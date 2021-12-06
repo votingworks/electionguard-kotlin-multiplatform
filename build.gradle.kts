@@ -18,6 +18,20 @@ repositories {
     mavenCentral()
 }
 
+// Failed attempt to get more output from failed tests
+// https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
+
+//tasks.withType<AbstractTestTask> {
+//    afterSuite(KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
+//        if (desc.parent == null) { // will match the outermost suite
+//            println("Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)")
+//        }
+//    }))
+//    testLogging {
+//        events("started", "passed", "skipped", "failed", "standardOut", "standardError")
+//    }
+//}
+
 kotlin {
     jvm {
         compilations.all {
@@ -32,6 +46,7 @@ kotlin {
     js(LEGACY) {
         useCommonJs()
         browser { commonWebpackConfig { cssSupport.enabled = true } }
+
     }
 
     val hostOs = System.getProperty("os.name")
