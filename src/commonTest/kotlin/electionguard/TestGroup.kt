@@ -6,6 +6,7 @@ import kotlin.test.assertEquals
  class GroupTest {
      @Test
      fun basics() {
+
          val ctx = lowMemoryProductionGroup()
          val three = 3.toElementModP(ctx)
          val four = 4.toElementModP(ctx)

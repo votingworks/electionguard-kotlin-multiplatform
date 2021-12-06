@@ -60,11 +60,15 @@ actual class GroupContext(val p: BigInteger, val q: BigInteger, val g: BigIntege
     val productionStrength: Boolean = strong
 
     init {
+        console.log("Entering GroupContext constructor")
+        console.log("p=$p, q=$q, g=$g, r=$r")
         zeroModP = ElementModP(0U.toBigInteger(), this)
         oneModP = ElementModP(1U.toBigInteger(), this)
         twoModP = ElementModP(2U.toBigInteger(), this)
         gModP = ElementModP(g, this)
-        gSquaredModP = ElementModP((g * g) % p, this)
+        val tmp = g*g
+        val tmp2 = tmp % p
+        gSquaredModP = ElementModP(tmp2, this)
         qModP = ElementModP(q, this)
         zeroModQ = ElementModQ(0U.toBigInteger(), this)
         oneModQ = ElementModQ(1U.toBigInteger(), this)

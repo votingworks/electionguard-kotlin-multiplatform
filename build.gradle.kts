@@ -81,6 +81,9 @@ kotlin {
                 // Coroutines
 //                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
+
+                // Portable logging
+                implementation("io.github.aakira:napier:2.2.0")
             }
         }
         val commonTest by
