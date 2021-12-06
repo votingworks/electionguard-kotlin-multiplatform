@@ -1,3 +1,10 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 plugins {
     kotlin("multiplatform") version "1.6.0"
     id("tech.formatter-kt.formatter") version "0.7.7"
@@ -95,13 +102,14 @@ kotlin {
         val jvmTest by
         getting {
             dependencies {
+                implementation(kotlin("test-junit5", "1.6.0"))
             }
         }
         val jsMain by
         getting {
             dependencies {
 //                    implementation(npm("gmp-wasm", "0.9.0", generateExternals = true))
-                implementation(kotlin("org.jetbrains.kotlin","stdlib-js:1.6.0"))
+                implementation(kotlin("stdlib-js", "1.6.0"))
 
                 // Portable, Kotlin port of Java's BigInteger; slow but works
                 implementation("io.github.gciatto:kt-math-js:0.4.0")
@@ -110,9 +118,15 @@ kotlin {
         val jsTest by
         getting {
             dependencies {
+//                runtimeOnly("org.jetbrains.kotlin:kotlin-test-js:1.6.0")
+                implementation(kotlin("test-js", "1.6.0"))
             }
         }
-        val nativeMain by getting
+        val nativeMain by
+        getting {
+            dependencies {
+            }
+        }
         val nativeTest by
         getting {
             dependencies {

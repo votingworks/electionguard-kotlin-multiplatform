@@ -1,7 +1,7 @@
-# Kotlin-Bignum
-This is an experimental attempt to create a multiplatform Kotlin library for cryptographic bignum arithmetic.
-In particular, the goal is to support [ElectionGuard](https://github.com/microsoft/electionguard) implementations
-across multiple platforms, including iOS, Android, and in the browser.
+# Electionguard-Kotlin-Multiplatform
+This is an experimental attempt to create a multiplatform Kotlin implementation of 
+[ElectionGuard](https://github.com/microsoft/electionguard), capable of running
+"everywhere" (Android, iOS, Unix native, JavaScript-in-browser).
 
 ElectionGuard is generally sensitive to the performance of bignum arithmetic, particularly modular exponentation, so
 even though there are pure-Kotlin implementations of bignum arithmetic, they are nowhere near as fast as the
