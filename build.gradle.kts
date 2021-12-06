@@ -16,7 +16,7 @@ kotlin {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
         }
-        withJava()
+//        withJava()
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
         }
@@ -72,7 +72,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
 
                 // Coroutines
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
+//                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
             }
         }
         val commonTest by
@@ -88,7 +89,7 @@ kotlin {
         val jvmMain by
         getting {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0")
+                implementation(kotlin("stdlib-jdk8", "1.6.0"))
             }
         }
         val jvmTest by
@@ -100,7 +101,7 @@ kotlin {
         getting {
             dependencies {
 //                    implementation(npm("gmp-wasm", "0.9.0", generateExternals = true))
-                implementation("org.jetbrains.kotlin:kotlin-stdlib-js:1.6.0")
+                implementation(kotlin("org.jetbrains.kotlin","stdlib-js:1.6.0"))
 
                 // Portable, Kotlin port of Java's BigInteger; slow but works
                 implementation("io.github.gciatto:kt-math-js:0.4.0")
