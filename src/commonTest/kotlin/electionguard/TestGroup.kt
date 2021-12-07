@@ -3,17 +3,16 @@ package electionguard
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
- class GroupTest {
-     @Test
-     fun basics() {
-
-         val ctx = lowMemoryProductionGroup()
-         val three = 3.toElementModP(ctx)
-         val four = 4.toElementModP(ctx)
-         val seven = 12.toElementModP(ctx)
-         assertEquals(seven, three * four)
-     }
- }
+class GroupTest {
+    @Test
+    fun basics() {
+        val ctx = lowMemoryProductionGroup()
+        val three = 3.toElementModP(ctx)
+        val four = 4.toElementModP(ctx)
+        val seven = 12.toElementModP(ctx)
+        assertEquals(seven, three * four)
+    }
+}
 //
 //     @Test
 //     fun comparisonOperations() {
