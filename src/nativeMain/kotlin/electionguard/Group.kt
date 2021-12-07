@@ -141,6 +141,35 @@ internal fun ByteArray.toHaclBignum4096(): HaclBignum4096 {
     }
 }
 
+internal infix fun HaclBignum256.lt256(other: HaclBignum256): Boolean {
+    nativeElems(this, other) { a, b ->
+        val aLtB = Hacl_Bignum256_lt_mask(a, b) != 0UL
+        return aLtB
+    }
+}
+
+internal infix fun HaclBignum256.gt256(other: HaclBignum256): Boolean {
+    nativeElems(this, other) { a, b ->
+        val aLtB = Hacl_Bignum256_lt_mask(b, a) != 0UL
+        return aLtB
+    }
+}
+
+internal infix fun HaclBignum4096.lt4096(other: HaclBignum4096): Boolean {
+    nativeElems(this, other) { a, b ->
+        val aLtB = Hacl_Bignum4096_lt_mask(a, b) != 0UL
+        return aLtB
+    }
+}
+
+internal infix fun HaclBignum4096.gt4096(other: HaclBignum4096): Boolean {
+    nativeElems(this, other) { a, b ->
+        val aLtB = Hacl_Bignum4096_lt_mask(b, a) != 0UL
+        return aLtB
+    }
+}
+
+
 internal fun Element.getCompat(context: GroupContext) =
     if (this.context.isCompatible(context))
         when(this) {
