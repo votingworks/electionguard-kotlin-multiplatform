@@ -2,7 +2,9 @@ headers = Hacl_Bignum.h Hacl_Bignum256.h Hacl_Bignum4096.h Hacl_HMAC.h Hacl_HMAC
 headerFilter = Hacl*.h
 staticLibraries = libhacl.a
 libraryPaths = build
-linkerOpts = -lhacl -Lbuild
+
+linkerOpts.osx = -lhacl -Lbuild
+linkerOpts.linux = -lhacl -Lbuild
 
 compilerOpts.osx = -Ilibhacl/include
 compilerOpts.linux = -Ilibhacl/include
