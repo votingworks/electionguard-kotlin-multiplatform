@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 
 class GroupTest {
     @Test
-    fun basics() {
+    fun basicsP() {
         val ctx = lowMemoryProductionGroup()
         val one = 1.toElementModP(ctx)
         val two = 2.toElementModP(ctx)
@@ -27,19 +27,47 @@ class GroupTest {
         assertEquals(twelve, three * four)
     }
 
-     @Test
-     fun comparisonOperations() {
-         val ctx = lowMemoryProductionGroup()
-         val two = 2.toElementModP(ctx)
-         val three = 3.toElementModP(ctx)
-         val four = 4.toElementModP(ctx)
+    @Test
+    fun basicsQ() {
+        val ctx = lowMemoryProductionGroup()
+        val one = 1.toElementModQ(ctx)
+        val two = 2.toElementModQ(ctx)
+        val alsoTwo = (1 + 1).toElementModQ(ctx)
+        val three = 3.toElementModQ(ctx)
+        val four = 4.toElementModQ(ctx)
+        val twelve = 12.toElementModQ(ctx)
 
-         assertTrue(three < four)
-         assertTrue(three <= four)
-         assertTrue(four > three)
-         assertTrue(four >= four)
-         assertTrue(four > two)
-     }
+        assertEquals(one, one)
+        assertEquals(two, alsoTwo)
+
+        // basic multiplication
+        assertEquals(one, one * one)
+        assertEquals(two, one * two)
+        assertEquals(two, two * one)
+        assertEquals(alsoTwo, two * one)
+        assertEquals(four, two * two)
+        assertEquals(twelve, three * four)
+
+        // basic addition
+        assertEquals(two, one + one)
+        assertEquals(three, one + two)
+        assertEquals(four, two + two)
+        assertEquals(twelve, four + three + three + two)
+    }
+
+    @Test
+    fun comparisonOperations() {
+        val ctx = lowMemoryProductionGroup()
+        val two = 2.toElementModP(ctx)
+        val three = 3.toElementModP(ctx)
+        val four = 4.toElementModP(ctx)
+
+        assertTrue(three < four)
+        assertTrue(three <= four)
+        assertTrue(four > three)
+        assertTrue(four >= four)
+        assertTrue(four > two)
+    }
 }
 //
 //     @Test

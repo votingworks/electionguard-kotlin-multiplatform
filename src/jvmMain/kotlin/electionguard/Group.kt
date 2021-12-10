@@ -8,20 +8,22 @@ import java.security.SecureRandom
 
 internal val productionGroupContext =
     GroupContext(
-        p = b64ProductionP.decodeFromBase64().toBigInteger(),
-        q = b64ProductionQ.decodeFromBase64().toBigInteger(),
-        g = b64ProductionG.decodeFromBase64().toBigInteger(),
-        r = b64ProductionR.decodeFromBase64().toBigInteger(),
-        strong = true
+        pBytes = b64ProductionP.decodeFromBase64(),
+        qBytes = b64ProductionQ.decodeFromBase64(),
+        gBytes = b64ProductionG.decodeFromBase64(),
+        rBytes = b64ProductionR.decodeFromBase64(),
+        strong = true,
+        name = "production group"
     )
 
 internal val testGroupContext =
     GroupContext(
-        p = b64TestP.decodeFromBase64().toBigInteger(),
-        q = b64TestQ.decodeFromBase64().toBigInteger(),
-        g = b64TestG.decodeFromBase64().toBigInteger(),
-        r = b64TestR.decodeFromBase64().toBigInteger(),
-        strong = false
+        pBytes = b64TestP.decodeFromBase64(),
+        qBytes = b64TestQ.decodeFromBase64(),
+        gBytes = b64TestG.decodeFromBase64(),
+        rBytes = b64TestR.decodeFromBase64(),
+        strong = false,
+        name = "16-bit test group"
     )
 
 actual fun highSpeedProductionGroup() = productionGroupContext
@@ -37,12 +39,17 @@ internal fun ByteArray.toBigInteger() = BigInteger(this)
 // TODO: add PowRadix
 
 actual class GroupContext(
-    val p: BigInteger,
-    val q: BigInteger,
-    val g: BigInteger,
-    val r: BigInteger,
-    strong: Boolean
+    pBytes: ByteArray,
+    qBytes: ByteArray,
+    gBytes: ByteArray,
+    rBytes: ByteArray,
+    strong: Boolean,
+    val name: String
 ) {
+    val p: BigInteger
+    val q: BigInteger
+    val g: BigInteger
+    val r: BigInteger
     val zeroModP: ElementModP
     val oneModP: ElementModP
     val twoModP: ElementModP
@@ -55,6 +62,10 @@ actual class GroupContext(
     val productionStrength: Boolean = strong
 
     init {
+        p = pBytes.toBigInteger()
+        q = qBytes.toBigInteger()
+        g = gBytes.toBigInteger()
+        r = rBytes.toBigInteger()
         zeroModP = ElementModP(0U.toBigInteger(), this)
         oneModP = ElementModP(1U.toBigInteger(), this)
         twoModP = ElementModP(2U.toBigInteger(), this)

@@ -59,12 +59,13 @@ kotlin {
     nativeTarget.apply {
         compilations.getByName("main") {
             cinterops {
-                val libhacl by creating {
-                    defFile(project.file("src/nativeInterop/libhacl.def"))
-                    packageName("hacl")
-                    compilerOpts("-Ilibhacl/include")
-                    includeDirs.allHeaders("${System.getProperty("user.dir")}/libhacl/include")
-                }
+                val libhacl by
+                    creating {
+                        defFile(project.file("src/nativeInterop/libhacl.def"))
+                        packageName("hacl")
+                        compilerOpts("-Ilibhacl/include")
+                        includeDirs.allHeaders("${System.getProperty("user.dir")}/libhacl/include")
+                    }
             }
         }
 

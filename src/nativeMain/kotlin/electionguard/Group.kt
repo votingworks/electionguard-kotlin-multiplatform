@@ -115,14 +115,31 @@ internal fun UInt.toHaclBignum4096(): HaclBignum4096 {
 
 /** Convert an array of bytes, in big-endian format, to a HaclBignum256. */
 internal fun ByteArray.toHaclBignum256(): HaclBignum256 {
-    this.useNative { bytes ->
+    // See detailed comments in ByteArray.toHaclBignum4096() for details on
+    // what's going on here.
+    val bytesToUse = when {
+        size == HaclBignum256_Bytes -> this
+        size == HaclBignum256_Bytes + 1 && this[0] == 0.toByte() ->
+            ByteArray(HaclBignum256_Bytes) { i -> this[i+1] }
+        size > HaclBignum256_Bytes ->
+            throw IllegalArgumentException("ByteArray size $size is too big for $HaclBignum256_Bytes")
+
+        else -> {
+            // leading padding with zero
+            val delta = HaclBignum256_Bytes - size
+            ByteArray(HaclBignum256_Bytes) { i ->
+                if (i < delta) 0 else this[i - delta]
+            }
+        }
+    }
+    bytesToUse.useNative { bytes ->
         val tmp: CPointer<UInt64Var>? =
-            Hacl_Bignum256_new_bn_from_bytes_be(size.convert(), bytes)
+            Hacl_Bignum256_new_bn_from_bytes_be(HaclBignum256_Bytes.convert(), bytes)
         if (tmp == null) {
             throw OutOfMemoryError()
         }
 
-        // make a copy to Kotlin-managed memory
+        // make a copy to Kotlin-managed memory and free the Hacl-managed original
         val result = ULongArray(HaclBignum256_LongWords) { tmp[it].convert() }
         free(tmp)
         return result
@@ -131,14 +148,43 @@ internal fun ByteArray.toHaclBignum256(): HaclBignum256 {
 
 /** Convert an array of bytes, in big-endian format, to a HaclBignum4096. */
 internal fun ByteArray.toHaclBignum4096(): HaclBignum4096 {
-    this.useNative { bytes ->
+    // This code, as well as ByteArray.toHaclBignum256() is making a bunch
+    // of copies. We do a first copy to get the input to exactly the right
+    // length, padding or chopping zeros as necessary. Then HACL makes a
+    // copy into memory that it allocated, rearranging the bytes as necessary
+    // for its internal representation. Then, we make a copy of *that* into
+    // memory that's managed by Kotlin, which allows the Kotlin native runtime
+    // (which has a GC implementation that's evolving over time) to dispose
+    // of it when it's no longer in use.
+
+    // This might seem like it's really awful, but it's only happening when
+    // we're reading this data in from an external source. What really matters
+    // for performance is when we're doing arithmetic, and there we're doing
+    // all the right things to avoid unnecessary copies.
+
+    val bytesToUse = when {
+        size == HaclBignum4096_Bytes -> this
+        size == HaclBignum4096_Bytes + 1 && this[0] == 0.toByte() ->
+            ByteArray(HaclBignum4096_Bytes) { i -> this[i+1] }
+        size > HaclBignum4096_Bytes ->
+            throw IllegalArgumentException("ByteArray size $size is too big for $HaclBignum4096_Bytes")
+
+        else -> {
+            // leading padding with zero
+            val delta = HaclBignum4096_Bytes - size
+            ByteArray(HaclBignum4096_Bytes) { i ->
+                if (i < delta) 0 else this[i - delta]
+            }
+        }
+    }
+    bytesToUse.useNative { bytes ->
         val tmp: CPointer<UInt64Var>? =
-            Hacl_Bignum4096_new_bn_from_bytes_be(size.convert(), bytes)
+            Hacl_Bignum4096_new_bn_from_bytes_be(HaclBignum4096_Bytes.convert(), bytes)
         if (tmp == null) {
             throw OutOfMemoryError()
         }
 
-        // make a copy to Kotlin-managed memory
+        // make a copy to Kotlin-managed memory and free the Hacl-managed original
         val result = ULongArray(HaclBignum4096_LongWords) { tmp[it].convert() }
         free(tmp)
         return result
@@ -474,9 +520,9 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
     )
 
     override fun equals(other: Any?) = when (other) {
-        // we're converting from the internal representation to a byte array
-        // for equality checking; possibly overkill, but if there are multiple
-        // internal representations, this should deal with normalization
+        // We're converting from the internal representation to a byte array
+        // for equality checking; possibly overkill, but if there are ever
+        // multiple internal representations, this guarantees normalization.
         is ElementModQ ->
             other.byteArray().contentEquals(this.byteArray()) &&
                     other.groupContext.isCompatible(this.groupContext)
@@ -573,9 +619,9 @@ actual class ElementModP(val element: HaclBignum4096, val groupContext: GroupCon
     )
 
     override fun equals(other: Any?) = when (other) {
-        // we're converting from the internal representation to a byte array
-        // for equality checking; possibly overkill, but if there are multiple
-        // internal representations, this should deal with normalization
+        // We're converting from the internal representation to a byte array
+        // for equality checking; possibly overkill, but if there are ever
+        // multiple internal representations, this guarantees normalization.
         is ElementModP ->
             other.byteArray().contentEquals(this.byteArray()) &&
                     other.groupContext.isCompatible(this.groupContext)
