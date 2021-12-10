@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 import electionguard.*
 import electionguard.Base64.decodeFromBase64
 import kotlin.test.Test

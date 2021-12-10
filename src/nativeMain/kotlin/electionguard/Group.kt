@@ -13,22 +13,24 @@ import hacl.*
 
 internal val productionGroupContext =
     GroupContext(
-        p = b64ProductionP.decodeFromBase64().toHaclBignum4096(),
-        q = b64ProductionQ.decodeFromBase64().toHaclBignum256(),
-        p256minusQ = b64ProductionP256MinusQ.decodeFromBase64().toHaclBignum256(),
-        g = b64ProductionG.decodeFromBase64().toHaclBignum4096(),
-        r = b64ProductionR.decodeFromBase64().toHaclBignum4096(),
-        strong = true
+        pBytes = b64ProductionP.decodeFromBase64(),
+        qBytes = b64ProductionQ.decodeFromBase64(),
+        p256minusQBytes = b64ProductionP256MinusQ.decodeFromBase64(),
+        gBytes = b64ProductionG.decodeFromBase64(),
+        rBytes = b64ProductionR.decodeFromBase64(),
+        strong = true,
+        name = "production strength group"
     )
 
 internal val testGroupContext =
     GroupContext(
-        p = b64TestP.decodeFromBase64().toHaclBignum4096(),
-        q = b64TestQ.decodeFromBase64().toHaclBignum256(),
-        p256minusQ = b64Test256MinusQ.decodeFromBase64().toHaclBignum256(),
-        g = b64TestG.decodeFromBase64().toHaclBignum4096(),
-        r = b64TestR.decodeFromBase64().toHaclBignum4096(),
-        strong = false
+        pBytes = b64TestP.decodeFromBase64(),
+        qBytes = b64TestQ.decodeFromBase64(),
+        p256minusQBytes = b64Test256MinusQ.decodeFromBase64(),
+        gBytes = b64TestG.decodeFromBase64(),
+        rBytes = b64TestR.decodeFromBase64(),
+        strong = false,
+        name = "16-bit test group"
     )
 
 actual fun highSpeedProductionGroup() = productionGroupContext
@@ -183,13 +185,19 @@ internal fun Element.getCompat(context: GroupContext) =
 // TODO: add PowRadix
 
 actual class GroupContext(
-    val p: HaclBignum4096,
-    val q: HaclBignum256,
-    val g: HaclBignum4096,
-    val p256minusQ: HaclBignum256,
-    val r: HaclBignum4096,
-    strong: Boolean
+    val pBytes: ByteArray,
+    val qBytes: ByteArray,
+    val gBytes: ByteArray,
+    val p256minusQBytes: ByteArray,
+    val rBytes: ByteArray,
+    val strong: Boolean,
+    val name: String
 ) {
+    val p: HaclBignum4096
+    val q: HaclBignum256
+    val g: HaclBignum4096
+    val p256minusQ: HaclBignum256
+    val r: HaclBignum4096
     val zeroModP: ElementModP
     val oneModP: ElementModP
     val twoModP: ElementModP
@@ -203,11 +211,17 @@ actual class GroupContext(
     val montCtx: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
 
     init {
+        println("Creating group context for <$name>, strong: ${strong}")
+        println("pBytes: ${pBytes.size}, qBytes: ${qBytes.size}, gBytes: ${gBytes.size},  p256minusQBytes: ${p256minusQBytes.size}, rBytes: ${rBytes.size}")
+        p = pBytes.toHaclBignum4096()
+        q = qBytes.toHaclBignum256()
+        g = gBytes.toHaclBignum4096()
+        p256minusQ = p256minusQBytes.toHaclBignum256()
+        r = rBytes.toHaclBignum4096()
         zeroModP = ElementModP(0U.toHaclBignum4096(), this)
         oneModP = ElementModP(1U.toHaclBignum4096(), this)
         twoModP = ElementModP(2U.toHaclBignum4096(), this)
         gModP = ElementModP(g, this)
-        gSquaredModP = listOf(gModP, gModP).multP()
         qModP = ElementModP(
             ULongArray(HaclBignum4096_LongWords) {
                     // Copy from 256-bit to 4096-bit, avoid problems later on. Hopefully.
@@ -225,6 +239,9 @@ actual class GroupContext(
             Hacl_Bignum4096_mont_ctx_init(it)
                 ?: throw RuntimeException("failed to make montCtx")
         }
+
+        // can't compute this until we have montCtx defined
+        gSquaredModP = gModP * gModP
     }
 
     actual fun isProductionStrength() = productionStrength

@@ -7,10 +7,23 @@ class GroupTest {
     @Test
     fun basics() {
         val ctx = lowMemoryProductionGroup()
+        val one = 1.toElementModP(ctx)
+        val two = 2.toElementModP(ctx)
+        val alsoTwo = (1 + 1).toElementModP(ctx)
         val three = 3.toElementModP(ctx)
         val four = 4.toElementModP(ctx)
-        val seven = 12.toElementModP(ctx)
-        assertEquals(seven, three * four)
+        val twelve = 12.toElementModP(ctx)
+
+        assertEquals(one, one)
+        assertEquals(two, alsoTwo)
+
+        // basic multiplication stuff
+        assertEquals(one, one * one)
+        assertEquals(two, one * two)
+        assertEquals(two, two * one)
+        assertEquals(alsoTwo, two * one)
+        assertEquals(four, two * two)
+        assertEquals(twelve, three * four)
     }
 }
 //
