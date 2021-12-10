@@ -34,7 +34,7 @@ actual fun testGroup() = testGroupContext
 
 /** Convert an array of bytes, in big-endian format, to a BigInteger */
 internal fun UInt.toBigInteger() = BigInteger.valueOf(this.toLong())
-internal fun ByteArray.toBigInteger() = BigInteger(this)
+internal fun ByteArray.toBigInteger() = BigInteger(1, this)
 
 // TODO: add PowRadix
 
@@ -116,11 +116,37 @@ actual class GroupContext(
         throw NotImplementedError()
     }
 
-    actual fun safeBinaryToElementModP(b: ByteArray) =
-        ElementModP(b.toBigInteger() % p, this)
+    actual fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
+        val result = when {
+            minimum < 0 ->
+                throw IllegalArgumentException("minimum $minimum may not be negative")
+            minimum == 0 ->
+                ElementModP(b.toBigInteger() % p, this)
+            else ->
+                minimum.toBigInteger().let { mv ->
+                    ElementModP(mv + b.toBigInteger() % (p - mv), this)
+                }
+        }
 
-    actual fun safeBinaryToElementModQ(b: ByteArray) =
-        ElementModQ(b.toBigInteger() % q, this)
+        assert(result.inBounds()) { "result not in bounds! ${result.element}" }
+        return result
+    }
+
+    actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
+        val result = when {
+            minimum < 0 ->
+                throw IllegalArgumentException("minimum $minimum may not be negative")
+            minimum == 0 ->
+                ElementModQ(b.toBigInteger() % q, this)
+            else ->
+                minimum.toBigInteger().let { mv ->
+                    ElementModQ(mv + b.toBigInteger() % (q - mv), this)
+                }
+        }
+
+        assert(result.inBounds()) { "result not in bounds! ${result.element}" }
+        return result
+    }
 
     actual fun binaryToElementModP(b: ByteArray): ElementModP? {
         val tmp = b.toBigInteger()

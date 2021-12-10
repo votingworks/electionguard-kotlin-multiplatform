@@ -1,5 +1,6 @@
 package electionguard
 
+import io.kotest.property.forAll
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -68,31 +69,96 @@ class GroupTest {
         assertTrue(four >= four)
         assertTrue(four > two)
     }
+
+    @Test
+    fun generatorsWorkSmall() {
+        runProperty { forAll(elementsModP(testGroup())) { it.inBounds() } }
+
+        runProperty { forAll(elementsModQ(testGroup())) { it.inBounds() } }
+    }
+
+    @Test
+    fun generatorsWorkLarge() {
+        runProperty {
+            forAll(propTestFastConfig, elementsModP(lowMemoryProductionGroup()) ) { it.inBounds() }
+        }
+
+        runProperty {
+            forAll(propTestFastConfig, elementsModQ(lowMemoryProductionGroup())) { it.inBounds() }
+        }
+    }
+
+    @Test
+    fun validResiduesForGPowP() {
+        runProperty { forAll(validElementsModP(testGroup())) { it.isValidResidue() } }
+
+        runProperty {
+            forAll(propTestFastConfig, validElementsModP(lowMemoryProductionGroup())) {
+                it.isValidResidue()
+            }
+        }
+    }
+
+    @Test
+    fun binaryArrayRoundTripSmall() {
+        runProperty {
+            forAll(elementsModP()) {
+                it == it.context.binaryToElementModP(it.byteArray())
+            }
+        }
+
+        runProperty {
+            forAll(elementsModQ()) {
+                it == it.context.binaryToElementModQ(it.byteArray())
+            }
+        }
+    }
+
+    @Test
+    fun binaryArrayRoundTripBig() {
+        runProperty {
+            forAll(propTestFastConfig, elementsModP(lowMemoryProductionGroup())) {
+                it == it.context.binaryToElementModP(it.byteArray())
+            }
+        }
+
+        runProperty {
+            forAll(propTestFastConfig, elementsModQ(lowMemoryProductionGroup())) {
+                it == it.context.binaryToElementModQ(it.byteArray())
+            }
+        }
+    }
+
+    @Test
+    fun base64RoundTripSmall() {
+        runProperty {
+            forAll(elementsModP()) {
+                it == it.context.base64ToElementModP(it.base64())
+            }
+        }
+
+        runProperty {
+            forAll(elementsModQ()) {
+                it == it.context.base64ToElementModQ(it.base64())
+            }
+        }
+    }
+
+    @Test
+    fun base64RoundTripBig() {
+        runProperty {
+            forAll(propTestFastConfig, elementsModP(lowMemoryProductionGroup())) {
+                it == it.context.base64ToElementModP(it.base64())
+            }
+        }
+
+        runProperty {
+            forAll(propTestFastConfig, elementsModQ(lowMemoryProductionGroup())) {
+                it == it.context.base64ToElementModQ(it.base64())
+            }
+        }
+    }
 }
-//
-//     @Test
-//     fun generatorsWork() {
-//         qt().forAll(elementsModP()).check { it.inBounds() }
-//
-//         qt().forAll(elementsModQ()).check { it.inBounds() }
-//     }
-//
-//     @Test
-//     fun validResiduesForGPowP() {
-//         qt().forAll(validElementsModP()).check { it.isValidResidue() }
-//     }
-//
-//     @Test
-//     fun binaryArrayRoundTrip() {
-//         qt().forAll(elementsModP()).check { it == bytesElementModP(it.byteArray()) }
-//         qt().forAll(elementsModQ()).check { it == bytesElementModQ(it.byteArray()) }
-//     }
-//
-//     @Test
-//     fun base64RoundTrip() {
-//         qt().forAll(elementsModP()).check { it == base64ElementModP(it.base64()) }
-//         qt().forAll(elementsModQ()).check { it == base64ElementModQ(it.base64()) }
-//     }
 //
 //     @Test
 //     fun base16RoundTrip() {

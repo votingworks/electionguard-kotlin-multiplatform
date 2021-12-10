@@ -45,7 +45,7 @@ actual fun testGroup() = testGroupContext
 
 /** Convert an array of bytes, in big-endian format, to a BigInteger */
 internal fun UInt.toBigInteger() = BigInteger.of(this.toLong())
-internal fun ByteArray.toBigInteger() = BigInteger(this)
+internal fun ByteArray.toBigInteger() = BigInteger(1, this)
 
 actual class GroupContext(val p: BigInteger, val q: BigInteger, val g: BigInteger, val r: BigInteger, strong: Boolean) {
     val zeroModP: ElementModP
@@ -113,11 +113,37 @@ actual class GroupContext(val p: BigInteger, val q: BigInteger, val g: BigIntege
         TODO("Not yet implemented")
     }
 
+    actual fun safeBinaryToElementModP(b: ByteArray, minimum: Int) =
+        when {
+            minimum < 0 ->
+                throw IllegalArgumentException("minimum $minimum may not be negative")
+            minimum == 0 ->
+                ElementModP(b.toBigInteger() % p, this)
+            else ->
+                BigInteger.of(minimum).let { mv ->
+                    ElementModP(mv + b.toBigInteger() % (p - mv), this)
+                }
+        }
+
+    actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int) =
+        when {
+            minimum < 0 ->
+                throw IllegalArgumentException("minimum $minimum may not be negative")
+            minimum == 0 ->
+                ElementModQ(b.toBigInteger() % q, this)
+            else ->
+                BigInteger.of(minimum).let { mv ->
+                    ElementModQ(mv + b.toBigInteger() % (q - mv), this)
+                }
+        }
+
+    /*
     actual fun safeBinaryToElementModP(b: ByteArray) =
         ElementModP(b.toBigInteger() % p, this)
 
     actual fun safeBinaryToElementModQ(b: ByteArray) =
         ElementModQ(b.toBigInteger() % q, this)
+     */
 
     actual fun binaryToElementModP(b: ByteArray): ElementModP? {
         val tmp = b.toBigInteger()

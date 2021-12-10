@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalUnsignedTypes::class)
 
-import electionguard.*
+package electionguard
+
 import electionguard.Base64.decodeFromBase64
 import kotlin.test.Test
 import kotlin.test.assertContentEquals

@@ -259,8 +259,6 @@ actual class GroupContext(
     val montCtx: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
 
     init {
-        println("Creating group context for <$name>, strong: ${strong}")
-        println("pBytes: ${pBytes.size}, qBytes: ${qBytes.size}, gBytes: ${gBytes.size},  p256minusQBytes: ${p256minusQBytes.size}, rBytes: ${rBytes.size}")
         p = pBytes.toHaclBignum4096()
         q = qBytes.toHaclBignum256()
         g = gBytes.toHaclBignum4096()
@@ -331,27 +329,67 @@ actual class GroupContext(
         throw NotImplementedError()
     }
 
-    actual fun safeBinaryToElementModP(b: ByteArray): ElementModP {
-        val bignum4096 = b.toHaclBignum4096()
-        val result = newZeroBignum4096()
+    actual fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
+        if (minimum < 0)
+            throw IllegalArgumentException("minimum $minimum may not be negative")
+        else if (minimum == 0) {
+            // we've got an optimized path, using our Montgomery context
+            val bignum4096 = b.toHaclBignum4096()
+            val result = newZeroBignum4096()
 
-        nativeElems(bignum4096, result) { s, r ->
-            Hacl_Bignum4096_mod_precomp(montCtx, s, r)
+            nativeElems(bignum4096, result) { s, r ->
+                Hacl_Bignum4096_mod_precomp(montCtx, s, r)
+            }
+            return ElementModP(result, this)
+        } else {
+            val mv = minimum.toUInt().toHaclBignum4096()
+            val pMinusMV = newZeroBignum4096()
+            val bignum4096 = b.toHaclBignum4096()
+            val result = newZeroBignum4096()
+
+            nativeElems(pMinusMV, p, mv, bignum4096, result) { pm, pp, mmv, bb, r ->
+                Hacl_Bignum4096_sub(pp, mmv, pm) // pm = pp - mv
+                val success = Hacl_Bignum4096_mod(pm, bb, r) // r = pm % bb
+                if (!success)
+                    throw ArithmeticException("preconditions for modulo operation were not met")
+                Hacl_Bignum4096_add(r, mmv, r) // r = r + mmv
+            }
+
+            return ElementModP(result, this)
         }
-        return ElementModP(result, this)
     }
 
-    actual fun safeBinaryToElementModQ(b: ByteArray): ElementModQ {
-        val bignum256 = b.toHaclBignum256()
-        val result = newZeroBignum256()
+    actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
+        if (minimum < 0)
+           throw IllegalArgumentException("minimum $minimum may not be negative")
+        else if (minimum == 0) {
+            val bignum256 = b.toHaclBignum256()
+            val result = newZeroBignum256()
 
-        val success = nativeElems(bignum256, result, q) { s, r, qq ->
-            Hacl_Bignum256_mod(qq, s, r)
+            val success = nativeElems(bignum256, result, q) { s, r, qq ->
+                Hacl_Bignum256_mod(qq, s, r)
+            }
+
+            if (!success) throw ArithmeticException("preconditions for modulo operation were not met")
+
+            return ElementModQ(result, this)
+        } else {
+            val mv = minimum.toUInt().toHaclBignum256()
+            val pMinusMV = newZeroBignum256()
+            val bignum256 = b.toHaclBignum256()
+            val result = newZeroBignum256()
+
+            nativeElems(pMinusMV, p, mv, bignum256, result) { pm, pp, mmv, bb, r ->
+                Hacl_Bignum256_sub(pp, mmv, pm) // pm = pp - mv
+                val success = Hacl_Bignum256_mod(pm, bb, r) // r = pm % bb
+                if (!success)
+                    throw ArithmeticException("preconditions for modulo operation were not met")
+                Hacl_Bignum256_add(r, mmv, r) // r = r + mmv
+            }
+
+            return ElementModQ(result, this)
+
         }
-
-        if (!success) throw ArithmeticException("preconditions for modulo operation were not met")
-
-        return ElementModQ(result, this)
     }
 
     actual fun binaryToElementModP(b: ByteArray): ElementModP? {
@@ -370,15 +408,8 @@ actual class GroupContext(
 
     actual fun gPowP(e: ElementModQ) = gModP.powP(e)  // fixme with PowRadix later on
 
-    actual fun randRangeQ(minimum: Int): ElementModQ {
-        val maybe = safeBinaryToElementModQ(secureRandomBytes(32))
-        val minQ = minimum.toElementModQ(this)
-        return if (maybe < minQ)
-            // we're introducing a tiny statistical bias here in return for code simplicity
-            minQ
-        else
-            maybe
-    }
+    actual fun randRangeQ(minimum: Int): ElementModQ =
+        safeBinaryToElementModQ(secureRandomBytes(32), minimum)
 }
 
 actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupContext): Element, Comparable<ElementModQ> {
@@ -387,13 +418,15 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
 
     internal fun HaclBignum256.wrap(): ElementModQ = ElementModQ(this, groupContext)
 
-    override fun inBounds(): Boolean {
-        throw NotImplementedError()
-    }
+    override fun inBounds(): Boolean =
+        nativeElems(element, groupContext.q) { e, q -> Hacl_Bignum256_lt_mask(e, q) != 0UL }
 
-    override fun inBoundsNoZero(): Boolean {
-        throw NotImplementedError()
-    }
+    override fun inBoundsNoZero(): Boolean =
+        nativeElems(element, groupContext.q, groupContext.zeroModQ.element) { e, q, z ->
+            // e < q && 0 < e
+            Hacl_Bignum256_lt_mask(e, q) != 0UL &&
+                    Hacl_Bignum256_lt_mask(z, e) != 0UL
+        }
 
     override fun byteArray(): ByteArray {
         val results = ByteArray(32)

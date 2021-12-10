@@ -87,16 +87,16 @@ expect class GroupContext {
     /**
      * Converts a [ByteArray] to an [ElementModP]. The input array is assumed to be in big-endian
      * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
-     * Java's BigInteger. Guarantees the result is in [0, P), by computing the result mod P.
+     * Java's BigInteger. Guarantees the result is in [minimum, P), by computing the result mod P.
      */
-    fun safeBinaryToElementModP(b: ByteArray): ElementModP
+    fun safeBinaryToElementModP(b: ByteArray, minimum: Int = 0): ElementModP
 
     /**
      * Converts a [ByteArray] to an [ElementModQ]. The input array is assumed to be in big-endian
      * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
-     * Java's BigInteger. Guarantees the result is in [0, Q), by computing the result mod Q.
+     * Java's BigInteger. Guarantees the result is in [minimum, Q), by computing the result mod Q.
      */
-    fun safeBinaryToElementModQ(b: ByteArray): ElementModQ
+    fun safeBinaryToElementModQ(b: ByteArray, minimum: Int = 0): ElementModQ
 
     /**
      * Converts a [ByteArray] to an [ElementModP]. The input array is assumed to be in big-endian
