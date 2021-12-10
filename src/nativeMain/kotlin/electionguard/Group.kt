@@ -114,7 +114,7 @@ internal fun UInt.toHaclBignum4096(): HaclBignum4096 {
 }
 
 /** Convert an array of bytes, in big-endian format, to a HaclBignum256. */
-internal fun ByteArray.toHaclBignum256(): HaclBignum256 {
+internal fun ByteArray.toHaclBignum256(doubleMemory: Boolean = false): HaclBignum256 {
     // See detailed comments in ByteArray.toHaclBignum4096() for details on
     // what's going on here.
     val bytesToUse = when {
@@ -140,14 +140,19 @@ internal fun ByteArray.toHaclBignum256(): HaclBignum256 {
         }
 
         // make a copy to Kotlin-managed memory and free the Hacl-managed original
-        val result = ULongArray(HaclBignum256_LongWords) { tmp[it].convert() }
+        val result = ULongArray((if (doubleMemory) 2 else 1) * HaclBignum256_LongWords) {
+            if (it >= HaclBignum256_LongWords)
+                0UL
+            else
+                tmp[it].convert()
+        }
         free(tmp)
         return result
     }
 }
 
 /** Convert an array of bytes, in big-endian format, to a HaclBignum4096. */
-internal fun ByteArray.toHaclBignum4096(): HaclBignum4096 {
+internal fun ByteArray.toHaclBignum4096(doubleMemory: Boolean = false): HaclBignum4096 {
     // This code, as well as ByteArray.toHaclBignum256() is making a bunch
     // of copies. We do a first copy to get the input to exactly the right
     // length, padding or chopping zeros as necessary. Then HACL makes a
@@ -185,7 +190,12 @@ internal fun ByteArray.toHaclBignum4096(): HaclBignum4096 {
         }
 
         // make a copy to Kotlin-managed memory and free the Hacl-managed original
-        val result = ULongArray(HaclBignum4096_LongWords) { tmp[it].convert() }
+        val result = ULongArray((if (doubleMemory) 2 else 1) * HaclBignum4096_LongWords) {
+            if (it >= HaclBignum4096_LongWords)
+                0UL
+            else
+                tmp[it].convert()
+        }
         free(tmp)
         return result
     }
@@ -340,7 +350,7 @@ actual class GroupContext(
             throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
             // we've got an optimized path, using our Montgomery context
-            val bignum4096 = b.toHaclBignum4096()
+            val bignum4096 = b.toHaclBignum4096(doubleMemory = true)
             val result = newZeroBignum4096()
             val minimum4096 = minimum.toUInt().toHaclBignum4096()
 
@@ -366,7 +376,7 @@ actual class GroupContext(
         if (minimum < 0)
            throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
-            val bignum256 = b.toHaclBignum256()
+            val bignum256 = b.toHaclBignum256(doubleMemory = true)
             val result = newZeroBignum256()
             val minimum256 = minimum.toUInt().toHaclBignum256()
 
