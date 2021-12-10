@@ -44,6 +44,8 @@ typealias HaclBignum256 = ULongArray
 
 internal const val HaclBignum256_LongWords = 4
 internal const val HaclBignum4096_LongWords = 64
+internal const val HaclBignum256_Bytes = HaclBignum256_LongWords * 8
+internal const val HaclBignum4096_Bytes = HaclBignum4096_LongWords * 8
 
 internal fun newZeroBignum4096() = HaclBignum4096(HaclBignum4096_LongWords)
 internal fun newZeroBignum256() = HaclBignum256(HaclBignum256_LongWords)
@@ -92,22 +94,22 @@ internal inline fun <T> ByteArray.useNative(f: (CPointer<UByteVar>) -> T): T =
 
 
 internal fun UInt.toHaclBignum256(): HaclBignum256 {
-    val bytes = ByteArray(4)
+    val bytes = ByteArray(HaclBignum256_Bytes)
     // big-endian
-    bytes[0] = ((this and 0xff000000U) shr 24).toByte()
-    bytes[1] = ((this and 0xff0000U) shr 16).toByte()
-    bytes[2] = ((this and 0xff00U) shr 8).toByte()
-    bytes[3] = ((this and 0xffU)).toByte()
+    bytes[HaclBignum256_Bytes - 4] = ((this and 0xff_00_00_00U) shr 24).toByte()
+    bytes[HaclBignum256_Bytes - 3] = ((this and 0xff_00_00U) shr 16).toByte()
+    bytes[HaclBignum256_Bytes - 2] = ((this and 0xff_00U) shr 8).toByte()
+    bytes[HaclBignum256_Bytes - 1] = ((this and 0xffU)).toByte()
     return bytes.toHaclBignum256()
 }
 
 internal fun UInt.toHaclBignum4096(): HaclBignum4096 {
-    val bytes = ByteArray(4)
+    val bytes = ByteArray(HaclBignum4096_Bytes)
     // big-endian
-    bytes[0] = ((this and 0xff000000U) shr 24).toByte()
-    bytes[1] = ((this and 0xff0000U) shr 16).toByte()
-    bytes[2] = ((this and 0xff00U) shr 8).toByte()
-    bytes[3] = ((this and 0xffU)).toByte()
+    bytes[HaclBignum4096_Bytes - 4] = ((this and 0xff_00_00_00U) shr 24).toByte()
+    bytes[HaclBignum4096_Bytes - 3] = ((this and 0xff_00_00U) shr 16).toByte()
+    bytes[HaclBignum4096_Bytes - 2] = ((this and 0xff_00U) shr 8).toByte()
+    bytes[HaclBignum4096_Bytes - 1] = ((this and 0xffU)).toByte()
     return bytes.toHaclBignum4096()
 }
 
@@ -472,8 +474,12 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
     )
 
     override fun equals(other: Any?) = when (other) {
-        is ElementModQ -> other.element.contentEquals(this.element) &&
-                other.groupContext.isCompatible(this.groupContext)
+        // we're converting from the internal representation to a byte array
+        // for equality checking; possibly overkill, but if there are multiple
+        // internal representations, this should deal with normalization
+        is ElementModQ ->
+            other.byteArray().contentEquals(this.byteArray()) &&
+                    other.groupContext.isCompatible(this.groupContext)
         else -> false
     }
 
@@ -567,8 +573,12 @@ actual class ElementModP(val element: HaclBignum4096, val groupContext: GroupCon
     )
 
     override fun equals(other: Any?) = when (other) {
-        is ElementModP -> other.element.contentEquals(this.element) &&
-                other.groupContext.isCompatible(this.groupContext)
+        // we're converting from the internal representation to a byte array
+        // for equality checking; possibly overkill, but if there are multiple
+        // internal representations, this should deal with normalization
+        is ElementModP ->
+            other.byteArray().contentEquals(this.byteArray()) &&
+                    other.groupContext.isCompatible(this.groupContext)
         else -> false
     }
 

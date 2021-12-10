@@ -3,6 +3,7 @@
 import electionguard.*
 import electionguard.Base64.decodeFromBase64
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -33,9 +34,14 @@ class TestConstants {
         val g = b64TestG.decodeFromBase64().toHaclBignum4096()
         val r = b64TestR.decodeFromBase64().toHaclBignum4096()
 
-        assertEquals(intTestP.toUInt().toHaclBignum4096(), p)
-        assertEquals(intTestQ.toUInt().toHaclBignum256(), q)
-        assertEquals(intTestG.toUInt().toHaclBignum4096(), g)
-        assertEquals(intTestR.toUInt().toHaclBignum4096(), r)
+        val ip = intTestP.toUInt().toHaclBignum4096()
+        val iq = intTestQ.toUInt().toHaclBignum256()
+        val ig = intTestG.toUInt().toHaclBignum4096()
+        val ir = intTestR.toUInt().toHaclBignum4096()
+
+        assertContentEquals(ip, p, "P")
+        assertContentEquals(iq, q, "Q")
+        assertContentEquals(ig, g, "G")
+        assertContentEquals(ir, r, "R")
     }
 }
