@@ -216,7 +216,7 @@ actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext
     actual operator fun unaryMinus() = (groupContext.q - element).wrap()
 
     actual infix operator fun div(denominator: ElementModQ) =
-        (element * denominator.getCompat(groupContext).modInverse(groupContext.q)).wrap()
+        ((element * denominator.getCompat(groupContext).modInverse(groupContext.q)) % groupContext.q).wrap()
 
     override fun equals(other: Any?) = when (other) {
         is ElementModQ -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)
@@ -256,7 +256,7 @@ actual class ElementModP(val element: BigInteger, val groupContext: GroupContext
     actual fun multInv() = element.modInverse(groupContext.p).wrap()
 
     actual infix operator fun div(denominator: ElementModP) =
-        (element * denominator.getCompat(groupContext).modInverse(groupContext.p)).wrap()
+        ((element * denominator.getCompat(groupContext).modInverse(groupContext.p)) % groupContext.p).wrap()
 
     override fun equals(other: Any?) = when (other) {
         is ElementModP -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)

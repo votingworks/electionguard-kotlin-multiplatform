@@ -21,20 +21,22 @@ import org.gciatto.kt.math.BigInteger
 
 internal val productionGroupContext =
     GroupContext(
-        p = b64ProductionP.decodeFromBase64().toBigInteger(),
-        q = b64ProductionQ.decodeFromBase64().toBigInteger(),
-        g = b64ProductionG.decodeFromBase64().toBigInteger(),
-        r = b64ProductionR.decodeFromBase64().toBigInteger(),
-        strong = true
+        pBytes = b64ProductionP.decodeFromBase64(),
+        qBytes = b64ProductionQ.decodeFromBase64(),
+        gBytes = b64ProductionG.decodeFromBase64(),
+        rBytes = b64ProductionR.decodeFromBase64(),
+        strong = true,
+        name = "production group"
     )
 
 internal val testGroupContext =
     GroupContext(
-        p = b64TestP.decodeFromBase64().toBigInteger(),
-        q = b64TestQ.decodeFromBase64().toBigInteger(),
-        g = b64TestG.decodeFromBase64().toBigInteger(),
-        r = b64TestR.decodeFromBase64().toBigInteger(),
-        strong = false
+        pBytes = b64TestP.decodeFromBase64(),
+        qBytes = b64TestQ.decodeFromBase64(),
+        gBytes = b64TestG.decodeFromBase64(),
+        rBytes = b64TestR.decodeFromBase64(),
+        strong = false,
+        name = "16-bit test group"
     )
 
 actual fun highSpeedProductionGroup() = productionGroupContext
@@ -47,7 +49,11 @@ actual fun testGroup() = testGroupContext
 internal fun UInt.toBigInteger() = BigInteger.of(this.toLong())
 internal fun ByteArray.toBigInteger() = BigInteger(1, this)
 
-actual class GroupContext(val p: BigInteger, val q: BigInteger, val g: BigInteger, val r: BigInteger, strong: Boolean) {
+actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, strong: Boolean, val name: String) {
+    val p: BigInteger
+    val q: BigInteger
+    val g: BigInteger
+    val r: BigInteger
     val zeroModP: ElementModP
     val oneModP: ElementModP
     val twoModP: ElementModP
@@ -60,8 +66,10 @@ actual class GroupContext(val p: BigInteger, val q: BigInteger, val g: BigIntege
     val productionStrength: Boolean = strong
 
     init {
-        println("Entering GroupContext constructor")
-        println("p=$p, q=$q, g=$g, r=$r")
+        p = pBytes.toBigInteger()
+        q = qBytes.toBigInteger()
+        g = gBytes.toBigInteger()
+        r = rBytes.toBigInteger()
         zeroModP = ElementModP(0U.toBigInteger(), this)
         oneModP = ElementModP(1U.toBigInteger(), this)
         twoModP = ElementModP(2U.toBigInteger(), this)
@@ -235,7 +243,7 @@ actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext
     actual operator fun unaryMinus() = (groupContext.q - element).wrap()
 
     actual infix operator fun div(denominator: ElementModQ) =
-        (element * denominator.getCompat(groupContext).modInverse(groupContext.q)).wrap()
+        ((element * denominator.getCompat(groupContext).modInverse(groupContext.q)) % groupContext.q).wrap()
 
     override fun equals(other: Any?) = when (other) {
         is ElementModQ -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)
@@ -275,7 +283,7 @@ actual class ElementModP(val element: BigInteger, val groupContext: GroupContext
     actual fun multInv() = element.modInverse(groupContext.p).wrap()
 
     actual infix operator fun div(denominator: ElementModP) =
-        (element * denominator.getCompat(groupContext).modInverse(groupContext.p)).wrap()
+        ((element * denominator.getCompat(groupContext).modInverse(groupContext.p)) % groupContext.p).wrap()
 
     override fun equals(other: Any?) = when (other) {
         is ElementModP -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)

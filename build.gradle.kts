@@ -43,7 +43,14 @@ kotlin {
 
     js(LEGACY) {
         useCommonJs()
-        browser { commonWebpackConfig { cssSupport.enabled = true } }
+        browser {
+            commonWebpackConfig { cssSupport.enabled = true }
+            testTask {
+                useMocha {
+                    timeout = "10000" // ten seconds rather than the default of two seconds
+                }
+            }
+        }
     }
 
     val hostOs = System.getProperty("os.name")

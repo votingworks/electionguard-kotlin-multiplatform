@@ -146,49 +146,49 @@ class GroupTest {
             }
         }
     }
-//
-//     @Test
-//     fun base16RoundTrip() {
-//         qt().forAll(elementsModP()).check { it == base16ElementModP(it.base16()) }
-//         qt().forAll(elementsModQ()).check { it == base16ElementModQ(it.base16()) }
-//     }
-//
-//     @Test
-//     fun base10RoundTrip() {
-//         qt().forAll(elementsModP()).check { it == base10ElementModP(it.base10()) }
-//         qt().forAll(elementsModQ()).check { it == base10ElementModQ(it.base10()) }
-//     }
-//
-//     @TestFactory
-//     fun baseConversionFails(): Iterable<DynamicTest> {
-//         logger.warn {
-//             "About to test for errors: logs will have many errors, but the tests should pass"
-//         }
-//         return listOf("", "@@", "-10", "1234567890".repeat(1000))
-//             .flatMap {
-//                 listOf(
-//                     dynamicTest("base64ElementModP($it)") { assertNull(base64ElementModP(it)) },
-//                     dynamicTest("base64ElementModQ($it)") { assertNull(base64ElementModQ(it)) },
-//                     dynamicTest("base16ElementModP($it)") { assertNull(base16ElementModP(it)) },
-//                     dynamicTest("base16ElementModQ($it)") { assertNull(base16ElementModQ(it)) },
-//                     dynamicTest("base10ElementModP($it)") { assertNull(base10ElementModP(it)) },
-//                     dynamicTest("base10ElementModQ($it)") { assertNull(base10ElementModQ(it)) },
-//                 )
-//             }
-//     }
+    //
+    //     @Test
+    //     fun base16RoundTrip() {
+    //         qt().forAll(elementsModP()).check { it == base16ElementModP(it.base16()) }
+    //         qt().forAll(elementsModQ()).check { it == base16ElementModQ(it.base16()) }
+    //     }
+    //
+    //     @Test
+    //     fun base10RoundTrip() {
+    //         qt().forAll(elementsModP()).check { it == base10ElementModP(it.base10()) }
+    //         qt().forAll(elementsModQ()).check { it == base10ElementModQ(it.base10()) }
+    //     }
+    //
+    //     @TestFactory
+    //     fun baseConversionFails(): Iterable<DynamicTest> {
+    //         logger.warn {
+    //             "About to test for errors: logs will have many errors, but the tests should pass"
+    //         }
+    //         return listOf("", "@@", "-10", "1234567890".repeat(1000))
+    //             .flatMap {
+    //                 listOf(
+    //                     dynamicTest("base64ElementModP($it)") { assertNull(base64ElementModP(it))
+    // },
+    //                     dynamicTest("base64ElementModQ($it)") { assertNull(base64ElementModQ(it))
+    // },
+    //                     dynamicTest("base16ElementModP($it)") { assertNull(base16ElementModP(it))
+    // },
+    //                     dynamicTest("base16ElementModQ($it)") { assertNull(base16ElementModQ(it))
+    // },
+    //                     dynamicTest("base10ElementModP($it)") { assertNull(base10ElementModP(it))
+    // },
+    //                     dynamicTest("base10ElementModQ($it)") { assertNull(base10ElementModQ(it))
+    // },
+    //                 )
+    //             }
+    //     }
 
     @Test
     fun commutativity() {
         runProperty {
-            forAll(elementsModP(), elementsModP()) { a, b ->
-                a * b == b * a
-            }
-            forAll(elementsModQ(), elementsModQ()) { a, b ->
-                a * b == b * a
-            }
-            forAll(elementsModQ(), elementsModQ()) { a, b ->
-                a + b == b + a
-            }
+            forAll(elementsModP(), elementsModP()) { a, b -> a * b == b * a }
+            forAll(elementsModQ(), elementsModQ()) { a, b -> a * b == b * a }
+            forAll(elementsModQ(), elementsModQ()) { a, b -> a + b == b + a }
         }
     }
 
@@ -219,40 +219,26 @@ class GroupTest {
     @Test
     fun identity() {
         runProperty {
-            forAll(elementsModQ()) {
-                it + it.context.ZERO_MOD_Q == it
-            }
+            forAll(elementsModQ()) { it + it.context.ZERO_MOD_Q == it }
 
-            forAll(elementsModQ()) {
-                it * it.context.ONE_MOD_Q == it
-            }
-            forAll(elementsModP()) {
-                it * it.context.ONE_MOD_P == it
-            }
+            forAll(elementsModQ()) { it * it.context.ONE_MOD_Q == it }
+            forAll(elementsModP()) { it * it.context.ONE_MOD_P == it }
         }
     }
 
     @Test
     fun closure() {
         runProperty {
-            forAll(elementsModQ(), elementsModQ()) { a, b ->
-                (a + b).inBounds()
-            }
-            forAll(elementsModQ(), elementsModQ()) { a, b ->
-                (a * b).inBounds()
-            }
-            forAll(validElementsModP(), validElementsModP()) { a, b ->
-                (a * b).inBoundsNoZero()
-            }
+            forAll(elementsModQ(), elementsModQ()) { a, b -> (a + b).inBounds() }
+            forAll(elementsModQ(), elementsModQ()) { a, b -> (a * b).inBounds() }
+            forAll(validElementsModP(), validElementsModP()) { a, b -> (a * b).inBoundsNoZero() }
         }
     }
 
     @Test
     fun additiveInverse() {
         runProperty {
-            forAll(elementsModQ(), elementsModQ()) { a, b ->
-                a - b + b == a
-            }
+            forAll(elementsModQ(), elementsModQ()) { a, b -> a - b + b == a }
             forAll(elementsModQ(), elementsModQ()) { a, b ->
                 val tmp = -b
                 a + tmp + b == a
@@ -262,137 +248,124 @@ class GroupTest {
 
     @Test
     fun divisionBySelfQ() {
-        runProperty {
-            forAll(elementsModQ()) {
-                it / it == it.context.ONE_MOD_Q
-            }
-        }
+        runProperty { forAll(elementsModQ(minimum = 1)) { it / it == it.context.ONE_MOD_Q } }
     }
 
     @Test
     fun multInvQ() {
         runProperty {
-            forAll(elementsModQ()) {
-                it * it.multInv() == it.context.ONE_MOD_Q
-            }
+            forAll(elementsModQ(minimum = 1)) { it * it.multInv() == it.context.ONE_MOD_Q }
         }
     }
 
     @Test
     fun divisionBySelfP() {
-        runProperty {
-            forAll(validElementsModP()) {
-                it / it == it.context.ONE_MOD_P
-            }
-        }
+        runProperty { forAll(validElementsModP()) { it / it == it.context.ONE_MOD_P } }
     }
 
     @Test
     fun multInvP() {
-        runProperty {
-            forAll(validElementsModP()) {
-                it * it.multInv() == it.context.ONE_MOD_P
-            }
-        }
+        runProperty { forAll(validElementsModP()) { it * it.multInv() == it.context.ONE_MOD_P } }
     }
 
-//     @Test
-//     fun subtractionBasics() {
-//         qt().forAll(elementsModP("a"), elementsModP("b"))
-//             .checkAssert { a, b ->
-//                 val expected = a.element - b.element
-//                 val actual = a - b
-//                 assertEquals(expected, actual.element)
-//                 assertEquals("[\"minusP\",\"a\",\"b\"]", actual.formula.toString())
-//             }
-//         qt().forAll(elementsModQ("a"), elementsModQ("b"))
-//             .checkAssert { a, b ->
-//                 val expected = a.element - b.element
-//                 val actual = a - b
-//                 assertEquals(expected, actual.element)
-//                 assertEquals("[\"minusQ\",\"a\",\"b\"]", actual.formula.toString())
-//             }
-//     }
-//
-//     @Test
-//     fun negation() {
-//         qt().forAll(elementsModQ("a"))
-//             .checkAssert {
-//                 assertEquals(ZERO_MOD_Q, negateQ(it) + it)
-//                 assertEquals("[\"negQ\",\"a\"]", negateQ(it).formula.toString())
-//             }
-//     }
-//
-//     @Test
-//     fun randRangeQ() {
-//         qt().forAll(integers().all())
-//             .checkAssert {
-//                 if (it >= 0) {
-//                     assertTrue(randRangeQ(it).inBounds())
-//                 } else {
-//                     assertThrows<GroupException> { randRangeQ(it) }
-//                 }
-//             }
-//     }
-//
-//     @Test
-//     fun multiplicativeInversesP() {
-//         qt().forAll(elementsModPNoZero()).check { it.multInv() * it == ONE_MOD_P }
-//     }
-//
-//     @Test
-//     fun multiplicativeInversesQ() {
-//         qt().forAll(elementsModQNoZero()).check { it.multInv() * it == ONE_MOD_Q }
-//     }
-//
-//     @Test
-//     fun divisionP() {
-//         qt().forAll(elementsModPNoZero()).check { it divP it == ONE_MOD_P }
-//     }
-//
-//     @Test
-//     fun divisionQ() {
-//         qt().forAll(elementsModQNoZero()).check { it divQ it == ONE_MOD_Q }
-//     }
-//
-//     @Test
-//     fun moreComplexFormulas() {
-//         assertEquals("\"0\"", ZERO_MOD_Q.formula.toString())
-//         assertEquals("\"0\"", ZERO_MOD_P.formula.toString())
-//         assertEquals("\"1\"", ONE_MOD_Q.formula.toString())
-//         assertEquals("\"1\"", ONE_MOD_P.formula.toString())
-//         assertEquals("\"2\"", TWO_MOD_Q.formula.toString())
-//         assertEquals("\"2\"", TWO_MOD_P.formula.toString())
-//
-//         val a = 0.toElementModP("a")
-//         val b = 0.toElementModQ("b")
-//         val c = 0.toElementModQ("c")
-//         val r = a * gPowP(b + c)
-//
-//         // we've got three different ways to convert these things to strings
-//
-//         assertEquals("""["multP","a",["gPowP",["addQ","b","c"]]]""", r.formula.toString())
-//         assertEquals(
-//             """ElementModP(formula = ["multP","a",["gPowP",["addQ","b","c"]]], element = 0)""",
-//             r.toString()
-//         )
-//
-//         // relatively short equations become one-liners
-//         assertEquals("""ElementModP["multP","a",["gPowP",["addQ","b","c"]]]""",
-// r.toFormulaString())
-//
-//         val bigger = hashElements(r, r, r, r, r, r, r)
-//         val expected =
-//             """ElementModQ[
-//     "hash",
-//     ["multP","a",["gPowP",["addQ","b","c"]]],
-//     ["multP","a",["gPowP",["addQ","b","c"]]],
-//     ["multP","a",["gPowP",["addQ","b","c"]]],
-//     ["multP","a",["gPowP",["addQ","b","c"]]],
-//     ["multP","a",["gPowP",["addQ","b","c"]]],
-//     ["multP","a",["gPowP",["addQ","b","c"]]],
-//     ["multP","a",["gPowP",["addQ","b","c"]]]
-// ]"""
-//         assertEquals(expected, bigger.toFormulaString())
-//     }
+    //     @Test
+    //     fun subtractionBasics() {
+    //         qt().forAll(elementsModP("a"), elementsModP("b"))
+    //             .checkAssert { a, b ->
+    //                 val expected = a.element - b.element
+    //                 val actual = a - b
+    //                 assertEquals(expected, actual.element)
+    //                 assertEquals("[\"minusP\",\"a\",\"b\"]", actual.formula.toString())
+    //             }
+    //         qt().forAll(elementsModQ("a"), elementsModQ("b"))
+    //             .checkAssert { a, b ->
+    //                 val expected = a.element - b.element
+    //                 val actual = a - b
+    //                 assertEquals(expected, actual.element)
+    //                 assertEquals("[\"minusQ\",\"a\",\"b\"]", actual.formula.toString())
+    //             }
+    //     }
+    //
+    //     @Test
+    //     fun negation() {
+    //         qt().forAll(elementsModQ("a"))
+    //             .checkAssert {
+    //                 assertEquals(ZERO_MOD_Q, negateQ(it) + it)
+    //                 assertEquals("[\"negQ\",\"a\"]", negateQ(it).formula.toString())
+    //             }
+    //     }
+    //
+    //     @Test
+    //     fun randRangeQ() {
+    //         qt().forAll(integers().all())
+    //             .checkAssert {
+    //                 if (it >= 0) {
+    //                     assertTrue(randRangeQ(it).inBounds())
+    //                 } else {
+    //                     assertThrows<GroupException> { randRangeQ(it) }
+    //                 }
+    //             }
+    //     }
+    //
+    //     @Test
+    //     fun multiplicativeInversesP() {
+    //         qt().forAll(elementsModPNoZero()).check { it.multInv() * it == ONE_MOD_P }
+    //     }
+    //
+    //     @Test
+    //     fun multiplicativeInversesQ() {
+    //         qt().forAll(elementsModQNoZero()).check { it.multInv() * it == ONE_MOD_Q }
+    //     }
+    //
+    //     @Test
+    //     fun divisionP() {
+    //         qt().forAll(elementsModPNoZero()).check { it divP it == ONE_MOD_P }
+    //     }
+    //
+    //     @Test
+    //     fun divisionQ() {
+    //         qt().forAll(elementsModQNoZero()).check { it divQ it == ONE_MOD_Q }
+    //     }
+    //
+    //     @Test
+    //     fun moreComplexFormulas() {
+    //         assertEquals("\"0\"", ZERO_MOD_Q.formula.toString())
+    //         assertEquals("\"0\"", ZERO_MOD_P.formula.toString())
+    //         assertEquals("\"1\"", ONE_MOD_Q.formula.toString())
+    //         assertEquals("\"1\"", ONE_MOD_P.formula.toString())
+    //         assertEquals("\"2\"", TWO_MOD_Q.formula.toString())
+    //         assertEquals("\"2\"", TWO_MOD_P.formula.toString())
+    //
+    //         val a = 0.toElementModP("a")
+    //         val b = 0.toElementModQ("b")
+    //         val c = 0.toElementModQ("c")
+    //         val r = a * gPowP(b + c)
+    //
+    //         // we've got three different ways to convert these things to strings
+    //
+    //         assertEquals("""["multP","a",["gPowP",["addQ","b","c"]]]""", r.formula.toString())
+    //         assertEquals(
+    //             """ElementModP(formula = ["multP","a",["gPowP",["addQ","b","c"]]], element =
+    // 0)""",
+    //             r.toString()
+    //         )
+    //
+    //         // relatively short equations become one-liners
+    //         assertEquals("""ElementModP["multP","a",["gPowP",["addQ","b","c"]]]""",
+    // r.toFormulaString())
+    //
+    //         val bigger = hashElements(r, r, r, r, r, r, r)
+    //         val expected =
+    //             """ElementModQ[
+    //     "hash",
+    //     ["multP","a",["gPowP",["addQ","b","c"]]],
+    //     ["multP","a",["gPowP",["addQ","b","c"]]],
+    //     ["multP","a",["gPowP",["addQ","b","c"]]],
+    //     ["multP","a",["gPowP",["addQ","b","c"]]],
+    //     ["multP","a",["gPowP",["addQ","b","c"]]],
+    //     ["multP","a",["gPowP",["addQ","b","c"]]],
+    //     ["multP","a",["gPowP",["addQ","b","c"]]]
+    // ]"""
+    //         assertEquals(expected, bigger.toFormulaString())
+    //     }
 }
