@@ -80,7 +80,7 @@ class GroupTest {
     @Test
     fun generatorsWorkLarge() {
         runProperty {
-            forAll(propTestFastConfig, elementsModP(lowMemoryProductionGroup()) ) { it.inBounds() }
+            forAll(propTestFastConfig, elementsModP(lowMemoryProductionGroup())) { it.inBounds() }
         }
 
         runProperty {
@@ -102,15 +102,11 @@ class GroupTest {
     @Test
     fun binaryArrayRoundTripSmall() {
         runProperty {
-            forAll(elementsModP()) {
-                it == it.context.binaryToElementModP(it.byteArray())
-            }
+            forAll(elementsModP()) { it == it.context.binaryToElementModP(it.byteArray()) }
         }
 
         runProperty {
-            forAll(elementsModQ()) {
-                it == it.context.binaryToElementModQ(it.byteArray())
-            }
+            forAll(elementsModQ()) { it == it.context.binaryToElementModQ(it.byteArray()) }
         }
     }
 
@@ -131,17 +127,9 @@ class GroupTest {
 
     @Test
     fun base64RoundTripSmall() {
-        runProperty {
-            forAll(elementsModP()) {
-                it == it.context.base64ToElementModP(it.base64())
-            }
-        }
+        runProperty { forAll(elementsModP()) { it == it.context.base64ToElementModP(it.base64()) } }
 
-        runProperty {
-            forAll(elementsModQ()) {
-                it == it.context.base64ToElementModQ(it.base64())
-            }
-        }
+        runProperty { forAll(elementsModQ()) { it == it.context.base64ToElementModQ(it.base64()) } }
     }
 
     @Test
