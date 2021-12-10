@@ -121,29 +121,34 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
         TODO("Not yet implemented")
     }
 
-    actual fun safeBinaryToElementModP(b: ByteArray, minimum: Int) =
-        when {
-            minimum < 0 ->
-                throw IllegalArgumentException("minimum $minimum may not be negative")
-            minimum == 0 ->
-                ElementModP(b.toBigInteger() % p, this)
-            else ->
-                BigInteger.of(minimum).let { mv ->
-                    ElementModP(mv + b.toBigInteger() % (p - mv), this)
-                }
+    actual fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
+        if (minimum < 0) {
+            throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-    actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int) =
-        when {
-            minimum < 0 ->
-                throw IllegalArgumentException("minimum $minimum may not be negative")
-            minimum == 0 ->
-                ElementModQ(b.toBigInteger() % q, this)
-            else ->
-                BigInteger.of(minimum).let { mv ->
-                    ElementModQ(mv + b.toBigInteger() % (q - mv), this)
-                }
+        val tmp = b.toBigInteger() % p
+
+        val mv = BigInteger.of(minimum)
+        val tmp2 = if (tmp < mv) tmp + mv else tmp
+        val result = ElementModP(tmp2, this)
+
+        return result
+    }
+
+    actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
+        if (minimum < 0) {
+            throw IllegalArgumentException("minimum $minimum may not be negative")
         }
+
+        val tmp = b.toBigInteger() % q
+
+        val mv = BigInteger.of(minimum)
+        val tmp2 = if (tmp < mv) tmp + mv else tmp
+        val result = ElementModQ(tmp2, this)
+
+        return result
+    }
+
 
     /*
     actual fun safeBinaryToElementModP(b: ByteArray) =
@@ -173,6 +178,9 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
     actual fun gPowP(e: ElementModQ) = gModP.powP(e)
 
     actual fun randRangeQ(minimum: Int): ElementModQ {
+        if (minimum < 0)
+            throw IllegalArgumentException("minimum $minimum must be greater than zero")
+
         // https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
         // This code is claimed to be inappropriate for generating keys, because it
         // might not be running in a "secure context" (i.e., if there's hostile JavaScript
@@ -198,10 +206,7 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
         crypto.getRandomValues(bytes)
 
         // And now those bytes have been overwritten, so we can process them normally
-        val minimumBig = BigInteger.of(minimum)
-        return ElementModQ(
-            minimumBig + bytes.toBigInteger() % (q - minimumBig),
-            this)
+        return safeBinaryToElementModQ(bytes, minimum)
     }
 }
 

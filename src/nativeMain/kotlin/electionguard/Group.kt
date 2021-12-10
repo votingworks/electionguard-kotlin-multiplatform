@@ -410,8 +410,11 @@ actual class GroupContext(
 
     actual fun gPowP(e: ElementModQ) = gModP.powP(e)  // fixme with PowRadix later on
 
-    actual fun randRangeQ(minimum: Int): ElementModQ =
-        safeBinaryToElementModQ(secureRandomBytes(32), minimum)
+    actual fun randRangeQ(minimum: Int): ElementModQ {
+        if (minimum < 0)
+            throw IllegalArgumentException("minimum $minimum must be greater than zero")
+        return safeBinaryToElementModQ(secureRandomBytes(32), minimum)
+    }
 }
 
 actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupContext): Element, Comparable<ElementModQ> {

@@ -117,34 +117,34 @@ actual class GroupContext(
     }
 
     actual fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
-        val result = when {
-            minimum < 0 ->
-                throw IllegalArgumentException("minimum $minimum may not be negative")
-            minimum == 0 ->
-                ElementModP(b.toBigInteger() % p, this)
-            else ->
-                minimum.toBigInteger().let { mv ->
-                    ElementModP(mv + b.toBigInteger() % (p - mv), this)
-                }
+        if(minimum < 0) {
+            throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        assert(result.inBounds()) { "result not in bounds! ${result.element}" }
+        val tmp = b.toBigInteger() % p
+
+        val mv = minimum.toBigInteger()
+        val tmp2 = if (tmp < mv) tmp + mv else tmp
+        val result = ElementModP(tmp2, this)
+
         return result
     }
 
     actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
-        val result = when {
-            minimum < 0 ->
-                throw IllegalArgumentException("minimum $minimum may not be negative")
-            minimum == 0 ->
-                ElementModQ(b.toBigInteger() % q, this)
-            else ->
-                minimum.toBigInteger().let { mv ->
-                    ElementModQ(mv + b.toBigInteger() % (q - mv), this)
-                }
+        if(minimum < 0) {
+            throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        assert(result.inBounds()) { "result not in bounds! ${result.element}" }
+        val tmp = b.toBigInteger() % q
+
+//        assert(tmp < q) { "modulo didn't work! $tmp > $q "}
+
+        val mv = minimum.toBigInteger()
+        val tmp2 = if (tmp < mv) tmp + mv else tmp
+        val result = ElementModQ(tmp2, this)
+
+//        assert(result.inBounds()) { "result not in bounds! ${result.element} > $q" }
+
         return result
     }
 
@@ -168,13 +168,13 @@ actual class GroupContext(
     actual fun gPowP(e: ElementModQ) = gModP.powP(e)
 
     actual fun randRangeQ(minimum: Int): ElementModQ {
+        if (minimum < 0)
+            throw IllegalArgumentException("minimum $minimum must be greater than zero")
+
         val bytes = ByteArray(32)
         SecureRandom().nextBytes(bytes)
 
-        val minimumBig = BigInteger.valueOf(minimum.toLong())
-        return ElementModQ(
-            minimumBig + bytes.toBigInteger() % (q - minimumBig),
-            this)
+        return safeBinaryToElementModQ(bytes, minimum)
     }
 }
 
