@@ -4,7 +4,7 @@ import electionguard.*
 import electionguard.Base64.decodeFromBase64
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class TestConstants {
@@ -20,7 +20,9 @@ class TestConstants {
         val big1_4096 = 1U.toHaclBignum4096()
 
         assertTrue(p gt4096 big1_4096)
+        assertFalse(big1_4096 gt4096 p)
         assertTrue(q gt256 big1_256)
+        assertFalse(big1_256 gt256 q)
         assertTrue(g gt4096 big1_4096)
         assertTrue(r gt4096 big1_4096)
         assertTrue(qInv gt256 big1_256)

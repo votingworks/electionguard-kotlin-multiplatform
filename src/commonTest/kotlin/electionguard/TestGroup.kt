@@ -2,6 +2,7 @@ package electionguard
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class GroupTest {
     @Test
@@ -25,23 +26,21 @@ class GroupTest {
         assertEquals(four, two * two)
         assertEquals(twelve, three * four)
     }
+
+     @Test
+     fun comparisonOperations() {
+         val ctx = lowMemoryProductionGroup()
+         val two = 2.toElementModP(ctx)
+         val three = 3.toElementModP(ctx)
+         val four = 4.toElementModP(ctx)
+
+         assertTrue(three < four)
+         assertTrue(three <= four)
+         assertTrue(four > three)
+         assertTrue(four >= four)
+         assertTrue(four > two)
+     }
 }
-//
-//     @Test
-//     fun comparisonOperations() {
-//         val three = 3.toElementModP()
-//         val four = 4.toElementModP()
-//
-//         assertTrue(three < four)
-//         assertTrue(three <= four)
-//         assertTrue(four > three)
-//         assertTrue(four >= four)
-//
-//         assertTrue(three < 4)
-//         assertTrue(four > 2)
-//         assertTrue(four > 2L)
-//         assertTrue(four > 2.0)
-//     }
 //
 //     @Test
 //     fun generatorsWork() {
