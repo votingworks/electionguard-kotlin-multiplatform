@@ -7,17 +7,12 @@ import kotlinx.serialization.json.JsonElement
 // for the JVM, both named GroupKt, which then doesn't work.
 
 /**
- * Fetches the [GroupContext] that will result in the highest-possible performance. This will
- * potentially use a gigabyte or two of RAM for its precomputation tables, in return for gains that
- * only make sense for large batch computations.
+ * Fetches the production-strength [GroupContext] with the desired amount of acceleration via
+ * precomputation, which can result in significant extra memory usage.
  */
-expect fun highSpeedProductionGroup(): GroupContext
-
-/**
- * Fetches the [GroupContext] that will result in reasonable performance in limited memory
- * situations, where gigabytes of precomputed tables are not possible.
- */
-expect fun lowMemoryProductionGroup(): GroupContext
+expect fun productionGroup(
+    acceleration: PowRadixOption = PowRadixOption.NO_ACCELERATION
+): GroupContext
 
 /**
  * Fetches the [GroupContext] suitable for unit tests and such, where we're still doing modular

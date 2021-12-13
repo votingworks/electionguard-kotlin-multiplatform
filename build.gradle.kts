@@ -7,7 +7,7 @@ buildscript {
 
 plugins {
     kotlin("multiplatform") version "1.6.0"
-    id("tech.formatter-kt.formatter") version "0.7.7"
+    id("tech.formatter-kt.formatter") version "0.7.9"
 }
 
 group = "electionguard-kotlin-multiplatform"
@@ -47,7 +47,8 @@ kotlin {
             commonWebpackConfig { cssSupport.enabled = true }
             testTask {
                 useMocha {
-                    timeout = "10000" // ten seconds rather than the default of two seconds
+                    // ten seconds rather than the default of two seconds
+                    timeout = "10000"
                 }
             }
         }

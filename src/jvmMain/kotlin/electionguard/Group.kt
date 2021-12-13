@@ -13,7 +13,7 @@ internal val productionGroupContext =
         gBytes = b64ProductionG.decodeFromBase64(),
         rBytes = b64ProductionR.decodeFromBase64(),
         strong = true,
-        name = "production group"
+        name = "production group, no acceleration"
     )
 
 internal val testGroupContext =
@@ -26,9 +26,9 @@ internal val testGroupContext =
         name = "16-bit test group"
     )
 
-actual fun highSpeedProductionGroup() = productionGroupContext
-
-actual fun lowMemoryProductionGroup() = productionGroupContext // for now
+actual fun productionGroup(acceleration: PowRadixOption): GroupContext {
+    return productionGroupContext // for now
+}
 
 actual fun testGroup() = testGroupContext
 

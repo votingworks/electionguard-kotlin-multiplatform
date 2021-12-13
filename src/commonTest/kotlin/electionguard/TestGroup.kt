@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class GroupTest {
     @Test
     fun basicsP() {
-        val ctx = lowMemoryProductionGroup()
+        val ctx = productionGroup()
         val one = 1.toElementModP(ctx)
         val two = 2.toElementModP(ctx)
         val alsoTwo = (1 + 1).toElementModP(ctx)
@@ -34,7 +34,7 @@ class GroupTest {
 
     @Test
     fun basicsQ() {
-        val ctx = lowMemoryProductionGroup()
+        val ctx = productionGroup()
         val one = 1.toElementModQ(ctx)
         val two = 2.toElementModQ(ctx)
         val alsoTwo = (1 + 1).toElementModQ(ctx)
@@ -62,7 +62,7 @@ class GroupTest {
 
     @Test
     fun comparisonOperations() {
-        val ctx = lowMemoryProductionGroup()
+        val ctx = productionGroup()
         val two = 2.toElementModP(ctx)
         val three = 3.toElementModP(ctx)
         val four = 4.toElementModP(ctx)
@@ -84,11 +84,11 @@ class GroupTest {
     @Test
     fun generatorsWorkLarge() {
         runProperty {
-            forAll(propTestFastConfig, elementsModP(lowMemoryProductionGroup())) { it.inBounds() }
+            forAll(propTestFastConfig, elementsModP(productionGroup())) { it.inBounds() }
         }
 
         runProperty {
-            forAll(propTestFastConfig, elementsModQ(lowMemoryProductionGroup())) { it.inBounds() }
+            forAll(propTestFastConfig, elementsModQ(productionGroup())) { it.inBounds() }
         }
     }
 
@@ -97,9 +97,7 @@ class GroupTest {
         runProperty { forAll(validElementsModP(testGroup())) { it.isValidResidue() } }
 
         runProperty {
-            forAll(propTestFastConfig, validElementsModP(lowMemoryProductionGroup())) {
-                it.isValidResidue()
-            }
+            forAll(propTestFastConfig, validElementsModP(productionGroup())) { it.isValidResidue() }
         }
     }
 
@@ -117,13 +115,13 @@ class GroupTest {
     @Test
     fun binaryArrayRoundTripBig() {
         runProperty {
-            forAll(propTestFastConfig, elementsModP(lowMemoryProductionGroup())) {
+            forAll(propTestFastConfig, elementsModP(productionGroup())) {
                 it == it.context.binaryToElementModP(it.byteArray())
             }
         }
 
         runProperty {
-            forAll(propTestFastConfig, elementsModQ(lowMemoryProductionGroup())) {
+            forAll(propTestFastConfig, elementsModQ(productionGroup())) {
                 it == it.context.binaryToElementModQ(it.byteArray())
             }
         }
@@ -139,13 +137,13 @@ class GroupTest {
     @Test
     fun base64RoundTripBig() {
         runProperty {
-            forAll(propTestFastConfig, elementsModP(lowMemoryProductionGroup())) {
+            forAll(propTestFastConfig, elementsModP(productionGroup())) {
                 it == it.context.base64ToElementModP(it.base64())
             }
         }
 
         runProperty {
-            forAll(propTestFastConfig, elementsModQ(lowMemoryProductionGroup())) {
+            forAll(propTestFastConfig, elementsModQ(productionGroup())) {
                 it == it.context.base64ToElementModQ(it.base64())
             }
         }
@@ -248,9 +246,7 @@ class GroupTest {
                 if (i >= 0) {
                     assertTrue(ctx.randRangeQ(minimum = i).inBounds())
                 } else {
-                    assertFailsWith(IllegalArgumentException::class) {
-                        ctx.randRangeQ(minimum = i)
-                    }
+                    assertFailsWith(IllegalArgumentException::class) { ctx.randRangeQ(minimum = i) }
                 }
             }
         }
