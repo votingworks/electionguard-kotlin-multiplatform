@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.6.0"
+    kotlin("multiplatform") version "1.6.10"
     id("tech.formatter-kt.formatter") version "0.7.9"
 }
 
@@ -91,11 +91,11 @@ kotlin {
         val commonMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-common", "1.6.0"))
-                    implementation(kotlin("stdlib", "1.6.0"))
+                    implementation(kotlin("stdlib-common", "1.6.10"))
+                    implementation(kotlin("stdlib", "1.6.10"))
 
                     // JSON serialization and DSL
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
+                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
 
                     // Coroutines
                     //                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
@@ -108,21 +108,21 @@ kotlin {
         val commonTest by
             getting {
                 dependencies {
-                    implementation(kotlin("test-common", "1.6.0"))
-                    implementation(kotlin("test-annotations-common", "1.6.0"))
+                    implementation(kotlin("test-common", "1.6.10"))
+                    implementation(kotlin("test-annotations-common", "1.6.10"))
 
                     // Fancy property-based testing
                     implementation("io.kotest:kotest-property:5.0.1")
                 }
             }
-        val jvmMain by getting { dependencies { implementation(kotlin("stdlib-jdk8", "1.6.0")) } }
-        val jvmTest by getting { dependencies { implementation(kotlin("test-junit5", "1.6.0")) } }
+        val jvmMain by getting { dependencies { implementation(kotlin("stdlib-jdk8", "1.6.10")) } }
+        val jvmTest by getting { dependencies { implementation(kotlin("test-junit5", "1.6.10")) } }
         val jsMain by
             getting {
                 dependencies {
                     //                    implementation(npm("gmp-wasm", "0.9.0", generateExternals
                     // = true))
-                    implementation(kotlin("stdlib-js", "1.6.0"))
+                    implementation(kotlin("stdlib-js", "1.6.10"))
 
                     // Portable, Kotlin port of Java's BigInteger; slow but works
                     implementation("io.github.gciatto:kt-math-js:0.4.0")
@@ -131,8 +131,8 @@ kotlin {
         val jsTest by
             getting {
                 dependencies {
-                    //                runtimeOnly("org.jetbrains.kotlin:kotlin-test-js:1.6.0")
-                    implementation(kotlin("test-js", "1.6.0"))
+                    //                runtimeOnly("org.jetbrains.kotlin:kotlin-test-js:1.6.10")
+                    implementation(kotlin("test-js", "1.6.10"))
                 }
             }
         val nativeMain by getting { dependencies {} }

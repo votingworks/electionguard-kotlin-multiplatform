@@ -13,11 +13,17 @@ class TestPowRadix {
         val testBytes = ByteArray(32) { 0x8F.toByte() }
         val expectedSliceSmall = UShortArray(32) { (0x8F).toUShort() }
 
-        assertContentEquals(expectedSliceSmall, testBytes.kBitsPerSlice(PowRadixOption.LOW_MEMORY_USE, 32))
+        assertContentEquals(
+            expectedSliceSmall,
+            testBytes.kBitsPerSlice(PowRadixOption.LOW_MEMORY_USE, 32)
+        )
 
         val expectedSliceExtreme = UShortArray(16) { 0x8F8F.toUShort() }
 
-        assertContentEquals(expectedSliceExtreme, testBytes.kBitsPerSlice(PowRadixOption.EXTREME_MEMORY_USE, 16))
+        assertContentEquals(
+            expectedSliceExtreme,
+            testBytes.kBitsPerSlice(PowRadixOption.EXTREME_MEMORY_USE, 16)
+        )
 
         val expectedSliceLarge =
             UShortArray(22) {
@@ -30,7 +36,10 @@ class TestPowRadix {
                 }
             }
 
-        assertContentEquals(expectedSliceLarge, testBytes.kBitsPerSlice(PowRadixOption.HIGH_MEMORY_USE, 22))
+        assertContentEquals(
+            expectedSliceLarge,
+            testBytes.kBitsPerSlice(PowRadixOption.HIGH_MEMORY_USE, 22)
+        )
     }
 
     @Test
@@ -41,7 +50,10 @@ class TestPowRadix {
         val testBytes = ByteArray(32) { (it + 1).toByte() }
         val expectedSliceSmall = UShortArray(32) { (32 - it).toUShort() }
 
-        assertContentEquals(expectedSliceSmall, testBytes.kBitsPerSlice(PowRadixOption.LOW_MEMORY_USE, 32))
+        assertContentEquals(
+            expectedSliceSmall,
+            testBytes.kBitsPerSlice(PowRadixOption.LOW_MEMORY_USE, 32)
+        )
 
         val expectedSliceExtreme =
             UShortArray(16) {
@@ -49,7 +61,29 @@ class TestPowRadix {
                 ((n shl 8) or (n + 1)).toUShort()
             }
 
-        assertContentEquals(expectedSliceExtreme, testBytes.kBitsPerSlice(PowRadixOption.EXTREME_MEMORY_USE, 16))
+        assertContentEquals(
+            expectedSliceExtreme,
+            testBytes.kBitsPerSlice(PowRadixOption.EXTREME_MEMORY_USE, 16)
+        )
+    }
+
+    @Test
+    fun bitSlicingBasics() {
+        val ctx = testGroup()
+        val option = PowRadixOption.LOW_MEMORY_USE
+        val g = ctx.G_MOD_P
+        val powRadix = PowRadix(g, option)
+
+        val bytes = 258.toElementModQ(ctx).byteArray()
+        // validate it's big-endian
+        assertEquals(1, bytes[bytes.size - 2])
+        assertEquals(2, bytes[bytes.size - 1])
+
+        val slices = bytes.kBitsPerSlice(option, powRadix.tableLength)
+        // validate it's little-endian
+        assertEquals(2.toUShort(), slices[0])
+        assertEquals(1.toUShort(), slices[1])
+        assertEquals(0.toUShort(), slices[2])
     }
 
     @Test
@@ -84,9 +118,7 @@ class TestPowRadix {
                 assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
 
                 runProperty {
-                    forAll(elementsModQ(ctx)) { e ->
-                        ctx.G_MOD_P powP e == powRadix.pow(e)
-                    }
+                    forAll(elementsModQ(ctx)) { e -> ctx.G_MOD_P powP e == powRadix.pow(e) }
                 }
             }
     }

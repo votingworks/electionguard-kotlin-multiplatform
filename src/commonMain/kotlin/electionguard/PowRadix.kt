@@ -31,9 +31,9 @@ enum class PowRadixOption(val numBits: Int) {
  * `PowRadixOption.EXTREME_MEMORY_USE` corresponds to 537MB of state per instance of PowRadix.
  */
 class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
-    val tableLength: Int
-    val numColumns: Int
-    val table: Array<Array<ElementModP>>
+    internal val tableLength: Int
+    internal val numColumns: Int
+    internal val table: Array<Array<ElementModP>>
     init {
         val k = acceleration.numBits
 
@@ -67,25 +67,31 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
     fun pow(e: ElementModQ): ElementModP {
         basis.context.assertCompatible(e.context)
 
-        println("Computing $basis pow $e")
+        //        if (basis == basis.context.G_MOD_P)
+        //            println("Computing gPow $e")
+        //        else
+        //            println("Computing $basis pow $e")
 
         if (acceleration.numBits == 0) return basis powP e else {
             val slices = e.byteArray().kBitsPerSlice(acceleration, tableLength)
             var y = e.context.ONE_MOD_P
             for (i in 0..(tableLength - 1)) {
                 val eSlice = slices[i].toInt() // from UShort to Int so we can do an array lookup
-//                println("- eSlice: " + eSlice.
+                //                println("- eSlice: $eSlice")
                 val nextProd = table[i][eSlice]
-//                println("- multiplying by $nextProd")
+                //                println("  - multiplying by $nextProd")
                 y = y * nextProd
             }
-            println("= resulting in $y")
+            //            println("= resulting in $y")
             return y
         }
     }
 }
 
-internal fun ByteArray.kBitsPerSlice(powRadixOption: PowRadixOption, tableLength: Int): UShortArray {
+internal fun ByteArray.kBitsPerSlice(
+    powRadixOption: PowRadixOption,
+    tableLength: Int
+): UShortArray {
     // Input is a "big-endian" byte array, output is "little-endian",
     // since that's the order that the pow method wants to digest
     // these values. We're assuming that k is never more than 16,
@@ -94,10 +100,22 @@ internal fun ByteArray.kBitsPerSlice(powRadixOption: PowRadixOption, tableLength
 
     // TODO: support values other than the hard-coded 16, 12, and 8-bit slices?
 
-    assert (this.size <= 32) { "invalid input size (${this.size}), not 32 bytes" }
+    assert (this.size <= 32 || (this.size == 33 && this[0].toInt() == 0)) {
+        "invalid input size (${this.size}), not 32 bytes"
+    }
 
-    fun ByteArray.getOrZero(offset: Int) = if (offset >= this.size) 0 else this[offset].toUByte().toInt()
-    fun ByteArray.getOrZeroUShort(offset: Int) = if (offset >= this.size) 0U else this[offset].toUByte().toUShort()
+    fun ByteArray.getOrZero(offset: Int) =
+        when {
+            offset < 0 || offset >= 32 ->
+                throw IllegalArgumentException("unexpected offset: $offset")
+            size == 32 -> this[offset]
+            size == 33 -> this[offset + 1] // skip the leading zero
+            offset < (32 - size) -> 0
+            else -> this[offset - 32 + size]
+        }.toUByte()
+            .toInt()
+
+    fun ByteArray.getOrZeroUShort(offset: Int) = getOrZero(offset).toUShort()
 
     return when (powRadixOption) {
         PowRadixOption.EXTREME_MEMORY_USE ->
@@ -134,6 +152,9 @@ internal fun ByteArray.kBitsPerSlice(powRadixOption: PowRadixOption, tableLength
                 assert(tableLength == 32) { "expected tableLength to be 32, got $tableLength" }
                 getOrZeroUShort(tableLength - it - 1)
             }
-        else -> throw IllegalStateException("acceleration k = ${powRadixOption.numBits} bits, which isn't supported")
+        else ->
+            throw IllegalStateException(
+                "acceleration k = ${powRadixOption.numBits} bits, which isn't supported"
+            )
     }
 }

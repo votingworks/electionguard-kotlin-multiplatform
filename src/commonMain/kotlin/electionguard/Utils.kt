@@ -12,10 +12,9 @@ fun assert(condition: Boolean, message: () -> String = { "Assertion failed" }) {
 }
 
 /**
- * Throughout our bignum arithmetic, every operation needs to check that its operands are
- * compatible (i.e., that we're not trying to use the test group and the production group
- * interchangeably). This will verify that compatibility and throw an `ArithmeticException`
- * if they're not.
+ * Throughout our bignum arithmetic, every operation needs to check that its operands are compatible
+ * (i.e., that we're not trying to use the test group and the production group interchangeably).
+ * This will verify that compatibility and throw an `ArithmeticException` if they're not.
  */
 fun GroupContext.assertCompatible(other: GroupContext) {
     if (!this.isCompatible(other)) {
