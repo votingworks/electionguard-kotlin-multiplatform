@@ -2,18 +2,39 @@
 
 package electionguard
 
+import kotlin.math.ceil
+
 // Modular exponentiation performance improvements based on a design by Olivier Pereira
 // https://github.com/pereira/expo-fixed-basis/blob/main/powradix.py
 
 // DO NOT CHANGE THE CONSTANTS BELOW. For simplicity reasons, and maybe some extra performance,
 // ByteArray.kBitsPerSlice is hard-coded around these specific constants.
 
-/** Different acceleration options for the `PowRadix` acceleration of modular exponentiation. */
+/**
+ * Different acceleration options for the `PowRadix` acceleration of modular exponentiation.
+ *
+ * In the most limited, embedded environment, with sometimes less than a megabyte of RAM,
+ * there's no way the PowRadix acceleration structures will fit. Use the `NO_ACCELERATION` option.
+ *
+ * In a "low memory" situation, such as an embedded computer like a Raspberry Pi Zero
+ * (512MB of RAM), the `LOW_MEMORY_USE` option will consume only 4.8MB for the generator,
+ * and presumably that much again for accelerating the public key.
+ *
+ * For any modern laptop or desktop computer, the `HIGH_MEMORY_USE` will use somewhere
+ * around ten times this much memory, in return for a significant performance boost. Still,
+ * this is worth it for repeated, bulk operations.
+ *
+ * For a batch server computation, where every little bit of performance gain is worth it,
+ * and assuming we can afford over 500MB of state for the generator and that much again
+ * for the public key, then the `EXTREME_MEMORY_USE` version would yield a modest speed
+ * improvement. For the JVM, this will easily exhaust the standard heap size, so don't
+ * forget to use appropriate flags to request a multi-gigabyte heap.
+ */
 enum class PowRadixOption(val numBits: Int) {
     NO_ACCELERATION(0),
-    LOW_MEMORY_USE(8), // 4.8MB per instance of PowRadix
-    HIGH_MEMORY_USE(12), // 42MB per instance
-    EXTREME_MEMORY_USE(16), // 573MB per instance
+    LOW_MEMORY_USE(8),
+    HIGH_MEMORY_USE(12),
+    EXTREME_MEMORY_USE(16),
 }
 
 /**
@@ -22,13 +43,7 @@ enum class PowRadixOption(val numBits: Int) {
  * `PowRadixOption` to use, the table will either use more or less memory, corresponding to greater
  * acceleration.
  *
- * `PowRadixOption.NO_ACCELERATION` uses no extra memory and just calls `powmod`.
- *
- * `PowRadixOption.LOW_MEMORY_USE` corresponds to 4.2MB of state per instance of PowRadix.
- *
- * `PowRadixOption.HIGH_MEMORY_USE` corresponds to 42MB of state per instance of PowRadix.
- *
- * `PowRadixOption.EXTREME_MEMORY_USE` corresponds to 537MB of state per instance of PowRadix.
+ * @see PowRadixOption
  */
 class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
     internal val tableLength: Int
@@ -42,7 +57,7 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
             numColumns = 0
             table = emptyArray()
         } else {
-            tableLength = - (-256 / k) // double negative takes the ceiling
+            tableLength = ceil(256.0 / k.toDouble()).toInt()
             var rowBasis = basis
             var runningBasis = rowBasis
             numColumns = 1 shl k
@@ -67,22 +82,14 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
     fun pow(e: ElementModQ): ElementModP {
         basis.context.assertCompatible(e.context)
 
-        //        if (basis == basis.context.G_MOD_P)
-        //            println("Computing gPow $e")
-        //        else
-        //            println("Computing $basis pow $e")
-
         if (acceleration.numBits == 0) return basis powP e else {
             val slices = e.byteArray().kBitsPerSlice(acceleration, tableLength)
             var y = e.context.ONE_MOD_P
             for (i in 0..(tableLength - 1)) {
                 val eSlice = slices[i].toInt() // from UShort to Int so we can do an array lookup
-                //                println("- eSlice: $eSlice")
                 val nextProd = table[i][eSlice]
-                //                println("  - multiplying by $nextProd")
                 y = y * nextProd
             }
-            //            println("= resulting in $y")
             return y
         }
     }
@@ -130,9 +137,11 @@ internal fun ByteArray.kBitsPerSlice(
             UShortArray(tableLength) {
                 // We've got 10*3 + 2 bytes; each group of three turns into two 12-bit values,
                 // leaving the two remaining bytes, which are on the MSB end of the input,
-                // corresponding to the last two 12-bit values we output.
+                // corresponding to the last two 12-bit values we output. The penultimate
+                // case doesn't require any special code, but the final 4-bits require a
+                // special case.
 
-                assert(tableLength == 21) { "expected tableLength to be 21, got $tableLength" }
+                assert(tableLength == 22) { "expected tableLength to be 22, got $tableLength" }
                 val inputOffset = 32 - 3 * (it shr 1) - 1
                 if (it == 21) {
                     // special case because there are no more high bits

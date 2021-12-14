@@ -28,7 +28,7 @@ class TestPowRadix {
         val expectedSliceLarge =
             UShortArray(22) {
                 if (it == 21) {
-                    0x8F.toUShort()
+                    0x8.toUShort()
                 } else if (it % 2 == 0) {
                     0xF8F.toUShort()
                 } else {
@@ -98,6 +98,7 @@ class TestPowRadix {
 
     @Test
     fun testExponentiationExtremeMem() {
+        println("Testing extreme exponentiation PowRadix tables; requires extra memory, slow one-time cost")
         testExponentiationGeneric(PowRadixOption.EXTREME_MEMORY_USE)
     }
 
@@ -110,24 +111,18 @@ class TestPowRadix {
 
         listOf(testGroup(), productionGroup(acceleration = PowRadixOption.NO_ACCELERATION))
             .forEach { ctx ->
-                println("Testing exponentation powradix, productionStrength = ${ctx.isProductionStrength()}")
                 val powRadix = PowRadix(ctx.G_MOD_P, option)
-                println("- PowRadix is ready")
 
                 // sanity check first, then property check
                 assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
                 assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
                 assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
 
-                println("- Sanity tests pass")
-
                 runProperty {
                     checkAll(elementsModQ(ctx)) { e ->
                         assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
                     }
                 }
-
-                println("- Property tests pass")
             }
     }
 }
