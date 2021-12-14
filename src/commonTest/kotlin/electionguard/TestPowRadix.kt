@@ -72,14 +72,22 @@ class TestPowRadix {
         // internally accelerate exponentiation with g, which means running g powP e won't use
         // the general-purpose modpow code, which is what we want to use as our base case.
 
-        val ctx = productionGroup(acceleration = PowRadixOption.NO_ACCELERATION)
-        val g = ctx.G_MOD_P
+        // First we'll try it with the test group, then with the production group
 
-        val powRadix = PowRadix(g, option)
-        runProperty {
-            forAll(elementsModQ(ctx)) { e ->
-                g powP e == powRadix.pow(e)
+        listOf(testGroup(), productionGroup(acceleration = PowRadixOption.NO_ACCELERATION))
+            .forEach { ctx ->
+                val powRadix = PowRadix(ctx.G_MOD_P, option)
+
+                // sanity check first, then property check
+                assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
+                assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
+                assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
+
+                runProperty {
+                    forAll(elementsModQ(ctx)) { e ->
+                        ctx.G_MOD_P powP e == powRadix.pow(e)
+                    }
+                }
             }
-        }
     }
 }
