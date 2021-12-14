@@ -229,16 +229,14 @@ internal infix fun HaclBignum4096.gt4096(other: HaclBignum4096): Boolean {
     }
 }
 
-
-internal fun Element.getCompat(context: GroupContext) =
-    if (this.context.isCompatible(context))
-        when(this) {
-            is ElementModP -> this.element
-            is ElementModQ -> this.element
-            else -> throw NotImplementedError("should only be two kinds of elements")
-        }
-    else
-        throw ArithmeticException("cannot mix and match incompatible element contexts")
+internal fun Element.getCompat(other: GroupContext): ULongArray {
+    context.assertCompatible(other)
+    return when (this) {
+        is ElementModP -> this.element
+        is ElementModQ -> this.element
+        else -> throw NotImplementedError("should only be two kinds of elements")
+    }
+}
 
 // TODO: add PowRadix
 

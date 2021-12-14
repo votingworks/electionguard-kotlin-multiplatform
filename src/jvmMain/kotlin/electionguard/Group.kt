@@ -178,15 +178,14 @@ actual class GroupContext(
     }
 }
 
-internal fun Element.getCompat(context: GroupContext) =
-    if (this.context.isCompatible(context))
-        when(this) {
-            is ElementModP -> this.element
-            is ElementModQ -> this.element
-            else -> throw NotImplementedError("should only be two kinds of elements")
-        }
-    else
-        throw ArithmeticException("cannot mix and match incompatible element contexts")
+internal fun Element.getCompat(other: GroupContext): BigInteger {
+    context.assertCompatible(other)
+    return when (this) {
+        is ElementModP -> this.element
+        is ElementModQ -> this.element
+        else -> throw NotImplementedError("should only be two kinds of elements")
+    }
+}
 
 actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext): Element, Comparable<ElementModQ> {
     internal fun BigInteger.wrap(): ElementModQ = ElementModQ(this, groupContext)
@@ -280,10 +279,7 @@ actual fun Iterable<ElementModQ>.addQ(): ElementModQ {
     val context = input[0].groupContext
 
     val result = input.subList(1, input.count()).fold(input[0].element) { a, b ->
-        if (!context.isCompatible(b.groupContext)) {
-            throw ArithmeticException("addQ on a inputs with incompatible group contexts")
-        }
-        (a + b.element) % context.q
+        (a + b.getCompat(context)) % context.q
     }
 
     return ElementModQ(result, context)
@@ -303,10 +299,7 @@ actual fun Iterable<ElementModP>.multP(): ElementModP {
     val context = input[0].groupContext
 
     val result = input.subList(1, input.count()).fold(input[0].element) { a, b ->
-        if (!context.isCompatible(b.groupContext)) {
-            throw ArithmeticException("multP on a inputs with incompatible group contexts")
-        }
-        (a * b.element) % context.p
+        (a * b.getCompat(context)) % context.p
     }
 
     return ElementModP(result, context)

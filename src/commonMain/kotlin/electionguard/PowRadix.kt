@@ -5,6 +5,9 @@ package electionguard
 // Modular exponentiation performance improvements based on a design by Olivier Pereira
 // https://github.com/pereira/expo-fixed-basis/blob/main/powradix.py
 
+// DO NOT CHANGE THE CONSTANTS BELOW. For simplicity reasons, and maybe some extra performance,
+// ByteArray.kBitsPerSlice is hard-coded around these specific constants.
+
 /** Different acceleration options for the `PowRadix` acceleration of modular exponentiation. */
 enum class PowRadixOption(val numBits: Int) {
     NO_ACCELERATION(0),
@@ -62,49 +65,33 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
     }
 
     fun pow(e: ElementModQ): ElementModP {
-        if (!basis.context.isCompatible(e.context))
-            throw ArithmeticException("incompatible element contexts")
+        basis.context.assertCompatible(e.context)
 
         if (acceleration.numBits == 0) return basis powP e else {
-            val slices = e.byteArray().kBitsPerSlice(acceleration.numBits, tableLength)
+            val slices = e.byteArray().kBitsPerSlice(acceleration, tableLength)
             var y = e.context.ONE_MOD_P
             for (i in 0..tableLength) {
-                val eSlice = slices[i]
-                y = y * table[i][eSlice.toInt()]
+                val eSlice = slices[i].toInt() // from UShort to Int so we can do an array lookup
+                y = y * table[i][eSlice]
             }
             return y
         }
     }
 }
 
-//    def pow(self, e: xmpz, normalize_e: bool = True) -> xmpz:
-//        """
-//        Computes the basis to the given exponent, optionally normalizing
-//        the exponent beforehand if it's out of range.
-//        """
-//        if normalize_e:
-//            e = e % self.small_prime
-//
-//        if self.k == 0:
-//            return powmod(self.basis, e, self.large_prime)
-//
-//        y = xmpz(1)
-//        for i in range(self.table_length):
-//            e_slice = e[i * self.k : (i + 1) * self.k]
-//            y = y * self.table[i][e_slice] % self.large_prime
-//        return y
-
-internal fun ByteArray.kBitsPerSlice(numBits: Int, tableLength: Int): UShortArray {
+internal fun ByteArray.kBitsPerSlice(powRadixOption: PowRadixOption, tableLength: Int): UShortArray {
     // Input is a "big-endian" byte array, output is "little-endian",
     // since that's the order that the pow method wants to digest
     // these values. We're assuming that k is never more than 16,
     // otherwise we'd need to move up from UShortArray to UIntArray
     // and take a lot more intermediate space for the computation.
 
+    // TODO: support values other than the hard-coded 16, 12, and 8-bit slices?
+
     assert (this.size == 32) { "invalid input size (${this.size}), not 32 bytes" }
 
-    return when (numBits) {
-        16 ->
+    return when (powRadixOption) {
+        PowRadixOption.EXTREME_MEMORY_USE ->
             UShortArray(tableLength) {
                 assert(tableLength == 16) { "expected tableLength to be 16, got $tableLength" }
                 val inputOffset = 32 - 2 * it - 2
@@ -112,7 +99,7 @@ internal fun ByteArray.kBitsPerSlice(numBits: Int, tableLength: Int): UShortArra
                 val highBits = this[inputOffset].toUByte().toInt()
                 ((highBits shl 8) or lowBits).toUShort()
             }
-        12 ->
+        PowRadixOption.HIGH_MEMORY_USE ->
             UShortArray(tableLength) {
                 // We've got 7*3 + 1 bytes; each group of three turns into two 12-bit values,
                 // leaving the remaining byte, which is on the MSB end of the input, corresenponding
@@ -133,11 +120,11 @@ internal fun ByteArray.kBitsPerSlice(numBits: Int, tableLength: Int): UShortArra
                     ((highBits shl 4) or lowBits).toUShort()
                 }
             }
-        8 ->
+        PowRadixOption.LOW_MEMORY_USE ->
             UShortArray(tableLength) {
                 assert(tableLength == 32) { "expected tableLength to be 32, got $tableLength" }
                 this[tableLength - it - 1].toUByte().toUShort()
             }
-        else -> throw IllegalStateException("acceleration k = $numBits bits, which isn't supported")
+        else -> throw IllegalStateException("acceleration k = ${powRadixOption.numBits} bits, which isn't supported")
     }
 }
