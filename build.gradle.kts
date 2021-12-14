@@ -38,7 +38,12 @@ kotlin {
     jvm {
         compilations.all { kotlinOptions.jvmTarget = "1.8" }
         //        withJava()
-        testRuns["test"].executionTask.configure { useJUnitPlatform() }
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+            minHeapSize = "512m"
+            maxHeapSize = "2048m"
+            jvmArgs = listOf("-Xss128m")
+        }
     }
 
     js(LEGACY) {

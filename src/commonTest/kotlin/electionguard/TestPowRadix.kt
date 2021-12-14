@@ -2,7 +2,7 @@
 
 package electionguard
 
-import io.kotest.property.forAll
+import io.kotest.property.checkAll
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -110,16 +110,24 @@ class TestPowRadix {
 
         listOf(testGroup(), productionGroup(acceleration = PowRadixOption.NO_ACCELERATION))
             .forEach { ctx ->
+                println("Testing exponentation powradix, productionStrength = ${ctx.isProductionStrength()}")
                 val powRadix = PowRadix(ctx.G_MOD_P, option)
+                println("- PowRadix is ready")
 
                 // sanity check first, then property check
                 assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
                 assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
                 assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
 
+                println("- Sanity tests pass")
+
                 runProperty {
-                    forAll(elementsModQ(ctx)) { e -> ctx.G_MOD_P powP e == powRadix.pow(e) }
+                    checkAll(elementsModQ(ctx)) { e ->
+                        assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
+                    }
                 }
+
+                println("- Property tests pass")
             }
     }
 }

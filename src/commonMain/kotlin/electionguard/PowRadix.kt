@@ -123,28 +123,28 @@ internal fun ByteArray.kBitsPerSlice(
                 assert(tableLength == 16) { "expected tableLength to be 16, got $tableLength" }
                 val inputOffset = 32 - 2 * it - 2
                 val lowBits = getOrZero(inputOffset + 1)
-                val highBits = getOrZero(inputOffset)
-                ((highBits shl 8) or lowBits).toUShort()
+                val highBits = getOrZero(inputOffset) shl 8
+                (highBits or lowBits).toUShort()
             }
         PowRadixOption.HIGH_MEMORY_USE ->
             UShortArray(tableLength) {
-                // We've got 7*3 + 1 bytes; each group of three turns into two 12-bit values,
-                // leaving the remaining byte, which is on the MSB end of the input, corresenponding
-                // to the last 12-bit value we output.
+                // We've got 10*3 + 2 bytes; each group of three turns into two 12-bit values,
+                // leaving the two remaining bytes, which are on the MSB end of the input,
+                // corresponding to the last two 12-bit values we output.
 
-                assert(tableLength == 22) { "expected tableLength to be 22, got $tableLength" }
+                assert(tableLength == 21) { "expected tableLength to be 21, got $tableLength" }
                 val inputOffset = 32 - 3 * (it shr 1) - 1
                 if (it == 21) {
                     // special case because there are no more high bits
-                    this[inputOffset].toUByte().toUShort()
+                    (getOrZero(0) shr 4).toUByte().toUShort()
                 } else if (it % 2 == 0) {
                     val lowBits = getOrZero(inputOffset)
-                    val highBits = getOrZero(inputOffset - 1) and 0xF
-                    ((highBits shl 8) or lowBits).toUShort()
+                    val highBits = (getOrZero(inputOffset - 1) and 0xF) shl 8
+                    (highBits or lowBits).toUShort()
                 } else {
                     val lowBits = getOrZero(inputOffset - 1) shr 4
-                    val highBits = getOrZero(inputOffset - 2)
-                    ((highBits shl 4) or lowBits).toUShort()
+                    val highBits = getOrZero(inputOffset - 2) shl 4
+                    (highBits or lowBits).toUShort()
                 }
             }
         PowRadixOption.LOW_MEMORY_USE ->
