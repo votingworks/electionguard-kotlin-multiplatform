@@ -197,13 +197,7 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
         // Also, note that Kotlin should support this directly, but doesn't. Yet.
         // https://youtrack.jetbrains.com/issue/KT-43322
 
-        val bytes = ByteArray(32)
-
-        // returns an object of type Crypto, of which Kotlin only knows it's "dynamic"
-        val crypto = js("crypto")
-
-        // Kotlin allows us to call methods on a "dyanmic" object without any typechecking!
-        crypto.getRandomValues(bytes)
+        val bytes = platformRandomValues(32)
 
         // And now those bytes have been overwritten, so we can process them normally
         return safeBinaryToElementModQ(bytes, minimum)

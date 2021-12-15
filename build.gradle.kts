@@ -38,12 +38,13 @@ kotlin {
     jvm {
         compilations.all { kotlinOptions.jvmTarget = "1.8" }
         //        withJava()
-        testRuns["test"].executionTask.configure {
-            useJUnitPlatform()
-            minHeapSize = "512m"
-            maxHeapSize = "2048m"
-            jvmArgs = listOf("-Xss128m")
-        }
+        testRuns["test"].executionTask
+            .configure {
+                useJUnitPlatform()
+                minHeapSize = "512m"
+                maxHeapSize = "2048m"
+                jvmArgs = listOf("-Xss128m")
+            }
     }
 
     js(LEGACY) {
@@ -125,9 +126,14 @@ kotlin {
         val jsMain by
             getting {
                 dependencies {
-                    //                    implementation(npm("gmp-wasm", "0.9.0", generateExternals
-                    // = true))
                     implementation(kotlin("stdlib-js", "1.6.10"))
+
+                    // gives us `window` even when we're not in a browser
+                    implementation(npm("jsdom", "19.0.0"))
+                    implementation(npm("jsdom-global", "3.0.2"))
+
+                    // port of GMP that runs as a WebAssembly module with a TypeScript interface
+                    // implementation(npm("gmp-wasm", "0.9.0", generateExternals = true))
 
                     // Portable, Kotlin port of Java's BigInteger; slow but works
                     implementation("io.github.gciatto:kt-math-js:0.4.0")

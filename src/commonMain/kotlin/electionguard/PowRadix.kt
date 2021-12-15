@@ -13,22 +13,22 @@ import kotlin.math.ceil
 /**
  * Different acceleration options for the `PowRadix` acceleration of modular exponentiation.
  *
- * In the most limited, embedded environment, with sometimes less than a megabyte of RAM,
- * there's no way the PowRadix acceleration structures will fit. Use the `NO_ACCELERATION` option.
+ * In the most limited, embedded environment, with sometimes less than a megabyte of RAM, there's no
+ * way the PowRadix acceleration structures will fit. Use the `NO_ACCELERATION` option.
  *
- * In a "low memory" situation, such as an embedded computer like a Raspberry Pi Zero
- * (512MB of RAM), the `LOW_MEMORY_USE` option will consume only 4.8MB for the generator,
- * and presumably that much again for accelerating the public key.
+ * In a "low memory" situation, such as an embedded computer like a Raspberry Pi Zero (512MB of
+ * RAM), the `LOW_MEMORY_USE` option will consume only 4.8MB for the generator, and presumably that
+ * much again for accelerating the public key.
  *
- * For any modern laptop or desktop computer, the `HIGH_MEMORY_USE` will use somewhere
- * around ten times this much memory, in return for a significant performance boost. Still,
- * this is worth it for repeated, bulk operations.
+ * For any modern laptop or desktop computer, the `HIGH_MEMORY_USE` will use somewhere around ten
+ * times this much memory, in return for a significant performance boost. Still, this is worth it
+ * for repeated, bulk operations.
  *
- * For a batch server computation, where every little bit of performance gain is worth it,
- * and assuming we can afford over 500MB of state for the generator and that much again
- * for the public key, then the `EXTREME_MEMORY_USE` version would yield a modest speed
- * improvement. For the JVM, this will easily exhaust the standard heap size, so don't
- * forget to use appropriate flags to request a multi-gigabyte heap.
+ * For a batch server computation, where every little bit of performance gain is worth it, and
+ * assuming we can afford over 500MB of state for the generator and that much again for the public
+ * key, then the `EXTREME_MEMORY_USE` version would yield a modest speed improvement. For the JVM,
+ * this will easily exhaust the standard heap size, so don't forget to use appropriate flags to
+ * request a multi-gigabyte heap.
  */
 enum class PowRadixOption(val numBits: Int) {
     NO_ACCELERATION(0),

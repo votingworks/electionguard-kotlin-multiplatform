@@ -98,7 +98,10 @@ class TestPowRadix {
 
     @Test
     fun testExponentiationExtremeMem() {
-        println("Testing extreme exponentiation PowRadix tables; requires extra memory, slow one-time cost")
+        println(
+            "Testing extreme exponentiation PowRadix tables; requires extra memory, slow one-time" +
+                " cost"
+        )
         testExponentiationGeneric(PowRadixOption.EXTREME_MEMORY_USE)
     }
 
@@ -110,35 +113,36 @@ class TestPowRadix {
 
         // First we'll try it with the test group, then with the production group
 
-        testGroup().let { ctx ->
-            val powRadix = PowRadix(ctx.G_MOD_P, option)
+        testGroup()
+            .let { ctx ->
+                val powRadix = PowRadix(ctx.G_MOD_P, option)
 
-            // sanity check first, then property check
-            assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
-            assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
-            assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
+                // sanity check first, then property check
+                assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
+                assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
+                assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
 
-            runProperty {
-                checkAll(elementsModQ(ctx)) { e ->
-                    assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
-                }
-            }
-        }
-
-        productionGroup(acceleration = PowRadixOption.NO_ACCELERATION).let { ctx ->
-            val powRadix = PowRadix(ctx.G_MOD_P, option)
-
-            assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
-            assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
-            assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
-
-            runProperty {
-                // check fewer cases because it's so much slower
-                checkAll(propTestFastConfig, elementsModQ(ctx)) { e ->
-                    assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
+                runProperty {
+                    checkAll(elementsModQ(ctx)) { e ->
+                        assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
+                    }
                 }
             }
 
-        }
+        productionGroup(acceleration = PowRadixOption.NO_ACCELERATION)
+            .let { ctx ->
+                val powRadix = PowRadix(ctx.G_MOD_P, option)
+
+                assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
+                assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
+                assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
+
+                runProperty {
+                    // check fewer cases because it's so much slower
+                    checkAll(propTestFastConfig, elementsModQ(ctx)) { e ->
+                        assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
+                    }
+                }
+            }
     }
 }
