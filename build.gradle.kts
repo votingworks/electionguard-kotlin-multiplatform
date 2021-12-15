@@ -128,12 +128,13 @@ kotlin {
                 dependencies {
                     implementation(kotlin("stdlib-js", "1.6.10"))
 
-                    // gives us `window` even when we're not in a browser
-                    implementation(npm("jsdom", "19.0.0"))
-                    implementation(npm("jsdom-global", "3.0.2"))
-
                     // port of GMP that runs as a WebAssembly module with a TypeScript interface
                     // implementation(npm("gmp-wasm", "0.9.0", generateExternals = true))
+
+                    // SHA256 wrapper that uses built-in (crypto.subtle) in the browser and
+                    // a portable implementation otherwise.
+                    implementation(npm("aws-crypto/random-source-universal", "2.0.0", generateExternals = true))
+                    implementation(npm("aws-crypto/sha256-universal", "2.0.1", generateExternals = true))
 
                     // Portable, Kotlin port of Java's BigInteger; slow but works
                     implementation("io.github.gciatto:kt-math-js:0.4.0")

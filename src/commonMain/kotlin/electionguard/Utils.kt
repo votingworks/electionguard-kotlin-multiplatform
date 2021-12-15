@@ -21,3 +21,6 @@ fun GroupContext.assertCompatible(other: GroupContext) {
         throw ArithmeticException("incompatible group contexts")
     }
 }
+
+/** Computes the SHA256 hash of the given string's UTF-8 representation. */
+fun String.sha256() = this.encodeToByteArray().sha256()
