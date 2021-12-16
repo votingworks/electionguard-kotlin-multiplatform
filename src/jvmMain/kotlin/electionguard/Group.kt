@@ -1,27 +1,28 @@
 package electionguard
 
-import electionguard.Base64.decodeFromBase64
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import java.math.BigInteger
 import java.security.SecureRandom
 
+import com.soywiz.krypto.encoding.*
+
 internal val productionGroupContext =
     GroupContext(
-        pBytes = b64ProductionP.decodeFromBase64(),
-        qBytes = b64ProductionQ.decodeFromBase64(),
-        gBytes = b64ProductionG.decodeFromBase64(),
-        rBytes = b64ProductionR.decodeFromBase64(),
+        pBytes = b64ProductionP.fromBase64(),
+        qBytes = b64ProductionQ.fromBase64(),
+        gBytes = b64ProductionG.fromBase64(),
+        rBytes = b64ProductionR.fromBase64(),
         strong = true,
         name = "production group, no acceleration"
     )
 
 internal val testGroupContext =
     GroupContext(
-        pBytes = b64TestP.decodeFromBase64(),
-        qBytes = b64TestQ.decodeFromBase64(),
-        gBytes = b64TestG.decodeFromBase64(),
-        rBytes = b64TestR.decodeFromBase64(),
+        pBytes = b64TestP.fromBase64(),
+        qBytes = b64TestQ.fromBase64(),
+        gBytes = b64TestG.fromBase64(),
+        rBytes = b64TestR.fromBase64(),
         strong = false,
         name = "16-bit test group"
     )
@@ -166,16 +167,6 @@ actual class GroupContext(
     }
 
     actual fun gPowP(e: ElementModQ) = gModP.powP(e)
-
-    actual fun randRangeQ(minimum: Int): ElementModQ {
-        if (minimum < 0)
-            throw IllegalArgumentException("minimum $minimum must be greater than zero")
-
-        val bytes = ByteArray(32)
-        SecureRandom().nextBytes(bytes)
-
-        return safeBinaryToElementModQ(bytes, minimum)
-    }
 }
 
 internal fun Element.getCompat(other: GroupContext): BigInteger {

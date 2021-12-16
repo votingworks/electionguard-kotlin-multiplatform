@@ -244,9 +244,9 @@ class GroupTest {
 
             checkAll(Arb.int(min=0, max=100)) { i ->
                 if (i >= 0) {
-                    assertTrue(ctx.randRangeQ(minimum = i).inBounds())
+                    assertTrue(ctx.randomElementModQ(minimum = i).inBounds())
                 } else {
-                    assertFailsWith(IllegalArgumentException::class) { ctx.randRangeQ(minimum = i) }
+                    assertFailsWith(IllegalArgumentException::class) { ctx.randomElementModQ(minimum = i) }
                 }
             }
         }

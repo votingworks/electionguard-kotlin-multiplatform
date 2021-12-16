@@ -4,6 +4,7 @@ package electionguard
 
 import io.kotest.property.checkAll
 import kotlin.test.Test
+import kotlin.test.Ignore
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
@@ -96,6 +97,7 @@ class TestPowRadix {
         testExponentiationGeneric(PowRadixOption.HIGH_MEMORY_USE)
     }
 
+    @Ignore // this runs too slowly
     @Test
     fun testExponentiationExtremeMem() {
         println(

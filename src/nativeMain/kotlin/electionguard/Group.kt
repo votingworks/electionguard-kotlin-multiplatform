@@ -3,32 +3,32 @@
 
 package electionguard
 
-import electionguard.Base64.decodeFromBase64
 import kotlinx.cinterop.*
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import platform.darwin.UInt64Var
 import platform.posix.free
 import hacl.*
+import com.soywiz.krypto.encoding.*
 
 internal val productionGroupContext =
     GroupContext(
-        pBytes = b64ProductionP.decodeFromBase64(),
-        qBytes = b64ProductionQ.decodeFromBase64(),
-        p256minusQBytes = b64ProductionP256MinusQ.decodeFromBase64(),
-        gBytes = b64ProductionG.decodeFromBase64(),
-        rBytes = b64ProductionR.decodeFromBase64(),
+        pBytes = b64ProductionP.fromBase64(),
+        qBytes = b64ProductionQ.fromBase64(),
+        p256minusQBytes = b64ProductionP256MinusQ.fromBase64(),
+        gBytes = b64ProductionG.fromBase64(),
+        rBytes = b64ProductionR.fromBase64(),
         strong = true,
         name = "production group, no acceleration"
     )
 
 internal val testGroupContext =
     GroupContext(
-        pBytes = b64TestP.decodeFromBase64(),
-        qBytes = b64TestQ.decodeFromBase64(),
-        p256minusQBytes = b64Test256MinusQ.decodeFromBase64(),
-        gBytes = b64TestG.decodeFromBase64(),
-        rBytes = b64TestR.decodeFromBase64(),
+        pBytes = b64TestP.fromBase64(),
+        qBytes = b64TestQ.fromBase64(),
+        p256minusQBytes = b64Test256MinusQ.fromBase64(),
+        gBytes = b64TestG.fromBase64(),
+        rBytes = b64TestR.fromBase64(),
         strong = false,
         name = "16-bit test group"
     )
@@ -407,12 +407,6 @@ actual class GroupContext(
     actual fun gPowP(e: Int) = gPowP(e.toElementModQ(this))
 
     actual fun gPowP(e: ElementModQ) = gModP.powP(e)  // fixme with PowRadix later on
-
-    actual fun randRangeQ(minimum: Int): ElementModQ {
-        if (minimum < 0)
-            throw IllegalArgumentException("minimum $minimum must be greater than zero")
-        return safeBinaryToElementModQ(secureRandomBytes(32), minimum)
-    }
 }
 
 actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupContext): Element, Comparable<ElementModQ> {

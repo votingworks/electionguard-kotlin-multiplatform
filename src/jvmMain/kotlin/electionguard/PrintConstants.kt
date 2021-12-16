@@ -1,7 +1,7 @@
 package electionguard
 
-import electionguard.Base64.encodeToBase64
 import java.math.BigInteger
+import com.soywiz.krypto.encoding.*
 
 // In Java, we have support for base10 BigInteger, so we'll take advantage of that
 // to translate our constants into base64. The output of this program goes into
@@ -21,11 +21,11 @@ fun main() {
     val g = BigInteger(gStr)
     val p256 = BigInteger.valueOf(1) shl 256
 
-    val pBase64 = p.toByteArray().encodeToBase64()
-    val qBase64 = q.toByteArray().encodeToBase64()
-    val rBase64 = r.toByteArray().encodeToBase64()
-    val gBase64 = g.toByteArray().encodeToBase64()
-    val p256minusQBase64 = (p256 - q).toByteArray().encodeToBase64()
+    val pBase64 = p.toByteArray().toBase64()
+    val qBase64 = q.toByteArray().toBase64()
+    val rBase64 = r.toByteArray().toBase64()
+    val gBase64 = g.toByteArray().toBase64()
+    val p256minusQBase64 = (p256 - q).toByteArray().toBase64()
 
     println("internal val b64ProductionP = \"$pBase64\"")
     println("internal val b64ProductionQ = \"$qBase64\"")
@@ -35,9 +35,9 @@ fun main() {
 
     println()
     println("// 16-bit everything, suitable for accelerated testing")
-    println("internal val b64TestP = \"${BigInteger.valueOf(intTestP.toLong()).toByteArray().encodeToBase64()}\"")
-    println("internal val b64TestQ = \"${BigInteger.valueOf(intTestQ.toLong()).toByteArray().encodeToBase64()}\"")
-    println("internal val b64Test256MinusQ = \"${(p256 - BigInteger.valueOf(intTestQ.toLong())).toByteArray().encodeToBase64()}\"")
-    println("internal val b64TestG = \"${BigInteger.valueOf(intTestG.toLong()).toByteArray().encodeToBase64()}\"")
-    println("internal val b64TestR = \"${BigInteger.valueOf(intTestR.toLong()).toByteArray().encodeToBase64()}\"")
+    println("internal val b64TestP = \"${BigInteger.valueOf(intTestP.toLong()).toByteArray().toBase64()}\"")
+    println("internal val b64TestQ = \"${BigInteger.valueOf(intTestQ.toLong()).toByteArray().toBase64()}\"")
+    println("internal val b64Test256MinusQ = \"${(p256 - BigInteger.valueOf(intTestQ.toLong())).toByteArray().toBase64()}\"")
+    println("internal val b64TestG = \"${BigInteger.valueOf(intTestG.toLong()).toByteArray().toBase64()}\"")
+    println("internal val b64TestR = \"${BigInteger.valueOf(intTestR.toLong()).toByteArray().toBase64()}\"")
 }

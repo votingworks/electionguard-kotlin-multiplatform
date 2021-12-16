@@ -1,6 +1,5 @@
 package electionguard
 
-import electionguard.Base64.decodeFromBase64
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import org.gciatto.kt.math.BigInteger
@@ -21,20 +20,20 @@ import org.gciatto.kt.math.BigInteger
 
 internal val productionGroupContext =
     GroupContext(
-        pBytes = b64ProductionP.decodeFromBase64(),
-        qBytes = b64ProductionQ.decodeFromBase64(),
-        gBytes = b64ProductionG.decodeFromBase64(),
-        rBytes = b64ProductionR.decodeFromBase64(),
+        pBytes = b64ProductionP.fromBase64(),
+        qBytes = b64ProductionQ.fromBase64(),
+        gBytes = b64ProductionG.fromBase64(),
+        rBytes = b64ProductionR.fromBase64(),
         strong = true,
         name = "production group, no acceleration"
     )
 
 internal val testGroupContext =
     GroupContext(
-        pBytes = b64TestP.decodeFromBase64(),
-        qBytes = b64TestQ.decodeFromBase64(),
-        gBytes = b64TestG.decodeFromBase64(),
-        rBytes = b64TestR.decodeFromBase64(),
+        pBytes = b64TestP.fromBase64(),
+        qBytes = b64TestQ.fromBase64(),
+        gBytes = b64TestG.fromBase64(),
+        rBytes = b64TestR.fromBase64(),
         strong = false,
         name = "16-bit test group"
     )
@@ -176,32 +175,6 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
     }
 
     actual fun gPowP(e: ElementModQ) = gModP.powP(e)
-
-    actual fun randRangeQ(minimum: Int): ElementModQ {
-        if (minimum < 0)
-            throw IllegalArgumentException("minimum $minimum must be greater than zero")
-
-        // https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
-        // This code is claimed to be inappropriate for generating keys, because it
-        // might not be running in a "secure context" (i.e., if there's hostile JavaScript
-        // on the page, then it could nuke these methods and cause something else to run).
-
-        // If ElectionGuard is used in a browser context, this would most likely impact
-        // the way the seed is generated. Under the threat model where we've got malicious
-        // JavaScript dorking with a web page, they could do a whole lot more than just
-        // changing the seed, so this isn't something to really stress out about.
-
-        // Conversely, if ElectionGuard is running in a server context (node.js, etc.),
-        // then we're not worried about hostile content, and this should be just fine.
-
-        // Also, note that Kotlin should support this directly, but doesn't. Yet.
-        // https://youtrack.jetbrains.com/issue/KT-43322
-
-        val bytes = platformRandomValues(32)
-
-        // And now those bytes have been overwritten, so we can process them normally
-        return safeBinaryToElementModQ(bytes, minimum)
-    }
 }
 
 internal fun Element.getCompat(other: GroupContext): BigInteger {

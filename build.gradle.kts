@@ -47,10 +47,14 @@ kotlin {
             }
     }
 
-    js(LEGACY) {
+    js(BOTH) {
+        moduleName = "electionguard"
+
         useCommonJs()
-        browser {
-            commonWebpackConfig { cssSupport.enabled = true }
+//        browser {
+//            commonWebpackConfig { cssSupport.enabled = true }
+//        }
+        nodejs {
             testTask {
                 useMocha {
                     // ten seconds rather than the default of two seconds
@@ -109,6 +113,9 @@ kotlin {
 
                     // Portable logging
                     implementation("io.github.aakira:napier:2.2.0")
+
+                    // SHA256, secure random number generation, Base64 encoding
+                    implementation("com.soywiz.korlibs.krypto:krypto:2.4.8")
                 }
             }
         val commonTest by
@@ -121,23 +128,25 @@ kotlin {
                     implementation("io.kotest:kotest-property:5.0.1")
                 }
             }
-        val jvmMain by getting { dependencies { implementation(kotlin("stdlib-jdk8", "1.6.10")) } }
+        val jvmMain by getting {
+            dependencies {
+                implementation(kotlin("stdlib-jdk8", "1.6.10"))
+
+                // SHA256, secure random number generation, Base64 encoding
+//                implementation("com.soywiz.korlibs.krypto:krypto-jvm:2.4.8")
+            }
+        }
         val jvmTest by getting { dependencies { implementation(kotlin("test-junit5", "1.6.10")) } }
         val jsMain by
             getting {
                 dependencies {
                     implementation(kotlin("stdlib-js", "1.6.10"))
 
-                    // port of GMP that runs as a WebAssembly module with a TypeScript interface
-                    // implementation(npm("gmp-wasm", "0.9.0", generateExternals = true))
-
-                    // SHA256 wrapper that uses built-in (crypto.subtle) in the browser and
-                    // a portable implementation otherwise.
-                    implementation(npm("aws-crypto/random-source-universal", "2.0.0", generateExternals = true))
-                    implementation(npm("aws-crypto/sha256-universal", "2.0.1", generateExternals = true))
-
                     // Portable, Kotlin port of Java's BigInteger; slow but works
-                    implementation("io.github.gciatto:kt-math-js:0.4.0")
+                    implementation("io.github.gciatto:kt-math:0.4.0")
+
+                    // SHA256, secure random number generation, Base64 encoding
+//                    implementation("com.soywiz.korlibs.krypto:krypto-js:2.4.8")
                 }
             }
         val jsTest by
@@ -147,7 +156,12 @@ kotlin {
                     implementation(kotlin("test-js", "1.6.10"))
                 }
             }
-        val nativeMain by getting { dependencies {} }
+        val nativeMain by getting {
+            dependencies {
+                // SHA256, secure random number generation, Base64 encoding
+//                implementation("com.soywiz.korlibs.krypto:krypto:2.4.8")
+            }
+        }
         val nativeTest by getting { dependencies {} }
     }
 }

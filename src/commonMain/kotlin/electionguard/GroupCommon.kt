@@ -1,7 +1,7 @@
 package electionguard
 
-import electionguard.Base64.decodeFromBase64
-import electionguard.Base64.encodeToBase64
+import com.soywiz.krypto.encoding.*
+
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
 internal val b64ProductionP =
@@ -43,31 +43,31 @@ fun multP(vararg elements: ElementModP) = elements.asIterable().multP()
  * string is malformed.
  */
 fun GroupContext.base64ToElementModP(s: String): ElementModP? =
-    binaryToElementModP(s.decodeFromBase64())
+    binaryToElementModP(s.fromBase64())
 
 /**
  * Converts a base-64 string to an [ElementModP]. Guarantees the result is in [0, P), by computing
  * the result mod P.
  */
 fun GroupContext.safeBase64ToElementModP(s: String): ElementModP =
-    safeBinaryToElementModP(s.decodeFromBase64())
+    safeBinaryToElementModP(s.fromBase64())
 
 /**
  * Converts a base-64 string to an [ElementModQ]. Guarantees the result is in [0, Q), by computing
  * the result mod Q.
  */
 fun GroupContext.safeBase64ToElementModQ(s: String): ElementModQ =
-    safeBinaryToElementModQ(s.decodeFromBase64())
+    safeBinaryToElementModQ(s.fromBase64())
 
 /**
  * Converts a base-64 string to an [ElementModQ]. Returns null if the number is out of bounds or the
  * string is malformed.
  */
 fun GroupContext.base64ToElementModQ(s: String): ElementModQ? =
-    binaryToElementModQ(s.decodeFromBase64())
+    binaryToElementModQ(s.fromBase64())
 
 /** Converts from any [Element] to a base64 string representation. */
-fun Element.base64(): String = byteArray().encodeToBase64()
+fun Element.base64(): String = byteArray().toBase64()
 
 /** Converts an integer to an ElementModQ, with optimizations when possible for small integers */
 fun Int.toElementModQ(ctx: GroupContext) =
@@ -111,3 +111,13 @@ interface Element {
     /** Converts from any [Element] to a compact [ByteArray] representation. */
     fun byteArray(): ByteArray
 }
+
+/**
+ * Returns a random number in [minimum, Q), where minimum defaults to zero. Promises to use a
+ * "secure" random number generator, such that the results are suitable for use as cryptographic
+ * keys.
+ *
+ * @throws GroupException if the minimum is negative
+ */
+fun GroupContext.randomElementModQ(minimum: Int = 0) =
+    safeBinaryToElementModQ(randomBytes(32), minimum)

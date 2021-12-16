@@ -115,15 +115,6 @@ expect class GroupContext {
 
     /** Computes G^e mod p, where G is our generator */
     fun gPowP(e: ElementModQ): ElementModP
-
-    /**
-     * Returns a random number in [minimum, Q), where minimum defaults to zero. Promises to use a
-     * "secure" random number generator, such that the results are suitable for use as cryptographic
-     * keys.
-     *
-     * @throws GroupException if the minimum is negative
-     */
-    fun randRangeQ(minimum: Int = 0): ElementModQ
 }
 
 expect class ElementModQ : Element, Comparable<ElementModQ> {
