@@ -121,3 +121,16 @@ interface Element {
  */
 fun GroupContext.randomElementModQ(minimum: Int = 0) =
     safeBinaryToElementModQ(randomBytes(32), minimum)
+
+/**
+ * We often want to raise g to small powers, for which we've conveniently pre-computed
+ * the answers. This function will back out and use [GroupContext.gPowP] if the input
+ * isn't precomputed.
+ */
+fun GroupContext.gPowPSmall(e: Int) = when {
+    e == 0 -> ONE_MOD_P
+    e == 1 -> G_MOD_P
+    e == 2 -> G_SQUARED_MOD_P
+    e < 0 -> throw ArithmeticException("not defined for negative values")
+    else -> gPowP(e.toElementModQ(this))
+}

@@ -47,7 +47,7 @@ kotlin {
             }
     }
 
-    js(BOTH) {
+    js(LEGACY) {
         moduleName = "electionguard"
 
         useCommonJs()

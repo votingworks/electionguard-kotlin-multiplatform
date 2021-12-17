@@ -159,13 +159,6 @@ actual class GroupContext(
         return if (tmp >= q) null else ElementModQ(tmp, this)
     }
 
-    actual fun gPowP(e: Int) = when(e) {
-        0 -> oneModP
-        1 -> gModP
-        2 -> gSquaredModP
-        else -> gPowP(e.toElementModQ(this))
-    }
-
     actual fun gPowP(e: ElementModQ) = gModP.powP(e)
 }
 
@@ -179,34 +172,35 @@ internal fun Element.getCompat(other: GroupContext): BigInteger {
 }
 
 actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext): Element, Comparable<ElementModQ> {
+    internal fun BigInteger.modWrap(): ElementModQ = this.rem(groupContext.q).wrap()
     internal fun BigInteger.wrap(): ElementModQ = ElementModQ(this, groupContext)
 
     override val context: GroupContext
         get() = groupContext
 
-    override fun inBounds() = element >= groupContext.ZERO_MOD_Q.element && element < groupContext.q
+    override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.q
 
-    override fun inBoundsNoZero() = element > groupContext.ZERO_MOD_Q.element && element < groupContext.q
+    override fun inBoundsNoZero() = element > BigInteger.ZERO && element < groupContext.q
 
     override fun byteArray(): ByteArray = element.toByteArray()
 
     actual override operator fun compareTo(other: ElementModQ): Int = element.compareTo(other.getCompat(groupContext))
 
     actual operator fun plus(other: ElementModQ) =
-        ((this.element + other.getCompat(groupContext)) % groupContext.q).wrap()
+        (this.element + other.getCompat(groupContext)).modWrap()
 
     actual operator fun minus(other: ElementModQ) =
-        ((this.element - other.getCompat(groupContext)) % groupContext.q).wrap()
+        (this.element - other.getCompat(groupContext)).modWrap()
 
     actual operator fun times(other: ElementModQ) =
-        ((this.element * other.getCompat(groupContext)) % groupContext.q).wrap()
+        (this.element * other.getCompat(groupContext)).modWrap()
 
     actual fun multInv() = element.modInverse(groupContext.q).wrap()
 
     actual operator fun unaryMinus() = (groupContext.q - element).wrap()
 
     actual infix operator fun div(denominator: ElementModQ) =
-        ((element * denominator.getCompat(groupContext).modInverse(groupContext.q)) % groupContext.q).wrap()
+        (element * denominator.getCompat(groupContext).modInverse(groupContext.q)).modWrap()
 
     override fun equals(other: Any?) = when (other) {
         is ElementModQ -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)
@@ -219,14 +213,15 @@ actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext
 }
 
 actual class ElementModP(val element: BigInteger, val groupContext: GroupContext): Element, Comparable<ElementModP> {
+    internal fun BigInteger.modWrap(): ElementModP = this.rem(groupContext.p).wrap()
     internal fun BigInteger.wrap(): ElementModP = ElementModP(this, groupContext)
 
     override val context: GroupContext
         get() = groupContext
 
-    override fun inBounds() = element >= groupContext.ZERO_MOD_P.element && element < groupContext.p
+    override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.p
 
-    override fun inBoundsNoZero() = element > groupContext.ZERO_MOD_P.element && element < groupContext.p
+    override fun inBoundsNoZero() = element > BigInteger.ZERO && element < groupContext.p
 
     override fun byteArray(): ByteArray = element.toByteArray()
 
@@ -241,12 +236,12 @@ actual class ElementModP(val element: BigInteger, val groupContext: GroupContext
         this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
 
     actual operator fun times(other: ElementModP) =
-        ((this.element * other.getCompat(groupContext)) % groupContext.p).wrap()
+        (this.element * other.getCompat(groupContext)).modWrap()
 
     actual fun multInv() = element.modInverse(groupContext.p).wrap()
 
     actual infix operator fun div(denominator: ElementModP) =
-        ((element * denominator.getCompat(groupContext).modInverse(groupContext.p)) % groupContext.p).wrap()
+        (element * denominator.getCompat(groupContext).modInverse(groupContext.p)).modWrap()
 
     override fun equals(other: Any?) = when (other) {
         is ElementModP -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)
@@ -270,7 +265,7 @@ actual fun Iterable<ElementModQ>.addQ(): ElementModQ {
     val context = input[0].groupContext
 
     val result = input.subList(1, input.count()).fold(input[0].element) { a, b ->
-        (a + b.getCompat(context)) % context.q
+        (a + b.getCompat(context)).rem(context.q)
     }
 
     return ElementModQ(result, context)
@@ -290,7 +285,7 @@ actual fun Iterable<ElementModP>.multP(): ElementModP {
     val context = input[0].groupContext
 
     val result = input.subList(1, input.count()).fold(input[0].element) { a, b ->
-        (a * b.getCompat(context)) % context.p
+        (a * b.getCompat(context)).rem(context.p)
     }
 
     return ElementModP(result, context)
