@@ -1,7 +1,5 @@
 package electionguard
 
-import com.soywiz.krypto.*
-
 /**
  * Our own assert function, which isn't available in the Kotlin standard library on JavaScript, even
  * though it's available on JVM and Native. If `condition` is `false`, then an `AssertionError` is
@@ -28,9 +26,7 @@ fun GroupContext.assertCompatible(other: GroupContext) {
 fun String.sha256(): ByteArray {
     // portable helper function provided by Kotlin
     val stringBytes: ByteArray = this.encodeToByteArray()
-
-    // Krypto provies us with a general-purpose SHA256 hash function
-    return stringBytes.sha256().bytes
+    return stringBytes.sha256()
 }
 
 /** Get "secure" random bytes from the native platform. */

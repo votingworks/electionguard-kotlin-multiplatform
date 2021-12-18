@@ -2,11 +2,11 @@
 
 package electionguard
 
+import electionguard.Base64.fromBase64
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import com.soywiz.krypto.encoding.*
 
 class TestConstants {
     @Test

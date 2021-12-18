@@ -113,9 +113,6 @@ kotlin {
 
                     // Portable logging
                     implementation("io.github.aakira:napier:2.2.0")
-
-                    // SHA256, secure random number generation, Base64 encoding
-                    implementation("com.soywiz.korlibs.krypto:krypto:2.4.8")
                 }
             }
         val commonTest by
@@ -131,9 +128,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-jdk8", "1.6.10"))
-
-                // SHA256, secure random number generation, Base64 encoding
-//                implementation("com.soywiz.korlibs.krypto:krypto-jvm:2.4.8")
             }
         }
         val jvmTest by getting { dependencies { implementation(kotlin("test-junit5", "1.6.10")) } }
@@ -144,9 +138,6 @@ kotlin {
 
                     // Portable, Kotlin port of Java's BigInteger; slow but works
                     implementation("io.github.gciatto:kt-math:0.4.0")
-
-                    // SHA256, secure random number generation, Base64 encoding
-//                    implementation("com.soywiz.korlibs.krypto:krypto-js:2.4.8")
                 }
             }
         val jsTest by
@@ -158,8 +149,6 @@ kotlin {
             }
         val nativeMain by getting {
             dependencies {
-                // SHA256, secure random number generation, Base64 encoding
-//                implementation("com.soywiz.korlibs.krypto:krypto:2.4.8")
             }
         }
         val nativeTest by getting { dependencies {} }

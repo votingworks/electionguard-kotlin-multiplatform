@@ -1,7 +1,7 @@
 package electionguard
 
 import java.math.BigInteger
-import com.soywiz.krypto.encoding.*
+import electionguard.Base64.toBase64
 
 // In Java, we have support for base10 BigInteger, so we'll take advantage of that
 // to translate our constants into base64. The output of this program goes into

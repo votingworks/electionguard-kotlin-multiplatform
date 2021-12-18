@@ -1,6 +1,6 @@
 package electionguard
 
-import com.soywiz.krypto.encoding.fromBase64
+import electionguard.Base64.fromBase64
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import org.gciatto.kt.math.BigInteger
