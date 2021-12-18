@@ -22,7 +22,7 @@ data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)
  * @throws GroupException if the secret key is less than two
  */
 fun elGamalKeyPairFromSecret(secret: ElGamalSecretKey) =
-    if (secret < 2.toElementModQ(secret.context))
+    if (secret < secret.context.TWO_MOD_Q)
         throw ArithmeticException("secret key must be in [2, Q)")
     else
         ElGamalKeypair(secret, secret.context.gPowP(secret).acceleratePow())

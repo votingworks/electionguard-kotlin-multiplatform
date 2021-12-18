@@ -149,8 +149,8 @@ class GroupTest {
     @Test
     fun divisionP() {
         runProperty {
-            forAll(validElementsModP(context), validElementsModP(context)) {
-                a, b -> (a * b) / b == a  // division undoes multiplication
+            forAll(validElementsModP(context), validElementsModP(context)) { a, b ->
+                (a * b) / b == a // division undoes multiplication
             }
         }
     }

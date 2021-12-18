@@ -5,7 +5,7 @@ package electionguard
 
 /** This should really use a logging library, but we don't have one right now... */
 private fun logWarning(f: () -> String) {
-//    println(f())
+    println(f())
 }
 
 /** Proof that the ciphertext is a given constant. */

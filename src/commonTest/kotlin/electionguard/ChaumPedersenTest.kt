@@ -1,12 +1,12 @@
 package electionguard
 
 import io.kotest.property.Arb
-import io.kotest.property.Arb.*
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 class ChaumPedersenTest {
     @Test
@@ -383,6 +383,53 @@ class ChaumPedersenTest {
     }
 
     @Test
+    fun disjunctiveProofsSimple() {
+        // values here from a case of disjunctiveProofs() that failed
+
+        val context = testGroup()
+        val constant = 1
+        val nonce =
+            context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUcY=") ?: fail()
+        val secretKey =
+            context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASqQ=") ?: fail()
+        val keypair = elGamalKeyPairFromSecret(secretKey)
+        val seed =
+            context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATqs=") ?: fail()
+        val hashHeader =
+            context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIHY=") ?: fail()
+
+        val ciphertext = constant.encrypt(keypair, nonce)
+        val proof =
+            ciphertext.disjunctiveChaumPedersenProofKnownNonce(
+                constant,
+                nonce,
+                keypair.publicKey,
+                seed,
+                hashHeader
+            )
+        assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader))
+
+        // now, swap the proofs around and verify it fails
+        val badProof =
+            proof.copy(
+                proof0 = proof.proof1,
+                proof1 = proof.proof0,
+                c =
+                    context.hashElements(
+                        hashHeader,
+                        ciphertext.pad,
+                        ciphertext.data,
+                        proof.proof1.a,
+                        proof.proof1.b,
+                        proof.proof0.a,
+                        proof.proof0.b
+                    )
+            )
+        assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
+        assertFalse(badProof.copy(c = proof.c).isValid(ciphertext, keypair.publicKey, hashHeader))
+    }
+
+    @Test
     fun disjunctiveProofs() {
         val context = testGroup()
         runProperty {
@@ -402,6 +449,7 @@ class ChaumPedersenTest {
                         seed,
                         hashHeader
                     )
+                println("Test1")
                 assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader))
 
                 // now, swap the proofs around and verify it fails
@@ -420,7 +468,9 @@ class ChaumPedersenTest {
                                 proof.proof0.b
                             )
                     )
+                println("Test2")
                 assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
+                println("Test3")
                 assertFalse(
                     badProof.copy(c = proof.c).isValid(ciphertext, keypair.publicKey, hashHeader)
                 )
