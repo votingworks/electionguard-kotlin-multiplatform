@@ -1,7 +1,5 @@
 package electionguard
 
-
-
 actual fun randomBytes(length: Int): ByteArray {
     val array = ByteArray(length)
     if (isNodeJs()) {

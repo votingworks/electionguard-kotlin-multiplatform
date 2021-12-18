@@ -294,14 +294,15 @@ actual open class ElementModP(val element: BigInteger, val groupContext: GroupCo
     override fun toString() = element.toString(10)
 
     actual open fun acceleratePow() : ElementModP =
-        AcceleratedElementModP(PowRadix(this, groupContext.powRadixOption), element, groupContext)
+        AcceleratedElementModP(this)
 }
 
-class AcceleratedElementModP(
-    val powRadix: PowRadix,
-    element: BigInteger,
-    groupContext: GroupContext
-) : ElementModP(element, groupContext) {
+class AcceleratedElementModP(p: ElementModP) : ElementModP(p.element, p.groupContext) {
+    // Laziness to delay computation of the table until its first use; saves space
+    // for PowModOptions that are never used.
+
+    val powRadix by lazy { PowRadix(p, p.groupContext.powRadixOption) }
+
     override fun acceleratePow(): ElementModP = this
 
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)

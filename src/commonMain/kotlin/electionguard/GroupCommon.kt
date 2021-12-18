@@ -134,3 +134,18 @@ fun GroupContext.gPowPSmall(e: Int) =
         e < 0 -> throw ArithmeticException("not defined for negative values")
         else -> gPowP(e.toElementModQ(this))
     }
+
+/**
+ * Verifies that every element has a compatible [GroupContext] and returns
+ * the first context. Throws `IllegalArithmeticException` if there's a problem.
+ */
+fun compatibleContextOrFail(vararg elements: Element): GroupContext {
+    if (elements.isEmpty()) throw IllegalArgumentException("no arguments")
+
+    val headContext = elements[0].context
+
+    val allCompat = elements.all { it.context.isCompatible(headContext) }
+    if (!allCompat) throw IllegalArgumentException("incompatible contexts")
+
+    return headContext
+}

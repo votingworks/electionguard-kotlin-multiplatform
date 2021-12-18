@@ -304,7 +304,6 @@ actual class GroupContext(
     val productionStrength: Boolean = strong
     val montCtxP: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val montCtxQ: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
-    val gPowRadix: Lazy<PowRadix>
     val dlogger: DLog
 
     init {
@@ -316,7 +315,7 @@ actual class GroupContext(
         zeroModP = ElementModP(0U.toHaclBignum4096(), this)
         oneModP = ElementModP(1U.toHaclBignum4096(), this)
         twoModP = ElementModP(2U.toHaclBignum4096(), this)
-        gModP = ElementModP(g, this)
+        gModP = ElementModP(g, this).acceleratePow()
         qModP = ElementModP(
             ULongArray(HaclBignum4096_LongWords) {
                     // Copy from 256-bit to 4096-bit, avoid problems later on. Hopefully.
@@ -342,7 +341,6 @@ actual class GroupContext(
 
         // can't compute this until we have montCtx defined
         gSquaredModP = gModP * gModP
-        gPowRadix = lazy { PowRadix(gModP, powRadixOption) }
         dlogger = DLog(this)
     }
 
@@ -454,7 +452,7 @@ actual class GroupContext(
         }
     }
 
-    actual fun gPowP(e: ElementModQ) = gPowRadix.value.pow(e)
+    actual fun gPowP(e: ElementModQ) = gModP powP e
 
     actual fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
@@ -709,14 +707,16 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
     override fun toString() = base64()  // unpleasant, but available
 
     actual open fun acceleratePow() : ElementModP =
-        AcceleratedElementModP(PowRadix(this, groupContext.powRadixOption), element, groupContext)
+        AcceleratedElementModP(this)
 }
 
-class AcceleratedElementModP(
-    val powRadix: PowRadix,
-    element: HaclBignum4096,
-    groupContext: GroupContext
-) : ElementModP(element, groupContext) {
+class AcceleratedElementModP(p: ElementModP) : ElementModP(p.element, p.groupContext) {
+    // Laziness to delay computation of the table until its first use; saves space
+    // for PowModOptions that are never used. Also, the context isn't fully initialized
+    // when constructing the GroupContext, and this avoids using it until it's ready.
+
+    val powRadix by lazy { PowRadix(p, p.groupContext.powRadixOption) }
+
     override fun acceleratePow(): ElementModP = this
 
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)

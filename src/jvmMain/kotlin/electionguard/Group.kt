@@ -94,7 +94,6 @@ actual class GroupContext(
     val oneModQ: ElementModQ
     val twoModQ: ElementModQ
     val productionStrength: Boolean = strong
-    val gPowRadix: Lazy<PowRadix>
     val dlogger: DLog
 
     init {
@@ -105,13 +104,12 @@ actual class GroupContext(
         zeroModP = ElementModP(0U.toBigInteger(), this)
         oneModP = ElementModP(1U.toBigInteger(), this)
         twoModP = ElementModP(2U.toBigInteger(), this)
-        gModP = ElementModP(g, this)
+        gModP = ElementModP(g, this).acceleratePow()
         gSquaredModP = ElementModP((g * g).mod(p), this)
         qModP = ElementModP(q, this)
         zeroModQ = ElementModQ(0U.toBigInteger(), this)
         oneModQ = ElementModQ(1U.toBigInteger(), this)
         twoModQ = ElementModQ(2U.toBigInteger(), this)
-        gPowRadix = lazy { PowRadix(G_MOD_P, powRadixOption) }
         dlogger = DLog(this)
     }
 
@@ -192,7 +190,7 @@ actual class GroupContext(
         return if (tmp >= q || tmp < BigInteger.ZERO) null else ElementModQ(tmp, this)
     }
 
-    actual fun gPowP(e: ElementModQ) = gPowRadix.value.pow(e)
+    actual fun gPowP(e: ElementModQ) = gModP powP e
 
     actual fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
@@ -288,19 +286,19 @@ actual open class ElementModP(val element: BigInteger, val groupContext: GroupCo
     override fun toString() = element.toString(10)
 
     actual open fun acceleratePow() : ElementModP =
-        AcceleratedElementModP(PowRadix(this, groupContext.powRadixOption), element, groupContext)
+        AcceleratedElementModP(this)
 }
 
-class AcceleratedElementModP(
-    val powRadix: PowRadix,
-    element: BigInteger,
-    groupContext: GroupContext
-) : ElementModP(element, groupContext) {
+class AcceleratedElementModP(p: ElementModP) : ElementModP(p.element, p.groupContext) {
+    // Laziness to delay computation of the table until its first use; saves space
+    // for PowModOptions that are never used.
+
+    val powRadix by lazy { PowRadix(p, p.groupContext.powRadixOption) }
+
     override fun acceleratePow(): ElementModP = this
 
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)
 }
-
 
 actual fun Iterable<ElementModQ>.addQ(): ElementModQ {
     val input = iterator().asSequence().toList()
