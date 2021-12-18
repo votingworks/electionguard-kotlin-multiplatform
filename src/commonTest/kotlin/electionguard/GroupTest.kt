@@ -134,7 +134,8 @@ class GroupTest {
     @Test
     fun multiplicativeInversesP() {
         runProperty {
-            forAll(elementsModPNoZero(context)) { it.multInv() * it == context.ONE_MOD_P }
+            // our inverse code only works for elements in the subgroup, which makes it faster
+            forAll(validElementsModP(context)) { it.multInv() * it == context.ONE_MOD_P }
         }
     }
 
@@ -147,7 +148,11 @@ class GroupTest {
 
     @Test
     fun divisionP() {
-        runProperty { forAll(elementsModPNoZero(context)) { it / it == context.ONE_MOD_P } }
+        runProperty {
+            forAll(validElementsModP(context), validElementsModP(context)) {
+                a, b -> (a * b) / b == a  // division undoes multiplication
+            }
+        }
     }
 
     @Test
@@ -168,6 +173,17 @@ class GroupTest {
                 val gaAccelerated = ga.acceleratePow()
                 val faster = gaAccelerated powP b
                 normal == faster
+            }
+        }
+    }
+
+    @Test
+    fun subgroupInverses() {
+        runProperty {
+            forAll(propTestFastConfig, elementsModQ(context)) {
+                val p1 = context.gPowP(it)
+                val p2 = p1 powP (context.ZERO_MOD_Q - context.ONE_MOD_Q)
+                p1 * p2 == context.ONE_MOD_P
             }
         }
     }

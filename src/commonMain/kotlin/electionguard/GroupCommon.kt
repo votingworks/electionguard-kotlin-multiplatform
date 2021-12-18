@@ -136,8 +136,8 @@ fun GroupContext.gPowPSmall(e: Int) =
     }
 
 /**
- * Verifies that every element has a compatible [GroupContext] and returns
- * the first context. Throws `IllegalArithmeticException` if there's a problem.
+ * Verifies that every element has a compatible [GroupContext] and returns the first context. Throws
+ * `IllegalArithmeticException` if there's a problem.
  */
 fun compatibleContextOrFail(vararg elements: Element): GroupContext {
     if (elements.isEmpty()) throw IllegalArgumentException("no arguments")

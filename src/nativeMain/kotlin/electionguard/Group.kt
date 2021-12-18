@@ -301,6 +301,7 @@ actual class GroupContext(
     val zeroModQ: ElementModQ
     val oneModQ: ElementModQ
     val twoModQ: ElementModQ
+    val qMinus1ModQ: ElementModQ
     val productionStrength: Boolean = strong
     val montCtxP: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val montCtxQ: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
@@ -325,6 +326,7 @@ actual class GroupContext(
         zeroModQ = ElementModQ(0U.toHaclBignum4096(), this)
         oneModQ = ElementModQ(1U.toHaclBignum256(), this)
         twoModQ = ElementModQ(2U.toHaclBignum256(), this)
+        qMinus1ModQ = zeroModQ - oneModQ
 
         // This context is something that normally needs to be freed, otherwise memory
         // leaks could occur, but we'll keep it live for the duration of the program
@@ -667,15 +669,18 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
     actual operator fun times(other: ElementModP): ElementModP {
         val result = newZeroBignum4096()
         val scratch = ULongArray(HaclBignum4096_LongWords * 2)
-        nativeElems(result, element, other.getCompat(context), scratch) { r, a, b, s ->
+        nativeElems(result, element, other.getCompat(groupContext), scratch) { r, a, b, s ->
             Hacl_Bignum4096_mul(a, b, s)
-            Hacl_Bignum4096_mod_precomp(context.montCtxP, s, r)
+            Hacl_Bignum4096_mod_precomp(groupContext.montCtxP, s, r)
         }
 
         return result.wrap()
     }
 
     actual fun multInv(): ElementModP {
+        // Performance note: the code below is really, really slow. Like, it's 1/17
+        // the speed of the equivalent code in java.math.BigInteger.
+
         val result = newZeroBignum4096()
 
         nativeElems(result, element) { r, e ->
@@ -683,6 +688,11 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
         }
 
         return result.wrap()
+
+        // Alternative design: taking advantage of the smaller size of the subgroup
+        // reachable from the generator.
+
+//        return this powP groupContext.qMinus1ModQ
     }
 
     actual infix operator fun div(denominator: ElementModP) = this * denominator.multInv()

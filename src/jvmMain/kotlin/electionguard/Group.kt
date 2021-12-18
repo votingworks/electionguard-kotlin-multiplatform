@@ -95,6 +95,7 @@ actual class GroupContext(
     val twoModQ: ElementModQ
     val productionStrength: Boolean = strong
     val dlogger: DLog
+    val qMinus1Q: ElementModQ
 
     init {
         p = pBytes.toBigInteger()
@@ -111,6 +112,7 @@ actual class GroupContext(
         oneModQ = ElementModQ(1U.toBigInteger(), this)
         twoModQ = ElementModQ(2U.toBigInteger(), this)
         dlogger = DLog(this)
+        qMinus1Q = zeroModQ - oneModQ
     }
 
     actual fun isProductionStrength() = productionStrength
@@ -271,7 +273,13 @@ actual open class ElementModP(val element: BigInteger, val groupContext: GroupCo
     actual operator fun times(other: ElementModP) =
         (this.element * other.getCompat(groupContext)).modWrap()
 
-    actual fun multInv() = element.modInverse(groupContext.p).wrap()
+    actual fun multInv()
+            = element.modInverse(groupContext.p).wrap()
+//            = this powP groupContext.qMinus1Q
+
+    // Performance note: multInv() can be expressed with the modInverse() method or we can do
+    // this exponentiation thing with Q - 1, which works for the subgroup. On the JVM, we get
+    // basically the same performance either way.
 
     actual infix operator fun div(denominator: ElementModP) =
         (element * denominator.getCompat(groupContext).modInverse(groupContext.p)).modWrap()

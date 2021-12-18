@@ -21,11 +21,11 @@ fun main() {
 
             val keypair = elGamalKeyPairFromRandom(context)
             val nonces = Array(N) { context.randomElementModQ() }
-            val random = Random(System.nanoTime()) // not secure, but we don't care
-            val messages = Array(N) { random.nextInt(1000) }
+            val prng = Random(System.nanoTime()) // not secure, but we don't care
+            val messages = Array(N) { prng.nextInt(1000) }
 
-            // force the PowRadix tables to be realized
-            val ignored = keypair.encrypt(messages[0], nonces[0]).decrypt(keypair)
+            // force the PowRadix tables to be realized before we start the clock
+            messages[0].encrypt(keypair, nonces[0]).decrypt(keypair)
 
             println("Running!")
 
@@ -44,7 +44,7 @@ fun main() {
                             .setMaxRenderedLength(100)
                             .showSpeed()
                     )
-                    .map { keypair.encrypt(messages[it], nonces[it]) }
+                    .map { messages[it].encrypt(keypair, nonces[it]) }
             }
             val encryptionTime = encryptionTimeMs / 1000.0
 

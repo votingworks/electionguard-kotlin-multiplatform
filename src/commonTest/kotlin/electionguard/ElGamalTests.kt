@@ -32,7 +32,7 @@ class ElGamalTests {
                 elementsModQNoZero(context),
                 smallInts()
             ) { keypair, nonce, message ->
-                message == keypair.decrypt(keypair.encrypt(message, nonce))
+                message == message.encrypt(keypair, nonce).decrypt(keypair)
             }
         }
     }
@@ -42,15 +42,11 @@ class ElGamalTests {
         runProperty {
             checkAll(propTestFastConfig, elGamalKeypairs(context), smallInts())
                 { keypair, message ->
-                    val encryption = keypair.encrypt(message)
-                    val decryption1 = keypair.decrypt(encryption)
-                    val decryption2 = keypair.secretKey.decrypt(encryption)
-                    val decryption3 = encryption.decrypt(keypair)
-                    val decryption4 = encryption.decrypt(keypair.secretKey)
+                    val encryption = message.encrypt(keypair)
+                    val decryption1 = encryption.decrypt(keypair)
+                    val decryption2 = encryption.decrypt(keypair.secretKey)
                     assertEquals(message, decryption1)
                     assertEquals(message, decryption2)
-                    assertEquals(message, decryption3)
-                    assertEquals(message, decryption4)
                 }
         }
     }
@@ -64,15 +60,9 @@ class ElGamalTests {
                 elementsModQNoZero(context),
                 smallInts()
             ) { keypair, nonce, message ->
-                val encryption = keypair.encrypt(message, nonce)
-                val decryption0 = keypair.decrypt(encryption)
-                val decryption1 = keypair.decryptWithNonce(encryption, nonce)
-                val decryption2 = keypair.publicKey.decryptWithNonce(encryption, nonce)
-                val decryption3 = encryption.decryptWithNonce(keypair.publicKey, nonce)
-                assertEquals(message, decryption0)
-                assertEquals(message, decryption1)
-                assertEquals(message, decryption2)
-                assertEquals(message, decryption3)
+                val encryption = message.encrypt(keypair, nonce)
+                val decryption = encryption.decryptWithNonce(keypair.publicKey, nonce)
+                assertEquals(message, decryption)
             }
         }
     }
@@ -88,10 +78,10 @@ class ElGamalTests {
                 elementsModQNoZero(context),
                 elementsModQNoZero(context)
             ) { keypair, p1, p2, n1, n2 ->
-                val c1 = keypair.encrypt(p1, n1)
-                val c2 = keypair.encrypt(p2, n2)
+                val c1 = p1.encrypt(keypair, n1)
+                val c2 = p2.encrypt(keypair, n2)
                 val csum = c1 + c2
-                val d = keypair.decrypt(csum)
+                val d = csum.decrypt(keypair)
                 p1 + p2 == d
             }
         }

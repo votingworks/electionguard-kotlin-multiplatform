@@ -34,7 +34,7 @@ fun validElementsModP(ctx: GroupContext): Arb<ElementModP> =
  * accelerated using the default PowRadixOption in the GroupContext.
  */
 fun elGamalKeypairs(ctx: GroupContext): Arb<ElGamalKeypair> =
-    elementsModQ(ctx).map { elGamalKeyPairFromSecret(it) }
+    elementsModQ(ctx, minimum = 2).map { elGamalKeyPairFromSecret(it) }
 
 /**
  * Property-based testing can run slowly. This will speed things up by turning off shrinking and

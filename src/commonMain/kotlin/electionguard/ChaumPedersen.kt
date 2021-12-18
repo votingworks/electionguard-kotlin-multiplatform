@@ -5,7 +5,7 @@ package electionguard
 
 /** This should really use a logging library, but we don't have one right now... */
 private fun logWarning(f: () -> String) {
-    println(f())
+//    println(f())
 }
 
 /** Proof that the ciphertext is a given constant. */
@@ -96,7 +96,15 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownSecretKey(
     seed: ElementModQ,
     hashHeader: ElementModQ
 ) : ConstantChaumPedersenProofKnownSecretKey {
-    val context = compatibleContextOrFail(this.data, this.pad, keypair.secretKey, keypair.publicKey, seed, hashHeader)
+    val context =
+        compatibleContextOrFail(
+            this.data,
+            this.pad,
+            keypair.secretKey,
+            keypair.publicKey,
+            seed,
+            hashHeader
+        )
     return ConstantChaumPedersenProofKnownSecretKey(
         genericChaumPedersenProofOf(
             g = context.G_MOD_P,
@@ -168,7 +176,9 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             DisjunctiveChaumPedersenProofKnownNonce(fakeZeroProof, realOneProof, c)
         }
         else ->
-            throw ArithmeticException("cannot compute disjunctive c-p proof with constant = $plaintext")
+            throw ArithmeticException(
+                "cannot compute disjunctive c-p proof with constant = $plaintext"
+            )
     }
 }
 
@@ -188,7 +198,14 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
     hashHeader: ElementModQ,
     expectedConstant: Int = -1
 ) : Boolean {
-    val context = compatibleContextOrFail(this.proof.a, ciphertext.data, ciphertext.pad, publicKey, hashHeader)
+    val context =
+        compatibleContextOrFail(
+            this.proof.a,
+            ciphertext.data,
+            ciphertext.pad,
+            publicKey,
+            hashHeader
+        )
     return proof.isValid(
         g = context.G_MOD_P,
         gx = ciphertext.pad,
@@ -216,13 +233,14 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
     hashHeader: ElementModQ,
     expectedConstant: Int = -1
 ) : Boolean {
-    val context = compatibleContextOrFail(
-        this.proof.a,
-        ciphertext.data,
-        ciphertext.pad,
-        publicKey,
-        hashHeader
-    )
+    val context =
+        compatibleContextOrFail(
+            this.proof.a,
+            ciphertext.data,
+            ciphertext.pad,
+            publicKey,
+            hashHeader
+        )
     return proof.isValid(
         g = context.G_MOD_P,
         gx = publicKey,
@@ -247,7 +265,8 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     publicKey: ElementModP,
     hashHeader: ElementModQ
 ): Boolean {
-    val context = compatibleContextOrFail(this.c, ciphertext.data, ciphertext.pad, publicKey, hashHeader)
+    val context =
+        compatibleContextOrFail(this.c, ciphertext.data, ciphertext.pad, publicKey, hashHeader)
     val (alpha, beta) = ciphertext
     val consistentC = proof0.c + proof1.c == c
     val validHash =
@@ -314,7 +333,7 @@ fun GenericChaumPedersenProof.isValid(
     alsoHash: Array<Element> = emptyArray(),
     checkC: Boolean = true
 ): Boolean {
-    val context = compatibleContextOrFail(this.a, g, gx, h,hx, hashHeader, *alsoHash)
+    val context = compatibleContextOrFail(this.a, g, gx, h, hx, hashHeader, *alsoHash)
     val inBoundsA = a.isValidResidue()
     val inBoundsB = b.isValidResidue()
     val inBoundsG = g.isValidResidue()
@@ -412,7 +431,7 @@ fun fakeGenericChaumPedersenProofOf(
     c: ElementModQ,
     seed: ElementModQ
 ): GenericChaumPedersenProof {
-    val context = compatibleContextOrFail(g, gx, h, hx, c, seed)
+    compatibleContextOrFail(g, gx, h, hx, c, seed)
     val r = Nonces(seed, "generic-chaum-pedersen-proof")[0]
     val gr = g powP r
     val hr = h powP r

@@ -28,8 +28,8 @@ fun elGamalKeyPairFromSecret(secret: ElGamalSecretKey) =
         ElGamalKeypair(secret, secret.context.gPowP(secret).acceleratePow())
 
 /** Generates a random ElGamal keypair. */
-fun elGamalKeyPairFromRandom(ctx: GroupContext) =
-    elGamalKeyPairFromSecret(ctx.randomElementModQ(minimum = 2))
+fun elGamalKeyPairFromRandom(context: GroupContext) =
+    elGamalKeyPairFromSecret(context.randomElementModQ(minimum = 2))
 
 /**
  * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
@@ -37,16 +37,17 @@ fun elGamalKeyPairFromRandom(ctx: GroupContext) =
  *
  * @throws GroupException if the nonce is zero or if the message is negative
  */
-fun ElGamalPublicKey.encrypt(
-    message: Int,
-    nonce: ElementModQ = context.randomElementModQ(minimum = 1)
+fun Int.encrypt(
+    publicKey: ElGamalPublicKey,
+    nonce: ElementModQ = publicKey.context.randomElementModQ(minimum = 1)
 ): ElGamalCiphertext {
+    val context = compatibleContextOrFail(publicKey, nonce)
 
     if (nonce == context.ZERO_MOD_Q) {
         throw ArithmeticException("Can't use a zero nonce for ElGamal encryption")
     }
 
-    if (message < 0) {
+    if (this < 0) {
         throw ArithmeticException("Can't encrypt a negative message")
     }
 
@@ -54,8 +55,8 @@ fun ElGamalPublicKey.encrypt(
     // is much larger than that.
 
     val pad = context.gPowP(nonce)
-    val expM = context.gPowPSmall(message)
-    val keyN = this powP nonce
+    val expM = context.gPowPSmall(this)
+    val keyN = publicKey powP nonce
     val data = expM * keyN
 
     return ElGamalCiphertext(pad, data)
@@ -65,51 +66,35 @@ fun ElGamalPublicKey.encrypt(
  * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
  * deterministic, or it will be chosen at random.
  */
-fun ElGamalKeypair.encrypt(
-    message: Int,
-    nonce: ElementModQ = context.randomElementModQ(minimum = 1)
-) = publicKey.encrypt(message, nonce)
+fun Int.encrypt(
+    keypair: ElGamalKeypair,
+    nonce: ElementModQ = keypair.context.randomElementModQ(minimum = 1)
+) = this.encrypt(keypair.publicKey, nonce)
 
-/** Uses an ElGamal secret key to decrypt a message. If the decryption fails, `null` is returned. */
-fun ElGamalSecretKey.decrypt(ciphertext: ElGamalCiphertext): Int? {
-    val blind = ciphertext.pad powP this
-    val gPowM = ciphertext.data / blind
+/** Decrypts using the secret key. if the decryption fails, `null` is returned. */
+fun ElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): Int? {
+    val context = compatibleContextOrFail(pad, secretKey)
+    val blind = pad powP secretKey
+    val gPowM = data / blind
     return context.dLog(gPowM)
 }
 
-/** Decrypts using the secret key. */
-fun ElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): Int? = secretKey.decrypt(this)
+/** Decrypts using the secret key from the keypair. If the decryption fails, `null` is returned. */
+fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = decrypt(keypair.secretKey)
 
-/** Uses an ElGamal secret key to decrypt a message. If the decryption fails, `null` is returned. */
-fun ElGamalKeypair.decrypt(ciphertext: ElGamalCiphertext) = secretKey.decrypt(ciphertext)
-
-/** Decrypts using the secret key from the keypair. */
-fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = keypair.secretKey.decrypt(this)
-
-/**
- * Uses an ElGamal public key to decrypt a message, while also knowing the nonce. If the decryption
- * fails, `null` is returned.
- */
-fun ElGamalPublicKey.decryptWithNonce(ciphertext: ElGamalCiphertext, nonce: ElementModQ): Int? {
-    val blind = this powP nonce
-    val gPowM = ciphertext.data / blind
+/** Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned. */
+fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ): Int? {
+    val context = compatibleContextOrFail(this.pad, publicKey, nonce)
+    val blind = publicKey powP nonce
+    val gPowM = data / blind
     return context.dLog(gPowM)
 }
-
-/**
- * Uses an ElGamal public key to decrypt a message, while also knowing the nonce. If the decryption
- * fails, `null` is returned.
- */
-fun ElGamalKeypair.decryptWithNonce(ciphertext: ElGamalCiphertext, nonce: ElementModQ) =
-    publicKey.decryptWithNonce(ciphertext, nonce)
-
-/** Decrypts a message by knowing the nonce. */
-fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ) =
-    publicKey.decryptWithNonce(this, nonce)
 
 /** Homomorphically "adds" two ElGamal ciphertexts together through piecewise multiplication. */
-operator fun ElGamalCiphertext.plus(o: ElGamalCiphertext) =
-    ElGamalCiphertext(pad * o.pad, data * o.data)
+operator fun ElGamalCiphertext.plus(o: ElGamalCiphertext): ElGamalCiphertext {
+    compatibleContextOrFail(this.pad, o.pad)
+    return ElGamalCiphertext(pad * o.pad, data * o.data)
+}
 
 /**
  * Homomorphically "adds" a sequence of ElGamal ciphertexts through piecewise multiplication.

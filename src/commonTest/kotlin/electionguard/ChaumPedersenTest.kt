@@ -1,25 +1,25 @@
 package electionguard
 
-import java.util.concurrent.TimeUnit
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
-import org.quicktheories.QuickTheory.qt
-import org.quicktheories.generators.SourceDSL.integers
-
-private const val MAX_TEST_TIME_SECONDS = 5L
+import io.kotest.property.Arb
+import io.kotest.property.Arb.*
+import io.kotest.property.arbitrary.int
+import io.kotest.property.checkAll
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ChaumPedersenTest {
     @Test
     fun testCCKnownNonceProofsSimpleEncryptionZero() {
-        val keypair = elGamalKeyPairFromSecret(TWO_MOD_Q)
-        val nonce = ONE_MOD_Q
-        val seed = TWO_MOD_Q
-        val message = keypair.encrypt(0, nonce)
-        val badMessage1 = keypair.encrypt(1, nonce)
-        val badMessage2 = keypair.encrypt(0, TWO_MOD_Q)
-        val hashHeader = ONE_MOD_Q
-        val badHashHeader = TWO_MOD_Q
+        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
+        val nonce = context.ONE_MOD_Q
+        val seed = context.TWO_MOD_Q
+        val message = 0.encrypt(keypair, nonce)
+        val badMessage1 = 1.encrypt(keypair, nonce)
+        val badMessage2 = 0.encrypt(keypair, context.TWO_MOD_Q)
+        val hashHeader = context.ONE_MOD_Q
+        val badHashHeader = context.TWO_MOD_Q
         val goodProof =
             message.constantChaumPedersenProofKnownNonce(
                 0,
@@ -62,14 +62,15 @@ class ChaumPedersenTest {
 
     @Test
     fun testCCKnownSecretProofsSimpleEncryptionZero() {
-        val keypair = elGamalKeyPairFromSecret(TWO_MOD_Q)
-        val nonce = ONE_MOD_Q
-        val seed = TWO_MOD_Q
-        val message = keypair.encrypt(0, nonce)
-        val badMessage1 = keypair.encrypt(1, nonce)
-        val badMessage2 = keypair.encrypt(0, TWO_MOD_Q)
-        val hashHeader = ONE_MOD_Q
-        val badHashHeader = TWO_MOD_Q
+        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
+        val nonce = context.ONE_MOD_Q
+        val seed = context.TWO_MOD_Q
+        val message = 0.encrypt(keypair, nonce)
+        val badMessage1 = 1.encrypt(keypair, nonce)
+        val badMessage2 = 0.encrypt(keypair, context.TWO_MOD_Q)
+        val hashHeader = context.ONE_MOD_Q
+        val badHashHeader = context.TWO_MOD_Q
         val goodProof =
             message.constantChaumPedersenProofKnownSecretKey(0, keypair, seed, hashHeader)
         val badProof1 =
@@ -89,22 +90,21 @@ class ChaumPedersenTest {
 
     @Test
     fun testCCProofsKnownNonce() {
-        qt().withTestingTime(MAX_TEST_TIME_SECONDS, TimeUnit.SECONDS)
-            .forAll(
-                tuples(
-                    elGamalKeypairs("key"),
-                    elementsModQNoZero("nonce"),
-                    elementsModQ("seed"),
-                    integers().between(0, 100),
-                    integers().between(0, 100)
-                )
-            )
-            .checkAssert { (keypair, nonce, seed, constant, constant2) ->
+        val context = testGroup()
+        runProperty {
+            checkAll(
+                propTestFastConfig,
+                elGamalKeypairs(context),
+                elementsModQNoZero(context),
+                elementsModQ(context),
+                Arb.int(min=0, max=100),
+                Arb.int(min=0, max=100)
+            ) { keypair, nonce, seed, constant, constant2 ->
                 // we need the constants to be different
                 val badConstant = if (constant == constant2) constant + 1 else constant2
 
-                val message = keypair.encrypt(constant, nonce)
-                val badMessage = keypair.encrypt(badConstant, nonce)
+                val message = constant.encrypt(keypair, nonce)
+                val badMessage = badConstant.encrypt(keypair, nonce)
 
                 val proof =
                     message.constantChaumPedersenProofKnownNonce(
@@ -112,13 +112,13 @@ class ChaumPedersenTest {
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
-                        hashHeader = ONE_MOD_Q
+                        hashHeader = context.ONE_MOD_Q
                     )
                 assertTrue(
                     proof.isValid(
                         message,
                         keypair.publicKey,
-                        ONE_MOD_Q,
+                        context.ONE_MOD_Q,
                         expectedConstant = constant
                     )
                 )
@@ -126,11 +126,11 @@ class ChaumPedersenTest {
                     proof.isValid(
                         message,
                         keypair.publicKey,
-                        ONE_MOD_Q,
+                        context.ONE_MOD_Q,
                         expectedConstant = constant + 1
                     )
                 )
-                assertFalse(proof.isValid(badMessage, keypair.publicKey, ONE_MOD_Q))
+                assertFalse(proof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q))
 
                 val badProof =
                     badMessage.constantChaumPedersenProofKnownNonce(
@@ -138,9 +138,9 @@ class ChaumPedersenTest {
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
-                        hashHeader = ONE_MOD_Q
+                        hashHeader = context.ONE_MOD_Q
                     )
-                assertFalse(badProof.isValid(badMessage, keypair.publicKey, ONE_MOD_Q))
+                assertFalse(badProof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q))
 
                 val badProof2 =
                     message.constantChaumPedersenProofKnownNonce(
@@ -148,107 +148,122 @@ class ChaumPedersenTest {
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
-                        hashHeader = ONE_MOD_Q
+                        hashHeader = context.ONE_MOD_Q
                     )
-                assertFalse(badProof2.isValid(message, keypair.publicKey, ONE_MOD_Q))
+                assertFalse(badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
 
                 val badProof3 = proof.copy(constant = Int.MAX_VALUE)
-                assertFalse(badProof3.isValid(message, keypair.publicKey, ONE_MOD_Q))
+                assertFalse(badProof3.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
             }
+        }
     }
 
     @Test
     fun testCCProofsKnownSecretKey() {
-        qt().withTestingTime(MAX_TEST_TIME_SECONDS, TimeUnit.SECONDS)
-            .forAll(
-                tuples(
-                    elGamalKeypairs("key"),
-                    elementsModQNoZero("nonce"),
-                    elementsModQ("seed"),
-                    integers().between(0, 100),
-                    integers().between(0, 100)
-                )
-            )
-            .checkAssert { (keypair, nonce, seed, constant, constant2) ->
+        val context = testGroup()
+        runProperty {
+            checkAll(
+                propTestFastConfig,
+                elGamalKeypairs(context),
+                elementsModQNoZero(context),
+                elementsModQ(context),
+                Arb.int(min = 0, max = 100),
+                Arb.int(min = 0, max = 100),
+            ) { keypair, nonce, seed, constant, constant2 ->
                 // we need the constants to be different
                 val badConstant = if (constant == constant2) constant + 1 else constant2
 
-                val message = keypair.encrypt(constant, nonce)
-                val badMessage = keypair.encrypt(badConstant, nonce)
+                val message = constant.encrypt(keypair, nonce)
+                val badMessage = badConstant.encrypt(keypair, nonce)
 
                 val proof =
                     message.constantChaumPedersenProofKnownSecretKey(
                         constant,
                         keypair,
                         seed,
-                        ONE_MOD_Q
+                        context.ONE_MOD_Q
                     )
                 assertTrue(
                     proof.isValid(
                         message,
                         keypair.publicKey,
-                        ONE_MOD_Q,
+                        context.ONE_MOD_Q,
                         expectedConstant = constant
                     )
                 )
-                assertTrue(proof.isValid(message, keypair.publicKey, ONE_MOD_Q))
+                assertTrue(proof.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
                 assertFalse(
                     proof.isValid(
                         message,
                         keypair.publicKey,
-                        ONE_MOD_Q,
+                        context.ONE_MOD_Q,
                         expectedConstant = badConstant
                     )
                 )
-                assertFalse(proof.isValid(badMessage, keypair.publicKey, ONE_MOD_Q))
+                assertFalse(proof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q))
 
                 val badProof =
                     badMessage.constantChaumPedersenProofKnownSecretKey(
                         constant,
                         keypair,
                         seed,
-                        ONE_MOD_Q
+                        context.ONE_MOD_Q
                     )
-                assertFalse(badProof.isValid(badMessage, keypair.publicKey, ONE_MOD_Q))
+                assertFalse(badProof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q))
 
                 val badProof2 =
                     message.constantChaumPedersenProofKnownSecretKey(
                         badConstant,
                         keypair,
                         seed,
-                        ONE_MOD_Q
+                        context.ONE_MOD_Q
                     )
-                assertFalse(badProof2.isValid(message, keypair.publicKey, ONE_MOD_Q))
+                assertFalse(badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
 
                 val badProof3 = proof.copy(constant = Int.MAX_VALUE)
-                assertFalse(badProof3.isValid(message, keypair.publicKey, ONE_MOD_Q))
+                assertFalse(badProof3.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
             }
+        }
     }
 
     @Test
     fun testGcpProof() {
-        qt().withTestingTime(MAX_TEST_TIME_SECONDS, TimeUnit.SECONDS)
-            .forAll(
-                tuples(
-                    elementsModQ("q1"),
-                    elementsModQ("q2"),
-                    elementsModQ("x"),
-                    elementsModQ("x2"),
-                    elementsModQ("seed"),
-                    elementsModQ("hashHeader")
-                )
-            )
-            .checkAssert { (q1, q2, x, x2, seed, hashHeader) ->
+        val context = testGroup()
+        runProperty {
+            checkAll(
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context)
+            ) { q1, q2, x, x2, seed, hashHeader ->
                 // we need x != notx, and using assuming() would slow us down
-                val notx = if (x == x2) x + ONE_MOD_Q else x2
+                val notx = if (x == x2) x + context.ONE_MOD_Q else x2
                 helperTestGcp(q1, q2, x, notx, seed, hashHeader)
             }
+        }
     }
 
     @Test
     fun testGcpProofSimple() {
-        helperTestGcp(TWO_MOD_Q, 3.toElementModQ(), 5.toElementModQ(), TWO_MOD_Q, ZERO_MOD_Q, null)
-        helperTestGcp(ONE_MOD_Q, ONE_MOD_Q, ZERO_MOD_Q, ONE_MOD_Q, ZERO_MOD_Q, null)
+        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        helperTestGcp(
+            context.TWO_MOD_Q,
+            3.toElementModQ(context),
+            5.toElementModQ(context),
+            context.TWO_MOD_Q,
+            context.ZERO_MOD_Q,
+            null
+        )
+        helperTestGcp(
+            context.ONE_MOD_Q,
+            context.ONE_MOD_Q,
+            context.ZERO_MOD_Q,
+            context.ONE_MOD_Q,
+            context.ZERO_MOD_Q,
+            null
+        )
     }
 
     private fun helperTestGcp(
@@ -259,14 +274,15 @@ class ChaumPedersenTest {
         seed: ElementModQ,
         hashHeader: ElementModQ?
     ) {
-        val g = gPowP(q1)
-        val h = gPowP(q2)
+        val context = q1.context
+        val g = context.gPowP(q1)
+        val h = context.gPowP(q2)
         val gx = g powP x
         val hx = h powP x
         val gnotx = g powP notx
         val hnotx = h powP notx
 
-        val hashHeaderX = hashHeader ?: ZERO_MOD_Q
+        val hashHeaderX = hashHeader ?: context.ZERO_MOD_Q
 
         val proof = genericChaumPedersenProofOf(g, h, x, seed, hashHeader = hashHeaderX)
         assertTrue(proof.isValid(g, gx, h, hx, hashHeader = hashHeaderX))
@@ -284,16 +300,17 @@ class ChaumPedersenTest {
 
     @Test
     fun testDisjunctiveProofKnownNonceSimple() {
-        val keypair = elGamalKeyPairFromSecret(TWO_MOD_Q)
-        val nonce = ONE_MOD_Q
-        val seed = TWO_MOD_Q
-        val message0 = keypair.encrypt(0, nonce)
-        val message1 = keypair.encrypt(1, nonce)
-        val badMessage0 = keypair.encrypt(0, TWO_MOD_Q)
-        val badMessage1 = keypair.encrypt(1, TWO_MOD_Q)
+        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
+        val nonce = context.ONE_MOD_Q
+        val seed = context.TWO_MOD_Q
+        val message0 = 0.encrypt(keypair, nonce)
+        val message1 = 1.encrypt(keypair, nonce)
+        val badMessage0 = 0.encrypt(keypair, context.TWO_MOD_Q)
+        val badMessage1 = 1.encrypt(keypair, context.TWO_MOD_Q)
 
-        val hashHeader = ONE_MOD_Q
-        val badHashHeader = TWO_MOD_Q
+        val hashHeader = context.ONE_MOD_Q
+        val badHashHeader = context.TWO_MOD_Q
         val goodProof0 =
             message0.disjunctiveChaumPedersenProofKnownNonce(
                 0,
@@ -367,18 +384,16 @@ class ChaumPedersenTest {
 
     @Test
     fun disjunctiveProofs() {
-        qt().withTestingTime(MAX_TEST_TIME_SECONDS, TimeUnit.SECONDS)
-            .forAll(
-                tuples(
-                    integers().between(0, 1),
-                    elementsModQNoZero("nonce"),
-                    elGamalKeypairs("key"),
-                    elementsModQ("seed"),
-                    elementsModQ("hashHeader")
-                )
-            )
-            .checkAssert { (constant, nonce, keypair, seed, hashHeader) ->
-                val ciphertext = keypair.encrypt(constant, nonce)
+        val context = testGroup()
+        runProperty {
+            checkAll(
+                Arb.int(min=0, max=1),
+                elementsModQNoZero(context),
+                elGamalKeypairs(context),
+                elementsModQ(context),
+                elementsModQ(context),
+            ) { constant, nonce, keypair, seed, hashHeader ->
+                val ciphertext = constant.encrypt(keypair, nonce)
                 val proof =
                     ciphertext.disjunctiveChaumPedersenProofKnownNonce(
                         constant,
@@ -395,7 +410,7 @@ class ChaumPedersenTest {
                         proof0 = proof.proof1,
                         proof1 = proof.proof0,
                         c =
-                            hashElements(
+                            context.hashElements(
                                 hashHeader,
                                 ciphertext.pad,
                                 ciphertext.data,
@@ -410,26 +425,25 @@ class ChaumPedersenTest {
                     badProof.copy(c = proof.c).isValid(ciphertext, keypair.publicKey, hashHeader)
                 )
             }
+        }
     }
 
     @Test
     fun fakeGenericProofsDontValidate() {
-        qt().withTestingTime(MAX_TEST_TIME_SECONDS, TimeUnit.SECONDS)
-            .forAll(
-                tuples(
-                    elementsModQNoZero("q1"),
-                    elementsModQNoZero("q2"),
-                    elementsModQ("x"),
-                    elementsModQ("notX"),
-                    elementsModQ("c"),
-                    elementsModQ("seed"),
-                    elementsModQ("hashHeader")
-                )
-            )
-            .checkAssert { (q1, q2, x, maybeNotX, c, seed, hashHeader) ->
-                val notX = if (x == maybeNotX) x + ONE_MOD_Q else maybeNotX
-                val g = gPowP(q1)
-                val h = gPowP(q2)
+        val context = testGroup()
+        runProperty {
+            checkAll(
+                elementsModQNoZero(context),
+                elementsModQNoZero(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context)
+            ) { q1, q2, x, maybeNotX, c, seed, hashHeader ->
+                val notX = if (x == maybeNotX) x + context.ONE_MOD_Q else maybeNotX
+                val g = context.gPowP(q1)
+                val h = context.gPowP(q2)
                 val gx = g powP x
                 val hNotX = h powP notX
 
@@ -443,5 +457,6 @@ class ChaumPedersenTest {
                     "if we do check c, the proof will not validate"
                 )
             }
+        }
     }
 }

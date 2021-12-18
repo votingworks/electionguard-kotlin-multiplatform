@@ -21,7 +21,10 @@ class Nonces(val seed: ElementModQ) {
      * Alternate constructor, where you can specify arbitrary values, which will be hashed together
      * to form the seed for this stream of nonces.
      */
-    constructor(seed: ElementModQ, vararg headers: Any?) : this(seed.context.hashElements(seed, *headers))
+    constructor(
+        seed: ElementModQ,
+        vararg headers: Any?
+    ) : this(seed.context.hashElements(seed, *headers))
 
     override fun equals(other: Any?) = when (other) {
         is Nonces -> seed == other.seed
@@ -37,7 +40,8 @@ class Nonces(val seed: ElementModQ) {
 operator fun Nonces.get(index: Int): ElementModQ = getWithHeaders(index)
 
 /** Get the requested nonce from the sequence, hashing the requested headers in with the result. */
-fun Nonces.getWithHeaders(index: Int, vararg headers: Any?) = seed.context.hashElements(seed, index, *headers)
+fun Nonces.getWithHeaders(index: Int, vararg headers: Any?) =
+    seed.context.hashElements(seed, index, *headers)
 
 /**
  * Get an infinite (lazy) sequences of nonces. Equivalent to indexing with [Nonces.get] starting at
