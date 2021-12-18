@@ -1,6 +1,6 @@
 package electionguard
 
-import com.soywiz.krypto.encoding.*
+import electionguard.Base64.fromBase64
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

@@ -1,7 +1,7 @@
 package electionguard
 
-import com.soywiz.krypto.encoding.*
-
+import electionguard.Base64.fromBase64
+import electionguard.Base64.toBase64
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
 internal val b64ProductionP =
@@ -43,28 +43,28 @@ fun multP(vararg elements: ElementModP) = elements.asIterable().multP()
  * string is malformed.
  */
 fun GroupContext.base64ToElementModP(s: String): ElementModP? =
-    binaryToElementModP(s.fromBase64())
-
-/**
- * Converts a base-64 string to an [ElementModP]. Guarantees the result is in [0, P), by computing
- * the result mod P.
- */
-fun GroupContext.safeBase64ToElementModP(s: String): ElementModP =
-    safeBinaryToElementModP(s.fromBase64())
-
-/**
- * Converts a base-64 string to an [ElementModQ]. Guarantees the result is in [0, Q), by computing
- * the result mod Q.
- */
-fun GroupContext.safeBase64ToElementModQ(s: String): ElementModQ =
-    safeBinaryToElementModQ(s.fromBase64())
+    s.fromBase64()?.let { binaryToElementModP(it) }
 
 /**
  * Converts a base-64 string to an [ElementModQ]. Returns null if the number is out of bounds or the
  * string is malformed.
  */
 fun GroupContext.base64ToElementModQ(s: String): ElementModQ? =
-    binaryToElementModQ(s.fromBase64())
+    s.fromBase64()?.let { binaryToElementModQ(it) }
+
+/**
+ * Converts a base-64 string to an [ElementModP]. Guarantees the result is in [0, P), by computing
+ * the result mod P.
+ */
+fun GroupContext.safeBase64ToElementModP(s: String): ElementModP =
+    s.fromBase64()?.let { safeBinaryToElementModP(it) } ?: ZERO_MOD_P
+
+/**
+ * Converts a base-64 string to an [ElementModQ]. Guarantees the result is in [0, Q), by computing
+ * the result mod Q.
+ */
+fun GroupContext.safeBase64ToElementModQ(s: String): ElementModQ =
+    s.fromBase64()?.let { safeBinaryToElementModQ(it) } ?: ZERO_MOD_Q
 
 /** Converts from any [Element] to a base64 string representation. */
 fun Element.base64(): String = byteArray().toBase64()
@@ -123,14 +123,14 @@ fun GroupContext.randomElementModQ(minimum: Int = 0) =
     safeBinaryToElementModQ(randomBytes(32), minimum)
 
 /**
- * We often want to raise g to small powers, for which we've conveniently pre-computed
- * the answers. This function will back out and use [GroupContext.gPowP] if the input
- * isn't precomputed.
+ * We often want to raise g to small powers, for which we've conveniently pre-computed the answers.
+ * This function will back out and use [GroupContext.gPowP] if the input isn't precomputed.
  */
-fun GroupContext.gPowPSmall(e: Int) = when {
-    e == 0 -> ONE_MOD_P
-    e == 1 -> G_MOD_P
-    e == 2 -> G_SQUARED_MOD_P
-    e < 0 -> throw ArithmeticException("not defined for negative values")
-    else -> gPowP(e.toElementModQ(this))
-}
+fun GroupContext.gPowPSmall(e: Int) =
+    when {
+        e == 0 -> ONE_MOD_P
+        e == 1 -> G_MOD_P
+        e == 2 -> G_SQUARED_MOD_P
+        e < 0 -> throw ArithmeticException("not defined for negative values")
+        else -> gPowP(e.toElementModQ(this))
+    }

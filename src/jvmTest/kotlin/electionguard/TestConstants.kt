@@ -5,16 +5,17 @@ import java.math.BigInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-import com.soywiz.krypto.encoding.*
+import electionguard.Base64.fromSafeBase64
+import electionguard.Base64.toBase64
 
 class TestConstants {
     @Test
     fun saneConstantsBig() {
-        val p = b64ProductionP.fromBase64().toBigInteger()
-        val q = b64ProductionQ.fromBase64().toBigInteger()
-        val qInv = b64ProductionP256MinusQ.fromBase64().toBigInteger()
-        val g = b64ProductionG.fromBase64().toBigInteger()
-        val r = b64ProductionR.fromBase64().toBigInteger()
+        val p = b64ProductionP.fromSafeBase64().toBigInteger()
+        val q = b64ProductionQ.fromSafeBase64().toBigInteger()
+        val qInv = b64ProductionP256MinusQ.fromSafeBase64().toBigInteger()
+        val g = b64ProductionG.fromSafeBase64().toBigInteger()
+        val r = b64ProductionR.fromSafeBase64().toBigInteger()
 
         val big1 = BigInteger.valueOf(1)
 
@@ -29,10 +30,10 @@ class TestConstants {
 
     @Test
     fun saneConstantsSmall() {
-        val p = b64TestP.fromBase64().toBigInteger()
-        val q = b64TestQ.fromBase64().toBigInteger()
-        val g = b64TestG.fromBase64().toBigInteger()
-        val r = b64TestR.fromBase64().toBigInteger()
+        val p = b64TestP.fromSafeBase64().toBigInteger()
+        val q = b64TestQ.fromSafeBase64().toBigInteger()
+        val g = b64TestG.fromSafeBase64().toBigInteger()
+        val r = b64TestR.fromSafeBase64().toBigInteger()
 
         assertEquals(BigInteger.valueOf(intTestP.toLong()), p)
         assertEquals(BigInteger.valueOf(intTestQ.toLong()), q)
@@ -42,10 +43,10 @@ class TestConstants {
 
     @Test
     fun expectedSmallConstants() {
-//        val p = b64TestP.fromBase64()
-//        val q = b64TestQ.fromBase64()
-//        val g = b64TestG.fromBase64()
-//        val r = b64TestR.fromBase64()
+//        val p = b64TestP.fromSafeBase64()
+//        val q = b64TestQ.fromSafeBase64()
+//        val g = b64TestG.fromSafeBase64()
+//        val r = b64TestR.fromSafeBase64()
 
         val pbytes = BigInteger.valueOf(intTestP.toLong()).toByteArray()
         val qbytes = BigInteger.valueOf(intTestQ.toLong()).toByteArray()

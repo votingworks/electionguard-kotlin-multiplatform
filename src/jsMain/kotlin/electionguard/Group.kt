@@ -1,6 +1,6 @@
 package electionguard
 
-import electionguard.Base64.fromBase64
+import electionguard.Base64.fromSafeBase64
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import org.gciatto.kt.math.BigInteger
@@ -19,37 +19,72 @@ import org.gciatto.kt.math.BigInteger
 //
 // But, for now, JS will at least "work".
 
-internal val productionGroupContext =
+private val testGroupContext =
     GroupContext(
-        pBytes = b64ProductionP.fromBase64(),
-        qBytes = b64ProductionQ.fromBase64(),
-        gBytes = b64ProductionG.fromBase64(),
-        rBytes = b64ProductionR.fromBase64(),
-        strong = true,
-        name = "production group, no acceleration"
-    )
-
-internal val testGroupContext =
-    GroupContext(
-        pBytes = b64TestP.fromBase64(),
-        qBytes = b64TestQ.fromBase64(),
-        gBytes = b64TestG.fromBase64(),
-        rBytes = b64TestR.fromBase64(),
+        pBytes = b64TestP.fromSafeBase64(),
+        qBytes = b64TestQ.fromSafeBase64(),
+        gBytes = b64TestG.fromSafeBase64(),
+        rBytes = b64TestR.fromSafeBase64(),
         strong = false,
-        name = "16-bit test group"
+        name = "16-bit test group",
+        powRadixOption = PowRadixOption.NO_ACCELERATION
     )
 
-actual fun productionGroup(acceleration: PowRadixOption): GroupContext {
-    return productionGroupContext // for now
-}
+private val productionGroups: HashMap<PowRadixOption, GroupContext> =
+    hashMapOf(
+        PowRadixOption.NO_ACCELERATION to
+                GroupContext(
+                    pBytes = b64ProductionP.fromSafeBase64(),
+                    qBytes = b64ProductionQ.fromSafeBase64(),
+                    gBytes = b64ProductionG.fromSafeBase64(),
+                    rBytes = b64ProductionR.fromSafeBase64(),
+                    strong = true,
+                    name = "production group, no acceleration",
+                    powRadixOption = PowRadixOption.NO_ACCELERATION
+                ),
+        PowRadixOption.LOW_MEMORY_USE to
+                GroupContext(
+                    pBytes = b64ProductionP.fromSafeBase64(),
+                    qBytes = b64ProductionQ.fromSafeBase64(),
+                    gBytes = b64ProductionG.fromSafeBase64(),
+                    rBytes = b64ProductionR.fromSafeBase64(),
+                    strong = true,
+                    name = "production group, low memory use",
+                    powRadixOption = PowRadixOption.LOW_MEMORY_USE
+                ),
+        PowRadixOption.HIGH_MEMORY_USE to
+                GroupContext(
+                    pBytes = b64ProductionP.fromSafeBase64(),
+                    qBytes = b64ProductionQ.fromSafeBase64(),
+                    gBytes = b64ProductionG.fromSafeBase64(),
+                    rBytes = b64ProductionR.fromSafeBase64(),
+                    strong = true,
+                    name = "production group, high memory use",
+                    powRadixOption = PowRadixOption.HIGH_MEMORY_USE
+                ),
+        PowRadixOption.EXTREME_MEMORY_USE to
+                GroupContext(
+                    pBytes = b64ProductionP.fromSafeBase64(),
+                    qBytes = b64ProductionQ.fromSafeBase64(),
+                    gBytes = b64ProductionG.fromSafeBase64(),
+                    rBytes = b64ProductionR.fromSafeBase64(),
+                    strong = true,
+                    name = "production group, extreme memory use",
+                    powRadixOption = PowRadixOption.EXTREME_MEMORY_USE
+                )
+    )
+
+actual fun productionGroup(acceleration: PowRadixOption) : GroupContext =
+    productionGroups[acceleration] ?: throw Error("can't happen")
 
 actual fun testGroup() = testGroupContext
+
 
 /** Convert an array of bytes, in big-endian format, to a BigInteger */
 internal fun UInt.toBigInteger() = BigInteger.of(this.toLong())
 internal fun ByteArray.toBigInteger() = BigInteger(1, this)
 
-actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, strong: Boolean, val name: String) {
+actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, strong: Boolean, val name: String, val powRadixOption: PowRadixOption) {
     val p: BigInteger
     val q: BigInteger
     val g: BigInteger
@@ -64,6 +99,8 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
     val oneModQ: ElementModQ
     val twoModQ: ElementModQ
     val productionStrength: Boolean = strong
+    val gPowRadix: Lazy<PowRadix>
+    val dlogger: DLog
 
     init {
         p = pBytes.toBigInteger()
@@ -81,6 +118,8 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
         zeroModQ = ElementModQ(0U.toBigInteger(), this)
         oneModQ = ElementModQ(1U.toBigInteger(), this)
         twoModQ = ElementModQ(2U.toBigInteger(), this)
+        gPowRadix = lazy { PowRadix(G_MOD_P, powRadixOption) }
+        dlogger = DLog(this)
     }
 
 
@@ -159,7 +198,9 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
         return if (tmp >= q || tmp < BigInteger.ZERO) null else ElementModQ(tmp, this)
     }
 
-    actual fun gPowP(e: ElementModQ) = gModP.powP(e)
+    actual fun gPowP(e: ElementModQ) = gPowRadix.value.pow(e)
+
+    actual fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
 internal fun Element.getCompat(other: GroupContext): BigInteger {
@@ -212,7 +253,7 @@ actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext
     override fun toString() = element.toString(10)
 }
 
-actual class ElementModP(val element: BigInteger, val groupContext: GroupContext): Element, Comparable<ElementModP> {
+actual open class ElementModP(val element: BigInteger, val groupContext: GroupContext): Element, Comparable<ElementModP> {
     internal fun BigInteger.modWrap(): ElementModP = this.rem(groupContext.p).wrap()
     internal fun BigInteger.wrap(): ElementModP = ElementModP(this, groupContext)
 
@@ -232,7 +273,7 @@ actual class ElementModP(val element: BigInteger, val groupContext: GroupContext
         return inBounds() && residue
     }
 
-    actual infix fun powP(e: ElementModQ) =
+    actual infix open fun powP(e: ElementModQ) =
         this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
 
     actual operator fun times(other: ElementModP) =
@@ -251,6 +292,19 @@ actual class ElementModP(val element: BigInteger, val groupContext: GroupContext
     override fun hashCode() = element.hashCode()
 
     override fun toString() = element.toString(10)
+
+    actual open fun acceleratePow() : ElementModP =
+        AcceleratedElementModP(PowRadix(this, groupContext.powRadixOption), element, groupContext)
+}
+
+class AcceleratedElementModP(
+    val powRadix: PowRadix,
+    element: BigInteger,
+    groupContext: GroupContext
+) : ElementModP(element, groupContext) {
+    override fun acceleratePow(): ElementModP = this
+
+    override infix fun powP(e: ElementModQ) = powRadix.pow(e)
 }
 
 actual fun Iterable<ElementModQ>.addQ(): ElementModQ {

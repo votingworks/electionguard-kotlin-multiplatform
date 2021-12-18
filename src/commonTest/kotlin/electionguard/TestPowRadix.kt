@@ -3,8 +3,8 @@
 package electionguard
 
 import io.kotest.property.checkAll
-import kotlin.test.Test
 import kotlin.test.Ignore
+import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
@@ -100,10 +100,7 @@ class TestPowRadix {
     @Ignore // this runs too slowly
     @Test
     fun testExponentiationExtremeMem() {
-        println(
-            "Testing extreme exponentiation PowRadix tables; requires extra memory, slow one-time" +
-                " cost"
-        )
+        println("Testing extreme PowRadix; requires extra memory, slow one-time cost")
         testExponentiationGeneric(PowRadixOption.EXTREME_MEMORY_USE)
     }
 
@@ -125,7 +122,7 @@ class TestPowRadix {
                 assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
 
                 runProperty {
-                    checkAll(elementsModQ(ctx)) { e ->
+                    checkAll(propTestFastConfig, elementsModQ(ctx)) { e ->
                         assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
                     }
                 }

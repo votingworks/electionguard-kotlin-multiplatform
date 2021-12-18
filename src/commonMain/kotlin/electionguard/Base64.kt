@@ -61,14 +61,22 @@ import kotlin.math.min
  * @since 1.8
  */
 object Base64 {
+    /** Convert a ByteArray to a base64 string. */
+    fun ByteArray.toBase64() = encoder.encode(this).decodeToString()
 
-    fun ByteArray.toBase64(): String {
-        return encoder.encode(this).decodeToString()
-    }
+    /** Convert a String to a ByteArray. Returns null if the input is not a valid base64 string. */
+    fun String.fromBase64(): ByteArray? =
+        try {
+            if (this == "") null else this.fromSafeBase64()
+        } catch (ex: IllegalArgumentException) {
+            null
+        }
 
-    fun String.fromBase64(): ByteArray {
-        return decoder.decode(this.encodeToByteArray())
-    }
+    /**
+     * Convert a String to a ByteArray. Assumes the string is a valid base64. Throws an
+     * `IllegalArgumentException` if it's not.
+     */
+    fun String.fromSafeBase64(): ByteArray = decoder.decode(this.encodeToByteArray())
 
     /**
      * Returns a [Encoder] that encodes using the [Basic](#basic) type base64 encoding scheme.

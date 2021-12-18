@@ -1,35 +1,67 @@
 package electionguard
 
+import electionguard.Base64.fromSafeBase64
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import java.math.BigInteger
-import java.security.SecureRandom
 
-import com.soywiz.krypto.encoding.*
-
-internal val productionGroupContext =
+private val testGroupContext =
     GroupContext(
-        pBytes = b64ProductionP.fromBase64(),
-        qBytes = b64ProductionQ.fromBase64(),
-        gBytes = b64ProductionG.fromBase64(),
-        rBytes = b64ProductionR.fromBase64(),
-        strong = true,
-        name = "production group, no acceleration"
-    )
-
-internal val testGroupContext =
-    GroupContext(
-        pBytes = b64TestP.fromBase64(),
-        qBytes = b64TestQ.fromBase64(),
-        gBytes = b64TestG.fromBase64(),
-        rBytes = b64TestR.fromBase64(),
+        pBytes = b64TestP.fromSafeBase64(),
+        qBytes = b64TestQ.fromSafeBase64(),
+        gBytes = b64TestG.fromSafeBase64(),
+        rBytes = b64TestR.fromSafeBase64(),
         strong = false,
-        name = "16-bit test group"
+        name = "16-bit test group",
+        powRadixOption = PowRadixOption.NO_ACCELERATION
     )
 
-actual fun productionGroup(acceleration: PowRadixOption): GroupContext {
-    return productionGroupContext // for now
-}
+private val productionGroups: HashMap<PowRadixOption, GroupContext> =
+    hashMapOf(
+        PowRadixOption.NO_ACCELERATION to
+                GroupContext(
+                    pBytes = b64ProductionP.fromSafeBase64(),
+                    qBytes = b64ProductionQ.fromSafeBase64(),
+                    gBytes = b64ProductionG.fromSafeBase64(),
+                    rBytes = b64ProductionR.fromSafeBase64(),
+                    strong = true,
+                    name = "production group, no acceleration",
+                    powRadixOption = PowRadixOption.NO_ACCELERATION
+                ),
+        PowRadixOption.LOW_MEMORY_USE to
+                GroupContext(
+                    pBytes = b64ProductionP.fromSafeBase64(),
+                    qBytes = b64ProductionQ.fromSafeBase64(),
+                    gBytes = b64ProductionG.fromSafeBase64(),
+                    rBytes = b64ProductionR.fromSafeBase64(),
+                    strong = true,
+                    name = "production group, low memory use",
+                    powRadixOption = PowRadixOption.LOW_MEMORY_USE
+                ),
+        PowRadixOption.HIGH_MEMORY_USE to
+                GroupContext(
+                    pBytes = b64ProductionP.fromSafeBase64(),
+                    qBytes = b64ProductionQ.fromSafeBase64(),
+                    gBytes = b64ProductionG.fromSafeBase64(),
+                    rBytes = b64ProductionR.fromSafeBase64(),
+                    strong = true,
+                    name = "production group, high memory use",
+                    powRadixOption = PowRadixOption.HIGH_MEMORY_USE
+                ),
+        PowRadixOption.EXTREME_MEMORY_USE to
+                GroupContext(
+                    pBytes = b64ProductionP.fromSafeBase64(),
+                    qBytes = b64ProductionQ.fromSafeBase64(),
+                    gBytes = b64ProductionG.fromSafeBase64(),
+                    rBytes = b64ProductionR.fromSafeBase64(),
+                    strong = true,
+                    name = "production group, extreme memory use",
+                    powRadixOption = PowRadixOption.EXTREME_MEMORY_USE
+                )
+    )
+
+actual fun productionGroup(acceleration: PowRadixOption) : GroupContext =
+    productionGroups[acceleration] ?: throw Error("can't happen")
 
 actual fun testGroup() = testGroupContext
 
@@ -45,7 +77,8 @@ actual class GroupContext(
     gBytes: ByteArray,
     rBytes: ByteArray,
     strong: Boolean,
-    val name: String
+    val name: String,
+    val powRadixOption: PowRadixOption
 ) {
     val p: BigInteger
     val q: BigInteger
@@ -61,6 +94,8 @@ actual class GroupContext(
     val oneModQ: ElementModQ
     val twoModQ: ElementModQ
     val productionStrength: Boolean = strong
+    val gPowRadix: Lazy<PowRadix>
+    val dlogger: DLog
 
     init {
         p = pBytes.toBigInteger()
@@ -71,11 +106,13 @@ actual class GroupContext(
         oneModP = ElementModP(1U.toBigInteger(), this)
         twoModP = ElementModP(2U.toBigInteger(), this)
         gModP = ElementModP(g, this)
-        gSquaredModP = ElementModP((g * g) % p, this)
+        gSquaredModP = ElementModP((g * g).mod(p), this)
         qModP = ElementModP(q, this)
         zeroModQ = ElementModQ(0U.toBigInteger(), this)
         oneModQ = ElementModQ(1U.toBigInteger(), this)
         twoModQ = ElementModQ(2U.toBigInteger(), this)
+        gPowRadix = lazy { PowRadix(G_MOD_P, powRadixOption) }
+        dlogger = DLog(this)
     }
 
     actual fun isProductionStrength() = productionStrength
@@ -122,7 +159,7 @@ actual class GroupContext(
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        val tmp = b.toBigInteger() % p
+        val tmp = b.toBigInteger().mod(p)
 
         val mv = minimum.toBigInteger()
         val tmp2 = if (tmp < mv) tmp + mv else tmp
@@ -136,30 +173,28 @@ actual class GroupContext(
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        val tmp = b.toBigInteger() % q
-
-//        assert(tmp < q) { "modulo didn't work! $tmp > $q "}
+        val tmp = b.toBigInteger().mod(q)
 
         val mv = minimum.toBigInteger()
         val tmp2 = if (tmp < mv) tmp + mv else tmp
         val result = ElementModQ(tmp2, this)
-
-//        assert(result.inBounds()) { "result not in bounds! ${result.element} > $q" }
 
         return result
     }
 
     actual fun binaryToElementModP(b: ByteArray): ElementModP? {
         val tmp = b.toBigInteger()
-        return if (tmp >= p) null else ElementModP(tmp, this)
+        return if (tmp >= p || tmp < BigInteger.ZERO) null else ElementModP(tmp, this)
     }
 
     actual fun binaryToElementModQ(b: ByteArray): ElementModQ? {
         val tmp = b.toBigInteger()
-        return if (tmp >= q) null else ElementModQ(tmp, this)
+        return if (tmp >= q || tmp < BigInteger.ZERO) null else ElementModQ(tmp, this)
     }
 
-    actual fun gPowP(e: ElementModQ) = gModP.powP(e)
+    actual fun gPowP(e: ElementModQ) = gPowRadix.value.pow(e)
+
+    actual fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
 internal fun Element.getCompat(other: GroupContext): BigInteger {
@@ -172,7 +207,7 @@ internal fun Element.getCompat(other: GroupContext): BigInteger {
 }
 
 actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext): Element, Comparable<ElementModQ> {
-    internal fun BigInteger.modWrap(): ElementModQ = this.rem(groupContext.q).wrap()
+    internal fun BigInteger.modWrap(): ElementModQ = this.mod(groupContext.q).wrap()
     internal fun BigInteger.wrap(): ElementModQ = ElementModQ(this, groupContext)
 
     override val context: GroupContext
@@ -212,8 +247,8 @@ actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext
     override fun toString() = element.toString(10)
 }
 
-actual class ElementModP(val element: BigInteger, val groupContext: GroupContext): Element, Comparable<ElementModP> {
-    internal fun BigInteger.modWrap(): ElementModP = this.rem(groupContext.p).wrap()
+actual open class ElementModP(val element: BigInteger, val groupContext: GroupContext): Element, Comparable<ElementModP> {
+    internal fun BigInteger.modWrap(): ElementModP = this.mod(groupContext.p).wrap()
     internal fun BigInteger.wrap(): ElementModP = ElementModP(this, groupContext)
 
     override val context: GroupContext
@@ -232,7 +267,7 @@ actual class ElementModP(val element: BigInteger, val groupContext: GroupContext
         return inBounds() && residue
     }
 
-    actual infix fun powP(e: ElementModQ) =
+    actual infix open fun powP(e: ElementModQ) =
         this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
 
     actual operator fun times(other: ElementModP) =
@@ -251,6 +286,19 @@ actual class ElementModP(val element: BigInteger, val groupContext: GroupContext
     override fun hashCode() = element.hashCode()
 
     override fun toString() = element.toString(10)
+
+    actual open fun acceleratePow() : ElementModP =
+        AcceleratedElementModP(PowRadix(this, groupContext.powRadixOption), element, groupContext)
+}
+
+class AcceleratedElementModP(
+    val powRadix: PowRadix,
+    element: BigInteger,
+    groupContext: GroupContext
+) : ElementModP(element, groupContext) {
+    override fun acceleratePow(): ElementModP = this
+
+    override infix fun powP(e: ElementModQ) = powRadix.pow(e)
 }
 
 
@@ -265,7 +313,7 @@ actual fun Iterable<ElementModQ>.addQ(): ElementModQ {
     val context = input[0].groupContext
 
     val result = input.subList(1, input.count()).fold(input[0].element) { a, b ->
-        (a + b.getCompat(context)).rem(context.q)
+        (a + b.getCompat(context)).mod(context.q)
     }
 
     return ElementModQ(result, context)
@@ -285,7 +333,7 @@ actual fun Iterable<ElementModP>.multP(): ElementModP {
     val context = input[0].groupContext
 
     val result = input.subList(1, input.count()).fold(input[0].element) { a, b ->
-        (a * b.getCompat(context)).rem(context.p)
+        (a * b.getCompat(context)).mod(context.p)
     }
 
     return ElementModP(result, context)

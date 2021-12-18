@@ -2,7 +2,7 @@
 
 package electionguard
 
-import electionguard.Base64.fromBase64
+import electionguard.Base64.fromSafeBase64
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertFalse
@@ -11,11 +11,11 @@ import kotlin.test.assertTrue
 class TestConstants {
     @Test
     fun saneConstantsBig() {
-        val p = b64ProductionP.fromBase64().toHaclBignum4096()
-        val q = b64ProductionQ.fromBase64().toHaclBignum256()
-        val qInv = b64ProductionP256MinusQ.fromBase64().toHaclBignum256()
-        val g = b64ProductionG.fromBase64().toHaclBignum4096()
-        val r = b64ProductionR.fromBase64().toHaclBignum4096()
+        val p = b64ProductionP.fromSafeBase64().toHaclBignum4096()
+        val q = b64ProductionQ.fromSafeBase64().toHaclBignum256()
+        val qInv = b64ProductionP256MinusQ.fromSafeBase64().toHaclBignum256()
+        val g = b64ProductionG.fromSafeBase64().toHaclBignum4096()
+        val r = b64ProductionR.fromSafeBase64().toHaclBignum4096()
 
         val big1_256 = 1U.toHaclBignum256()
         val big1_4096 = 1U.toHaclBignum4096()
@@ -32,10 +32,10 @@ class TestConstants {
 
     @Test
     fun saneConstantsSmall() {
-        val p = b64TestP.fromBase64().toHaclBignum4096()
-        val q = b64TestQ.fromBase64().toHaclBignum256()
-        val g = b64TestG.fromBase64().toHaclBignum4096()
-        val r = b64TestR.fromBase64().toHaclBignum4096()
+        val p = b64TestP.fromSafeBase64().toHaclBignum4096()
+        val q = b64TestQ.fromSafeBase64().toHaclBignum256()
+        val g = b64TestG.fromSafeBase64().toHaclBignum4096()
+        val r = b64TestR.fromSafeBase64().toHaclBignum4096()
 
         val ip = intTestP.toUInt().toHaclBignum4096()
         val iq = intTestQ.toUInt().toHaclBignum256()

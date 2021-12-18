@@ -109,6 +109,12 @@ expect class GroupContext {
 
     /** Computes G^e mod p, where G is our generator */
     fun gPowP(e: ElementModQ): ElementModP
+
+    /**
+     * Computes the discrete log, base g, of p. Only yields an answer for "small" exponents,
+     * otherwise returns null.
+     */
+    fun dLog(p: ElementModP): Int?
 }
 
 expect class ElementModQ : Element, Comparable<ElementModQ> {
@@ -134,7 +140,7 @@ expect class ElementModQ : Element, Comparable<ElementModQ> {
     override operator fun compareTo(other: ElementModQ): Int
 }
 
-expect class ElementModP : Element, Comparable<ElementModP> {
+expect open class ElementModP : Element, Comparable<ElementModP> {
     /**
      * Validates that this element is a quadratic residue (and is reachable from
      * [GroupContext.gPowP]). Returns true if everything is good.
@@ -142,7 +148,7 @@ expect class ElementModP : Element, Comparable<ElementModP> {
     fun isValidResidue(): Boolean
 
     /** Computes b^e mod p */
-    infix fun powP(e: ElementModQ): ElementModP
+    open infix fun powP(e: ElementModQ): ElementModP
 
     /** Modular multiplication */
     operator fun times(other: ElementModP): ElementModP
@@ -155,6 +161,13 @@ expect class ElementModP : Element, Comparable<ElementModP> {
 
     /** Allows elements to be compared (<, >, <=, etc.) using the usual arithmetic operators. */
     override operator fun compareTo(other: ElementModP): Int
+
+    /**
+     * Creates a new instance of this element where the `powP` function will use the acceleration
+     * possible with `PowRadix` to run faster. The `PowRadixOption` for this instance is taken from
+     * the `GroupContext`.
+     */
+    open fun acceleratePow(): ElementModP
 }
 
 /**

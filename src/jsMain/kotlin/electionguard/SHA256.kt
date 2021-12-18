@@ -2,6 +2,25 @@ package electionguard
 
 actual fun ByteArray.sha256(): ByteArray = sha256(this)
 
+// Note: Node.js has a synchronous SHA256 provider. The browser version, in "SubtleCrypto",
+// is asynchronous. Since nothing else here is asynchronous, we don't want to unnecessarily
+// go down that road. So, for now, here's a first stab at the Node code, untested, and instead
+// a pure-Kotlin version that should work just fine.
+
+//import org.khronos.webgl.Uint8Array
+//
+//actual fun ByteArray.sha256(): ByteArray {
+//    if (isNodeJs()) {
+//        val c = js("require")("crypto")
+//        val buffer: Uint8Array = c.createHash("sha256").update(this).digest()
+//        return buffer.unsafeCast<ByteArray>()
+//    } else if (isBrowser()) {
+//
+//    } else {
+//        throw NotImplementedError("we don't have sha256 on this platform")
+//    }
+//}
+
 /* *******************************************************************************************************************
  * SHA-256 hash algorithm implementation.
  *

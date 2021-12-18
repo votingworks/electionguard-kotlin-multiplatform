@@ -51,9 +51,9 @@ kotlin {
         moduleName = "electionguard"
 
         useCommonJs()
-//        browser {
-//            commonWebpackConfig { cssSupport.enabled = true }
-//        }
+        //        browser {
+        //            commonWebpackConfig { cssSupport.enabled = true }
+        //        }
         nodejs {
             testTask {
                 useMocha {
@@ -110,9 +110,6 @@ kotlin {
                     // Coroutines
                     //                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
-
-                    // Portable logging
-                    implementation("io.github.aakira:napier:2.2.0")
                 }
             }
         val commonTest by
@@ -125,11 +122,7 @@ kotlin {
                     implementation("io.kotest:kotest-property:5.0.1")
                 }
             }
-        val jvmMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib-jdk8", "1.6.10"))
-            }
-        }
+        val jvmMain by getting { dependencies { implementation(kotlin("stdlib-jdk8", "1.6.10")) } }
         val jvmTest by getting { dependencies { implementation(kotlin("test-junit5", "1.6.10")) } }
         val jsMain by
             getting {
@@ -147,10 +140,7 @@ kotlin {
                     implementation(kotlin("test-js", "1.6.10"))
                 }
             }
-        val nativeMain by getting {
-            dependencies {
-            }
-        }
+        val nativeMain by getting { dependencies {} }
         val nativeTest by getting { dependencies {} }
     }
 }
