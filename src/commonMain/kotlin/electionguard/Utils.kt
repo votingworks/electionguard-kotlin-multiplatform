@@ -24,3 +24,10 @@ fun GroupContext.assertCompatible(other: GroupContext) {
 
 /** Computes the SHA256 hash of the given string's UTF-8 representation. */
 fun String.sha256(): ByteArray = encodeToByteArray().sha256()
+
+/** Get a "secure" random integer from the native platform */
+fun randomInt(): Int {
+    val bytes = randomBytes(4)
+    return (bytes[0].toInt() shl 24) or (bytes[1].toInt() shl 16) or (bytes[2].toInt() shl 8) or
+        bytes[3].toInt()
+}

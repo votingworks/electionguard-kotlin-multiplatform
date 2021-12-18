@@ -87,7 +87,7 @@ kotlin {
             }
         }
 
-        //        binaries { executable { entryPoint = "main" } }
+        binaries { executable { entryPoint = "main" } }
         //        binaries {
         //            staticLib {
         //                entryPoint = "main"
@@ -122,7 +122,15 @@ kotlin {
                     implementation("io.kotest:kotest-property:5.0.1")
                 }
             }
-        val jvmMain by getting { dependencies { implementation(kotlin("stdlib-jdk8", "1.6.10")) } }
+        val jvmMain by
+            getting {
+                dependencies {
+                    implementation(kotlin("stdlib-jdk8", "1.6.10"))
+
+                    // Progress bars
+                    implementation("me.tongfei:progressbar:0.9.2")
+                }
+            }
         val jvmTest by getting { dependencies { implementation(kotlin("test-junit5", "1.6.10")) } }
         val jsMain by
             getting {

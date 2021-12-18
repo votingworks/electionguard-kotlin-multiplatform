@@ -30,6 +30,13 @@ fun validElementsModP(ctx: GroupContext): Arb<ElementModP> =
     elementsModQ(ctx).map { e -> ctx.gPowP(e) }
 
 /**
+ * Generates a random ElGamal keypair. Modular exponentiation with the public key will be
+ * accelerated using the default PowRadixOption in the GroupContext.
+ */
+fun elGamalKeypairs(ctx: GroupContext): Arb<ElGamalKeypair> =
+    elementsModQ(ctx).map { elGamalKeyPairFromSecret(it) }
+
+/**
  * Property-based testing can run slowly. This will speed things up by turning off shrinking and
  * using fewer iterations.
  */
