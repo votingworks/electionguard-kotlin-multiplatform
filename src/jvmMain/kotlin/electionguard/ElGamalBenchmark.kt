@@ -24,6 +24,9 @@ fun main() {
             val random = Random(System.nanoTime()) // not secure, but we don't care
             val messages = Array(N) { random.nextInt(1000) }
 
+            // force the PowRadix tables to be realized
+            val ignored = keypair.encrypt(messages[0], nonces[0]).decrypt(keypair)
+
             println("Running!")
 
             var ciphertexts: List<ElGamalCiphertext>
