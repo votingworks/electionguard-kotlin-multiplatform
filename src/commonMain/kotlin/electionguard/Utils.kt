@@ -23,18 +23,4 @@ fun GroupContext.assertCompatible(other: GroupContext) {
 }
 
 /** Computes the SHA256 hash of the given string's UTF-8 representation. */
-fun String.sha256(): ByteArray {
-    // portable helper function provided by Kotlin
-    val stringBytes: ByteArray = this.encodeToByteArray()
-    return stringBytes.sha256()
-}
-
-/** Get "secure" random bytes from the native platform. */
-fun randomBytes(length: Int): ByteArray {
-    // The Krypto library has logic inside of it to deal with the JVM, JS (Node and browser,
-    // which are not the same thing), and Native. This saves us a bunch of work.
-
-    val result = ByteArray(length)
-    fillRandomBytes(result)
-    return result
-}
+fun String.sha256(): ByteArray = encodeToByteArray().sha256()
