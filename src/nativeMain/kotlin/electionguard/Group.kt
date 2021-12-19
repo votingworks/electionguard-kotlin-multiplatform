@@ -296,7 +296,8 @@ actual class GroupContext(
     val oneModP: ElementModP
     val twoModP: ElementModP
     val gModP: ElementModP
-    val gSquaredModP: ElementModP
+    val gInvModP by lazy { gPowP(qMinus1ModQ) }
+    val gSquaredModP by lazy { G_MOD_P * G_MOD_P }
     val qModP: ElementModP
     val zeroModQ: ElementModQ
     val oneModQ: ElementModQ
@@ -341,8 +342,6 @@ actual class GroupContext(
                 ?: throw RuntimeException("failed to make montCtxQ")
         }
 
-        // can't compute this until we have montCtx defined
-        gSquaredModP = gModP * gModP
         dlogger = DLog(this)
     }
 
@@ -363,6 +362,9 @@ actual class GroupContext(
 
     actual val G_MOD_P
         get() = gModP
+
+    actual val GINV_MOD_P
+        get() = gInvModP
 
     actual val G_SQUARED_MOD_P
         get() = gSquaredModP

@@ -140,17 +140,21 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
     val context = compatibleContextOrFail(this.data, this.pad, nonce, publicKey, seed, hashHeader)
     return when (plaintext) {
         0 -> {
-            val (alpha, beta) = this
-            val (c1, v1, u0) = Nonces(seed, "disjoint-chaum-pedersen-proof")
+            // Note: this is using Benaloh's revised equations ("Efficient Implementation of
+            // ElectionGuard Ballot Encryption and Proofs", 2021).
 
-            val a0 = context.gPowP(u0)
-            val b0 = publicKey powP u0
-            val negC1 = -c1
-            val a1 = context.gPowP(v1) * (alpha powP negC1)
-            val b1 = multP(publicKey powP v1, context.gPowP(c1), beta powP negC1)
+            val (alpha, beta) = this
+            val (u, v, w) = Nonces(seed, "disjoint-chaum-pedersen-proof")
+
+            val a0 = context.gPowP(u)
+            val b0 = publicKey powP u
+            val a1 = context.gPowP(v)
+            val b1 = context.gPowP(w) * (publicKey powP v)
             val c = context.hashElements(hashHeader, alpha, beta, a0, b0, a1, b1)
-            val c0 = c - c1
-            val v0 = u0 + c0 * nonce
+            val c0 = c - w
+            val c1 = w
+            val v0 = u + c0 * nonce
+            val v1 = v + c1 * nonce
 
             val realZeroProof = GenericChaumPedersenProof(a0, b0, c0, v0)
             val fakeOneProof = GenericChaumPedersenProof(a1, b1, c1, v1)
@@ -158,17 +162,35 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             DisjunctiveChaumPedersenProofKnownNonce(realZeroProof, fakeOneProof, c)
         }
         1 -> {
-            val (alpha, beta) = this
-            val (c0, v0, u1) = Nonces(seed, "disjoint-chaum-pedersen-proof")
+            // Note: this is using Benaloh's revised equations ("Efficient Implementation of
+            // ElectionGuard Ballot Encryption and Proofs", 2021).
+            //
+            //    # Pick three random numbers in Q.
+            //    u, v, w = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
+            //
+            //    # Compute the NIZKP
+            //    a0 = g_pow_p(v)
+            //    b0 = mult_p(g_pow_p(w), k.pow_p(v))
+            //    a1 = g_pow_p(u)
+            //    b1 = k.pow_p(u)
+            //    c = hash_elems(q, alpha, beta, a0, b0, a1, b1)
+            //    c0 = negate_q(w)
+            //    c1 = add_q(c, w)
+            //    v0 = a_plus_bc_q(v, c0, r)
+            //    v1 = a_plus_bc_q(u, c1, r)
 
-            val negC0 = -c0
-            val a0 = context.gPowP(v0) * (alpha powP negC0)
-            val b0 = (publicKey powP v0) * (beta powP negC0)
-            val a1 = context.gPowP(u1)
-            val b1 = publicKey powP u1
+            val (alpha, beta) = this
+            val (u, v, w) = Nonces(seed, "disjoint-chaum-pedersen-proof")
+
+            val a0 = context.gPowP(v)
+            val b0 = context.gPowP(w) * (publicKey powP v)
+            val a1 = context.gPowP(u)
+            val b1 = publicKey powP u
             val c = context.hashElements(hashHeader, alpha, beta, a0, b0, a1, b1)
-            val c1 = c - c0
-            val v1 = u1 + c1 * nonce
+            val c0 = -w
+            val c1 = c + w
+            val v0 = v + c0 * nonce
+            val v1 = u + c1 * nonce
 
             val fakeZeroProof = GenericChaumPedersenProof(a0, b0, c0, v0)
             val realOneProof = GenericChaumPedersenProof(a1, b1, c1, v1)
@@ -210,7 +232,7 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
         g = context.G_MOD_P,
         gx = ciphertext.pad,
         h = publicKey,
-        hx = ciphertext.data / context.gPowP(constant.toElementModQ(context)),
+        hx = ciphertext.data * context.gPowP(-constant.toElementModQ(context)),
         alsoHash = arrayOf(ciphertext.pad, ciphertext.data),
         hashHeader = hashHeader,
         checkC = true
@@ -245,7 +267,7 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
         g = context.G_MOD_P,
         gx = publicKey,
         h = ciphertext.pad,
-        hx = ciphertext.data / context.gPowP(constant.toElementModQ(context)),
+        hx = ciphertext.data * context.gPowP(-constant.toElementModQ(context)),
         alsoHash = arrayOf(ciphertext.pad, ciphertext.data),
         hashHeader = hashHeader,
         checkC = true
@@ -287,7 +309,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
             h = publicKey,
-            hx = ciphertext.data / context.G_MOD_P,
+            hx = ciphertext.data * context.GINV_MOD_P,
             checkC = false,
             hashHeader = hashHeader,
         )

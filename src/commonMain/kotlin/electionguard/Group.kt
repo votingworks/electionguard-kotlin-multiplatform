@@ -52,6 +52,9 @@ expect class GroupContext {
     /** Useful constant: the group generator */
     val G_MOD_P: ElementModP
 
+    /** Useful constant: the inverse of the group generator */
+    val GINV_MOD_P: ElementModP
+
     /** Useful constant: the group generator, squared */
     val G_SQUARED_MOD_P: ElementModP
 

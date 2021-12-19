@@ -88,6 +88,7 @@ actual class GroupContext(
     val oneModP: ElementModP
     val twoModP: ElementModP
     val gModP: ElementModP
+    val gInvModP by lazy { gPowP(qMinus1Q) }
     val gSquaredModP: ElementModP
     val qModP: ElementModP
     val zeroModQ: ElementModQ
@@ -132,6 +133,9 @@ actual class GroupContext(
 
     actual val G_MOD_P
         get() = gModP
+
+    actual val GINV_MOD_P
+        get() = gInvModP
 
     actual val G_SQUARED_MOD_P
         get() = gSquaredModP

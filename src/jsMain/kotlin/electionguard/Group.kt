@@ -93,13 +93,14 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
     val oneModP: ElementModP
     val twoModP: ElementModP
     val gModP: ElementModP
+    val gInvModP by lazy { gPowP(qMinus1ModQ) }
     val gSquaredModP: ElementModP
     val qModP: ElementModP
+    val qMinus1ModQ: ElementModQ
     val zeroModQ: ElementModQ
     val oneModQ: ElementModQ
     val twoModQ: ElementModQ
     val productionStrength: Boolean = strong
-    val gPowRadix: Lazy<PowRadix>
     val dlogger: DLog
 
     init {
@@ -110,18 +111,15 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
         zeroModP = ElementModP(0U.toBigInteger(), this)
         oneModP = ElementModP(1U.toBigInteger(), this)
         twoModP = ElementModP(2U.toBigInteger(), this)
-        gModP = ElementModP(g, this)
-        val tmp = g*g
-        val tmp2 = tmp % p
-        gSquaredModP = ElementModP(tmp2, this)
+        gModP = ElementModP(g, this).acceleratePow()
+        gSquaredModP = gModP * gModP
         qModP = ElementModP(q, this)
         zeroModQ = ElementModQ(0U.toBigInteger(), this)
         oneModQ = ElementModQ(1U.toBigInteger(), this)
         twoModQ = ElementModQ(2U.toBigInteger(), this)
-        gPowRadix = lazy { PowRadix(G_MOD_P, powRadixOption) }
         dlogger = DLog(this)
+        qMinus1ModQ = zeroModQ - oneModQ
     }
-
 
     actual fun toJson(): JsonElement = JsonObject(mapOf()) // fixme
 
@@ -138,6 +136,9 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
 
     actual val G_MOD_P: ElementModP
         get() = gModP
+
+    actual val GINV_MOD_P: ElementModP
+        get() = gInvModP
 
     actual val G_SQUARED_MOD_P: ElementModP
         get() = gSquaredModP
@@ -198,7 +199,7 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
         return if (tmp >= q || tmp < BigInteger.ZERO) null else ElementModQ(tmp, this)
     }
 
-    actual fun gPowP(e: ElementModQ) = gPowRadix.value.pow(e)
+    actual fun gPowP(e: ElementModQ) = gModP powP e
 
     actual fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
