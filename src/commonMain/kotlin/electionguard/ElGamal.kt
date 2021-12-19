@@ -1,7 +1,22 @@
 package electionguard
 
-typealias ElGamalSecretKey = ElementModQ
+//typealias ElGamalSecretKey = ElementModQ
 typealias ElGamalPublicKey = ElementModP
+
+/** A thin wrapper around an ElementModQ that allows us to hang onto a pre-computed `negativeE` */
+class ElGamalSecretKey(val e: ElementModQ) {
+    val negativeE: ElementModQ = -e
+
+    override fun equals(other: Any?) = when {
+        other is ElementModQ -> e == other
+        other is ElGamalSecretKey -> e == other.e
+        else -> false
+    }
+
+    override fun hashCode(): Int = e.hashCode()
+
+    override fun toString(): String = e.toString()
+}
 
 /** A public and private keypair, suitable for doing ElGamal cryptographic operations. */
 data class ElGamalKeypair(val secretKey: ElGamalSecretKey, val publicKey: ElGamalPublicKey)
@@ -21,11 +36,11 @@ data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)
  *
  * @throws GroupException if the secret key is less than two
  */
-fun elGamalKeyPairFromSecret(secret: ElGamalSecretKey) =
+fun elGamalKeyPairFromSecret(secret: ElementModQ) =
     if (secret < secret.context.TWO_MOD_Q)
         throw ArithmeticException("secret key must be in [2, Q)")
     else
-        ElGamalKeypair(secret, secret.context.gPowP(secret).acceleratePow())
+        ElGamalKeypair(ElGamalSecretKey(secret), secret.context.gPowP(secret).acceleratePow())
 
 /** Generates a random ElGamal keypair. */
 fun elGamalKeyPairFromRandom(context: GroupContext) =
@@ -73,9 +88,9 @@ fun Int.encrypt(
 
 /** Decrypts using the secret key. if the decryption fails, `null` is returned. */
 fun ElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): Int? {
-    val context = compatibleContextOrFail(pad, secretKey)
-    val blind = pad powP secretKey
-    val gPowM = data / blind
+    val context = compatibleContextOrFail(pad, secretKey.e)
+    val blind = pad powP secretKey.negativeE
+    val gPowM = data * blind
     return context.dLog(gPowM)
 }
 

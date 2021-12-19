@@ -5,7 +5,7 @@ package electionguard
 
 /** This should really use a logging library, but we don't have one right now... */
 private fun logWarning(f: () -> String) {
-    println(f())
+//    println(f())
 }
 
 /** Proof that the ciphertext is a given constant. */
@@ -100,7 +100,7 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownSecretKey(
         compatibleContextOrFail(
             this.data,
             this.pad,
-            keypair.secretKey,
+            keypair.secretKey.e,
             keypair.publicKey,
             seed,
             hashHeader
@@ -109,7 +109,7 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownSecretKey(
         genericChaumPedersenProofOf(
             g = context.G_MOD_P,
             h = pad,
-            x = keypair.secretKey,
+            x = keypair.secretKey.e,
             seed = seed,
             alsoHash = arrayOf(pad, data),
             hashHeader = hashHeader
