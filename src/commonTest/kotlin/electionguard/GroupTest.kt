@@ -101,14 +101,13 @@ class GroupTest {
     fun additionBasics(context: GroupContext) {
         runProperty {
             checkAll(elementsModQ(context), elementsModQ(context), elementsModQ(context))
-            { a, b, c ->
-                assertEquals(a, a + context.ZERO_MOD_Q) // identity
-                assertEquals(a + b, b + a) // commutative
-                assertEquals(a + (b + c), (a + b) + c) // associative
-            }
+                { a, b, c ->
+                    assertEquals(a, a + context.ZERO_MOD_Q) // identity
+                    assertEquals(a + b, b + a) // commutative
+                    assertEquals(a + (b + c), (a + b) + c) // associative
+                }
         }
     }
-
 
     @Test
     fun additionWrappingQLg() = additionWrappingQ(context)

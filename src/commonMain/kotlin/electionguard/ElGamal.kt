@@ -7,11 +7,12 @@ typealias ElGamalPublicKey = ElementModP
 class ElGamalSecretKey(val e: ElementModQ) {
     val negativeE: ElementModQ = -e
 
-    override fun equals(other: Any?) = when {
-        other is ElementModQ -> e == other
-        other is ElGamalSecretKey -> e == other.e
-        else -> false
-    }
+    override fun equals(other: Any?) =
+        when {
+            other is ElementModQ -> e == other
+            other is ElGamalSecretKey -> e == other.e
+            else -> false
+        }
 
     override fun hashCode(): Int = e.hashCode()
 
