@@ -15,7 +15,7 @@ private val testGroupContext =
     GroupContext(
         pBytes = b64TestP.fromSafeBase64(),
         qBytes = b64TestQ.fromSafeBase64(),
-        p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
+        p256minusQBytes = b64Test256MinusQ.fromSafeBase64(),
         gBytes = b64TestG.fromSafeBase64(),
         rBytes = b64TestR.fromSafeBase64(),
         strong = false,
@@ -275,8 +275,6 @@ internal fun Element.getCompat(other: GroupContext): ULongArray {
     }
 }
 
-// TODO: add PowRadix
-
 actual class GroupContext(
     val pBytes: ByteArray,
     val qBytes: ByteArray,
@@ -508,7 +506,7 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
             groupContext.p256minusQ) { r, a, b, q, p256 ->
 
             val carry = Hacl_Bignum256_add(a, b, r)
-            val inBoundsQ = Hacl_Bignum256_lt_mask(r, q) > 0U
+            val inBoundsQ = Hacl_Bignum256_lt_mask(r, q) != 0UL
             val zeroCarry = (carry == 0UL)
 
             when {
@@ -517,7 +515,11 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
                     // result - Q; which we're guaranteed is in [0,Q) because there isn't
                     // much space between Q and 2^256; this wouldn't work for the general case
                     // of arbitrary primes Q, but works for ElectionGuard because 2Q > 2^256.
-                    Hacl_Bignum256_sub(r, q, r)
+//                    Hacl_Bignum256_sub(r, q, r)
+
+                    // Cleverly, by adding the difference between q and 2^256, we'll
+                    // wrap around and end up where we should have been anyway.
+                    Hacl_Bignum256_add(r, p256, r)
                 }
                 else -> {
                     // (2^256 - Q) + result; because we overflowed; again, this only works because
@@ -541,7 +543,7 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
             groupContext.p256minusQ) { r, a, b, q, p256 ->
 
             val carry = Hacl_Bignum256_sub(a, b, r)
-            val inBoundsQ = Hacl_Bignum256_lt_mask(r, q) > 0U
+            val inBoundsQ = Hacl_Bignum256_lt_mask(r, q) != 0UL
             val zeroCarry = (carry == 0UL)
 
             if (!inBoundsQ || !zeroCarry) {
@@ -739,38 +741,15 @@ actual fun Iterable<ElementModQ>.addQ(): ElementModQ {
     if (input.isEmpty()) {
         throw ArithmeticException("addQ not defined on empty lists")
     }
-
-
-    // We're going to mutate the state of the result; it starts with the
-    // first entry in the list, and then we add each subsequent entry.
-    val result = input[0].deepCopy()
-    val context = input[0].groupContext
-
-    input.subList(1, input.count()).forEach {
-        nativeElems(result.element, it.getCompat(context), context.q, context.p256minusQ) { r, i, q, m ->
-            val carry = Hacl_Bignum256_add(r, i, r)
-            val inBoundsQ = Hacl_Bignum256_lt_mask(r, q) > 0U
-            val zeroCarry = (carry == 0UL)
-
-            when {
-                inBoundsQ && zeroCarry -> { }
-                !inBoundsQ && zeroCarry -> {
-                    // result - Q; which we're guaranteed is in [0,Q) because there isn't
-                    // much space between Q and 2^256; this wouldn't work for the general case
-                    // of arbitrary primes Q, but works for ElectionGuard because 2Q > 2^256.
-                    Hacl_Bignum256_sub(r, q, r)
-                }
-                else -> {
-                    // (2^256 - Q) + result; because we overflowed; again, this only works because
-                    // 2Q > 2^256, so we're just adding in the bit that was lost when we wrapped
-                    // around from the original add
-                    Hacl_Bignum256_add(r, m, r)
-                }
-            }
-        }
+    if (input.count() == 1) {
+        return input[0]
     }
 
-    return result
+    // There's an opportunity here to avoid creating intermediate ElementModQ instances
+    // and mutate a running total instead. For now, we're just focused on correctness
+    // and will circle back if/when this is performance relevant.
+
+    return input.subList(1, input.count()).fold(input[0]) { a, b -> a + b }
 }
 
 actual fun Iterable<ElementModP>.multP(): ElementModP {
@@ -782,20 +761,7 @@ actual fun Iterable<ElementModP>.multP(): ElementModP {
         return input[0]
     }
 
-    // We're going to mutate the state of the result; it starts with the
-    // first entry in the list, and then we add each subsequent entry.
-    val context = input[0].groupContext
-    val result = input[0].deepCopy()
-    val scratch = ULongArray(HaclBignum4096_LongWords * 2) // scratch space
-
-    input.subList(1, input.count()).forEach {
-        nativeElems(result.element, it.getCompat(context), scratch) { r, i, scratch ->
-            Hacl_Bignum4096_mul(r, i, scratch)
-            Hacl_Bignum4096_mod_precomp(context.montCtxP, scratch, r)
-        }
-    }
-
-    return result
+    return input.subList(1, input.count()).fold(input[0]) { a, b -> a * b }
 }
 
 actual fun UInt.toElementModQ(ctx: GroupContext) : ElementModQ = when (this) {

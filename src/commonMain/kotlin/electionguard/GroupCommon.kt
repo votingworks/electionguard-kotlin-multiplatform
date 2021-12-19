@@ -73,6 +73,8 @@ fun Element.base64(): String = byteArray().toBase64()
 fun Int.toElementModQ(ctx: GroupContext) =
     if (this < 0)
         throw NoSuchElementException("no negative numbers allowed")
+    else if (!ctx.isProductionStrength() && this >= intTestQ)
+        throw NoSuchElementException("tried to make an element >= q")
     else
         this.toUInt().toElementModQ(ctx)
 
@@ -80,6 +82,8 @@ fun Int.toElementModQ(ctx: GroupContext) =
 fun Int.toElementModP(ctx: GroupContext) =
     if (this < 0)
         throw NoSuchElementException("no negative numbers allowed")
+    else if (!ctx.isProductionStrength() && this >= intTestP)
+        throw NoSuchElementException("tried to make an element >= p")
     else
         this.toUInt().toElementModP(ctx)
 

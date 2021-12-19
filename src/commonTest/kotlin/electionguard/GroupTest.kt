@@ -1,5 +1,7 @@
 package electionguard
 
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 import io.kotest.property.forAll
 import kotlin.test.Test
@@ -9,9 +11,15 @@ import kotlin.test.assertTrue
 
 class GroupTest {
     val context = productionGroup()
+    val smContext = testGroup()
 
     @Test
-    fun basics() {
+    fun basicsLg() = basics(context)
+
+    @Test
+    fun basicsSm() = basics(smContext)
+
+    fun basics(context: GroupContext) {
         val three = 3.toElementModQ(context)
         val four = 4.toElementModQ(context)
         val seven = 7.toElementModQ(context)
@@ -19,7 +27,12 @@ class GroupTest {
     }
 
     @Test
-    fun comparisonOperations() {
+    fun comparisonOperationsLg() = comparisonOperations(context)
+
+    @Test
+    fun comparisonOperationsSm() = comparisonOperations(smContext)
+
+    fun comparisonOperations(context: GroupContext) {
         val three = 3.toElementModQ(context)
         val four = 4.toElementModQ(context)
 
@@ -30,7 +43,12 @@ class GroupTest {
     }
 
     @Test
-    fun generatorsWork() {
+    fun generatorsWorkLg() = generatorsWork(context)
+
+    @Test
+    fun generatorsWorkSm() = generatorsWork(smContext)
+
+    fun generatorsWork(context: GroupContext) {
         runProperty {
             forAll(elementsModP(context)) { it.inBounds() }
             forAll(elementsModQ(context)) { it.inBounds() }
@@ -38,7 +56,12 @@ class GroupTest {
     }
 
     @Test
-    fun validResiduesForGPowP() {
+    fun validResiduesForGPowPLg() = validResiduesForGPowP(context)
+
+    @Test
+    fun validResiduesForGPowPSm() = validResiduesForGPowP(smContext)
+
+    fun validResiduesForGPowP(context: GroupContext) {
         runProperty {
             forAll(propTestFastConfig, validElementsModP(context)) { it.isValidResidue() }
         }
@@ -70,19 +93,47 @@ class GroupTest {
     }
 
     @Test
-    fun additionBasics() {
+    fun additionBasicsLg() = additionBasics(context)
+
+    @Test
+    fun additionBasicsSm() = additionBasics(smContext)
+
+    fun additionBasics(context: GroupContext) {
         runProperty {
             checkAll(elementsModQ(context), elementsModQ(context), elementsModQ(context))
-                { a, b, c ->
-                    assertEquals(a, a + context.ZERO_MOD_Q) // identity
-                    assertEquals(a + b, b + a) // commutative
-                    assertEquals(a + (b + c), (a + b) + c) // associative
-                }
+            { a, b, c ->
+                assertEquals(a, a + context.ZERO_MOD_Q) // identity
+                assertEquals(a + b, b + a) // commutative
+                assertEquals(a + (b + c), (a + b) + c) // associative
+            }
+        }
+    }
+
+
+    @Test
+    fun additionWrappingQLg() = additionWrappingQ(context)
+
+    @Test
+    fun additionWrappingQSm() = additionWrappingQ(smContext)
+
+    fun additionWrappingQ(context: GroupContext) {
+        runProperty {
+            checkAll(Arb.int(min=0, max=intTestQ - 1)) { i ->
+                val iq = i.toElementModQ(context)
+                val q = context.ZERO_MOD_Q - iq
+                assertTrue(q.inBounds())
+                assertEquals(context.ZERO_MOD_Q, q + iq)
+            }
         }
     }
 
     @Test
-    fun multiplicationBasicsP() {
+    fun multiplicationBasicsPLg() = multiplicationBasicsP(context)
+
+    @Test
+    fun multiplicationBasicsPSm() = multiplicationBasicsP(smContext)
+
+    fun multiplicationBasicsP(context: GroupContext) {
         runProperty {
             checkAll(
                 elementsModPNoZero(context),
@@ -97,7 +148,12 @@ class GroupTest {
     }
 
     @Test
-    fun multiplicationBasicsQ() {
+    fun multiplicationBasicsQLg() = multiplicationBasicsQ(context)
+
+    @Test
+    fun multiplicationBasicsQsm() = multiplicationBasicsQ(smContext)
+
+    fun multiplicationBasicsQ(context: GroupContext) {
         runProperty {
             checkAll(
                 elementsModQNoZero(context),
@@ -112,7 +168,12 @@ class GroupTest {
     }
 
     @Test
-    fun subtractionBasics() {
+    fun subtractionBasicsLg() = subtractionBasics(context)
+
+    @Test
+    fun subtractionBasicsSm() = subtractionBasics(smContext)
+
+    fun subtractionBasics(context: GroupContext) {
         runProperty {
             checkAll(
                 elementsModQNoZero(context),
@@ -127,12 +188,22 @@ class GroupTest {
     }
 
     @Test
-    fun negation() {
+    fun negationLg() = negation(context)
+
+    @Test
+    fun negationSm() = negation(smContext)
+
+    fun negation(context: GroupContext) {
         runProperty { forAll(elementsModQ(context)) { context.ZERO_MOD_Q == (-it) + it } }
     }
 
     @Test
-    fun multiplicativeInversesP() {
+    fun multiplicativeInversesPLg() = multiplicativeInversesP(context)
+
+    @Test
+    fun multiplicativeInversesPSm() = multiplicativeInversesP(smContext)
+
+    fun multiplicativeInversesP(context: GroupContext) {
         runProperty {
             // our inverse code only works for elements in the subgroup, which makes it faster
             forAll(validElementsModP(context)) { it.multInv() * it == context.ONE_MOD_P }
@@ -156,7 +227,12 @@ class GroupTest {
     }
 
     @Test
-    fun exponentiation() {
+    fun exponentiationLg() = exponentiation(context)
+
+    @Test
+    fun exponentiationSm() = exponentiation(smContext)
+
+    fun exponentiation(context: GroupContext) {
         runProperty {
             forAll(propTestFastConfig, elementsModQ(context), elementsModQ(context)) { a, b ->
                 context.gPowP(a) * context.gPowP(b) == context.gPowP(a + b)
@@ -178,7 +254,12 @@ class GroupTest {
     }
 
     @Test
-    fun subgroupInverses() {
+    fun subgroupInversesLg() = subgroupInverses(context)
+
+    @Test
+    fun subgroupInversesSm() = subgroupInverses(smContext)
+
+    fun subgroupInverses(context: GroupContext) {
         runProperty {
             forAll(propTestFastConfig, elementsModQ(context)) {
                 val p1 = context.gPowP(it)
