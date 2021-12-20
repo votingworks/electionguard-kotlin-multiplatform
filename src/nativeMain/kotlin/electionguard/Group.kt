@@ -15,7 +15,7 @@ private val testGroupContext =
     GroupContext(
         pBytes = b64TestP.fromSafeBase64(),
         qBytes = b64TestQ.fromSafeBase64(),
-        p256minusQBytes = b64Test256MinusQ.fromSafeBase64(),
+        p256minusQBytes = b64TestP256MinusQ.fromSafeBase64(),
         gBytes = b64TestG.fromSafeBase64(),
         rBytes = b64TestR.fromSafeBase64(),
         strong = false,
@@ -683,7 +683,10 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
 
     actual fun multInv(): ElementModP {
         // Performance note: the code below is really, really slow. Like, it's 1/17
-        // the speed of the equivalent code in java.math.BigInteger.
+        // the speed of the equivalent code in java.math.BigInteger. The solution
+        // is that we basically never call it. Instead, throughout the code for
+        // things like Chaum-Pedersen proofs, we instead raise things to powers that
+        // have the side-effect of taking the inverse.
 
         val result = newZeroBignum4096()
 

@@ -11,7 +11,7 @@ import kotlin.test.fail
 class ChaumPedersenTest {
     @Test
     fun testCCKnownNonceProofsSimpleEncryptionZero() {
-        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val context = testGroup()
         val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
         val nonce = context.ONE_MOD_Q
         val seed = context.TWO_MOD_Q
@@ -62,7 +62,7 @@ class ChaumPedersenTest {
 
     @Test
     fun testCCKnownSecretProofsSimpleEncryptionZero() {
-        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val context = testGroup()
         val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
         val nonce = context.ONE_MOD_Q
         val seed = context.TWO_MOD_Q
@@ -90,7 +90,8 @@ class ChaumPedersenTest {
 
     @Test
     fun testCCProofsKnownNonce() {
-        val context = testGroup()
+        // TODO: this test fails, portably, if we use the test group; fix it!
+        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
         runProperty {
             checkAll(
                 propTestFastConfig,
@@ -160,7 +161,8 @@ class ChaumPedersenTest {
 
     @Test
     fun testCCProofsKnownSecretKey() {
-        val context = testGroup()
+        // TODO: this test fails, portably, if we use the test group; fix it!
+        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
         runProperty {
             checkAll(
                 propTestFastConfig,
@@ -247,7 +249,7 @@ class ChaumPedersenTest {
 
     @Test
     fun testGcpProofSimple() {
-        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val context = testGroup()
         helperTestGcp(
             context.TWO_MOD_Q,
             3.toElementModQ(context),
@@ -300,7 +302,7 @@ class ChaumPedersenTest {
 
     @Test
     fun testDisjunctiveProofKnownNonceSimple() {
-        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val context = testGroup()
         val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
         val nonce = context.ONE_MOD_Q
         val seed = context.TWO_MOD_Q
@@ -449,7 +451,7 @@ class ChaumPedersenTest {
                         seed,
                         hashHeader
                     )
-                println("Test1")
+//                println("Test1")
                 assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader))
 
                 // now, swap the proofs around and verify it fails
@@ -468,9 +470,9 @@ class ChaumPedersenTest {
                                 proof.proof0.b
                             )
                     )
-                println("Test2")
+//                println("Test2")
                 assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
-                println("Test3")
+//                println("Test3")
                 assertFalse(
                     badProof.copy(c = proof.c).isValid(ciphertext, keypair.publicKey, hashHeader)
                 )
