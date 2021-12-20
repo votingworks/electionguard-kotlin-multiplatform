@@ -108,8 +108,7 @@ kotlin {
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
 
                     // Coroutines
-                    //                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC3")
                 }
             }
         val commonTest by
@@ -117,6 +116,9 @@ kotlin {
                 dependencies {
                     implementation(kotlin("test-common", "1.6.10"))
                     implementation(kotlin("test-annotations-common", "1.6.10"))
+
+                    // runTest() for running suspend functions in tests
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0-RC3")
 
                     // Fancy property-based testing
                     implementation("io.kotest:kotest-property:5.0.1")
@@ -131,7 +133,14 @@ kotlin {
                     implementation("me.tongfei:progressbar:0.9.2")
                 }
             }
-        val jvmTest by getting { dependencies { implementation(kotlin("test-junit5", "1.6.10")) } }
+        val jvmTest by
+            getting {
+                dependencies {
+                    // Unclear if we really need all the extra features of JUnit5, but it would
+                    // at least be handy if we could get its parallel test runner to work.
+                    implementation(kotlin("test-junit5", "1.6.10"))
+                }
+            }
         val jsMain by
             getting {
                 dependencies {
@@ -141,13 +150,7 @@ kotlin {
                     implementation("io.github.gciatto:kt-math:0.4.0")
                 }
             }
-        val jsTest by
-            getting {
-                dependencies {
-                    //                runtimeOnly("org.jetbrains.kotlin:kotlin-test-js:1.6.10")
-                    implementation(kotlin("test-js", "1.6.10"))
-                }
-            }
+        val jsTest by getting { dependencies { implementation(kotlin("test-js", "1.6.10")) } }
         val nativeMain by getting { dependencies {} }
         val nativeTest by getting { dependencies {} }
     }

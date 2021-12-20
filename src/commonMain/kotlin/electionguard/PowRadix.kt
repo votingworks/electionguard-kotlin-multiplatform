@@ -27,8 +27,8 @@ import kotlin.math.ceil
  *
  * For a batch server computation, where every little bit of performance gain is worth it, and
  * assuming we can afford over 500MB of state for the generator and that much again for the public
- * key, then the `EXTREME_MEMORY_USE` version would yield the best possible speed improvement (6x
- * or more). For the JVM, this will easily exhaust the standard heap size, so don't forget to use
+ * key, then the `EXTREME_MEMORY_USE` version would yield the best possible speed improvement (6x or
+ * more). For the JVM, this will easily exhaust the standard heap size, so don't forget to use
  * appropriate flags to request a multi-gigabyte heap.
  */
 enum class PowRadixOption(val numBits: Int) {

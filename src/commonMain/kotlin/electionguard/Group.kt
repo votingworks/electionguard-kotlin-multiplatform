@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonElement
 /**
  * Fetches the production-strength [GroupContext] with the desired amount of acceleration via
  * precomputation, which can result in significant extra memory usage.
+ *
  * @see PowRadixOption for the different memory use vs. performance profiles
  */
 expect fun productionGroup(
