@@ -220,9 +220,11 @@ actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext
     override val context: GroupContext
         get() = groupContext
 
+    override fun isZero() = element == BigInteger.ZERO
+
     override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.q
 
-    override fun inBoundsNoZero() = element > BigInteger.ZERO && element < groupContext.q
+    override fun inBoundsNoZero() = inBounds() && !isZero()
 
     override fun byteArray(): ByteArray = element.toByteArray()
 
@@ -261,9 +263,11 @@ actual open class ElementModP(val element: BigInteger, val groupContext: GroupCo
     override val context: GroupContext
         get() = groupContext
 
-    override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.p
+    override fun isZero() = element == BigInteger.ZERO
 
-    override fun inBoundsNoZero() = element > BigInteger.ZERO && element < groupContext.p
+    override fun inBoundsNoZero() = inBounds() && !isZero()
+
+    override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.p
 
     override fun byteArray(): ByteArray = element.toByteArray()
 

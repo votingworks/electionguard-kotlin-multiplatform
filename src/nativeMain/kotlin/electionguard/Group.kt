@@ -238,6 +238,7 @@ internal fun ByteArray.toHaclBignum4096(doubleMemory: Boolean = false): HaclBign
     }
 }
 
+/** Returns true if the given element is strictly less than the other */
 internal infix fun HaclBignum256.lt256(other: HaclBignum256): Boolean {
     nativeElems(this, other) { a, b ->
         val aLtB = Hacl_Bignum256_lt_mask(a, b) != 0UL
@@ -245,13 +246,15 @@ internal infix fun HaclBignum256.lt256(other: HaclBignum256): Boolean {
     }
 }
 
+/** Returns true if the given element is strictly greater than the other */
 internal infix fun HaclBignum256.gt256(other: HaclBignum256): Boolean {
     nativeElems(this, other) { a, b ->
-        val aLtB = Hacl_Bignum256_lt_mask(b, a) != 0UL
-        return aLtB
+        val bLtA = Hacl_Bignum256_lt_mask(b, a) != 0UL
+        return bLtA
     }
 }
 
+/** Returns true if the given element is strictly less than the other */
 internal infix fun HaclBignum4096.lt4096(other: HaclBignum4096): Boolean {
     nativeElems(this, other) { a, b ->
         val aLtB = Hacl_Bignum4096_lt_mask(a, b) != 0UL
@@ -259,10 +262,11 @@ internal infix fun HaclBignum4096.lt4096(other: HaclBignum4096): Boolean {
     }
 }
 
+/** Returns true if the given element is strictly greater than the other */
 internal infix fun HaclBignum4096.gt4096(other: HaclBignum4096): Boolean {
     nativeElems(this, other) { a, b ->
-        val aLtB = Hacl_Bignum4096_lt_mask(b, a) != 0UL
-        return aLtB
+        val bLtA = Hacl_Bignum4096_lt_mask(b, a) != 0UL
+        return bLtA
     }
 }
 
@@ -465,15 +469,11 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
 
     internal fun HaclBignum256.wrap(): ElementModQ = ElementModQ(this, groupContext)
 
-    override fun inBounds(): Boolean =
-        nativeElems(element, groupContext.q) { e, q -> Hacl_Bignum256_lt_mask(e, q) != 0UL }
+    override fun inBounds(): Boolean = element lt256 groupContext.q
 
-    override fun inBoundsNoZero(): Boolean =
-        nativeElems(element, groupContext.q, groupContext.zeroModQ.element) { e, q, z ->
-            // e < q && 0 < e
-            Hacl_Bignum256_lt_mask(e, q) != 0UL &&
-                    Hacl_Bignum256_lt_mask(z, e) != 0UL
-        }
+    override fun isZero() = element.contentEquals(context.ZERO_MOD_Q.element)
+
+    override fun inBoundsNoZero(): Boolean = inBounds() && !isZero()
 
     override fun byteArray(): ByteArray {
         val results = ByteArray(32)
@@ -486,9 +486,8 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
     }
 
     actual override operator fun compareTo(other: ElementModQ): Int {
-        val thisLtOther = nativeElems(element, other.getCompat(groupContext)) { t, o ->
-            Hacl_Bignum256_lt_mask(t, o) != 0UL
-        }
+        val thisLtOther = element lt256 other.getCompat(context)
+
         return when {
             thisLtOther -> -1
             element.contentEquals(other.element) -> 0
@@ -620,20 +619,15 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
 
     internal fun HaclBignum4096.wrap(): ElementModP = ElementModP(this, groupContext)
 
-    override fun inBounds(): Boolean =
-        nativeElems(element, groupContext.p) { e, p -> Hacl_Bignum4096_lt_mask(e, p) != 0UL }
+    override fun inBounds(): Boolean = element lt4096 groupContext.p
 
-    override fun inBoundsNoZero(): Boolean =
-        nativeElems(element, groupContext.p, groupContext.zeroModP.element) { e, p, z ->
-            // e < p && 0 < e
-            Hacl_Bignum4096_lt_mask(e, p) != 0UL &&
-                    Hacl_Bignum4096_lt_mask(z, e) != 0UL
-        }
+    override fun isZero() = element.contentEquals(context.ZERO_MOD_P.element)
+
+    override fun inBoundsNoZero() = inBounds() && !isZero()
 
     actual override operator fun compareTo(other: ElementModP): Int {
-        val thisLtOther = nativeElems(element, other.getCompat(groupContext)) { t, o ->
-            Hacl_Bignum4096_lt_mask(t, o) != 0UL
-        }
+        val thisLtOther = element lt4096 other.getCompat(context)
+
         return when {
             thisLtOther -> -1
             element.contentEquals(other.element) -> 0

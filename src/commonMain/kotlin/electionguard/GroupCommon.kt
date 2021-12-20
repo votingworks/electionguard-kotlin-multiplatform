@@ -112,6 +112,9 @@ interface Element {
      */
     fun inBoundsNoZero(): Boolean
 
+    /** Checks whether this element is zero. */
+    fun isZero(): Boolean
+
     /** Converts from any [Element] to a compact [ByteArray] representation. */
     fun byteArray(): ByteArray
 }
