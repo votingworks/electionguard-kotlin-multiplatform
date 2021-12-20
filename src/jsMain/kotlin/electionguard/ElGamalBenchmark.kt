@@ -1,13 +1,19 @@
 package electionguard
 
+import kotlin.js.Date
 import kotlin.random.Random
-import kotlin.system.exitProcess
-import kotlin.system.measureTimeMillis
 
 // this is a simple benchmark that just measures how fast ElGamal encryption runs
 
+fun measureTimeMillis(f: () -> Unit): Double {
+    val start = Date.now()
+    f()
+    val end = Date.now()
+    return end - start
+}
+
 fun elGamalPerfTest() {
-    val N = 1000
+    val N = 10
 
     PowRadixOption.values()
         .filter { it != PowRadixOption.EXTREME_MEMORY_USE }
@@ -46,14 +52,19 @@ fun elGamalPerfTest() {
 
             if (decryptions.contains(null)) {
                 println("------- Unexpected decryption failure! -------")
-                exitProcess(1)
+                return
             }
 
             val decryptionsNoNull = decryptions.filterNotNull()
 
             if (decryptionsNoNull != messages.toList()) {
                 println("------- Unexpected decryption not inverse of encryption! -------")
-                exitProcess(1)
+                return
             }
         }
+}
+
+fun main() {
+    println("ElGamal benchmark for node.js (node version = " + js("process").version + ")")
+    elGamalPerfTest()
 }

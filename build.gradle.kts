@@ -34,6 +34,13 @@ repositories {
 //    }
 //}
 
+// Hack to get us a newer version of Gradle than the default of 14.17.0
+rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java) {
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().download = true
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "17.3.0"
+}
+
+
 kotlin {
     jvm {
         compilations.all { kotlinOptions.jvmTarget = "1.8" }
@@ -51,14 +58,18 @@ kotlin {
         moduleName = "electionguard"
 
         useCommonJs()
+        binaries.executable()
+
         //        browser {
         //            commonWebpackConfig { cssSupport.enabled = true }
         //        }
         nodejs {
+            version = "17.3.0"
+
             testTask {
                 useMocha {
-                    // ten seconds rather than the default of two seconds
-                    timeout = "10000"
+                    // thirty seconds rather than the default of two seconds
+                    timeout = "30000"
                 }
             }
         }
