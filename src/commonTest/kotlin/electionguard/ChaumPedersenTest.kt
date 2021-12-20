@@ -90,8 +90,7 @@ class ChaumPedersenTest {
 
     @Test
     fun testCCProofsKnownNonce() {
-        // TODO: this test fails, portably, if we use the test group; fix it!
-        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val context = testGroup()
         runProperty {
             checkAll(
                 propTestFastConfig,
@@ -128,7 +127,7 @@ class ChaumPedersenTest {
                         message,
                         keypair.publicKey,
                         context.ONE_MOD_Q,
-                        expectedConstant = constant + 1
+                        expectedConstant = badConstant
                     )
                 )
                 assertFalse(proof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q))
@@ -153,7 +152,7 @@ class ChaumPedersenTest {
                     )
                 assertFalse(badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
 
-                val badProof3 = proof.copy(constant = Int.MAX_VALUE)
+                val badProof3 = proof.copy(constant = intTestQ - 1)
                 assertFalse(badProof3.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
             }
         }
@@ -161,8 +160,7 @@ class ChaumPedersenTest {
 
     @Test
     fun testCCProofsKnownSecretKey() {
-        // TODO: this test fails, portably, if we use the test group; fix it!
-        val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+        val context = testGroup()
         runProperty {
             checkAll(
                 propTestFastConfig,
@@ -222,7 +220,7 @@ class ChaumPedersenTest {
                     )
                 assertFalse(badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
 
-                val badProof3 = proof.copy(constant = Int.MAX_VALUE)
+                val badProof3 = proof.copy(constant = intTestQ - 1)
                 assertFalse(badProof3.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
             }
         }
@@ -451,7 +449,7 @@ class ChaumPedersenTest {
                         seed,
                         hashHeader
                     )
-//                println("Test1")
+
                 assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader))
 
                 // now, swap the proofs around and verify it fails
@@ -470,9 +468,9 @@ class ChaumPedersenTest {
                                 proof.proof0.b
                             )
                     )
-//                println("Test2")
+
                 assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
-//                println("Test3")
+
                 assertFalse(
                     badProof.copy(c = proof.c).isValid(ciphertext, keypair.publicKey, hashHeader)
                 )
