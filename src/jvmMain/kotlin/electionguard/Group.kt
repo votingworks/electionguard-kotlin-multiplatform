@@ -244,7 +244,7 @@ actual class ElementModQ(val element: BigInteger, val groupContext: GroupContext
         (element * denominator.getCompat(groupContext).modInverse(groupContext.q)).modWrap()
 
     override fun equals(other: Any?) = when (other) {
-        is ElementModQ -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)
+        is ElementModQ -> other.getCompat(this.groupContext) == this.element
         else -> false
     }
 
@@ -293,7 +293,7 @@ actual open class ElementModP(val element: BigInteger, val groupContext: GroupCo
         (element * denominator.getCompat(groupContext).modInverse(groupContext.p)).modWrap()
 
     override fun equals(other: Any?) = when (other) {
-        is ElementModP -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)
+        is ElementModP -> other.getCompat(this.context) == this.element
         else -> false
     }
 
