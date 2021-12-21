@@ -73,6 +73,25 @@ kotlin {
                 }
             }
         }
+
+        // This should allow things to run in Chrome, but we're getitng weird errors.
+        // Error during file loading or preprocessing
+
+        //Error: error:0308010C:digital envelope routines::unsupported
+        //    at new Hash (node:internal/crypto/hash:67:19)
+        //    at Object.createHash (node:crypto:130:10)
+        //    at BulkUpdateDecorator.hashFactory (/Users/dwallach/IdeaProjects/electionguard-kotlin-multiplatform/build/js/node_modules/webpack/lib/util/createHash.js:155:18)
+
+        // This seems like a Kotlin bug, not my bug.
+
+//         browser {
+//             testTask {
+//                 useKarma {
+//                     useChromeHeadless()
+//                 }
+//             }
+//         }
+
     }
 
     val hostOs = System.getProperty("os.name")

@@ -64,7 +64,7 @@ fun elGamalPerfTest() {
         }
 }
 
-fun main() {
-    println("ElGamal benchmark for node.js (node version = " + js("process").version + ")")
-    elGamalPerfTest()
-}
+//fun main() {
+//    println("ElGamal benchmark for node.js (node version = " + js("process").version + ")")
+//    elGamalPerfTest()
+//}
