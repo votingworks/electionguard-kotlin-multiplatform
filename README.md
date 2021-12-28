@@ -37,5 +37,5 @@ Branches of note:
   But we had to do extensive manual cleanup to get it to compile. Once it eventually linked, it inevitably bombs
   out with `undefined` things.
 
-Maybe the right answer is to use the Rice student's port of ElectionGuard to TypeScript
-(link not yet public) for browser-related stuff, while this repo works for virtually everything else.
+Maybe the right answer is to use the [Rice student's port of ElectionGuard to TypeScript](https://github.com/Xin128/ElectionGuard-COMP413/)
+for browser-related stuff, while this repo works for virtually everything else.
