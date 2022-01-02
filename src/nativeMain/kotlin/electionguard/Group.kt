@@ -8,7 +8,6 @@ import hacl.*
 import kotlinx.cinterop.*
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import platform.darwin.UInt64Var
 import platform.posix.free
 
 private val testGroupContext =
@@ -170,7 +169,7 @@ internal fun ByteArray.toHaclBignum256(doubleMemory: Boolean = false): HaclBignu
         }
     }
     bytesToUse.useNative { bytes ->
-        val tmp: CPointer<UInt64Var>? =
+        val tmp: CPointer<ULongVar>? =
             Hacl_Bignum256_new_bn_from_bytes_be(HaclBignum256_Bytes.convert(), bytes)
         if (tmp == null) {
             throw OutOfMemoryError()
@@ -220,7 +219,7 @@ internal fun ByteArray.toHaclBignum4096(doubleMemory: Boolean = false): HaclBign
         }
     }
     bytesToUse.useNative { bytes ->
-        val tmp: CPointer<UInt64Var>? =
+        val tmp: CPointer<ULongVar>? =
             Hacl_Bignum4096_new_bn_from_bytes_be(HaclBignum4096_Bytes.convert(), bytes)
         if (tmp == null) {
             throw OutOfMemoryError()

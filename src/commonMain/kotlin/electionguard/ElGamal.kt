@@ -35,7 +35,7 @@ data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)
 /**
  * Given an ElGamal secret key, derives the corresponding secret/public key pair.
  *
- * @throws GroupException if the secret key is less than two
+ * @throws ArithmeticException if the secret key is less than two
  */
 fun elGamalKeyPairFromSecret(secret: ElementModQ) =
     if (secret < secret.context.TWO_MOD_Q)
@@ -51,7 +51,7 @@ fun elGamalKeyPairFromRandom(context: GroupContext) =
  * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
  * deterministic, or it will be chosen at random.
  *
- * @throws GroupException if the nonce is zero or if the message is negative
+ * @throws ArithmeticException if the nonce is zero or if the message is negative
  */
 fun Int.encrypt(
     publicKey: ElGamalPublicKey,
@@ -115,7 +115,7 @@ operator fun ElGamalCiphertext.plus(o: ElGamalCiphertext): ElGamalCiphertext {
 /**
  * Homomorphically "adds" a sequence of ElGamal ciphertexts through piecewise multiplication.
  *
- * @throws GroupException if the sequence is empty
+ * @throws ArithmeticException if the sequence is empty
  */
 fun Iterable<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext =
     // This operation isn't defined on an empty list -- we'd have to have some way of getting

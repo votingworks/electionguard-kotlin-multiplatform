@@ -124,7 +124,7 @@ interface Element {
  * "secure" random number generator, such that the results are suitable for use as cryptographic
  * keys.
  *
- * @throws GroupException if the minimum is negative
+ * @throws IllegalArgumentException if the minimum is negative
  */
 fun GroupContext.randomElementModQ(minimum: Int = 0) =
     safeBinaryToElementModQ(randomBytes(32), minimum)
@@ -143,8 +143,9 @@ fun GroupContext.gPowPSmall(e: Int) =
     }
 
 /**
- * Verifies that every element has a compatible [GroupContext] and returns the first context. Throws
- * `IllegalArithmeticException` if there's a problem.
+ * Verifies that every element has a compatible [GroupContext] and returns the first context.
+ *
+ * @throws IllegalArgumentException if there's an incompatibility.
  */
 fun compatibleContextOrFail(vararg elements: Element): GroupContext {
     if (elements.isEmpty()) throw IllegalArgumentException("no arguments")
