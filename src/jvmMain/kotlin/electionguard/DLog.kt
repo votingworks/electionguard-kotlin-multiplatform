@@ -3,12 +3,20 @@ package electionguard
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_DLOG: Int = 1_000_000_000
 
 actual class DLog(val context: GroupContext) {
+    // We're taking advantage of Java's ConcurrentHashMap, which allows us to know
+    // we can safely attempt reads on the map without needing our global lock, which
+    // we only need to use for writes.
+
     private val dLogMapping: MutableMap<ElementModP, Int> =
-        emptyConcurrentMutableMap<ElementModP, Int>().apply { this[context.ONE_MOD_P] = 0 }
+        ConcurrentHashMap<ElementModP, Int>()
+            .apply {
+                this[context.ONE_MOD_P] = 0
+            }
 
     private var dLogMaxElement = context.ONE_MOD_P
     private var dLogMaxExponent = 0

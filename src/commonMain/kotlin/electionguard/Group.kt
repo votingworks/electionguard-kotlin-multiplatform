@@ -8,20 +8,23 @@ import kotlinx.serialization.json.JsonElement
 
 /**
  * Fetches the production-strength [GroupContext] with the desired amount of acceleration via
- * precomputation, which can result in significant extra memory usage.
+ * precomputation, which can result in significant extra memory usage. This function is "suspending"
+ * because, at least in the JavaScript universe, some of the internals require a promise to
+ * complete.
  *
  * @see PowRadixOption for the different memory use vs. performance profiles
  */
-expect fun productionGroup(
+expect suspend fun productionGroup(
     acceleration: PowRadixOption = PowRadixOption.LOW_MEMORY_USE
 ): GroupContext
 
 /**
  * Fetches the [GroupContext] suitable for unit tests and such, where we're still doing modular
  * arithmetic, but in 16 bits rather than 4000 bits. This will make tests much faster. **Do not use
- * this in production code!**
+ * this in production code!** This function is "suspending" because, at least in the JavaScript
+ * universe, some of the internals require a promise to complete.
  */
-expect fun testGroup(): GroupContext
+expect suspend fun testGroup(): GroupContext
 
 /**
  * The GroupContext class provides all the necessary context to define the arithmetic that we'll be

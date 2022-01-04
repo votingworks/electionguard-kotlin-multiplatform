@@ -70,21 +70,25 @@ class TestPowRadix {
 
     @Test
     fun bitSlicingBasics() {
-        val ctx = testGroup()
-        val option = PowRadixOption.LOW_MEMORY_USE
-        val g = ctx.G_MOD_P
-        val powRadix = PowRadix(g, option)
+        // Yes, this isn't actually a property test, but this puts the test into
+        // a "suspend" context, allowing testGroup() to work correctly.
+        runTest {
+            val ctx = testGroup()
+            val option = PowRadixOption.LOW_MEMORY_USE
+            val g = ctx.G_MOD_P
+            val powRadix = PowRadix(g, option)
 
-        val bytes = 258.toElementModQ(ctx).byteArray()
-        // validate it's big-endian
-        assertEquals(1, bytes[bytes.size - 2])
-        assertEquals(2, bytes[bytes.size - 1])
+            val bytes = 258.toElementModQ(ctx).byteArray()
+            // validate it's big-endian
+            assertEquals(1, bytes[bytes.size - 2])
+            assertEquals(2, bytes[bytes.size - 1])
 
-        val slices = bytes.kBitsPerSlice(option, powRadix.tableLength)
-        // validate it's little-endian
-        assertEquals(2.toUShort(), slices[0])
-        assertEquals(1.toUShort(), slices[1])
-        assertEquals(0.toUShort(), slices[2])
+            val slices = bytes.kBitsPerSlice(option, powRadix.tableLength)
+            // validate it's little-endian
+            assertEquals(2.toUShort(), slices[0])
+            assertEquals(1.toUShort(), slices[1])
+            assertEquals(0.toUShort(), slices[2])
+        }
     }
 
     @Test
@@ -112,36 +116,34 @@ class TestPowRadix {
 
         // First we'll try it with the test group, then with the production group
 
-        testGroup()
-            .let { ctx ->
-                val powRadix = PowRadix(ctx.G_MOD_P, option)
+        runTest {
+            testGroup()
+                .let { ctx ->
+                    val powRadix = PowRadix(ctx.G_MOD_P, option)
 
-                // sanity check first, then property check
-                assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
-                assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
-                assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
+                    // sanity check first, then property check
+                    assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
+                    assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
+                    assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
 
-                runProperty {
                     checkAll(propTestFastConfig, elementsModQ(ctx)) { e ->
                         assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
                     }
                 }
-            }
 
-        productionGroup(acceleration = PowRadixOption.NO_ACCELERATION)
-            .let { ctx ->
-                val powRadix = PowRadix(ctx.G_MOD_P, option)
+            productionGroup(acceleration = PowRadixOption.NO_ACCELERATION)
+                .let { ctx ->
+                    val powRadix = PowRadix(ctx.G_MOD_P, option)
 
-                assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
-                assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
-                assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
+                    assertEquals(ctx.ONE_MOD_P, powRadix.pow(0.toElementModQ(ctx)))
+                    assertEquals(ctx.G_MOD_P, powRadix.pow(1.toElementModQ(ctx)))
+                    assertEquals(ctx.G_SQUARED_MOD_P, powRadix.pow(2.toElementModQ(ctx)))
 
-                runProperty {
                     // check fewer cases because it's so much slower
                     checkAll(propTestFastConfig, elementsModQ(ctx)) { e ->
                         assertEquals(ctx.G_MOD_P powP e, powRadix.pow(e))
                     }
                 }
-            }
+        }
     }
 }

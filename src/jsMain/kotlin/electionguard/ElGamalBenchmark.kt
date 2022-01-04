@@ -1,5 +1,8 @@
 package electionguard
 
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlin.js.Date
 import kotlin.random.Random
 
@@ -12,7 +15,7 @@ fun measureTimeMillis(f: () -> Unit): Double {
     return end - start
 }
 
-fun elGamalPerfTest() {
+suspend fun elGamalPerfTest() {
     val N = 10
 
     PowRadixOption.values()
@@ -64,7 +67,10 @@ fun elGamalPerfTest() {
         }
 }
 
-//fun main() {
-//    println("ElGamal benchmark for node.js (node version = " + js("process").version + ")")
-//    elGamalPerfTest()
-//}
+@OptIn(DelicateCoroutinesApi::class)
+fun main() {
+    GlobalScope.launch {
+        println("ElGamal benchmark for node.js (node version = " + js("process").version + ")")
+        elGamalPerfTest()
+    }
+}

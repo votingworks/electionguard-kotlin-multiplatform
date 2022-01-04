@@ -9,7 +9,7 @@ import kotlin.test.assertNotEquals
 class HashTest {
     @Test
     fun sameAnswerTwiceInARow() {
-        runProperty {
+        runTest {
             val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
             forAll(elementsModP(context), elementsModQ(context)) { p, q ->
                 val h1 = context.hashElements(p, q)
@@ -21,7 +21,7 @@ class HashTest {
 
     @Test
     fun basicHashProperties() {
-        runProperty {
+        runTest {
             val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
             checkAll(elementsModQ(context), elementsModQ(context)) { q1, q2 ->
                 val h1 = context.hashElements(q1)

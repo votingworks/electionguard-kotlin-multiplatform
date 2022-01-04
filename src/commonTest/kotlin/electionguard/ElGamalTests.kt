@@ -10,22 +10,27 @@ import kotlin.test.assertEquals
 private fun smallInts() = Arb.int(min=0, max=1000)
 
 class ElGamalTests {
-    val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
 
     @Test
     fun noSmallKeys() {
-        assertThrows<Exception>("0 is too small") {
-            elGamalKeyPairFromSecret(0.toElementModQ(context))
+        runTest {
+            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+
+            assertThrows<Exception>("0 is too small") {
+                elGamalKeyPairFromSecret(0.toElementModQ(context))
+            }
+            assertThrows<Exception>("1 is too small") {
+                elGamalKeyPairFromSecret(1.toElementModQ(context))
+            }
+            assertDoesNotThrow { elGamalKeyPairFromSecret(2.toElementModQ(context)) }
         }
-        assertThrows<Exception>("1 is too small") {
-            elGamalKeyPairFromSecret(1.toElementModQ(context))
-        }
-        assertDoesNotThrow { elGamalKeyPairFromSecret(2.toElementModQ(context)) }
     }
 
     @Test
     fun encryptionBasics() {
-        runProperty {
+        runTest {
+            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+
             forAll(
                 propTestFastConfig,
                 elGamalKeypairs(context),
@@ -39,7 +44,9 @@ class ElGamalTests {
 
     @Test
     fun encryptionBasicsAutomaticNonces() {
-        runProperty {
+        runTest {
+            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+
             checkAll(propTestFastConfig, elGamalKeypairs(context), smallInts())
                 { keypair, message ->
                     val encryption = message.encrypt(keypair)
@@ -53,7 +60,9 @@ class ElGamalTests {
 
     @Test
     fun decryptWithNonce() {
-        runProperty {
+        runTest {
+            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+
             checkAll(
                 propTestFastConfig,
                 elGamalKeypairs(context),
@@ -69,7 +78,9 @@ class ElGamalTests {
 
     @Test
     fun homomorphicAccumulation() {
-        runProperty {
+        runTest {
+            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+
             forAll(
                 propTestFastConfig,
                 elGamalKeypairs(context),

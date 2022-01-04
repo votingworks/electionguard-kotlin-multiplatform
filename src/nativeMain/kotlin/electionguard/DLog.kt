@@ -7,8 +7,7 @@ import kotlinx.coroutines.sync.withLock
 private const val MAX_DLOG: Int = 1_000_000_000
 
 actual class DLog(val context: GroupContext) {
-    private val dLogMapping: MutableMap<ElementModP, Int> =
-        emptyConcurrentMutableMap<ElementModP, Int>().apply { this[context.ONE_MOD_P] = 0 }
+    private val dLogMapping = mutableMapOf(context.ONE_MOD_P to 0)
 
     private var dLogMaxElement = context.ONE_MOD_P
     private var dLogMaxExponent = 0
@@ -16,29 +15,32 @@ actual class DLog(val context: GroupContext) {
     private val mutex = Mutex()
 
     actual fun dLog(input: ElementModP): Int? =
-        if (input in dLogMapping) {
-            dLogMapping[input]
-        } else {
-            runBlocking {
-                mutex.withLock {
-                    // We need to check the map again; it might have changed.
-                    if (input in dLogMapping) {
-                        dLogMapping[input]
-                    } else {
-                        var error = false
+        // Unlike the Java version, here we cannot assume that the map allows for
+        // reentrant / concurrent reads, so we're using a global lock around it
+        // before doing anything at all.
 
-                        while (input != dLogMaxElement) {
-                            if (dLogMaxExponent++ > MAX_DLOG) {
-                                error = true
-                                break
-                            } else {
-                                dLogMaxElement *= context.G_MOD_P
-                                dLogMapping[dLogMaxElement] = dLogMaxExponent
-                            }
+        // Hopefully, this code won't require any optimization. If it does, then
+        // we'll have ample opportunity to do it (e.g., by keeping one map instance
+        // per thread in ThreadLocal storage).
+
+        runBlocking {
+            mutex.withLock {
+                if (input in dLogMapping) {
+                    dLogMapping[input]
+                } else {
+                    var error = false
+
+                    while (input != dLogMaxElement) {
+                        if (dLogMaxExponent++ > MAX_DLOG) {
+                            error = true
+                            break
+                        } else {
+                            dLogMaxElement *= context.G_MOD_P
+                            dLogMapping[dLogMaxElement] = dLogMaxExponent
                         }
-
-                        if (error) null else dLogMaxExponent
                     }
+
+                    if (error) null else dLogMaxExponent
                 }
             }
         }

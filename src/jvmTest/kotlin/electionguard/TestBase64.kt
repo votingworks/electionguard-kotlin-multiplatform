@@ -13,7 +13,7 @@ class TestBase64 {
     @Test
     fun comparingBase64ToJava() {
         val encoder = java.util.Base64.getEncoder()
-        runBlocking {
+        runTest {
             checkAll(Arb.positiveLong()) { x ->
                 val bytes = x.toBigInteger().toByteArray()
                 val b64lib = bytes.toBase64()

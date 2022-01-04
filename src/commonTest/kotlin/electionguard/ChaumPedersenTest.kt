@@ -11,87 +11,95 @@ import kotlin.test.fail
 class ChaumPedersenTest {
     @Test
     fun testCCKnownNonceProofsSimpleEncryptionZero() {
-        val context = testGroup()
-        val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
-        val nonce = context.ONE_MOD_Q
-        val seed = context.TWO_MOD_Q
-        val message = 0.encrypt(keypair, nonce)
-        val badMessage1 = 1.encrypt(keypair, nonce)
-        val badMessage2 = 0.encrypt(keypair, context.TWO_MOD_Q)
-        val hashHeader = context.ONE_MOD_Q
-        val badHashHeader = context.TWO_MOD_Q
-        val goodProof =
-            message.constantChaumPedersenProofKnownNonce(
-                0,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
-        val badProof1 =
-            message.constantChaumPedersenProofKnownNonce(
-                1,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
-        val badProof2 =
-            badMessage1.constantChaumPedersenProofKnownNonce(
-                0,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
-        val badProof3 =
-            badMessage2.constantChaumPedersenProofKnownNonce(
-                0,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
+        runTest {
+            val context = testGroup()
+            val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
+            val nonce = context.ONE_MOD_Q
+            val seed = context.TWO_MOD_Q
+            val message = 0.encrypt(keypair, nonce)
+            val badMessage1 = 1.encrypt(keypair, nonce)
+            val badMessage2 = 0.encrypt(keypair, context.TWO_MOD_Q)
+            val hashHeader = context.ONE_MOD_Q
+            val badHashHeader = context.TWO_MOD_Q
+            val goodProof =
+                message.constantChaumPedersenProofKnownNonce(
+                    0,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            val badProof1 =
+                message.constantChaumPedersenProofKnownNonce(
+                    1,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            val badProof2 =
+                badMessage1.constantChaumPedersenProofKnownNonce(
+                    0,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            val badProof3 =
+                badMessage2.constantChaumPedersenProofKnownNonce(
+                    0,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
 
-        assertTrue(goodProof.isValid(message, keypair.publicKey, hashHeader))
-        assertFalse(goodProof.isValid(message, keypair.publicKey, badHashHeader))
-        assertFalse(badProof1.isValid(message, keypair.publicKey, hashHeader))
-        assertFalse(badProof2.isValid(message, keypair.publicKey, hashHeader))
-        assertFalse(badProof3.isValid(message, keypair.publicKey, hashHeader))
+            assertTrue(goodProof.isValid(message, keypair.publicKey, hashHeader))
+            assertFalse(goodProof.isValid(message, keypair.publicKey, badHashHeader))
+            assertFalse(badProof1.isValid(message, keypair.publicKey, hashHeader))
+            assertFalse(badProof2.isValid(message, keypair.publicKey, hashHeader))
+            assertFalse(badProof3.isValid(message, keypair.publicKey, hashHeader))
+        }
     }
 
     @Test
     fun testCCKnownSecretProofsSimpleEncryptionZero() {
-        val context = testGroup()
-        val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
-        val nonce = context.ONE_MOD_Q
-        val seed = context.TWO_MOD_Q
-        val message = 0.encrypt(keypair, nonce)
-        val badMessage1 = 1.encrypt(keypair, nonce)
-        val badMessage2 = 0.encrypt(keypair, context.TWO_MOD_Q)
-        val hashHeader = context.ONE_MOD_Q
-        val badHashHeader = context.TWO_MOD_Q
-        val goodProof =
-            message.constantChaumPedersenProofKnownSecretKey(0, keypair, seed, hashHeader)
-        val badProof1 =
-            message.constantChaumPedersenProofKnownSecretKey(1, keypair, seed, hashHeader)
-        val badProof2 =
-            badMessage1.constantChaumPedersenProofKnownSecretKey(0, keypair, seed, hashHeader)
-        val badProof3 =
-            badMessage2.constantChaumPedersenProofKnownSecretKey(0, keypair, seed, hashHeader)
+        runTest {
+            val context = testGroup()
+            val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
+            val nonce = context.ONE_MOD_Q
+            val seed = context.TWO_MOD_Q
+            val message = 0.encrypt(keypair, nonce)
+            val badMessage1 = 1.encrypt(keypair, nonce)
+            val badMessage2 = 0.encrypt(keypair, context.TWO_MOD_Q)
+            val hashHeader = context.ONE_MOD_Q
+            val badHashHeader = context.TWO_MOD_Q
+            val goodProof =
+                message.constantChaumPedersenProofKnownSecretKey(0, keypair, seed, hashHeader)
+            val badProof1 =
+                message.constantChaumPedersenProofKnownSecretKey(1, keypair, seed, hashHeader)
+            val badProof2 =
+                badMessage1.constantChaumPedersenProofKnownSecretKey(0, keypair, seed, hashHeader)
+            val badProof3 =
+                badMessage2.constantChaumPedersenProofKnownSecretKey(0, keypair, seed, hashHeader)
 
-        assertTrue(goodProof.isValid(message, keypair.publicKey, hashHeader, expectedConstant = 0))
-        assertFalse(goodProof.isValid(message, keypair.publicKey, hashHeader, expectedConstant = 1))
-        assertFalse(goodProof.isValid(message, keypair.publicKey, badHashHeader))
-        assertFalse(badProof1.isValid(message, keypair.publicKey, hashHeader))
-        assertFalse(badProof2.isValid(message, keypair.publicKey, hashHeader))
-        assertFalse(badProof3.isValid(message, keypair.publicKey, hashHeader))
+            assertTrue(
+                goodProof.isValid(message, keypair.publicKey, hashHeader, expectedConstant = 0)
+            )
+            assertFalse(
+                goodProof.isValid(message, keypair.publicKey, hashHeader, expectedConstant = 1)
+            )
+            assertFalse(goodProof.isValid(message, keypair.publicKey, badHashHeader))
+            assertFalse(badProof1.isValid(message, keypair.publicKey, hashHeader))
+            assertFalse(badProof2.isValid(message, keypair.publicKey, hashHeader))
+            assertFalse(badProof3.isValid(message, keypair.publicKey, hashHeader))
+        }
     }
 
     @Test
     fun testCCProofsKnownNonce() {
-        val context = testGroup()
-        runProperty {
+        runTest {
+            val context = testGroup()
             checkAll(
                 propTestFastConfig,
                 elGamalKeypairs(context),
@@ -160,8 +168,8 @@ class ChaumPedersenTest {
 
     @Test
     fun testCCProofsKnownSecretKey() {
-        val context = testGroup()
-        runProperty {
+        runTest {
+            val context = testGroup()
             checkAll(
                 propTestFastConfig,
                 elGamalKeypairs(context),
@@ -228,8 +236,8 @@ class ChaumPedersenTest {
 
     @Test
     fun testGcpProof() {
-        val context = testGroup()
-        runProperty {
+        runTest {
+            val context = testGroup()
             checkAll(
                 elementsModQ(context),
                 elementsModQ(context),
@@ -247,23 +255,25 @@ class ChaumPedersenTest {
 
     @Test
     fun testGcpProofSimple() {
-        val context = testGroup()
-        helperTestGcp(
-            context.TWO_MOD_Q,
-            3.toElementModQ(context),
-            5.toElementModQ(context),
-            context.TWO_MOD_Q,
-            context.ZERO_MOD_Q,
-            null
-        )
-        helperTestGcp(
-            context.ONE_MOD_Q,
-            context.ONE_MOD_Q,
-            context.ZERO_MOD_Q,
-            context.ONE_MOD_Q,
-            context.ZERO_MOD_Q,
-            null
-        )
+        runTest {
+            val context = testGroup()
+            helperTestGcp(
+                context.TWO_MOD_Q,
+                3.toElementModQ(context),
+                5.toElementModQ(context),
+                context.TWO_MOD_Q,
+                context.ZERO_MOD_Q,
+                null
+            )
+            helperTestGcp(
+                context.ONE_MOD_Q,
+                context.ONE_MOD_Q,
+                context.ZERO_MOD_Q,
+                context.ONE_MOD_Q,
+                context.ZERO_MOD_Q,
+                null
+            )
+        }
     }
 
     private fun helperTestGcp(
@@ -300,139 +310,148 @@ class ChaumPedersenTest {
 
     @Test
     fun testDisjunctiveProofKnownNonceSimple() {
-        val context = testGroup()
-        val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
-        val nonce = context.ONE_MOD_Q
-        val seed = context.TWO_MOD_Q
-        val message0 = 0.encrypt(keypair, nonce)
-        val message1 = 1.encrypt(keypair, nonce)
-        val badMessage0 = 0.encrypt(keypair, context.TWO_MOD_Q)
-        val badMessage1 = 1.encrypt(keypair, context.TWO_MOD_Q)
+        runTest {
+            val context = testGroup()
+            val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
+            val nonce = context.ONE_MOD_Q
+            val seed = context.TWO_MOD_Q
+            val message0 = 0.encrypt(keypair, nonce)
+            val message1 = 1.encrypt(keypair, nonce)
+            val badMessage0 = 0.encrypt(keypair, context.TWO_MOD_Q)
+            val badMessage1 = 1.encrypt(keypair, context.TWO_MOD_Q)
 
-        val hashHeader = context.ONE_MOD_Q
-        val badHashHeader = context.TWO_MOD_Q
-        val goodProof0 =
-            message0.disjunctiveChaumPedersenProofKnownNonce(
-                0,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
-        val goodProof1 =
-            message1.disjunctiveChaumPedersenProofKnownNonce(
-                1,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
-        val badProof0 =
-            message0.disjunctiveChaumPedersenProofKnownNonce(
-                1,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
-        val badProof1 =
-            message1.disjunctiveChaumPedersenProofKnownNonce(
-                0,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
-        val badProof2 =
-            badMessage0.disjunctiveChaumPedersenProofKnownNonce(
-                0,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
-        val badProof3 =
-            badMessage1.disjunctiveChaumPedersenProofKnownNonce(
-                0,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
-            )
+            val hashHeader = context.ONE_MOD_Q
+            val badHashHeader = context.TWO_MOD_Q
+            val goodProof0 =
+                message0.disjunctiveChaumPedersenProofKnownNonce(
+                    0,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            val goodProof1 =
+                message1.disjunctiveChaumPedersenProofKnownNonce(
+                    1,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            val badProof0 =
+                message0.disjunctiveChaumPedersenProofKnownNonce(
+                    1,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            val badProof1 =
+                message1.disjunctiveChaumPedersenProofKnownNonce(
+                    0,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            val badProof2 =
+                badMessage0.disjunctiveChaumPedersenProofKnownNonce(
+                    0,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            val badProof3 =
+                badMessage1.disjunctiveChaumPedersenProofKnownNonce(
+                    0,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
 
-        assertTrue(goodProof0.isValid(message0, keypair.publicKey, hashHeader))
-        assertTrue(goodProof1.isValid(message1, keypair.publicKey, hashHeader))
+            assertTrue(goodProof0.isValid(message0, keypair.publicKey, hashHeader))
+            assertTrue(goodProof1.isValid(message1, keypair.publicKey, hashHeader))
 
-        assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader))
-        assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader))
 
-        assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader))
-        assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader))
+            assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader))
+            assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader))
 
-        assertFalse(badProof0.isValid(message0, keypair.publicKey, hashHeader))
-        assertFalse(badProof0.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(badProof0.isValid(message0, keypair.publicKey, hashHeader))
+            assertFalse(badProof0.isValid(message1, keypair.publicKey, hashHeader))
 
-        assertFalse(badProof1.isValid(message0, keypair.publicKey, hashHeader))
-        assertFalse(badProof1.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(badProof1.isValid(message0, keypair.publicKey, hashHeader))
+            assertFalse(badProof1.isValid(message1, keypair.publicKey, hashHeader))
 
-        assertFalse(badProof2.isValid(message0, keypair.publicKey, hashHeader))
-        assertFalse(badProof2.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(badProof2.isValid(message0, keypair.publicKey, hashHeader))
+            assertFalse(badProof2.isValid(message1, keypair.publicKey, hashHeader))
 
-        assertFalse(badProof3.isValid(message1, keypair.publicKey, hashHeader))
-        assertFalse(badProof3.isValid(message0, keypair.publicKey, hashHeader))
+            assertFalse(badProof3.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(badProof3.isValid(message0, keypair.publicKey, hashHeader))
+        }
     }
 
     @Test
     fun disjunctiveProofsSimple() {
         // values here from a case of disjunctiveProofs() that failed
+        runTest {
+            val context = testGroup()
+            val constant = 1
+            val nonce =
+                context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUcY=")
+                    ?: fail()
+            val secretKey =
+                context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASqQ=")
+                    ?: fail()
+            val keypair = elGamalKeyPairFromSecret(secretKey)
+            val seed =
+                context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATqs=")
+                    ?: fail()
+            val hashHeader =
+                context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIHY=")
+                    ?: fail()
 
-        val context = testGroup()
-        val constant = 1
-        val nonce =
-            context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUcY=") ?: fail()
-        val secretKey =
-            context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASqQ=") ?: fail()
-        val keypair = elGamalKeyPairFromSecret(secretKey)
-        val seed =
-            context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATqs=") ?: fail()
-        val hashHeader =
-            context.base64ToElementModQ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIHY=") ?: fail()
+            val ciphertext = constant.encrypt(keypair, nonce)
+            val proof =
+                ciphertext.disjunctiveChaumPedersenProofKnownNonce(
+                    constant,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    hashHeader
+                )
+            assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader))
 
-        val ciphertext = constant.encrypt(keypair, nonce)
-        val proof =
-            ciphertext.disjunctiveChaumPedersenProofKnownNonce(
-                constant,
-                nonce,
-                keypair.publicKey,
-                seed,
-                hashHeader
+            // now, swap the proofs around and verify it fails
+            val badProof =
+                proof.copy(
+                    proof0 = proof.proof1,
+                    proof1 = proof.proof0,
+                    c =
+                        context.hashElements(
+                            hashHeader,
+                            ciphertext.pad,
+                            ciphertext.data,
+                            proof.proof1.a,
+                            proof.proof1.b,
+                            proof.proof0.a,
+                            proof.proof0.b
+                        )
+                )
+            assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
+            assertFalse(
+                badProof.copy(c = proof.c).isValid(ciphertext, keypair.publicKey, hashHeader)
             )
-        assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader))
-
-        // now, swap the proofs around and verify it fails
-        val badProof =
-            proof.copy(
-                proof0 = proof.proof1,
-                proof1 = proof.proof0,
-                c =
-                    context.hashElements(
-                        hashHeader,
-                        ciphertext.pad,
-                        ciphertext.data,
-                        proof.proof1.a,
-                        proof.proof1.b,
-                        proof.proof0.a,
-                        proof.proof0.b
-                    )
-            )
-        assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
-        assertFalse(badProof.copy(c = proof.c).isValid(ciphertext, keypair.publicKey, hashHeader))
+        }
     }
 
     @Test
     fun disjunctiveProofs() {
-        val context = testGroup()
-        runProperty {
+        runTest {
+            val context = testGroup()
             checkAll(
                 Arb.int(min=0, max=1),
                 elementsModQNoZero(context),
@@ -480,8 +499,8 @@ class ChaumPedersenTest {
 
     @Test
     fun fakeGenericProofsDontValidate() {
-        val context = testGroup()
-        runProperty {
+        runTest {
+            val context = testGroup()
             checkAll(
                 elementsModQNoZero(context),
                 elementsModQNoZero(context),

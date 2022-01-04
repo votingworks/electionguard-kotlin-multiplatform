@@ -74,10 +74,10 @@ private val productionGroups: HashMap<PowRadixOption, GroupContext> =
                 )
     )
 
-actual fun productionGroup(acceleration: PowRadixOption) : GroupContext =
+actual suspend fun productionGroup(acceleration: PowRadixOption) : GroupContext =
     productionGroups[acceleration] ?: throw Error("can't happen")
 
-actual fun testGroup() = testGroupContext
+actual suspend fun testGroup() = testGroupContext
 
 
 /** Convert an array of bytes, in big-endian format, to a BigInteger */

@@ -18,26 +18,10 @@ repositories {
     mavenCentral()
 }
 
-// Failed attempt to get more output from failed tests
-// https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
-
-//tasks.withType<AbstractTestTask> {
-//    afterSuite(KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
-//        if (desc.parent == null) { // will match the outermost suite
-//            println("Results: ${result.resultType} (${result.testCount} tests,
-// ${result.successfulTestCount} successes, ${result.failedTestCount} failures,
-// ${result.skippedTestCount} skipped)")
-//        }
-//    }))
-//    testLogging {
-//        events("started", "passed", "skipped", "failed", "standardOut", "standardError")
-//    }
-//}
-
 // Hack to get us a newer version of Gradle than the default of 14.17.0
 rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java) {
     rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().download = true
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "17.3.0"
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.13.1"
 }
 
 
@@ -60,38 +44,38 @@ kotlin {
         useCommonJs()
         binaries.executable()
 
-        //        browser {
-        //            commonWebpackConfig { cssSupport.enabled = true }
-        //        }
         nodejs {
-            version = "17.3.0"
+            version = "16.13.1"
 
             testTask {
                 useMocha {
                     // thirty seconds rather than the default of two seconds
                     timeout = "30000"
                 }
+
+                testLogging {
+                    showExceptions = true
+                    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                    showCauses = true
+                    showStackTraces = true
+                }
             }
         }
 
-        // This should allow things to run in Chrome, but we're getitng weird errors.
-        // Error during file loading or preprocessing
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
 
-        //Error: error:0308010C:digital envelope routines::unsupported
-        //    at new Hash (node:internal/crypto/hash:67:19)
-        //    at Object.createHash (node:crypto:130:10)
-        //    at BulkUpdateDecorator.hashFactory (/Users/dwallach/IdeaProjects/electionguard-kotlin-multiplatform/build/js/node_modules/webpack/lib/util/createHash.js:155:18)
-
-        // This seems like a Kotlin bug, not my bug.
-
-//         browser {
-//             testTask {
-//                 useKarma {
-//                     useChromeHeadless()
-//                 }
-//             }
-//         }
-
+                testLogging {
+                    showExceptions = true
+                    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                    showCauses = true
+                    showStackTraces = true
+                }
+            }
+        }
     }
 
     val hostOs = System.getProperty("os.name")

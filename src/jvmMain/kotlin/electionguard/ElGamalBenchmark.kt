@@ -1,5 +1,6 @@
 package electionguard
 
+import kotlinx.coroutines.runBlocking
 import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 import kotlin.system.exitProcess
@@ -17,7 +18,7 @@ fun main() {
         .forEach { powRadixOption ->
             println("=======================================================")
             println("Initializing benchmark for $powRadixOption")
-            val context = productionGroup(powRadixOption)
+            val context = runBlocking { productionGroup(powRadixOption) }
 
             val keypair = elGamalKeyPairFromRandom(context)
             val nonces = Array(N) { context.randomElementModQ() }

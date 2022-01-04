@@ -31,11 +31,11 @@ import kotlin.math.ceil
  * more). For the JVM, this will easily exhaust the standard heap size, so don't forget to use
  * appropriate flags to request a multi-gigabyte heap.
  */
-enum class PowRadixOption(val numBits: Int) {
-    NO_ACCELERATION(0),
-    LOW_MEMORY_USE(8),
-    HIGH_MEMORY_USE(12),
-    EXTREME_MEMORY_USE(16),
+enum class PowRadixOption(val numBits: Int, val description: String) {
+    NO_ACCELERATION(0, "no acceleration"),
+    LOW_MEMORY_USE(8, "low memory use"),
+    HIGH_MEMORY_USE(12, "high memory use"),
+    EXTREME_MEMORY_USE(16, "extreme memory use"),
 }
 
 /**

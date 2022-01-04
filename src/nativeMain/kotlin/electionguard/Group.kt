@@ -22,58 +22,24 @@ private val testGroupContext =
         powRadixOption = PowRadixOption.NO_ACCELERATION
     )
 
-private val productionGroups: HashMap<PowRadixOption, GroupContext> =
-    hashMapOf(
-        PowRadixOption.NO_ACCELERATION to
-                GroupContext(
-                    pBytes = b64ProductionP.fromSafeBase64(),
-                    qBytes = b64ProductionQ.fromSafeBase64(),
-                    p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
-                    gBytes = b64ProductionG.fromSafeBase64(),
-                    rBytes = b64ProductionR.fromSafeBase64(),
-                    strong = true,
-                    name = "production group, no acceleration",
-                    powRadixOption = PowRadixOption.NO_ACCELERATION
-                ),
-        PowRadixOption.LOW_MEMORY_USE to
-                GroupContext(
-                    pBytes = b64ProductionP.fromSafeBase64(),
-                    qBytes = b64ProductionQ.fromSafeBase64(),
-                    p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
-                    gBytes = b64ProductionG.fromSafeBase64(),
-                    rBytes = b64ProductionR.fromSafeBase64(),
-                    strong = true,
-                    name = "production group, low memory use",
-                    powRadixOption = PowRadixOption.LOW_MEMORY_USE
-                ),
-        PowRadixOption.HIGH_MEMORY_USE to
-                GroupContext(
-                    pBytes = b64ProductionP.fromSafeBase64(),
-                    qBytes = b64ProductionQ.fromSafeBase64(),
-                    p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
-                    gBytes = b64ProductionG.fromSafeBase64(),
-                    rBytes = b64ProductionR.fromSafeBase64(),
-                    strong = true,
-                    name = "production group, high memory use",
-                    powRadixOption = PowRadixOption.HIGH_MEMORY_USE
-                ),
-        PowRadixOption.EXTREME_MEMORY_USE to
-                GroupContext(
-                    pBytes = b64ProductionP.fromSafeBase64(),
-                    qBytes = b64ProductionQ.fromSafeBase64(),
-                    p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
-                    gBytes = b64ProductionG.fromSafeBase64(),
-                    rBytes = b64ProductionR.fromSafeBase64(),
-                    strong = true,
-                    name = "production group, extreme memory use",
-                    powRadixOption = PowRadixOption.EXTREME_MEMORY_USE
-                )
-    )
+private val productionGroups =
+    PowRadixOption.values().associateWith {
+        GroupContext(
+            pBytes = b64ProductionP.fromSafeBase64(),
+            qBytes = b64ProductionQ.fromSafeBase64(),
+            p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
+            gBytes = b64ProductionG.fromSafeBase64(),
+            rBytes = b64ProductionR.fromSafeBase64(),
+            strong = true,
+            name = "production group, ${it.description}",
+            powRadixOption = it
+        )
+    }
 
-actual fun productionGroup(acceleration: PowRadixOption) : GroupContext =
+actual suspend fun productionGroup(acceleration: PowRadixOption) : GroupContext =
     productionGroups[acceleration] ?: throw Error("can't happen")
 
-actual fun testGroup() = testGroupContext
+actual suspend fun testGroup() = testGroupContext
 
 typealias HaclBignum4096 = ULongArray
 typealias HaclBignum256 = ULongArray

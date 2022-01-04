@@ -10,66 +10,71 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GroupTest {
-    val context = productionGroup()
-    val smContext = testGroup()
+    @Test
+    fun basicsLg() = basics { productionGroup() }
 
     @Test
-    fun basicsLg() = basics(context)
+    fun basicsSm() = basics { testGroup() }
 
-    @Test
-    fun basicsSm() = basics(smContext)
-
-    fun basics(context: GroupContext) {
-        val three = 3.toElementModQ(context)
-        val four = 4.toElementModQ(context)
-        val seven = 7.toElementModQ(context)
-        assertEquals(seven, three + four)
+    fun basics(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
+            val three = 3.toElementModQ(context)
+            val four = 4.toElementModQ(context)
+            val seven = 7.toElementModQ(context)
+            assertEquals(seven, three + four)
+        }
     }
 
     @Test
-    fun comparisonOperationsLg() = comparisonOperations(context)
+    fun comparisonOperationsLg() = comparisonOperations { productionGroup() }
 
     @Test
-    fun comparisonOperationsSm() = comparisonOperations(smContext)
+    fun comparisonOperationsSm() = comparisonOperations { testGroup() }
 
-    fun comparisonOperations(context: GroupContext) {
-        val three = 3.toElementModQ(context)
-        val four = 4.toElementModQ(context)
+    fun comparisonOperations(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
+            val three = 3.toElementModQ(context)
+            val four = 4.toElementModQ(context)
 
-        assertTrue(three < four)
-        assertTrue(three <= four)
-        assertTrue(four > three)
-        assertTrue(four >= four)
+            assertTrue(three < four)
+            assertTrue(three <= four)
+            assertTrue(four > three)
+            assertTrue(four >= four)
+        }
     }
 
     @Test
-    fun generatorsWorkLg() = generatorsWork(context)
+    fun generatorsWorkLg() = generatorsWork { productionGroup() }
 
     @Test
-    fun generatorsWorkSm() = generatorsWork(smContext)
+    fun generatorsWorkSm() = generatorsWork { testGroup() }
 
-    fun generatorsWork(context: GroupContext) {
-        runProperty {
+    fun generatorsWork(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             forAll(elementsModP(context)) { it.inBounds() }
             forAll(elementsModQ(context)) { it.inBounds() }
         }
     }
 
     @Test
-    fun validResiduesForGPowPLg() = validResiduesForGPowP(context)
+    fun validResiduesForGPowPLg() = validResiduesForGPowP { productionGroup() }
 
     @Test
-    fun validResiduesForGPowPSm() = validResiduesForGPowP(smContext)
+    fun validResiduesForGPowPSm() = validResiduesForGPowP { testGroup() }
 
-    fun validResiduesForGPowP(context: GroupContext) {
-        runProperty {
-            forAll(propTestFastConfig, validElementsModP(context)) { it.isValidResidue() }
+    fun validResiduesForGPowP(contextF: suspend () -> GroupContext) {
+        runTest {
+            forAll(propTestFastConfig, validElementsModP(contextF())) { it.isValidResidue() }
         }
     }
 
     @Test
     fun binaryArrayRoundTrip() {
-        runProperty {
+        runTest {
+            val context = productionGroup()
             forAll(elementsModP(context)) { it == context.binaryToElementModP(it.byteArray()) }
             forAll(elementsModQ(context)) { it == context.binaryToElementModQ(it.byteArray()) }
         }
@@ -77,7 +82,8 @@ class GroupTest {
 
     @Test
     fun base64RoundTrip() {
-        runProperty {
+        runTest {
+            val context = productionGroup()
             forAll(elementsModP(context)) { it == context.base64ToElementModP(it.base64()) }
             forAll(elementsModQ(context)) { it == context.base64ToElementModQ(it.base64()) }
         }
@@ -85,21 +91,25 @@ class GroupTest {
 
     @Test
     fun baseConversionFails() {
-        listOf("", "@@", "-10", "1234567890".repeat(1000))
-            .forEach {
-                assertNull(context.base64ToElementModP(it))
-                assertNull(context.base64ToElementModQ(it))
-            }
+        runTest {
+            val context = productionGroup()
+            listOf("", "@@", "-10", "1234567890".repeat(1000))
+                .forEach {
+                    assertNull(context.base64ToElementModP(it))
+                    assertNull(context.base64ToElementModQ(it))
+                }
+        }
     }
 
     @Test
-    fun additionBasicsLg() = additionBasics(context)
+    fun additionBasicsLg() = additionBasics { productionGroup() }
 
     @Test
-    fun additionBasicsSm() = additionBasics(smContext)
+    fun additionBasicsSm() = additionBasics { testGroup() }
 
-    fun additionBasics(context: GroupContext) {
-        runProperty {
+    fun additionBasics(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             checkAll(elementsModQ(context), elementsModQ(context), elementsModQ(context))
                 { a, b, c ->
                     assertEquals(a, a + context.ZERO_MOD_Q) // identity
@@ -110,13 +120,14 @@ class GroupTest {
     }
 
     @Test
-    fun additionWrappingQLg() = additionWrappingQ(context)
+    fun additionWrappingQLg() = additionWrappingQ { productionGroup() }
 
     @Test
-    fun additionWrappingQSm() = additionWrappingQ(smContext)
+    fun additionWrappingQSm() = additionWrappingQ { testGroup() }
 
-    fun additionWrappingQ(context: GroupContext) {
-        runProperty {
+    fun additionWrappingQ(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             checkAll(Arb.int(min=0, max=intTestQ - 1)) { i ->
                 val iq = i.toElementModQ(context)
                 val q = context.ZERO_MOD_Q - iq
@@ -127,13 +138,14 @@ class GroupTest {
     }
 
     @Test
-    fun multiplicationBasicsPLg() = multiplicationBasicsP(context)
+    fun multiplicationBasicsPLg() = multiplicationBasicsP { productionGroup() }
 
     @Test
-    fun multiplicationBasicsPSm() = multiplicationBasicsP(smContext)
+    fun multiplicationBasicsPSm() = multiplicationBasicsP { testGroup() }
 
-    fun multiplicationBasicsP(context: GroupContext) {
-        runProperty {
+    fun multiplicationBasicsP(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             checkAll(
                 elementsModPNoZero(context),
                 elementsModPNoZero(context),
@@ -147,13 +159,14 @@ class GroupTest {
     }
 
     @Test
-    fun multiplicationBasicsQLg() = multiplicationBasicsQ(context)
+    fun multiplicationBasicsQLg() = multiplicationBasicsQ { productionGroup() }
 
     @Test
-    fun multiplicationBasicsQsm() = multiplicationBasicsQ(smContext)
+    fun multiplicationBasicsQsm() = multiplicationBasicsQ { testGroup() }
 
-    fun multiplicationBasicsQ(context: GroupContext) {
-        runProperty {
+    fun multiplicationBasicsQ(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             checkAll(
                 elementsModQNoZero(context),
                 elementsModQNoZero(context),
@@ -167,13 +180,14 @@ class GroupTest {
     }
 
     @Test
-    fun subtractionBasicsLg() = subtractionBasics(context)
+    fun subtractionBasicsLg() = subtractionBasics { productionGroup() }
 
     @Test
-    fun subtractionBasicsSm() = subtractionBasics(smContext)
+    fun subtractionBasicsSm() = subtractionBasics { testGroup() }
 
-    fun subtractionBasics(context: GroupContext) {
-        runProperty {
+    fun subtractionBasics(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             checkAll(
                 elementsModQNoZero(context),
                 elementsModQNoZero(context),
@@ -187,23 +201,27 @@ class GroupTest {
     }
 
     @Test
-    fun negationLg() = negation(context)
+    fun negationLg() = negation { productionGroup() }
 
     @Test
-    fun negationSm() = negation(smContext)
+    fun negationSm() = negation { testGroup() }
 
-    fun negation(context: GroupContext) {
-        runProperty { forAll(elementsModQ(context)) { context.ZERO_MOD_Q == (-it) + it } }
+    fun negation(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
+            forAll(elementsModQ(context)) { context.ZERO_MOD_Q == (-it) + it }
+        }
     }
 
     @Test
-    fun multiplicativeInversesPLg() = multiplicativeInversesP(context)
+    fun multiplicativeInversesPLg() = multiplicativeInversesP { productionGroup() }
 
     @Test
-    fun multiplicativeInversesPSm() = multiplicativeInversesP(smContext)
+    fun multiplicativeInversesPSm() = multiplicativeInversesP { testGroup() }
 
-    fun multiplicativeInversesP(context: GroupContext) {
-        runProperty {
+    fun multiplicativeInversesP(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             // our inverse code only works for elements in the subgroup, which makes it faster
             forAll(validElementsModP(context)) { it.multInv() * it == context.ONE_MOD_P }
         }
@@ -211,14 +229,16 @@ class GroupTest {
 
     @Test
     fun multiplicativeInversesQ() {
-        runProperty {
+        runTest {
+            val context = productionGroup()
             forAll(elementsModQNoZero(context)) { it.multInv() * it == context.ONE_MOD_Q }
         }
     }
 
     @Test
     fun divisionP() {
-        runProperty {
+        runTest {
+            val context = productionGroup()
             forAll(validElementsModP(context), validElementsModP(context)) { a, b ->
                 (a * b) / b == a // division undoes multiplication
             }
@@ -226,13 +246,14 @@ class GroupTest {
     }
 
     @Test
-    fun exponentiationLg() = exponentiation(context)
+    fun exponentiationLg() = exponentiation { productionGroup() }
 
     @Test
-    fun exponentiationSm() = exponentiation(smContext)
+    fun exponentiationSm() = exponentiation { testGroup() }
 
-    fun exponentiation(context: GroupContext) {
-        runProperty {
+    fun exponentiation(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             forAll(propTestFastConfig, elementsModQ(context), elementsModQ(context)) { a, b ->
                 context.gPowP(a) * context.gPowP(b) == context.gPowP(a + b)
             }
@@ -241,7 +262,8 @@ class GroupTest {
 
     @Test
     fun acceleratedExponentiation() {
-        runProperty {
+        runTest {
+            val context = productionGroup()
             forAll(propTestFastConfig, elementsModQ(context), elementsModQ(context)) { a, b ->
                 val ga = context.gPowP(a)
                 val normal = ga powP b
@@ -253,13 +275,14 @@ class GroupTest {
     }
 
     @Test
-    fun subgroupInversesLg() = subgroupInverses(context)
+    fun subgroupInversesLg() = subgroupInverses { productionGroup() }
 
     @Test
-    fun subgroupInversesSm() = subgroupInverses(smContext)
+    fun subgroupInversesSm() = subgroupInverses { testGroup() }
 
-    fun subgroupInverses(context: GroupContext) {
-        runProperty {
+    fun subgroupInverses(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             forAll(propTestFastConfig, elementsModQ(context)) {
                 val p1 = context.gPowP(it)
                 val p2 = p1 powP (context.ZERO_MOD_Q - context.ONE_MOD_Q)

@@ -1,5 +1,6 @@
 package electionguard
 
+import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 import kotlin.system.exitProcess
 import kotlin.system.measureTimeMillis
@@ -13,7 +14,7 @@ fun elGamalPerfTest() {
         .filter { it != PowRadixOption.EXTREME_MEMORY_USE }
         .forEach { powRadixOption ->
             println("Initializing benchmark for $powRadixOption")
-            val context = productionGroup(powRadixOption)
+            val context = runBlocking { productionGroup(powRadixOption) }
 
             val keypair = elGamalKeyPairFromRandom(context)
             val nonces = Array(N) { context.randomElementModQ() }
