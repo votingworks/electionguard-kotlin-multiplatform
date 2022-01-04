@@ -19,11 +19,13 @@ repositories {
 }
 
 // Hack to get us a newer version of Gradle than the default of 14.17.0
-rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java) {
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().download = true
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.13.1"
-}
-
+rootProject.plugins
+    .withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java) {
+        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>()
+            .download = true
+        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>()
+            .nodeVersion = "16.13.1"
+    }
 
 kotlin {
     jvm {
@@ -64,9 +66,7 @@ kotlin {
 
         browser {
             testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
+                useKarma { useChromeHeadless() }
 
                 testLogging {
                     showExceptions = true

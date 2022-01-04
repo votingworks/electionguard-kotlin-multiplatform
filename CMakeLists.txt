@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
 
+# On a Mac, we'll normally get LLVM / AppleClang 13. The line below forces gcc-11
+# (via `brew install gcc`), which seems to yield code that's 15% slower than Clang.
+
+# set(CMAKE_C_COMPILER "/usr/local/bin/gcc-11" CACHE STRING "gcc compiler" FORCE)
+
 project(hacl)
+
 
 ADD_LIBRARY(hacl STATIC
     libhacl/src/Hacl_Bignum.c
