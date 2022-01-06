@@ -25,8 +25,8 @@ private fun GroupContext.hashElementsNoFormula(vararg elements: Any?): ElementMo
             .map {
                 when (it) {
                     null -> "null"
-                    is Element -> it.base64()
-                    is CryptoHashable -> it.cryptoHash().base64()
+                    is Element -> it.base16()
+                    is CryptoHashable -> it.cryptoHash().base16()
                     is String -> it
                     is Number, Int -> it.toString()
                     is Iterable<*> ->
@@ -41,7 +41,7 @@ private fun GroupContext.hashElementsNoFormula(vararg elements: Any?): ElementMo
                         if (it.none())
                             "null"
                         else
-                            hashElementsNoFormula(*(it.toList().toTypedArray())).base64()
+                            hashElementsNoFormula(*(it.toList().toTypedArray())).base16()
                     else ->
                         throw IllegalArgumentException("unknown type in hashElements: ${it::class}")
                 }
@@ -49,5 +49,5 @@ private fun GroupContext.hashElementsNoFormula(vararg elements: Any?): ElementMo
             .fold("|") { prev, next -> "$prev$next|" }
 
     val digest = hashMe.encodeToByteArray().sha256()
-    return safeBinaryToElementModQ(digest)
+    return safeBinaryToElementModQ(digest, maxQMinus1 = true)
 }

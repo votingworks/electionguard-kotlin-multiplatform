@@ -144,12 +144,12 @@ actual class GroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArra
         return result
     }
 
-    actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
+    actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int, maxQMinus1: Boolean): ElementModQ {
         if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        val tmp = b.toBigInteger().rem(q)
+        val tmp = b.toBigInteger().rem(if (maxQMinus1) qMinus1ModQ.element else q)
 
         val mv = BigInteger.of(minimum)
         val tmp2 = if (tmp < mv) tmp + mv else tmp

@@ -1,5 +1,7 @@
 package electionguard
 
+import electionguard.Base16.fromHex
+import electionguard.Base16.toHex
 import electionguard.Base64.fromBase64
 import electionguard.Base64.toBase64
 
@@ -39,6 +41,34 @@ fun addQ(vararg elements: ElementModQ) = elements.asIterable().addQ()
 fun multP(vararg elements: ElementModP) = elements.asIterable().multP()
 
 /**
+ * Converts a base-16 (hexidecimal) string to an [ElementModP]. Returns null if the number is out of bounds or the
+ * string is malformed.
+ */
+fun GroupContext.base16ToElementModP(s: String): ElementModP? =
+    s.fromHex()?.let { binaryToElementModP(it) }
+
+/**
+ * Converts a base-16 (hexidecimal) string to an [ElementModQ]. Returns null if the number is out of bounds or the
+ * string is malformed.
+ */
+fun GroupContext.base16ToElementModQ(s: String): ElementModQ? =
+    s.fromHex()?.let { binaryToElementModQ(it) }
+
+/**
+ * Converts a base-16 (hexidecimal) string to an [ElementModP]. Guarantees the result is in [0, P), by computing
+ * the result mod P.
+ */
+fun GroupContext.safeBase16ToElementModP(s: String): ElementModP =
+    s.fromHex()?.let { safeBinaryToElementModP(it) } ?: ZERO_MOD_P
+
+/**
+ * Converts a base-16 (hexidecimal) string to an [ElementModQ]. Guarantees the result is in [0, Q), by computing
+ * the result mod Q.
+ */
+fun GroupContext.safeBase16ToElementModQ(s: String): ElementModQ =
+    s.fromHex()?.let { safeBinaryToElementModQ(it) } ?: ZERO_MOD_Q
+
+/**
  * Converts a base-64 string to an [ElementModP]. Returns null if the number is out of bounds or the
  * string is malformed.
  */
@@ -68,6 +98,9 @@ fun GroupContext.safeBase64ToElementModQ(s: String): ElementModQ =
 
 /** Converts from any [Element] to a base64 string representation. */
 fun Element.base64(): String = byteArray().toBase64()
+
+/** Converts from any [Element] to a base16 (hexadecimal) string representation. */
+fun Element.base16(): String = byteArray().toHex()
 
 /** Converts an integer to an ElementModQ, with optimizations when possible for small integers */
 fun Int.toElementModQ(ctx: GroupContext) =
