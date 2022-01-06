@@ -391,19 +391,20 @@ actual class GroupContext(
             // taking advantage of the fact that q is very close to 2^256, so if we're
             // in the region above or equal to q, we can wrap around with a simple addition.
 
-            val result = b.toHaclBignum256()
             val minimum256 = minimum.toUInt().toHaclBignum256()
             val nonZeroMinimum = minimum > 0
 
-            if (!maxQMinus1) {
-                nativeElems(result, minimum256, q, p256minusQ) { r, m, qq, p256 ->
-                    if (Hacl_Bignum256_lt_mask(r, qq) == 0UL) {
-                        // r >= q, so need to wrap around
-                        // r = r + p256
-                        //   = r + (2^256 - q)
-                        //   = r - q
-                        Hacl_Bignum256_add(r, p256, r)
-                    }
+            if (!productionStrength) {
+                // We can't just use the optimization below, which assumes that q
+                // is very close to 2^256, so we're instead going to do the whole
+                // mod thing. At least for now, we're not doing it mod q-1, but
+                // then this only really breaks the hash function for testing,
+                // while retaining correctness in production.
+
+                val tmp = b.toHaclBignum256(doubleMemory = true)
+                val result = newZeroBignum256()
+                nativeElems(tmp, minimum256, result) { t, m, r ->
+                    Hacl_Bignum256_mod_precomp(montCtxQ, t, r)
 
                     // Same hack as above.
 
@@ -411,26 +412,52 @@ actual class GroupContext(
                         Hacl_Bignum256_add(r, m, r)
                     }
                 }
+
+                return ElementModQ(result, this)
             } else {
-                nativeElems(result, minimum256, qMinus1ModQ.element, p256minusQ, oneModQ.element) { r, m, qM1, p256, one ->
-                    if (Hacl_Bignum256_lt_mask(r, qM1) == 0UL) {
-                        // r >= q - 1, so need to wrap around
-                        // r = r + p256 + 1
-                        //   = r + (2^256 - q)
-                        //   = r - q + 1
-                        Hacl_Bignum256_add(r, p256, r)
-                        Hacl_Bignum256_add(r, one, r)
+                val result = b.toHaclBignum256()
+                if (!maxQMinus1) {
+                    nativeElems(result, minimum256, q, p256minusQ) { r, m, qq, p256 ->
+                        if (Hacl_Bignum256_lt_mask(r, qq) == 0UL) {
+                            // r >= q, so need to wrap around
+                            // r = r + p256
+                            //   = r + (2^256 - q)
+                            //   = r - q
+                            Hacl_Bignum256_add(r, p256, r)
+                        }
+
+                        // Same hack as above.
+
+                        if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
+                            Hacl_Bignum256_add(r, m, r)
+                        }
                     }
+                } else {
+                    nativeElems(
+                        result,
+                        minimum256,
+                        qMinus1ModQ.element,
+                        p256minusQ,
+                        oneModQ.element
+                    ) { r, m, qM1, p256, one ->
+                        if (Hacl_Bignum256_lt_mask(r, qM1) == 0UL) {
+                            // r >= q - 1, so need to wrap around
+                            // r = r + p256 + 1
+                            //   = r + (2^256 - q)
+                            //   = r - q + 1
+                            Hacl_Bignum256_add(r, p256, r)
+                            Hacl_Bignum256_add(r, one, r)
+                        }
 
-                    // Same hack as above.
+                        // Same hack as above.
 
-                    if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
-                        Hacl_Bignum256_add(r, m, r)
+                        if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
+                            Hacl_Bignum256_add(r, m, r)
+                        }
                     }
                 }
+                return ElementModQ(result, this)
             }
-
-            return ElementModQ(result, this)
         }
     }
 
