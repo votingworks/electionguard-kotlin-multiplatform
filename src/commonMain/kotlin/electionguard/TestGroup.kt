@@ -181,13 +181,13 @@ class TestGroupContext(
 
     override fun Iterable<ElementModQ>.addQ(): ElementModQ =
         TestElementModQ(
-            fold(0U) { a, b -> a + b.getCompat(this@TestGroupContext) % q },
+            fold(0U) { a, b -> (a + b.getCompat(this@TestGroupContext)) % q },
             this@TestGroupContext
         )
 
     override fun Iterable<ElementModP>.multP(): ElementModP =
         TestElementModP(
-            fold(1U) { a, b -> a * b.getCompat(this@TestGroupContext) % p },
+            fold(1U) { a, b -> (a * b.getCompat(this@TestGroupContext)) % p },
             this@TestGroupContext
         )
 

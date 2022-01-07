@@ -290,4 +290,38 @@ class GroupTest {
             }
         }
     }
+
+    @Test
+    fun iterableAdditionLg() = iterableAddition { productionGroup() }
+
+    @Test
+    fun iterableAdditionSm() = iterableAddition { testGroup() }
+
+    fun iterableAddition(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
+            checkAll(propTestFastConfig, elementsModQ(context), elementsModQ(context), elementsModQ(context)) { a, b, c ->
+                val expected = a + b + c
+                assertEquals(expected, context.addQ(a, b, c))
+                assertEquals(expected, with(context) { listOf(a, b, c).addQ() } )
+            }
+        }
+    }
+
+    @Test
+    fun iterableMultiplicationLg() = iterableMultiplication { productionGroup() }
+
+    @Test
+    fun iterableMultiplicationSm() = iterableMultiplication { testGroup() }
+
+    fun iterableMultiplication(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
+            checkAll(propTestFastConfig, validElementsModP(context), validElementsModP(context), validElementsModP(context)) { a, b, c ->
+                val expected = a * b * c
+                assertEquals(expected, context.multP(a, b, c))
+                assertEquals(expected, with(context) { listOf(a, b, c).multP() } )
+            }
+        }
+    }
 }
