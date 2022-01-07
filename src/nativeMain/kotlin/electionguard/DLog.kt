@@ -20,8 +20,10 @@ class DLog(val context: GroupContext) {
         // before doing anything at all.
 
         // Hopefully, this code won't require any optimization. If it does, then
-        // we'll have ample opportunity to do it (e.g., by keeping one map instance
-        // per thread in ThreadLocal storage).
+        // we'll have ample opportunity to do it. Example: we could use a functional
+        // hash array mapped trie (HAMT), for which multiple pure Kotlin implementations
+        // already exist, which are inherently safe for lock-free concurrent reads,
+        // although we'd still need a lock to enforce a single-writer policy.
 
         runBlocking {
             mutex.withLock {
