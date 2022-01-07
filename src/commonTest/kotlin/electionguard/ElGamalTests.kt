@@ -27,10 +27,18 @@ class ElGamalTests {
     }
 
     @Test
-    fun encryptionBasics() {
-        runTest {
-            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+    fun encryptionBasicsLg() {
+        encryptionBasics { productionGroup(PowRadixOption.LOW_MEMORY_USE) }
+    }
 
+    @Test
+    fun encryptionBasicsSm() {
+        encryptionBasics { testGroup() }
+    }
+
+    fun encryptionBasics(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
             forAll(
                 propTestFastConfig,
                 elGamalKeypairs(context),
