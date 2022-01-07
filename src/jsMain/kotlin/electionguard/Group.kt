@@ -141,7 +141,9 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        val tmp = b.toBigInteger().rem(if (maxQMinus1) qMinus1ModQ.getCompat(this) else q)
+        val modulus = if (maxQMinus1) qMinus1ModQ.getCompat(this) else q
+
+        val tmp = b.toBigInteger().rem(modulus)
 
         val mv = BigInteger.of(minimum)
         val tmp2 = if (tmp < mv) tmp + mv else tmp
@@ -300,7 +302,8 @@ open class ProductionElementModP(val element: BigInteger, val groupContext: Prod
     override operator fun times(other: ElementModP) =
         (this.element * other.getCompat(groupContext)).modWrap()
 
-    override fun multInv() = element.modInverse(groupContext.p).wrap()
+//    override fun multInv() = element.modInverse(groupContext.p).wrap()
+    override fun multInv() = this powP groupContext.qMinus1ModQ
 
     override infix operator fun div(denominator: ElementModP) =
         (element * denominator.getCompat(groupContext).modInverse(groupContext.p)).modWrap()

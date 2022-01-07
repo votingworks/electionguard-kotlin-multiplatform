@@ -223,7 +223,9 @@ class GroupTest {
         runTest {
             val context = contextF()
             // our inverse code only works for elements in the subgroup, which makes it faster
-            forAll(validElementsModP(context)) { it.multInv() * it == context.ONE_MOD_P }
+            forAll(propTestFastConfig, validElementsModP(context)) {
+                it.multInv() * it == context.ONE_MOD_P
+            }
         }
     }
 

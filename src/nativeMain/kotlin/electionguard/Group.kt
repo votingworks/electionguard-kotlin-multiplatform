@@ -696,18 +696,18 @@ open class ProductionElementModP(val element: HaclBignum4096, val groupContext: 
         // things like Chaum-Pedersen proofs, we instead raise things to powers that
         // have the side-effect of taking the inverse.
 
-        val result = newZeroBignum4096()
-
-        nativeElems(result, element) { r, e ->
-            Hacl_Bignum4096_mod_inv_prime_vartime_precomp(groupContext.montCtxP, e, r)
-        }
-
-        return result.wrap()
+//        val result = newZeroBignum4096()
+//
+//        nativeElems(result, element) { r, e ->
+//            Hacl_Bignum4096_mod_inv_prime_vartime_precomp(groupContext.montCtxP, e, r)
+//        }
+//
+//        return result.wrap()
 
         // Alternative design: taking advantage of the smaller size of the subgroup
         // reachable from the generator.
 
-//        return this powP groupContext.qMinus1ModQ
+        return this powP groupContext.qMinus1ModQ
     }
 
     override infix operator fun div(denominator: ElementModP) = this * denominator.multInv()

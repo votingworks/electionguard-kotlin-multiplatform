@@ -55,14 +55,13 @@ class ElGamalTests {
         runTest {
             val context = tinyGroup()
 
-            checkAll(elGamalKeypairs(context), smallInts())
-                { keypair, message ->
-                    val encryption = message.encrypt(keypair)
-                    val decryption1 = encryption.decrypt(keypair)
-                    val decryption2 = encryption.decrypt(keypair.secretKey)
-                    assertEquals(message, decryption1)
-                    assertEquals(message, decryption2)
-                }
+            checkAll(elGamalKeypairs(context), smallInts()) { keypair, message ->
+                val encryption = message.encrypt(keypair)
+                val decryption1 = encryption.decrypt(keypair)
+                val decryption2 = encryption.decrypt(keypair.secretKey)
+                assertEquals(message, decryption1)
+                assertEquals(message, decryption2)
+            }
         }
     }
 
@@ -71,15 +70,12 @@ class ElGamalTests {
         runTest {
             val context = tinyGroup()
 
-            checkAll(
-                elGamalKeypairs(context),
-                elementsModQNoZero(context),
-                smallInts()
-            ) { keypair, nonce, message ->
-                val encryption = message.encrypt(keypair, nonce)
-                val decryption = encryption.decryptWithNonce(keypair.publicKey, nonce)
-                assertEquals(message, decryption)
-            }
+            checkAll(elGamalKeypairs(context), elementsModQNoZero(context), smallInts())
+                { keypair, nonce, message ->
+                    val encryption = message.encrypt(keypair, nonce)
+                    val decryption = encryption.decryptWithNonce(keypair.publicKey, nonce)
+                    assertEquals(message, decryption)
+                }
         }
     }
 
