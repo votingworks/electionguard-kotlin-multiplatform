@@ -68,6 +68,8 @@ class TestGroupContext(
         TODO("Not yet implemented")
     }
 
+    override fun toString(): String = name
+
     override val ZERO_MOD_P: ElementModP
         get() = zeroModP
     override val ONE_MOD_P: ElementModP
