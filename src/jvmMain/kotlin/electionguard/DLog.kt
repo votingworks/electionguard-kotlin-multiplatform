@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_DLOG: Int = 1_000_000_000
 
-actual class DLog(val context: GroupContext) {
+class DLog(val context: GroupContext) {
     // We're taking advantage of Java's ConcurrentHashMap, which allows us to know
     // we can safely attempt reads on the map without needing our global lock, which
     // we only need to use for writes.
@@ -23,7 +23,7 @@ actual class DLog(val context: GroupContext) {
 
     private val mutex = Mutex()
 
-    actual fun dLog(input: ElementModP): Int? =
+    fun dLog(input: ElementModP): Int? =
         if (input in dLogMapping) {
             dLogMapping[input]
         } else {

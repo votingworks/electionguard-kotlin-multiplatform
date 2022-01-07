@@ -4,6 +4,7 @@ import electionguard.Base16.fromHex
 import electionguard.Base16.toHex
 import electionguard.Base64.fromBase64
 import electionguard.Base64.toBase64
+import kotlinx.serialization.json.JsonElement
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
 internal val b64ProductionP =
@@ -23,47 +24,266 @@ internal val b64TestR = "Ag=="
 internal val b64TestG = "Aw=="
 
 // useful for checking the decoders from base64
-internal val intTestP = 65267
-internal val intTestQ = 32633
-internal val intTestR = 2
-internal val intTestG = 3
+internal const val intTestP = 65267
+internal const val intTestQ = 32633
+internal const val intTestR = 2
+internal const val intTestG = 3
+
+interface Element {
+    /**
+     * Every Element knows the [GroupContext] that was used to create it. This simplifies code that
+     * computes with elements, allowing arithmetic expressions to be written in many cases without
+     * needing to pass in the context.
+     */
+    val context: GroupContext
+        get
+
+    /**
+     * Normal computations should ensure that every [Element] is in the modular bounds defined by
+     * the group, but deserialization of hostile inputs or buggy code might not preserve this
+     * property, so it's valuable to have a way to check. This method allows anything in [0, N)
+     * where N is the group modulus.
+     */
+    fun inBounds(): Boolean
+
+    /**
+     * Normal computations should ensure that every [Element] is in the modular bounds defined by
+     * the group, but deserialization of hostile inputs or buggy code might not preserve this
+     * property, so it's valuable to have a way to check. This method allows anything in [1, N)
+     * where N is the group modulus.
+     */
+    fun inBoundsNoZero(): Boolean
+
+    /** Checks whether this element is zero. */
+    fun isZero(): Boolean
+
+    /** Converts from any [Element] to a compact [ByteArray] representation. */
+    fun byteArray(): ByteArray
+}
+
+/**
+ * The GroupContext interface provides all the necessary context to define the arithmetic that we'll
+ * be doing, such as the moduli P and Q, the generator G, and so forth. This also allows us to
+ * encapsulate acceleration data structures that we'll use to support various operations.
+ */
+interface GroupContext {
+    /**
+     * Returns whether we're using "production primes" (bigger, slower, secure) versus "test primes"
+     * (smaller, faster, but insecure).
+     */
+    fun isProductionStrength(): Boolean
+
+    /**
+     * Returns a JSON object which expresses the otherwise opaque state used in the GroupContext.
+     * This could be useful, in conjunction with [isCompatible], to ensure that saved ballots from
+     * one ElectionGuard instance are compatible with another ElectionGuard instance.
+     */
+    fun toJson(): JsonElement
+
+    /** Useful constant: zero mod p */
+    val ZERO_MOD_P: ElementModP
+
+    /** Useful constant: one mod p */
+    val ONE_MOD_P: ElementModP
+
+    /** Useful constant: two mod p */
+    val TWO_MOD_P: ElementModP
+
+    /** Useful constant: the group generator */
+    val G_MOD_P: ElementModP
+
+    /** Useful constant: the inverse of the group generator */
+    val GINV_MOD_P: ElementModP
+
+    /** Useful constant: the group generator, squared */
+    val G_SQUARED_MOD_P: ElementModP
+
+    /** Useful constant: the modulus of the ElementModQ group */
+    val Q_MOD_P: ElementModP
+
+    /** Useful constant: zero mod q */
+    val ZERO_MOD_Q: ElementModQ
+
+    /** Useful constant: one mod q */
+    val ONE_MOD_Q: ElementModQ
+
+    /** Useful constant: two mod q */
+    val TWO_MOD_Q: ElementModQ
+
+    /**
+     * Useful constant: the maximum number of bytes to represent any element mod p when serialized
+     * as a `ByteArray`.
+     */
+    val MAX_BYTES_P: Int
+
+    /**
+     * Useful constant: the maximum number of bytes to represent any element mod q when serialized
+     * as a `ByteArray`.
+     */
+    val MAX_BYTES_Q: Int
+
+    /**
+     * Identifies whether the two GroupContexts are "compatible", so elements made in one context
+     * would work in the other. Groups with the same primes should be compatible.
+     */
+    fun isCompatible(ctx: GroupContext): Boolean
+
+    /**
+     * Identifies whether the JSON representation of a GroupContext is compatible with the current
+     * context.
+     */
+    fun isCompatible(json: JsonElement): Boolean
+
+    /**
+     * Converts a [ByteArray] to an [ElementModP]. The input array is assumed to be in big-endian
+     * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
+     * Java's BigInteger. Guarantees the result is in [minimum, P), by computing the result mod P.
+     */
+    fun safeBinaryToElementModP(b: ByteArray, minimum: Int = 0): ElementModP
+
+    /**
+     * Converts a [ByteArray] to an [ElementModQ]. The input array is assumed to be in big-endian
+     * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
+     * Java's BigInteger. Guarantees the result is in [minimum, Q), by computing the result mod Q.
+     * The `maxQMinus1` flag changes the range to [minimum, Q-1), which is used for compatibility
+     * with the original ElectionGuard hash function.
+     */
+    fun safeBinaryToElementModQ(
+        b: ByteArray,
+        minimum: Int = 0,
+        maxQMinus1: Boolean = false
+    ): ElementModQ
+
+    /**
+     * Converts a [ByteArray] to an [ElementModP]. The input array is assumed to be in big-endian
+     * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
+     * Java's BigInteger. Returns null if the number is out of bounds.
+     */
+    fun binaryToElementModP(b: ByteArray): ElementModP?
+
+    /**
+     * Converts a [ByteArray] to an [ElementModQ]. The input array is assumed to be in big-endian
+     * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
+     * Java's BigInteger. Returns null if the number is out of bounds.
+     */
+    fun binaryToElementModQ(b: ByteArray): ElementModQ?
+
+    /**
+     * Converts an integer to an ElementModQ, with optimizations when possible for small integers
+     */
+    fun uIntToElementModQ(i: UInt): ElementModQ
+
+    /**
+     * Converts an integer to an ElementModP, with optimizations when possible for small integers
+     */
+    fun uIntToElementModP(i: UInt): ElementModP
+
+    /**
+     * Computes the sum of the given elements, mod q; this can be faster than using the addition
+     * operation for large numbers of inputs by potentially reusing scratch-space memory.
+     */
+    fun Iterable<ElementModQ>.addQ(): ElementModQ
+
+    /**
+     * Computes the product of the given elements, mod p; this can be faster than using the
+     * multiplication operation for large numbers of inputs by potentially reusing scratch-space
+     * memory.
+     */
+    fun Iterable<ElementModP>.multP(): ElementModP
+
+    /** Computes G^e mod p, where G is our generator */
+    fun gPowP(e: ElementModQ): ElementModP
+
+    /**
+     * Computes the discrete log, base g, of p. Only yields an answer for "small" exponents,
+     * otherwise returns null.
+     */
+    fun dLog(p: ElementModP): Int?
+}
+
+interface ElementModQ : Element, Comparable<ElementModQ> {
+    /** Modular addition */
+    operator fun plus(other: ElementModQ): ElementModQ
+
+    /** Modular subtraction */
+    operator fun minus(other: ElementModQ): ElementModQ
+
+    /** Modular multiplication */
+    operator fun times(other: ElementModQ): ElementModQ
+
+    /** Computes the additive inverse */
+    operator fun unaryMinus(): ElementModQ
+
+    /** Allows elements to be compared (<, >, <=, etc.) using the usual arithmetic operators. */
+    override operator fun compareTo(other: ElementModQ): Int
+}
+
+interface ElementModP : Element, Comparable<ElementModP> {
+    /**
+     * Validates that this element is a quadratic residue (and is reachable from
+     * [GroupContext.gPowP]). Returns true if everything is good.
+     */
+    fun isValidResidue(): Boolean
+
+    /** Computes b^e mod p */
+    infix fun powP(e: ElementModQ): ElementModP
+
+    /** Modular multiplication */
+    operator fun times(other: ElementModP): ElementModP
+
+    /** Finds the multiplicative inverse */
+    fun multInv(): ElementModP
+
+    /** Multiplies by the modular inverse of [denominator] */
+    infix operator fun div(denominator: ElementModP): ElementModP
+
+    /** Allows elements to be compared (<, >, <=, etc.) using the usual arithmetic operators. */
+    override operator fun compareTo(other: ElementModP): Int
+
+    /**
+     * Creates a new instance of this element where the `powP` function will use the acceleration
+     * possible with `PowRadix` to run faster. The `PowRadixOption` for this instance is taken from
+     * the `GroupContext`.
+     */
+    fun acceleratePow(): ElementModP
+}
 
 /**
  * Computes the sum of the given elements, mod q; this can be faster than using the addition
  * operation for large numbers of inputs by potentially reusing scratch-space memory.
  */
-fun addQ(vararg elements: ElementModQ) = elements.asIterable().addQ()
+fun GroupContext.addQ(vararg elements: ElementModQ) = elements.asIterable().addQ()
 
 /**
  * Computes the product of the given elements, mod p; this can be faster than using the
  * multiplication operation for large numbers of inputs by potentially reusing scratch-space memory.
  */
-fun multP(vararg elements: ElementModP) = elements.asIterable().multP()
+fun GroupContext.multP(vararg elements: ElementModP) = elements.asIterable().multP()
 
 /**
- * Converts a base-16 (hexidecimal) string to an [ElementModP]. Returns null if the number is out of bounds or the
- * string is malformed.
+ * Converts a base-16 (hexidecimal) string to an [ElementModP]. Returns null if the number is out of
+ * bounds or the string is malformed.
  */
 fun GroupContext.base16ToElementModP(s: String): ElementModP? =
     s.fromHex()?.let { binaryToElementModP(it) }
 
 /**
- * Converts a base-16 (hexidecimal) string to an [ElementModQ]. Returns null if the number is out of bounds or the
- * string is malformed.
+ * Converts a base-16 (hexidecimal) string to an [ElementModQ]. Returns null if the number is out of
+ * bounds or the string is malformed.
  */
 fun GroupContext.base16ToElementModQ(s: String): ElementModQ? =
     s.fromHex()?.let { binaryToElementModQ(it) }
 
 /**
- * Converts a base-16 (hexidecimal) string to an [ElementModP]. Guarantees the result is in [0, P), by computing
- * the result mod P.
+ * Converts a base-16 (hexidecimal) string to an [ElementModP]. Guarantees the result is in [0, P),
+ * by computing the result mod P.
  */
 fun GroupContext.safeBase16ToElementModP(s: String): ElementModP =
     s.fromHex()?.let { safeBinaryToElementModP(it) } ?: ZERO_MOD_P
 
 /**
- * Converts a base-16 (hexidecimal) string to an [ElementModQ]. Guarantees the result is in [0, Q), by computing
- * the result mod Q.
+ * Converts a base-16 (hexidecimal) string to an [ElementModQ]. Guarantees the result is in [0, Q),
+ * by computing the result mod Q.
  */
 fun GroupContext.safeBase16ToElementModQ(s: String): ElementModQ =
     s.fromHex()?.let { safeBinaryToElementModQ(it) } ?: ZERO_MOD_Q
@@ -108,7 +328,7 @@ fun Int.toElementModQ(ctx: GroupContext) =
         this < 0 -> throw NoSuchElementException("no negative numbers allowed")
         !ctx.isProductionStrength() && this >= intTestQ ->
             throw NoSuchElementException("tried to make an element >= q")
-        else -> this.toUInt().toElementModQ(ctx)
+        else -> ctx.uIntToElementModQ(this.toUInt())
     }
 
 /** Converts an integer to an ElementModQ, with optimizations when possible for small integers */
@@ -117,40 +337,8 @@ fun Int.toElementModP(ctx: GroupContext) =
         this < 0 -> throw NoSuchElementException("no negative numbers allowed")
         !ctx.isProductionStrength() && this >= intTestP ->
             throw NoSuchElementException("tried to make an element >= p")
-        else -> this.toUInt().toElementModP(ctx)
+        else -> ctx.uIntToElementModP(this.toUInt())
     }
-
-interface Element {
-    /**
-     * Every Element knows the [GroupContext] that was used to create it. This simplifies code that
-     * computes with elements, allowing arithmetic expressions to be written in many cases without
-     * needing to pass in the context.
-     */
-    val context: GroupContext
-        get
-
-    /**
-     * Normal computations should ensure that every [Element] is in the modular bounds defined by
-     * the group, but deserialization of hostile inputs or buggy code might not preserve this
-     * property, so it's valuable to have a way to check. This method allows anything in [0, N)
-     * where N is the group modulus.
-     */
-    fun inBounds(): Boolean
-
-    /**
-     * Normal computations should ensure that every [Element] is in the modular bounds defined by
-     * the group, but deserialization of hostile inputs or buggy code might not preserve this
-     * property, so it's valuable to have a way to check. This method allows anything in [1, N)
-     * where N is the group modulus.
-     */
-    fun inBoundsNoZero(): Boolean
-
-    /** Checks whether this element is zero. */
-    fun isZero(): Boolean
-
-    /** Converts from any [Element] to a compact [ByteArray] representation. */
-    fun byteArray(): ByteArray
-}
 
 /**
  * Returns a random number in [minimum, Q), where minimum defaults to zero. Promises to use a
@@ -160,7 +348,7 @@ interface Element {
  * @throws IllegalArgumentException if the minimum is negative
  */
 fun GroupContext.randomElementModQ(minimum: Int = 0) =
-    safeBinaryToElementModQ(randomBytes(32), minimum)
+    safeBinaryToElementModQ(randomBytes(MAX_BYTES_Q), minimum)
 
 /**
  * We often want to raise g to small powers, for which we've conveniently pre-computed the answers.

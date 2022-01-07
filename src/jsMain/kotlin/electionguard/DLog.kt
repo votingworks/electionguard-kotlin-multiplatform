@@ -2,7 +2,7 @@ package electionguard
 
 private const val MAX_DLOG: Int = 1_000_000_000
 
-actual class DLog(val context: GroupContext) {
+class DLog(val context: GroupContext) {
     // Implementation note for JavaScript: the JS interpreter is single-threaded,
     // so we don't have to worry about concurrency inside here. That certainly
     // simplifies things.

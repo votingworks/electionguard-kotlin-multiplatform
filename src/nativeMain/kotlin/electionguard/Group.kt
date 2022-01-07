@@ -10,21 +10,9 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import platform.posix.free
 
-private val testGroupContext =
-    GroupContext(
-        pBytes = b64TestP.fromSafeBase64(),
-        qBytes = b64TestQ.fromSafeBase64(),
-        p256minusQBytes = b64TestP256MinusQ.fromSafeBase64(),
-        gBytes = b64TestG.fromSafeBase64(),
-        rBytes = b64TestR.fromSafeBase64(),
-        strong = false,
-        name = "16-bit test group",
-        powRadixOption = PowRadixOption.NO_ACCELERATION
-    )
-
 private val productionGroups =
     PowRadixOption.values().associateWith {
-        GroupContext(
+        ProductionGroupContext(
             pBytes = b64ProductionP.fromSafeBase64(),
             qBytes = b64ProductionQ.fromSafeBase64(),
             p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
@@ -38,8 +26,6 @@ private val productionGroups =
 
 actual suspend fun productionGroup(acceleration: PowRadixOption) : GroupContext =
     productionGroups[acceleration] ?: throw Error("can't happen")
-
-actual suspend fun testGroup() = testGroupContext
 
 typealias HaclBignum4096 = ULongArray
 typealias HaclBignum256 = ULongArray
@@ -235,16 +221,16 @@ internal infix fun HaclBignum4096.gt4096(other: HaclBignum4096): Boolean {
     }
 }
 
-internal fun Element.getCompat(other: GroupContext): ULongArray {
+private fun Element.getCompat(other: ProductionGroupContext): ULongArray {
     context.assertCompatible(other)
     return when (this) {
-        is ElementModP -> this.element
-        is ElementModQ -> this.element
+        is ProductionElementModP -> this.element
+        is ProductionElementModQ -> this.element
         else -> throw NotImplementedError("should only be two kinds of elements")
     }
 }
 
-actual class GroupContext(
+class ProductionGroupContext(
     val pBytes: ByteArray,
     val qBytes: ByteArray,
     val gBytes: ByteArray,
@@ -253,23 +239,23 @@ actual class GroupContext(
     val strong: Boolean,
     val name: String,
     val powRadixOption: PowRadixOption
-) {
+) : GroupContext {
     val p: HaclBignum4096
     val q: HaclBignum256
     val g: HaclBignum4096
     val p256minusQ: HaclBignum256
     val r: HaclBignum4096
-    val zeroModP: ElementModP
-    val oneModP: ElementModP
-    val twoModP: ElementModP
-    val gModP: ElementModP
+    val zeroModP: ProductionElementModP
+    val oneModP: ProductionElementModP
+    val twoModP: ProductionElementModP
+    val gModP: ProductionElementModP
     val gInvModP by lazy { gPowP(qMinus1ModQ) }
     val gSquaredModP by lazy { G_MOD_P * G_MOD_P }
-    val qModP: ElementModP
-    val zeroModQ: ElementModQ
-    val oneModQ: ElementModQ
-    val twoModQ: ElementModQ
-    val qMinus1ModQ: ElementModQ
+    val qModP: ProductionElementModP
+    val zeroModQ: ProductionElementModQ
+    val oneModQ: ProductionElementModQ
+    val twoModQ: ProductionElementModQ
+    val qMinus1ModQ: ProductionElementModQ
     val productionStrength: Boolean = strong
     val montCtxP: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val montCtxQ: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
@@ -281,20 +267,20 @@ actual class GroupContext(
         g = gBytes.toHaclBignum4096()
         p256minusQ = p256minusQBytes.toHaclBignum256()
         r = rBytes.toHaclBignum4096()
-        zeroModP = ElementModP(0U.toHaclBignum4096(), this)
-        oneModP = ElementModP(1U.toHaclBignum4096(), this)
-        twoModP = ElementModP(2U.toHaclBignum4096(), this)
-        gModP = ElementModP(g, this).acceleratePow()
-        qModP = ElementModP(
+        zeroModP = ProductionElementModP(0U.toHaclBignum4096(), this)
+        oneModP = ProductionElementModP(1U.toHaclBignum4096(), this)
+        twoModP = ProductionElementModP(2U.toHaclBignum4096(), this)
+        gModP = ProductionElementModP(g, this).acceleratePow() as ProductionElementModP
+        qModP = ProductionElementModP(
             ULongArray(HaclBignum4096_LongWords) {
                     // Copy from 256-bit to 4096-bit, avoid problems later on. Hopefully.
                     i -> if (i >= HaclBignum256_LongWords) 0U else q[i]
             },
             this)
-        zeroModQ = ElementModQ(0U.toHaclBignum4096(), this)
-        oneModQ = ElementModQ(1U.toHaclBignum256(), this)
-        twoModQ = ElementModQ(2U.toHaclBignum256(), this)
-        qMinus1ModQ = zeroModQ - oneModQ
+        zeroModQ = ProductionElementModQ(0U.toHaclBignum4096(), this)
+        oneModQ = ProductionElementModQ(1U.toHaclBignum256(), this)
+        twoModQ = ProductionElementModQ(2U.toHaclBignum256(), this)
+        qMinus1ModQ = (zeroModQ - oneModQ) as ProductionElementModQ
 
         // This context is something that normally needs to be freed, otherwise memory
         // leaks could occur, but we'll keep it live for the duration of the program
@@ -312,49 +298,55 @@ actual class GroupContext(
         dlogger = DLog(this)
     }
 
-    actual fun isProductionStrength() = productionStrength
+    override fun isProductionStrength() = true
 
-    actual fun toJson(): JsonElement = JsonObject(mapOf()) // fixme
+    override fun toJson(): JsonElement = JsonObject(mapOf()) // fixme
 
-    override fun toString() = toJson().toString()
+    override fun toString() : String = name
 
-    actual val ZERO_MOD_P
+    override val ZERO_MOD_P
         get() = zeroModP
 
-    actual val ONE_MOD_P
+    override val ONE_MOD_P
         get() = oneModP
 
-    actual val TWO_MOD_P
+    override val TWO_MOD_P
         get() = twoModP
 
-    actual val G_MOD_P
+    override val G_MOD_P
         get() = gModP
 
-    actual val GINV_MOD_P
+    override val GINV_MOD_P
         get() = gInvModP
 
-    actual val G_SQUARED_MOD_P
+    override val G_SQUARED_MOD_P
         get() = gSquaredModP
 
-    actual val Q_MOD_P
+    override val Q_MOD_P
         get() = qModP
 
-    actual val ZERO_MOD_Q
+    override val ZERO_MOD_Q
         get() = zeroModQ
 
-    actual val ONE_MOD_Q
+    override val ONE_MOD_Q
         get() = oneModQ
 
-    actual val TWO_MOD_Q
+    override val TWO_MOD_Q
         get() = twoModQ
 
-    actual fun isCompatible(ctx: GroupContext) = this.productionStrength == ctx.productionStrength
+    override val MAX_BYTES_P: Int
+        get() = 512
 
-    actual fun isCompatible(json: JsonElement): Boolean {
+    override val MAX_BYTES_Q: Int
+        get() = 32
+
+    override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
+
+    override fun isCompatible(json: JsonElement): Boolean {
         throw NotImplementedError()
     }
 
-    actual fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
+    override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0)
             throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
@@ -377,11 +369,11 @@ actual class GroupContext(
                     Hacl_Bignum4096_add(r, m, r)
                 }
             }
-            return ElementModP(result, this)
+            return ProductionElementModP(result, this)
         }
     }
 
-    actual fun safeBinaryToElementModQ(b: ByteArray, minimum: Int, maxQMinus1: Boolean): ElementModQ {
+    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int, maxQMinus1: Boolean): ElementModQ {
         if (minimum < 0)
            throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
@@ -394,17 +386,16 @@ actual class GroupContext(
             val minimum256 = minimum.toUInt().toHaclBignum256()
             val nonZeroMinimum = minimum > 0
 
-            if (!productionStrength) {
-                // We can't just use the optimization below, which assumes that q
-                // is very close to 2^256, so we're instead going to do the whole
-                // mod thing. At least for now, we're not doing it mod q-1, but
-                // then this only really breaks the hash function for testing,
-                // while retaining correctness in production.
-
-                val tmp = b.toHaclBignum256(doubleMemory = true)
-                val result = newZeroBignum256()
-                nativeElems(tmp, minimum256, result) { t, m, r ->
-                    Hacl_Bignum256_mod_precomp(montCtxQ, t, r)
+            val result = b.toHaclBignum256()
+            if (!maxQMinus1) {
+                nativeElems(result, minimum256, q, p256minusQ) { r, m, qq, p256 ->
+                    if (Hacl_Bignum256_lt_mask(r, qq) == 0UL) {
+                        // r >= q, so need to wrap around
+                        // r = r + p256
+                        //   = r + (2^256 - q)
+                        //   = r - q
+                        Hacl_Bignum256_add(r, p256, r)
+                    }
 
                     // Same hack as above.
 
@@ -412,58 +403,37 @@ actual class GroupContext(
                         Hacl_Bignum256_add(r, m, r)
                     }
                 }
-
-                return ElementModQ(result, this)
             } else {
-                val result = b.toHaclBignum256()
-                if (!maxQMinus1) {
-                    nativeElems(result, minimum256, q, p256minusQ) { r, m, qq, p256 ->
-                        if (Hacl_Bignum256_lt_mask(r, qq) == 0UL) {
-                            // r >= q, so need to wrap around
-                            // r = r + p256
-                            //   = r + (2^256 - q)
-                            //   = r - q
-                            Hacl_Bignum256_add(r, p256, r)
-                        }
-
-                        // Same hack as above.
-
-                        if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
-                            Hacl_Bignum256_add(r, m, r)
-                        }
+                nativeElems(
+                    result,
+                    minimum256,
+                    qMinus1ModQ.element,
+                    p256minusQ,
+                    oneModQ.element
+                ) { r, m, qM1, p256, one ->
+                    if (Hacl_Bignum256_lt_mask(r, qM1) == 0UL) {
+                        // r >= q - 1, so need to wrap around
+                        // r = r + p256 + 1
+                        //   = r + (2^256 - q)
+                        //   = r - q + 1
+                        Hacl_Bignum256_add(r, p256, r)
+                        Hacl_Bignum256_add(r, one, r)
                     }
-                } else {
-                    nativeElems(
-                        result,
-                        minimum256,
-                        qMinus1ModQ.element,
-                        p256minusQ,
-                        oneModQ.element
-                    ) { r, m, qM1, p256, one ->
-                        if (Hacl_Bignum256_lt_mask(r, qM1) == 0UL) {
-                            // r >= q - 1, so need to wrap around
-                            // r = r + p256 + 1
-                            //   = r + (2^256 - q)
-                            //   = r - q + 1
-                            Hacl_Bignum256_add(r, p256, r)
-                            Hacl_Bignum256_add(r, one, r)
-                        }
 
-                        // Same hack as above.
+                    // Same hack as above.
 
-                        if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
-                            Hacl_Bignum256_add(r, m, r)
-                        }
+                    if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
+                        Hacl_Bignum256_add(r, m, r)
                     }
                 }
-                return ElementModQ(result, this)
             }
+            return ProductionElementModQ(result, this)
         }
     }
 
-    actual fun binaryToElementModP(b: ByteArray): ElementModP? {
+    override fun binaryToElementModP(b: ByteArray): ElementModP? {
         try {
-            val bignum4096 = ElementModP(b.toHaclBignum4096(), this)
+            val bignum4096 = ProductionElementModP(b.toHaclBignum4096(), this)
             if (!bignum4096.inBounds()) return null
             return bignum4096
         } catch (ex: IllegalArgumentException) {
@@ -471,9 +441,9 @@ actual class GroupContext(
         }
     }
 
-    actual fun binaryToElementModQ(b: ByteArray): ElementModQ? {
+    override fun binaryToElementModQ(b: ByteArray): ElementModQ? {
         try {
-            val bignum256 = ElementModQ(b.toHaclBignum256(), this)
+            val bignum256 = ProductionElementModQ(b.toHaclBignum256(), this)
             if (!bignum256.inBounds()) return null
             return bignum256
         } catch (ex: IllegalArgumentException) {
@@ -481,20 +451,70 @@ actual class GroupContext(
         }
     }
 
-    actual fun gPowP(e: ElementModQ) = gModP powP e
+    override fun uIntToElementModQ(i: UInt) : ElementModQ = when (i) {
+        0U -> ZERO_MOD_Q
+        1U -> ONE_MOD_Q
+        2U -> TWO_MOD_Q
+        else -> ProductionElementModQ(i.toHaclBignum256(), this)
+    }
 
-    actual fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
+    override fun uIntToElementModP(i: UInt) : ElementModP = when (i) {
+        0U -> ZERO_MOD_P
+        1U -> ONE_MOD_P
+        2U -> TWO_MOD_P
+        else -> ProductionElementModP(i.toHaclBignum4096(), this)
+    }
+
+    override fun Iterable<ElementModQ>.addQ(): ElementModQ {
+        val input = iterator().asSequence().toList()
+
+        if (input.isEmpty()) {
+            throw ArithmeticException("addQ not defined on empty lists")
+        }
+
+        if (input.count() == 1) {
+            return input[0]
+        }
+
+        // There's an opportunity here to avoid creating intermediate ElementModQ instances
+        // and mutate a running total instead. For now, we're just focused on correctness
+        // and will circle back if/when this is performance relevant.
+
+        return input.subList(1, input.count()).fold(input[0]) { a, b -> a + b }
+    }
+
+    override fun Iterable<ElementModP>.multP(): ElementModP {
+        val input = iterator().asSequence().toList()
+
+        if (input.isEmpty()) {
+            throw ArithmeticException("multP not defined on empty lists")
+        }
+
+        if (input.count() == 1) {
+            return input[0]
+        }
+
+        // There's an opportunity here to avoid creating intermediate ElementModQ instances
+        // and mutate a running total instead. For now, we're just focused on correctness
+        // and will circle back if/when this is performance relevant.
+
+        return input.subList(1, input.count()).fold(input[0]) { a, b -> a * b }
+    }
+
+    override fun gPowP(e: ElementModQ) = gModP powP e
+
+    override fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
-actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupContext): Element, Comparable<ElementModQ> {
+class ProductionElementModQ(val element: HaclBignum256, val groupContext: ProductionGroupContext): ElementModQ, Element, Comparable<ElementModQ> {
     override val context: GroupContext
     get() = groupContext
 
-    internal fun HaclBignum256.wrap(): ElementModQ = ElementModQ(this, groupContext)
+    internal fun HaclBignum256.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
 
     override fun inBounds(): Boolean = element lt256 groupContext.q
 
-    override fun isZero() = element.contentEquals(context.ZERO_MOD_Q.element)
+    override fun isZero() = element.contentEquals(groupContext.ZERO_MOD_Q.element)
 
     override fun inBoundsNoZero(): Boolean = inBounds() && !isZero()
 
@@ -508,17 +528,18 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
         return results
     }
 
-    actual override operator fun compareTo(other: ElementModQ): Int {
-        val thisLtOther = element lt256 other.getCompat(context)
+    override operator fun compareTo(other: ElementModQ): Int {
+        val otherElement = other.getCompat(groupContext)
+        val thisLtOther = element lt256 otherElement
 
         return when {
             thisLtOther -> -1
-            element.contentEquals(other.element) -> 0
+            element.contentEquals(otherElement) -> 0
             else -> 1
         }
     }
 
-    actual operator fun plus(other: ElementModQ): ElementModQ {
+    override operator fun plus(other: ElementModQ): ElementModQ {
         val result = newZeroBignum256()
 
         nativeElems(result,
@@ -555,31 +576,10 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
         return result.wrap()
     }
 
-    actual operator fun minus(other: ElementModQ): ElementModQ {
-        val result = newZeroBignum256()
+    override operator fun minus(other: ElementModQ): ElementModQ =
+        this + (-other)
 
-        nativeElems(result,
-            element,
-            other.getCompat(groupContext),
-            groupContext.q,
-            groupContext.p256minusQ) { r, a, b, q, p256 ->
-
-            val carry = Hacl_Bignum256_sub(a, b, r)
-            val inBoundsQ = Hacl_Bignum256_lt_mask(r, q) != 0UL
-            val zeroCarry = (carry == 0UL)
-
-            if (!inBoundsQ || !zeroCarry) {
-                // We underflowed, so we need to subtract the difference from the maximum
-                // value (2^256) and Q. This case should be correct, regardless of whether
-                // we landed in the region above Q, or anywhere else.
-                Hacl_Bignum256_sub(r, p256, r)
-            }
-        }
-
-        return result.wrap()
-    }
-
-    actual operator fun times(other: ElementModQ): ElementModQ {
+    override operator fun times(other: ElementModQ): ElementModQ {
         val result = newZeroBignum256()
         val scratch = ULongArray(HaclBignum256_LongWords * 2) // 512-bit intermediate value
 
@@ -592,17 +592,7 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
         return result.wrap()
     }
 
-    actual fun multInv(): ElementModQ {
-        val result = newZeroBignum256()
-
-        nativeElems(result, element) { r, e ->
-            Hacl_Bignum256_mod_inv_prime_vartime_precomp(groupContext.montCtxQ, e, r)
-        }
-
-        return result.wrap()
-    }
-
-    actual operator fun unaryMinus(): ElementModQ {
+    override operator fun unaryMinus(): ElementModQ {
         val result = newZeroBignum256()
 
         nativeElems(result, element, groupContext.q) { r, e, q ->
@@ -614,18 +604,11 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
         return result.wrap()
     }
 
-    actual infix operator fun div(denominator: ElementModQ) = this * denominator.multInv()
-
-    fun deepCopy() = ElementModQ(
-        ULongArray(HaclBignum256_LongWords) { i -> this.element[i] },
-        groupContext
-    )
-
     override fun equals(other: Any?) = when (other) {
         // We're converting from the internal representation to a byte array
         // for equality checking; possibly overkill, but if there are ever
         // multiple internal representations, this guarantees normalization.
-        is ElementModQ ->
+        is ProductionElementModQ ->
             other.byteArray().contentEquals(this.byteArray()) &&
                     other.groupContext.isCompatible(this.groupContext)
         else -> false
@@ -636,24 +619,25 @@ actual class ElementModQ(val element: HaclBignum256, val groupContext: GroupCont
     override fun toString() = base64()  // unpleasant, but available
 }
 
-actual open class ElementModP(val element: HaclBignum4096, val groupContext: GroupContext): Element, Comparable<ElementModP> {
+open class ProductionElementModP(val element: HaclBignum4096, val groupContext: ProductionGroupContext): ElementModP, Element, Comparable<ElementModP> {
     override val context: GroupContext
         get() = groupContext
 
-    internal fun HaclBignum4096.wrap(): ElementModP = ElementModP(this, groupContext)
+    internal fun HaclBignum4096.wrap(): ElementModP = ProductionElementModP(this, groupContext)
 
     override fun inBounds(): Boolean = element lt4096 groupContext.p
 
-    override fun isZero() = element.contentEquals(context.ZERO_MOD_P.element)
+    override fun isZero() = element.contentEquals(groupContext.ZERO_MOD_P.element)
 
     override fun inBoundsNoZero() = inBounds() && !isZero()
 
-    actual override operator fun compareTo(other: ElementModP): Int {
-        val thisLtOther = element lt4096 other.getCompat(context)
+    override operator fun compareTo(other: ElementModP): Int {
+        val otherElement = other.getCompat(groupContext)
+        val thisLtOther = element lt4096 otherElement
 
         return when {
             thisLtOther -> -1
-            element.contentEquals(other.element) -> 0
+            element.contentEquals(otherElement) -> 0
             else -> 1
         }
     }
@@ -668,7 +652,7 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
         return result
     }
 
-    actual fun isValidResidue(): Boolean {
+    override fun isValidResidue(): Boolean {
         val result = newZeroBignum4096()
         nativeElems(result, element, groupContext.q) { r, a, q ->
             Hacl_Bignum4096_mod_exp_vartime_precomp(groupContext.montCtxP, a, 256, q, r)
@@ -677,7 +661,7 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
         return inBounds() && residue
     }
 
-    actual infix open fun powP(e: ElementModQ): ElementModP {
+    override infix open fun powP(e: ElementModQ): ElementModP {
         val result = newZeroBignum4096()
         nativeElems(result, element, e.getCompat(groupContext)) { r, a, b ->
             // We're using the faster "variable time" modular exponentiation; timing attacks
@@ -687,7 +671,7 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
         return result.wrap()
     }
 
-    actual operator fun times(other: ElementModP): ElementModP {
+    override operator fun times(other: ElementModP): ElementModP {
         val result = newZeroBignum4096()
         val scratch = ULongArray(HaclBignum4096_LongWords * 2)
         nativeElems(result, element, other.getCompat(groupContext), scratch) { r, a, b, s ->
@@ -698,7 +682,7 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
         return result.wrap()
     }
 
-    actual fun multInv(): ElementModP {
+    override fun multInv(): ElementModP {
         // Performance note: the code below is really, really slow. Like, it's 1/17
         // the speed of the equivalent code in java.math.BigInteger. The solution
         // is that we basically never call it. Instead, throughout the code for
@@ -719,18 +703,13 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
 //        return this powP groupContext.qMinus1ModQ
     }
 
-    actual infix operator fun div(denominator: ElementModP) = this * denominator.multInv()
-
-    fun deepCopy() = ElementModP(
-        ULongArray(HaclBignum4096_LongWords) { i -> this.element[i] },
-        groupContext
-    )
+    override infix operator fun div(denominator: ElementModP) = this * denominator.multInv()
 
     override fun equals(other: Any?) = when (other) {
         // We're converting from the internal representation to a byte array
         // for equality checking; possibly overkill, but if there are ever
         // multiple internal representations, this guarantees normalization.
-        is ElementModP ->
+        is ProductionElementModP ->
             other.byteArray().contentEquals(this.byteArray()) &&
                     other.groupContext.isCompatible(this.groupContext)
         else -> false
@@ -740,11 +719,11 @@ actual open class ElementModP(val element: HaclBignum4096, val groupContext: Gro
 
     override fun toString() = base64()  // unpleasant, but available
 
-    actual open fun acceleratePow() : ElementModP =
+    override open fun acceleratePow() : ElementModP =
         AcceleratedElementModP(this)
 }
 
-class AcceleratedElementModP(p: ElementModP) : ElementModP(p.element, p.groupContext) {
+class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p.element, p.groupContext) {
     // Laziness to delay computation of the table until its first use; saves space
     // for PowModOptions that are never used. Also, the context isn't fully initialized
     // when constructing the GroupContext, and this avoids using it until it's ready.
@@ -754,46 +733,4 @@ class AcceleratedElementModP(p: ElementModP) : ElementModP(p.element, p.groupCon
     override fun acceleratePow(): ElementModP = this
 
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)
-}
-
-actual fun Iterable<ElementModQ>.addQ(): ElementModQ {
-    val input = iterator().asSequence().toList()
-    if (input.isEmpty()) {
-        throw ArithmeticException("addQ not defined on empty lists")
-    }
-    if (input.count() == 1) {
-        return input[0]
-    }
-
-    // There's an opportunity here to avoid creating intermediate ElementModQ instances
-    // and mutate a running total instead. For now, we're just focused on correctness
-    // and will circle back if/when this is performance relevant.
-
-    return input.subList(1, input.count()).fold(input[0]) { a, b -> a + b }
-}
-
-actual fun Iterable<ElementModP>.multP(): ElementModP {
-    val input = iterator().asSequence().toList()
-    if (input.isEmpty()) {
-        throw ArithmeticException("multP not defined on empty lists")
-    }
-    if (input.count() == 1) {
-        return input[0]
-    }
-
-    return input.subList(1, input.count()).fold(input[0]) { a, b -> a * b }
-}
-
-actual fun UInt.toElementModQ(ctx: GroupContext) : ElementModQ = when (this) {
-    0U -> ctx.ZERO_MOD_Q
-    1U -> ctx.ONE_MOD_Q
-    2U -> ctx.TWO_MOD_Q
-    else -> ElementModQ(this.toHaclBignum256(), ctx)
-}
-
-actual fun UInt.toElementModP(ctx: GroupContext) : ElementModP = when (this) {
-    0U -> ctx.ZERO_MOD_P
-    1U -> ctx.ONE_MOD_P
-    2U -> ctx.TWO_MOD_P
-    else -> ElementModP(this.toHaclBignum4096(), ctx)
 }

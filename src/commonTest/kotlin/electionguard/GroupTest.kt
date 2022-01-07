@@ -227,13 +227,13 @@ class GroupTest {
         }
     }
 
-    @Test
-    fun multiplicativeInversesQ() {
-        runTest {
-            val context = productionGroup()
-            forAll(elementsModQNoZero(context)) { it.multInv() * it == context.ONE_MOD_Q }
-        }
-    }
+//    @Test
+//    fun multiplicativeInversesQ() {
+//        runTest {
+//            val context = productionGroup()
+//            forAll(elementsModQNoZero(context)) { it.multInv() * it == context.ONE_MOD_Q }
+//        }
+//    }
 
     @Test
     fun divisionP() {
