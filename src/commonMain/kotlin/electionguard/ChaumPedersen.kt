@@ -167,20 +167,6 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
         1 -> {
             // Note: this is using Benaloh's revised equations ("Efficient Implementation of
             // ElectionGuard Ballot Encryption and Proofs", 2021).
-            //
-            //    # Pick three random numbers in Q.
-            //    u, v, w = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
-            //
-            //    # Compute the NIZKP
-            //    a0 = g_pow_p(v)
-            //    b0 = mult_p(g_pow_p(w), k.pow_p(v))
-            //    a1 = g_pow_p(u)
-            //    b1 = k.pow_p(u)
-            //    c = hash_elems(q, alpha, beta, a0, b0, a1, b1)
-            //    c0 = negate_q(w)
-            //    c1 = add_q(c, w)
-            //    v0 = a_plus_bc_q(v, c0, r)
-            //    v1 = a_plus_bc_q(u, c1, r)
 
             val (alpha, beta) = this
             val (u, v, w) = Nonces(seed, "disjoint-chaum-pedersen-proof")
@@ -216,6 +202,7 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
  *     hash (Q')
  * @param expectedConstant Optional parameter. If specified, the constant in the proof is validated
  *     against the expected constant.
+ * @return true if the proof is valid
  */
 fun ConstantChaumPedersenProofKnownNonce.isValid(
     ciphertext: ElGamalCiphertext,
@@ -251,6 +238,7 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
  *     hash (Q')
  * @param expectedConstant Optional parameter. If specified, the constant in the proof is validated
  *     against the expected constant.
+ * @return true if the proof is valid
  */
 fun ConstantChaumPedersenProofKnownSecretKey.isValid(
     ciphertext: ElGamalCiphertext,
@@ -284,6 +272,7 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
  * @param publicKey The public key of the election
  * @param hashHeader A value used when generating the challenge, usually the election extended base
  *     hash (Q')
+ * @return true if the proof is valid
  */
 fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     ciphertext: ElGamalCiphertext,
