@@ -118,7 +118,7 @@ class TestGroupContext(
             }
 
         val result = if (u16 < minimum.toUInt()) u16 + minimum.toUInt() else u16
-        return TestElementModP(result, this)
+        return uIntToElementModP(result)
     }
 
     override fun safeBinaryToElementModQ(
@@ -138,7 +138,7 @@ class TestGroupContext(
             }
 
         val result = if (u16 < minimum.toUInt()) u16 + minimum.toUInt() else u16
-        return TestElementModQ(result, this)
+        return uIntToElementModQ(result)
     }
 
     override fun binaryToElementModP(b: ByteArray): ElementModP? {
@@ -152,7 +152,7 @@ class TestGroupContext(
 
         if (u16 >= p) return null
 
-        return TestElementModP(u16, this)
+        return uIntToElementModP(u16)
     }
 
     override fun binaryToElementModQ(b: ByteArray): ElementModQ? {
@@ -166,7 +166,7 @@ class TestGroupContext(
 
         if (u16 >= q) return null
 
-        return TestElementModQ(u16, this)
+        return uIntToElementModQ(u16)
     }
 
     override fun uIntToElementModQ(i: UInt): ElementModQ =
@@ -182,23 +182,17 @@ class TestGroupContext(
             TestElementModP(i, this)
 
     override fun Iterable<ElementModQ>.addQ(): ElementModQ =
-        TestElementModQ(
-            fold(0U) { a, b -> (a + b.getCompat(this@TestGroupContext)) % q },
-            this@TestGroupContext
-        )
+        uIntToElementModQ(fold(0U) { a, b -> (a + b.getCompat(this@TestGroupContext)) % q })
 
     override fun Iterable<ElementModP>.multP(): ElementModP =
-        TestElementModP(
-            fold(1U) { a, b -> (a * b.getCompat(this@TestGroupContext)) % p },
-            this@TestGroupContext
-        )
+        uIntToElementModP(fold(1U) { a, b -> (a * b.getCompat(this@TestGroupContext)) % p })
 
     override fun gPowP(e: ElementModQ): ElementModP = gModP powP e
 
     override fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
-open class TestElementModP(val element: UInt, val groupContext: TestGroupContext) : ElementModP {
+class TestElementModP(val element: UInt, val groupContext: TestGroupContext) : ElementModP {
     internal fun UInt.modWrap(): ElementModP = (this % groupContext.p).wrap()
     internal fun UInt.wrap(): ElementModP = TestElementModP(this, groupContext)
 
@@ -228,7 +222,7 @@ open class TestElementModP(val element: UInt, val groupContext: TestGroupContext
 
     override fun div(denominator: ElementModP): ElementModP = this * denominator.multInv()
 
-    // TODO: add actual optimizations here
+    // we could try to use the whole powradix thing, but it's overkill for 16-bit numbers
     override fun acceleratePow(): ElementModP = this
 
     override fun compareTo(other: ElementModP): Int =
