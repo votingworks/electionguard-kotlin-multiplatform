@@ -100,7 +100,6 @@ class ChaumPedersenTest {
         runTest {
             val context = tinyGroup()
             checkAll(
-                propTestFastConfig,
                 elGamalKeypairs(context),
                 elementsModQNoZero(context),
                 elementsModQ(context),
@@ -170,7 +169,6 @@ class ChaumPedersenTest {
         runTest {
             val context = tinyGroup()
             checkAll(
-                propTestFastConfig,
                 elGamalKeypairs(context),
                 elementsModQNoZero(context),
                 elementsModQ(context),

@@ -367,13 +367,13 @@ fun GenericChaumPedersenProof.isValid(
         logWarning {
             "Invalid generic Chaum-Pedersen proof: " +
                 mapOf(
-                    "hash_good" to hashGood,
-                    "in_bounds_a" to inBoundsA,
-                    "in_bounds_b" to inBoundsB,
-                    "in_bounds_g" to inBoundsG,
-                    "in_bounds_gx" to inBoundsGx,
-                    "in_bounds_h" to inBoundsH,
-                    "in_bounds_hx" to inBoundsHx,
+                    "hashGood" to hashGood,
+                    "inBoundsA" to inBoundsA,
+                    "inBoundsB" to inBoundsB,
+                    "inBoundsG" to inBoundsG,
+                    "inBoundsGx" to inBoundsGx,
+                    "inBoundsH" to inBoundsH,
+                    "inBoundsHx" to inBoundsHx,
                     "good_g" to goodG,
                     "good_h" to goodH,
                 ).toString()
