@@ -1,8 +1,5 @@
 package electionguard
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlin.js.Date
 import kotlin.random.Random
 
@@ -67,10 +64,10 @@ suspend fun elGamalPerfTest() {
         }
 }
 
-@OptIn(DelicateCoroutinesApi::class)
-fun main() {
-    GlobalScope.launch {
-        println("ElGamal benchmark for node.js (node version = " + js("process").version + ")")
-        elGamalPerfTest()
-    }
-}
+//@OptIn(DelicateCoroutinesApi::class)
+//fun main() {
+//    GlobalScope.launch {
+//        println("ElGamal benchmark for node.js (node version = " + js("process").version + ")")
+//        elGamalPerfTest()
+//    }
+//}

@@ -208,7 +208,7 @@ class ProductionGroupContext(
     override fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
-private fun Element.getCompat(other: GroupContext): BigInteger {
+private fun Element.getCompat(other: ProductionGroupContext): BigInteger {
     context.assertCompatible(other)
     return when (this) {
         is ProductionElementModP -> this.element
@@ -245,7 +245,11 @@ class ProductionElementModQ(val element: BigInteger, val groupContext: Productio
 
 //    override fun multInv() = element.modInverse(groupContext.q).wrap()
 
-    override operator fun unaryMinus() = (groupContext.q - element).wrap()
+    override operator fun unaryMinus(): ElementModQ =
+        if (this == groupContext.zeroModQ)
+            this
+        else
+            (groupContext.q - element).wrap()
 
 //    override infix operator fun div(denominator: ElementModQ) =
 //        (element * denominator.getCompat(groupContext).modInverse(groupContext.q)).modWrap()
@@ -300,7 +304,7 @@ open class ProductionElementModP(val element: BigInteger, val groupContext: Prod
         (element * denominator.getCompat(groupContext).modInverse(groupContext.p)).modWrap()
 
     override fun equals(other: Any?) = when (other) {
-        is ElementModP -> other.getCompat(this.context) == this.element
+        is ElementModP -> other.getCompat(this.groupContext) == this.element
         else -> false
     }
 

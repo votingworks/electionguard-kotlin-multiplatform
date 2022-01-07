@@ -115,7 +115,8 @@ class TestGroupContext(
                 }
             }
 
-        return TestElementModP(u16, this)
+        val result = if (u16 < minimum.toUInt()) u16 + minimum.toUInt() else u16
+        return TestElementModP(result, this)
     }
 
     override fun safeBinaryToElementModQ(
@@ -134,7 +135,8 @@ class TestGroupContext(
                 }
             }
 
-        return TestElementModQ(u16, this)
+        val result = if (u16 < minimum.toUInt()) u16 + minimum.toUInt() else u16
+        return TestElementModQ(result, this)
     }
 
     override fun binaryToElementModP(b: ByteArray): ElementModP? {
@@ -195,6 +197,9 @@ class TestGroupContext(
 }
 
 open class TestElementModP(val element: UInt, val groupContext: TestGroupContext) : ElementModP {
+    internal fun UInt.modWrap(): ElementModP = (this % groupContext.p).wrap()
+    internal fun UInt.wrap(): ElementModP = TestElementModP(this, groupContext)
+
     override fun isValidResidue(): Boolean {
         val residue =
             this powP TestElementModQ(groupContext.q, groupContext) == groupContext.ONE_MOD_P
@@ -211,14 +216,11 @@ open class TestElementModP(val element: UInt, val groupContext: TestGroupContext
                 if (eBitSet) result = (result * base) % groupContext.p
                 base = (base * base) % groupContext.p
             }
-        return TestElementModP(result, groupContext)
+        return result.wrap()
     }
 
     override fun times(other: ElementModP): ElementModP =
-        TestElementModP(
-            (this.element * other.getCompat(groupContext)) % groupContext.p,
-            groupContext
-        )
+        (this.element * other.getCompat(groupContext)).modWrap()
 
     override fun multInv(): ElementModP = this powP groupContext.qMinus1Q
 
@@ -241,28 +243,29 @@ open class TestElementModP(val element: UInt, val groupContext: TestGroupContext
 
     override fun byteArray(): ByteArray =
         byteArrayOf(((element shr 8) and 0xffU).toByte(), (element and 0xffU).toByte())
+
+    override fun equals(other: Any?): Boolean = other is TestElementModP && element == other.element
+
+    override fun hashCode(): Int = element.hashCode()
+
+    override fun toString(): String = "ElementModP($element)"
 }
 
 class TestElementModQ(val element: UInt, val groupContext: TestGroupContext) : ElementModQ {
+    internal fun UInt.modWrap(): ElementModQ = (this % groupContext.q).wrap()
+    internal fun UInt.wrap(): ElementModQ = TestElementModQ(this, groupContext)
+
     override fun plus(other: ElementModQ): ElementModQ =
-        TestElementModQ(
-            (this.element + other.getCompat(groupContext)) % groupContext.q,
-            groupContext
-        )
+        (this.element + other.getCompat(groupContext)).modWrap()
 
     override fun minus(other: ElementModQ): ElementModQ =
-        TestElementModQ(
-            (this.element + (-other).getCompat(groupContext)) % groupContext.q,
-            groupContext
-        )
+        (this.element + (-other).getCompat(groupContext)).modWrap()
 
     override fun times(other: ElementModQ): ElementModQ =
-        TestElementModQ(
-            (this.element * other.getCompat(groupContext)) % groupContext.q,
-            groupContext
-        )
+        (this.element * other.getCompat(groupContext)).modWrap()
 
-    override fun unaryMinus(): ElementModQ = TestElementModQ(groupContext.q - element, groupContext)
+    override operator fun unaryMinus(): ElementModQ =
+        if (this == groupContext.zeroModQ) this else (groupContext.q - element).wrap()
 
     override fun compareTo(other: ElementModQ): Int =
         element.compareTo(other.getCompat(groupContext))
@@ -278,4 +281,10 @@ class TestElementModQ(val element: UInt, val groupContext: TestGroupContext) : E
 
     override fun byteArray(): ByteArray =
         byteArrayOf(((element shr 8) and 0xffU).toByte(), (element and 0xffU).toByte())
+
+    override fun equals(other: Any?): Boolean = other is TestElementModQ && element == other.element
+
+    override fun hashCode(): Int = element.hashCode()
+
+    override fun toString(): String = "ElementModQ($element)"
 }

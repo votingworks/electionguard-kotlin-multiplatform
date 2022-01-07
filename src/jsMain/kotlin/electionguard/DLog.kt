@@ -13,7 +13,7 @@ class DLog(val context: GroupContext) {
     private var dLogMaxElement = context.ONE_MOD_P
     private var dLogMaxExponent = 0
 
-    actual fun dLog(input: ElementModP): Int? =
+    fun dLog(input: ElementModP): Int? =
         if (input in dLogMapping) {
             dLogMapping[input]
         } else {

@@ -26,7 +26,6 @@ private val productionGroups =
             qBytes = b64ProductionQ.fromSafeBase64(),
             gBytes = b64ProductionG.fromSafeBase64(),
             rBytes = b64ProductionR.fromSafeBase64(),
-            strong = true,
             name = "production group, ${it.description}",
             powRadixOption = it
         )
@@ -39,7 +38,7 @@ actual suspend fun productionGroup(acceleration: PowRadixOption) : GroupContext 
 internal fun UInt.toBigInteger() = BigInteger.of(this.toLong())
 internal fun ByteArray.toBigInteger() = BigInteger(1, this)
 
-class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, strong: Boolean, val name: String, val powRadixOption: PowRadixOption) : GroupContext {
+class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, val name: String, val powRadixOption: PowRadixOption) : GroupContext {
     val p: BigInteger
     val q: BigInteger
     val g: BigInteger
@@ -74,6 +73,8 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
         dlogger = DLog(this)
         qMinus1ModQ = (zeroModQ - oneModQ) as ProductionElementModQ
     }
+
+    override fun toString() : String = name
 
     override fun toJson(): JsonElement = JsonObject(mapOf()) // fixme
 
@@ -252,7 +253,11 @@ class ProductionElementModQ(val element: BigInteger, val groupContext: Productio
 
 //    override fun multInv() = element.modInverse(groupContext.q).wrap()
 
-    override operator fun unaryMinus() = (groupContext.q - element).wrap()
+    override operator fun unaryMinus(): ElementModQ =
+        if (this == groupContext.zeroModQ)
+            this
+        else
+            (groupContext.q - element).wrap()
 
 //    override infix operator fun div(denominator: ElementModQ) =
 //        (element * denominator.getCompat(groupContext).modInverse(groupContext.q)).modWrap()

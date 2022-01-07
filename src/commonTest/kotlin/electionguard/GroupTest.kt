@@ -193,9 +193,9 @@ class GroupTest {
                 elementsModQNoZero(context),
                 elementsModQNoZero(context)
             ) { a, b, c ->
-                assertEquals(a, a - context.ZERO_MOD_Q)
-                assertEquals(a - b, -(b - a))
-                assertEquals(a - (b - c), (a - b) + c)
+                assertEquals(a, a - context.ZERO_MOD_Q, "identity")
+                assertEquals(a - b, -(b - a), "commutativity-ish")
+                assertEquals(a - (b - c), (a - b) + c, "associativity-ish")
             }
         }
     }
@@ -227,13 +227,13 @@ class GroupTest {
         }
     }
 
-//    @Test
-//    fun multiplicativeInversesQ() {
-//        runTest {
-//            val context = productionGroup()
-//            forAll(elementsModQNoZero(context)) { it.multInv() * it == context.ONE_MOD_Q }
-//        }
-//    }
+    //    @Test
+    //    fun multiplicativeInversesQ() {
+    //        runTest {
+    //            val context = productionGroup()
+    //            forAll(elementsModQNoZero(context)) { it.multInv() * it == context.ONE_MOD_Q }
+    //        }
+    //    }
 
     @Test
     fun divisionP() {

@@ -18,7 +18,6 @@ private val productionGroups =
             p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
             gBytes = b64ProductionG.fromSafeBase64(),
             rBytes = b64ProductionR.fromSafeBase64(),
-            strong = true,
             name = "production group, ${it.description}",
             powRadixOption = it
         )
@@ -236,7 +235,6 @@ class ProductionGroupContext(
     val gBytes: ByteArray,
     val p256minusQBytes: ByteArray,
     val rBytes: ByteArray,
-    val strong: Boolean,
     val name: String,
     val powRadixOption: PowRadixOption
 ) : GroupContext {
@@ -256,7 +254,6 @@ class ProductionGroupContext(
     val oneModQ: ProductionElementModQ
     val twoModQ: ProductionElementModQ
     val qMinus1ModQ: ProductionElementModQ
-    val productionStrength: Boolean = strong
     val montCtxP: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val montCtxQ: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val dlogger: DLog
@@ -592,12 +589,22 @@ class ProductionElementModQ(val element: HaclBignum256, val groupContext: Produc
         return result.wrap()
     }
 
+//    override operator fun unaryMinus(): ElementModQ {
+//        val inverse = groupContext.q - element
+//         if element is zero, then we get an inverse that's out of bounds
+//        return (if (inverse == groupContext.q) groupContext.zeroModQ else inverse.wrap())
+//    }
+
     override operator fun unaryMinus(): ElementModQ {
         val result = newZeroBignum256()
 
+        if (this == groupContext.zeroModQ)
+            return this
+
         nativeElems(result, element, groupContext.q) { r, e, q ->
             // We're guaranteed from our type system that e is in [0,Q), so we don't
-            // have to worry about underflow.
+            // have to worry about underflow, and we handle the degenerate zero case
+            // above.
             Hacl_Bignum256_sub(q, e, r)
         }
 
