@@ -352,7 +352,7 @@ fun GroupContext.randomElementModQ(minimum: Int = 0) =
 
 /**
  * We often want to raise g to small powers, for which we've conveniently pre-computed the answers.
- * This function will back out and use [GroupContext.gPowP] if the input isn't precomputed.
+ * This function will fall back to use [GroupContext.gPowP] if the input isn't precomputed.
  */
 fun GroupContext.gPowPSmall(e: Int) =
     when {
@@ -373,7 +373,11 @@ fun compatibleContextOrFail(vararg elements: Element): GroupContext {
 
     val headContext = elements[0].context
 
+    // Note: this is comparing the head of the list to itself, which seems inefficient,
+    // but adding something like drop(1) in here would allocate an ArrayList and
+    // entail a bunch of copying overhead. What's here is almost certainly cheaper.
     val allCompat = elements.all { it.context.isCompatible(headContext) }
+
     if (!allCompat) throw IllegalArgumentException("incompatible contexts")
 
     return headContext

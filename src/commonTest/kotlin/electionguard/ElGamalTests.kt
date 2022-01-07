@@ -14,7 +14,7 @@ class ElGamalTests {
     @Test
     fun noSmallKeys() {
         runTest {
-            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+            val context = tinyGroup()
 
             assertThrows<Exception>("0 is too small") {
                 elGamalKeyPairFromSecret(0.toElementModQ(context))
@@ -53,9 +53,9 @@ class ElGamalTests {
     @Test
     fun encryptionBasicsAutomaticNonces() {
         runTest {
-            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+            val context = tinyGroup()
 
-            checkAll(propTestFastConfig, elGamalKeypairs(context), smallInts())
+            checkAll(elGamalKeypairs(context), smallInts())
                 { keypair, message ->
                     val encryption = message.encrypt(keypair)
                     val decryption1 = encryption.decrypt(keypair)
@@ -69,10 +69,9 @@ class ElGamalTests {
     @Test
     fun decryptWithNonce() {
         runTest {
-            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+            val context = tinyGroup()
 
             checkAll(
-                propTestFastConfig,
                 elGamalKeypairs(context),
                 elementsModQNoZero(context),
                 smallInts()
@@ -87,7 +86,7 @@ class ElGamalTests {
     @Test
     fun homomorphicAccumulation() {
         runTest {
-            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+            val context = tinyGroup()
 
             forAll(
                 propTestFastConfig,

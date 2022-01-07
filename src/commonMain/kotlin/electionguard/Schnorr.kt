@@ -30,7 +30,8 @@ fun ElGamalKeypair.schnorrProof(nonce: ElementModQ): SchnorrProof {
  */
 fun ElGamalPublicKey.hasValidSchnorrProof(proof: SchnorrProof): Boolean {
     val (k, h, challenge, u) = proof
-    val context = compatibleContextOrFail(k, h, challenge, u)
+    val context = compatibleContextOrFail(this, k, h, challenge, u)
+
     val validPublicKey = k.isValidResidue()
     val inBoundsH = h.inBounds()
     val inBoundsU = u.inBounds()
