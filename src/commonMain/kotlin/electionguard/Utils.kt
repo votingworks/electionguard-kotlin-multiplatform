@@ -31,3 +31,11 @@ fun randomInt(): Int {
     return (bytes[0].toInt() shl 24) or (bytes[1].toInt() shl 16) or (bytes[2].toInt() shl 8) or
         bytes[3].toInt()
 }
+
+/** This should really use a logging library, but we don't have one right now... */
+internal fun logWarning(
+    @Suppress("UNUSED_PARAMETER")
+    f: () -> String
+) {
+    println(f())
+}

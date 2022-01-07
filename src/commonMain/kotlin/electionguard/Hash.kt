@@ -28,16 +28,15 @@ private fun GroupContext.hashElementsNoFormula(vararg elements: Any?): ElementMo
                     is Element -> it.base16()
                     is CryptoHashable -> it.cryptoHash().base16()
                     is String -> it
-                    is Number, Int -> it.toString()
+                    is Number, UInt, ULong, UShort, UByte -> it.toString()
                     is Iterable<*> ->
                         // The simplest way to deal with lists and such are to crunch them
                         // recursively.
-                        // But we special-case the empty list, because it hashes to "null" yet has a
+
+                        // We special-case the empty list, because it hashes to "null" yet has a
                         // formula of []. Note that empty lists and nulls will never occur in
-                        // practice,
-                        // anywhere in ElectionGuard, but hashElements needs to handle them
-                        // correctly,
-                        // just in case.
+                        // practice, anywhere in ElectionGuard, but hashElements needs to handle
+                        // them correctly, just in case.
                         if (it.none())
                             "null"
                         else
@@ -51,3 +50,9 @@ private fun GroupContext.hashElementsNoFormula(vararg elements: Any?): ElementMo
     val digest = hashMe.encodeToByteArray().sha256()
     return safeBinaryToElementModQ(digest, maxQMinus1 = true)
 }
+
+// TODO: do we need to be able to hash anything else that wouldn't already be covered
+//   by CryptoHashable? The Python reference code, if it sees an unknown type, just
+//   calls str() on it, getting whatever Python implementation-specific string representation
+//   might be present. For contrast, we throw an exception here. This might at least
+//   become a useful way to detect things that need to be CryptoHashable but aren't.

@@ -11,7 +11,7 @@ class ChaumPedersenTest {
     @Test
     fun testCCKnownNonceProofsSimpleEncryptionZero() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
             val nonce = context.ONE_MOD_Q
             val seed = context.TWO_MOD_Q
@@ -64,7 +64,7 @@ class ChaumPedersenTest {
     @Test
     fun testCCKnownSecretProofsSimpleEncryptionZero() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
             val nonce = context.ONE_MOD_Q
             val seed = context.TWO_MOD_Q
@@ -98,7 +98,7 @@ class ChaumPedersenTest {
     @Test
     fun testCCProofsKnownNonce() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             checkAll(
                 propTestFastConfig,
                 elGamalKeypairs(context),
@@ -168,7 +168,7 @@ class ChaumPedersenTest {
     @Test
     fun testCCProofsKnownSecretKey() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             checkAll(
                 propTestFastConfig,
                 elGamalKeypairs(context),
@@ -236,7 +236,7 @@ class ChaumPedersenTest {
     @Test
     fun testGcpProof() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             checkAll(
                 elementsModQ(context),
                 elementsModQ(context),
@@ -255,7 +255,7 @@ class ChaumPedersenTest {
     @Test
     fun testGcpProofSimple() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             helperTestGcp(
                 context.TWO_MOD_Q,
                 3.toElementModQ(context),
@@ -310,7 +310,7 @@ class ChaumPedersenTest {
     @Test
     fun testDisjunctiveProofKnownNonceSimple() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
             val nonce = context.ONE_MOD_Q
             val seed = context.TWO_MOD_Q
@@ -396,7 +396,7 @@ class ChaumPedersenTest {
     @Test
     fun disjunctiveProofs() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             checkAll(
                 Arb.int(min=0, max=1),
                 elementsModQNoZero(context),
@@ -445,7 +445,7 @@ class ChaumPedersenTest {
     @Test
     fun fakeGenericProofsDontValidate() {
         runTest {
-            val context = testGroup()
+            val context = tinyGroup()
             checkAll(
                 elementsModQNoZero(context),
                 elementsModQNoZero(context),

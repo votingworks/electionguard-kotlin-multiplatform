@@ -33,7 +33,7 @@ class ElGamalTests {
 
     @Test
     fun encryptionBasicsSm() {
-        encryptionBasics { testGroup() }
+        encryptionBasics { tinyGroup() }
     }
 
     fun encryptionBasics(contextF: suspend () -> GroupContext) {

@@ -3,14 +3,6 @@ package electionguard
 // Reference specification:
 // https://github.com/microsoft/electionguard/releases/tag/v0.95.0
 
-/** This should really use a logging library, but we don't have one right now... */
-private fun logWarning(
-    @Suppress("UNUSED_PARAMETER")
-    f: () -> String
-) {
-    //    println(f())
-}
-
 /** Proof that the ciphertext is a given constant. */
 data class ConstantChaumPedersenProofKnownNonce(
     val proof: GenericChaumPedersenProof,

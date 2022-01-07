@@ -1,7 +1,7 @@
 package electionguard
 private const val MAX_DLOG: Int = intTestQ
 
-class TestDLog(val context: GroupContext) {
+class TinyDLog(val context: GroupContext) {
     // Implementation note for dealing with test-sized values: we're avoiding
     // concurrency issues here by simply precomputing the entire table up front,
     // since it's pretty small. This will yield constant-time dLog computation,

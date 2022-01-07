@@ -1,6 +1,5 @@
 package electionguard
 
-//typealias ElGamalSecretKey = ElementModQ
 typealias ElGamalPublicKey = ElementModP
 
 /** A thin wrapper around an ElementModQ that allows us to hang onto a pre-computed `negativeE` */

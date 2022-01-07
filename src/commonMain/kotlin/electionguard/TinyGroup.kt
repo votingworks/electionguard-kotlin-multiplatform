@@ -2,8 +2,8 @@ package electionguard
 
 import kotlinx.serialization.json.JsonElement
 
-private val testGroupContext =
-    TestGroupContext(
+private val tinyGroupContext =
+    TinyGroupContext(
         p = intTestP.toUInt(),
         q = intTestQ.toUInt(),
         r = intTestR.toUInt(),
@@ -16,18 +16,18 @@ private val testGroupContext =
  * Fetches the [GroupContext] suitable for unit tests and such, where everything is a 16-bit number
  * on the inside, so it runs really fast, but is (of course) completely insecure.
  */
-fun testGroup(): GroupContext = testGroupContext
+fun tinyGroup(): GroupContext = tinyGroupContext
 
 private fun Element.getCompat(other: GroupContext): UInt {
     context.assertCompatible(other)
     return when (this) {
-        is TestElementModP -> this.element
-        is TestElementModQ -> this.element
+        is TinyElementModP -> this.element
+        is TinyElementModQ -> this.element
         else -> throw NotImplementedError("should only be two kinds of elements")
     }
 }
 
-class TestGroupContext(
+class TinyGroupContext(
     val p: UInt,
     val q: UInt,
     val g: UInt,
@@ -45,20 +45,20 @@ class TestGroupContext(
     val zeroModQ: ElementModQ
     val oneModQ: ElementModQ
     val twoModQ: ElementModQ
-    val dlogger: TestDLog
+    val dlogger: TinyDLog
     val qMinus1Q: ElementModQ
 
     init {
-        zeroModP = TestElementModP(0U, this)
-        oneModP = TestElementModP(1U, this)
-        twoModP = TestElementModP(2U, this)
-        gModP = TestElementModP(g, this).acceleratePow()
-        gSquaredModP = TestElementModP((g * g) % p, this)
-        qModP = TestElementModP(q, this)
-        zeroModQ = TestElementModQ(0U, this)
-        oneModQ = TestElementModQ(1U, this)
-        twoModQ = TestElementModQ(2U, this)
-        dlogger = TestDLog(this)
+        zeroModP = TinyElementModP(0U, this)
+        oneModP = TinyElementModP(1U, this)
+        twoModP = TinyElementModP(2U, this)
+        gModP = TinyElementModP(g, this).acceleratePow()
+        gSquaredModP = TinyElementModP((g * g) % p, this)
+        qModP = TinyElementModP(q, this)
+        zeroModQ = TinyElementModQ(0U, this)
+        oneModQ = TinyElementModQ(1U, this)
+        twoModQ = TinyElementModQ(2U, this)
+        dlogger = TinyDLog(this)
         qMinus1Q = zeroModQ - oneModQ
     }
 
@@ -173,32 +173,32 @@ class TestGroupContext(
         if (i >= q)
             throw ArithmeticException("out of bounds for TestElementModQ: $i")
         else
-            TestElementModQ(i, this)
+            TinyElementModQ(i, this)
 
     override fun uIntToElementModP(i: UInt): ElementModP =
         if (i >= p)
             throw ArithmeticException("out of bounds for TestElementModP: $i")
         else
-            TestElementModP(i, this)
+            TinyElementModP(i, this)
 
     override fun Iterable<ElementModQ>.addQ(): ElementModQ =
-        uIntToElementModQ(fold(0U) { a, b -> (a + b.getCompat(this@TestGroupContext)) % q })
+        uIntToElementModQ(fold(0U) { a, b -> (a + b.getCompat(this@TinyGroupContext)) % q })
 
     override fun Iterable<ElementModP>.multP(): ElementModP =
-        uIntToElementModP(fold(1U) { a, b -> (a * b.getCompat(this@TestGroupContext)) % p })
+        uIntToElementModP(fold(1U) { a, b -> (a * b.getCompat(this@TinyGroupContext)) % p })
 
     override fun gPowP(e: ElementModQ): ElementModP = gModP powP e
 
     override fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
-class TestElementModP(val element: UInt, val groupContext: TestGroupContext) : ElementModP {
+class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {
     internal fun UInt.modWrap(): ElementModP = (this % groupContext.p).wrap()
-    internal fun UInt.wrap(): ElementModP = TestElementModP(this, groupContext)
+    internal fun UInt.wrap(): ElementModP = TinyElementModP(this, groupContext)
 
     override fun isValidResidue(): Boolean {
         val residue =
-            this powP TestElementModQ(groupContext.q, groupContext) == groupContext.ONE_MOD_P
+            this powP TinyElementModQ(groupContext.q, groupContext) == groupContext.ONE_MOD_P
         return inBounds() && residue
     }
 
@@ -240,16 +240,16 @@ class TestElementModP(val element: UInt, val groupContext: TestGroupContext) : E
     override fun byteArray(): ByteArray =
         byteArrayOf(((element shr 8) and 0xffU).toByte(), (element and 0xffU).toByte())
 
-    override fun equals(other: Any?): Boolean = other is TestElementModP && element == other.element
+    override fun equals(other: Any?): Boolean = other is TinyElementModP && element == other.element
 
     override fun hashCode(): Int = element.hashCode()
 
     override fun toString(): String = "ElementModP($element)"
 }
 
-class TestElementModQ(val element: UInt, val groupContext: TestGroupContext) : ElementModQ {
+class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : ElementModQ {
     internal fun UInt.modWrap(): ElementModQ = (this % groupContext.q).wrap()
-    internal fun UInt.wrap(): ElementModQ = TestElementModQ(this, groupContext)
+    internal fun UInt.wrap(): ElementModQ = TinyElementModQ(this, groupContext)
 
     override fun plus(other: ElementModQ): ElementModQ =
         (this.element + other.getCompat(groupContext)).modWrap()
@@ -278,7 +278,7 @@ class TestElementModQ(val element: UInt, val groupContext: TestGroupContext) : E
     override fun byteArray(): ByteArray =
         byteArrayOf(((element shr 8) and 0xffU).toByte(), (element and 0xffU).toByte())
 
-    override fun equals(other: Any?): Boolean = other is TestElementModQ && element == other.element
+    override fun equals(other: Any?): Boolean = other is TinyElementModQ && element == other.element
 
     override fun hashCode(): Int = element.hashCode()
 

@@ -14,7 +14,7 @@ class GroupTest {
     fun basicsLg() = basics { productionGroup() }
 
     @Test
-    fun basicsSm() = basics { testGroup() }
+    fun basicsSm() = basics { tinyGroup() }
 
     fun basics(contextF: suspend () -> GroupContext) {
         runTest {
@@ -30,7 +30,7 @@ class GroupTest {
     fun comparisonOperationsLg() = comparisonOperations { productionGroup() }
 
     @Test
-    fun comparisonOperationsSm() = comparisonOperations { testGroup() }
+    fun comparisonOperationsSm() = comparisonOperations { tinyGroup() }
 
     fun comparisonOperations(contextF: suspend () -> GroupContext) {
         runTest {
@@ -49,7 +49,7 @@ class GroupTest {
     fun generatorsWorkLg() = generatorsWork { productionGroup() }
 
     @Test
-    fun generatorsWorkSm() = generatorsWork { testGroup() }
+    fun generatorsWorkSm() = generatorsWork { tinyGroup() }
 
     fun generatorsWork(contextF: suspend () -> GroupContext) {
         runTest {
@@ -63,7 +63,7 @@ class GroupTest {
     fun validResiduesForGPowPLg() = validResiduesForGPowP { productionGroup() }
 
     @Test
-    fun validResiduesForGPowPSm() = validResiduesForGPowP { testGroup() }
+    fun validResiduesForGPowPSm() = validResiduesForGPowP { tinyGroup() }
 
     fun validResiduesForGPowP(contextF: suspend () -> GroupContext) {
         runTest {
@@ -105,7 +105,7 @@ class GroupTest {
     fun additionBasicsLg() = additionBasics { productionGroup() }
 
     @Test
-    fun additionBasicsSm() = additionBasics { testGroup() }
+    fun additionBasicsSm() = additionBasics { tinyGroup() }
 
     fun additionBasics(contextF: suspend () -> GroupContext) {
         runTest {
@@ -123,7 +123,7 @@ class GroupTest {
     fun additionWrappingQLg() = additionWrappingQ { productionGroup() }
 
     @Test
-    fun additionWrappingQSm() = additionWrappingQ { testGroup() }
+    fun additionWrappingQSm() = additionWrappingQ { tinyGroup() }
 
     fun additionWrappingQ(contextF: suspend () -> GroupContext) {
         runTest {
@@ -141,7 +141,7 @@ class GroupTest {
     fun multiplicationBasicsPLg() = multiplicationBasicsP { productionGroup() }
 
     @Test
-    fun multiplicationBasicsPSm() = multiplicationBasicsP { testGroup() }
+    fun multiplicationBasicsPSm() = multiplicationBasicsP { tinyGroup() }
 
     fun multiplicationBasicsP(contextF: suspend () -> GroupContext) {
         runTest {
@@ -162,7 +162,7 @@ class GroupTest {
     fun multiplicationBasicsQLg() = multiplicationBasicsQ { productionGroup() }
 
     @Test
-    fun multiplicationBasicsQsm() = multiplicationBasicsQ { testGroup() }
+    fun multiplicationBasicsQsm() = multiplicationBasicsQ { tinyGroup() }
 
     fun multiplicationBasicsQ(contextF: suspend () -> GroupContext) {
         runTest {
@@ -183,7 +183,7 @@ class GroupTest {
     fun subtractionBasicsLg() = subtractionBasics { productionGroup() }
 
     @Test
-    fun subtractionBasicsSm() = subtractionBasics { testGroup() }
+    fun subtractionBasicsSm() = subtractionBasics { tinyGroup() }
 
     fun subtractionBasics(contextF: suspend () -> GroupContext) {
         runTest {
@@ -204,7 +204,7 @@ class GroupTest {
     fun negationLg() = negation { productionGroup() }
 
     @Test
-    fun negationSm() = negation { testGroup() }
+    fun negationSm() = negation { tinyGroup() }
 
     fun negation(contextF: suspend () -> GroupContext) {
         runTest {
@@ -217,7 +217,7 @@ class GroupTest {
     fun multiplicativeInversesPLg() = multiplicativeInversesP { productionGroup() }
 
     @Test
-    fun multiplicativeInversesPSm() = multiplicativeInversesP { testGroup() }
+    fun multiplicativeInversesPSm() = multiplicativeInversesP { tinyGroup() }
 
     fun multiplicativeInversesP(contextF: suspend () -> GroupContext) {
         runTest {
@@ -249,7 +249,7 @@ class GroupTest {
     fun exponentiationLg() = exponentiation { productionGroup() }
 
     @Test
-    fun exponentiationSm() = exponentiation { testGroup() }
+    fun exponentiationSm() = exponentiation { tinyGroup() }
 
     fun exponentiation(contextF: suspend () -> GroupContext) {
         runTest {
@@ -278,7 +278,7 @@ class GroupTest {
     fun subgroupInversesLg() = subgroupInverses { productionGroup() }
 
     @Test
-    fun subgroupInversesSm() = subgroupInverses { testGroup() }
+    fun subgroupInversesSm() = subgroupInverses { tinyGroup() }
 
     fun subgroupInverses(contextF: suspend () -> GroupContext) {
         runTest {
@@ -295,7 +295,7 @@ class GroupTest {
     fun iterableAdditionLg() = iterableAddition { productionGroup() }
 
     @Test
-    fun iterableAdditionSm() = iterableAddition { testGroup() }
+    fun iterableAdditionSm() = iterableAddition { tinyGroup() }
 
     fun iterableAddition(contextF: suspend () -> GroupContext) {
         runTest {
@@ -317,7 +317,7 @@ class GroupTest {
     fun iterableMultiplicationLg() = iterableMultiplication { productionGroup() }
 
     @Test
-    fun iterableMultiplicationSm() = iterableMultiplication { testGroup() }
+    fun iterableMultiplicationSm() = iterableMultiplication { tinyGroup() }
 
     fun iterableMultiplication(contextF: suspend () -> GroupContext) {
         runTest {

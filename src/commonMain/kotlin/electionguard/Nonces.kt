@@ -16,38 +16,35 @@ package electionguard
  * val (a, b, c) = Nonces(seed, "some-specific-purpose")
  * ```
  */
-class Nonces(val seed: ElementModQ) {
-    /**
-     * Alternate constructor, where you can specify arbitrary values, which will be hashed together
-     * to form the seed for this stream of nonces.
-     */
-    constructor(
-        seed: ElementModQ,
-        vararg headers: Any?
-    ) : this(seed.context.hashElements(seed, *headers))
+class Nonces(seed: ElementModQ, vararg headers: Any) {
+    val internalSeed = if (headers.isNotEmpty()) seed.context.hashElements(seed, *headers) else seed
 
-    override fun equals(other: Any?) = when (other) {
-        is Nonces -> seed == other.seed
-        else -> false
-    }
+    override fun equals(other: Any?) =
+        when (other) {
+            is Nonces -> internalSeed == other.internalSeed
+            else -> false
+        }
 
-    override fun hashCode() = seed.hashCode()
+    override fun hashCode() = internalSeed.hashCode()
 
-    override fun toString() = "Nonces($seed)"
+    override fun toString() = "Nonces($internalSeed)"
 }
 
 /** Get the requested nonce from the sequence. */
 operator fun Nonces.get(index: Int): ElementModQ = getWithHeaders(index)
 
-/** Get the requested nonce from the sequence, hashing the requested headers in with the result. */
-fun Nonces.getWithHeaders(index: Int, vararg headers: Any?) =
-    seed.context.hashElements(seed, index, *headers)
+/**
+ * Get the requested nonce from the sequence, hashing the requested headers in with the result.
+ * Headers can be included to optionally help specify what a nonce is being used for.
+ */
+fun Nonces.getWithHeaders(index: Int, vararg headers: String) =
+    internalSeed.context.hashElements(internalSeed, index, *headers)
 
 /**
  * Get an infinite (lazy) sequences of nonces. Equivalent to indexing with [Nonces.get] starting at
  * 0.
  */
-fun Nonces.asSequence() = generateSequence(0) { it + 1 }.map { this[it] }
+fun Nonces.asSequence(): Sequence<ElementModQ> = generateSequence(0) { it + 1 }.map { this[it] }
 
 /** Gets a list of the desired number (`n`) of nonces. */
 fun Nonces.take(n: Int): List<ElementModQ> = asSequence().take(n).toList()

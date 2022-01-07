@@ -73,7 +73,7 @@ class TestPowRadix {
         // Yes, this isn't actually a property test, but this puts the test into
         // a "suspend" context, allowing testGroup() to work correctly.
         runTest {
-            val ctx = testGroup()
+            val ctx = tinyGroup()
             val option = PowRadixOption.LOW_MEMORY_USE
             val g = ctx.G_MOD_P
             val powRadix = PowRadix(g, option)
@@ -117,7 +117,7 @@ class TestPowRadix {
         // First we'll try it with the test group, then with the production group
 
         runTest {
-            testGroup()
+            tinyGroup()
                 .let { ctx ->
                     val powRadix = PowRadix(ctx.G_MOD_P, option)
 
