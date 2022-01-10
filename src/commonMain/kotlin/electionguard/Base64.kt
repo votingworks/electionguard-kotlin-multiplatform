@@ -1,5 +1,10 @@
 package electionguard
 
+import kotlin.math.min
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger("Base64")
+
 // Borrowed from here:
 // https://gist.githubusercontent.com/MarkusKramer/4db02c9983c76efc6aa56cf0bdc75a5b/raw/aa49830aa7db2717926421bdde18d6d153f69c53/Base64.kt
 
@@ -25,8 +30,6 @@ package electionguard
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions. */
-
-import kotlin.math.min
 
 /**
  * This class consists exclusively of static methods for obtaining encoders and decoders for the
@@ -69,6 +72,7 @@ object Base64 {
         try {
             if (this == "") null else this.fromSafeBase64()
         } catch (ex: IllegalArgumentException) {
+            logger.warn { "input isn't a valid base64 string" }
             null
         }
 
@@ -83,14 +87,14 @@ object Base64 {
      *
      * @return A Base64 encoder.
      */
-    val encoder = Encoder(null, -1, true)
+    private val encoder = Encoder(null, -1, true)
 
     /**
      * Returns a [Decoder] that decodes using the [Basic](#basic) type base64 encoding scheme.
      *
      * @return A Base64 decoder.
      */
-    val decoder = Decoder()
+    private val decoder = Decoder()
 
     /**
      * This class implements an encoder for encoding byte data using the Base64 encoding scheme as

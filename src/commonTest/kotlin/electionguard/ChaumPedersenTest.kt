@@ -420,15 +420,15 @@ class ChaumPedersenTest {
                         proof0 = proof.proof1,
                         proof1 = proof.proof0,
                         c =
-                        context.hashElements(
-                            hashHeader,
-                            ciphertext.pad,
-                            ciphertext.data,
-                            proof.proof1.a,
-                            proof.proof1.b,
-                            proof.proof0.a,
-                            proof.proof0.b
-                        )
+                            context.hashElements(
+                                hashHeader,
+                                ciphertext.pad,
+                                ciphertext.data,
+                                proof.proof1.a,
+                                proof.proof1.b,
+                                proof.proof0.a,
+                                proof.proof0.b
+                            )
                     )
 
                 assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
@@ -470,10 +470,10 @@ class ChaumPedersenTest {
                 // the same test, below, with the production group, and enabling this second
                 // assertion only there.
 
-//                assertFalse(
-//                    badProof.isValid(g, gx, h, hNotX, hashHeader, checkC = true),
-//                    "if we do check c, the proof will not validate"
-//                )
+                //                assertFalse(
+                //                    badProof.isValid(g, gx, h, hNotX, hashHeader, checkC = true),
+                //                    "if we do check c, the proof will not validate"
+                //                )
             }
         }
     }

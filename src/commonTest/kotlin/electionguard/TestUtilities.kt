@@ -3,6 +3,7 @@
 package electionguard
 
 import io.kotest.assertions.fail
+import kotlin.test.assertFalse
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 /**
@@ -36,4 +37,9 @@ inline fun assertDoesNotThrow(message: String = "", f: () -> Unit) {
     } catch (ex: Throwable) {
         fail(message)
     }
+}
+
+/** Verifies that two byte arrays are different. */
+fun assertContentNotEquals(a: ByteArray, b: ByteArray) {
+    assertFalse(a.contentEquals(b))
 }

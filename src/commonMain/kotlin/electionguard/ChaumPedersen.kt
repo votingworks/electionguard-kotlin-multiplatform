@@ -1,7 +1,7 @@
 package electionguard
 
 import mu.KotlinLogging
-private val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger("ChaumPedersen")
 
 // Reference specification:
 // https://github.com/microsoft/electionguard/releases/tag/v0.95.0

@@ -171,18 +171,10 @@ kotlin {
 
                     // Portable, Kotlin port of Java's BigInteger; slow but works
                     implementation("io.github.gciatto:kt-math:0.4.0")
-
-                    // Logging
-//                    implementation("io.github.microutils:kotlin-logging-js:2.1.21")
                 }
             }
         val jsTest by getting { dependencies { implementation(kotlin("test-js", "1.6.10")) } }
-        val nativeMain by getting {
-            dependencies {
-                // Logging
-//                implementation("io.github.microutils:kotlin-logging-macosx64:2.1.21")
-            }
-        }
+        val nativeMain by getting { dependencies {} }
         val nativeTest by getting { dependencies {} }
     }
 }

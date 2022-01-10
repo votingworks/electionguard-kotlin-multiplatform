@@ -1,7 +1,7 @@
 package electionguard
 
 import mu.KotlinLogging
-private val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger("Schnorr")
 
 /**
  * Representation of a proof that the prover know the private key corresponding to the given public

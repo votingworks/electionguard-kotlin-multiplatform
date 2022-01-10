@@ -276,11 +276,12 @@ class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : E
         // finalState.t < 0, to work correctly.
 
         data class State(val t: Long, val newT: Long, val r: Long, val newR: Long)
-        val seq = generateSequence(State(0, 1, groupContext.q.toLong(), element.toLong())) {
-                (t, newT, r, newR)  ->
-            val quotient = r / newR
-            State(newT, t - quotient * newT, newR, r - quotient * newR)
-        }
+        val seq =
+            generateSequence(State(0, 1, groupContext.q.toLong(), element.toLong()))
+                { (t, newT, r, newR) ->
+                    val quotient = r / newR
+                    State(newT, t - quotient * newT, newR, r - quotient * newR)
+                }
 
         val finalState = seq.find { it.newR == 0L } ?: throw Error("should never happen")
 
@@ -288,11 +289,11 @@ class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : E
             throw ArithmeticException("element $element is not invertible")
         }
 
-        return TinyElementModQ((
-                if (finalState.t < 0)
-                    finalState.t + groupContext.q.toLong()
-                else finalState.t).toUInt(),
-            groupContext)
+        return TinyElementModQ(
+            (if (finalState.t < 0) finalState.t + groupContext.q.toLong() else finalState.t)
+                .toUInt(),
+            groupContext
+        )
     }
 
     override fun div(denominator: ElementModQ): ElementModQ = this * denominator.multInv()
