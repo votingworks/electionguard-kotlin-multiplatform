@@ -229,13 +229,20 @@ class GroupTest {
         }
     }
 
-    //    @Test
-    //    fun multiplicativeInversesQ() {
-    //        runTest {
-    //            val context = productionGroup()
-    //            forAll(elementsModQNoZero(context)) { it.multInv() * it == context.ONE_MOD_Q }
-    //        }
-    //    }
+    @Test
+    fun multiplicativeInversesQLg() = multiplicativeInversesQ { productionGroup() }
+
+    @Test
+    fun multiplicativeInversesQSm() = multiplicativeInversesQ { tinyGroup() }
+
+    fun multiplicativeInversesQ(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
+            checkAll(elementsModQNoZero(context)) {
+                assertEquals(context.ONE_MOD_Q, it.multInv() * it)
+            }
+        }
+    }
 
     @Test
     fun divisionP() {
@@ -243,6 +250,21 @@ class GroupTest {
             val context = productionGroup()
             forAll(validElementsModP(context), validElementsModP(context)) { a, b ->
                 (a * b) / b == a // division undoes multiplication
+            }
+        }
+    }
+
+    @Test
+    fun exponentiationQLg() = exponentiationQ { productionGroup() }
+
+    @Test
+    fun exponentiationQSm() = exponentiationQ { tinyGroup() }
+
+    fun exponentiationQ(contextF: suspend () -> GroupContext) {
+        runTest {
+            val context = contextF()
+            checkAll(propTestFastConfig, elementsModQ(context), elementsModQ(context), elementsModQ(context)) { a, b, c ->
+                assertEquals(a powQ (b + c), (a powQ b) * (a powQ c))
             }
         }
     }

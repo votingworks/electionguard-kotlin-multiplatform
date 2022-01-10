@@ -214,6 +214,15 @@ interface ElementModQ : Element, Comparable<ElementModQ> {
     /** Computes the additive inverse */
     operator fun unaryMinus(): ElementModQ
 
+    /** Computes b^e mod q */
+    infix fun powQ(e: ElementModQ): ElementModQ
+
+    /** Finds the multiplicative inverse */
+    fun multInv(): ElementModQ
+
+    /** Multiplies by the modular inverse of [denominator] */
+    infix operator fun div(denominator: ElementModQ): ElementModQ
+
     /** Allows elements to be compared (<, >, <=, etc.) using the usual arithmetic operators. */
     override operator fun compareTo(other: ElementModQ): Int
 }

@@ -253,7 +253,7 @@ class ProductionElementModQ(val element: BigInteger, val groupContext: Productio
     override operator fun times(other: ElementModQ) =
         (this.element * other.getCompat(groupContext)).modWrap()
 
-//    override fun multInv() = element.modInverse(groupContext.q).wrap()
+    override fun multInv() = element.modInverse(groupContext.q).wrap()
 
     override operator fun unaryMinus(): ElementModQ =
         if (this == groupContext.zeroModQ)
@@ -261,8 +261,11 @@ class ProductionElementModQ(val element: BigInteger, val groupContext: Productio
         else
             (groupContext.q - element).wrap()
 
-//    override infix operator fun div(denominator: ElementModQ) =
-//        (element * denominator.getCompat(groupContext).modInverse(groupContext.q)).modWrap()
+    override infix operator fun div(denominator: ElementModQ) =
+        (element * denominator.getCompat(groupContext).modInverse(groupContext.q)).modWrap()
+
+    override infix fun powQ(e: ElementModQ) =
+        this.element.modPow(e.getCompat(groupContext), groupContext.q).wrap()
 
     override fun equals(other: Any?) = when (other) {
         is ProductionElementModQ -> other.element == this.element && other.groupContext.isCompatible(this.groupContext)

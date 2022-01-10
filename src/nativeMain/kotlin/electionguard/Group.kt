@@ -37,7 +37,14 @@ internal const val HaclBignum4096_Bytes = HaclBignum4096_LongWords * 8
 internal fun newZeroBignum4096() = HaclBignum4096(HaclBignum4096_LongWords)
 internal fun newZeroBignum256() = HaclBignum256(HaclBignum256_LongWords)
 
-// helper functions that make it less awful to go back and forth from Kotlin to C interaction
+// Helper functions that make it less awful to go back and forth from Kotlin to C interaction.
+// What's going on here: before we can pass a pointer from a Kotlin-managed ULongArray into
+// a C function, we need to "pin" it in memory, guaranteeing that a hypothetical copying
+// garbage collector won't come along and relocate that buffer while we were sending a
+// raw pointer to it into the C library. That's what usePinned() is all about. At least in
+// how we're using HACL, we're relying on these functions being stateless. We know that
+// whatever we pass in won't be retained, so once the call returns, the pinning is no
+// longer necessary.
 
 internal inline fun <T> nativeElems(a: ULongArray,
                                     b: ULongArray,
@@ -611,6 +618,28 @@ class ProductionElementModQ(val element: HaclBignum256, val groupContext: Produc
         return result.wrap()
     }
 
+    override fun multInv(): ElementModQ {
+        val result = newZeroBignum256()
+
+        nativeElems(result, element) { r, e ->
+            Hacl_Bignum256_mod_inv_prime_vartime_precomp(groupContext.montCtxQ, e, r)
+        }
+
+        return result.wrap()
+    }
+
+    override fun div(denominator: ElementModQ): ElementModQ = this * denominator.multInv()
+
+    override infix fun powQ(e: ElementModQ): ElementModQ {
+        val result = newZeroBignum256()
+        nativeElems(result, element, e.getCompat(groupContext)) { r, a, b ->
+            // We're using the faster "variable time" modular exponentiation; timing attacks
+            // are not considered a significant threat against ElectionGuard.
+            Hacl_Bignum256_mod_exp_vartime_precomp(groupContext.montCtxQ, a, 256, b, r)
+        }
+        return result.wrap()
+    }
+
     override fun equals(other: Any?) = when (other) {
         // We're converting from the internal representation to a byte array
         // for equality checking; possibly overkill, but if there are ever
@@ -668,7 +697,7 @@ open class ProductionElementModP(val element: HaclBignum4096, val groupContext: 
         return inBounds() && residue
     }
 
-    override infix open fun powP(e: ElementModQ): ElementModP {
+    override infix fun powP(e: ElementModQ): ElementModP {
         val result = newZeroBignum4096()
         nativeElems(result, element, e.getCompat(groupContext)) { r, a, b ->
             // We're using the faster "variable time" modular exponentiation; timing attacks
@@ -726,7 +755,7 @@ open class ProductionElementModP(val element: HaclBignum4096, val groupContext: 
 
     override fun toString() = base64()  // unpleasant, but available
 
-    override open fun acceleratePow() : ElementModP =
+    override fun acceleratePow() : ElementModP =
         AcceleratedElementModP(this)
 }
 

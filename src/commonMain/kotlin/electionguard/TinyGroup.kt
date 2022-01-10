@@ -263,6 +263,23 @@ class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : E
     override operator fun unaryMinus(): ElementModQ =
         if (this == groupContext.zeroModQ) this else (groupContext.q - element).wrap()
 
+    override fun multInv(): ElementModQ = this powQ groupContext.qMinus1Q
+
+    override fun div(denominator: ElementModQ): ElementModQ = this * denominator.multInv()
+
+    override infix fun powQ(e: ElementModQ): ElementModQ {
+        var result: UInt = 1U
+        var base: UInt = element
+        val exp: UInt = e.getCompat(groupContext)
+        (0..16)
+            .forEach { bit ->
+                val eBitSet = ((exp shr bit) and 1U) == 1U
+                if (eBitSet) result = (result * base) % groupContext.q
+                base = (base * base) % groupContext.q
+            }
+        return result.wrap()
+    }
+
     override fun compareTo(other: ElementModQ): Int =
         element.compareTo(other.getCompat(groupContext))
 
