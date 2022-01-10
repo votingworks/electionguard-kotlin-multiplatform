@@ -4,10 +4,7 @@ import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 import io.kotest.property.forAll
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class GroupTest {
     @Test
@@ -264,7 +261,7 @@ class GroupTest {
         runTest {
             val context = productionGroup()
             forAll(propTestFastConfig, validElementsModP(context), validElementsModP(context))
-                { a, b -> (a * b) / b == a // division undoes multiplication } }
+                { a, b -> (a * b) / b == a }
         }
     }
 
@@ -372,6 +369,19 @@ class GroupTest {
                 assertEquals(expected, context.multP(a, b, c))
                 assertEquals(expected, with(context) { listOf(a, b, c).multP() })
             }
+        }
+    }
+
+    @Test
+    fun groupCompatibility() {
+        runTest {
+            val ctxP = productionGroup(PowRadixOption.NO_ACCELERATION)
+            val ctxP2 = productionGroup(PowRadixOption.NO_ACCELERATION)
+            val ctxT = tinyGroup()
+
+            assertTrue(ctxP.isCompatible(ctxP.groupContextDescription))
+            assertTrue(ctxP.isCompatible(ctxP2.groupContextDescription))
+            assertFalse(ctxT.groupContextDescription.isCompatible(ctxP.groupContextDescription))
         }
     }
 }

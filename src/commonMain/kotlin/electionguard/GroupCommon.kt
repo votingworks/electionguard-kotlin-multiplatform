@@ -169,8 +169,10 @@ interface GroupContext {
     val MAX_BYTES_Q: Int
 
     /**
-     * Identifies whether the two GroupContexts are "compatible", so elements made in one context
-     * would work in the other. Groups with the same primes should be compatible.
+     * Identifies whether two internal GroupContexts are "compatible", so elements made in one context
+     * would work in the other. Groups with the same primes should be compatible. Note that this
+     * is meant to be fast, so only makes superficial checks. The [GroupContextDescription] variant
+     * of this method validates that all the group constants are the same.
      */
     fun isCompatible(ctx: GroupContext): Boolean
 
