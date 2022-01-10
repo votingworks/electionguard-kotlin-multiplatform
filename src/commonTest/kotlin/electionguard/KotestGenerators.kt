@@ -40,7 +40,10 @@ fun elGamalKeypairs(ctx: GroupContext): Arb<ElGamalKeypair> =
 
 /**
  * Property-based testing can run slowly. This will speed things up by turning off shrinking and
- * using fewer iterations.
+ * using fewer iterations. Typical usage:
+ * ```
+ * forAll(propTestFastConfig, Arb.x(), Arb.y()) { x, y -> ... }
+ * ```
  */
 val propTestFastConfig =
     PropTestConfig(maxFailure = 1, shrinkingMode = ShrinkingMode.Off, iterations = 10)

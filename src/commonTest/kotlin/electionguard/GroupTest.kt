@@ -54,8 +54,8 @@ class GroupTest {
     fun generatorsWork(contextF: suspend () -> GroupContext) {
         runTest {
             val context = contextF()
-            forAll(elementsModP(context)) { it.inBounds() }
-            forAll(elementsModQ(context)) { it.inBounds() }
+            forAll(propTestFastConfig, elementsModP(context)) { it.inBounds() }
+            forAll(propTestFastConfig, elementsModQ(context)) { it.inBounds() }
         }
     }
 
@@ -75,8 +75,12 @@ class GroupTest {
     fun binaryArrayRoundTrip() {
         runTest {
             val context = productionGroup()
-            forAll(elementsModP(context)) { it == context.binaryToElementModP(it.byteArray()) }
-            forAll(elementsModQ(context)) { it == context.binaryToElementModQ(it.byteArray()) }
+            forAll(propTestFastConfig, elementsModP(context)) {
+                it == context.binaryToElementModP(it.byteArray())
+            }
+            forAll(propTestFastConfig, elementsModQ(context)) {
+                it == context.binaryToElementModQ(it.byteArray())
+            }
         }
     }
 
@@ -84,8 +88,12 @@ class GroupTest {
     fun base64RoundTrip() {
         runTest {
             val context = productionGroup()
-            forAll(elementsModP(context)) { it == context.base64ToElementModP(it.base64()) }
-            forAll(elementsModQ(context)) { it == context.base64ToElementModQ(it.base64()) }
+            forAll(propTestFastConfig, elementsModP(context)) {
+                it == context.base64ToElementModP(it.base64())
+            }
+            forAll(propTestFastConfig, elementsModQ(context)) {
+                it == context.base64ToElementModQ(it.base64())
+            }
         }
     }
 
@@ -110,12 +118,16 @@ class GroupTest {
     fun additionBasics(contextF: suspend () -> GroupContext) {
         runTest {
             val context = contextF()
-            checkAll(elementsModQ(context), elementsModQ(context), elementsModQ(context))
-                { a, b, c ->
-                    assertEquals(a, a + context.ZERO_MOD_Q) // identity
-                    assertEquals(a + b, b + a) // commutative
-                    assertEquals(a + (b + c), (a + b) + c) // associative
-                }
+            checkAll(
+                propTestFastConfig,
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context)
+            ) { a, b, c ->
+                assertEquals(a, a + context.ZERO_MOD_Q) // identity
+                assertEquals(a + b, b + a) // commutative
+                assertEquals(a + (b + c), (a + b) + c) // associative
+            }
         }
     }
 
@@ -128,7 +140,7 @@ class GroupTest {
     fun additionWrappingQ(contextF: suspend () -> GroupContext) {
         runTest {
             val context = contextF()
-            checkAll(Arb.int(min=0, max=intTestQ - 1)) { i ->
+            checkAll(propTestFastConfig, Arb.int(min=0, max=intTestQ - 1)) { i ->
                 val iq = i.toElementModQ(context)
                 val q = context.ZERO_MOD_Q - iq
                 assertTrue(q.inBounds())
@@ -147,6 +159,7 @@ class GroupTest {
         runTest {
             val context = contextF()
             checkAll(
+                propTestFastConfig,
                 elementsModPNoZero(context),
                 elementsModPNoZero(context),
                 elementsModPNoZero(context)
@@ -168,6 +181,7 @@ class GroupTest {
         runTest {
             val context = contextF()
             checkAll(
+                propTestFastConfig,
                 elementsModQNoZero(context),
                 elementsModQNoZero(context),
                 elementsModQNoZero(context)
@@ -189,6 +203,7 @@ class GroupTest {
         runTest {
             val context = contextF()
             checkAll(
+                propTestFastConfig,
                 elementsModQNoZero(context),
                 elementsModQNoZero(context),
                 elementsModQNoZero(context)
@@ -209,7 +224,7 @@ class GroupTest {
     fun negation(contextF: suspend () -> GroupContext) {
         runTest {
             val context = contextF()
-            forAll(elementsModQ(context)) { context.ZERO_MOD_Q == (-it) + it }
+            forAll(propTestFastConfig, elementsModQ(context)) { context.ZERO_MOD_Q == (-it) + it }
         }
     }
 
@@ -238,7 +253,7 @@ class GroupTest {
     fun multiplicativeInversesQ(contextF: suspend () -> GroupContext) {
         runTest {
             val context = contextF()
-            checkAll(elementsModQNoZero(context)) {
+            checkAll(propTestFastConfig, elementsModQNoZero(context)) {
                 assertEquals(context.ONE_MOD_Q, it.multInv() * it)
             }
         }
@@ -248,8 +263,9 @@ class GroupTest {
     fun divisionP() {
         runTest {
             val context = productionGroup()
-            forAll(validElementsModP(context), validElementsModP(context)) { a, b ->
-                (a * b) / b == a // division undoes multiplication
+            forAll(propTestFastConfig, validElementsModP(context), validElementsModP(context))
+            { a, b ->
+                (a * b) / b == a // division undoes multiplication }
             }
         }
     }

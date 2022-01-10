@@ -3,9 +3,7 @@ package electionguard
 import kotlin.math.min
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger("Base64")
-
-// Borrowed from here:
+// Borrowed from here, then modified:
 // https://gist.githubusercontent.com/MarkusKramer/4db02c9983c76efc6aa56cf0bdc75a5b/raw/aa49830aa7db2717926421bdde18d6d153f69c53/Base64.kt
 
 /* Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
@@ -32,38 +30,14 @@ private val logger = KotlinLogging.logger("Base64")
  * questions. */
 
 /**
- * This class consists exclusively of static methods for obtaining encoders and decoders for the
- * Base64 encoding scheme. The implementation of this class supports the following types of Base64
- * as specified in [RFC 4648](http://www.ietf.org/rfc/rfc4648.txt) and
+ * This implements static methods for working with base64-encoded strings. The implementation of
+ * this class supports the "basic" Base64 encoding scheme as specified in
+ * [RFC 4648](http://www.ietf.org/rfc/rfc4648.txt) and
  * [RFC 2045](http://www.ietf.org/rfc/rfc2045.txt).
- *
- *  * <a id="basic">**Basic**</a>
- *
- *  Uses "The Base64 Alphabet" as specified in Table 1 of RFC 4648 and RFC 2045 for encoding and
- * decoding operation. The encoder does not add any line feed (line separator) character. The
- * decoder rejects data that contains characters outside the base64 alphabet.
- *
- *  * <a id="url">**URL and Filename safe**</a>
- *
- *  Uses the "URL and Filename safe Base64 Alphabet" as specified in Table 2 of RFC 4648 for
- * encoding and decoding. The encoder does not add any line feed (line separator) character. The
- * decoder rejects data that contains characters outside the base64 alphabet.
- *
- *  * <a id="mime">**MIME**</a>
- *
- *  Uses "The Base64 Alphabet" as specified in Table 1 of RFC 2045 for encoding and decoding
- * operation. The encoded output must be represented in lines of no more than 76 characters each and
- * uses a carriage return `'\r'` followed immediately by a linefeed `'\n'` as the line separator. No
- * line separator is added to the end of the encoded output. All line separators or other characters
- * not found in the base64 alphabet table are ignored in decoding operation.
- *
- *  Unless otherwise noted, passing a `null` argument to a method of this class will cause a
- * [ NullPointerException][java.lang.NullPointerException] to be thrown.
- *
- * @author Xueming Shen
- * @since 1.8
  */
 object Base64 {
+    private val logger = KotlinLogging.logger("Base64")
+
     /** Convert a ByteArray to a base64 string. */
     fun ByteArray.toBase64() = encoder.encode(this).decodeToString()
 
@@ -76,10 +50,7 @@ object Base64 {
             null
         }
 
-    /**
-     * Convert a String to a ByteArray. Assumes the string is a valid base64. Throws an
-     * `IllegalArgumentException` if it's not.
-     */
+    /** Convert a String to a ByteArray. Throws an `IllegalArgumentException` if it's invalid. */
     fun String.fromSafeBase64(): ByteArray = decoder.decode(this.encodeToByteArray())
 
     /**
@@ -96,20 +67,7 @@ object Base64 {
      */
     private val decoder = Decoder()
 
-    /**
-     * This class implements an encoder for encoding byte data using the Base64 encoding scheme as
-     * specified in RFC 4648 and RFC 2045.
-     *
-     *  Instances of [Encoder] class are safe for use by multiple concurrent threads.
-     *
-     *  Unless otherwise noted, passing a `null` argument to a method of this class will cause a
-     * [NullPointerException][java.lang.NullPointerException] to be thrown.
-     *
-     * @see Decoder
-     *
-     * @since 1.8
-     */
-    class Encoder internal constructor(
+    private class Encoder constructor(
         private val newline: ByteArray?,
         private val linemax: Int,
         private val doPadding: Boolean
@@ -348,28 +306,7 @@ object Base64 {
         }
     }
 
-    /**
-     * This class implements a decoder for decoding byte data using the Base64 encoding scheme as
-     * specified in RFC 4648 and RFC 2045.
-     *
-     *  The Base64 padding character `'='` is accepted and interpreted as the end of the encoded
-     * byte data, but is not required. So if the final unit of the encoded byte data only has two or
-     * three Base64 characters (without the corresponding padding character(s) padded), they are
-     * decoded as if followed by padding character(s). If there is a padding character present in
-     * the final unit, the correct number of padding character(s) must be present, otherwise
-     * `IllegalArgumentException` ( `IOException` when reading from a Base64 stream) is thrown
-     * during decoding.
-     *
-     *  Instances of [Decoder] class are safe for use by multiple concurrent threads.
-     *
-     *  Unless otherwise noted, passing a `null` argument to a method of this class will cause a
-     * [NullPointerException][java.lang.NullPointerException] to be thrown.
-     *
-     * @see Encoder
-     *
-     * @since 1.8
-     */
-    class Decoder {
+    private class Decoder {
         companion object {
             /**
              * Lookup table for decoding unicode characters drawn from the "Base64 Alphabet" (as
@@ -420,7 +357,7 @@ object Base64 {
         }
 
         private fun outLength(src: ByteArray, spx: Int, sl: Int): Int {
-            var sp = spx
+            val sp = spx
             var paddings = 0
             val len = sl - sp
             if (len == 0) return 0

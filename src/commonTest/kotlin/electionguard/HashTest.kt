@@ -11,7 +11,7 @@ class HashTest {
     fun sameAnswerTwiceInARow() {
         runTest {
             val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
-            forAll(elementsModP(context), elementsModQ(context)) { p, q ->
+            forAll(propTestFastConfig, elementsModP(context), elementsModQ(context)) { p, q ->
                 val h1 = context.hashElements(p, q)
                 val h2 = context.hashElements(p, q)
                 h1 == h2
@@ -23,7 +23,7 @@ class HashTest {
     fun basicHashProperties() {
         runTest {
             val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
-            checkAll(elementsModQ(context), elementsModQ(context)) { q1, q2 ->
+            checkAll(propTestFastConfig, elementsModQ(context), elementsModQ(context)) { q1, q2 ->
                 val h1 = context.hashElements(q1)
                 val h2 = context.hashElements(q2)
                 if (q1 == q2) assertEquals(h1, h2) else assertNotEquals(h1, h2)

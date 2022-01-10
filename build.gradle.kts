@@ -7,6 +7,9 @@ buildscript {
 
 plugins {
     kotlin("multiplatform") version "1.6.10"
+
+    // https://github.com/hovinen/kotlin-auto-formatter
+    // Creates a `formatKotlin` Gradle action that seems to be reliable.
     id("tech.formatter-kt.formatter") version "0.7.9"
 }
 
@@ -18,7 +21,7 @@ repositories {
     mavenCentral()
 }
 
-// Hack to get us a newer version of Gradle than the default of 14.17.0
+// Hack to get us a newer version of NodeJs than the default of 14.17.0
 rootProject.plugins
     .withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java) {
         rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>()
@@ -127,7 +130,9 @@ kotlin {
                     // Useful, portable routines
                     implementation("io.ktor:ktor-utils:1.6.7")
 
-                    // Logging
+                    // Portable logging interface. On the JVM, we'll get "logback", which gives
+                    // us lots of features. On Native, it ultimately just prints to stdout.
+                    // On JS, it uses console.log, console.error, etc.
                     implementation("io.github.microutils:kotlin-logging:2.1.21")
                 }
             }
@@ -152,8 +157,10 @@ kotlin {
                     // Progress bars
                     implementation("me.tongfei:progressbar:0.9.2")
 
-                    // Logging (used by "kotlin-logging")
-                    implementation("org.slf4j:slf4j-simple:2.0.0-alpha5")
+                    // Logging implementation (used by "kotlin-logging"). Note that we need
+                    // a bleeding-edge implementation to ensure we don't have vulnerabilities
+                    // similar to (but not as bad) as the log4j issues.
+                    implementation("ch.qos.logback:logback-classic:1.3.0-alpha12")
                 }
             }
         val jvmTest by
