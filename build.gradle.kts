@@ -123,6 +123,9 @@ kotlin {
 
                     // Coroutines
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC3")
+
+                    // Useful, portable routines
+                    runtimeOnly("io.ktor:ktor-utils:1.6.7")
                 }
             }
         val commonTest by

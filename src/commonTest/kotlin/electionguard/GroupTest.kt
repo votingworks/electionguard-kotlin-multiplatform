@@ -263,8 +263,10 @@ class GroupTest {
     fun exponentiationQ(contextF: suspend () -> GroupContext) {
         runTest {
             val context = contextF()
-            checkAll(propTestFastConfig, elementsModQ(context), elementsModQ(context), elementsModQ(context)) { a, b, c ->
-                assertEquals(a powQ (b + c), (a powQ b) * (a powQ c))
+            val qMinus1 = context.ZERO_MOD_Q - context.ONE_MOD_Q
+            checkAll(propTestFastConfig, elementsModQ(context)) {
+                assertEquals(it * it, it powQ context.TWO_MOD_Q)
+                assertEquals(context.ONE_MOD_Q, it powQ qMinus1)
             }
         }
     }

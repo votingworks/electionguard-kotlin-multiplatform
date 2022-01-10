@@ -263,7 +263,37 @@ class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : E
     override operator fun unaryMinus(): ElementModQ =
         if (this == groupContext.zeroModQ) this else (groupContext.q - element).wrap()
 
-    override fun multInv(): ElementModQ = this powQ groupContext.qMinus1Q
+    override fun multInv(): ElementModQ {
+        // https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
+
+        // This implementation is functional and lazy, which is kinda fun, although it's
+        // going to allocate a bunch of memory and otherwise be much less efficient than
+        // writing it as a vanilla while-loop. This function is rarely used in real code,
+        // so efficient doesn't matter as much as correctness.
+
+        // We're using Long, rather than UInt, to insure that we never experience over-
+        // or under-flow. This allows the normalization of the result, which checks for
+        // finalState.t < 0, to work correctly.
+
+        data class State(val t: Long, val newT: Long, val r: Long, val newR: Long)
+        val seq = generateSequence(State(0, 1, groupContext.q.toLong(), element.toLong())) {
+                (t, newT, r, newR)  ->
+            val quotient = r / newR
+            State(newT, t - quotient * newT, newR, r - quotient * newR)
+        }
+
+        val finalState = seq.find { it.newR == 0L } ?: throw Error("should never happen")
+
+        if (finalState.r > 1) {
+            throw ArithmeticException("element $element is not invertible")
+        }
+
+        return TinyElementModQ((
+                if (finalState.t < 0)
+                    finalState.t + groupContext.q.toLong()
+                else finalState.t).toUInt(),
+            groupContext)
+    }
 
     override fun div(denominator: ElementModQ): ElementModQ = this * denominator.multInv()
 

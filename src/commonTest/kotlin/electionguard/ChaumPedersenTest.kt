@@ -420,15 +420,15 @@ class ChaumPedersenTest {
                         proof0 = proof.proof1,
                         proof1 = proof.proof0,
                         c =
-                            context.hashElements(
-                                hashHeader,
-                                ciphertext.pad,
-                                ciphertext.data,
-                                proof.proof1.a,
-                                proof.proof1.b,
-                                proof.proof0.a,
-                                proof.proof0.b
-                            )
+                        context.hashElements(
+                            hashHeader,
+                            ciphertext.pad,
+                            ciphertext.data,
+                            proof.proof1.a,
+                            proof.proof1.b,
+                            proof.proof0.a,
+                            proof.proof0.b
+                        )
                     )
 
                 assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
@@ -441,10 +441,49 @@ class ChaumPedersenTest {
     }
 
     @Test
-    fun fakeGenericProofsDontValidate() {
+    fun fakeGenericProofsDontValidateSm() {
         runTest {
             val context = tinyGroup()
             checkAll(
+                elementsModQNoZero(context),
+                elementsModQNoZero(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context)
+            ) { q1, q2, x, maybeNotX, c, seed, hashHeader ->
+                val notX = if (x == maybeNotX) x + context.ONE_MOD_Q else maybeNotX
+                val g = context.gPowP(q1)
+                val h = context.gPowP(q2)
+                val gx = g powP x
+                val hNotX = h powP notX
+
+                val badProof = fakeGenericChaumPedersenProofOf(g, gx, h, hNotX, c, seed)
+                assertTrue(
+                    badProof.isValid(g, gx, h, hNotX, hashHeader, checkC = false),
+                    "if we don't check c, the proof will validate"
+                )
+                // The property below is valid for the production group, but in the test group
+                // there are non-trivial odds that the property checker stumbles into a hash
+                // collision, which will make it occasionally fail. That's why we're repeating
+                // the same test, below, with the production group, and enabling this second
+                // assertion only there.
+
+//                assertFalse(
+//                    badProof.isValid(g, gx, h, hNotX, hashHeader, checkC = true),
+//                    "if we do check c, the proof will not validate"
+//                )
+            }
+        }
+    }
+
+    @Test
+    fun fakeGenericProofsDontValidateLg() {
+        runTest {
+            val context = productionGroup()
+            checkAll(
+                propTestFastConfig,
                 elementsModQNoZero(context),
                 elementsModQNoZero(context),
                 elementsModQ(context),

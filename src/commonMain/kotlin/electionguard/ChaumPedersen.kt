@@ -347,7 +347,8 @@ fun GenericChaumPedersenProof.isValid(
     val inBoundsH = h.isValidResidue()
     val inBoundsHx = hx.isValidResidue()
 
-    val hashGood = !(checkC) || (c == context.hashElements(hashHeader, a, b, *alsoHash))
+    val expectedC = context.hashElements(hashHeader, a, b, *alsoHash)
+    val hashGood = !(checkC) || (c == expectedC)
 
     val agxc = a * (gx powP c) // should yield g^{w + xc}
     val gr = g powP r // should also yield g^{w + xc}
