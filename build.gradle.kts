@@ -125,7 +125,10 @@ kotlin {
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC3")
 
                     // Useful, portable routines
-                    runtimeOnly("io.ktor:ktor-utils:1.6.7")
+                    implementation("io.ktor:ktor-utils:1.6.7")
+
+                    // Logging
+                    implementation("io.github.microutils:kotlin-logging:2.1.21")
                 }
             }
         val commonTest by
@@ -148,6 +151,9 @@ kotlin {
 
                     // Progress bars
                     implementation("me.tongfei:progressbar:0.9.2")
+
+                    // Logging (used by "kotlin-logging")
+                    implementation("org.slf4j:slf4j-simple:2.0.0-alpha5")
                 }
             }
         val jvmTest by
@@ -165,10 +171,18 @@ kotlin {
 
                     // Portable, Kotlin port of Java's BigInteger; slow but works
                     implementation("io.github.gciatto:kt-math:0.4.0")
+
+                    // Logging
+//                    implementation("io.github.microutils:kotlin-logging-js:2.1.21")
                 }
             }
         val jsTest by getting { dependencies { implementation(kotlin("test-js", "1.6.10")) } }
-        val nativeMain by getting { dependencies {} }
+        val nativeMain by getting {
+            dependencies {
+                // Logging
+//                implementation("io.github.microutils:kotlin-logging-macosx64:2.1.21")
+            }
+        }
         val nativeTest by getting { dependencies {} }
     }
 }

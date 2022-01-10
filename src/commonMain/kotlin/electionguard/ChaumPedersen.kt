@@ -1,5 +1,8 @@
 package electionguard
 
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger {}
+
 // Reference specification:
 // https://github.com/microsoft/electionguard/releases/tag/v0.95.0
 
@@ -301,7 +304,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     // If valid0 or valid1 is false, this will already have been logged,
     // so we don't have to repeat it here.
     if (!consistentC || !validHash)
-        logWarning {
+        logger.warn {
             "Invalid commitments for disjunctive Chaum-Pedersen proof: " +
                 mapOf(
                     "consistentC" to consistentC,
@@ -365,7 +368,7 @@ fun GenericChaumPedersenProof.isValid(
             goodG && goodH)
 
     if (!success)
-        logWarning {
+        logger.warn {
             "Invalid generic Chaum-Pedersen proof: " +
                 mapOf(
                     "hashGood" to hashGood,

@@ -1,5 +1,8 @@
 package electionguard
 
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger {}
+
 /**
  * Representation of a proof that the prover know the private key corresponding to the given public
  * key.
@@ -53,7 +56,7 @@ fun ElGamalPublicKey.hasValidSchnorrProof(proof: SchnorrProof): Boolean {
                 "samePublicKey" to samePublicKey,
                 "proof" to this
             )
-        logWarning { "found an invalid Schnorr proof: $resultMap" }
+        logger.warn { "found an invalid Schnorr proof: $resultMap" }
     }
 
     return success
