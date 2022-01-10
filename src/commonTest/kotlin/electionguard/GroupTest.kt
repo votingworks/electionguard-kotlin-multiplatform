@@ -264,9 +264,7 @@ class GroupTest {
         runTest {
             val context = productionGroup()
             forAll(propTestFastConfig, validElementsModP(context), validElementsModP(context))
-            { a, b ->
-                (a * b) / b == a // division undoes multiplication }
-            }
+                { a, b -> (a * b) / b == a // division undoes multiplication } }
         }
     }
 

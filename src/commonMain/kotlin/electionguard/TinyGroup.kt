@@ -1,7 +1,5 @@
 package electionguard
 
-import kotlinx.serialization.json.JsonElement
-
 private val tinyGroupContext =
     TinyGroupContext(
         p = intTestP.toUInt(),
@@ -64,9 +62,8 @@ class TinyGroupContext(
 
     override fun isProductionStrength() = false
 
-    override fun toJson(): JsonElement {
-        TODO("Not yet implemented")
-    }
+    override val groupContextDescription: GroupContextDescription by
+        lazy { GroupContextDescription(false, b64TestP, b64TestQ, b64TestR, b64TestG, name) }
 
     override fun toString(): String = name
 
@@ -96,10 +93,6 @@ class TinyGroupContext(
         get() = 2
 
     override fun isCompatible(ctx: GroupContext): Boolean = !ctx.isProductionStrength()
-
-    override fun isCompatible(json: JsonElement): Boolean {
-        TODO("Not yet implemented")
-    }
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0) {

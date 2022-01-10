@@ -1,6 +1,7 @@
 package electionguard
 
 import electionguard.Base64.fromSafeBase64
+import electionguard.Base64.toBase64
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import org.gciatto.kt.math.BigInteger
@@ -76,7 +77,10 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
 
     override fun toString() : String = name
 
-    override fun toJson(): JsonElement = JsonObject(mapOf()) // fixme
+    override val groupContextDescription: GroupContextDescription by lazy {
+        GroupContextDescription(true,
+            b64ProductionP, b64ProductionQ, b64ProductionR, b64ProductionG, name)
+    }
 
     override fun isProductionStrength() = true
 
@@ -117,10 +121,6 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
         get() = 32
 
     override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
-
-    override fun isCompatible(json: JsonElement): Boolean {
-        TODO("Not yet implemented")
-    }
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0) {

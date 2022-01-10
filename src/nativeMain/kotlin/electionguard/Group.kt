@@ -4,6 +4,7 @@
 package electionguard
 
 import electionguard.Base64.fromSafeBase64
+import electionguard.Base64.toBase64
 import hacl.*
 import kotlinx.cinterop.*
 import kotlinx.serialization.json.JsonElement
@@ -302,9 +303,12 @@ class ProductionGroupContext(
         dlogger = DLog(this)
     }
 
-    override fun isProductionStrength() = true
+    override val groupContextDescription: GroupContextDescription by lazy {
+        GroupContextDescription(true,
+            b64ProductionP, b64ProductionQ, b64ProductionR, b64ProductionG, name)
+    }
 
-    override fun toJson(): JsonElement = JsonObject(mapOf()) // fixme
+    override fun isProductionStrength() = true
 
     override fun toString() : String = name
 
@@ -345,10 +349,6 @@ class ProductionGroupContext(
         get() = 32
 
     override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
-
-    override fun isCompatible(json: JsonElement): Boolean {
-        throw NotImplementedError()
-    }
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0)

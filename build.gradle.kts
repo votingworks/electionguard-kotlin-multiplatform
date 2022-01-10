@@ -8,6 +8,9 @@ buildscript {
 plugins {
     kotlin("multiplatform") version "1.6.10"
 
+    // cross-platform serialization support
+    kotlin("plugin.serialization") version "1.6.10"
+
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
     id("tech.formatter-kt.formatter") version "0.7.9"

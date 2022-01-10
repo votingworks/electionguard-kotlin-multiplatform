@@ -4,7 +4,11 @@ import electionguard.Base16.fromHex
 import electionguard.Base16.toHex
 import electionguard.Base64.fromBase64
 import electionguard.Base64.toBase64
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
 internal val b64ProductionP =
@@ -61,6 +65,45 @@ interface Element {
     fun byteArray(): ByteArray
 }
 
+@Serializable
+data class GroupContextDescription(
+    val isProductionStrength: Boolean,
+    val p: String,
+    val q: String,
+    val r: String,
+    val g: String,
+    val description: String
+) {
+    /**
+     * Validates whether external data, possibly encrypted using obsolete group context parameters,
+     * is compatible with the current group, supported by the current ElectionGuard library.
+     */
+    fun isCompatible(other: GroupContextDescription): Boolean =
+        other.isProductionStrength == isProductionStrength && other.p == p && other.q == q &&
+            other.g == g && other.r == r
+
+    /**
+     * Validates whether external data, possibly encrypted using obsolete group context parameters,
+     * is compatible with the current group, supported by the current ElectionGuard library. If
+     * incompatible, throws a [RuntimeException].
+     */
+    fun requireCompatible(other: GroupContextDescription) {
+        if (!isCompatible(other))
+            throw RuntimeException(
+                "other group (${other.description}) is incompatible with this group ($description)"
+            )
+    }
+
+    /**
+     * Given a JSON-serialized GroupContextDescription, deserializes it and validates whether it,
+     * and the data processed with it, is compatible with the current group, supported by the
+     * current ElectionGuard library. If incompatible, throws a [RuntimeException] or
+     * [SerializationException].
+     */
+    fun requireCompatible(other: JsonElement) =
+        requireCompatible(Json.decodeFromJsonElement<GroupContextDescription>(other))
+}
+
 /**
  * The GroupContext interface provides all the necessary context to define the arithmetic that we'll
  * be doing, such as the moduli P and Q, the generator G, and so forth. This also allows us to
@@ -74,11 +117,14 @@ interface GroupContext {
     fun isProductionStrength(): Boolean
 
     /**
-     * Returns a JSON object which expresses the otherwise opaque state used in the GroupContext.
-     * This could be useful, in conjunction with [isCompatible], to ensure that saved ballots from
-     * one ElectionGuard instance are compatible with another ElectionGuard instance.
+     * A "description" of this group, suitable for serialization. Write this out alongside your
+     * ballots or other external data, to represent the mathematical group used for all of its
+     * cryptographic operations. When reading in external and possibly untrusted data, you can
+     * deserialize the JSON back to this type, and then use the
+     * [GroupContextDescription.isCompatible] method to validate that external data is compatible
+     * with internal values.
      */
-    fun toJson(): JsonElement
+    val groupContextDescription: GroupContextDescription
 
     /** Useful constant: zero mod p */
     val ZERO_MOD_P: ElementModP
@@ -129,10 +175,11 @@ interface GroupContext {
     fun isCompatible(ctx: GroupContext): Boolean
 
     /**
-     * Identifies whether the JSON representation of a GroupContext is compatible with the current
-     * context.
+     * Identifies whether an external GroupContextDescription is "compatible" with this
+     * GroupContext.
      */
-    fun isCompatible(json: JsonElement): Boolean
+    fun isCompatible(desc: GroupContextDescription): Boolean =
+        groupContextDescription.isCompatible(desc)
 
     /**
      * Converts a [ByteArray] to an [ElementModP]. The input array is assumed to be in big-endian

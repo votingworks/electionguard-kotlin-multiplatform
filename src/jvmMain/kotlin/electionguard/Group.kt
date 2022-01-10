@@ -1,9 +1,16 @@
 package electionguard
 
 import electionguard.Base64.fromSafeBase64
+import electionguard.Base64.toBase64
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import mu.KotlinLogging
 import java.math.BigInteger
+
+private val logger = KotlinLogging.logger("Group")
 
 private val productionGroups =
     PowRadixOption.values().associateWith {
@@ -69,7 +76,10 @@ class ProductionGroupContext(
 
     override fun isProductionStrength() = true
 
-    override fun toJson(): JsonElement = JsonObject(mapOf()) // fixme
+    override val groupContextDescription: GroupContextDescription by lazy {
+        GroupContextDescription(true,
+            b64ProductionP, b64ProductionQ, b64ProductionR, b64ProductionG, name)
+    }
 
     override fun toString() : String = name
 
@@ -110,10 +120,6 @@ class ProductionGroupContext(
         get() = 32
 
     override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
-
-    override fun isCompatible(json: JsonElement): Boolean {
-        throw NotImplementedError()
-    }
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         if(minimum < 0) {
