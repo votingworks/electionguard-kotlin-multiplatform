@@ -1,3 +1,5 @@
+import electionguard.core.elGamalPerfTest
+
 fun main() {
-    electionguard.elGamalPerfTest()
+    elGamalPerfTest()
 }
