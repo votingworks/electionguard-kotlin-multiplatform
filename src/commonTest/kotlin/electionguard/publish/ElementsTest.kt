@@ -5,15 +5,23 @@ import electionguard.core.elementsModQ
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import io.kotest.property.checkAll
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.encodeToJsonElement
+import kotlin.test.*
+import kotlinx.serialization.json.*
 
-inline fun <reified T> jsonRoundTrip(value: T): T {
+private inline fun <reified T> jsonRoundTrip(value: T): T {
     val jsonT: JsonElement = Json.encodeToJsonElement(value)
+
+    // while we're here, verify that the JSON is an "object" with a single key, "value"
+    // and a string associated with it
+
+    if (jsonT is JsonObject) {
+        assertEquals(setOf("value"), jsonT.keys)
+        val expectedString = jsonT["value"] ?: fail("won't ever fail")
+        assertTrue(expectedString.jsonPrimitive.isString)
+    } else {
+        fail("expected jsonT to be JsonObject")
+    }
+
     val jsonS = jsonT.toString()
     val backToJ: JsonElement = Json.parseToJsonElement(jsonS)
     val backToT: T = Json.decodeFromJsonElement(backToJ)
