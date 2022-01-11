@@ -3,10 +3,21 @@ package electionguard
 import kotlin.math.min
 import mu.KotlinLogging
 
-// Borrowed from here, then modified:
+// Engineering note for this and Base16: there's also base16 and base64 support
+// in ktor-utils, but those don't reliably reject bogus input, instead just giving
+// you some random value. This code seems to be pretty solid. If we were going to
+// do anything particularly different, it would be some sort of multiplatform thing
+// that uses built-in libraries on Java as well as whatever base64 support is baked
+// into modern JavaScript environments, saving this code for the native-only case
+// where we don't otherwise have a ready-made solution.
+
+// The code below is borrowed from the link below and modified a bit.
+// That code, in turn, is a Kotlin port of some code from within Java,
+// which carries the copyright notice reproduced below.
 // https://gist.githubusercontent.com/MarkusKramer/4db02c9983c76efc6aa56cf0bdc75a5b/raw/aa49830aa7db2717926421bdde18d6d153f69c53/Base64.kt
 
-/* Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -27,7 +38,8 @@ import mu.KotlinLogging
  *
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
- * questions. */
+ * questions.
+ */
 
 /**
  * This implements static methods for working with base64-encoded strings. The implementation of
