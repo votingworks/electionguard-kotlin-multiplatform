@@ -11,6 +11,10 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 
 /** External representation of an ElementModP. */
 @Serializable(with = ElementModPAsStringSerializer::class)
@@ -23,20 +27,11 @@ data class ElementModPPub(val value: ByteArray)
 data class ElementModQPub(val value: ByteArray)
 
 // We're doing custom serializers for ElementModP and ElementModP that know how to
-// convert from ByteArray (our "internal" format) to a JSON object having one key
-// ("value"), and the corresponding value is a big-endian base16-encoding of
-// the ByteArray.
-
-// Hopefully, we won't need to do this mess anywhere else. Instead, we'll just have
-// Kotlin data classes that correspond 1:1 with the JSON structures used by
-// ElectionGuard.
+// convert from ByteArray (our "internal" format) to a JSON object which is just
+// a base16 string representation.
 
 // Note: if we want to change from base16 to base64, just replace toHex/fromHex with
-// toBase64/fromBase64 and everything else would stay the same. Also, there's a lot
-// of extra complexity here to wrap the JSON object around the string. If we didn't
-// care about that, and just wanted to directly have the base16 string, by itself,
-// then `buildClassSerialDescriptor` could be replaced with `PrimitiveSerialDescriptor`
-// and so forth.
+// toBase64/fromBase64 and everything else would stay the same.
 
 // Associated documentation for "composite serializers":
 // https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serializers.md#hand-written-composite-serializer
@@ -47,19 +42,15 @@ data class ElementModQPub(val value: ByteArray)
 /** Custom serializer for [ElementModPPub]. */
 object ElementModPAsStringSerializer : KSerializer<ElementModPPub> {
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("ElementModP") { element("value", serialDescriptor<String>()) }
+        PrimitiveSerialDescriptor("ElementModP", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ElementModPPub) {
         val string = value.value.toHex()
-        val composite = encoder.beginStructure(descriptor)
-        composite.encodeStringElement(descriptor, 0, string)
-        composite.endStructure(descriptor)
+        encoder.encodeString(string)
     }
 
     override fun deserialize(decoder: Decoder): ElementModPPub {
-        val composite = decoder.beginStructure(descriptor)
-        val string = composite.decodeStringElement(descriptor, 0)
-        composite.endStructure(descriptor)
+        val string = decoder.decodeString()
         return ElementModPPub(
             string.fromHex() ?: throw SerializationException("invalid base16 string")
         )
@@ -69,37 +60,53 @@ object ElementModPAsStringSerializer : KSerializer<ElementModPPub> {
 /** Custom serializer for [ElementModQPub]. */
 object ElementModQAsStringSerializer : KSerializer<ElementModQPub> {
     override val descriptor: SerialDescriptor =
-        buildClassSerialDescriptor("ElementModQ") { element("value", serialDescriptor<String>()) }
+        PrimitiveSerialDescriptor("ElementModQ", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ElementModQPub) {
         val string = value.value.toHex()
-        val composite = encoder.beginStructure(descriptor)
-        composite.encodeStringElement(descriptor, 0, string)
-        composite.endStructure(descriptor)
+        encoder.encodeString(string)
     }
 
     override fun deserialize(decoder: Decoder): ElementModQPub {
-        val composite = decoder.beginStructure(descriptor)
-        val string = composite.decodeStringElement(descriptor, 0)
-        composite.endStructure(descriptor)
+        val string = decoder.decodeString()
         return ElementModQPub(
             string.fromHex() ?: throw SerializationException("invalid base16 string")
         )
     }
 }
 
-// TODO: find a way to have these two "object" singletons written once rather than cut-and-pasted.
-//   Getting instances would be straightforward (doing the Kotlin equivalent of Java's anonymous
-//   classes), but we need a ::class reference for the annotation.
-
-/** Publishes an ElementModP to its external form. */
+/** Publishes an ElementModP to its external, serializable form. */
 fun ElementModP.publish(): ElementModPPub = ElementModPPub(this.byteArray())
 
-/** Publishes an ElementModQ to its external form. */
+/** Publishes an ElementModQ to its external, serializable form. */
 fun ElementModQ.publish(): ElementModQPub = ElementModQPub(this.byteArray())
+
+/** Publishes an ElementModP to a JSON AST representation. */
+fun ElementModP.publishJson(): JsonElement = Json.encodeToJsonElement(publish())
+
+/** Publishes an ElementModQ to a JSON AST representation. */
+fun ElementModQ.publishJson(): JsonElement = Json.encodeToJsonElement(publish())
 
 /** Imports from a published ElementModP. Returns `null` if it's out of bounds. */
 fun GroupContext.import(element: ElementModPPub): ElementModP? = binaryToElementModP(element.value)
 
 /** Imports from a published ElementModQ. Returns `null` if it's out of bounds. */
 fun GroupContext.import(element: ElementModQPub): ElementModQ? = binaryToElementModQ(element.value)
+
+/** Imports from a published ElementModP. Returns `null` if it's out of bounds or malformed. */
+fun GroupContext.importElementModP(element: JsonElement): ElementModP? =
+    try {
+        this.import(Json.decodeFromJsonElement<ElementModPPub>(element))
+    } catch (ex: SerializationException) {
+        // should we log this failure somewhere?
+        null
+    }
+
+/** Imports from a published ElementModQ. Returns `null` if it's out of bounds or malformed.. */
+fun GroupContext.importElementModQ(element: JsonElement): ElementModQ? =
+    try {
+        this.import(Json.decodeFromJsonElement<ElementModQPub>(element))
+    } catch (ex: SerializationException) {
+        // should we log this failure somewhere?
+        null
+    }
