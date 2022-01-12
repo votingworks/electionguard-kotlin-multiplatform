@@ -4,7 +4,7 @@ import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
 import electionguard.core.Base64.fromBase64
 import electionguard.core.Base64.toBase64
-import electionguard.publish.GroupContextDescription
+import electionguard.publish.Constants
 import electionguard.publish.isCompatible
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
@@ -78,11 +78,10 @@ interface GroupContext {
      * A "description" of this group, suitable for serialization. Write this out alongside your
      * ballots or other external data, to represent the mathematical group used for all of its
      * cryptographic operations. When reading in external and possibly untrusted data, you can
-     * deserialize the JSON back to this type, and then use the
-     * [GroupContextDescription.isCompatible] method to validate that external data is compatible
-     * with internal values.
+     * deserialize the JSON back to this type, and then use the [Constants.isCompatible] method to
+     * validate that external data is compatible with internal values.
      */
-    val groupContextDescription: GroupContextDescription
+    val constants: Constants
 
     /** Useful constant: zero mod p */
     val ZERO_MOD_P: ElementModP
@@ -128,18 +127,15 @@ interface GroupContext {
 
     /**
      * Identifies whether two internal GroupContexts are "compatible", so elements made in one
-     * context would work in the other. Groups with the same primes should be compatible. Note that
-     * this is meant to be fast, so only makes superficial checks. The [GroupContextDescription]
-     * variant of this method validates that all the group constants are the same.
+     * context would work in the other. Groups with the same primes will be compatible. Note that
+     * this is meant to be fast, so only makes superficial checks. The [Constants] variant of this
+     * method validates that all the group constants are the same.
      */
     fun isCompatible(ctx: GroupContext): Boolean
 
-    /**
-     * Identifies whether an external GroupContextDescription is "compatible" with this
-     * GroupContext.
-     */
-    fun isCompatible(desc: GroupContextDescription): Boolean =
-        groupContextDescription.isCompatible(desc)
+    /** Identifies whether an external [Constants] is "compatible" with this GroupContext. */
+    fun isCompatible(externalConstants: Constants): Boolean =
+        constants.isCompatible(externalConstants)
 
     /**
      * Converts a [ByteArray] to an [ElementModP]. The input array is assumed to be in big-endian
@@ -236,7 +232,7 @@ interface ElementModQ : Element, Comparable<ElementModQ> {
 
 interface ElementModP : Element, Comparable<ElementModP> {
     /**
-     * Validates that this element is a quadratic residue (and is reachable from
+     * Validates that this element is a quadratic residue (and is thus reachable from
      * [GroupContext.gPowP]). Returns true if everything is good.
      */
     fun isValidResidue(): Boolean

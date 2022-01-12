@@ -391,9 +391,9 @@ class GroupTest {
             val ctxP2 = productionGroup(PowRadixOption.NO_ACCELERATION)
             val ctxT = tinyGroup()
 
-            assertTrue(ctxP.isCompatible(ctxP.groupContextDescription))
-            assertTrue(ctxP.isCompatible(ctxP2.groupContextDescription))
-            assertFalse(ctxT.groupContextDescription.isCompatible(ctxP.groupContextDescription))
+            assertTrue(ctxP.isCompatible(ctxP.constants))
+            assertTrue(ctxP.isCompatible(ctxP2.constants))
+            assertFalse(ctxT.constants.isCompatible(ctxP.constants))
         }
     }
 }

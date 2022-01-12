@@ -4,8 +4,8 @@
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
-import electionguard.publish.GroupContextDescription
-import electionguard.publish.groupContextDescriptionFromBytes
+import electionguard.publish.Constants
+import electionguard.publish.constantsFromBytes
 import hacl.*
 import kotlinx.cinterop.*
 import platform.posix.free
@@ -302,8 +302,8 @@ class ProductionGroupContext(
         dlogger = DLog(this)
     }
 
-    override val groupContextDescription: GroupContextDescription by lazy {
-        groupContextDescriptionFromBytes(true, pBytes, qBytes, rBytes, gBytes, name)
+    override val constants: Constants by lazy {
+        constantsFromBytes(pBytes, qBytes, rBytes, gBytes)
     }
 
     override fun isProductionStrength() = true

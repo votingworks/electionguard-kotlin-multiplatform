@@ -1,7 +1,7 @@
 package electionguard.core
 
-import electionguard.publish.GroupContextDescription
-import electionguard.publish.groupContextDescriptionFromBytes
+import electionguard.publish.Constants
+import electionguard.publish.constantsFromBytes
 
 private val tinyGroupContext =
     TinyGroupContext(
@@ -13,11 +13,10 @@ private val tinyGroupContext =
     )
 
 /**
- * The "tiny" group is built around having p and q values that fit inside unsigned 32-bit
- * integers. The purpose of this group is to make the unit tests run (radically) faster
- * by avoiding the overheads associated with bignum arithmetic on thousands of bits.
- * The values of p and q are big enough to make it unlikely that, for example, false hash
- * collisions might crop up in texting.
+ * The "tiny" group is built around having p and q values that fit inside unsigned 32-bit integers.
+ * The purpose of this group is to make the unit tests run (radically) faster by avoiding the
+ * overheads associated with bignum arithmetic on thousands of bits. The values of p and q are big
+ * enough to make it unlikely that, for example, false hash collisions might crop up in texting.
  *
  * Of course, it should be obvious, but *do not use this group in any production code!*
  */
@@ -67,17 +66,10 @@ private class TinyGroupContext(
 
     override fun isProductionStrength() = false
 
-    override val groupContextDescription: GroupContextDescription by
-        lazy {
-            groupContextDescriptionFromBytes(
-                false,
-                p.toByteArray(),
-                q.toByteArray(),
-                r.toByteArray(),
-                g.toByteArray(),
-                name
-            )
-        }
+    override val constants: Constants by
+    lazy {
+        constantsFromBytes(p.toByteArray(), q.toByteArray(), r.toByteArray(), g.toByteArray(),)
+    }
 
     override fun toString(): String = name
 
@@ -242,10 +234,10 @@ private class TinyElementModP(val element: UInt, val groupContext: TinyGroupCont
 }
 
 private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : ElementModQ {
-    internal fun ULong.modWrap(): ElementModQ = (this % groupContext.q).wrap()
-    internal fun UInt.modWrap(): ElementModQ = (this % groupContext.q).wrap()
-    internal fun ULong.wrap(): ElementModQ = toUInt().wrap()
-    internal fun UInt.wrap(): ElementModQ = TinyElementModQ(this, groupContext)
+    fun ULong.modWrap(): ElementModQ = (this % groupContext.q).wrap()
+    fun UInt.modWrap(): ElementModQ = (this % groupContext.q).wrap()
+    fun ULong.wrap(): ElementModQ = toUInt().wrap()
+    fun UInt.wrap(): ElementModQ = TinyElementModQ(this, groupContext)
 
     override fun plus(other: ElementModQ): ElementModQ =
         (this.element + other.getCompat(groupContext)).modWrap()
@@ -274,10 +266,10 @@ private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupCont
         data class State(val t: Long, val newT: Long, val r: Long, val newR: Long)
         val seq =
             generateSequence(State(0, 1, groupContext.q.toLong(), element.toLong()))
-                { (t, newT, r, newR) ->
-                    val quotient = r / newR
-                    State(newT, t - quotient * newT, newR, r - quotient * newR)
-                }
+            { (t, newT, r, newR) ->
+                val quotient = r / newR
+                State(newT, t - quotient * newT, newR, r - quotient * newR)
+            }
 
         val finalState = seq.find { it.newR == 0L } ?: throw Error("should never happen")
 

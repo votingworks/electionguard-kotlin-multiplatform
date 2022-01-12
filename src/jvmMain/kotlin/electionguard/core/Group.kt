@@ -1,8 +1,8 @@
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
-import electionguard.publish.GroupContextDescription
-import electionguard.publish.groupContextDescriptionFromBytes
+import electionguard.publish.Constants
+import electionguard.publish.constantsFromBytes
 import mu.KotlinLogging
 import java.math.BigInteger
 
@@ -72,8 +72,8 @@ class ProductionGroupContext(
 
     override fun isProductionStrength() = true
 
-    override val groupContextDescription: GroupContextDescription by lazy {
-        groupContextDescriptionFromBytes(true, pBytes, qBytes, rBytes, gBytes, name)
+    override val constants: Constants by lazy {
+        constantsFromBytes(pBytes, qBytes, rBytes, gBytes)
     }
 
     override fun toString() : String = name

@@ -1,8 +1,8 @@
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
-import electionguard.publish.GroupContextDescription
-import electionguard.publish.groupContextDescriptionFromBytes
+import electionguard.publish.Constants
+import electionguard.publish.constantsFromBytes
 import org.gciatto.kt.math.BigInteger
 
 // This implementation uses kt-math (https://github.com/gciatto/kt-math), which is something
@@ -77,8 +77,8 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
 
     override fun toString() : String = name
 
-    override val groupContextDescription: GroupContextDescription by lazy {
-        groupContextDescriptionFromBytes(true, pBytes, qBytes, rBytes, gBytes, name)
+    override val constants: Constants by lazy {
+        constantsFromBytes(pBytes, qBytes, rBytes, gBytes)
     }
 
     override fun isProductionStrength() = true
