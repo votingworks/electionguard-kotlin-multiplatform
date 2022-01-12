@@ -17,18 +17,18 @@ internal val b64ProductionR =
 internal val b64ProductionG =
     "HUHknEd+Feru8MXkrAjUpGwmjNNCT8AdE3ab20NnMhhYe8hsTBRI0AagNpnzq65f6xnilvXRQ8xeSj/IkIjJ9FI9Fm7jrp1fsDwL3Xet1cAX9sVeLsksIm/vXGwd8ufDbZDn6q3gmCQdNAmYO8zStTeek5H7xi+fjZOdEgixYDZ8E0JkEiGJWV7IXIzb5fnTB/RpEsBJMvjBaBWna0aCvWvcDtUrANjTD1nHMdWn/66BZdU8+WZJqsK3Q9pW8U8Z2sxSNvKbGrn5vvxpaXKT1d6ti1v13purbeZ8RXGeVjRKPL3zYJgksbV4406utt0xkKs1cdbWccUSKCwdp702tCUdJYT63qgLnhQUIwdN2bX7g6y96tTIelj/9Rf5d6gwgDcKOwz5ihvCl4xHqsKWEf1sQOL5h1w11QRDqao/SWEdzToNb/PLP6zzFHG9thhguSxZTU5GVpuzn+6t/x/WTINqbW24XGunJBdmt6tWv3OWM7BUFH9xcJIUEulI2eR0AtFbscJXMYYSwSHDa4DrhDPAjn0LcUnjqwqHNaku3Oj/lD4ootzqz8xp7DGJCcsEe+HFhYhEta1E8i7rKJ5MxVT3peLz3qAmh3/5KFGBYHHOAo64aNllzLLSKVqMVb0cBws5sJrgazfSk0O52Jl9wkTEaLmAlwcxc27gGLutuYc="
 
-// 16-bit everything, suitable for accelerated testing
-internal val b64TestP = "AP7z"
-internal val b64TestQ = "f3k="
-internal val b64TestP256MinusQ = "AP///////////////////////////////////////4CH"
-internal val b64TestR = "Ag=="
-internal val b64TestG = "Aw=="
+// 32-bit everything, suitable for accelerated testing
+internal val b64TestP = "b//93w=="
+internal val b64TestQ = "B///2Q=="
+internal val b64TestP256MinusQ = "AP/////////////////////////////////////4AAAn"
+internal val b64TestR = "Dg=="
+internal val b64TestG = "QAA="
 
 // useful for checking the decoders from base64
-internal const val intTestP = 65267
-internal const val intTestQ = 32633
-internal const val intTestR = 2
-internal const val intTestG = 3
+internal const val intTestP = 1879047647
+internal const val intTestQ = 134217689
+internal const val intTestR = 14
+internal const val intTestG = 16384
 
 interface Element {
     /**

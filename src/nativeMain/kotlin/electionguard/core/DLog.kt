@@ -6,7 +6,9 @@ import kotlinx.coroutines.sync.withLock
 
 private const val MAX_DLOG: Int = 1_000_000_000
 
-class DLog(val context: GroupContext) {
+actual fun dLoggerOf(context: GroupContext) = DLog(context)
+
+actual class DLog(val context: GroupContext) {
     private val dLogMapping = mutableMapOf(context.ONE_MOD_P to 0)
 
     private var dLogMaxElement = context.ONE_MOD_P
@@ -14,7 +16,7 @@ class DLog(val context: GroupContext) {
 
     private val mutex = Mutex()
 
-    fun dLog(input: ElementModP): Int? =
+    actual fun dLog(input: ElementModP): Int? =
         // Unlike the Java version, here we cannot assume that the map allows for
         // reentrant / concurrent reads, so we're using a global lock around it
         // before doing anything at all.

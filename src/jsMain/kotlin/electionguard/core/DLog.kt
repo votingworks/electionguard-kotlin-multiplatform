@@ -2,7 +2,9 @@ package electionguard.core
 
 private const val MAX_DLOG: Int = 1_000_000_000
 
-class DLog(val context: GroupContext) {
+actual fun dLoggerOf(context: GroupContext) = DLog(context)
+
+actual class DLog(val context: GroupContext) {
     // Implementation note for JavaScript: the JS interpreter is single-threaded,
     // so we don't have to worry about concurrency inside here. That certainly
     // simplifies things.
@@ -13,7 +15,7 @@ class DLog(val context: GroupContext) {
     private var dLogMaxElement = context.ONE_MOD_P
     private var dLogMaxExponent = 0
 
-    fun dLog(input: ElementModP): Int? =
+    actual fun dLog(input: ElementModP): Int? =
         if (input in dLogMapping) {
             dLogMapping[input]
         } else {

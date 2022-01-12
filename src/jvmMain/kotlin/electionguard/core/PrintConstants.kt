@@ -27,7 +27,7 @@ fun main() {
         "Production")
 
     helper(
-        "16-bit everything, suitable for accelerated testing",
+        "32-bit everything, suitable for accelerated testing",
         BigInteger.valueOf(intTestP.toLong()),
         BigInteger.valueOf(intTestQ.toLong()),
         BigInteger.valueOf(intTestR.toLong()),

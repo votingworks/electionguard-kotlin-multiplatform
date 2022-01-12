@@ -99,9 +99,7 @@ fun ElementModP.publish(): ElementModPPub = ElementModPPub(this.byteArray())
 fun ElementModQ.publish(): ElementModQPub = ElementModQPub(this.byteArray())
 
 /** Imports from a published ElementModP. Returns `null` if it's out of bounds. */
-fun GroupContext.import(element: ElementModPPub): ElementModP? =
-    binaryToElementModP(element.value)
+fun GroupContext.import(element: ElementModPPub): ElementModP? = binaryToElementModP(element.value)
 
 /** Imports from a published ElementModQ. Returns `null` if it's out of bounds. */
-fun GroupContext.import(element: ElementModQPub): ElementModQ? =
-    binaryToElementModQ(element.value)
+fun GroupContext.import(element: ElementModQPub): ElementModQ? = binaryToElementModQ(element.value)

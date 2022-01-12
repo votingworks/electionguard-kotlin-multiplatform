@@ -9,13 +9,17 @@ private val tinyGroupContext =
         q = intTestQ.toUInt(),
         r = intTestR.toUInt(),
         g = intTestG.toUInt(),
-        name = "16-bit test group",
-        powRadixOption = PowRadixOption.NO_ACCELERATION
+        name = "32-bit test group",
     )
 
 /**
- * Fetches the [GroupContext] suitable for unit tests and such, where everything is a 16-bit number
- * on the inside, so it runs really fast, but is (of course) completely insecure.
+ * The "tiny" group is built around having p and q values that fit inside unsigned 32-bit
+ * integers. The purpose of this group is to make the unit tests run (radically) faster
+ * by avoiding the overheads associated with bignum arithmetic on thousands of bits.
+ * The values of p and q are big enough to make it unlikely that, for example, false hash
+ * collisions might crop up in texting.
+ *
+ * Of course, it should be obvious, but *do not use this group in any production code!*
  */
 fun tinyGroup(): GroupContext = tinyGroupContext
 
@@ -28,13 +32,12 @@ private fun Element.getCompat(other: GroupContext): UInt {
     }
 }
 
-class TinyGroupContext(
+private class TinyGroupContext(
     val p: UInt,
     val q: UInt,
     val g: UInt,
     val r: UInt,
     val name: String,
-    val powRadixOption: PowRadixOption
 ) : GroupContext {
     val zeroModP: ElementModP
     val oneModP: ElementModP
@@ -46,7 +49,7 @@ class TinyGroupContext(
     val zeroModQ: ElementModQ
     val oneModQ: ElementModQ
     val twoModQ: ElementModQ
-    val dlogger: TinyDLog
+    val dlogger: DLog by lazy { dLoggerOf(this) }
     val qMinus1Q: ElementModQ
 
     init {
@@ -59,7 +62,6 @@ class TinyGroupContext(
         zeroModQ = TinyElementModQ(0U, this)
         oneModQ = TinyElementModQ(1U, this)
         twoModQ = TinyElementModQ(2U, this)
-        dlogger = TinyDLog(this)
         qMinus1Q = zeroModQ - oneModQ
     }
 
@@ -111,18 +113,12 @@ class TinyGroupContext(
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        val u16: UInt =
-            when (b.size) {
-                0 -> 0U
-                1 -> b[0].toUInt() % p
-                2 -> ((b[0].toUInt() shl 8) or b[1].toUInt()) % p
-                else -> {
-                    // time for a total hack, since our goal is to output *something*
-                    b.fold(0U) { prev, next -> ((prev shl 8) or next.toUInt()) % p }
-                }
-            }
-
-        val result = if (u16 < minimum.toUInt()) u16 + minimum.toUInt() else u16
+        // Gives an exact answer if the input is <= 8 byte, otherwise is going to be weird
+        // but will at least give *something* in bounds as its result. Assumes that the
+        // minimum is significantly smaller than the modulus.
+        val u32: UInt =
+            (b.fold(0UL) { prev, next -> ((prev shl 8) or next.toULong()) } % p).toUInt()
+        val result = if (u32 < minimum.toUInt()) u32 + minimum.toUInt() else u32
         return uIntToElementModP(result)
     }
 
@@ -131,47 +127,32 @@ class TinyGroupContext(
         minimum: Int,
         maxQMinus1: Boolean
     ): ElementModQ {
+        if (minimum < 0) {
+            throw IllegalArgumentException("minimum $minimum may not be negative")
+        }
         val modulus = if (maxQMinus1) (q - 1U) else q
-        val u16: UInt =
-            when (b.size) {
-                0 -> 0U
-                1 -> b[0].toUInt() % modulus
-                2 -> ((b[0].toUInt() shl 8) or b[1].toUInt()) % modulus
-                else -> {
-                    b.fold(0U) { prev, next -> ((prev shl 8) or next.toUInt()) % modulus }
-                }
-            }
 
-        val result = if (u16 < minimum.toUInt()) u16 + minimum.toUInt() else u16
+        // Gives an exact answer if the input is <= 8 byte, otherwise is going to be weird
+        // but will at least give *something* in bounds as its result. Assumes that the
+        // minimum is significantly smaller than the modulus.
+        val u32: UInt =
+            (b.fold(0UL) { prev, next -> ((prev shl 8) or next.toULong()) } % modulus).toUInt()
+        val result = if (u32 < minimum.toUInt()) u32 + minimum.toUInt() else u32
         return uIntToElementModQ(result)
     }
 
     override fun binaryToElementModP(b: ByteArray): ElementModP? {
-        val u16: UInt =
-            when (b.size) {
-                0 -> 0U
-                1 -> b[0].toUInt()
-                2 -> ((b[0].toUInt() shl 8) or b[1].toUInt())
-                else -> return null
-            }
+        if (b.size > 4) return null // guaranteed to be out of bounds
 
-        if (u16 >= p) return null
-
-        return uIntToElementModP(u16)
+        val u32: UInt = b.fold(0U) { prev, next -> ((prev shl 8) or next.toUInt()) }
+        return if (u32 >= p) null else uIntToElementModP(u32)
     }
 
     override fun binaryToElementModQ(b: ByteArray): ElementModQ? {
-        val u16: UInt =
-            when (b.size) {
-                0 -> 0U
-                1 -> b[0].toUInt()
-                2 -> ((b[0].toUInt() shl 8) or b[1].toUInt())
-                else -> return null
-            }
+        if (b.size > 4) return null // guaranteed to be out of bounds
 
-        if (u16 >= q) return null
-
-        return uIntToElementModQ(u16)
+        val u32: UInt = b.fold(0U) { prev, next -> ((prev shl 8) or next.toUInt()) }
+        return if (u32 >= q) null else uIntToElementModQ(u32)
     }
 
     override fun uIntToElementModQ(i: UInt): ElementModQ =
@@ -190,16 +171,20 @@ class TinyGroupContext(
         uIntToElementModQ(fold(0U) { a, b -> (a + b.getCompat(this@TinyGroupContext)) % q })
 
     override fun Iterable<ElementModP>.multP(): ElementModP =
-        uIntToElementModP(fold(1U) { a, b -> (a * b.getCompat(this@TinyGroupContext)) % p })
+        uIntToElementModP(
+            fold(1UL) { a, b -> (a * b.getCompat(this@TinyGroupContext).toULong()) % p }.toUInt()
+        )
 
     override fun gPowP(e: ElementModQ): ElementModP = gModP powP e
 
     override fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
-class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {
-    internal fun UInt.modWrap(): ElementModP = (this % groupContext.p).wrap()
-    internal fun UInt.wrap(): ElementModP = TinyElementModP(this, groupContext)
+private class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {
+    fun UInt.modWrap(): ElementModP = (this % groupContext.p).wrap()
+    fun ULong.modWrap(): ElementModP = (this % groupContext.p).wrap()
+    fun UInt.wrap(): ElementModP = TinyElementModP(this, groupContext)
+    fun ULong.wrap(): ElementModP = toUInt().wrap()
 
     override fun isValidResidue(): Boolean {
         val residue =
@@ -208,12 +193,17 @@ class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : E
     }
 
     override fun powP(e: ElementModQ): ElementModP {
-        var result: UInt = 1U
-        var base: UInt = element
+        var result: ULong = 1U
+        var base: ULong = element.toULong()
         val exp: UInt = e.getCompat(groupContext)
-        (0..16)
+
+        // we know that all the bits above this are zero because q < 2^28
+        (0..28)
             .forEach { bit ->
                 val eBitSet = ((exp shr bit) and 1U) == 1U
+
+                // We're doing arithmetic in the larger 64-bit space, but we'll never overflow
+                // because the internal values are always mod p or q, and thus fit in 32 bits.
                 if (eBitSet) result = (result * base) % groupContext.p
                 base = (base * base) % groupContext.p
             }
@@ -221,7 +211,7 @@ class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : E
     }
 
     override fun times(other: ElementModP): ElementModP =
-        (this.element * other.getCompat(groupContext)).modWrap()
+        (this.element.toULong() * other.getCompat(groupContext).toULong()).modWrap()
 
     override fun multInv(): ElementModP = this powP groupContext.qMinus1Q
 
@@ -251,8 +241,10 @@ class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : E
     override fun toString(): String = "ElementModP($element)"
 }
 
-class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : ElementModQ {
+private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : ElementModQ {
+    internal fun ULong.modWrap(): ElementModQ = (this % groupContext.q).wrap()
     internal fun UInt.modWrap(): ElementModQ = (this % groupContext.q).wrap()
+    internal fun ULong.wrap(): ElementModQ = toUInt().wrap()
     internal fun UInt.wrap(): ElementModQ = TinyElementModQ(this, groupContext)
 
     override fun plus(other: ElementModQ): ElementModQ =
@@ -262,7 +254,7 @@ class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : E
         (this.element + (-other).getCompat(groupContext)).modWrap()
 
     override fun times(other: ElementModQ): ElementModQ =
-        (this.element * other.getCompat(groupContext)).modWrap()
+        (this.element.toULong() * other.getCompat(groupContext).toULong()).modWrap()
 
     override operator fun unaryMinus(): ElementModQ =
         if (this == groupContext.zeroModQ) this else (groupContext.q - element).wrap()
@@ -303,12 +295,17 @@ class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : E
     override fun div(denominator: ElementModQ): ElementModQ = this * denominator.multInv()
 
     override infix fun powQ(e: ElementModQ): ElementModQ {
-        var result: UInt = 1U
-        var base: UInt = element
+        var result: ULong = 1U
+        var base: ULong = element.toULong()
         val exp: UInt = e.getCompat(groupContext)
-        (0..16)
+
+        // we know that all the bits above this are zero because q < 2^28
+        (0..28)
             .forEach { bit ->
                 val eBitSet = ((exp shr bit) and 1U) == 1U
+
+                // We're doing arithmetic in the larger 64-bit space, but we'll never overflow
+                // because the internal values are always mod p or q, and thus fit in 32 bits.
                 if (eBitSet) result = (result * base) % groupContext.q
                 base = (base * base) % groupContext.q
             }

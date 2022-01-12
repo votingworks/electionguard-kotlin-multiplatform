@@ -1,7 +1,5 @@
 package electionguard.core
 
-import electionguard.core.ElementModP
-import electionguard.core.GroupContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -9,7 +7,9 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_DLOG: Int = 1_000_000_000
 
-class DLog(val context: GroupContext) {
+actual fun dLoggerOf(context: GroupContext) = DLog(context)
+
+actual class DLog(val context: GroupContext) {
     // We're taking advantage of Java's ConcurrentHashMap, which allows us to know
     // we can safely attempt reads on the map without needing our global lock, which
     // we only need to use for writes.
@@ -25,7 +25,7 @@ class DLog(val context: GroupContext) {
 
     private val mutex = Mutex()
 
-    fun dLog(input: ElementModP): Int? =
+    actual fun dLog(input: ElementModP): Int? =
         if (input in dLogMapping) {
             dLogMapping[input]
         } else {
