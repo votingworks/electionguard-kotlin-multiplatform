@@ -253,3 +253,28 @@ val restoreYarnLock = tasks.register("restoreYarnLock") {
 }
 
 tasks["kotlinNpmInstall"].dependsOn("restoreYarnLock")
+
+tasks.register("validateYarnLock") {
+    dependsOn(":kotlinNpmInstall")
+
+    doLast {
+        val expected = file("$rootDir/yarn.lock.bak").readText()
+        val actual = file("$rootDir/build/js/yarn.lock").readText()
+
+        if (expected != actual) {
+            throw AssertionError(
+                "Generated yarn.lock differs from the one in the repository. " +
+                        "It can happen because someone has updated a dependency and haven't run `./gradlew :backupYarnLock --refresh-dependencies` " +
+                        "afterwards."
+            )
+        }
+    }
+
+    inputs.files("$rootDir/yarn.lock.bak", "$rootDir/build/js/yarn.lock").withPropertyName("inputFiles")
+}
+
+allprojects {
+    tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask> {
+        args += "--ignore-scripts"
+    }
+}
