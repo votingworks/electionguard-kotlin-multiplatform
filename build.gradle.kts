@@ -24,15 +24,6 @@ repositories {
     mavenCentral()
 }
 
-// Hack to get us a newer version of NodeJs than the default of 14.17.0
-rootProject.plugins
-    .withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java) {
-        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>()
-            .download = true
-        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>()
-            .nodeVersion = "16.13.1"
-    }
-
 kotlin {
     jvm {
         compilations.all { kotlinOptions.jvmTarget = "1.8" }
@@ -217,3 +208,48 @@ tasks.register("libhaclBuild") {
 tasks["cinteropLibhaclNative"].dependsOn("libhaclBuild")
 
 tasks.withType<Test> { testLogging { showStandardStreams = true } }
+
+// Hack to get us a newer version of NodeJs than the default of 14.17.0
+rootProject.plugins
+    .withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java) {
+        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>()
+            .download = true
+        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>()
+            .nodeVersion = "16.13.1"
+    }
+
+// ensures that the yarn.lock file is persistent
+// https://blog.jetbrains.com/kotlin/2021/10/control-over-npm-dependencies-in-kotlin-js/
+rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().disableGranularWorkspaces()
+}
+
+tasks.register("backupYarnLock") {
+    dependsOn(":kotlinNpmInstall")
+
+    doLast {
+        copy {
+            from("$rootDir/build/js/yarn.lock")
+            rename { "yarn.lock.bak" }
+            into(rootDir)
+        }
+    }
+
+    inputs.file("$rootDir/build/js/yarn.lock").withPropertyName("inputFile")
+    outputs.file("$rootDir/yarn.lock.bak").withPropertyName("outputFile")
+}
+
+val restoreYarnLock = tasks.register("restoreYarnLock") {
+    doLast {
+        copy {
+            from("$rootDir/yarn.lock.bak")
+            rename { "yarn.lock" }
+            into("$rootDir/build/js")
+        }
+    }
+
+    inputs.file("$rootDir/yarn.lock.bak").withPropertyName("inputFile")
+    outputs.file("$rootDir/build/js/yarn.lock").withPropertyName("outputFile")
+}
+
+tasks["kotlinNpmInstall"].dependsOn("restoreYarnLock")
