@@ -3,11 +3,17 @@ package electionguard.core
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ChaumPedersenTest {
+    @BeforeTest
+    fun suppressLogs() {
+        loggingErrorsOnly()
+    }
+
     @Test
     fun testCCKnownNonceProofsSimpleEncryptionZero() {
         runTest {
