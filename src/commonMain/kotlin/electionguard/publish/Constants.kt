@@ -29,7 +29,7 @@ data class Constants(
 )
 
 /** Helper function: building a [Constants] from byte arrays. */
-fun constantsFromBytes(p: ByteArray, q: ByteArray, r: ByteArray, g: ByteArray,) =
+fun constantsFromBytes(p: ByteArray, q: ByteArray, r: ByteArray, g: ByteArray) =
     Constants(p.toHex(), q.toHex(), r.toHex(), g.toHex())
 
 /**
