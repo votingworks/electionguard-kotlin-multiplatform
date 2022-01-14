@@ -324,17 +324,3 @@ private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupCont
 
     override fun toString(): String = "ElementModQ($element)"
 }
-
-private fun UInt.toByteArray(): ByteArray =
-    when {
-        this <= UByte.MAX_VALUE -> byteArrayOf((this and 0xffU).toByte())
-        this <= UShort.MAX_VALUE ->
-            byteArrayOf(((this shr 8) and 0xffU).toByte(), (this and 0xffU).toByte())
-        else ->
-            byteArrayOf(
-                ((this shr 24) and 0xffU).toByte(),
-                ((this shr 16) and 0xffU).toByte(),
-                ((this shr 8) and 0xffU).toByte(),
-                (this and 0xffU).toByte()
-            )
-    }
