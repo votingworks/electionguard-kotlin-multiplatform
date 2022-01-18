@@ -4,6 +4,7 @@
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
+import electionguard.core.Base64.toBase64
 import electionguard.publish.Constants
 import electionguard.publish.constantsFromBytes
 import hacl.*
@@ -87,25 +88,9 @@ internal inline fun <T> ByteArray.useNative(f: (CPointer<UByteVar>) -> T): T =
     }
 
 
-internal fun UInt.toHaclBignum256(): HaclBignum256 {
-    val bytes = ByteArray(HaclBignum256_Bytes)
-    // big-endian
-    bytes[HaclBignum256_Bytes - 4] = ((this and 0xff_00_00_00U) shr 24).toByte()
-    bytes[HaclBignum256_Bytes - 3] = ((this and 0xff_00_00U) shr 16).toByte()
-    bytes[HaclBignum256_Bytes - 2] = ((this and 0xff_00U) shr 8).toByte()
-    bytes[HaclBignum256_Bytes - 1] = ((this and 0xffU)).toByte()
-    return bytes.toHaclBignum256()
-}
+internal fun UInt.toHaclBignum256(): HaclBignum256 = toByteArray().toHaclBignum256()
 
-internal fun UInt.toHaclBignum4096(): HaclBignum4096 {
-    val bytes = ByteArray(HaclBignum4096_Bytes)
-    // big-endian
-    bytes[HaclBignum4096_Bytes - 4] = ((this and 0xff_00_00_00U) shr 24).toByte()
-    bytes[HaclBignum4096_Bytes - 3] = ((this and 0xff_00_00U) shr 16).toByte()
-    bytes[HaclBignum4096_Bytes - 2] = ((this and 0xff_00U) shr 8).toByte()
-    bytes[HaclBignum4096_Bytes - 1] = ((this and 0xffU)).toByte()
-    return bytes.toHaclBignum4096()
-}
+internal fun UInt.toHaclBignum4096(): HaclBignum4096 = toByteArray().toHaclBignum4096()
 
 /** Convert an array of bytes, in big-endian format, to a HaclBignum256. */
 internal fun ByteArray.toHaclBignum256(doubleMemory: Boolean = false): HaclBignum256 {
@@ -349,11 +334,23 @@ class ProductionGroupContext(
     override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
+        // Implementation node: ByteArray.toHaclBignum4096() throws
+        // an exception if there are more than MAX_BYTES_P bytes of input. We're
+        // working around this with a special case that simply ignores the upper
+        // bytes. HACL's 4096-bit types do support mod on numbers twice as large,
+        // but we'd still need to deal with this problem in the general case.
+
         if (minimum < 0)
             throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
+            val bytesToUse = if (b.size > MAX_BYTES_P) {
+                // Vague assumption: input is big-endian, so we're getting the
+                // lower bytes.
+                b.copyOfRange(b.size - MAX_BYTES_P, b.size)
+            } else b
+
             // we've got an optimized path, using our Montgomery context
-            val bignum4096 = b.toHaclBignum4096(doubleMemory = true)
+            val bignum4096 = bytesToUse.toHaclBignum4096(doubleMemory = true)
             val result = newZeroBignum4096()
             val minimum4096 = minimum.toUInt().toHaclBignum4096()
 
@@ -384,6 +381,12 @@ class ProductionGroupContext(
             // want to call Hacl_Bignum256_mod, because it's relatively slow. We're instead
             // taking advantage of the fact that q is very close to 2^256, so if we're
             // in the region above or equal to q, we can wrap around with a simple addition.
+
+            // But if we've got more than 256 bits, we need a fallback solution.
+
+            if (b.size > MAX_BYTES_Q) {
+                return hashElements(b.toBase64())
+            }
 
             val minimum256 = minimum.toUInt().toHaclBignum256()
             val nonZeroMinimum = minimum > 0
