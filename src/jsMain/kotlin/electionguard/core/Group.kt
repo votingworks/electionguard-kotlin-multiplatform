@@ -11,11 +11,15 @@ import org.gciatto.kt.math.BigInteger
 // as the JVM code. This really needs to be replaced with something that will be performant,
 // probably using WASM. The "obvious" choices are:
 //
+// - SJCL (Stanford JavaScript Crypto Library) - widely used, but seems to fail some
+//   of our simple unit tests.
+//
 // - GMP-WASM (https://github.com/Daninet/gmp-wasm)
-//   (Kotlin's "Dukat" TypeScript interface extraction completely fails on this, which is sad.)
+//   (See the branches with names like 'gmp-wasm' or 'gmp-wasm-v2'. Seems to trigger errors
+//   in Kotlin/JS's Promise.await() as well as other bugs in gmp-wasm itself.)
 //
 // - HACL-WASM (https://github.com/project-everest/hacl-star/tree/master/bindings/js#readme)
-//   (Hash many other HACL features, but doesn't expose any of the BigInt-related types.)
+//   (Has many other HACL features, but doesn't expose any of the BigInt-related types.)
 //
 // But, for now, JS will at least "work".
 
