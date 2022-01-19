@@ -20,7 +20,7 @@ class DLogParallelTest {
                 input.parallelStream()
                     .map {
                         val q = it.toElementModQ(context)
-                        context.dLog(context.gPowP(q)) ?: fail("Unexpected failure for $it")
+                        context.gPowP(q).dLog() ?: fail("Unexpected failure for $it")
                     }
                     .toList()
 

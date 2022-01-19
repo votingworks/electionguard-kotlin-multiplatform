@@ -11,9 +11,9 @@ class DLogTest {
     @Test
     fun basics() {
         runTest {
-            forAll(Arb.int(min=0, max=small)) {
+            forAll(propTestFastConfig, Arb.int(min=0, max=small)) {
                 val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
-                it == context.dLog(context.gPowP(it.toElementModQ(context)))
+                it == context.gPowP(it.toElementModQ(context)).dLog()
             }
         }
     }

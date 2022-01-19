@@ -88,10 +88,10 @@ fun Int.encrypt(
 
 /** Decrypts using the secret key. if the decryption fails, `null` is returned. */
 fun ElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): Int? {
-    val context = compatibleContextOrFail(pad, secretKey.e)
+    compatibleContextOrFail(pad, data, secretKey.e)
     val blind = pad powP secretKey.negativeE
     val gPowM = data * blind
-    return context.dLog(gPowM)
+    return gPowM.dLog()
 }
 
 /** Decrypts using the secret key from the keypair. If the decryption fails, `null` is returned. */
@@ -99,15 +99,15 @@ fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = decrypt(keypair.secretK
 
 /** Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned. */
 fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ): Int? {
-    val context = compatibleContextOrFail(this.pad, publicKey, nonce)
+    compatibleContextOrFail(pad, data, publicKey, nonce)
     val blind = publicKey powP nonce
     val gPowM = data / blind
-    return context.dLog(gPowM)
+    return gPowM.dLog()
 }
 
 /** Homomorphically "adds" two ElGamal ciphertexts together through piecewise multiplication. */
 operator fun ElGamalCiphertext.plus(o: ElGamalCiphertext): ElGamalCiphertext {
-    compatibleContextOrFail(this.pad, o.pad)
+    compatibleContextOrFail(this.pad, this.data, o.pad, o.data)
     return ElGamalCiphertext(pad * o.pad, data * o.data)
 }
 
