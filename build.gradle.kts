@@ -134,6 +134,9 @@ kotlin {
                     // us lots of features. On Native, it ultimately just prints to stdout.
                     // On JS, it uses console.log, console.error, etc.
                     implementation("io.github.microutils:kotlin-logging:2.1.21")
+
+                    // A multiplatform Kotlin library for working with date and time.
+                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
                 }
             }
         val commonTest by
