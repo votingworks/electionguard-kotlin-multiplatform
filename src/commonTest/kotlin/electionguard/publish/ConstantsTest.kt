@@ -1,6 +1,8 @@
 package electionguard.publish
 
 import electionguard.core.*
+import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.assertions.throwables.shouldThrow
 import kotlin.test.Test
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
@@ -17,13 +19,29 @@ class ConstantsTest {
             val productionDesc1 = productionGroup1.constants
             val productionDesc2 = productionGroup2.constants
 
-            assertDoesNotThrow { tinyDesc.requireCompatible(Json.encodeToJsonElement(tinyDesc)) }
-            assertDoesNotThrow {
+            shouldNotThrowAny { tinyDesc.requireCompatible(tinyDesc) }
+            shouldNotThrowAny {
                 productionDesc1.requireCompatible(Json.encodeToJsonElement(productionDesc2))
             }
-            assertThrows<RuntimeException> {
+            shouldThrow<RuntimeException> {
                 tinyDesc.requireCompatible(Json.encodeToJsonElement(productionDesc1))
             }
+        }
+    }
+
+    @Test
+    fun testGroupsDontSerialize() {
+        runTest {
+            val tinyGroup = tinyGroup()
+            val n = tinyGroup.uIntToElementModQ(42U)
+            shouldThrow<Error> { n.publishJson() }
+
+            val productionGroup = productionGroup(PowRadixOption.NO_ACCELERATION)
+            val n2 = productionGroup.uIntToElementModQ(42U)
+            val j = shouldNotThrowAny { n2.publishJson() }
+
+            shouldNotThrowAny { productionGroup.importElementModQ(j) }
+            shouldThrow<Error> { tinyGroup.importElementModQ(j) }
         }
     }
 }

@@ -43,7 +43,8 @@ fun ULong.toByteArray(): ByteArray =
                 ((this shr 24) and 0xffU).toByte(),
                 ((this shr 16) and 0xffU).toByte(),
                 ((this shr 8) and 0xffU).toByte(),
-                (this and 0xffU).toByte())
+                (this and 0xffU).toByte()
+            )
         else ->
             byteArrayOf(
                 ((this shr 56) and 0xffU).toByte(),

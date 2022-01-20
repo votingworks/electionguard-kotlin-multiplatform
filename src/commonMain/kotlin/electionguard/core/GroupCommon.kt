@@ -396,7 +396,7 @@ fun compatibleContextOrFail(vararg elements: Element): GroupContext {
 }
 
 /**
- * Computes the discrete log, base g, of this element. Only yields an answer for
- * "small" exponents, otherwise returns `null`.
+ * Computes the discrete log, base g, of this element. Only yields an answer for "small" exponents,
+ * otherwise returns `null`.
  */
 fun ElementModP.dLog(): Int? = context.dLog(this)

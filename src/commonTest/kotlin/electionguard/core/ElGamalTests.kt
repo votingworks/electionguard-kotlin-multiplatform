@@ -1,5 +1,7 @@
 package electionguard.core
 
+import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
@@ -16,13 +18,9 @@ class ElGamalTests {
         runTest {
             val context = tinyGroup()
 
-            assertThrows<Exception>("0 is too small") {
-                elGamalKeyPairFromSecret(0.toElementModQ(context))
-            }
-            assertThrows<Exception>("1 is too small") {
-                elGamalKeyPairFromSecret(1.toElementModQ(context))
-            }
-            assertDoesNotThrow { elGamalKeyPairFromSecret(2.toElementModQ(context)) }
+            shouldThrow<ArithmeticException> { elGamalKeyPairFromSecret(0.toElementModQ(context)) }
+            shouldThrow<ArithmeticException> { elGamalKeyPairFromSecret(1.toElementModQ(context)) }
+            shouldNotThrowAny { elGamalKeyPairFromSecret(2.toElementModQ(context)) }
         }
     }
 

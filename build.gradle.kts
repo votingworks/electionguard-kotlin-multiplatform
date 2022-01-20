@@ -39,7 +39,8 @@ kotlin {
                 // More info: https://www.jvt.me/posts/2021/03/11/gradle-speed-parallel/
                 systemProperties["junit.jupiter.execution.parallel.enabled"] = "true"
                 systemProperties["junit.jupiter.execution.parallel.mode.default"] = "same_thread"
-                systemProperties["junit.jupiter.execution.parallel.mode.classes.default"] = "concurrent"
+                systemProperties["junit.jupiter.execution.parallel.mode.classes.default"] =
+                    "concurrent"
             }
     }
 
@@ -222,9 +223,11 @@ rootProject.plugins
 
 // ensures that the yarn.lock file is persistent
 // https://blog.jetbrains.com/kotlin/2021/10/control-over-npm-dependencies-in-kotlin-js/
-rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().disableGranularWorkspaces()
-}
+rootProject.plugins
+    .withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
+        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>()
+            .disableGranularWorkspaces()
+    }
 
 tasks.register("backupYarnLock") {
     dependsOn(":kotlinNpmInstall")
@@ -241,18 +244,19 @@ tasks.register("backupYarnLock") {
     outputs.file("$rootDir/yarn.lock.bak").withPropertyName("outputFile")
 }
 
-val restoreYarnLock = tasks.register("restoreYarnLock") {
-    doLast {
-        copy {
-            from("$rootDir/yarn.lock.bak")
-            rename { "yarn.lock" }
-            into("$rootDir/build/js")
+val restoreYarnLock =
+    tasks.register("restoreYarnLock") {
+        doLast {
+            copy {
+                from("$rootDir/yarn.lock.bak")
+                rename { "yarn.lock" }
+                into("$rootDir/build/js")
+            }
         }
-    }
 
-    inputs.file("$rootDir/yarn.lock.bak").withPropertyName("inputFile")
-    outputs.file("$rootDir/build/js/yarn.lock").withPropertyName("outputFile")
-}
+        inputs.file("$rootDir/yarn.lock.bak").withPropertyName("inputFile")
+        outputs.file("$rootDir/build/js/yarn.lock").withPropertyName("outputFile")
+    }
 
 tasks["kotlinNpmInstall"].dependsOn("restoreYarnLock")
 
@@ -266,13 +270,14 @@ tasks.register("validateYarnLock") {
         if (expected != actual) {
             throw AssertionError(
                 "Generated yarn.lock differs from the one in the repository. " +
-                        "It can happen because someone has updated a dependency and haven't run `./gradlew :backupYarnLock --refresh-dependencies` " +
-                        "afterwards."
+                    "It can happen because someone has updated a dependency and haven't run " +
+                    "`./gradlew :backupYarnLock --refresh-dependencies` " + "afterwards."
             )
         }
     }
 
-    inputs.files("$rootDir/yarn.lock.bak", "$rootDir/build/js/yarn.lock").withPropertyName("inputFiles")
+    inputs.files("$rootDir/yarn.lock.bak", "$rootDir/build/js/yarn.lock")
+        .withPropertyName("inputFiles")
 }
 
 allprojects {

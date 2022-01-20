@@ -18,7 +18,8 @@ private val tinyGroupContext =
  * overheads associated with bignum arithmetic on thousands of bits. The values of p and q are big
  * enough to make it unlikely that, for example, false hash collisions might crop up in texting.
  *
- * Of course, it should be obvious, but *do not use this group in any production code!*
+ * Needless to say, this group should not be used in production code! (Which is why it's in a test
+ * code directory and not a main code directory.)
  */
 fun tinyGroup(): GroupContext = tinyGroupContext
 
