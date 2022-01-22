@@ -18,8 +18,8 @@ private val tinyGroupContext =
  * overheads associated with bignum arithmetic on thousands of bits. The values of p and q are big
  * enough to make it unlikely that, for example, false hash collisions might crop up in texting.
  *
- * Needless to say, this group should not be used in production code! (Which is why it's in a test
- * code directory and not a main code directory.)
+ * Needless to say, THIS GROUP SHOULD NOT BE USED IN PRODUCTION CODE! And, in fact, this is why this
+ * group isn't exported as part of the "main" code of our library but is only visible to test code.
  */
 fun tinyGroup(): GroupContext = tinyGroupContext
 
@@ -101,16 +101,30 @@ private class TinyGroupContext(
 
     override fun isCompatible(ctx: GroupContext): Boolean = !ctx.isProductionStrength()
 
+    /**
+     * Convert a ByteArray, of arbitrary size, to a UInt, mod the given modulus. If the ByteArray
+     * happens to be of size eight or less, the result is exactly the same as treating the ByteArray
+     * as a big-endian integer and computing the modulus afterward. For anything longer, this method
+     * uses the smallest 64 bits (i.e., the final eight bytes of the array) and ignores the rest.
+     *
+     * If the modulus is zero, it's ignored, and the intermediate value is truncated to a UInt and
+     * returned.
+     */
+    private fun ByteArray.toUIntMod(modulus: UInt = 0U): UInt {
+        val preModulus = this.fold(0UL) { prev, next -> ((prev shl 8) or next.toULong()) }
+        return if (modulus == 0U) {
+            preModulus.toUInt()
+        } else {
+            (preModulus % modulus).toUInt()
+        }
+    }
+
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        // Gives an exact answer if the input is <= 8 byte, otherwise is going to be weird
-        // but will at least give *something* in bounds as its result. Assumes that the
-        // minimum is significantly smaller than the modulus.
-        val u32: UInt =
-            (b.fold(0UL) { prev, next -> ((prev shl 8) or next.toULong()) } % p).toUInt()
+        val u32 = b.toUIntMod(p)
         val result = if (u32 < minimum.toUInt()) u32 + minimum.toUInt() else u32
         return uIntToElementModP(result)
     }
@@ -125,11 +139,7 @@ private class TinyGroupContext(
         }
         val modulus = if (maxQMinus1) (q - 1U) else q
 
-        // Gives an exact answer if the input is <= 8 byte, otherwise is going to be weird
-        // but will at least give *something* in bounds as its result. Assumes that the
-        // minimum is significantly smaller than the modulus.
-        val u32: UInt =
-            (b.fold(0UL) { prev, next -> ((prev shl 8) or next.toULong()) } % modulus).toUInt()
+        val u32 = b.toUIntMod(modulus)
         val result = if (u32 < minimum.toUInt()) u32 + minimum.toUInt() else u32
         return uIntToElementModQ(result)
     }
@@ -137,14 +147,14 @@ private class TinyGroupContext(
     override fun binaryToElementModP(b: ByteArray): ElementModP? {
         if (b.size > 4) return null // guaranteed to be out of bounds
 
-        val u32: UInt = b.fold(0U) { prev, next -> ((prev shl 8) or next.toUInt()) }
+        val u32 = b.toUIntMod()
         return if (u32 >= p) null else uIntToElementModP(u32)
     }
 
     override fun binaryToElementModQ(b: ByteArray): ElementModQ? {
         if (b.size > 4) return null // guaranteed to be out of bounds
 
-        val u32: UInt = b.fold(0U) { prev, next -> ((prev shl 8) or next.toUInt()) }
+        val u32 = b.toUIntMod()
         return if (u32 >= q) null else uIntToElementModQ(u32)
     }
 

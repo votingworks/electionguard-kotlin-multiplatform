@@ -28,20 +28,4 @@ class ConstantsTest {
             }
         }
     }
-
-    @Test
-    fun testGroupsDontSerialize() {
-        runTest {
-            val tinyGroup = tinyGroup()
-            val n = tinyGroup.uIntToElementModQ(42U)
-            shouldThrow<Error> { n.publishJson() }
-
-            val productionGroup = productionGroup(PowRadixOption.NO_ACCELERATION)
-            val n2 = productionGroup.uIntToElementModQ(42U)
-            val j = shouldNotThrowAny { n2.publishJson() }
-
-            shouldNotThrowAny { productionGroup.importElementModQ(j) }
-            shouldThrow<Error> { tinyGroup.importElementModQ(j) }
-        }
-    }
 }

@@ -62,6 +62,7 @@ object Base16 {
 
     /**
      * Converts from a hex-encoded string to a byte array, returning null if the input is malformed.
+     * Works correctly for both lower and upper-case values for A-F.
      */
     fun String.fromHex(): ByteArray? {
         // Performance note: we could probably speed this up by doing math on characters,

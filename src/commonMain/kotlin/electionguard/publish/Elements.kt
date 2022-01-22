@@ -75,23 +75,11 @@ object ElementModQAsStringSerializer : KSerializer<ElementModQPub> {
     }
 }
 
-// Engineering note: we don't want to ever accidentally use the TinyGroup in production.
-// One way that we can head this off is by creating a runtime failure
-// since this represents a code bug; we should never do this!
-
 /** Publishes an ElementModP to its external, serializable form. */
-fun ElementModP.publish(): ElementModPPub =
-    if (context.isProductionStrength())
-        ElementModPPub(this.byteArray())
-    else
-        throw Error("serialization not supported for non-production group")
+fun ElementModP.publish(): ElementModPPub = ElementModPPub(this.byteArray())
 
 /** Publishes an ElementModQ to its external, serializable form. */
-fun ElementModQ.publish(): ElementModQPub =
-    if (context.isProductionStrength())
-        ElementModQPub(this.byteArray())
-    else
-        throw Error("serialization not supported for non-production group")
+fun ElementModQ.publish(): ElementModQPub = ElementModQPub(this.byteArray())
 
 /** Publishes an ElementModP to a JSON AST representation. */
 fun ElementModP.publishJson(): JsonElement = Json.encodeToJsonElement(publish())
@@ -100,18 +88,10 @@ fun ElementModP.publishJson(): JsonElement = Json.encodeToJsonElement(publish())
 fun ElementModQ.publishJson(): JsonElement = Json.encodeToJsonElement(publish())
 
 /** Imports from a published ElementModP. Returns `null` if it's out of bounds. */
-fun GroupContext.import(element: ElementModPPub): ElementModP? =
-    if (isProductionStrength())
-        binaryToElementModP(element.value)
-    else
-        throw Error("serialization not supported for non-production group")
+fun GroupContext.import(element: ElementModPPub): ElementModP? = binaryToElementModP(element.value)
 
 /** Imports from a published ElementModQ. Returns `null` if it's out of bounds. */
-fun GroupContext.import(element: ElementModQPub): ElementModQ? =
-    if (isProductionStrength())
-        binaryToElementModQ(element.value)
-    else
-        throw Error("serialization not supported for non-production group")
+fun GroupContext.import(element: ElementModQPub): ElementModQ? = binaryToElementModQ(element.value)
 
 /** Imports from a published ElementModP. Returns `null` if it's out of bounds or malformed. */
 fun GroupContext.importElementModP(element: JsonElement): ElementModP? =
