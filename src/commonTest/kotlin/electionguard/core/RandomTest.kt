@@ -1,6 +1,7 @@
 package electionguard.core
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class RandomTest {
     @Test
@@ -11,6 +12,7 @@ class RandomTest {
 
             for (i in 0..100) {
                 val moreBytes = randomBytes(16)
+                assertEquals(16, moreBytes.size)
                 assertContentNotEquals(firstBytes, moreBytes)
             }
         }
