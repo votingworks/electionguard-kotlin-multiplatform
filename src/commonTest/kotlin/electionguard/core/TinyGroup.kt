@@ -111,7 +111,7 @@ private class TinyGroupContext(
      * returned.
      */
     private fun ByteArray.toUIntMod(modulus: UInt = 0U): UInt {
-        val preModulus = this.fold(0UL) { prev, next -> ((prev shl 8) or next.toULong()) }
+        val preModulus = this.fold(0UL) { prev, next -> ((prev shl 8) or next.toUByte().toULong()) }
         return if (modulus == 0U) {
             preModulus.toUInt()
         } else {
@@ -147,14 +147,14 @@ private class TinyGroupContext(
     override fun binaryToElementModP(b: ByteArray): ElementModP? {
         if (b.size > 4) return null // guaranteed to be out of bounds
 
-        val u32 = b.toUIntMod()
+        val u32: UInt = b.toUIntMod()
         return if (u32 >= p) null else uIntToElementModP(u32)
     }
 
     override fun binaryToElementModQ(b: ByteArray): ElementModQ? {
         if (b.size > 4) return null // guaranteed to be out of bounds
 
-        val u32 = b.toUIntMod()
+        val u32: UInt = b.toUIntMod()
         return if (u32 >= q) null else uIntToElementModQ(u32)
     }
 
