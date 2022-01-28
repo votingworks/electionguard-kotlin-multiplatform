@@ -191,8 +191,10 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
             return input[0]
         }
 
-        val result = input.subList(1, input.count()).fold(input[0].getCompat(this@ProductionGroupContext)) { a, b ->
-            (a + b.getCompat(this@ProductionGroupContext)).rem(this@ProductionGroupContext.q)
+        val result = input.map {
+            it.getCompat(this@ProductionGroupContext)
+        }.reduce { a, b ->
+            (a + b).rem(this@ProductionGroupContext.q)
         }
 
         return ProductionElementModQ(result, this@ProductionGroupContext)
@@ -209,8 +211,10 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
             return input[0]
         }
 
-        val result = input.subList(1, input.count()).fold(input[0].getCompat(this@ProductionGroupContext)) { a, b ->
-            (a * b.getCompat(this@ProductionGroupContext)).rem(this@ProductionGroupContext.p)
+        val result = input.map {
+            it.getCompat(this@ProductionGroupContext)
+        }.reduce { a, b ->
+            (a * b).rem(this@ProductionGroupContext.p)
         }
 
         return ProductionElementModP(result, this@ProductionGroupContext)

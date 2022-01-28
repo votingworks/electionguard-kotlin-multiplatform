@@ -485,7 +485,7 @@ class ProductionGroupContext(
         // and mutate a running total instead. For now, we're just focused on correctness
         // and will circle back if/when this is performance relevant.
 
-        return input.subList(1, input.count()).fold(input[0]) { a, b -> a + b }
+        return input.reduce { a, b -> a * b }
     }
 
     override fun Iterable<ElementModP>.multP(): ElementModP {
@@ -503,7 +503,7 @@ class ProductionGroupContext(
         // and mutate a running total instead. For now, we're just focused on correctness
         // and will circle back if/when this is performance relevant.
 
-        return input.subList(1, input.count()).fold(input[0]) { a, b -> a * b }
+        return input.reduce { a, b -> a * b }
     }
 
     override fun gPowP(e: ElementModQ) = gModP powP e
