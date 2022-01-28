@@ -128,7 +128,7 @@ kotlin {
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
 
                     // Coroutines
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC3")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
 
                     // Useful, portable routines
                     implementation("io.ktor:ktor-utils:1.6.7")
@@ -146,7 +146,7 @@ kotlin {
                     implementation(kotlin("test-annotations-common", "1.6.10"))
 
                     // runTest() for running suspend functions in tests
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0-RC3")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
 
                     // Fancy property-based testing
                     implementation("io.kotest:kotest-property:5.0.1")

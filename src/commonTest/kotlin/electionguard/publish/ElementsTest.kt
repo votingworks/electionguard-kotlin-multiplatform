@@ -6,7 +6,7 @@ import io.kotest.property.checkAll
 import kotlin.test.*
 import kotlinx.serialization.json.*
 
-private inline fun <reified T> jsonRoundTrip(value: T): T {
+inline fun <reified T> jsonRoundTripWithStringPrimitive(value: T): T {
     val jsonT: JsonElement = Json.encodeToJsonElement(value)
 
     if (jsonT is JsonPrimitive) {
@@ -33,8 +33,8 @@ class ElementTest {
                 assertEquals(q, context.importElementModQ(q.publishJson()))
 
                 // longer round-trip through serialized JSON strings and back
-                assertEquals(p, context.import(jsonRoundTrip(p.publish())))
-                assertEquals(q, context.import(jsonRoundTrip(q.publish())))
+                assertEquals(p, context.import(jsonRoundTripWithStringPrimitive(p.publish())))
+                assertEquals(q, context.import(jsonRoundTripWithStringPrimitive(q.publish())))
             }
         }
     }
@@ -48,8 +48,8 @@ class ElementTest {
                 assertEquals(q, context.importElementModQ(q.publishJson()))
 
                 // longer round-trip through serialized JSON strings and back
-                assertEquals(p, context.import(jsonRoundTrip(p.publish())))
-                assertEquals(q, context.import(jsonRoundTrip(q.publish())))
+                assertEquals(p, context.import(jsonRoundTripWithStringPrimitive(p.publish())))
+                assertEquals(q, context.import(jsonRoundTripWithStringPrimitive(q.publish())))
             }
         }
     }

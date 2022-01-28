@@ -19,10 +19,10 @@ data class SchnorrProof(
  * that the author of the proof knew the public and corresponding private keys.
  */
 fun ElGamalKeypair.schnorrProof(nonce: ElementModQ): SchnorrProof {
-    val context = compatibleContextOrFail(publicKey, secretKey.e, nonce)
+    val context = compatibleContextOrFail(publicKey.key, secretKey.key, nonce)
     val h = context.gPowP(nonce)
     val c = context.hashElements(publicKey, h)
-    val u = nonce + secretKey.e * c
+    val u = nonce + secretKey.key * c
 
     return SchnorrProof(publicKey, h, c, u)
 }
@@ -33,9 +33,9 @@ fun ElGamalKeypair.schnorrProof(nonce: ElementModQ): SchnorrProof {
  */
 fun ElGamalPublicKey.hasValidSchnorrProof(proof: SchnorrProof): Boolean {
     val (k, h, challenge, u) = proof
-    val context = compatibleContextOrFail(this, k, h, challenge, u)
+    val context = compatibleContextOrFail(this.key, k.key, h, challenge, u)
 
-    val validPublicKey = k.isValidResidue()
+    val validPublicKey = k.key.isValidResidue()
     val inBoundsH = h.inBounds()
     val inBoundsU = u.inBounds()
     val c = context.hashElements(k, h)

@@ -30,7 +30,7 @@ internal const val intTestQ = 134217689
 internal const val intTestR = 14
 internal const val intTestG = 16384
 
-interface Element {
+interface Element : CryptoHashableString {
     /**
      * Every Element knows the [GroupContext] that was used to create it. This simplifies code that
      * computes with elements, allowing arithmetic expressions to be written in many cases without
@@ -58,8 +58,11 @@ interface Element {
     /** Checks whether this element is zero. */
     fun isZero(): Boolean
 
-    /** Converts from any [Element] to a compact [ByteArray] representation. */
+    /** Converts from any [Element] to a big-endian [ByteArray] representation. */
     fun byteArray(): ByteArray
+
+    /** Returns a string representation suitable for cryptographic hashing. */
+    override fun cryptoHashString(): String = base16()
 }
 
 /**

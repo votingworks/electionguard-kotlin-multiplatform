@@ -23,7 +23,9 @@ class SchnorrTest {
                 val goodProof = kp.schnorrProof(n)
                 assertTrue(kp.publicKey.hasValidSchnorrProof(goodProof))
 
-                val badProof1 = goodProof.copy(publicKey = fakeElementModP)
+                val fakePublicKey = ElGamalPublicKey(fakeElementModP)
+
+                val badProof1 = goodProof.copy(publicKey = fakePublicKey)
                 val badProof2 = goodProof.copy(commitment = fakeElementModP)
                 val badProof3 = goodProof.copy(challenge = fakeElementModQ)
                 val badProof4 = goodProof.copy(response = fakeElementModQ)
@@ -32,7 +34,7 @@ class SchnorrTest {
                 // originals, so we need to be a little bit careful here.
 
                 assertTrue(
-                    goodProof.publicKey == fakeElementModP ||
+                    goodProof.publicKey == fakePublicKey ||
                         !kp.publicKey.hasValidSchnorrProof(badProof1)
                 )
                 assertTrue(
