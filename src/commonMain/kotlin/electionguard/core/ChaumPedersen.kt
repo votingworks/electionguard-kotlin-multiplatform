@@ -402,7 +402,6 @@ fun GenericChaumPedersenProof.isValid(
  * @param hashHeader A value used when generating the challenge, usually the election extended base
  *     hash (Q')
  * @param alsoHash Optional additional values to include in the hash challenge computation hash.
- *     Ignored when [c] is specified.
  */
 fun genericChaumPedersenProofOf(
     g: ElementModP,
