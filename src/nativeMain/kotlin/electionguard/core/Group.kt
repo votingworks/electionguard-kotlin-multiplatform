@@ -11,21 +11,39 @@ import hacl.*
 import kotlinx.cinterop.*
 import platform.posix.free
 
-private val productionGroups =
+private val productionGroups4096 =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
-            pBytes = b64ProductionP.fromSafeBase64(),
-            qBytes = b64ProductionQ.fromSafeBase64(),
-            p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
-            gBytes = b64ProductionG.fromSafeBase64(),
-            rBytes = b64ProductionR.fromSafeBase64(),
-            name = "production group, ${it.description}",
-            powRadixOption = it
+            pBytes = b64Production4096P.fromSafeBase64(),
+            qBytes = b64Production4096Q.fromSafeBase64(),
+            p256minusQBytes = b64Production4096P256MinusQ.fromSafeBase64(),
+            gBytes = b64Production4096G.fromSafeBase64(),
+            rBytes = b64Production4096R.fromSafeBase64(),
+            name = "production group, ${it.description}, 4096 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode4096
         )
     }
 
-actual suspend fun productionGroup(acceleration: PowRadixOption) : GroupContext =
-    productionGroups[acceleration] ?: throw Error("can't happen")
+private val productionGroups3072 =
+    PowRadixOption.values().associateWith {
+        ProductionGroupContext(
+            pBytes = b64Production3072P.fromSafeBase64(),
+            qBytes = b64Production3072Q.fromSafeBase64(),
+            p256minusQBytes = b64Production3072P256MinusQ.fromSafeBase64(),
+            gBytes = b64Production3072G.fromSafeBase64(),
+            rBytes = b64Production3072R.fromSafeBase64(),
+            name = "production group, ${it.description}, 3072 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode3072
+        )
+    }
+
+actual suspend fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) : GroupContext =
+    when(mode) {
+        ProductionMode.Mode4096 -> productionGroups4096[acceleration] ?: throw Error("can't happen")
+        ProductionMode.Mode3072 -> productionGroups3072[acceleration] ?: throw Error("can't happen")
+    }
 
 typealias HaclBignum4096 = ULongArray
 typealias HaclBignum256 = ULongArray
@@ -228,7 +246,8 @@ class ProductionGroupContext(
     val p256minusQBytes: ByteArray,
     val rBytes: ByteArray,
     val name: String,
-    val powRadixOption: PowRadixOption
+    val powRadixOption: PowRadixOption,
+    val productionMode: ProductionMode
 ) : GroupContext {
     val p: HaclBignum4096
     val q: HaclBignum256
@@ -331,7 +350,8 @@ class ProductionGroupContext(
     override val MAX_BYTES_Q: Int
         get() = 32
 
-    override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
+    override fun isCompatible(ctx: GroupContext): Boolean =
+        ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         // Implementation node: ByteArray.toHaclBignum4096() throws
@@ -485,7 +505,7 @@ class ProductionGroupContext(
         // and mutate a running total instead. For now, we're just focused on correctness
         // and will circle back if/when this is performance relevant.
 
-        return input.reduce { a, b -> a * b }
+        return input.reduce { a, b -> a + b }
     }
 
     override fun Iterable<ElementModP>.multP(): ElementModP {

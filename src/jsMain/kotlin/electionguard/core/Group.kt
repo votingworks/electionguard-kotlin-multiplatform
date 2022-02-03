@@ -23,26 +23,44 @@ import org.gciatto.kt.math.BigInteger
 //
 // But, for now, JS will at least "work".
 
-private val productionGroups =
+private val productionGroups4096 =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
-            pBytes = b64ProductionP.fromSafeBase64(),
-            qBytes = b64ProductionQ.fromSafeBase64(),
-            gBytes = b64ProductionG.fromSafeBase64(),
-            rBytes = b64ProductionR.fromSafeBase64(),
-            name = "production group, ${it.description}",
-            powRadixOption = it
+            pBytes = b64Production4096P.fromSafeBase64(),
+            qBytes = b64Production4096Q.fromSafeBase64(),
+            gBytes = b64Production4096G.fromSafeBase64(),
+            rBytes = b64Production4096R.fromSafeBase64(),
+            name = "production group, ${it.description}, 4096 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode4096
         )
     }
 
-actual suspend fun productionGroup(acceleration: PowRadixOption) : GroupContext =
-    productionGroups[acceleration] ?: throw Error("can't happen")
+private val productionGroups3072 =
+    PowRadixOption.values().associateWith {
+        ProductionGroupContext(
+            pBytes = b64Production3072P.fromSafeBase64(),
+            qBytes = b64Production3072Q.fromSafeBase64(),
+            gBytes = b64Production3072G.fromSafeBase64(),
+            rBytes = b64Production3072R.fromSafeBase64(),
+            name = "production group, ${it.description}, 3072 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode4096
+        )
+    }
+
+actual suspend fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) : GroupContext =
+    when(mode) {
+        ProductionMode.Mode4096 -> productionGroups4096[acceleration] ?: throw Error("can't happen")
+        ProductionMode.Mode3072 -> productionGroups3072[acceleration] ?: throw Error("can't happen")
+    }
+
 
 /** Convert an array of bytes, in big-endian format, to a BigInteger */
 internal fun UInt.toBigInteger() = BigInteger.of(this.toLong())
 internal fun ByteArray.toBigInteger() = BigInteger(1, this)
 
-class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, val name: String, val powRadixOption: PowRadixOption) :
+class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, val name: String, val powRadixOption: PowRadixOption, val productionMode: ProductionMode) :
     GroupContext {
     val p: BigInteger
     val q: BigInteger
@@ -123,7 +141,8 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
     override val MAX_BYTES_Q: Int
         get() = 32
 
-    override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
+    override fun isCompatible(ctx: GroupContext): Boolean =
+        ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0) {

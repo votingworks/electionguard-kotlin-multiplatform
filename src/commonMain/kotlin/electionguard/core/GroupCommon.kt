@@ -8,14 +8,24 @@ import electionguard.publish.Constants
 import electionguard.publish.isCompatible
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
-internal val b64ProductionP =
+internal val b64Production4096P =
     "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3fFy0NYjQhf8wAN/GLk+9TiRMLemYeXCblQhQGi7yv6jKmeBi9MHWtH1x+nMPRc3+ygXG6+E27ZhK3iBwaSOQ5zQOpK/UiJaKzjmVC6fcivOFaOBtXU+qEJ2M4HMroNRKzBRGzLl6NgDYhSa0DCqul86V5i7Iqp+wbbQ8XkD9OIthAc0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWav//////////////////////////////////////////"
-internal val b64ProductionQ = "AP////////////////////////////////////////9D"
-internal val b64ProductionP256MinusQ = "AL0="
-internal val b64ProductionR =
+internal val b64Production4096Q = "AP////////////////////////////////////////9D"
+internal val b64Production4096P256MinusQ = "AL0="
+internal val b64Production4096R =
     "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCbivamTAztzy1VnanZfwlcMHbGhgN2GRSNLIbDFxAq+iFIAx8ERArA/wyaQXqJISUS52B7JQHapNOKLBQQxINhSeK9uMgmDmJ8RkaWPv/p4W5JXUi9IVxtjsnRZnZXoqHIUG8hE/+tGaayvHxFdgRWcZGDMJ+HS8ms5XD/2od6orI6LW8pHBVUyi6xLxLNAJuLhzSmStUeuJO9iRdQuFFiJB2QjwyXCYeXWOfoIz6rO/LWq1OvoyqhU61mguWgZIiXyb4YoNUL7OAww0MjNq2RY+M/jn2vSY8UuyhSr/qBSEHrGN1fDolRbVV3dihcFgcdIRGU7hw/NGQgNquIbj7CiILOQAPeozW02TW65LWCNbn7K6txPI9wWhx95CIgIJ1rvKzEZzGGAVZScuSmPjjiSZdUrkk6wajoNGnu81yifCcbx5Lu4hFW5he5IuqPcTwizygtxdY4W7EoaOt4Enj6CrKolY/Mtf/i5cNh/BdEIBIrAWPKSkYwjIxGyR6nRXwTan2f1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kg=="
-internal val b64ProductionG =
+internal val b64Production4096G =
     "HUHknEd+Feru8MXkrAjUpGwmjNNCT8AdE3ab20NnMhhYe8hsTBRI0AagNpnzq65f6xnilvXRQ8xeSj/IkIjJ9FI9Fm7jrp1fsDwL3Xet1cAX9sVeLsksIm/vXGwd8ufDbZDn6q3gmCQdNAmYO8zStTeek5H7xi+fjZOdEgixYDZ8E0JkEiGJWV7IXIzb5fnTB/RpEsBJMvjBaBWna0aCvWvcDtUrANjTD1nHMdWn/66BZdU8+WZJqsK3Q9pW8U8Z2sxSNvKbGrn5vvxpaXKT1d6ti1v13purbeZ8RXGeVjRKPL3zYJgksbV4406utt0xkKs1cdbWccUSKCwdp702tCUdJYT63qgLnhQUIwdN2bX7g6y96tTIelj/9Rf5d6gwgDcKOwz5ihvCl4xHqsKWEf1sQOL5h1w11QRDqao/SWEdzToNb/PLP6zzFHG9thhguSxZTU5GVpuzn+6t/x/WTINqbW24XGunJBdmt6tWv3OWM7BUFH9xcJIUEulI2eR0AtFbscJXMYYSwSHDa4DrhDPAjn0LcUnjqwqHNaku3Oj/lD4ootzqz8xp7DGJCcsEe+HFhYhEta1E8i7rKJ5MxVT3peLz3qAmh3/5KFGBYHHOAo64aNllzLLSKVqMVb0cBws5sJrgazfSk0O52Jl9wkTEaLmAlwcxc27gGLutuYc="
+
+// 3072-bit P and 256-bit Q primes, plus generator G and cofactor R
+internal val b64Production3072P =
+    "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3tTlMKbslAxFMU0W09hktKiTT4uHxSr6CWGgpsXuSjU3d3P//////////////////////////////////////////w=="
+internal val b64Production3072Q = "AP////////////////////////////////////////9D"
+internal val b64Production3072P256MinusQ = "AL0="
+internal val b64Production3072R =
+    "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCbivamTAztzy1VnanZfwlcMHbGhgN2GRSNLIbDFxAq+iFIAx8ERArA/wyaQXqJISUS52B7JQHapNOKLBQQxINhSeK9uMgmDmJ8RkaWPv/p4W5JXUi9IVxtjsnRZnZXoqHIUG8hE/+tGaayvHxFdgRWcZGDMJ+HS8ms5XD/2od6orI6LW8pHBVUyi6xLxLNAJuLhzSmStUeuJO9iRdQuFFiJB2QjwyXCYeXWOfoIz6rO/LWq1OvoyqhU61mguWgZIiXyb4YoNUL7OAww0MjNq2RY+M/jn2vSY8UuyhSr/qBSEHrGN1fDolRbVV3dihcFgcdIRGU7hw/NGQgNquIbj7CiWZAn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9So="
+internal val b64Production3072G =
+    "AK+NwgV5Y8bDZBGcAUonaGungFdnSLcvZwxKXUw/rB4ii4T7qIxOr5TfmHVcbHNhG7VKFKbiMtI4yRfadtimK3CDehXuwREMESVhqw6unhHdzsYfK71Uu3YvyQNJTvIfDzOP4mWCRTzj/wLFOncpYSblnhmAzUmlZyakDP3vk6GBQc+DRC0P3N+fE1Gy0M+BTOnHlkAtwiGBMtKDYFvdFUaOq6S2945N494HZvqZFe0o4A2QdX9JSYYJJHfJDF/DBaVoKQiNmW0ifS8BjBoWN3sAFKgYP1nPiHHEZZEyvdunnoaa6PZck2CNF5oH19mU4Fjl9RtHxyCaJYZNqfE3fBaxwJyFtmzD1Sf6s/ay321r6hUgYpi6w+KT8Q4um3gOzgM6R8/EUSIVIrtwnhuU2Op0hyQhhdj4+wE+nhBzldU+IsVVAvweSpFXZvPDtGOj7ky2gpJqDE+HzYYYGrxvuQK9gzHeGPWYIMXZZ9eEscBuWpTzHvhhG1RdLx4YTOrDEg=="
 
 // 32-bit everything, suitable for accelerated testing
 internal val b64TestP = "b//93w=="
@@ -29,6 +39,15 @@ internal const val intTestP = 1879047647
 internal const val intTestQ = 134217689
 internal const val intTestR = 14
 internal const val intTestG = 16384
+
+/**
+ * ElectionGuard defines two modes of operation, with P having either 4096 bits or 3072 bits. We'll
+ * track which mode we're using with this enum.
+ */
+enum class ProductionMode(val numBitsInP: Int) {
+    Mode4096(4096),
+    Mode3072(3072)
+}
 
 interface Element : CryptoHashableString {
     /**

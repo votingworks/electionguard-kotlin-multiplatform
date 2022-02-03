@@ -8,7 +8,9 @@ package electionguard.core
  * surround this with a call to `runBlocking` or equivalent.
  *
  * @see PowRadixOption for the different memory use vs. performance profiles
+ * @see ProductionMode specifies the particular set of cryptographic constants we'll be using
  */
 expect suspend fun productionGroup(
-    acceleration: PowRadixOption = PowRadixOption.LOW_MEMORY_USE
+    acceleration: PowRadixOption = PowRadixOption.LOW_MEMORY_USE,
+    mode: ProductionMode = ProductionMode.Mode4096
 ): GroupContext
