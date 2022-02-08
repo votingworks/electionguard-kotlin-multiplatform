@@ -60,7 +60,7 @@ fun GroupContext.hashElements(vararg elements: Any?): ElementModQ {
         }
 
     val digest = hashMe.encodeToByteArray().sha256()
-    return safeBinaryToElementModQ(digest, maxQMinus1 = true)
+    return safeBinaryToElementModQ(digest)
 }
 
 // TODO: do we need to be able to hash anything else that wouldn't already be covered

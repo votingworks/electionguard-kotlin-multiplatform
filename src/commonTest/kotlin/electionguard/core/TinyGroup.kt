@@ -132,14 +132,11 @@ private class TinyGroupContext(
     override fun safeBinaryToElementModQ(
         b: ByteArray,
         minimum: Int,
-        maxQMinus1: Boolean
     ): ElementModQ {
         if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
-        val modulus = if (maxQMinus1) (q - 1U) else q
-
-        val u32 = b.toUIntMod(modulus)
+        val u32 = b.toUIntMod(q)
         val result = if (u32 < minimum.toUInt()) u32 + minimum.toUInt() else u32
         return uIntToElementModQ(result)
     }

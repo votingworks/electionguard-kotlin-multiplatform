@@ -150,12 +150,12 @@ class ProductionGroupContext(
         return result
     }
 
-    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int, maxQMinus1: Boolean): ElementModQ {
+    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
         if(minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        val tmp = b.toBigInteger().mod(if (maxQMinus1) qMinus1Q.element else q)
+        val tmp = b.toBigInteger().mod(q)
 
         val mv = minimum.toBigInteger()
         val tmp2 = if (tmp < mv) tmp + mv else tmp
@@ -244,8 +244,8 @@ private fun Element.getCompat(other: ProductionGroupContext): BigInteger {
 
 class ProductionElementModQ(val element: BigInteger, val groupContext: ProductionGroupContext): ElementModQ,
     Element, Comparable<ElementModQ> {
-    internal fun BigInteger.modWrap(): ElementModQ = this.mod(groupContext.q).wrap()
-    internal fun BigInteger.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
+    private fun BigInteger.modWrap(): ElementModQ = this.mod(groupContext.q).wrap()
+    private fun BigInteger.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
 
     override val context: GroupContext
         get() = groupContext
@@ -295,8 +295,8 @@ class ProductionElementModQ(val element: BigInteger, val groupContext: Productio
 
 open class ProductionElementModP(val element: BigInteger, val groupContext: ProductionGroupContext): ElementModP,
     Element, Comparable<ElementModP> {
-    internal fun BigInteger.modWrap(): ElementModP = this.mod(groupContext.p).wrap()
-    internal fun BigInteger.wrap(): ElementModP = ProductionElementModP(this, groupContext)
+    private fun BigInteger.modWrap(): ElementModP = this.mod(groupContext.p).wrap()
+    private fun BigInteger.wrap(): ElementModP = ProductionElementModP(this, groupContext)
 
     override val context: GroupContext
         get() = groupContext

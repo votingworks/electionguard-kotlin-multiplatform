@@ -170,13 +170,10 @@ interface GroupContext {
      * Converts a [ByteArray] to an [ElementModQ]. The input array is assumed to be in big-endian
      * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
      * Java's BigInteger. Guarantees the result is in [minimum, Q), by computing the result mod Q.
-     * The `maxQMinus1` flag changes the range to [minimum, Q-1), which is used for compatibility
-     * with the original ElectionGuard hash function.
      */
     fun safeBinaryToElementModQ(
         b: ByteArray,
         minimum: Int = 0,
-        maxQMinus1: Boolean = false
     ): ElementModQ
 
     /**

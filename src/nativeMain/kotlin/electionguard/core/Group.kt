@@ -392,7 +392,7 @@ class ProductionGroupContext(
         }
     }
 
-    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int, maxQMinus1: Boolean): ElementModQ {
+    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
         if (minimum < 0)
            throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
@@ -412,46 +412,23 @@ class ProductionGroupContext(
             val nonZeroMinimum = minimum > 0
 
             val result = b.toHaclBignum256()
-            if (!maxQMinus1) {
-                nativeElems(result, minimum256, q, p256minusQ) { r, m, qq, p256 ->
-                    if (Hacl_Bignum256_lt_mask(r, qq) == 0UL) {
-                        // r >= q, so need to wrap around
-                        // r = r + p256
-                        //   = r + (2^256 - q)
-                        //   = r - q
-                        Hacl_Bignum256_add(r, p256, r)
-                    }
 
-                    // Same hack as above.
-
-                    if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
-                        Hacl_Bignum256_add(r, m, r)
-                    }
+            nativeElems(result, minimum256, q, p256minusQ) { r, m, qq, p256 ->
+                if (Hacl_Bignum256_lt_mask(r, qq) == 0UL) {
+                    // r >= q, so need to wrap around
+                    // r = r + p256
+                    //   = r + (2^256 - q)
+                    //   = r - q
+                    Hacl_Bignum256_add(r, p256, r)
                 }
-            } else {
-                nativeElems(
-                    result,
-                    minimum256,
-                    qMinus1ModQ.element,
-                    p256minusQ,
-                    oneModQ.element
-                ) { r, m, qM1, p256, one ->
-                    if (Hacl_Bignum256_lt_mask(r, qM1) == 0UL) {
-                        // r >= q - 1, so need to wrap around
-                        // r = r + p256 + 1
-                        //   = r + (2^256 - q)
-                        //   = r - q + 1
-                        Hacl_Bignum256_add(r, p256, r)
-                        Hacl_Bignum256_add(r, one, r)
-                    }
 
-                    // Same hack as above.
+                // Same hack as above.
 
-                    if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
-                        Hacl_Bignum256_add(r, m, r)
-                    }
+                if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
+                    Hacl_Bignum256_add(r, m, r)
                 }
             }
+
             return ProductionElementModQ(result, this)
         }
     }
@@ -536,7 +513,7 @@ class ProductionElementModQ(val element: HaclBignum256, val groupContext: Produc
     override val context: GroupContext
     get() = groupContext
 
-    internal fun HaclBignum256.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
+    private fun HaclBignum256.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
 
     override fun inBounds(): Boolean = element lt256 groupContext.q
 
@@ -682,7 +659,7 @@ open class ProductionElementModP(val element: HaclBignum4096, val groupContext: 
     override val context: GroupContext
         get() = groupContext
 
-    internal fun HaclBignum4096.wrap(): ElementModP = ProductionElementModP(this, groupContext)
+    private fun HaclBignum4096.wrap(): ElementModP = ProductionElementModP(this, groupContext)
 
     override fun inBounds(): Boolean = element lt4096 groupContext.p
 
