@@ -2,6 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.CryptoHashable
 import electionguard.core.ElementModQ
+import electionguard.core.GroupContext
 import electionguard.core.hashElements
 import kotlinx.datetime.UtcOffset
 
@@ -10,6 +11,7 @@ import kotlinx.datetime.UtcOffset
  * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election)
  */
 data class Manifest(
+    val groupContext : GroupContext,
     val election_scope_id: String,
     val type: ElectionType,
     val start_date: UtcOffset,
@@ -21,9 +23,10 @@ data class Manifest(
     val ballot_styles: List<BallotStyle>,
     val name: InternationalizedText?,
     val contact_information: ContactInformation?
-) {
-    fun cryptoHash(): ElementModQ {
-        return hashElements(
+) : CryptoHashable {
+
+    override fun cryptoHash(): ElementModQ {
+        return groupContext.hashElements(
             election_scope_id,
             type.name,
             start_date.toString(), // to_iso_date_string
@@ -37,7 +40,6 @@ data class Manifest(
             ballot_styles,
         );
     }
-
 
     /**
      * The type of election.
@@ -313,11 +315,13 @@ data class Manifest(
      * An annotated character string.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/annotated-string)
      */
-    data class AnnotatedString(val annotation: String, val value: String) : CryptoHashable {
+    inner class AnnotatedString(val annotation: String, val value: String) : CryptoHashable {
         override fun cryptoHash(): ElementModQ {
-            return hashElements(annotation, value)
+            return groupContext.hashElements(annotation, value)
         }
     }
+
+    /// Note: data class cannot be inner class
 
     /**
      * The ISO-639 language code.
@@ -325,7 +329,7 @@ data class Manifest(
      */
     data class Language(val value: String?, val language: String?) : CryptoHashable {
         override fun cryptoHash(): ElementModQ {
-            return hashElements(value, language)
+            return groupContext.hashElements(value, language)
         }
     }
 
@@ -440,7 +444,7 @@ data class Manifest(
         val contest_id: String,
         val electoral_district_id: String,
         val sequence_order: Int,
-        val vote_variation: VoteVariationType?,
+        val vote_variation: VoteVariationType,
         val number_elected: Int,
         val votes_allowed: Int,
         val name: String,
