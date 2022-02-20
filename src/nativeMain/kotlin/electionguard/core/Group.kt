@@ -4,27 +4,46 @@
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
+import electionguard.core.Base64.toBase64
 import electionguard.publish.Constants
 import electionguard.publish.constantsFromBytes
 import hacl.*
 import kotlinx.cinterop.*
 import platform.posix.free
 
-private val productionGroups =
+private val productionGroups4096 =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
-            pBytes = b64ProductionP.fromSafeBase64(),
-            qBytes = b64ProductionQ.fromSafeBase64(),
-            p256minusQBytes = b64ProductionP256MinusQ.fromSafeBase64(),
-            gBytes = b64ProductionG.fromSafeBase64(),
-            rBytes = b64ProductionR.fromSafeBase64(),
-            name = "production group, ${it.description}",
-            powRadixOption = it
+            pBytes = b64Production4096P.fromSafeBase64(),
+            qBytes = b64Production4096Q.fromSafeBase64(),
+            p256minusQBytes = b64Production4096P256MinusQ.fromSafeBase64(),
+            gBytes = b64Production4096G.fromSafeBase64(),
+            rBytes = b64Production4096R.fromSafeBase64(),
+            name = "production group, ${it.description}, 4096 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode4096
         )
     }
 
-actual suspend fun productionGroup(acceleration: PowRadixOption) : GroupContext =
-    productionGroups[acceleration] ?: throw Error("can't happen")
+private val productionGroups3072 =
+    PowRadixOption.values().associateWith {
+        ProductionGroupContext(
+            pBytes = b64Production3072P.fromSafeBase64(),
+            qBytes = b64Production3072Q.fromSafeBase64(),
+            p256minusQBytes = b64Production3072P256MinusQ.fromSafeBase64(),
+            gBytes = b64Production3072G.fromSafeBase64(),
+            rBytes = b64Production3072R.fromSafeBase64(),
+            name = "production group, ${it.description}, 3072 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode3072
+        )
+    }
+
+actual suspend fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) : GroupContext =
+    when(mode) {
+        ProductionMode.Mode4096 -> productionGroups4096[acceleration] ?: throw Error("can't happen")
+        ProductionMode.Mode3072 -> productionGroups3072[acceleration] ?: throw Error("can't happen")
+    }
 
 typealias HaclBignum4096 = ULongArray
 typealias HaclBignum256 = ULongArray
@@ -87,25 +106,9 @@ internal inline fun <T> ByteArray.useNative(f: (CPointer<UByteVar>) -> T): T =
     }
 
 
-internal fun UInt.toHaclBignum256(): HaclBignum256 {
-    val bytes = ByteArray(HaclBignum256_Bytes)
-    // big-endian
-    bytes[HaclBignum256_Bytes - 4] = ((this and 0xff_00_00_00U) shr 24).toByte()
-    bytes[HaclBignum256_Bytes - 3] = ((this and 0xff_00_00U) shr 16).toByte()
-    bytes[HaclBignum256_Bytes - 2] = ((this and 0xff_00U) shr 8).toByte()
-    bytes[HaclBignum256_Bytes - 1] = ((this and 0xffU)).toByte()
-    return bytes.toHaclBignum256()
-}
+internal fun UInt.toHaclBignum256(): HaclBignum256 = toByteArray().toHaclBignum256()
 
-internal fun UInt.toHaclBignum4096(): HaclBignum4096 {
-    val bytes = ByteArray(HaclBignum4096_Bytes)
-    // big-endian
-    bytes[HaclBignum4096_Bytes - 4] = ((this and 0xff_00_00_00U) shr 24).toByte()
-    bytes[HaclBignum4096_Bytes - 3] = ((this and 0xff_00_00U) shr 16).toByte()
-    bytes[HaclBignum4096_Bytes - 2] = ((this and 0xff_00U) shr 8).toByte()
-    bytes[HaclBignum4096_Bytes - 1] = ((this and 0xffU)).toByte()
-    return bytes.toHaclBignum4096()
-}
+internal fun UInt.toHaclBignum4096(): HaclBignum4096 = toByteArray().toHaclBignum4096()
 
 /** Convert an array of bytes, in big-endian format, to a HaclBignum256. */
 internal fun ByteArray.toHaclBignum256(doubleMemory: Boolean = false): HaclBignum256 {
@@ -243,7 +246,8 @@ class ProductionGroupContext(
     val p256minusQBytes: ByteArray,
     val rBytes: ByteArray,
     val name: String,
-    val powRadixOption: PowRadixOption
+    val powRadixOption: PowRadixOption,
+    val productionMode: ProductionMode
 ) : GroupContext {
     val p: HaclBignum4096
     val q: HaclBignum256
@@ -346,14 +350,27 @@ class ProductionGroupContext(
     override val MAX_BYTES_Q: Int
         get() = 32
 
-    override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
+    override fun isCompatible(ctx: GroupContext): Boolean =
+        ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
+        // Implementation node: ByteArray.toHaclBignum4096() throws
+        // an exception if there are more than MAX_BYTES_P bytes of input. We're
+        // working around this with a special case that simply ignores the upper
+        // bytes. HACL's 4096-bit types do support mod on numbers twice as large,
+        // but we'd still need to deal with this problem in the general case.
+
         if (minimum < 0)
             throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
+            val bytesToUse = if (b.size > MAX_BYTES_P) {
+                // Vague assumption: input is big-endian, so we're getting the
+                // lower bytes.
+                b.copyOfRange(b.size - MAX_BYTES_P, b.size)
+            } else b
+
             // we've got an optimized path, using our Montgomery context
-            val bignum4096 = b.toHaclBignum4096(doubleMemory = true)
+            val bignum4096 = bytesToUse.toHaclBignum4096(doubleMemory = true)
             val result = newZeroBignum4096()
             val minimum4096 = minimum.toUInt().toHaclBignum4096()
 
@@ -375,7 +392,7 @@ class ProductionGroupContext(
         }
     }
 
-    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int, maxQMinus1: Boolean): ElementModQ {
+    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
         if (minimum < 0)
            throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
@@ -385,50 +402,33 @@ class ProductionGroupContext(
             // taking advantage of the fact that q is very close to 2^256, so if we're
             // in the region above or equal to q, we can wrap around with a simple addition.
 
+            // But if we've got more than 256 bits, we need a fallback solution.
+
+            if (b.size > MAX_BYTES_Q) {
+                return hashElements(b.toBase64())
+            }
+
             val minimum256 = minimum.toUInt().toHaclBignum256()
             val nonZeroMinimum = minimum > 0
 
             val result = b.toHaclBignum256()
-            if (!maxQMinus1) {
-                nativeElems(result, minimum256, q, p256minusQ) { r, m, qq, p256 ->
-                    if (Hacl_Bignum256_lt_mask(r, qq) == 0UL) {
-                        // r >= q, so need to wrap around
-                        // r = r + p256
-                        //   = r + (2^256 - q)
-                        //   = r - q
-                        Hacl_Bignum256_add(r, p256, r)
-                    }
 
-                    // Same hack as above.
-
-                    if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
-                        Hacl_Bignum256_add(r, m, r)
-                    }
+            nativeElems(result, minimum256, q, p256minusQ) { r, m, qq, p256 ->
+                if (Hacl_Bignum256_lt_mask(r, qq) == 0UL) {
+                    // r >= q, so need to wrap around
+                    // r = r + p256
+                    //   = r + (2^256 - q)
+                    //   = r - q
+                    Hacl_Bignum256_add(r, p256, r)
                 }
-            } else {
-                nativeElems(
-                    result,
-                    minimum256,
-                    qMinus1ModQ.element,
-                    p256minusQ,
-                    oneModQ.element
-                ) { r, m, qM1, p256, one ->
-                    if (Hacl_Bignum256_lt_mask(r, qM1) == 0UL) {
-                        // r >= q - 1, so need to wrap around
-                        // r = r + p256 + 1
-                        //   = r + (2^256 - q)
-                        //   = r - q + 1
-                        Hacl_Bignum256_add(r, p256, r)
-                        Hacl_Bignum256_add(r, one, r)
-                    }
 
-                    // Same hack as above.
+                // Same hack as above.
 
-                    if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
-                        Hacl_Bignum256_add(r, m, r)
-                    }
+                if (nonZeroMinimum && Hacl_Bignum256_lt_mask(r, m) != 0UL) {
+                    Hacl_Bignum256_add(r, m, r)
                 }
             }
+
             return ProductionElementModQ(result, this)
         }
     }
@@ -482,7 +482,7 @@ class ProductionGroupContext(
         // and mutate a running total instead. For now, we're just focused on correctness
         // and will circle back if/when this is performance relevant.
 
-        return input.subList(1, input.count()).fold(input[0]) { a, b -> a + b }
+        return input.reduce { a, b -> a + b }
     }
 
     override fun Iterable<ElementModP>.multP(): ElementModP {
@@ -500,7 +500,7 @@ class ProductionGroupContext(
         // and mutate a running total instead. For now, we're just focused on correctness
         // and will circle back if/when this is performance relevant.
 
-        return input.subList(1, input.count()).fold(input[0]) { a, b -> a * b }
+        return input.reduce { a, b -> a * b }
     }
 
     override fun gPowP(e: ElementModQ) = gModP powP e
@@ -513,7 +513,7 @@ class ProductionElementModQ(val element: HaclBignum256, val groupContext: Produc
     override val context: GroupContext
     get() = groupContext
 
-    internal fun HaclBignum256.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
+    private fun HaclBignum256.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
 
     override fun inBounds(): Boolean = element lt256 groupContext.q
 
@@ -659,7 +659,7 @@ open class ProductionElementModP(val element: HaclBignum4096, val groupContext: 
     override val context: GroupContext
         get() = groupContext
 
-    internal fun HaclBignum4096.wrap(): ElementModP = ProductionElementModP(this, groupContext)
+    private fun HaclBignum4096.wrap(): ElementModP = ProductionElementModP(this, groupContext)
 
     override fun inBounds(): Boolean = element lt4096 groupContext.p
 

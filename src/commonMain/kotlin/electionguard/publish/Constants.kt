@@ -47,11 +47,11 @@ fun Constants.isCompatible(other: Constants): Boolean =
  */
 fun Constants.requireCompatible(other: Constants) {
     if (!isCompatible(other)) {
-        logger.warn {
+        val errStr =
             "other group is incompatible with this group: " +
                 Json.encodeToString(mapOf("other" to other, "this" to this))
-        }
-        throw RuntimeException("other group is incompatible with this group")
+        logger.warn { errStr }
+        throw RuntimeException(errStr)
     }
 }
 

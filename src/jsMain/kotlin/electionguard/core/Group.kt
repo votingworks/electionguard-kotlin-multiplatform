@@ -11,34 +11,56 @@ import org.gciatto.kt.math.BigInteger
 // as the JVM code. This really needs to be replaced with something that will be performant,
 // probably using WASM. The "obvious" choices are:
 //
+// - SJCL (Stanford JavaScript Crypto Library) - widely used, but seems to fail some
+//   of our simple unit tests.
+//
 // - GMP-WASM (https://github.com/Daninet/gmp-wasm)
-//   (Kotlin's "Dukat" TypeScript interface extraction completely fails on this, which is sad.)
+//   (See the branches with names like 'gmp-wasm' or 'gmp-wasm-v2'. Seems to trigger errors
+//   in Kotlin/JS's Promise.await() as well as other bugs in gmp-wasm itself.)
 //
 // - HACL-WASM (https://github.com/project-everest/hacl-star/tree/master/bindings/js#readme)
-//   (Hash many other HACL features, but doesn't expose any of the BigInt-related types.)
+//   (Has many other HACL features, but doesn't expose any of the BigInt-related types.)
 //
 // But, for now, JS will at least "work".
 
-private val productionGroups =
+private val productionGroups4096 =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
-            pBytes = b64ProductionP.fromSafeBase64(),
-            qBytes = b64ProductionQ.fromSafeBase64(),
-            gBytes = b64ProductionG.fromSafeBase64(),
-            rBytes = b64ProductionR.fromSafeBase64(),
-            name = "production group, ${it.description}",
-            powRadixOption = it
+            pBytes = b64Production4096P.fromSafeBase64(),
+            qBytes = b64Production4096Q.fromSafeBase64(),
+            gBytes = b64Production4096G.fromSafeBase64(),
+            rBytes = b64Production4096R.fromSafeBase64(),
+            name = "production group, ${it.description}, 4096 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode4096
         )
     }
 
-actual suspend fun productionGroup(acceleration: PowRadixOption) : GroupContext =
-    productionGroups[acceleration] ?: throw Error("can't happen")
+private val productionGroups3072 =
+    PowRadixOption.values().associateWith {
+        ProductionGroupContext(
+            pBytes = b64Production3072P.fromSafeBase64(),
+            qBytes = b64Production3072Q.fromSafeBase64(),
+            gBytes = b64Production3072G.fromSafeBase64(),
+            rBytes = b64Production3072R.fromSafeBase64(),
+            name = "production group, ${it.description}, 3072 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode4096
+        )
+    }
+
+actual suspend fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) : GroupContext =
+    when(mode) {
+        ProductionMode.Mode4096 -> productionGroups4096[acceleration] ?: throw Error("can't happen")
+        ProductionMode.Mode3072 -> productionGroups3072[acceleration] ?: throw Error("can't happen")
+    }
+
 
 /** Convert an array of bytes, in big-endian format, to a BigInteger */
 internal fun UInt.toBigInteger() = BigInteger.of(this.toLong())
 internal fun ByteArray.toBigInteger() = BigInteger(1, this)
 
-class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, val name: String, val powRadixOption: PowRadixOption) :
+class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteArray, rBytes: ByteArray, val name: String, val powRadixOption: PowRadixOption, val productionMode: ProductionMode) :
     GroupContext {
     val p: BigInteger
     val q: BigInteger
@@ -119,7 +141,8 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
     override val MAX_BYTES_Q: Int
         get() = 32
 
-    override fun isCompatible(ctx: GroupContext) = ctx.isProductionStrength()
+    override fun isCompatible(ctx: GroupContext): Boolean =
+        ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0) {
@@ -135,14 +158,12 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
         return result
     }
 
-    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int, maxQMinus1: Boolean): ElementModQ {
+    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
         if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
-        val modulus = if (maxQMinus1) qMinus1ModQ.getCompat(this) else q
-
-        val tmp = b.toBigInteger().rem(modulus)
+        val tmp = b.toBigInteger().rem(q)
 
         val mv = BigInteger.of(minimum)
         val tmp2 = if (tmp < mv) tmp + mv else tmp
@@ -187,8 +208,10 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
             return input[0]
         }
 
-        val result = input.subList(1, input.count()).fold(input[0].getCompat(this@ProductionGroupContext)) { a, b ->
-            (a + b.getCompat(this@ProductionGroupContext)).rem(this@ProductionGroupContext.q)
+        val result = input.map {
+            it.getCompat(this@ProductionGroupContext)
+        }.reduce { a, b ->
+            (a + b).rem(this@ProductionGroupContext.q)
         }
 
         return ProductionElementModQ(result, this@ProductionGroupContext)
@@ -205,8 +228,10 @@ class ProductionGroupContext(pBytes: ByteArray, qBytes: ByteArray, gBytes: ByteA
             return input[0]
         }
 
-        val result = input.subList(1, input.count()).fold(input[0].getCompat(this@ProductionGroupContext)) { a, b ->
-            (a * b.getCompat(this@ProductionGroupContext)).rem(this@ProductionGroupContext.p)
+        val result = input.map {
+            it.getCompat(this@ProductionGroupContext)
+        }.reduce { a, b ->
+            (a * b).rem(this@ProductionGroupContext.p)
         }
 
         return ProductionElementModP(result, this@ProductionGroupContext)
@@ -228,8 +253,8 @@ private fun Element.getCompat(other: ProductionGroupContext): BigInteger {
 
 class ProductionElementModQ(val element: BigInteger, val groupContext: ProductionGroupContext): ElementModQ,
     Element, Comparable<ElementModQ> {
-    internal fun BigInteger.modWrap(): ElementModQ = this.rem(groupContext.q).wrap()
-    internal fun BigInteger.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
+    private fun BigInteger.modWrap(): ElementModQ = this.rem(groupContext.q).wrap()
+    private fun BigInteger.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
 
     override val context: GroupContext
         get() = groupContext
@@ -279,8 +304,8 @@ class ProductionElementModQ(val element: BigInteger, val groupContext: Productio
 
 open class ProductionElementModP(val element: BigInteger, val groupContext: ProductionGroupContext): ElementModP,
     Element, Comparable<ElementModP> {
-    internal fun BigInteger.modWrap(): ElementModP = this.rem(groupContext.p).wrap()
-    internal fun BigInteger.wrap(): ElementModP = ProductionElementModP(this, groupContext)
+    private fun BigInteger.modWrap(): ElementModP = this.rem(groupContext.p).wrap()
+    private fun BigInteger.wrap(): ElementModP = ProductionElementModP(this, groupContext)
 
     override val context: GroupContext
         get() = groupContext

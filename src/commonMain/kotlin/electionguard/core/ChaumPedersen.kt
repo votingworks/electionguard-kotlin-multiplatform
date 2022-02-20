@@ -60,15 +60,16 @@ data class GenericChaumPedersenProof(
 fun ElGamalCiphertext.constantChaumPedersenProofKnownNonce(
     plaintext: Int,
     nonce: ElementModQ,
-    publicKey: ElementModP,
+    publicKey: ElGamalPublicKey,
     seed: ElementModQ,
     hashHeader: ElementModQ
 ): ConstantChaumPedersenProofKnownNonce {
-    val context = compatibleContextOrFail(this.data, this.pad, nonce, publicKey, seed, hashHeader)
+    val context =
+        compatibleContextOrFail(this.data, this.pad, nonce, publicKey.key, seed, hashHeader)
     return ConstantChaumPedersenProofKnownNonce(
         genericChaumPedersenProofOf(
             g = context.G_MOD_P,
-            h = publicKey,
+            h = publicKey.key,
             x = nonce,
             seed = seed,
             alsoHash = arrayOf(pad, data),
@@ -98,8 +99,8 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownSecretKey(
         compatibleContextOrFail(
             this.data,
             this.pad,
-            keypair.secretKey.e,
-            keypair.publicKey,
+            keypair.secretKey.key,
+            keypair.publicKey.key,
             seed,
             hashHeader
         )
@@ -107,7 +108,7 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownSecretKey(
         genericChaumPedersenProofOf(
             g = context.G_MOD_P,
             h = pad,
-            x = keypair.secretKey.e,
+            x = keypair.secretKey.key,
             seed = seed,
             alsoHash = arrayOf(pad, data),
             hashHeader = hashHeader
@@ -131,11 +132,12 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownSecretKey(
 fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
     plaintext: Int,
     nonce: ElementModQ,
-    publicKey: ElementModP,
+    publicKey: ElGamalPublicKey,
     seed: ElementModQ,
     hashHeader: ElementModQ
 ): DisjunctiveChaumPedersenProofKnownNonce {
-    val context = compatibleContextOrFail(this.data, this.pad, nonce, publicKey, seed, hashHeader)
+    val context =
+        compatibleContextOrFail(this.data, this.pad, nonce, publicKey.key, seed, hashHeader)
     return when (plaintext) {
         0 -> {
             // Note: this is using Benaloh's revised equations ("Efficient Implementation of
@@ -201,7 +203,7 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
  */
 fun ConstantChaumPedersenProofKnownNonce.isValid(
     ciphertext: ElGamalCiphertext,
-    publicKey: ElementModP,
+    publicKey: ElGamalPublicKey,
     hashHeader: ElementModQ,
     expectedConstant: Int = -1
 ) : Boolean {
@@ -210,13 +212,13 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
             this.proof.a,
             ciphertext.data,
             ciphertext.pad,
-            publicKey,
+            publicKey.key,
             hashHeader
         )
     return proof.isValid(
         g = context.G_MOD_P,
         gx = ciphertext.pad,
-        h = publicKey,
+        h = publicKey.key,
         hx = ciphertext.data * context.gPowP(-constant.toElementModQ(context)),
         alsoHash = arrayOf(ciphertext.pad, ciphertext.data),
         hashHeader = hashHeader,
@@ -237,7 +239,7 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
  */
 fun ConstantChaumPedersenProofKnownSecretKey.isValid(
     ciphertext: ElGamalCiphertext,
-    publicKey: ElementModP,
+    publicKey: ElGamalPublicKey,
     hashHeader: ElementModQ,
     expectedConstant: Int = -1
 ) : Boolean {
@@ -246,12 +248,12 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
             this.proof.a,
             ciphertext.data,
             ciphertext.pad,
-            publicKey,
+            publicKey.key,
             hashHeader
         )
     return proof.isValid(
         g = context.G_MOD_P,
-        gx = publicKey,
+        gx = publicKey.key,
         h = ciphertext.pad,
         hx = ciphertext.data * context.gPowP(-constant.toElementModQ(context)),
         alsoHash = arrayOf(ciphertext.pad, ciphertext.data),
@@ -271,11 +273,11 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
  */
 fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     ciphertext: ElGamalCiphertext,
-    publicKey: ElementModP,
+    publicKey: ElGamalPublicKey,
     hashHeader: ElementModQ
 ): Boolean {
     val context =
-        compatibleContextOrFail(this.c, ciphertext.data, ciphertext.pad, publicKey, hashHeader)
+        compatibleContextOrFail(this.c, ciphertext.data, ciphertext.pad, publicKey.key, hashHeader)
     val (alpha, beta) = ciphertext
     val consistentC = proof0.c + proof1.c == c
     val validHash =
@@ -285,7 +287,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
         proof0.isValid(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
-            h = publicKey,
+            h = publicKey.key,
             hx = ciphertext.data,
             checkC = false,
             hashHeader = hashHeader,
@@ -295,7 +297,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
         proof1.isValid(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
-            h = publicKey,
+            h = publicKey.key,
             hx = ciphertext.data * context.GINV_MOD_P,
             checkC = false,
             hashHeader = hashHeader,
@@ -393,14 +395,13 @@ fun GenericChaumPedersenProof.isValid(
  *
  * There's no need for g^x and h^x in this particular computation.
  *
- * @param g Any element in P that can be generated by [gPowP]
- * @param h Any element in P that can be generated by [gPowP]
+ * @param g Any element in P that can be generated by [GroupContext.gPowP]
+ * @param h Any element in P that can be generated by [GroupContext.gPowP]
  * @param x Any element in Q
  * @param seed Used to randomize the generation of the Chaum-Pedersen proof.
  * @param hashHeader A value used when generating the challenge, usually the election extended base
  *     hash (Q')
  * @param alsoHash Optional additional values to include in the hash challenge computation hash.
- *     Ignored when [c] is specified.
  */
 fun genericChaumPedersenProofOf(
     g: ElementModP,

@@ -9,7 +9,10 @@ import kotlin.test.*
 
 class GroupTest {
     @Test
-    fun basicsLg() = basics { productionGroup() }
+    fun basics3072() = basics { productionGroup(mode = ProductionMode.Mode3072) }
+
+    @Test
+    fun basics4096() = basics { productionGroup(mode = ProductionMode.Mode4096) }
 
     @Test
     fun basicsSm() = basics { tinyGroup() }
@@ -25,7 +28,12 @@ class GroupTest {
     }
 
     @Test
-    fun comparisonOperationsLg() = comparisonOperations { productionGroup() }
+    fun comparisonOperations3072() =
+        comparisonOperations { productionGroup(mode = ProductionMode.Mode3072) }
+
+    @Test
+    fun comparisonOperations4096() =
+        comparisonOperations { productionGroup(mode = ProductionMode.Mode4096) }
 
     @Test
     fun comparisonOperationsSm() = comparisonOperations { tinyGroup() }
@@ -44,7 +52,10 @@ class GroupTest {
     }
 
     @Test
-    fun generatorsWorkLg() = generatorsWork { productionGroup() }
+    fun generatorsWork3072() = generatorsWork { productionGroup(mode = ProductionMode.Mode3072) }
+
+    @Test
+    fun generatorsWork4096() = generatorsWork { productionGroup(mode = ProductionMode.Mode4096) }
 
     @Test
     fun generatorsWorkSm() = generatorsWork { tinyGroup() }
@@ -58,7 +69,12 @@ class GroupTest {
     }
 
     @Test
-    fun validResiduesForGPowPLg() = validResiduesForGPowP { productionGroup() }
+    fun validResiduesForGPowP4096() =
+        validResiduesForGPowP { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun validResiduesForGPowP3072() =
+        validResiduesForGPowP { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun validResiduesForGPowPSm() = validResiduesForGPowP { tinyGroup() }
@@ -108,7 +124,10 @@ class GroupTest {
     }
 
     @Test
-    fun additionBasicsLg() = additionBasics { productionGroup() }
+    fun additionBasics4096() = additionBasics { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun additionBasics3072() = additionBasics { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun additionBasicsSm() = additionBasics { tinyGroup() }
@@ -130,7 +149,12 @@ class GroupTest {
     }
 
     @Test
-    fun additionWrappingQLg() = additionWrappingQ { productionGroup() }
+    fun additionWrappingQ4096() =
+        additionWrappingQ { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun additionWrappingQ3072() =
+        additionWrappingQ { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun additionWrappingQSm() = additionWrappingQ { tinyGroup() }
@@ -148,7 +172,12 @@ class GroupTest {
     }
 
     @Test
-    fun multiplicationBasicsPLg() = multiplicationBasicsP { productionGroup() }
+    fun multiplicationBasicsP4096() =
+        multiplicationBasicsP { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun multiplicationBasicsP3072() =
+        multiplicationBasicsP { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun multiplicationBasicsPSm() = multiplicationBasicsP { tinyGroup() }
@@ -170,7 +199,12 @@ class GroupTest {
     }
 
     @Test
-    fun multiplicationBasicsQLg() = multiplicationBasicsQ { productionGroup() }
+    fun multiplicationBasicsQ4096() =
+        multiplicationBasicsQ { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun multiplicationBasicsQ3072() =
+        multiplicationBasicsQ { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun multiplicationBasicsQsm() = multiplicationBasicsQ { tinyGroup() }
@@ -192,7 +226,12 @@ class GroupTest {
     }
 
     @Test
-    fun subtractionBasicsLg() = subtractionBasics { productionGroup() }
+    fun subtractionBasics4096() =
+        subtractionBasics { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun subtractionBasics3072() =
+        subtractionBasics { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun subtractionBasicsSm() = subtractionBasics { tinyGroup() }
@@ -214,7 +253,10 @@ class GroupTest {
     }
 
     @Test
-    fun negationLg() = negation { productionGroup() }
+    fun negation4096() = negation { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun negation3072() = negation { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun negationSm() = negation { tinyGroup() }
@@ -227,7 +269,12 @@ class GroupTest {
     }
 
     @Test
-    fun multiplicativeInversesPLg() = multiplicativeInversesP { productionGroup() }
+    fun multiplicativeInversesP4096() =
+        multiplicativeInversesP { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun multiplicativeInversesP3072() =
+        multiplicativeInversesP { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun multiplicativeInversesPSm() = multiplicativeInversesP { tinyGroup() }
@@ -243,7 +290,12 @@ class GroupTest {
     }
 
     @Test
-    fun multiplicativeInversesQLg() = multiplicativeInversesQ { productionGroup() }
+    fun multiplicativeInversesQ4096() =
+        multiplicativeInversesQ { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun multiplicativeInversesQ3072() =
+        multiplicativeInversesQ { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun multiplicativeInversesQSm() = multiplicativeInversesQ { tinyGroup() }
@@ -258,18 +310,31 @@ class GroupTest {
     }
 
     @Test
-    fun divisionP() {
+    fun divisionP4096() = divisionP { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun divisionP3072() = divisionP { productionGroup(mode = ProductionMode.Mode3072) }
+
+    @Test
+    fun divisionPSm() = divisionP { tinyGroup() }
+
+    fun divisionP(contextF: suspend () -> GroupContext) {
         runTest {
-            val context = productionGroup()
+            val context = contextF()
             forAll(propTestFastConfig, validElementsModP(context), validElementsModP(context))
                 { a, b -> (a * b) / b == a }
         }
     }
 
     @Test
-    fun exponentiationQLg() {
+    fun exponentiationQ4096() = exponentiationQ { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun exponentiationQ3072() = exponentiationQ { productionGroup(mode = ProductionMode.Mode3072) }
+
+    fun exponentiationQ(contextF: suspend () -> GroupContext) {
         runTest {
-            val context = productionGroup()
+            val context = contextF()
             val qMinus1 = context.ZERO_MOD_Q - context.ONE_MOD_Q
 
             checkAll(propTestFastConfig, elementsModQNoZero(context)) {
@@ -295,7 +360,10 @@ class GroupTest {
     }
 
     @Test
-    fun exponentiationLg() = exponentiation { productionGroup() }
+    fun exponentiation4096() = exponentiation { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun exponentiation3072() = exponentiation { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun exponentiationSm() = exponentiation { tinyGroup() }
@@ -310,9 +378,16 @@ class GroupTest {
     }
 
     @Test
-    fun acceleratedExponentiation() {
+    fun acceleratedExponentiation4096() =
+        acceleratedExponentiation { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun acceleratedExponentiation3072() =
+        acceleratedExponentiation { productionGroup(mode = ProductionMode.Mode3072) }
+
+    fun acceleratedExponentiation(contextF: suspend () -> GroupContext) {
         runTest {
-            val context = productionGroup()
+            val context = contextF()
             forAll(propTestFastConfig, elementsModQ(context), elementsModQ(context)) { a, b ->
                 val ga = context.gPowP(a)
                 val normal = ga powP b
@@ -324,7 +399,12 @@ class GroupTest {
     }
 
     @Test
-    fun subgroupInversesLg() = subgroupInverses { productionGroup() }
+    fun subgroupInverses4096() =
+        subgroupInverses { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun subgroupInverses3072() =
+        subgroupInverses { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun subgroupInversesSm() = subgroupInverses { tinyGroup() }
@@ -341,7 +421,12 @@ class GroupTest {
     }
 
     @Test
-    fun iterableAdditionLg() = iterableAddition { productionGroup() }
+    fun iterableAddition4096() =
+        iterableAddition { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun iterableAddition3072() =
+        iterableAddition { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun iterableAdditionSm() = iterableAddition { tinyGroup() }
@@ -363,7 +448,12 @@ class GroupTest {
     }
 
     @Test
-    fun iterableMultiplicationLg() = iterableMultiplication { productionGroup() }
+    fun iterableMultiplication4096() =
+        iterableMultiplication { productionGroup(mode = ProductionMode.Mode4096) }
+
+    @Test
+    fun iterableMultiplication3072() =
+        iterableMultiplication { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
     fun iterableMultiplicationSm() = iterableMultiplication { tinyGroup() }
@@ -387,12 +477,26 @@ class GroupTest {
     @Test
     fun groupCompatibility() {
         runTest {
-            val ctxP = productionGroup(PowRadixOption.NO_ACCELERATION)
-            val ctxP2 = productionGroup(PowRadixOption.NO_ACCELERATION)
+            val ctxP =
+                productionGroup(
+                    acceleration = PowRadixOption.NO_ACCELERATION,
+                    mode = ProductionMode.Mode4096
+                )
+            val ctxP2 =
+                productionGroup(
+                    acceleration = PowRadixOption.LOW_MEMORY_USE,
+                    mode = ProductionMode.Mode4096
+                )
+            val ctx3 =
+                productionGroup(
+                    acceleration = PowRadixOption.NO_ACCELERATION,
+                    mode = ProductionMode.Mode3072
+                )
             val ctxT = tinyGroup()
 
             assertTrue(ctxP.isCompatible(ctxP.constants))
             assertTrue(ctxP.isCompatible(ctxP2.constants))
+            assertFalse(ctx3.isCompatible(ctxP))
             assertFalse(ctxT.constants.isCompatible(ctxP.constants))
         }
     }

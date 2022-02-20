@@ -15,7 +15,7 @@ actual fun randomBytes(length: Int): ByteArray {
     return buffer
 }
 
-private interface Crypto {
+external private interface Crypto {
     fun randomFillSync(buffer: ByteArray)
     fun getRandomValues(buffer: ByteArray)
 }

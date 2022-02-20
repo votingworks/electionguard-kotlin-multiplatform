@@ -11,11 +11,11 @@ import electionguard.core.Base64.toBase64
 class TestConstants {
     @Test
     fun saneConstantsBig() {
-        val p = b64ProductionP.fromSafeBase64().toBigInteger()
-        val q = b64ProductionQ.fromSafeBase64().toBigInteger()
-        val qInv = b64ProductionP256MinusQ.fromSafeBase64().toBigInteger()
-        val g = b64ProductionG.fromSafeBase64().toBigInteger()
-        val r = b64ProductionR.fromSafeBase64().toBigInteger()
+        val p = b64Production4096P.fromSafeBase64().toBigInteger()
+        val q = b64Production4096Q.fromSafeBase64().toBigInteger()
+        val qInv = b64Production4096P256MinusQ.fromSafeBase64().toBigInteger()
+        val g = b64Production4096G.fromSafeBase64().toBigInteger()
+        val r = b64Production4096R.fromSafeBase64().toBigInteger()
 
         val big1 = BigInteger.valueOf(1)
 

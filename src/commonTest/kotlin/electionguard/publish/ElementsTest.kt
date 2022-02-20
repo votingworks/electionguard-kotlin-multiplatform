@@ -1,15 +1,12 @@
 package electionguard.publish
 
+import electionguard.core.*
 import electionguard.core.Base16.fromHex
-import electionguard.core.elementsModP
-import electionguard.core.elementsModQ
-import electionguard.core.productionGroup
-import electionguard.core.runTest
 import io.kotest.property.checkAll
 import kotlin.test.*
 import kotlinx.serialization.json.*
 
-private inline fun <reified T> jsonRoundTrip(value: T): T {
+inline fun <reified T> jsonRoundTripWithStringPrimitive(value: T): T {
     val jsonT: JsonElement = Json.encodeToJsonElement(value)
 
     if (jsonT is JsonPrimitive) {
@@ -27,7 +24,7 @@ private inline fun <reified T> jsonRoundTrip(value: T): T {
 
 class ElementTest {
     @Test
-    fun importExportForElements() {
+    fun importExportForProductionElements() {
         runTest {
             val context = productionGroup()
             checkAll(elementsModP(context), elementsModQ(context)) { p, q ->
@@ -36,8 +33,23 @@ class ElementTest {
                 assertEquals(q, context.importElementModQ(q.publishJson()))
 
                 // longer round-trip through serialized JSON strings and back
-                assertEquals(p, context.import(jsonRoundTrip(p.publish())))
-                assertEquals(q, context.import(jsonRoundTrip(q.publish())))
+                assertEquals(p, context.import(jsonRoundTripWithStringPrimitive(p.publish())))
+                assertEquals(q, context.import(jsonRoundTripWithStringPrimitive(q.publish())))
+            }
+        }
+    }
+    @Test
+    fun importExportForTinyElements() {
+        runTest {
+            val context = tinyGroup()
+            checkAll(elementsModP(context), elementsModQ(context)) { p, q ->
+                // shorter round-trip from the core classes to JsonElement and back
+                assertEquals(p, context.importElementModP(p.publishJson()))
+                assertEquals(q, context.importElementModQ(q.publishJson()))
+
+                // longer round-trip through serialized JSON strings and back
+                assertEquals(p, context.import(jsonRoundTripWithStringPrimitive(p.publish())))
+                assertEquals(q, context.import(jsonRoundTripWithStringPrimitive(q.publish())))
             }
         }
     }
