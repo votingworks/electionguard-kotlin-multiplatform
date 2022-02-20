@@ -29,14 +29,14 @@ fun createCiphertextElectionContext(
         groupContext.get_large_prime(),
         groupContext.get_small_prime(),
         groupContext.get_generator(),
-        number_of_guardians, quorum, manifest.cryptoHash()
+        number_of_guardians, quorum, manifest.cryptoHashElement()
     )
     val crypto_extended_base_hash: ElementModQ = groupContext.hashElements(crypto_base_hash, commitment_hash)
     return CiphertextElectionContext(
         number_of_guardians,
         quorum,
         jointPublicKey,
-        manifest.cryptoHash(),
+        manifest.cryptoHashElement(),
         crypto_base_hash,
         crypto_extended_base_hash,
         commitment_hash,

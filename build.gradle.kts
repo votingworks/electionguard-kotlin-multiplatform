@@ -140,6 +140,9 @@ kotlin {
 
                     // A multiplatform Kotlin library for working with date and time.
                     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
+
+                    // A multiplatform Kotlin library for working with date and time.
+                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
                 }
             }
         val commonTest by

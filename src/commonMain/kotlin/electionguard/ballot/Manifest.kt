@@ -1,6 +1,6 @@
 package electionguard.ballot
 
-import electionguard.core.CryptoHashable
+import electionguard.core.CryptoHashableElement
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.hashElements
@@ -23,9 +23,9 @@ data class Manifest(
     val ballot_styles: List<BallotStyle>,
     val name: InternationalizedText?,
     val contact_information: ContactInformation?
-) : CryptoHashable {
+) : CryptoHashableElement {
 
-    override fun cryptoHash(): ElementModQ {
+    override fun cryptoHashElement(): ElementModQ {
         return groupContext.hashElements(
             election_scope_id,
             type.name,
@@ -38,7 +38,7 @@ data class Manifest(
             candidates,
             contests,
             ballot_styles,
-        );
+        )
     }
 
     /**
@@ -315,8 +315,8 @@ data class Manifest(
      * An annotated character string.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/annotated-string)
      */
-    inner class AnnotatedString(val annotation: String, val value: String) : CryptoHashable {
-        override fun cryptoHash(): ElementModQ {
+    inner class AnnotatedString(val annotation: String, val value: String) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
             return groupContext.hashElements(annotation, value)
         }
     }
@@ -327,8 +327,8 @@ data class Manifest(
      * The ISO-639 language code.
      * @see [ISO 639](https://en.wikipedia.org/wiki/ISO_639)
      */
-    data class Language(val value: String?, val language: String?) : CryptoHashable {
-        override fun cryptoHash(): ElementModQ {
+    inner class Language(val value: String?, val language: String?) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
             return groupContext.hashElements(value, language)
         }
     }
@@ -337,9 +337,9 @@ data class Manifest(
      * Text that may have translations in multiple languages.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
      */
-    data class InternationalizedText(val text: List<Language>?) : CryptoHashable {
-        override fun cryptoHash(): ElementModQ {
-            return hashElements(text)
+    inner class InternationalizedText(val text: List<Language>?) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return groupContext.hashElements(text)
         }
     }
 
@@ -347,14 +347,14 @@ data class Manifest(
      * Contact information about persons, boards of authorities, organizations, etc.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
      */
-    data class ContactInformation(
+    inner class ContactInformation(
         val address_line: List<String>?,
         val email: List<AnnotatedString>?,
         val phone: List<AnnotatedString>?,
         val name: String?
-    ) : CryptoHashable {
-        override fun cryptoHash(): ElementModQ {
-            return hashElements(name, address_line, email, phone)
+    ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return groupContext.hashElements(name, address_line, email, phone)
         }
     }
 
@@ -364,29 +364,29 @@ data class Manifest(
      * to associate contests, offices, vote counts, or other information with those geographies.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
      */
-    data class GeopoliticalUnit(
+    inner class GeopoliticalUnit(
         val unit_id: String,
         val name: String,
         val type: ReportingUnitType,
         val contact_information: ContactInformation?
-    ) : CryptoHashable {
+    ) : CryptoHashableElement {
 
-        override fun cryptoHash(): ElementModQ {
-            return hashElements(this.unit_id, name, type.name, contact_information)
+        override fun cryptoHashElement(): ElementModQ {
+            return groupContext.hashElements(this.unit_id, name, type.name, contact_information)
         }
 
     }
 
     /** Classifies a set of contests by their set of parties and geopolitical units  */
-    data class BallotStyle(
+    inner class BallotStyle(
         val style_id: String,
         val geopolitical_unit_ids: List<String>?,
         val party_ids: List<String>?,
         val image_uri: String?
-    ) : CryptoHashable {
+    ) : CryptoHashableElement {
 
-        override fun cryptoHash(): ElementModQ {
-            return hashElements(
+        override fun cryptoHashElement(): ElementModQ {
+            return groupContext.hashElements(
                 this.style_id, geopolitical_unit_ids, party_ids, image_uri
             )
         }
@@ -396,15 +396,15 @@ data class Manifest(
      * A political party.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
      */
-    data class Party(
+    inner class Party(
         val party_id: String,
         val name: InternationalizedText,
         val abbreviation: String?,
         val color: String?,
         val logo_uri: String?,
-    ) : CryptoHashable {
-        override fun cryptoHash(): ElementModQ {
-            return hashElements(
+    ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return groupContext.hashElements(
                 this.party_id,
                 name,
                 abbreviation,
@@ -421,16 +421,16 @@ data class Manifest(
      * would be included in the model to represent the `affirmative` and `negative` selections for the contest.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/candidate)
      */
-    data class Candidate(
+    inner class Candidate(
         val candidate_id: String,
         val name: InternationalizedText,
         val party_id: String?,
         val image_uri: String?,
         val is_write_in: Boolean?
-    ) : CryptoHashable {
+    ) : CryptoHashableElement {
 
-        override fun cryptoHash(): ElementModQ {
-            return hashElements(
+        override fun cryptoHashElement(): ElementModQ {
+            return groupContext.hashElements(
                 this.candidate_id, name, party_id, image_uri
             )
         }
@@ -440,7 +440,7 @@ data class Manifest(
      * The metadata that describes the structure and type of one contest in the election.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
      */
-    data class ContestDescription(
+    inner class ContestDescription(
         val contest_id: String,
         val electoral_district_id: String,
         val sequence_order: Int,
@@ -451,10 +451,10 @@ data class Manifest(
         val ballot_selections: List<SelectionDescription>,
         val ballot_title: InternationalizedText?,
         val ballot_subtitle: InternationalizedText?
-    ) : CryptoHashable {
+    ) : CryptoHashableElement {
 
-        override fun cryptoHash(): ElementModQ {
-            return hashElements(
+        override fun cryptoHashElement(): ElementModQ {
+            return groupContext.hashElements(
                 contest_id,
                 electoral_district_id,
                 sequence_order,
@@ -474,13 +474,13 @@ data class Manifest(
      * A ballot selection for a specific candidate in a contest.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
      */
-    data class SelectionDescription(
+    inner class SelectionDescription(
         val selection_id: String,
         val candidate_id: String,
         val sequence_order: Int
-    ) : CryptoHashable {
-        override fun cryptoHash(): ElementModQ {
-            return hashElements(selection_id, candidate_id, sequence_order)
+    ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return groupContext.hashElements(selection_id, candidate_id, sequence_order)
         }
     }
 
