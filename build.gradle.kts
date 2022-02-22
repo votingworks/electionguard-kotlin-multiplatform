@@ -1,4 +1,3 @@
-import com.google.protobuf.gradle.*
 
 buildscript {
     repositories {
@@ -202,32 +201,6 @@ kotlin {
         val jsTest by getting { dependencies { implementation(kotlin("test-js", "1.6.10")) } }
         val nativeMain by getting { dependencies {} }
         val nativeTest by getting { dependencies {} }
-    }
-}
-
-
-protobuf {
-    // generatedFilesBaseDir = "$projectDir/src"
-    generatedFilesBaseDir = "/home/snake/dev/github/electionguard-kotlin-multiplatform/build/generated/source/proto"
-    protoc {
-        artifact = "com.google.protobuf:protoc:$protobufVersion"
-    }
-    plugins {
-        id("pbandk") {
-            artifact = "pro.streem.pbandk:protoc-gen-pbandk-jvm:$pbandkVersion:jvm8@jar"
-        }
-    }
-    generateProtoTasks {
-        ofSourceSet("main").forEach { task ->
-            task.builtins {
-                remove("java")
-            }
-            task.plugins {
-                id("pbandk") {
-                    option("kotlin_package=electionguard.protogen")
-                }
-            }
-        }
     }
 }
 

@@ -6,38 +6,40 @@ import electionguard.core.GroupContext
 import electionguard.core.hashElements
 import kotlinx.datetime.UtcOffset
 
+
 /**
  * The Election Manifest: defines the candidates, contests, and associated information for a specific election.
  * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election)
  */
 data class Manifest(
-    val groupContext : GroupContext,
-    val election_scope_id: String,
-    val type: ElectionType,
-    val start_date: UtcOffset,
-    val end_date: UtcOffset,
-    val geopolitical_units: List<GeopoliticalUnit>,
+    val groupContext: GroupContext,
+    val electionScopeId: String,
+    val specVersion: String,
+    val electionType: ElectionType,
+    val startDate: UtcOffset,
+    val endDate: UtcOffset,
+    val geopoliticalUnits: List<GeopoliticalUnit>,
     val parties: List<Party>,
     val candidates: List<Candidate>,
     val contests: List<ContestDescription>,
-    val ballot_styles: List<BallotStyle>,
+    val ballotStyles: List<BallotStyle>,
     val name: InternationalizedText?,
-    val contact_information: ContactInformation?
+    val contactInformation: ContactInformation?
 ) : CryptoHashableElement {
 
     override fun cryptoHashElement(): ElementModQ {
         return groupContext.hashElements(
-            election_scope_id,
-            type.name,
-            start_date.toString(), // to_iso_date_string
-            end_date.toString(),
+            electionScopeId,
+            electionType.name,
+            startDate.toString(), // to_iso_date_string
+            endDate.toString(),
             name,
-            contact_information,
-            geopolitical_units,
+            contactInformation,
+            geopoliticalUnits,
             parties,
             candidates,
             contests,
-            ballot_styles,
+            ballotStyles,
         )
     }
 
@@ -315,9 +317,10 @@ data class Manifest(
      * An annotated character string.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/annotated-string)
      */
-    inner class AnnotatedString(val annotation: String, val value: String) : CryptoHashableElement {
+    data class AnnotatedString(val annotation: String, val value: String, val cryptoHash: ElementModQ) :
+        CryptoHashableElement {
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(annotation, value)
+            return cryptoHash
         }
     }
 
@@ -327,9 +330,9 @@ data class Manifest(
      * The ISO-639 language code.
      * @see [ISO 639](https://en.wikipedia.org/wiki/ISO_639)
      */
-    inner class Language(val value: String?, val language: String?) : CryptoHashableElement {
+    data class Language(val value: String, val language: String, val cryptoHash: ElementModQ) : CryptoHashableElement {
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(value, language)
+            return cryptoHash
         }
     }
 
@@ -337,9 +340,9 @@ data class Manifest(
      * Text that may have translations in multiple languages.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
      */
-    inner class InternationalizedText(val text: List<Language>?) : CryptoHashableElement {
+    data class InternationalizedText(val text: List<Language>, val cryptoHash: ElementModQ) : CryptoHashableElement {
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(text)
+            return cryptoHash
         }
     }
 
@@ -347,14 +350,15 @@ data class Manifest(
      * Contact information about persons, boards of authorities, organizations, etc.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
      */
-    inner class ContactInformation(
-        val address_line: List<String>?,
-        val email: List<AnnotatedString>?,
-        val phone: List<AnnotatedString>?,
-        val name: String?
+    data class ContactInformation(
+        val addressLine: List<String>,
+        val email: List<AnnotatedString>,
+        val phone: List<AnnotatedString>,
+        val name: String?,
+        val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(name, address_line, email, phone)
+            return cryptoHash
         }
     }
 
@@ -364,31 +368,28 @@ data class Manifest(
      * to associate contests, offices, vote counts, or other information with those geographies.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
      */
-    inner class GeopoliticalUnit(
-        val unit_id: String,
+    data class GeopoliticalUnit(
+        val unitId: String,
         val name: String,
         val type: ReportingUnitType,
-        val contact_information: ContactInformation?
+        val contactInformation: ContactInformation?,
+        val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(this.unit_id, name, type.name, contact_information)
+            return cryptoHash
         }
-
     }
 
     /** Classifies a set of contests by their set of parties and geopolitical units  */
-    inner class BallotStyle(
-        val style_id: String,
-        val geopolitical_unit_ids: List<String>?,
-        val party_ids: List<String>?,
-        val image_uri: String?
+    data class BallotStyle(
+        val styleId: String,
+        val geopoliticalUnitIds: List<String>,
+        val partyIds: List<String>,
+        val imageUri: String?,
+        val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(
-                this.style_id, geopolitical_unit_ids, party_ids, image_uri
-            )
+            return cryptoHash
         }
     }
 
@@ -396,21 +397,16 @@ data class Manifest(
      * A political party.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
      */
-    inner class Party(
-        val party_id: String,
-        val name: InternationalizedText,
+    data class Party(
+        val partyId: String,
+        val name: InternationalizedText?,
         val abbreviation: String?,
         val color: String?,
-        val logo_uri: String?,
+        val logoUri: String?,
+        val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(
-                this.party_id,
-                name,
-                abbreviation,
-                color,
-                logo_uri
-            )
+            return cryptoHash
         }
     }
 
@@ -421,18 +417,16 @@ data class Manifest(
      * would be included in the model to represent the `affirmative` and `negative` selections for the contest.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/candidate)
      */
-    inner class Candidate(
-        val candidate_id: String,
-        val name: InternationalizedText,
-        val party_id: String?,
-        val image_uri: String?,
-        val is_write_in: Boolean?
+    data class Candidate(
+        val candidateId: String,
+        val name: InternationalizedText?,
+        val partyId: String?,
+        val imageUri: String?,
+        val isWriteIn: Boolean,
+        val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(
-                this.candidate_id, name, party_id, image_uri
-            )
+            return cryptoHash
         }
     }
 
@@ -440,21 +434,100 @@ data class Manifest(
      * The metadata that describes the structure and type of one contest in the election.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
      */
-    inner class ContestDescription(
-        val contest_id: String,
-        val electoral_district_id: String,
-        val sequence_order: Int,
-        val vote_variation: VoteVariationType,
-        val number_elected: Int,
-        val votes_allowed: Int,
+    data class ContestDescription(
+        val contestId: String,
+        val electoralDistrictId: String,
+        val sequenceOrder: Int,
+        val voteVariation: VoteVariationType,
+        val numberElected: Int,
+        val votesAllowed: Int,
         val name: String,
-        val ballot_selections: List<SelectionDescription>,
-        val ballot_title: InternationalizedText?,
-        val ballot_subtitle: InternationalizedText?
+        val ballotSelections: List<SelectionDescription>,
+        val ballotTitle: InternationalizedText?,
+        val ballotSubtitle: InternationalizedText?,
+        val primaryPartyIds: List<String>,
+        val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
 
         override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(
+            return cryptoHash
+        }
+    }
+
+
+    /**
+     * A ballot selection for a specific candidate in a contest.
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
+     */
+    data class SelectionDescription(
+        val selectionId: String,
+        val candidateId: String,
+        val sequenceOrder: Int,
+        val cryptoHash: ElementModQ
+    ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return cryptoHash
+        }
+    }
+
+    companion object {
+
+        fun makeAnnotatedString(
+            groupContext: GroupContext,
+            annotation: String,
+            value: String
+        ): Manifest.AnnotatedString {
+            return Manifest.AnnotatedString(annotation, value, groupContext.hashElements(annotation, value))
+        }
+
+        fun makeBallotStyle(
+            groupContext: GroupContext,
+            styleId: String,
+            geopoliticalUnitIds: List<String>?,
+            partyIds: List<String>?,
+            imageUri: String?
+        ): Manifest.BallotStyle {
+
+            return Manifest.BallotStyle(
+                styleId,
+                geopoliticalUnitIds?: emptyList(),
+                partyIds?: emptyList(),
+                imageUri,
+                groupContext.hashElements(styleId, geopoliticalUnitIds, partyIds, imageUri)
+            )
+        }
+
+        fun makeCandidate(
+            groupContext: GroupContext,
+            candidate_id: String,
+            name: Manifest.InternationalizedText?,
+            party_id: String?,
+            image_uri: String?,
+            is_write_in: Boolean
+        ): Manifest.Candidate {
+
+            return Manifest.Candidate(
+                candidate_id, name, party_id, image_uri, is_write_in,
+                groupContext.hashElements(candidate_id, name, party_id, image_uri)
+            )
+        }
+
+        fun makeContestDescription(
+            groupContext: GroupContext,
+            contest_id: String,
+            electoral_district_id: String,
+            sequence_order: Int,
+            vote_variation: Manifest.VoteVariationType,
+            number_elected: Int,
+            votes_allowed: Int,
+            name: String,
+            ballot_selections: List<Manifest.SelectionDescription>,
+            ballot_title: Manifest.InternationalizedText?,
+            ballot_subtitle: Manifest.InternationalizedText?,
+            primary_party_ids : List<String>
+        ): Manifest.ContestDescription {
+
+            return Manifest.ContestDescription(
                 contest_id,
                 electoral_district_id,
                 sequence_order,
@@ -465,22 +538,88 @@ data class Manifest(
                 ballot_selections,
                 ballot_title,
                 ballot_subtitle,
+                primary_party_ids,
+                groupContext.hashElements(
+                    contest_id,
+                    electoral_district_id,
+                    sequence_order,
+                    vote_variation,
+                    number_elected,
+                    votes_allowed,
+                    name,
+                    ballot_selections,
+                    ballot_title,
+                    ballot_subtitle,
+                    primary_party_ids
+                )
             )
         }
-    }
 
 
-    /**
-     * A ballot selection for a specific candidate in a contest.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
-     */
-    inner class SelectionDescription(
-        val selection_id: String,
-        val candidate_id: String,
-        val sequence_order: Int
-    ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return groupContext.hashElements(selection_id, candidate_id, sequence_order)
+        fun makeContactInformation(
+            groupContext: GroupContext,
+            address_line: List<String>,
+            email: List<Manifest.AnnotatedString>,
+            phone: List<Manifest.AnnotatedString>,
+            name: String?
+        ): Manifest.ContactInformation {
+
+            return Manifest.ContactInformation(
+                address_line, email, phone, name,
+                groupContext.hashElements(name, address_line, email, phone)
+            )
+        }
+
+        fun makeGeopoliticalUnit(
+            groupContext: GroupContext,
+            unit_id: String,
+            name: String,
+            type: Manifest.ReportingUnitType,
+            contact_information: Manifest.ContactInformation?
+        ): Manifest.GeopoliticalUnit {
+
+            return Manifest.GeopoliticalUnit(
+                unit_id, name, type, contact_information,
+                groupContext.hashElements(unit_id, name, type, contact_information)
+            )
+        }
+
+        fun makeInternationalizedText(
+            groupContext: GroupContext,
+            text: List<Manifest.Language>
+        ): Manifest.InternationalizedText {
+            return Manifest.InternationalizedText(text, groupContext.hashElements(text))
+        }
+
+        fun makeLanguage(groupContext: GroupContext, value: String, language: String): Manifest.Language {
+            return Manifest.Language(value, language, groupContext.hashElements(value, language))
+        }
+
+        fun makeParty(
+            groupContext: GroupContext,
+            party_id: String,
+            name: Manifest.InternationalizedText?,
+            abbreviation: String?,
+            color: String?,
+            logo_uri: String?,
+        ): Manifest.Party {
+
+            return Manifest.Party(
+                party_id, name, abbreviation, color, logo_uri,
+                groupContext.hashElements(party_id, name, abbreviation, color, logo_uri)
+            )
+        }
+
+        fun makeSelectionDescription(
+            groupContext: GroupContext,
+            selection_id: String,
+            candidate_id: String,
+            sequence_order: Int
+        ): Manifest.SelectionDescription {
+            return Manifest.SelectionDescription(
+                selection_id, candidate_id, sequence_order,
+                groupContext.hashElements(selection_id, candidate_id, sequence_order)
+            )
         }
     }
 

@@ -6,9 +6,8 @@ package electionguard.ballot
  * This is used both as input, and for the roundtrip: input -&gt; encrypt -&gt; decrypt -&gt; output.
  */
 data class PlaintextBallot(
-    val ballot_id: String,
-    /** The object_id of the Manifest.BallotStyle.  */
-    val style_id: String,
+    val ballotId: String,
+    val ballotStyleId: String, // matches BallotStyle.object_id
     val contests: List<Contest>
 ) {
 
@@ -27,9 +26,9 @@ data class PlaintextBallot(
      * while complete contests are passed into ElectionGuard when running encryption on an existing dataset.
      */
     data class Contest(
-        val contest_id: String,
-        val sequence_order: Int,
-        val ballot_selections: List<Selection>,
+        val contestId: String, // matches ContestDescription.object_id
+        val sequenceOrder: Int,
+        val ballotSelections: List<Selection>,
     );
 
     /**
@@ -39,18 +38,17 @@ data class PlaintextBallot(
      * This can also be designated as `is_placeholder_selection` which has no
      * context to the data specification but is useful for running validity checks internally
      *
-     *
      * An `extended_data` field exists to support any arbitrary data to be associated
      * with the selection.  In practice, this field is the cleartext representation
      * of a write-in candidate value.
      * LOOK In the current implementation these write-in are discarded when encrypting.
      */
     data class Selection(
-        val selection_id: String,
-        val sequence_order: Int,
+        val selectionId: String, // matches SelectionDescription.object_id
+        val sequenceOrder: Int,
         val vote: Int,
-        val is_placeholder_selection: Boolean,
-        val extended_data: ExtendedData?
+        val isPlaceholderSelection: Boolean,
+        val extendedData: ExtendedData?
     )
 
     /** Used to indicate a write-in candidate.  */
