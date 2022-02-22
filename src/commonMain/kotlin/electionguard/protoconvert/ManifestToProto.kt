@@ -74,15 +74,15 @@ data class ManifestToProto(val groupContext: GroupContext) {
     }
 
     private fun convertVoteVariationType(type: Manifest.VoteVariationType): electionguard.protogen.ContestDescription.VoteVariationType {
-        return electionguard.protogen.ContestDescription.VoteVariationType.fromName(type.name?: throw IllegalStateException(type.toString()))
+        return electionguard.protogen.ContestDescription.VoteVariationType.fromName(type.name)
     }
 
     private fun convertElectionType(type: Manifest.ElectionType): electionguard.protogen.Manifest.ElectionType {
-        return electionguard.protogen.Manifest.ElectionType.fromName(type.name?: throw IllegalStateException(type.toString()))
+        return electionguard.protogen.Manifest.ElectionType.fromName(type.name)
     }
 
     private fun convertReportingUnitType(type: Manifest.ReportingUnitType): electionguard.protogen.GeopoliticalUnit.ReportingUnitType {
-        return electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromName(type.name?: throw IllegalStateException(type.toString()))
+        return electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromName(type.name)
     }
 
     private fun convertGeopoliticalUnit(geounit : Manifest.GeopoliticalUnit): electionguard.protogen.GeopoliticalUnit {

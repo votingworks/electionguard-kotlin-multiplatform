@@ -19,7 +19,7 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
                 PlaintextTallyConvert(groupContext).translateFromProto(proto.decryptedTally)
             }
         val availableGuardians: List<AvailableGuardian>? =
-            if (proto.availableGuardians == null || proto.availableGuardians.isEmpty()) { null } else {
+            if (proto.availableGuardians.isEmpty()) { null } else {
                 proto.availableGuardians.map {convertAvailableGuardian(it)}
             }
 
@@ -27,7 +27,7 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
         return ElectionRecord(
             proto.version,
             convertConstants(proto.constants?: throw IllegalStateException("constants cant be null")),
-            convertContext(proto.context?: throw IllegalStateException("context cant be null"), manifest),
+            convertContext(proto.context?: throw IllegalStateException("context cant be null")),
             manifest,
             proto.guardianRecords.map { convertGuardianRecord(it) },
             proto.device.map { convertDevice(it) },
@@ -56,7 +56,7 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertContext(context: electionguard.protogen.ElectionContext, manifest : Manifest): CiphertextElectionContext {
+    private fun convertContext(context: electionguard.protogen.ElectionContext): CiphertextElectionContext {
         return CiphertextElectionContext(
             context.numberOfGuardians,
             context.quorum,
