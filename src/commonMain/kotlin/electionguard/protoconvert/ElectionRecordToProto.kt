@@ -28,28 +28,28 @@ data class ElectionRecordToProto(val groupContext: GroupContext) {
             }
 
         return electionguard.protogen.ElectionRecord(
+            election.version,
             convertConstants(election.constants),
             manifest,
             convertContext(election.context),
-            election.devices.map { convertDevice(it) },
             guardianRecords,
+            election.devices.map { convertDevice(it) },
             ciphertextTally,
             decryptedTally,
             availableGuardians,
-            election.version,
         )
     }
 
     private fun convertAvailableGuardian(proto: AvailableGuardian): electionguard.protogen.AvailableGuardian {
         return electionguard.protogen.AvailableGuardian(
             proto.guardianId,
-            proto.sequence,
+            proto.xCoordinate,
             convertElementModQ(proto.lagrangeCoordinate)
         )
     }
 
-    private fun convertConstants(constants: ElectionConstants): electionguard.protogen.Constants {
-        return electionguard.protogen.Constants(
+    private fun convertConstants(constants: ElectionConstants): electionguard.protogen.ElectionConstants {
+        return electionguard.protogen.ElectionConstants(
             ByteArr(constants.largePrime),
             ByteArr(constants.smallPrime),
             ByteArr(constants.cofactor),
@@ -57,7 +57,7 @@ data class ElectionRecordToProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertContext(context: CiphertextElectionContext): electionguard.protogen.ElectionContext {
+    private fun convertContext(context: ElectionContext): electionguard.protogen.ElectionContext {
         val extendedData: List<electionguard.protogen.ElectionContext.ExtendedDataEntry> =
             if (context.extendedData == null) { emptyList() } else {
                 context.extendedData.map{(key, value) -> convertExtendedData(key, value)}
@@ -93,7 +93,7 @@ data class ElectionRecordToProto(val groupContext: GroupContext) {
     private fun convertGuardianRecord(guardianRecord: GuardianRecord): electionguard.protogen.GuardianRecord {
          return electionguard.protogen.GuardianRecord(
             guardianRecord.guardianId,
-            guardianRecord.sequenceOrder,
+            guardianRecord.xCoordinate,
             convertElementModP(guardianRecord.electionPublicKey),
             guardianRecord.coefficientCommitments.map { convertElementModP(it)},
             guardianRecord.coefficientProofs.map { convertSchnorrProof(it)},

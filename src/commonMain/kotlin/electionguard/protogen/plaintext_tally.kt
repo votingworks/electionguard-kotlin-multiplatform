@@ -4,8 +4,8 @@ package electionguard.protogen
 
 @pbandk.Export
 public data class PlaintextTally(
-    val objectId: String = "",
-    val contests: List<electionguard.protogen.PlaintextTally.ContestsEntry> = emptyList(),
+    val tallyId: String = "",
+    val contests: List<electionguard.protogen.PlaintextTallyContest> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextTally = protoMergeImpl(other)
@@ -21,11 +21,11 @@ public data class PlaintextTally(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "tally_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.PlaintextTally::objectId
+                        jsonName = "tallyId",
+                        value = electionguard.protogen.PlaintextTally::tallyId
                     )
                 )
                 add(
@@ -33,7 +33,7 @@ public data class PlaintextTally(
                         messageDescriptor = this@Companion::descriptor,
                         name = "contests",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.PlaintextTally.ContestsEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTally.ContestsEntry.Companion)),
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.PlaintextTallyContest>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTallyContest.Companion)),
                         jsonName = "contests",
                         value = electionguard.protogen.PlaintextTally::contests
                     )
@@ -47,58 +47,12 @@ public data class PlaintextTally(
             )
         }
     }
-
-    public data class ContestsEntry(
-        override val key: String = "",
-        override val value: electionguard.protogen.PlaintextTallyContest? = null,
-        override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-    ) : pbandk.Message, Map.Entry<String, electionguard.protogen.PlaintextTallyContest?> {
-        override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextTally.ContestsEntry = protoMergeImpl(other)
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextTally.ContestsEntry> get() = Companion.descriptor
-        override val protoSize: Int by lazy { super.protoSize }
-        public companion object : pbandk.Message.Companion<electionguard.protogen.PlaintextTally.ContestsEntry> {
-            public val defaultInstance: electionguard.protogen.PlaintextTally.ContestsEntry by lazy { electionguard.protogen.PlaintextTally.ContestsEntry() }
-            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.PlaintextTally.ContestsEntry = electionguard.protogen.PlaintextTally.ContestsEntry.decodeWithImpl(u)
-
-            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextTally.ContestsEntry> by lazy {
-                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextTally.ContestsEntry, *>>(2)
-                fieldsList.apply {
-                    add(
-                        pbandk.FieldDescriptor(
-                            messageDescriptor = this@Companion::descriptor,
-                            name = "key",
-                            number = 1,
-                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                            jsonName = "key",
-                            value = electionguard.protogen.PlaintextTally.ContestsEntry::key
-                        )
-                    )
-                    add(
-                        pbandk.FieldDescriptor(
-                            messageDescriptor = this@Companion::descriptor,
-                            name = "value",
-                            number = 2,
-                            type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTallyContest.Companion),
-                            jsonName = "value",
-                            value = electionguard.protogen.PlaintextTally.ContestsEntry::value
-                        )
-                    )
-                }
-                pbandk.MessageDescriptor(
-                    fullName = "PlaintextTally.ContestsEntry",
-                    messageClass = electionguard.protogen.PlaintextTally.ContestsEntry::class,
-                    messageCompanion = this,
-                    fields = fieldsList
-                )
-            }
-        }
-    }
 }
 
 @pbandk.Export
 public data class PlaintextTallyContest(
-    val objectId: String = "",
-    val selections: List<electionguard.protogen.PlaintextTallyContest.SelectionsEntry> = emptyList(),
+    val contestId: String = "",
+    val selections: List<electionguard.protogen.PlaintextTallySelection> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextTallyContest = protoMergeImpl(other)
@@ -114,11 +68,11 @@ public data class PlaintextTallyContest(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "contest_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.PlaintextTallyContest::objectId
+                        jsonName = "contestId",
+                        value = electionguard.protogen.PlaintextTallyContest::contestId
                     )
                 )
                 add(
@@ -126,7 +80,7 @@ public data class PlaintextTallyContest(
                         messageDescriptor = this@Companion::descriptor,
                         name = "selections",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.PlaintextTallyContest.SelectionsEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTallyContest.SelectionsEntry.Companion)),
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.PlaintextTallySelection>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTallySelection.Companion)),
                         jsonName = "selections",
                         value = electionguard.protogen.PlaintextTallyContest::selections
                     )
@@ -140,57 +94,11 @@ public data class PlaintextTallyContest(
             )
         }
     }
-
-    public data class SelectionsEntry(
-        override val key: String = "",
-        override val value: electionguard.protogen.PlaintextTallySelection? = null,
-        override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-    ) : pbandk.Message, Map.Entry<String, electionguard.protogen.PlaintextTallySelection?> {
-        override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextTallyContest.SelectionsEntry = protoMergeImpl(other)
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextTallyContest.SelectionsEntry> get() = Companion.descriptor
-        override val protoSize: Int by lazy { super.protoSize }
-        public companion object : pbandk.Message.Companion<electionguard.protogen.PlaintextTallyContest.SelectionsEntry> {
-            public val defaultInstance: electionguard.protogen.PlaintextTallyContest.SelectionsEntry by lazy { electionguard.protogen.PlaintextTallyContest.SelectionsEntry() }
-            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.PlaintextTallyContest.SelectionsEntry = electionguard.protogen.PlaintextTallyContest.SelectionsEntry.decodeWithImpl(u)
-
-            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextTallyContest.SelectionsEntry> by lazy {
-                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextTallyContest.SelectionsEntry, *>>(2)
-                fieldsList.apply {
-                    add(
-                        pbandk.FieldDescriptor(
-                            messageDescriptor = this@Companion::descriptor,
-                            name = "key",
-                            number = 1,
-                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                            jsonName = "key",
-                            value = electionguard.protogen.PlaintextTallyContest.SelectionsEntry::key
-                        )
-                    )
-                    add(
-                        pbandk.FieldDescriptor(
-                            messageDescriptor = this@Companion::descriptor,
-                            name = "value",
-                            number = 2,
-                            type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTallySelection.Companion),
-                            jsonName = "value",
-                            value = electionguard.protogen.PlaintextTallyContest.SelectionsEntry::value
-                        )
-                    )
-                }
-                pbandk.MessageDescriptor(
-                    fullName = "PlaintextTallyContest.SelectionsEntry",
-                    messageClass = electionguard.protogen.PlaintextTallyContest.SelectionsEntry::class,
-                    messageCompanion = this,
-                    fields = fieldsList
-                )
-            }
-        }
-    }
 }
 
 @pbandk.Export
 public data class PlaintextTallySelection(
-    val objectId: String = "",
+    val selectionId: String = "",
     val tally: Int = 0,
     val value: electionguard.protogen.ElementModP? = null,
     val message: electionguard.protogen.ElGamalCiphertext? = null,
@@ -210,11 +118,11 @@ public data class PlaintextTallySelection(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "selection_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.PlaintextTallySelection::objectId
+                        jsonName = "selectionId",
+                        value = electionguard.protogen.PlaintextTallySelection::selectionId
                     )
                 )
                 add(
@@ -270,7 +178,6 @@ public data class PlaintextTallySelection(
 
 @pbandk.Export
 public data class CiphertextDecryptionSelection(
-    val objectId: String = "",
     val guardianId: String = "",
     val share: electionguard.protogen.ElementModP? = null,
     val proof: electionguard.protogen.ChaumPedersenProof? = null,
@@ -285,23 +192,13 @@ public data class CiphertextDecryptionSelection(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.CiphertextDecryptionSelection = electionguard.protogen.CiphertextDecryptionSelection.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CiphertextDecryptionSelection> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextDecryptionSelection, *>>(5)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextDecryptionSelection, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.CiphertextDecryptionSelection::objectId
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "guardian_id",
-                        number = 2,
+                        number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "guardianId",
                         value = electionguard.protogen.CiphertextDecryptionSelection::guardianId
@@ -311,7 +208,7 @@ public data class CiphertextDecryptionSelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "share",
-                        number = 3,
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "share",
                         value = electionguard.protogen.CiphertextDecryptionSelection::share
@@ -321,7 +218,7 @@ public data class CiphertextDecryptionSelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof",
-                        number = 4,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ChaumPedersenProof.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.CiphertextDecryptionSelection::proof
@@ -331,7 +228,7 @@ public data class CiphertextDecryptionSelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "recovered_parts",
-                        number = 5,
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry.Companion)),
                         jsonName = "recoveredParts",
                         value = electionguard.protogen.CiphertextDecryptionSelection::recoveredParts
@@ -396,7 +293,6 @@ public data class CiphertextDecryptionSelection(
 
 @pbandk.Export
 public data class CiphertextCompensatedDecryptionSelection(
-    val objectId: String = "",
     val guardianId: String = "",
     val missingGuardianId: String = "",
     val share: electionguard.protogen.ElementModP? = null,
@@ -412,23 +308,13 @@ public data class CiphertextCompensatedDecryptionSelection(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.CiphertextCompensatedDecryptionSelection = electionguard.protogen.CiphertextCompensatedDecryptionSelection.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CiphertextCompensatedDecryptionSelection> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextCompensatedDecryptionSelection, *>>(6)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextCompensatedDecryptionSelection, *>>(5)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.CiphertextCompensatedDecryptionSelection::objectId
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "guardian_id",
-                        number = 2,
+                        number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "guardianId",
                         value = electionguard.protogen.CiphertextCompensatedDecryptionSelection::guardianId
@@ -438,7 +324,7 @@ public data class CiphertextCompensatedDecryptionSelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "missing_guardian_id",
-                        number = 3,
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "missingGuardianId",
                         value = electionguard.protogen.CiphertextCompensatedDecryptionSelection::missingGuardianId
@@ -448,7 +334,7 @@ public data class CiphertextCompensatedDecryptionSelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "share",
-                        number = 4,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "share",
                         value = electionguard.protogen.CiphertextCompensatedDecryptionSelection::share
@@ -458,7 +344,7 @@ public data class CiphertextCompensatedDecryptionSelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "recovery_key",
-                        number = 5,
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "recoveryKey",
                         value = electionguard.protogen.CiphertextCompensatedDecryptionSelection::recoveryKey
@@ -468,7 +354,7 @@ public data class CiphertextCompensatedDecryptionSelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof",
-                        number = 6,
+                        number = 5,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ChaumPedersenProof.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.CiphertextCompensatedDecryptionSelection::proof
@@ -498,41 +384,16 @@ private fun PlaintextTally.protoMergeImpl(plus: pbandk.Message?): PlaintextTally
 
 @Suppress("UNCHECKED_CAST")
 private fun PlaintextTally.Companion.decodeWithImpl(u: pbandk.MessageDecoder): PlaintextTally {
-    var objectId = ""
-    var contests: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextTally.ContestsEntry>? = null
+    var tallyId = ""
+    var contests: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextTallyContest>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
-            2 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextTally.ContestsEntry> }
+            1 -> tallyId = _fieldValue as String
+            2 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextTallyContest> }
         }
     }
-    return PlaintextTally(objectId, pbandk.ListWithSize.Builder.fixed(contests), unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForPlaintextTallyContestsEntry")
-public fun PlaintextTally.ContestsEntry?.orDefault(): electionguard.protogen.PlaintextTally.ContestsEntry = this ?: PlaintextTally.ContestsEntry.defaultInstance
-
-private fun PlaintextTally.ContestsEntry.protoMergeImpl(plus: pbandk.Message?): PlaintextTally.ContestsEntry = (plus as? PlaintextTally.ContestsEntry)?.let {
-    it.copy(
-        value = value?.plus(plus.value) ?: plus.value,
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun PlaintextTally.ContestsEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): PlaintextTally.ContestsEntry {
-    var key = ""
-    var value: electionguard.protogen.PlaintextTallyContest? = null
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> key = _fieldValue as String
-            2 -> value = _fieldValue as electionguard.protogen.PlaintextTallyContest
-        }
-    }
-    return PlaintextTally.ContestsEntry(key, value, unknownFields)
+    return PlaintextTally(tallyId, pbandk.ListWithSize.Builder.fixed(contests), unknownFields)
 }
 
 @pbandk.Export
@@ -548,41 +409,16 @@ private fun PlaintextTallyContest.protoMergeImpl(plus: pbandk.Message?): Plainte
 
 @Suppress("UNCHECKED_CAST")
 private fun PlaintextTallyContest.Companion.decodeWithImpl(u: pbandk.MessageDecoder): PlaintextTallyContest {
-    var objectId = ""
-    var selections: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextTallyContest.SelectionsEntry>? = null
+    var contestId = ""
+    var selections: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextTallySelection>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
-            2 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextTallyContest.SelectionsEntry> }
+            1 -> contestId = _fieldValue as String
+            2 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextTallySelection> }
         }
     }
-    return PlaintextTallyContest(objectId, pbandk.ListWithSize.Builder.fixed(selections), unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForPlaintextTallyContestSelectionsEntry")
-public fun PlaintextTallyContest.SelectionsEntry?.orDefault(): electionguard.protogen.PlaintextTallyContest.SelectionsEntry = this ?: PlaintextTallyContest.SelectionsEntry.defaultInstance
-
-private fun PlaintextTallyContest.SelectionsEntry.protoMergeImpl(plus: pbandk.Message?): PlaintextTallyContest.SelectionsEntry = (plus as? PlaintextTallyContest.SelectionsEntry)?.let {
-    it.copy(
-        value = value?.plus(plus.value) ?: plus.value,
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun PlaintextTallyContest.SelectionsEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): PlaintextTallyContest.SelectionsEntry {
-    var key = ""
-    var value: electionguard.protogen.PlaintextTallySelection? = null
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> key = _fieldValue as String
-            2 -> value = _fieldValue as electionguard.protogen.PlaintextTallySelection
-        }
-    }
-    return PlaintextTallyContest.SelectionsEntry(key, value, unknownFields)
+    return PlaintextTallyContest(contestId, pbandk.ListWithSize.Builder.fixed(selections), unknownFields)
 }
 
 @pbandk.Export
@@ -600,7 +436,7 @@ private fun PlaintextTallySelection.protoMergeImpl(plus: pbandk.Message?): Plain
 
 @Suppress("UNCHECKED_CAST")
 private fun PlaintextTallySelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): PlaintextTallySelection {
-    var objectId = ""
+    var selectionId = ""
     var tally = 0
     var value: electionguard.protogen.ElementModP? = null
     var message: electionguard.protogen.ElGamalCiphertext? = null
@@ -608,14 +444,14 @@ private fun PlaintextTallySelection.Companion.decodeWithImpl(u: pbandk.MessageDe
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
+            1 -> selectionId = _fieldValue as String
             2 -> tally = _fieldValue as Int
             3 -> value = _fieldValue as electionguard.protogen.ElementModP
             4 -> message = _fieldValue as electionguard.protogen.ElGamalCiphertext
             5 -> shares = (shares ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CiphertextDecryptionSelection> }
         }
     }
-    return PlaintextTallySelection(objectId, tally, value, message,
+    return PlaintextTallySelection(selectionId, tally, value, message,
         pbandk.ListWithSize.Builder.fixed(shares), unknownFields)
 }
 
@@ -634,7 +470,6 @@ private fun CiphertextDecryptionSelection.protoMergeImpl(plus: pbandk.Message?):
 
 @Suppress("UNCHECKED_CAST")
 private fun CiphertextDecryptionSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): CiphertextDecryptionSelection {
-    var objectId = ""
     var guardianId = ""
     var share: electionguard.protogen.ElementModP? = null
     var proof: electionguard.protogen.ChaumPedersenProof? = null
@@ -642,15 +477,13 @@ private fun CiphertextDecryptionSelection.Companion.decodeWithImpl(u: pbandk.Mes
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
-            2 -> guardianId = _fieldValue as String
-            3 -> share = _fieldValue as electionguard.protogen.ElementModP
-            4 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
-            5 -> recoveredParts = (recoveredParts ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry> }
+            1 -> guardianId = _fieldValue as String
+            2 -> share = _fieldValue as electionguard.protogen.ElementModP
+            3 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
+            4 -> recoveredParts = (recoveredParts ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry> }
         }
     }
-    return CiphertextDecryptionSelection(objectId, guardianId, share, proof,
-        pbandk.ListWithSize.Builder.fixed(recoveredParts), unknownFields)
+    return CiphertextDecryptionSelection(guardianId, share, proof, pbandk.ListWithSize.Builder.fixed(recoveredParts), unknownFields)
 }
 
 @pbandk.Export
@@ -693,7 +526,6 @@ private fun CiphertextCompensatedDecryptionSelection.protoMergeImpl(plus: pbandk
 
 @Suppress("UNCHECKED_CAST")
 private fun CiphertextCompensatedDecryptionSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): CiphertextCompensatedDecryptionSelection {
-    var objectId = ""
     var guardianId = ""
     var missingGuardianId = ""
     var share: electionguard.protogen.ElementModP? = null
@@ -702,14 +534,13 @@ private fun CiphertextCompensatedDecryptionSelection.Companion.decodeWithImpl(u:
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
-            2 -> guardianId = _fieldValue as String
-            3 -> missingGuardianId = _fieldValue as String
-            4 -> share = _fieldValue as electionguard.protogen.ElementModP
-            5 -> recoveryKey = _fieldValue as electionguard.protogen.ElementModP
-            6 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
+            1 -> guardianId = _fieldValue as String
+            2 -> missingGuardianId = _fieldValue as String
+            3 -> share = _fieldValue as electionguard.protogen.ElementModP
+            4 -> recoveryKey = _fieldValue as electionguard.protogen.ElementModP
+            5 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
         }
     }
-    return CiphertextCompensatedDecryptionSelection(objectId, guardianId, missingGuardianId, share,
-        recoveryKey, proof, unknownFields)
+    return CiphertextCompensatedDecryptionSelection(guardianId, missingGuardianId, share, recoveryKey,
+        proof, unknownFields)
 }

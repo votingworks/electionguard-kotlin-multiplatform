@@ -27,10 +27,10 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
         return ElectionRecord(
             proto.version,
             convertConstants(proto.constants?: throw IllegalStateException("constants cant be null")),
-            convertContext(proto.context?: throw IllegalStateException("context cant be null")),
             manifest,
+            convertContext(proto.context?: throw IllegalStateException("context cant be null")),
             proto.guardianRecords.map { convertGuardianRecord(it) },
-            proto.device.map { convertDevice(it) },
+            proto.devices.map { convertDevice(it) },
             ciphertextTally,
             decryptedTally,
             null,
@@ -42,12 +42,12 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
     private fun convertAvailableGuardian(proto: electionguard.protogen.AvailableGuardian): AvailableGuardian {
         return AvailableGuardian(
             proto.guardianId,
-            proto.sequence,
+            proto.xCoordinate,
             convertElementModQ(proto.lagrangeCoordinate?: throw IllegalStateException("context cant be null"), groupContext)
         )
     }
 
-    private fun convertConstants(constants: electionguard.protogen.Constants): ElectionConstants {
+    private fun convertConstants(constants: electionguard.protogen.ElectionConstants): ElectionConstants {
         return ElectionConstants(
             constants.largePrime.array,
             constants.smallPrime.array,
@@ -56,8 +56,8 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertContext(context: electionguard.protogen.ElectionContext): CiphertextElectionContext {
-        return CiphertextElectionContext(
+    private fun convertContext(context: electionguard.protogen.ElectionContext): ElectionContext {
+        return ElectionContext(
             context.numberOfGuardians,
             context.quorum,
             convertElementModP(context.jointPublicKey?: throw IllegalStateException("jointPublicKey cant be null"), groupContext),
@@ -81,7 +81,7 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
     private fun convertGuardianRecord(guardianRecord: electionguard.protogen.GuardianRecord): GuardianRecord {
          return GuardianRecord(
             guardianRecord.guardianId,
-            guardianRecord.sequence,
+            guardianRecord.xCoordinate,
             convertElementModP(guardianRecord.electionPublicKey?: throw IllegalStateException("electionPublicKey cant be null"), groupContext),
             guardianRecord.coefficientCommitments.map { convertElementModP(it, groupContext)},
             guardianRecord.coefficientProofs.map { convertSchnorrProof(it, groupContext)},

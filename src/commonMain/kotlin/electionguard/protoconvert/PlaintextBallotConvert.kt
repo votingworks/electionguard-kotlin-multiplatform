@@ -6,8 +6,8 @@ class PlaintextBallotConvert {
 
     fun translateFromProto(ballot: electionguard.protogen.PlaintextBallot): PlaintextBallot {
         return PlaintextBallot(
-            ballot.objectId,
-            ballot.styleId,
+            ballot.ballotId,
+            ballot.ballotStyleId,
             ballot.contests.map{ convertContest(it) }
             )
     }
@@ -16,7 +16,7 @@ class PlaintextBallotConvert {
         return PlaintextBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
-            contest.ballotSelections.map{ convertSelection(it) }
+            contest.selections.map{ convertSelection(it) }
         )
     }
 
@@ -54,7 +54,7 @@ class PlaintextBallotConvert {
         return electionguard.protogen.PlaintextBallotContest(
             contest.contestId,
             contest.sequenceOrder,
-            contest.ballotSelections.map{ convertSelection(it) }
+            contest.selections.map{ convertSelection(it) }
         )
     }
 

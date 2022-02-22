@@ -6,8 +6,8 @@ import electionguard.core.*
 data class ElectionRecord(
     val version: String,
     val constants: ElectionConstants,
-    val context: CiphertextElectionContext,
     val manifest: Manifest,
+    val context: ElectionContext,
     val guardianRecords: List<GuardianRecord>?,
     val devices: List<EncryptionDevice>,
     val encryptedTally: CiphertextTally?,
@@ -17,14 +17,16 @@ data class ElectionRecord(
     val availableGuardians: List<AvailableGuardian?>?
 )
 
-data class EncryptionDevice(
-    /** Unique identifier for device.  */
-    val deviceId: Long,
-    /** Used to identify session and protect the timestamp.  */
-    val sessionId: Long,
-    /** Election initialization value.  */
-    val launchCode: Long,
-    val location: String,
+/**
+ * An available Guardian when decrypting.
+ * @param guardian_id The guardian id
+ * @param sequence the guardian x coordinate value
+ * @param lagrangeCoordinate the lagrange coordinate when decrypting
+ */
+data class AvailableGuardian(
+    var guardianId: String,
+    var xCoordinate: Int,
+    var lagrangeCoordinate: ElementModQ
 )
 
 // for now just hang onto the byte array
@@ -47,18 +49,28 @@ data class ElectionConstants(
  * @see [Key Generation](https://www.electionguard.vote/spec/0.95.0/4_Key_generation/.details-of-key-generation)
  * for defintion of K, 𝑄, 𝑄'.
  */
-data class CiphertextElectionContext(
+data class ElectionContext(
     /** The number of guardians necessary to generate the public key.  */
     val numberOfGuardians: Int,
     /** The quorum of guardians necessary to decrypt an election.  Must be less than number_of_guardians.  */
     val quorum: Int,
     /** The joint public key (K) in the ElectionGuard Spec.  */
     val jointPublicKey: ElementModP,
-    val commitmentHash: ElementModQ,
     val manifestHash: ElementModQ,
     val cryptoBaseHash: ElementModQ,
     val cryptoExtendedBaseHash: ElementModQ,
+    val commitmentHash: ElementModQ,
     val extendedData: Map<String, String>?
+)
+
+data class EncryptionDevice(
+    /** Unique identifier for device.  */
+    val deviceId: Long,
+    /** Used to identify session and protect the timestamp.  */
+    val sessionId: Long,
+    /** Election initialization value.  */
+    val launchCode: Long,
+    val location: String,
 )
 
 /**
@@ -66,22 +78,10 @@ data class CiphertextElectionContext(
  */
 data class GuardianRecord(
     val guardianId: String,
-    val sequenceOrder: Int,
+    val xCoordinate: Int,
     val electionPublicKey: ElementModP,
     val coefficientCommitments: List<ElementModP>,
     val coefficientProofs: List<SchnorrProof>
-)
-
-/**
- * An available Guardian when decrypting.
- * @param guardian_id The guardian id
- * @param sequence the guardian x coordinate value
- * @param lagrangeCoordinate the lagrange coordinate when decrypting
- */
-data class AvailableGuardian(
-    var guardianId: String,
-    var sequence: Int,
-    var lagrangeCoordinate: ElementModQ
 )
 
 
@@ -104,7 +104,7 @@ fun makeCiphertextElectionContext(
     manifest: Manifest,
     commitment_hash: ElementModQ,
     extended_data: Map<String, String>?
-): CiphertextElectionContext {
+): ElectionContext {
 
     val crypto_base_hash: ElementModQ = groupContext.hashElements(
         groupContext.constants.large_prime,
@@ -114,7 +114,7 @@ fun makeCiphertextElectionContext(
     )
     val crypto_extended_base_hash: ElementModQ = groupContext.hashElements(crypto_base_hash, commitment_hash)
 
-    return CiphertextElectionContext(
+    return ElectionContext(
         number_of_guardians,
         quorum,
         jointPublicKey,

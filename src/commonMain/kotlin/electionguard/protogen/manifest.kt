@@ -229,7 +229,7 @@ public data class AnnotatedString(
 
 @pbandk.Export
 public data class BallotStyle(
-    val objectId: String = "",
+    val ballotStyleId: String = "",
     val geopoliticalUnitIds: List<String> = emptyList(),
     val partyIds: List<String> = emptyList(),
     val imageUrl: String = "",
@@ -248,11 +248,11 @@ public data class BallotStyle(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "ballot_style_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.BallotStyle::objectId
+                        jsonName = "ballotStyleId",
+                        value = electionguard.protogen.BallotStyle::ballotStyleId
                     )
                 )
                 add(
@@ -298,7 +298,7 @@ public data class BallotStyle(
 
 @pbandk.Export
 public data class Candidate(
-    val objectId: String = "",
+    val candidateId: String = "",
     val name: electionguard.protogen.InternationalizedText? = null,
     val partyId: String = "",
     val imageUrl: String = "",
@@ -318,11 +318,11 @@ public data class Candidate(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "candidate_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.Candidate::objectId
+                        jsonName = "candidateId",
+                        value = electionguard.protogen.Candidate::candidateId
                     )
                 )
                 add(
@@ -447,7 +447,7 @@ public data class ContactInformation(
 
 @pbandk.Export
 public data class GeopoliticalUnit(
-    val objectId: String = "",
+    val geopoliticalUnitId: String = "",
     val name: String = "",
     val type: electionguard.protogen.GeopoliticalUnit.ReportingUnitType = electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromValue(0),
     val contactInformation: electionguard.protogen.ContactInformation? = null,
@@ -466,11 +466,11 @@ public data class GeopoliticalUnit(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "geopolitical_unit_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.GeopoliticalUnit::objectId
+                        jsonName = "geopoliticalUnitId",
+                        value = electionguard.protogen.GeopoliticalUnit::geopoliticalUnitId
                     )
                 )
                 add(
@@ -642,7 +642,7 @@ public data class Language(
 
 @pbandk.Export
 public data class Party(
-    val objectId: String = "",
+    val partyId: String = "",
     val name: electionguard.protogen.InternationalizedText? = null,
     val abbreviation: String = "",
     val color: String = "",
@@ -662,11 +662,11 @@ public data class Party(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "party_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.Party::objectId
+                        jsonName = "partyId",
+                        value = electionguard.protogen.Party::partyId
                     )
                 )
                 add(
@@ -722,14 +722,14 @@ public data class Party(
 
 @pbandk.Export
 public data class ContestDescription(
-    val objectId: String = "",
-    val electoralDistrictId: String = "",
+    val contestId: String = "",
     val sequenceOrder: Int = 0,
+    val geopoliticalUnitId: String = "",
     val voteVariation: electionguard.protogen.ContestDescription.VoteVariationType = electionguard.protogen.ContestDescription.VoteVariationType.fromValue(0),
     val numberElected: Int = 0,
     val votesAllowed: Int = 0,
     val name: String = "",
-    val ballotSelections: List<electionguard.protogen.SelectionDescription> = emptyList(),
+    val selections: List<electionguard.protogen.SelectionDescription> = emptyList(),
     val ballotTitle: electionguard.protogen.InternationalizedText? = null,
     val ballotSubtitle: electionguard.protogen.InternationalizedText? = null,
     val primaryPartyIds: List<String> = emptyList(),
@@ -748,31 +748,31 @@ public data class ContestDescription(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "contest_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.ContestDescription::objectId
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "electoral_district_id",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "electoralDistrictId",
-                        value = electionguard.protogen.ContestDescription::electoralDistrictId
+                        jsonName = "contestId",
+                        value = electionguard.protogen.ContestDescription::contestId
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "sequence_order",
-                        number = 3,
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "sequenceOrder",
                         value = electionguard.protogen.ContestDescription::sequenceOrder
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "geopolitical_unit_id",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "geopoliticalUnitId",
+                        value = electionguard.protogen.ContestDescription::geopoliticalUnitId
                     )
                 )
                 add(
@@ -818,11 +818,11 @@ public data class ContestDescription(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "ballot_selections",
+                        name = "selections",
                         number = 8,
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.SelectionDescription>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.SelectionDescription.Companion)),
-                        jsonName = "ballotSelections",
-                        value = electionguard.protogen.ContestDescription::ballotSelections
+                        jsonName = "selections",
+                        value = electionguard.protogen.ContestDescription::selections
                     )
                 )
                 add(
@@ -895,9 +895,9 @@ public data class ContestDescription(
 
 @pbandk.Export
 public data class SelectionDescription(
-    val objectId: String = "",
-    val candidateId: String = "",
+    val selectionId: String = "",
     val sequenceOrder: Int = 0,
+    val candidateId: String = "",
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.SelectionDescription = protoMergeImpl(other)
@@ -913,31 +913,31 @@ public data class SelectionDescription(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "selection_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.SelectionDescription::objectId
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "candidate_id",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "candidateId",
-                        value = electionguard.protogen.SelectionDescription::candidateId
+                        jsonName = "selectionId",
+                        value = electionguard.protogen.SelectionDescription::selectionId
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "sequence_order",
-                        number = 3,
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "sequenceOrder",
                         value = electionguard.protogen.SelectionDescription::sequenceOrder
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "candidate_id",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "candidateId",
+                        value = electionguard.protogen.SelectionDescription::candidateId
                     )
                 )
             }
@@ -1042,20 +1042,20 @@ private fun BallotStyle.protoMergeImpl(plus: pbandk.Message?): BallotStyle = (pl
 
 @Suppress("UNCHECKED_CAST")
 private fun BallotStyle.Companion.decodeWithImpl(u: pbandk.MessageDecoder): BallotStyle {
-    var objectId = ""
+    var ballotStyleId = ""
     var geopoliticalUnitIds: pbandk.ListWithSize.Builder<String>? = null
     var partyIds: pbandk.ListWithSize.Builder<String>? = null
     var imageUrl = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
+            1 -> ballotStyleId = _fieldValue as String
             2 -> geopoliticalUnitIds = (geopoliticalUnitIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
             3 -> partyIds = (partyIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
             4 -> imageUrl = _fieldValue as String
         }
     }
-    return BallotStyle(objectId, pbandk.ListWithSize.Builder.fixed(geopoliticalUnitIds), pbandk.ListWithSize.Builder.fixed(partyIds), imageUrl, unknownFields)
+    return BallotStyle(ballotStyleId, pbandk.ListWithSize.Builder.fixed(geopoliticalUnitIds), pbandk.ListWithSize.Builder.fixed(partyIds), imageUrl, unknownFields)
 }
 
 @pbandk.Export
@@ -1071,7 +1071,7 @@ private fun Candidate.protoMergeImpl(plus: pbandk.Message?): Candidate = (plus a
 
 @Suppress("UNCHECKED_CAST")
 private fun Candidate.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Candidate {
-    var objectId = ""
+    var candidateId = ""
     var name: electionguard.protogen.InternationalizedText? = null
     var partyId = ""
     var imageUrl = ""
@@ -1079,14 +1079,14 @@ private fun Candidate.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Candid
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
+            1 -> candidateId = _fieldValue as String
             2 -> name = _fieldValue as electionguard.protogen.InternationalizedText
             3 -> partyId = _fieldValue as String
             4 -> imageUrl = _fieldValue as String
             5 -> isWriteIn = _fieldValue as Boolean
         }
     }
-    return Candidate(objectId, name, partyId, imageUrl,
+    return Candidate(candidateId, name, partyId, imageUrl,
         isWriteIn, unknownFields)
 }
 
@@ -1134,20 +1134,20 @@ private fun GeopoliticalUnit.protoMergeImpl(plus: pbandk.Message?): Geopolitical
 
 @Suppress("UNCHECKED_CAST")
 private fun GeopoliticalUnit.Companion.decodeWithImpl(u: pbandk.MessageDecoder): GeopoliticalUnit {
-    var objectId = ""
+    var geopoliticalUnitId = ""
     var name = ""
     var type: electionguard.protogen.GeopoliticalUnit.ReportingUnitType = electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromValue(0)
     var contactInformation: electionguard.protogen.ContactInformation? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
+            1 -> geopoliticalUnitId = _fieldValue as String
             2 -> name = _fieldValue as String
             3 -> type = _fieldValue as electionguard.protogen.GeopoliticalUnit.ReportingUnitType
             4 -> contactInformation = _fieldValue as electionguard.protogen.ContactInformation
         }
     }
-    return GeopoliticalUnit(objectId, name, type, contactInformation, unknownFields)
+    return GeopoliticalUnit(geopoliticalUnitId, name, type, contactInformation, unknownFields)
 }
 
 @pbandk.Export
@@ -1210,7 +1210,7 @@ private fun Party.protoMergeImpl(plus: pbandk.Message?): Party = (plus as? Party
 
 @Suppress("UNCHECKED_CAST")
 private fun Party.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Party {
-    var objectId = ""
+    var partyId = ""
     var name: electionguard.protogen.InternationalizedText? = null
     var abbreviation = ""
     var color = ""
@@ -1218,14 +1218,14 @@ private fun Party.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Party {
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
+            1 -> partyId = _fieldValue as String
             2 -> name = _fieldValue as electionguard.protogen.InternationalizedText
             3 -> abbreviation = _fieldValue as String
             4 -> color = _fieldValue as String
             5 -> logoUri = _fieldValue as String
         }
     }
-    return Party(objectId, name, abbreviation, color,
+    return Party(partyId, name, abbreviation, color,
         logoUri, unknownFields)
 }
 
@@ -1235,7 +1235,7 @@ public fun ContestDescription?.orDefault(): electionguard.protogen.ContestDescri
 
 private fun ContestDescription.protoMergeImpl(plus: pbandk.Message?): ContestDescription = (plus as? ContestDescription)?.let {
     it.copy(
-        ballotSelections = ballotSelections + plus.ballotSelections,
+        selections = selections + plus.selections,
         ballotTitle = ballotTitle?.plus(plus.ballotTitle) ?: plus.ballotTitle,
         ballotSubtitle = ballotSubtitle?.plus(plus.ballotSubtitle) ?: plus.ballotSubtitle,
         primaryPartyIds = primaryPartyIds + plus.primaryPartyIds,
@@ -1245,35 +1245,35 @@ private fun ContestDescription.protoMergeImpl(plus: pbandk.Message?): ContestDes
 
 @Suppress("UNCHECKED_CAST")
 private fun ContestDescription.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ContestDescription {
-    var objectId = ""
-    var electoralDistrictId = ""
+    var contestId = ""
     var sequenceOrder = 0
+    var geopoliticalUnitId = ""
     var voteVariation: electionguard.protogen.ContestDescription.VoteVariationType = electionguard.protogen.ContestDescription.VoteVariationType.fromValue(0)
     var numberElected = 0
     var votesAllowed = 0
     var name = ""
-    var ballotSelections: pbandk.ListWithSize.Builder<electionguard.protogen.SelectionDescription>? = null
+    var selections: pbandk.ListWithSize.Builder<electionguard.protogen.SelectionDescription>? = null
     var ballotTitle: electionguard.protogen.InternationalizedText? = null
     var ballotSubtitle: electionguard.protogen.InternationalizedText? = null
     var primaryPartyIds: pbandk.ListWithSize.Builder<String>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
-            2 -> electoralDistrictId = _fieldValue as String
-            3 -> sequenceOrder = _fieldValue as Int
+            1 -> contestId = _fieldValue as String
+            2 -> sequenceOrder = _fieldValue as Int
+            3 -> geopoliticalUnitId = _fieldValue as String
             4 -> voteVariation = _fieldValue as electionguard.protogen.ContestDescription.VoteVariationType
             5 -> numberElected = _fieldValue as Int
             6 -> votesAllowed = _fieldValue as Int
             7 -> name = _fieldValue as String
-            8 -> ballotSelections = (ballotSelections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.SelectionDescription> }
+            8 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.SelectionDescription> }
             9 -> ballotTitle = _fieldValue as electionguard.protogen.InternationalizedText
             10 -> ballotSubtitle = _fieldValue as electionguard.protogen.InternationalizedText
             11 -> primaryPartyIds = (primaryPartyIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
         }
     }
-    return ContestDescription(objectId, electoralDistrictId, sequenceOrder, voteVariation,
-        numberElected, votesAllowed, name, pbandk.ListWithSize.Builder.fixed(ballotSelections),
+    return ContestDescription(contestId, sequenceOrder, geopoliticalUnitId, voteVariation,
+        numberElected, votesAllowed, name, pbandk.ListWithSize.Builder.fixed(selections),
         ballotTitle, ballotSubtitle, pbandk.ListWithSize.Builder.fixed(primaryPartyIds), unknownFields)
 }
 
@@ -1289,16 +1289,16 @@ private fun SelectionDescription.protoMergeImpl(plus: pbandk.Message?): Selectio
 
 @Suppress("UNCHECKED_CAST")
 private fun SelectionDescription.Companion.decodeWithImpl(u: pbandk.MessageDecoder): SelectionDescription {
-    var objectId = ""
-    var candidateId = ""
+    var selectionId = ""
     var sequenceOrder = 0
+    var candidateId = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
-            2 -> candidateId = _fieldValue as String
-            3 -> sequenceOrder = _fieldValue as Int
+            1 -> selectionId = _fieldValue as String
+            2 -> sequenceOrder = _fieldValue as Int
+            3 -> candidateId = _fieldValue as String
         }
     }
-    return SelectionDescription(objectId, candidateId, sequenceOrder, unknownFields)
+    return SelectionDescription(selectionId, sequenceOrder, candidateId, unknownFields)
 }

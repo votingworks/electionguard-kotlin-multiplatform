@@ -9,29 +9,25 @@ data class CiphertextTallyConvert(val groupContext: GroupContext) {
 
     fun translateFromProto(proto: electionguard.protogen.CiphertextTally): CiphertextTally {
         return CiphertextTally(
-            proto.objectId,
-            proto.contests.map{ (key, value) -> key to convertContest(value ?:
-            throw IllegalArgumentException("PlaintextTallyContest cannot be null")) }
-                .toMap()
+            proto.tallyId,
+            proto.contests.associate{ it.contestId to convertContest(it) }
         )
     }
 
     private fun convertContest(proto: CiphertextTallyContest): CiphertextTally.Contest {
         return CiphertextTally.Contest(
-            proto.objectId,
+            proto.contestId,
             proto.sequenceOrder,
-            convertElementModQ(proto.descriptionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            proto.tallySelections.map{ (key, value) -> key to convertSelection(value ?:
-            throw IllegalArgumentException("PlaintextTallySelection cannot be null")) }
-                .toMap()
+            convertElementModQ(proto.contestDescriptionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            proto.selections.associate{ it.selectionId to convertSelection(it) }
         )
     }
 
     private fun convertSelection(proto: CiphertextTallySelection): CiphertextTally.Selection {
         return CiphertextTally.Selection(
-            proto.objectId,
+            proto.selectionId,
             proto.sequenceOrder,
-            convertElementModQ(proto.descriptionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proto.selectionDescriptionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             convertCiphertext(proto.ciphertext?: throw IllegalArgumentException("Selection message cannot be null"), groupContext),
         )
     }
@@ -40,32 +36,26 @@ data class CiphertextTallyConvert(val groupContext: GroupContext) {
 
     fun translateToProto(tally: CiphertextTally): electionguard.protogen.CiphertextTally {
         return electionguard.protogen.CiphertextTally(
-            tally.objectId,
+            tally.tallyId,
             tally.contests.map{ convertContest(it.value) }
         )
     }
 
-    private fun convertContest(contest: CiphertextTally.Contest): electionguard.protogen.CiphertextTally.ContestsEntry {
-        return electionguard.protogen.CiphertextTally.ContestsEntry(
-            contest.objectId,
-            electionguard.protogen.CiphertextTallyContest(
-                contest.objectId,
+    private fun convertContest(contest: CiphertextTally.Contest): electionguard.protogen.CiphertextTallyContest {
+        return electionguard.protogen.CiphertextTallyContest(
+                contest.contestId,
                 contest.sequenceOrder,
                 convertElementModQ(contest.contestDescriptionHash),
                 contest.selections.values.map{ convertSelection(it) }
-            )
         )
     }
 
-    private fun convertSelection(selection: CiphertextTally.Selection): electionguard.protogen.CiphertextTallyContest.TallySelectionsEntry {
-        return electionguard.protogen.CiphertextTallyContest.TallySelectionsEntry(
-            selection.objectId,
-            electionguard.protogen.CiphertextTallySelection(
-                selection.objectId,
+    private fun convertSelection(selection: CiphertextTally.Selection): electionguard.protogen.CiphertextTallySelection {
+        return electionguard.protogen.CiphertextTallySelection(
+                selection.selectionId,
                 selection.sequenceOrder,
-                convertElementModQ(selection.descriptionHash),
+                convertElementModQ(selection.selectionDescriptionHash),
                 convertCiphertext(selection.ciphertext)
-            )
         )
     }
 }

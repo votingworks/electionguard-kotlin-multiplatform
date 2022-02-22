@@ -3,6 +3,75 @@
 package electionguard.protogen
 
 @pbandk.Export
+public data class ChaumPedersenProof(
+    val pad: electionguard.protogen.ElementModP? = null,
+    val data: electionguard.protogen.ElementModP? = null,
+    val challenge: electionguard.protogen.ElementModQ? = null,
+    val response: electionguard.protogen.ElementModQ? = null,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ChaumPedersenProof = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ChaumPedersenProof> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<electionguard.protogen.ChaumPedersenProof> {
+        public val defaultInstance: electionguard.protogen.ChaumPedersenProof by lazy { electionguard.protogen.ChaumPedersenProof() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ChaumPedersenProof = electionguard.protogen.ChaumPedersenProof.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ChaumPedersenProof> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ChaumPedersenProof, *>>(4)
+            fieldsList.apply {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "pad",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
+                        jsonName = "pad",
+                        value = electionguard.protogen.ChaumPedersenProof::pad
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "data",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
+                        jsonName = "data",
+                        value = electionguard.protogen.ChaumPedersenProof::data
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "challenge",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "challenge",
+                        value = electionguard.protogen.ChaumPedersenProof::challenge
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "response",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "response",
+                        value = electionguard.protogen.ChaumPedersenProof::response
+                    )
+                )
+            }
+            pbandk.MessageDescriptor(
+                fullName = "ChaumPedersenProof",
+                messageClass = electionguard.protogen.ChaumPedersenProof::class,
+                messageCompanion = this,
+                fields = fieldsList
+            )
+        }
+    }
+}
+
+@pbandk.Export
 public data class ElementModP(
     val value: pbandk.ByteArr = pbandk.ByteArr.empty,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -169,169 +238,6 @@ public data class ElGamalKeyPair(
 }
 
 @pbandk.Export
-public data class RSAPublicKey(
-    val modulus: pbandk.ByteArr = pbandk.ByteArr.empty,
-    val publicExponent: pbandk.ByteArr = pbandk.ByteArr.empty,
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.RSAPublicKey = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RSAPublicKey> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.RSAPublicKey> {
-        public val defaultInstance: electionguard.protogen.RSAPublicKey by lazy { electionguard.protogen.RSAPublicKey() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.RSAPublicKey = electionguard.protogen.RSAPublicKey.decodeWithImpl(u)
-
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RSAPublicKey> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.RSAPublicKey, *>>(2)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "modulus",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
-                        jsonName = "modulus",
-                        value = electionguard.protogen.RSAPublicKey::modulus
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "public_exponent",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
-                        jsonName = "publicExponent",
-                        value = electionguard.protogen.RSAPublicKey::publicExponent
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "RSAPublicKey",
-                messageClass = electionguard.protogen.RSAPublicKey::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
-        }
-    }
-}
-
-@pbandk.Export
-public data class RSAPrivateKey(
-    val modulus: pbandk.ByteArr = pbandk.ByteArr.empty,
-    val privateExponent: pbandk.ByteArr = pbandk.ByteArr.empty,
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.RSAPrivateKey = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RSAPrivateKey> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.RSAPrivateKey> {
-        public val defaultInstance: electionguard.protogen.RSAPrivateKey by lazy { electionguard.protogen.RSAPrivateKey() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.RSAPrivateKey = electionguard.protogen.RSAPrivateKey.decodeWithImpl(u)
-
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RSAPrivateKey> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.RSAPrivateKey, *>>(2)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "modulus",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
-                        jsonName = "modulus",
-                        value = electionguard.protogen.RSAPrivateKey::modulus
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "private_exponent",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
-                        jsonName = "privateExponent",
-                        value = electionguard.protogen.RSAPrivateKey::privateExponent
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "RSAPrivateKey",
-                messageClass = electionguard.protogen.RSAPrivateKey::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
-        }
-    }
-}
-
-@pbandk.Export
-public data class ChaumPedersenProof(
-    val pad: electionguard.protogen.ElementModP? = null,
-    val data: electionguard.protogen.ElementModP? = null,
-    val challenge: electionguard.protogen.ElementModQ? = null,
-    val response: electionguard.protogen.ElementModQ? = null,
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ChaumPedersenProof = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ChaumPedersenProof> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.ChaumPedersenProof> {
-        public val defaultInstance: electionguard.protogen.ChaumPedersenProof by lazy { electionguard.protogen.ChaumPedersenProof() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ChaumPedersenProof = electionguard.protogen.ChaumPedersenProof.decodeWithImpl(u)
-
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ChaumPedersenProof> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ChaumPedersenProof, *>>(4)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "pad",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
-                        jsonName = "pad",
-                        value = electionguard.protogen.ChaumPedersenProof::pad
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "data",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
-                        jsonName = "data",
-                        value = electionguard.protogen.ChaumPedersenProof::data
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "challenge",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "challenge",
-                        value = electionguard.protogen.ChaumPedersenProof::challenge
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "response",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "response",
-                        value = electionguard.protogen.ChaumPedersenProof::response
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "ChaumPedersenProof",
-                messageClass = electionguard.protogen.ChaumPedersenProof::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
-        }
-    }
-}
-
-@pbandk.Export
 public data class SchnorrProof(
     val publicKey: electionguard.protogen.ElementModP? = null,
     val commitment: electionguard.protogen.ElementModP? = null,
@@ -401,75 +307,35 @@ public data class SchnorrProof(
 }
 
 @pbandk.Export
-public data class FinishRequest(
-    val allOk: Boolean = false,
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.FinishRequest = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.FinishRequest> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.FinishRequest> {
-        public val defaultInstance: electionguard.protogen.FinishRequest by lazy { electionguard.protogen.FinishRequest() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.FinishRequest = electionguard.protogen.FinishRequest.decodeWithImpl(u)
+@pbandk.JsName("orDefaultForChaumPedersenProof")
+public fun ChaumPedersenProof?.orDefault(): electionguard.protogen.ChaumPedersenProof = this ?: ChaumPedersenProof.defaultInstance
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.FinishRequest> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.FinishRequest, *>>(1)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "all_ok",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(),
-                        jsonName = "allOk",
-                        value = electionguard.protogen.FinishRequest::allOk
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "FinishRequest",
-                messageClass = electionguard.protogen.FinishRequest::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
+private fun ChaumPedersenProof.protoMergeImpl(plus: pbandk.Message?): ChaumPedersenProof = (plus as? ChaumPedersenProof)?.let {
+    it.copy(
+        pad = pad?.plus(plus.pad) ?: plus.pad,
+        data = data?.plus(plus.data) ?: plus.data,
+        challenge = challenge?.plus(plus.challenge) ?: plus.challenge,
+        response = response?.plus(plus.response) ?: plus.response,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun ChaumPedersenProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ChaumPedersenProof {
+    var pad: electionguard.protogen.ElementModP? = null
+    var data: electionguard.protogen.ElementModP? = null
+    var challenge: electionguard.protogen.ElementModQ? = null
+    var response: electionguard.protogen.ElementModQ? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> pad = _fieldValue as electionguard.protogen.ElementModP
+            2 -> data = _fieldValue as electionguard.protogen.ElementModP
+            3 -> challenge = _fieldValue as electionguard.protogen.ElementModQ
+            4 -> response = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
-}
-
-@pbandk.Export
-public data class ErrorResponse(
-    val error: String = "",
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ErrorResponse = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ErrorResponse> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.ErrorResponse> {
-        public val defaultInstance: electionguard.protogen.ErrorResponse by lazy { electionguard.protogen.ErrorResponse() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ErrorResponse = electionguard.protogen.ErrorResponse.decodeWithImpl(u)
-
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ErrorResponse> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ErrorResponse, *>>(1)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "error",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "error",
-                        value = electionguard.protogen.ErrorResponse::error
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "ErrorResponse",
-                messageClass = electionguard.protogen.ErrorResponse::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
-        }
-    }
+    return ChaumPedersenProof(pad, data, challenge, response, unknownFields)
 }
 
 @pbandk.Export
@@ -569,86 +435,6 @@ private fun ElGamalKeyPair.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForRSAPublicKey")
-public fun RSAPublicKey?.orDefault(): electionguard.protogen.RSAPublicKey = this ?: RSAPublicKey.defaultInstance
-
-private fun RSAPublicKey.protoMergeImpl(plus: pbandk.Message?): RSAPublicKey = (plus as? RSAPublicKey)?.let {
-    it.copy(
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun RSAPublicKey.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RSAPublicKey {
-    var modulus: pbandk.ByteArr = pbandk.ByteArr.empty
-    var publicExponent: pbandk.ByteArr = pbandk.ByteArr.empty
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> modulus = _fieldValue as pbandk.ByteArr
-            2 -> publicExponent = _fieldValue as pbandk.ByteArr
-        }
-    }
-    return RSAPublicKey(modulus, publicExponent, unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForRSAPrivateKey")
-public fun RSAPrivateKey?.orDefault(): electionguard.protogen.RSAPrivateKey = this ?: RSAPrivateKey.defaultInstance
-
-private fun RSAPrivateKey.protoMergeImpl(plus: pbandk.Message?): RSAPrivateKey = (plus as? RSAPrivateKey)?.let {
-    it.copy(
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun RSAPrivateKey.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RSAPrivateKey {
-    var modulus: pbandk.ByteArr = pbandk.ByteArr.empty
-    var privateExponent: pbandk.ByteArr = pbandk.ByteArr.empty
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> modulus = _fieldValue as pbandk.ByteArr
-            2 -> privateExponent = _fieldValue as pbandk.ByteArr
-        }
-    }
-    return RSAPrivateKey(modulus, privateExponent, unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForChaumPedersenProof")
-public fun ChaumPedersenProof?.orDefault(): electionguard.protogen.ChaumPedersenProof = this ?: ChaumPedersenProof.defaultInstance
-
-private fun ChaumPedersenProof.protoMergeImpl(plus: pbandk.Message?): ChaumPedersenProof = (plus as? ChaumPedersenProof)?.let {
-    it.copy(
-        pad = pad?.plus(plus.pad) ?: plus.pad,
-        data = data?.plus(plus.data) ?: plus.data,
-        challenge = challenge?.plus(plus.challenge) ?: plus.challenge,
-        response = response?.plus(plus.response) ?: plus.response,
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun ChaumPedersenProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ChaumPedersenProof {
-    var pad: electionguard.protogen.ElementModP? = null
-    var data: electionguard.protogen.ElementModP? = null
-    var challenge: electionguard.protogen.ElementModQ? = null
-    var response: electionguard.protogen.ElementModQ? = null
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> pad = _fieldValue as electionguard.protogen.ElementModP
-            2 -> data = _fieldValue as electionguard.protogen.ElementModP
-            3 -> challenge = _fieldValue as electionguard.protogen.ElementModQ
-            4 -> response = _fieldValue as electionguard.protogen.ElementModQ
-        }
-    }
-    return ChaumPedersenProof(pad, data, challenge, response, unknownFields)
-}
-
-@pbandk.Export
 @pbandk.JsName("orDefaultForSchnorrProof")
 public fun SchnorrProof?.orDefault(): electionguard.protogen.SchnorrProof = this ?: SchnorrProof.defaultInstance
 
@@ -678,48 +464,4 @@ private fun SchnorrProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Sch
         }
     }
     return SchnorrProof(publicKey, commitment, challenge, response, unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForFinishRequest")
-public fun FinishRequest?.orDefault(): electionguard.protogen.FinishRequest = this ?: FinishRequest.defaultInstance
-
-private fun FinishRequest.protoMergeImpl(plus: pbandk.Message?): FinishRequest = (plus as? FinishRequest)?.let {
-    it.copy(
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun FinishRequest.Companion.decodeWithImpl(u: pbandk.MessageDecoder): FinishRequest {
-    var allOk = false
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> allOk = _fieldValue as Boolean
-        }
-    }
-    return FinishRequest(allOk, unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForErrorResponse")
-public fun ErrorResponse?.orDefault(): electionguard.protogen.ErrorResponse = this ?: ErrorResponse.defaultInstance
-
-private fun ErrorResponse.protoMergeImpl(plus: pbandk.Message?): ErrorResponse = (plus as? ErrorResponse)?.let {
-    it.copy(
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun ErrorResponse.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ErrorResponse {
-    var error = ""
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> error = _fieldValue as String
-        }
-    }
-    return ErrorResponse(error, unknownFields)
 }

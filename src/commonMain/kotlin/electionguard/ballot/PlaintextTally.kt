@@ -3,7 +3,7 @@ package electionguard.ballot
 import electionguard.core.ElementModP
 import electionguard.core.ElGamalCiphertext
 
-data class PlaintextTally(val objectId: String, val contests: Map<String, Contest>) {
+data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest>) {
     /**
      * The plaintext representation of the counts of one contest in the election.
      * The object_id is the same as the Manifest.ContestDescription.object_id or PlaintextBallotContest object_id.
@@ -11,8 +11,8 @@ data class PlaintextTally(val objectId: String, val contests: Map<String, Contes
      * @param selections The collection of selections in the contest, keyed by selection.object_id.
      */
     data class Contest(
-        val contestId: String, // matches ContestDescription.object_id
-        val ballotSelections: Map<String, Selection>,
+        val contestId: String, // matches ContestDescription.contestId
+        val selections: Map<String, Selection>,
     );
 
     /**
@@ -25,7 +25,7 @@ data class PlaintextTally(val objectId: String, val contests: Map<String, Contes
      * @param shares  The Guardians' shares of the decryption of a selection. `M_i` in the spec. Must be nguardians of them.
      */
     data class Selection(
-        val selectionId: String, // matches SelectionDescription.object_id
+        val selectionId: String, // matches SelectionDescription.selectionId
         val tally: Int,
         val value: ElementModP,
         val message: ElGamalCiphertext,

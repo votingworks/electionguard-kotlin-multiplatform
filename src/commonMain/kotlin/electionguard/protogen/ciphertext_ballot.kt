@@ -4,16 +4,15 @@ package electionguard.protogen
 
 @pbandk.Export
 public data class SubmittedBallot(
-    val objectId: String = "",
+    val ballotId: String = "",
     val ballotStyleId: String = "",
     val manifestHash: electionguard.protogen.ElementModQ? = null,
-    val trackingHash: electionguard.protogen.ElementModQ? = null,
     val previousTrackingHash: electionguard.protogen.ElementModQ? = null,
+    val trackingHash: electionguard.protogen.ElementModQ? = null,
     val contests: List<electionguard.protogen.CiphertextBallotContest> = emptyList(),
     val timestamp: Long = 0L,
     val cryptoHash: electionguard.protogen.ElementModQ? = null,
-    val nonce: electionguard.protogen.ElementModQ? = null,
-    val state: electionguard.protogen.SubmittedBallot.BallotBoxState = electionguard.protogen.SubmittedBallot.BallotBoxState.fromValue(0),
+    val state: electionguard.protogen.SubmittedBallot.BallotState = electionguard.protogen.SubmittedBallot.BallotState.fromValue(0),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.SubmittedBallot = protoMergeImpl(other)
@@ -24,16 +23,16 @@ public data class SubmittedBallot(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.SubmittedBallot = electionguard.protogen.SubmittedBallot.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.SubmittedBallot> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.SubmittedBallot, *>>(10)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.SubmittedBallot, *>>(9)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "ballot_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.SubmittedBallot::objectId
+                        jsonName = "ballotId",
+                        value = electionguard.protogen.SubmittedBallot::ballotId
                     )
                 )
                 add(
@@ -59,21 +58,21 @@ public data class SubmittedBallot(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "tracking_hash",
+                        name = "previous_tracking_hash",
                         number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "trackingHash",
-                        value = electionguard.protogen.SubmittedBallot::trackingHash
+                        jsonName = "previousTrackingHash",
+                        value = electionguard.protogen.SubmittedBallot::previousTrackingHash
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "previous_tracking_hash",
+                        name = "tracking_hash",
                         number = 5,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "previousTrackingHash",
-                        value = electionguard.protogen.SubmittedBallot::previousTrackingHash
+                        jsonName = "trackingHash",
+                        value = electionguard.protogen.SubmittedBallot::trackingHash
                     )
                 )
                 add(
@@ -109,19 +108,9 @@ public data class SubmittedBallot(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "nonce",
-                        number = 9,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "nonce",
-                        value = electionguard.protogen.SubmittedBallot::nonce
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "state",
-                        number = 10,
-                        type = pbandk.FieldDescriptor.Type.Enum(enumCompanion = electionguard.protogen.SubmittedBallot.BallotBoxState.Companion),
+                        number = 9,
+                        type = pbandk.FieldDescriptor.Type.Enum(enumCompanion = electionguard.protogen.SubmittedBallot.BallotState.Companion),
                         jsonName = "state",
                         value = electionguard.protogen.SubmittedBallot::state
                     )
@@ -136,33 +125,32 @@ public data class SubmittedBallot(
         }
     }
 
-    public sealed class BallotBoxState(override val value: Int, override val name: String? = null) : pbandk.Message.Enum {
-        override fun equals(other: kotlin.Any?): Boolean = other is SubmittedBallot.BallotBoxState && other.value == value
+    public sealed class BallotState(override val value: Int, override val name: String? = null) : pbandk.Message.Enum {
+        override fun equals(other: kotlin.Any?): Boolean = other is SubmittedBallot.BallotState && other.value == value
         override fun hashCode(): Int = value.hashCode()
-        override fun toString(): String = "SubmittedBallot.BallotBoxState.${name ?: "UNRECOGNIZED"}(value=$value)"
+        override fun toString(): String = "SubmittedBallot.BallotState.${name ?: "UNRECOGNIZED"}(value=$value)"
 
-        public object UNKNOWN : BallotBoxState(0, "UNKNOWN")
-        public object CAST : BallotBoxState(1, "CAST")
-        public object SPOILED : BallotBoxState(2, "SPOILED")
-        public class UNRECOGNIZED(value: Int) : BallotBoxState(value)
+        public object UNKNOWN : BallotState(0, "UNKNOWN")
+        public object CAST : BallotState(1, "CAST")
+        public object SPOILED : BallotState(2, "SPOILED")
+        public class UNRECOGNIZED(value: Int) : BallotState(value)
 
-        public companion object : pbandk.Message.Enum.Companion<SubmittedBallot.BallotBoxState> {
-            public val values: List<SubmittedBallot.BallotBoxState> by lazy { listOf(UNKNOWN, CAST, SPOILED) }
-            override fun fromValue(value: Int): SubmittedBallot.BallotBoxState = values.firstOrNull { it.value == value } ?: UNRECOGNIZED(value)
-            override fun fromName(name: String): SubmittedBallot.BallotBoxState = values.firstOrNull { it.name == name } ?: throw IllegalArgumentException("No BallotBoxState with name: $name")
+        public companion object : pbandk.Message.Enum.Companion<SubmittedBallot.BallotState> {
+            public val values: List<SubmittedBallot.BallotState> by lazy { listOf(UNKNOWN, CAST, SPOILED) }
+            override fun fromValue(value: Int): SubmittedBallot.BallotState = values.firstOrNull { it.value == value } ?: UNRECOGNIZED(value)
+            override fun fromName(name: String): SubmittedBallot.BallotState = values.firstOrNull { it.name == name } ?: throw IllegalArgumentException("No BallotState with name: $name")
         }
     }
 }
 
 @pbandk.Export
 public data class CiphertextBallotContest(
-    val objectId: String = "",
+    val contestId: String = "",
     val sequenceOrder: Int = 0,
-    val descriptionHash: electionguard.protogen.ElementModQ? = null,
+    val contestHash: electionguard.protogen.ElementModQ? = null,
     val selections: List<electionguard.protogen.CiphertextBallotSelection> = emptyList(),
-    val cryptoHash: electionguard.protogen.ElementModQ? = null,
     val ciphertextAccumulation: electionguard.protogen.ElGamalCiphertext? = null,
-    val nonce: electionguard.protogen.ElementModQ? = null,
+    val cryptoHash: electionguard.protogen.ElementModQ? = null,
     val proof: electionguard.protogen.ConstantChaumPedersenProof? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -174,16 +162,16 @@ public data class CiphertextBallotContest(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.CiphertextBallotContest = electionguard.protogen.CiphertextBallotContest.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CiphertextBallotContest> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextBallotContest, *>>(8)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextBallotContest, *>>(7)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "contest_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.CiphertextBallotContest::objectId
+                        jsonName = "contestId",
+                        value = electionguard.protogen.CiphertextBallotContest::contestId
                     )
                 )
                 add(
@@ -191,7 +179,7 @@ public data class CiphertextBallotContest(
                         messageDescriptor = this@Companion::descriptor,
                         name = "sequence_order",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(),
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "sequenceOrder",
                         value = electionguard.protogen.CiphertextBallotContest::sequenceOrder
                     )
@@ -199,11 +187,11 @@ public data class CiphertextBallotContest(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "description_hash",
+                        name = "contest_hash",
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "descriptionHash",
-                        value = electionguard.protogen.CiphertextBallotContest::descriptionHash
+                        jsonName = "contestHash",
+                        value = electionguard.protogen.CiphertextBallotContest::contestHash
                     )
                 )
                 add(
@@ -219,18 +207,8 @@ public data class CiphertextBallotContest(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "crypto_hash",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "cryptoHash",
-                        value = electionguard.protogen.CiphertextBallotContest::cryptoHash
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "ciphertext_accumulation",
-                        number = 6,
+                        number = 5,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElGamalCiphertext.Companion),
                         jsonName = "ciphertextAccumulation",
                         value = electionguard.protogen.CiphertextBallotContest::ciphertextAccumulation
@@ -239,18 +217,18 @@ public data class CiphertextBallotContest(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "nonce",
-                        number = 7,
+                        name = "crypto_hash",
+                        number = 6,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "nonce",
-                        value = electionguard.protogen.CiphertextBallotContest::nonce
+                        jsonName = "cryptoHash",
+                        value = electionguard.protogen.CiphertextBallotContest::cryptoHash
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof",
-                        number = 8,
+                        number = 7,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ConstantChaumPedersenProof.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.CiphertextBallotContest::proof
@@ -269,13 +247,12 @@ public data class CiphertextBallotContest(
 
 @pbandk.Export
 public data class CiphertextBallotSelection(
-    val objectId: String = "",
+    val selectionId: String = "",
     val sequenceOrder: Int = 0,
-    val descriptionHash: electionguard.protogen.ElementModQ? = null,
+    val selectionHash: electionguard.protogen.ElementModQ? = null,
     val ciphertext: electionguard.protogen.ElGamalCiphertext? = null,
     val cryptoHash: electionguard.protogen.ElementModQ? = null,
     val isPlaceholderSelection: Boolean = false,
-    val nonce: electionguard.protogen.ElementModQ? = null,
     val proof: electionguard.protogen.DisjunctiveChaumPedersenProof? = null,
     val extendedData: electionguard.protogen.ElGamalCiphertext? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -288,16 +265,16 @@ public data class CiphertextBallotSelection(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.CiphertextBallotSelection = electionguard.protogen.CiphertextBallotSelection.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CiphertextBallotSelection> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextBallotSelection, *>>(9)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextBallotSelection, *>>(8)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "selection_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.CiphertextBallotSelection::objectId
+                        jsonName = "selectionId",
+                        value = electionguard.protogen.CiphertextBallotSelection::selectionId
                     )
                 )
                 add(
@@ -305,7 +282,7 @@ public data class CiphertextBallotSelection(
                         messageDescriptor = this@Companion::descriptor,
                         name = "sequence_order",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(),
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "sequenceOrder",
                         value = electionguard.protogen.CiphertextBallotSelection::sequenceOrder
                     )
@@ -313,11 +290,11 @@ public data class CiphertextBallotSelection(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "description_hash",
+                        name = "selection_hash",
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "descriptionHash",
-                        value = electionguard.protogen.CiphertextBallotSelection::descriptionHash
+                        jsonName = "selectionHash",
+                        value = electionguard.protogen.CiphertextBallotSelection::selectionHash
                     )
                 )
                 add(
@@ -353,18 +330,8 @@ public data class CiphertextBallotSelection(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "nonce",
-                        number = 7,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "nonce",
-                        value = electionguard.protogen.CiphertextBallotSelection::nonce
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "proof",
-                        number = 8,
+                        number = 7,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.DisjunctiveChaumPedersenProof.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.CiphertextBallotSelection::proof
@@ -374,7 +341,7 @@ public data class CiphertextBallotSelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "extended_data",
-                        number = 9,
+                        number = 8,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElGamalCiphertext.Companion),
                         jsonName = "extendedData",
                         value = electionguard.protogen.CiphertextBallotSelection::extendedData
@@ -475,13 +442,13 @@ public data class ConstantChaumPedersenProof(
 public data class DisjunctiveChaumPedersenProof(
     val proofZeroPad: electionguard.protogen.ElementModP? = null,
     val proofZeroData: electionguard.protogen.ElementModP? = null,
+    val proofZeroChallenge: electionguard.protogen.ElementModQ? = null,
+    val proofZeroResponse: electionguard.protogen.ElementModQ? = null,
     val proofOnePad: electionguard.protogen.ElementModP? = null,
     val proofOneData: electionguard.protogen.ElementModP? = null,
-    val proofZeroChallenge: electionguard.protogen.ElementModQ? = null,
     val proofOneChallenge: electionguard.protogen.ElementModQ? = null,
-    val challenge: electionguard.protogen.ElementModQ? = null,
-    val proofZeroResponse: electionguard.protogen.ElementModQ? = null,
     val proofOneResponse: electionguard.protogen.ElementModQ? = null,
+    val challenge: electionguard.protogen.ElementModQ? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.DisjunctiveChaumPedersenProof = protoMergeImpl(other)
@@ -517,8 +484,28 @@ public data class DisjunctiveChaumPedersenProof(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "proof_one_pad",
+                        name = "proof_zero_challenge",
                         number = 3,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "proofZeroChallenge",
+                        value = electionguard.protogen.DisjunctiveChaumPedersenProof::proofZeroChallenge
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "proof_zero_response",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "proofZeroResponse",
+                        value = electionguard.protogen.DisjunctiveChaumPedersenProof::proofZeroResponse
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "proof_one_pad",
+                        number = 5,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "proofOnePad",
                         value = electionguard.protogen.DisjunctiveChaumPedersenProof::proofOnePad
@@ -528,7 +515,7 @@ public data class DisjunctiveChaumPedersenProof(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof_one_data",
-                        number = 4,
+                        number = 6,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "proofOneData",
                         value = electionguard.protogen.DisjunctiveChaumPedersenProof::proofOneData
@@ -537,18 +524,8 @@ public data class DisjunctiveChaumPedersenProof(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "proof_zero_challenge",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "proofZeroChallenge",
-                        value = electionguard.protogen.DisjunctiveChaumPedersenProof::proofZeroChallenge
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "proof_one_challenge",
-                        number = 6,
+                        number = 7,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "proofOneChallenge",
                         value = electionguard.protogen.DisjunctiveChaumPedersenProof::proofOneChallenge
@@ -557,31 +534,21 @@ public data class DisjunctiveChaumPedersenProof(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "challenge",
-                        number = 7,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "challenge",
-                        value = electionguard.protogen.DisjunctiveChaumPedersenProof::challenge
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "proof_zero_response",
-                        number = 8,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "proofZeroResponse",
-                        value = electionguard.protogen.DisjunctiveChaumPedersenProof::proofZeroResponse
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "proof_one_response",
-                        number = 9,
+                        number = 8,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "proofOneResponse",
                         value = electionguard.protogen.DisjunctiveChaumPedersenProof::proofOneResponse
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "challenge",
+                        number = 9,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "challenge",
+                        value = electionguard.protogen.DisjunctiveChaumPedersenProof::challenge
                     )
                 )
             }
@@ -602,45 +569,42 @@ public fun SubmittedBallot?.orDefault(): electionguard.protogen.SubmittedBallot 
 private fun SubmittedBallot.protoMergeImpl(plus: pbandk.Message?): SubmittedBallot = (plus as? SubmittedBallot)?.let {
     it.copy(
         manifestHash = manifestHash?.plus(plus.manifestHash) ?: plus.manifestHash,
-        trackingHash = trackingHash?.plus(plus.trackingHash) ?: plus.trackingHash,
         previousTrackingHash = previousTrackingHash?.plus(plus.previousTrackingHash) ?: plus.previousTrackingHash,
+        trackingHash = trackingHash?.plus(plus.trackingHash) ?: plus.trackingHash,
         contests = contests + plus.contests,
         cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
-        nonce = nonce?.plus(plus.nonce) ?: plus.nonce,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
 private fun SubmittedBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): SubmittedBallot {
-    var objectId = ""
+    var ballotId = ""
     var ballotStyleId = ""
     var manifestHash: electionguard.protogen.ElementModQ? = null
-    var trackingHash: electionguard.protogen.ElementModQ? = null
     var previousTrackingHash: electionguard.protogen.ElementModQ? = null
+    var trackingHash: electionguard.protogen.ElementModQ? = null
     var contests: pbandk.ListWithSize.Builder<electionguard.protogen.CiphertextBallotContest>? = null
     var timestamp = 0L
     var cryptoHash: electionguard.protogen.ElementModQ? = null
-    var nonce: electionguard.protogen.ElementModQ? = null
-    var state: electionguard.protogen.SubmittedBallot.BallotBoxState = electionguard.protogen.SubmittedBallot.BallotBoxState.fromValue(0)
+    var state: electionguard.protogen.SubmittedBallot.BallotState = electionguard.protogen.SubmittedBallot.BallotState.fromValue(0)
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
+            1 -> ballotId = _fieldValue as String
             2 -> ballotStyleId = _fieldValue as String
             3 -> manifestHash = _fieldValue as electionguard.protogen.ElementModQ
-            4 -> trackingHash = _fieldValue as electionguard.protogen.ElementModQ
-            5 -> previousTrackingHash = _fieldValue as electionguard.protogen.ElementModQ
+            4 -> previousTrackingHash = _fieldValue as electionguard.protogen.ElementModQ
+            5 -> trackingHash = _fieldValue as electionguard.protogen.ElementModQ
             6 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CiphertextBallotContest> }
             7 -> timestamp = _fieldValue as Long
             8 -> cryptoHash = _fieldValue as electionguard.protogen.ElementModQ
-            9 -> nonce = _fieldValue as electionguard.protogen.ElementModQ
-            10 -> state = _fieldValue as electionguard.protogen.SubmittedBallot.BallotBoxState
+            9 -> state = _fieldValue as electionguard.protogen.SubmittedBallot.BallotState
         }
     }
-    return SubmittedBallot(objectId, ballotStyleId, manifestHash, trackingHash,
-        previousTrackingHash, pbandk.ListWithSize.Builder.fixed(contests), timestamp, cryptoHash,
-        nonce, state, unknownFields)
+    return SubmittedBallot(ballotId, ballotStyleId, manifestHash, previousTrackingHash,
+        trackingHash, pbandk.ListWithSize.Builder.fixed(contests), timestamp, cryptoHash,
+        state, unknownFields)
 }
 
 @pbandk.Export
@@ -649,11 +613,10 @@ public fun CiphertextBallotContest?.orDefault(): electionguard.protogen.Cipherte
 
 private fun CiphertextBallotContest.protoMergeImpl(plus: pbandk.Message?): CiphertextBallotContest = (plus as? CiphertextBallotContest)?.let {
     it.copy(
-        descriptionHash = descriptionHash?.plus(plus.descriptionHash) ?: plus.descriptionHash,
+        contestHash = contestHash?.plus(plus.contestHash) ?: plus.contestHash,
         selections = selections + plus.selections,
-        cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         ciphertextAccumulation = ciphertextAccumulation?.plus(plus.ciphertextAccumulation) ?: plus.ciphertextAccumulation,
-        nonce = nonce?.plus(plus.nonce) ?: plus.nonce,
+        cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         proof = proof?.plus(plus.proof) ?: plus.proof,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -661,29 +624,27 @@ private fun CiphertextBallotContest.protoMergeImpl(plus: pbandk.Message?): Ciphe
 
 @Suppress("UNCHECKED_CAST")
 private fun CiphertextBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDecoder): CiphertextBallotContest {
-    var objectId = ""
+    var contestId = ""
     var sequenceOrder = 0
-    var descriptionHash: electionguard.protogen.ElementModQ? = null
+    var contestHash: electionguard.protogen.ElementModQ? = null
     var selections: pbandk.ListWithSize.Builder<electionguard.protogen.CiphertextBallotSelection>? = null
-    var cryptoHash: electionguard.protogen.ElementModQ? = null
     var ciphertextAccumulation: electionguard.protogen.ElGamalCiphertext? = null
-    var nonce: electionguard.protogen.ElementModQ? = null
+    var cryptoHash: electionguard.protogen.ElementModQ? = null
     var proof: electionguard.protogen.ConstantChaumPedersenProof? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
+            1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            3 -> descriptionHash = _fieldValue as electionguard.protogen.ElementModQ
+            3 -> contestHash = _fieldValue as electionguard.protogen.ElementModQ
             4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CiphertextBallotSelection> }
-            5 -> cryptoHash = _fieldValue as electionguard.protogen.ElementModQ
-            6 -> ciphertextAccumulation = _fieldValue as electionguard.protogen.ElGamalCiphertext
-            7 -> nonce = _fieldValue as electionguard.protogen.ElementModQ
-            8 -> proof = _fieldValue as electionguard.protogen.ConstantChaumPedersenProof
+            5 -> ciphertextAccumulation = _fieldValue as electionguard.protogen.ElGamalCiphertext
+            6 -> cryptoHash = _fieldValue as electionguard.protogen.ElementModQ
+            7 -> proof = _fieldValue as electionguard.protogen.ConstantChaumPedersenProof
         }
     }
-    return CiphertextBallotContest(objectId, sequenceOrder, descriptionHash, pbandk.ListWithSize.Builder.fixed(selections),
-        cryptoHash, ciphertextAccumulation, nonce, proof, unknownFields)
+    return CiphertextBallotContest(contestId, sequenceOrder, contestHash, pbandk.ListWithSize.Builder.fixed(selections),
+        ciphertextAccumulation, cryptoHash, proof, unknownFields)
 }
 
 @pbandk.Export
@@ -692,10 +653,9 @@ public fun CiphertextBallotSelection?.orDefault(): electionguard.protogen.Cipher
 
 private fun CiphertextBallotSelection.protoMergeImpl(plus: pbandk.Message?): CiphertextBallotSelection = (plus as? CiphertextBallotSelection)?.let {
     it.copy(
-        descriptionHash = descriptionHash?.plus(plus.descriptionHash) ?: plus.descriptionHash,
+        selectionHash = selectionHash?.plus(plus.selectionHash) ?: plus.selectionHash,
         ciphertext = ciphertext?.plus(plus.ciphertext) ?: plus.ciphertext,
         cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
-        nonce = nonce?.plus(plus.nonce) ?: plus.nonce,
         proof = proof?.plus(plus.proof) ?: plus.proof,
         extendedData = extendedData?.plus(plus.extendedData) ?: plus.extendedData,
         unknownFields = unknownFields + plus.unknownFields
@@ -704,32 +664,29 @@ private fun CiphertextBallotSelection.protoMergeImpl(plus: pbandk.Message?): Cip
 
 @Suppress("UNCHECKED_CAST")
 private fun CiphertextBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): CiphertextBallotSelection {
-    var objectId = ""
+    var selectionId = ""
     var sequenceOrder = 0
-    var descriptionHash: electionguard.protogen.ElementModQ? = null
+    var selectionHash: electionguard.protogen.ElementModQ? = null
     var ciphertext: electionguard.protogen.ElGamalCiphertext? = null
     var cryptoHash: electionguard.protogen.ElementModQ? = null
     var isPlaceholderSelection = false
-    var nonce: electionguard.protogen.ElementModQ? = null
     var proof: electionguard.protogen.DisjunctiveChaumPedersenProof? = null
     var extendedData: electionguard.protogen.ElGamalCiphertext? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
+            1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            3 -> descriptionHash = _fieldValue as electionguard.protogen.ElementModQ
+            3 -> selectionHash = _fieldValue as electionguard.protogen.ElementModQ
             4 -> ciphertext = _fieldValue as electionguard.protogen.ElGamalCiphertext
             5 -> cryptoHash = _fieldValue as electionguard.protogen.ElementModQ
             6 -> isPlaceholderSelection = _fieldValue as Boolean
-            7 -> nonce = _fieldValue as electionguard.protogen.ElementModQ
-            8 -> proof = _fieldValue as electionguard.protogen.DisjunctiveChaumPedersenProof
-            9 -> extendedData = _fieldValue as electionguard.protogen.ElGamalCiphertext
+            7 -> proof = _fieldValue as electionguard.protogen.DisjunctiveChaumPedersenProof
+            8 -> extendedData = _fieldValue as electionguard.protogen.ElGamalCiphertext
         }
     }
-    return CiphertextBallotSelection(objectId, sequenceOrder, descriptionHash, ciphertext,
-        cryptoHash, isPlaceholderSelection, nonce, proof,
-        extendedData, unknownFields)
+    return CiphertextBallotSelection(selectionId, sequenceOrder, selectionHash, ciphertext,
+        cryptoHash, isPlaceholderSelection, proof, extendedData, unknownFields)
 }
 
 @pbandk.Export
@@ -775,13 +732,13 @@ private fun DisjunctiveChaumPedersenProof.protoMergeImpl(plus: pbandk.Message?):
     it.copy(
         proofZeroPad = proofZeroPad?.plus(plus.proofZeroPad) ?: plus.proofZeroPad,
         proofZeroData = proofZeroData?.plus(plus.proofZeroData) ?: plus.proofZeroData,
+        proofZeroChallenge = proofZeroChallenge?.plus(plus.proofZeroChallenge) ?: plus.proofZeroChallenge,
+        proofZeroResponse = proofZeroResponse?.plus(plus.proofZeroResponse) ?: plus.proofZeroResponse,
         proofOnePad = proofOnePad?.plus(plus.proofOnePad) ?: plus.proofOnePad,
         proofOneData = proofOneData?.plus(plus.proofOneData) ?: plus.proofOneData,
-        proofZeroChallenge = proofZeroChallenge?.plus(plus.proofZeroChallenge) ?: plus.proofZeroChallenge,
         proofOneChallenge = proofOneChallenge?.plus(plus.proofOneChallenge) ?: plus.proofOneChallenge,
-        challenge = challenge?.plus(plus.challenge) ?: plus.challenge,
-        proofZeroResponse = proofZeroResponse?.plus(plus.proofZeroResponse) ?: plus.proofZeroResponse,
         proofOneResponse = proofOneResponse?.plus(plus.proofOneResponse) ?: plus.proofOneResponse,
+        challenge = challenge?.plus(plus.challenge) ?: plus.challenge,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -790,28 +747,28 @@ private fun DisjunctiveChaumPedersenProof.protoMergeImpl(plus: pbandk.Message?):
 private fun DisjunctiveChaumPedersenProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DisjunctiveChaumPedersenProof {
     var proofZeroPad: electionguard.protogen.ElementModP? = null
     var proofZeroData: electionguard.protogen.ElementModP? = null
+    var proofZeroChallenge: electionguard.protogen.ElementModQ? = null
+    var proofZeroResponse: electionguard.protogen.ElementModQ? = null
     var proofOnePad: electionguard.protogen.ElementModP? = null
     var proofOneData: electionguard.protogen.ElementModP? = null
-    var proofZeroChallenge: electionguard.protogen.ElementModQ? = null
     var proofOneChallenge: electionguard.protogen.ElementModQ? = null
-    var challenge: electionguard.protogen.ElementModQ? = null
-    var proofZeroResponse: electionguard.protogen.ElementModQ? = null
     var proofOneResponse: electionguard.protogen.ElementModQ? = null
+    var challenge: electionguard.protogen.ElementModQ? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> proofZeroPad = _fieldValue as electionguard.protogen.ElementModP
             2 -> proofZeroData = _fieldValue as electionguard.protogen.ElementModP
-            3 -> proofOnePad = _fieldValue as electionguard.protogen.ElementModP
-            4 -> proofOneData = _fieldValue as electionguard.protogen.ElementModP
-            5 -> proofZeroChallenge = _fieldValue as electionguard.protogen.ElementModQ
-            6 -> proofOneChallenge = _fieldValue as electionguard.protogen.ElementModQ
-            7 -> challenge = _fieldValue as electionguard.protogen.ElementModQ
-            8 -> proofZeroResponse = _fieldValue as electionguard.protogen.ElementModQ
-            9 -> proofOneResponse = _fieldValue as electionguard.protogen.ElementModQ
+            3 -> proofZeroChallenge = _fieldValue as electionguard.protogen.ElementModQ
+            4 -> proofZeroResponse = _fieldValue as electionguard.protogen.ElementModQ
+            5 -> proofOnePad = _fieldValue as electionguard.protogen.ElementModP
+            6 -> proofOneData = _fieldValue as electionguard.protogen.ElementModP
+            7 -> proofOneChallenge = _fieldValue as electionguard.protogen.ElementModQ
+            8 -> proofOneResponse = _fieldValue as electionguard.protogen.ElementModQ
+            9 -> challenge = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
-    return DisjunctiveChaumPedersenProof(proofZeroPad, proofZeroData, proofOnePad, proofOneData,
-        proofZeroChallenge, proofOneChallenge, challenge, proofZeroResponse,
-        proofOneResponse, unknownFields)
+    return DisjunctiveChaumPedersenProof(proofZeroPad, proofZeroData, proofZeroChallenge, proofZeroResponse,
+        proofOnePad, proofOneData, proofOneChallenge, proofOneResponse,
+        challenge, unknownFields)
 }

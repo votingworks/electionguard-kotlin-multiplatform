@@ -4,8 +4,8 @@ package electionguard.protogen
 
 @pbandk.Export
 public data class PlaintextBallot(
-    val objectId: String = "",
-    val styleId: String = "",
+    val ballotId: String = "",
+    val ballotStyleId: String = "",
     val contests: List<electionguard.protogen.PlaintextBallotContest> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -22,21 +22,21 @@ public data class PlaintextBallot(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "object_id",
+                        name = "ballot_id",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "objectId",
-                        value = electionguard.protogen.PlaintextBallot::objectId
+                        jsonName = "ballotId",
+                        value = electionguard.protogen.PlaintextBallot::ballotId
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "style_id",
+                        name = "ballot_style_id",
                         number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "styleId",
-                        value = electionguard.protogen.PlaintextBallot::styleId
+                        jsonName = "ballotStyleId",
+                        value = electionguard.protogen.PlaintextBallot::ballotStyleId
                     )
                 )
                 add(
@@ -64,7 +64,7 @@ public data class PlaintextBallot(
 public data class PlaintextBallotContest(
     val contestId: String = "",
     val sequenceOrder: Int = 0,
-    val ballotSelections: List<electionguard.protogen.PlaintextBallotSelection> = emptyList(),
+    val selections: List<electionguard.protogen.PlaintextBallotSelection> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextBallotContest = protoMergeImpl(other)
@@ -92,7 +92,7 @@ public data class PlaintextBallotContest(
                         messageDescriptor = this@Companion::descriptor,
                         name = "sequence_order",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(),
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "sequenceOrder",
                         value = electionguard.protogen.PlaintextBallotContest::sequenceOrder
                     )
@@ -100,11 +100,11 @@ public data class PlaintextBallotContest(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "ballot_selections",
+                        name = "selections",
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.PlaintextBallotSelection>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextBallotSelection.Companion)),
-                        jsonName = "ballotSelections",
-                        value = electionguard.protogen.PlaintextBallotContest::ballotSelections
+                        jsonName = "selections",
+                        value = electionguard.protogen.PlaintextBallotContest::selections
                     )
                 )
             }
@@ -152,7 +152,7 @@ public data class PlaintextBallotSelection(
                         messageDescriptor = this@Companion::descriptor,
                         name = "sequence_order",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(),
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "sequenceOrder",
                         value = electionguard.protogen.PlaintextBallotSelection::sequenceOrder
                     )
@@ -258,18 +258,18 @@ private fun PlaintextBallot.protoMergeImpl(plus: pbandk.Message?): PlaintextBall
 
 @Suppress("UNCHECKED_CAST")
 private fun PlaintextBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): PlaintextBallot {
-    var objectId = ""
-    var styleId = ""
+    var ballotId = ""
+    var ballotStyleId = ""
     var contests: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextBallotContest>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> objectId = _fieldValue as String
-            2 -> styleId = _fieldValue as String
+            1 -> ballotId = _fieldValue as String
+            2 -> ballotStyleId = _fieldValue as String
             3 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextBallotContest> }
         }
     }
-    return PlaintextBallot(objectId, styleId, pbandk.ListWithSize.Builder.fixed(contests), unknownFields)
+    return PlaintextBallot(ballotId, ballotStyleId, pbandk.ListWithSize.Builder.fixed(contests), unknownFields)
 }
 
 @pbandk.Export
@@ -278,7 +278,7 @@ public fun PlaintextBallotContest?.orDefault(): electionguard.protogen.Plaintext
 
 private fun PlaintextBallotContest.protoMergeImpl(plus: pbandk.Message?): PlaintextBallotContest = (plus as? PlaintextBallotContest)?.let {
     it.copy(
-        ballotSelections = ballotSelections + plus.ballotSelections,
+        selections = selections + plus.selections,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -287,16 +287,16 @@ private fun PlaintextBallotContest.protoMergeImpl(plus: pbandk.Message?): Plaint
 private fun PlaintextBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDecoder): PlaintextBallotContest {
     var contestId = ""
     var sequenceOrder = 0
-    var ballotSelections: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextBallotSelection>? = null
+    var selections: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextBallotSelection>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            3 -> ballotSelections = (ballotSelections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextBallotSelection> }
+            3 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextBallotSelection> }
         }
     }
-    return PlaintextBallotContest(contestId, sequenceOrder, pbandk.ListWithSize.Builder.fixed(ballotSelections), unknownFields)
+    return PlaintextBallotContest(contestId, sequenceOrder, pbandk.ListWithSize.Builder.fixed(selections), unknownFields)
 }
 
 @pbandk.Export

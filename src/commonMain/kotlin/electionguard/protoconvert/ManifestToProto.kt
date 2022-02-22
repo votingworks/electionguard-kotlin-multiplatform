@@ -28,7 +28,7 @@ data class ManifestToProto(val groupContext: GroupContext) {
 
     private fun convertBallotStyle(style: Manifest.BallotStyle): electionguard.protogen.BallotStyle {
         return electionguard.protogen.BallotStyle(
-            style.styleId,
+            style.ballotStyleId,
             style.geopoliticalUnitIds,
             style.partyIds,
             style.imageUri?: ""
@@ -60,13 +60,13 @@ data class ManifestToProto(val groupContext: GroupContext) {
     private fun convertContestDescription(contest: Manifest.ContestDescription): electionguard.protogen.ContestDescription {
         return electionguard.protogen.ContestDescription(
             contest.contestId,
-            contest.electoralDistrictId,
             contest.sequenceOrder,
+            contest.geopoliticalUnitId,
             convertVoteVariationType(contest.voteVariation),
             contest.numberElected,
             contest.votesAllowed,
             contest.name,
-            contest.ballotSelections.map { convertSelectionDescription(it) },
+            contest.selections.map { convertSelectionDescription(it) },
             convertInternationalizedText(contest.ballotTitle),
             convertInternationalizedText(contest.ballotSubtitle),
             contest.primaryPartyIds
@@ -87,7 +87,7 @@ data class ManifestToProto(val groupContext: GroupContext) {
 
     private fun convertGeopoliticalUnit(geounit : Manifest.GeopoliticalUnit): electionguard.protogen.GeopoliticalUnit {
         return electionguard.protogen.GeopoliticalUnit(
-            geounit.unitId,
+            geounit.geopoliticalUnitId,
             geounit.name,
             convertReportingUnitType(geounit.type),
             if (geounit.contactInformation == null) { null } else {convertContactInformation(geounit.contactInformation)}
@@ -99,8 +99,8 @@ data class ManifestToProto(val groupContext: GroupContext) {
             return null
         }
         return electionguard.protogen.InternationalizedText(
-            itext.text.map( { convertLanguage(it) }
-            ))
+            itext.text.map( { convertLanguage(it) })
+        )
     }
 
     private fun convertLanguage(language: Manifest.Language): electionguard.protogen.Language {
@@ -122,8 +122,8 @@ data class ManifestToProto(val groupContext: GroupContext) {
     private fun convertSelectionDescription(selection: Manifest.SelectionDescription): electionguard.protogen.SelectionDescription {
         return electionguard.protogen.SelectionDescription(
             selection.selectionId,
+            selection.sequenceOrder,
             selection.candidateId,
-            selection.sequenceOrder
         )
     }
 }

@@ -324,85 +324,12 @@ data class Manifest(
         }
     }
 
-    /// Note: data class cannot be inner class
-
-    /**
-     * The ISO-639 language code.
-     * @see [ISO 639](https://en.wikipedia.org/wiki/ISO_639)
-     */
-    data class Language(val value: String, val language: String, val cryptoHash: ElementModQ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
-    }
-
-    /**
-     * Text that may have translations in multiple languages.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
-     */
-    data class InternationalizedText(val text: List<Language>, val cryptoHash: ElementModQ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
-    }
-
-    /**
-     * Contact information about persons, boards of authorities, organizations, etc.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
-     */
-    data class ContactInformation(
-        val addressLine: List<String>,
-        val email: List<AnnotatedString>,
-        val phone: List<AnnotatedString>,
-        val name: String?,
-        val cryptoHash: ElementModQ
-    ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
-    }
-
-    /**
-     * A physical or virtual unit of representation or vote/seat aggregation.
-     * Use this entity to define geopolitical units such as cities, districts, jurisdictions, or precincts
-     * to associate contests, offices, vote counts, or other information with those geographies.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
-     */
-    data class GeopoliticalUnit(
-        val unitId: String,
-        val name: String,
-        val type: ReportingUnitType,
-        val contactInformation: ContactInformation?,
-        val cryptoHash: ElementModQ
-    ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
-    }
-
     /** Classifies a set of contests by their set of parties and geopolitical units  */
     data class BallotStyle(
-        val styleId: String,
+        val ballotStyleId: String,
         val geopoliticalUnitIds: List<String>,
         val partyIds: List<String>,
         val imageUri: String?,
-        val cryptoHash: ElementModQ
-    ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
-    }
-
-    /**
-     * A political party.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
-     */
-    data class Party(
-        val partyId: String,
-        val name: InternationalizedText?,
-        val abbreviation: String?,
-        val color: String?,
-        val logoUri: String?,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
         override fun cryptoHashElement(): ElementModQ {
@@ -431,18 +358,89 @@ data class Manifest(
     }
 
     /**
+     * Contact information about persons, boards of authorities, organizations, etc.
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
+     */
+    data class ContactInformation(
+        val addressLine: List<String>,
+        val email: List<AnnotatedString>,
+        val phone: List<AnnotatedString>,
+        val name: String?,
+        val cryptoHash: ElementModQ
+    ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return cryptoHash
+        }
+    }
+
+    /**
+     * A physical or virtual unit of representation or vote/seat aggregation.
+     * Use this entity to define geopolitical units such as cities, districts, jurisdictions, or precincts
+     * to associate contests, offices, vote counts, or other information with those geographies.
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
+     */
+    data class GeopoliticalUnit(
+        val geopoliticalUnitId: String,
+        val name: String,
+        val type: ReportingUnitType,
+        val contactInformation: ContactInformation?,
+        val cryptoHash: ElementModQ
+    ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return cryptoHash
+        }
+    }
+
+    /**
+     * Text that may have translations in multiple languages.
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
+     */
+    data class InternationalizedText(val text: List<Language>, val cryptoHash: ElementModQ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return cryptoHash
+        }
+    }
+
+    /**
+     * The ISO-639 language code.
+     * @see [ISO 639](https://en.wikipedia.org/wiki/ISO_639)
+     */
+    data class Language(val value: String, val language: String, val cryptoHash: ElementModQ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return cryptoHash
+        }
+    }
+
+    /**
+     * A political party.
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
+     */
+    data class Party(
+        val partyId: String,
+        val name: InternationalizedText?,
+        val abbreviation: String?,
+        val color: String?,
+        val logoUri: String?,
+        val cryptoHash: ElementModQ
+    ) : CryptoHashableElement {
+        override fun cryptoHashElement(): ElementModQ {
+            return cryptoHash
+        }
+    }
+
+    /**
      * The metadata that describes the structure and type of one contest in the election.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
      */
     data class ContestDescription(
         val contestId: String,
-        val electoralDistrictId: String,
         val sequenceOrder: Int,
+        val geopoliticalUnitId: String,
         val voteVariation: VoteVariationType,
         val numberElected: Int,
         val votesAllowed: Int,
         val name: String,
-        val ballotSelections: List<SelectionDescription>,
+        val selections: List<SelectionDescription>,
         val ballotTitle: InternationalizedText?,
         val ballotSubtitle: InternationalizedText?,
         val primaryPartyIds: List<String>,
@@ -461,8 +459,8 @@ data class Manifest(
      */
     data class SelectionDescription(
         val selectionId: String,
-        val candidateId: String,
         val sequenceOrder: Int,
+        val candidateId: String,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
         override fun cryptoHashElement(): ElementModQ {
@@ -529,8 +527,8 @@ data class Manifest(
 
             return Manifest.ContestDescription(
                 contest_id,
-                electoral_district_id,
                 sequence_order,
+                electoral_district_id,
                 vote_variation,
                 number_elected,
                 votes_allowed,
@@ -617,7 +615,7 @@ data class Manifest(
             sequence_order: Int
         ): Manifest.SelectionDescription {
             return Manifest.SelectionDescription(
-                selection_id, candidate_id, sequence_order,
+                selection_id, sequence_order, candidate_id,
                 groupContext.hashElements(selection_id, candidate_id, sequence_order)
             )
         }

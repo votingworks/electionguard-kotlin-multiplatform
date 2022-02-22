@@ -6,15 +6,14 @@ import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModQ
 
 data class SubmittedBallot(
-    val objectId: String,
+    val ballotId: String,
     val ballotStyleId: String,
     val manifestHash: ElementModQ,
-    val trackingHash: ElementModQ,
     val previousTrackingHash: ElementModQ,
+    val trackingHash: ElementModQ,
     val contests: List<Contest>,
     val timestamp: Long,
     val cryptoHash: ElementModQ,
-    val nonce: ElementModQ?,
     val state: BallotState,
 ) {
 
@@ -31,21 +30,19 @@ data class SubmittedBallot(
         val contestId: String,
         val sequenceOrder: Int,
         val contestHash: ElementModQ,
-        val ballotSelections: List<Selection>,
+        val selections: List<Selection>,
+        val ciphertextAccumulation: ElGamalCiphertext,
         val cryptoHash: ElementModQ,
-        val encryptedTotal: ElGamalCiphertext,
-        val nonce: ElementModQ?,
         val proof: ConstantChaumPedersenProofKnownNonce?,
     )
 
     data class Selection(
         val selectionId: String,
         val sequenceOrder: Int,
-        val descriptionHash: ElementModQ,
+        val selectionHash: ElementModQ,
         val ciphertext: ElGamalCiphertext,
         val cryptoHash: ElementModQ,
         val isPlaceholderSelection: Boolean,
-        val nonce: ElementModQ?,
         val proof: DisjunctiveChaumPedersenProofKnownNonce?,
         val extendedData: ElGamalCiphertext?,
     )

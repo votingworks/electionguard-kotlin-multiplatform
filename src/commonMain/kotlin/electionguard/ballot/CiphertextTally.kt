@@ -5,19 +5,19 @@ import electionguard.core.ElementModQ
 
 /** The encrypted representation of the summed votes for a collection of ballots  */
 data class CiphertextTally(
-    val objectId: String,
-    val contests: Map<String, Contest>
+    val tallyId: String,
+    val contests: Map<String, Contest> // map<contestId, contest>
 ) {
 
     /**
      * The encrypted selections for a specific contest.
-     * The object_id is the Manifest.ContestDescription.object_id.
+     * The contestId is the Manifest.ContestDescription.contestId.
      */
     data class Contest(
-        val objectId: String,
+        val contestId: String,
         val sequenceOrder: Int,
         val contestDescriptionHash: ElementModQ,
-        val selections: Map<String, Selection>
+        val selections: Map<String, Selection> // map<selectionId, selection>
     )
 
     /**
@@ -25,9 +25,9 @@ data class CiphertextTally(
      * The object_id is the Manifest.SelectionDescription.object_id.
      */
     data class Selection(
-        val objectId: String,
+        val selectionId: String,
         val sequenceOrder: Int,
-        val descriptionHash: ElementModQ,
+        val selectionDescriptionHash: ElementModQ,
         val ciphertext: ElGamalCiphertext,
     )
 }

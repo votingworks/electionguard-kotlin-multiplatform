@@ -10,7 +10,7 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
 
     fun translateFromProto(proto: electionguard.protogen.SubmittedBallot): SubmittedBallot {
         return SubmittedBallot(
-            proto.objectId,
+            proto.ballotId,
             proto.ballotStyleId,
             convertElementModQ(proto.manifestHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             convertElementModQ(proto.trackingHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
@@ -18,37 +18,34 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
             proto.contests.map{ convertContest(it) },
             proto.timestamp,
             convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertElementModQ(proto.nonce?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             convertBallotState(proto.state),
         )
     }
 
-    private fun convertBallotState(proto: electionguard.protogen.SubmittedBallot.BallotBoxState): SubmittedBallot.BallotState {
-        return SubmittedBallot.BallotState.valueOf(proto.name?: throw IllegalArgumentException("BallotBoxState cannot be null"))
+    private fun convertBallotState(proto: electionguard.protogen.SubmittedBallot.BallotState): SubmittedBallot.BallotState {
+        return SubmittedBallot.BallotState.valueOf(proto.name?: throw IllegalArgumentException("BallotState cannot be null"))
     }
 
     private fun convertContest(proto: electionguard.protogen.CiphertextBallotContest): SubmittedBallot.Contest {
         return SubmittedBallot.Contest(
-            proto.objectId,
+            proto.contestId,
             proto.sequenceOrder,
-            convertElementModQ(proto.descriptionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proto.contestHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             proto.selections.map{ convertSelection(it) },
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             convertCiphertext(proto.ciphertextAccumulation?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertElementModQ(proto.nonce?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             convertConstantChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Selection value cannot be null")),
         )
     }
 
     private fun convertSelection(proto: electionguard.protogen.CiphertextBallotSelection): SubmittedBallot.Selection {
         return SubmittedBallot.Selection(
-            proto.objectId,
+            proto.selectionId,
             proto.sequenceOrder,
-            convertElementModQ(proto.descriptionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proto.selectionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             convertCiphertext(proto.ciphertext?: throw IllegalArgumentException("Selection message cannot be null"), groupContext),
             convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             proto.isPlaceholderSelection,
-            convertElementModQ(proto.nonce?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             convertDisjunctiveChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Selection value cannot be null")),
             convertCiphertext(proto.extendedData?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
         )
@@ -88,7 +85,7 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
 
     fun translateToProto(ballot: SubmittedBallot): electionguard.protogen.SubmittedBallot {
         return electionguard.protogen.SubmittedBallot(
-            ballot.objectId,
+            ballot.ballotId,
             ballot.ballotStyleId,
             convertElementModQ(ballot.manifestHash),
             convertElementModQ(ballot.trackingHash),
@@ -96,13 +93,12 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
             ballot.contests.map{ convertContest(it) },
             ballot.timestamp,
             convertElementModQ(ballot.cryptoHash),
-            if (ballot.nonce == null) { null } else { convertElementModQ(ballot.nonce) },
             convertBallotState(ballot.state)
         )
     }
 
-    private fun convertBallotState(type: SubmittedBallot.BallotState ): electionguard.protogen.SubmittedBallot.BallotBoxState{
-        return electionguard.protogen.SubmittedBallot.BallotBoxState.fromName(type.name)
+    private fun convertBallotState(type: SubmittedBallot.BallotState ): electionguard.protogen.SubmittedBallot.BallotState{
+        return electionguard.protogen.SubmittedBallot.BallotState.fromName(type.name)
     }
 
     private fun convertContest(contest: SubmittedBallot.Contest): electionguard.protogen.CiphertextBallotContest {
@@ -110,10 +106,9 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
                 contest.contestId,
                 contest.sequenceOrder,
             convertElementModQ(contest.contestHash),
-            contest.ballotSelections.map{ convertSelection(it) },
+            contest.selections.map{ convertSelection(it) },
+            convertCiphertext(contest.ciphertextAccumulation),
             convertElementModQ(contest.cryptoHash),
-            convertCiphertext(contest.encryptedTotal),
-            if (contest.nonce == null) { null } else { convertElementModQ(contest.nonce) },
             if (contest.proof == null) { null } else { convertConstantChaumPedersenProof(contest.proof) },
         )
     }
@@ -122,11 +117,10 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
         return electionguard.protogen.CiphertextBallotSelection(
                 selection.selectionId,
                 selection.sequenceOrder,
-                convertElementModQ(selection.descriptionHash),
+                convertElementModQ(selection.selectionHash),
                 convertCiphertext(selection.ciphertext),
             convertElementModQ(selection.cryptoHash),
             selection.isPlaceholderSelection,
-            if (selection.nonce == null) { null } else { convertElementModQ(selection.nonce) },
             if (selection.proof == null) { null } else { convertDisjunctiveChaumPedersenProof(selection.proof) },
             if (selection.extendedData == null) { null } else { convertCiphertext(selection.extendedData) },
             )
@@ -146,13 +140,13 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
         return electionguard.protogen.DisjunctiveChaumPedersenProof(
             convertElementModP(proof.proof0.a),
             convertElementModP(proof.proof0.b),
-            convertElementModP(proof.proof1.a),
-            convertElementModP(proof.proof1.b),
             convertElementModQ(proof.proof0.c),
             convertElementModQ(proof.proof0.r),
-            convertElementModQ(proof.c),
+            convertElementModP(proof.proof1.a),
+            convertElementModP(proof.proof1.b),
             convertElementModQ(proof.proof1.c),
             convertElementModQ(proof.proof1.r),
+            convertElementModQ(proof.c),
         )
     }
 }

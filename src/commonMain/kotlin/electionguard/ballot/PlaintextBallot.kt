@@ -7,7 +7,7 @@ package electionguard.ballot
  */
 data class PlaintextBallot(
     val ballotId: String,
-    val ballotStyleId: String, // matches BallotStyle.object_id
+    val ballotStyleId: String, // matches BallotStyle.ballotStyleId
     val contests: List<Contest>
 ) {
 
@@ -26,9 +26,9 @@ data class PlaintextBallot(
      * while complete contests are passed into ElectionGuard when running encryption on an existing dataset.
      */
     data class Contest(
-        val contestId: String, // matches ContestDescription.object_id
+        val contestId: String, // matches ContestDescription.contestId
         val sequenceOrder: Int,
-        val ballotSelections: List<Selection>,
+        val selections: List<Selection>,
     );
 
     /**
@@ -44,7 +44,7 @@ data class PlaintextBallot(
      * LOOK In the current implementation these write-in are discarded when encrypting.
      */
     data class Selection(
-        val selectionId: String, // matches SelectionDescription.object_id
+        val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int,
         val vote: Int,
         val isPlaceholderSelection: Boolean,
