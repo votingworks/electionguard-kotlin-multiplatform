@@ -44,6 +44,7 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
             parts = proto.recoveredParts.associate { it.key to convertRecoveredParts(it) }
         }
         return DecryptionShare.CiphertextDecryptionSelection(
+            proto.selectionId,
             proto.guardianId,
             convertElementModP(proto.share?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             proof,
@@ -54,6 +55,7 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
     private fun convertRecoveredParts(proto: electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry): DecryptionShare.CiphertextCompensatedDecryptionSelection {
         val part : electionguard.protogen.CiphertextCompensatedDecryptionSelection = proto.value?: throw IllegalArgumentException("DecryptionShare cannot be null")
         return DecryptionShare.CiphertextCompensatedDecryptionSelection(
+            part.selectionId,
             part.guardianId,
             part.missingGuardianId,
             convertElementModP(part.share?: throw IllegalArgumentException("DecryptionShare part cannot be null"), groupContext),
@@ -99,6 +101,7 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
             pparts = share.recoveredParts.map{ convertRecoveredParts(it.value)}
         }
         return electionguard.protogen.CiphertextDecryptionSelection(
+            share.selectionId,
             share.guardianId,
             convertElementModP(share.share),
             pproof,
@@ -110,6 +113,7 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
         return electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry(
             part.missingGuardianId,
             electionguard.protogen.CiphertextCompensatedDecryptionSelection(
+                part.selectionId,
                 part.guardianId,
                 part.missingGuardianId,
                 convertElementModP(part.share),

@@ -17,7 +17,6 @@ plugins {
     id("tech.formatter-kt.formatter") version "0.7.9"
 
     java
-    id("com.google.protobuf") version "0.8.18"
 }
 
 group = "electionguard-kotlin-multiplatform"
@@ -203,8 +202,6 @@ kotlin {
         val nativeTest by getting { dependencies {} }
     }
 }
-
-val protoGenSource by extra("/home/snake/dev/github/electionguard-kotlin-multiplatform/build/generated/source/proto")
 
 val compileProtobuf = tasks.register("compileProtobuf") {
     print("* Compiling protobuf *\n")

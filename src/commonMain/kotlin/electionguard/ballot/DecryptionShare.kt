@@ -22,6 +22,7 @@ class DecryptionShare {
      * @param recoveredParts For missing guardians, keyed by available guardian_id.
      */
     data class CiphertextDecryptionSelection(
+        val selectionId : String,
         val guardianId : String,
         val share: ElementModP,
         val proof : GenericChaumPedersenProof?,
@@ -37,6 +38,7 @@ class DecryptionShare {
      * @param proof               The proof that the share was decrypted correctly.
      */
     data class CiphertextCompensatedDecryptionSelection(
+        val selectionId : String,
         val guardianId : String,
         val missingGuardianId : String,
         val share : ElementModP,

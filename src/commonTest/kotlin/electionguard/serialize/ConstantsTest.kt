@@ -1,4 +1,4 @@
-package electionguard.publish
+package electionguard.serialize
 
 import electionguard.core.*
 import io.kotest.assertions.throwables.shouldNotThrowAny

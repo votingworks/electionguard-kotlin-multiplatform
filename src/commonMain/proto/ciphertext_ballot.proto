@@ -54,7 +54,7 @@ message ConstantChaumPedersenProof {
   ElementModP data = 2;
   ElementModQ challenge = 3;
   ElementModQ response = 4;
-  int32 constant = 5;
+  uint32 constant = 5;
 }
 
 message DisjunctiveChaumPedersenProof {

@@ -8,13 +8,13 @@ data class ElectionRecord(
     val constants: ElectionConstants,
     val manifest: Manifest,
     val context: ElectionContext,
-    val guardianRecords: List<GuardianRecord>?,
+    val guardianRecords: List<GuardianRecord>,
     val devices: List<EncryptionDevice>,
     val encryptedTally: CiphertextTally?,
     val decryptedTally: PlaintextTally?,
     val acceptedBallots: Iterable<SubmittedBallot>?,
-    val spoiledBallots: Iterable<PlaintextTally?>?,
-    val availableGuardians: List<AvailableGuardian?>?
+    val spoiledBallots: Iterable<PlaintextTally>?,
+    val availableGuardians: List<AvailableGuardian>?
 )
 
 /**

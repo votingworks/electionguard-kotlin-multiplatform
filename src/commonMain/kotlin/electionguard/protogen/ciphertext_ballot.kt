@@ -422,7 +422,7 @@ public data class ConstantChaumPedersenProof(
                         messageDescriptor = this@Companion::descriptor,
                         name = "constant",
                         number = 5,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(),
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "constant",
                         value = electionguard.protogen.ConstantChaumPedersenProof::constant
                     )

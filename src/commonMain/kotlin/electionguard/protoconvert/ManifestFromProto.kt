@@ -2,6 +2,7 @@ package electionguard.protoconvert
 
 import electionguard.ballot.Manifest
 import electionguard.core.GroupContext
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.UtcOffset
 
 data class ManifestFromProto(val groupContext: GroupContext) {
@@ -12,14 +13,18 @@ data class ManifestFromProto(val groupContext: GroupContext) {
             proto.electionScopeId,
             proto.specVersion,
             convert(proto.electionType),
-            UtcOffset.parse(proto.startDate),
-            UtcOffset.parse(proto.endDate),
-            proto.geopoliticalUnits.map {convertGeopoliticalUnit(it)},
-            proto.parties.map{convertParty(it)},
-            proto.candidates.map{convertCandidate(it)},
-            proto.contests.map{convertContestDescription(it)},
-            proto.ballotStyles.map{convertBallotStyle(it)},
-            if (proto.name == null) { null } else { convertInternationalizedText(proto.name) },
+            LocalDateTime.parse(proto.startDate),
+            LocalDateTime.parse(proto.endDate),
+            proto.geopoliticalUnits.map { convertGeopoliticalUnit(it) },
+            proto.parties.map { convertParty(it) },
+            proto.candidates.map { convertCandidate(it) },
+            proto.contests.map { convertContestDescription(it) },
+            proto.ballotStyles.map { convertBallotStyle(it) },
+            if (proto.name == null) {
+                null
+            } else {
+                convertInternationalizedText(proto.name)
+            },
             convertContactInformation(proto.contactInformation),
         )
     }
@@ -66,8 +71,8 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         return Manifest.makeContestDescription(
             groupContext,
             proto.contestId,
-            proto.geopoliticalUnitId,
             proto.sequenceOrder,
+            proto.geopoliticalUnitId,
             convertVoteVariationType(proto.voteVariation),
             proto.numberElected,
             proto.votesAllowed,
@@ -80,24 +85,28 @@ data class ManifestFromProto(val groupContext: GroupContext) {
     }
 
     private fun convertVoteVariationType(type: electionguard.protogen.ContestDescription.VoteVariationType): Manifest.VoteVariationType {
-        return Manifest.VoteVariationType.valueOf(type.name?: throw IllegalStateException(type.toString()))
+        return Manifest.VoteVariationType.valueOf(type.name ?: throw IllegalStateException(type.toString()))
     }
 
     private fun convert(type: electionguard.protogen.Manifest.ElectionType): Manifest.ElectionType {
-        return Manifest.ElectionType.valueOf(type.name?: throw IllegalStateException(type.toString()))
+        return Manifest.ElectionType.valueOf(type.name ?: throw IllegalStateException(type.toString()))
     }
 
     private fun convertReportingUnitType(type: electionguard.protogen.GeopoliticalUnit.ReportingUnitType): Manifest.ReportingUnitType {
-        return Manifest.ReportingUnitType.valueOf(type.name?: throw IllegalStateException(type.toString()))
+        return Manifest.ReportingUnitType.valueOf(type.name ?: throw IllegalStateException(type.toString()))
     }
 
-    private fun convertGeopoliticalUnit(proto : electionguard.protogen.GeopoliticalUnit): Manifest.GeopoliticalUnit {
+    private fun convertGeopoliticalUnit(proto: electionguard.protogen.GeopoliticalUnit): Manifest.GeopoliticalUnit {
         return Manifest.makeGeopoliticalUnit(
             groupContext,
             proto.geopoliticalUnitId,
             proto.name,
             convertReportingUnitType(proto.type),
-            if (proto.contactInformation == null) { null } else {convertContactInformation(proto.contactInformation)}
+            if (proto.contactInformation == null) {
+                null
+            } else {
+                convertContactInformation(proto.contactInformation)
+            }
         )
     }
 
@@ -107,7 +116,7 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         }
         return Manifest.makeInternationalizedText(
             groupContext,
-            proto.text.map( { convertLanguage(it) }
+            proto.text.map({ convertLanguage(it) }
             ))
     }
 
@@ -115,7 +124,8 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         return Manifest.makeLanguage(
             groupContext,
             proto.value,
-            proto.language)
+            proto.language
+        )
     }
 
     private fun convertParty(proto: electionguard.protogen.Party): Manifest.Party {
@@ -133,8 +143,8 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         return Manifest.makeSelectionDescription(
             groupContext,
             proto.selectionId,
+            proto.sequenceOrder,
             proto.candidateId,
-            proto.sequenceOrder
         )
     }
 }

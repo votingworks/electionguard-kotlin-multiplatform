@@ -1,51 +1,50 @@
 # 🗳 Election Record serialization (proposed specification)
-draft 2/22/2022
+draft 2/23/2022
 
 This covers only the election record, and not any serialized classes used in remote procedure calls.
 
 Notes
 
-  1. Any field may be missing or null. Could try to document when fields must be present.
-  2. Could document the filenames and directory layout.
+  1. Document when fields must be present.
 
 ## Common
 
 ### class ChaumPedersenProof
-| Name		    | JSON Name	 | Type               | Notes   |
-|-----------|------------|--------------------|---------|
-|           | name       | string  		         | removed |
-|           | usage      | enum ProofUsage  	 | removed |
-| pad       |            | ElementModP        |         |
-| data      |            | ElementModP        |         |
-| challenge |            | ElementModQ        |         |
-| response  |            | ElementModQ        |         |
+| Name      | JSON Name  | Type             | Notes   |
+|-----------|------------|------------------|---------|
+|           | name       | string           | removed |
+|           | usage      | enum ProofUsage  | removed |
+| pad       |            | ElementModP      |         |
+| data      |            | ElementModP      |         |
+| challenge |            | ElementModQ      |         |
+| response  |            | ElementModQ      |         |
 
 ### class ElementModQ, ElementModP
-| Name		 | JSON Name		 | Type   | Notes |
-|--------|-------------|--------|-------|
-| value  | data        | bytes	 |       |
+| Name  | JSON Name | Type   | Notes                             |
+|-------|-----------|--------|-----------------------------------|
+| value | data      | bytes  | bigint is unsigned and big-endian |
 
 ### class ElGamalCiphertext|
-| Name		 | JSON Name		 | Type        | Notes |
-|--------|-------------|-------------|-------|
-| pad    |             | ElementModP ||
-| data   |             | ElementModP ||
+| Name  | JSON Name  | Type        | Notes |
+|-------|------------|-------------|-------|
+| pad   |            | ElementModP |       |
+| data  |            | ElementModP |       |
 
 ### class ElGamalKeyPair LOOK
 | Name		     | JSON Name		 | Type        | Notes |
 |------------|-------------|-------------|-------|
-| secret_key |             | ElementModQ ||
-| public_key |             | ElementModP ||
+| secret_key |             | ElementModQ |       |
+| public_key |             | ElementModP |       |
 
 ### class SchnorrProof
-| Name		     | JSON Name		 | Type              | Notes   |
-|------------|-------------|-------------------|---------|
-|            | name        | string				        | removed |
-|            | usage       | enum ProofUsage		 | removed |
-| public_key |             | ElementModP       ||
-| commitment |             | ElementModP       ||
-| challenge  |             | ElementModQ       ||
-| response   |             | ElementModQ       ||
+| Name       | JSON Name		 | Type             | Notes   |
+|------------|-------------|------------------|---------|
+|            | name        | string           | removed |
+|            | usage       | enum ProofUsage  | removed |
+| public_key |             | ElementModP      |         |
+| commitment |             | ElementModP      |         |
+| challenge  |             | ElementModQ      |         |
+| response   |             | ElementModQ      |         |
 
 
 ## Election
@@ -112,7 +111,7 @@ Notes
 ## Manifest
 
 Could simplify to be just the fields needed by electionguard library.
-Assume that there is an existing system that captures all the metadata that election software need, and that is a
+Assume that there is an existing system that captures all the metadata that election software need, which is a
 superset of this.
 
 Notes
@@ -152,13 +151,13 @@ Notes
 | image_uri             |            | string         |                                               |
 
 ### class Candidate
-| Name		       | JSON Name		 | Type	                 | Notes                                      |
-|--------------|-------------|-----------------------|--------------------------------------------|
-| candidate_id | object_id   | string                |                                            |
-| name         |             | InternationalizedText |                                            |
-| party_id     |             | string                | matches Party.party_id                     |
-| image_uri    |             | string                |                                            |
-| is_write_in  |             | bool                  | assumes all write-ins are known in advance |
+| Name		       | JSON Name		 | Type	                 | Notes                  |
+|--------------|-------------|-----------------------|------------------------|
+| candidate_id | object_id   | string                |                        |
+| name         |             | InternationalizedText |                        |
+| party_id     |             | string                | matches Party.party_id |
+| image_uri    |             | string                |                        |
+| is_write_in  |             | bool                  |                        |
 
 ### class ContactInformation
 | Name		       | JSON Name		 | Type	          | Notes |
@@ -236,30 +235,30 @@ Notes
 ### class PlaintextTallySelection
 | Name		       | JSON Name		 | Type	                                 | Notes                                      |
 |--------------|-------------|---------------------------------------|--------------------------------------------|
-| selection_id | object_id   | string                                | matches SelectionDescription.selection_id. |
+| selection_id | object_id   | string                                | matches SelectionDescription.selection_id  |
 | tally        |             | int                                   |                                            |
 | value        |             | ElementModP                           |                                            |
 | message      |             | ElGamalCiphertext                     |                                            |
 | shares       |             | List\<CiphertextDecryptionSelection\> | removed unneeded map                       |
 
 ### class CiphertextDecryptionSelection
-| Name		          | JSON Name | Type      		                                            | Notes   |
-|-----------------|-----------|---------------------------------------------------------|---------|
-|                 | object_id | string                                                  | removed |
-| guardian_id     |           | string                                                  |         |
-| share           |           | ElementModP                                             |         |
-| proof           |           | ChaumPedersenProof                                      |         |
-| recovered_parts |           | map\<string, CiphertextCompensatedDecryptionSelection\> |         |
+| Name	           | JSON Name | Type                                                    | Notes                           |
+|-----------------|-----------|---------------------------------------------------------|---------------------------------|
+| selection_id    | object_id | string                                                  | get_tally_shares_for_selection2 |
+| guardian_id     |           | string                                                  |                                 |
+| share           |           | ElementModP                                             |                                 |
+| proof           |           | ChaumPedersenProof                                      |                                 |
+| recovered_parts |           | map\<string, CiphertextCompensatedDecryptionSelection\> |                                 |
 
 ### class CiphertextCompensatedDecryptionSelection(ElectionObjectBase)
-| Name		              | JSON Name | Type      	        | Notes   |
-|---------------------|-----------|--------------------|---------|
-|                     | object_id | string             | removed |
-| guardian_id         |           | string             |         |
-| missing_guardian_id |           | string             |         |
-| share               |           | ElementModP        |         |
-| recovery_key        |           | ElementModP        |         |
-| proof               |           | ChaumPedersenProof |         |
+| Name		              | JSON Name | Type      	        | Notes    |
+|---------------------|-----------|--------------------|----------|
+| selection_id        | object_id | string             | unneeded |
+| guardian_id         |           | string             |          |
+| missing_guardian_id |           | string             |          |
+| share               |           | ElementModP        |          |
+| recovery_key        |           | ElementModP        |          |
+| proof               |           | ChaumPedersenProof |          |
  
 ## CiphertextTally
 
@@ -368,7 +367,7 @@ Notes
 | data      |           | ElementModP     |         |
 | challenge |           | ElementModQ     |         |
 | response  |           | ElementModQ     |         |
-| constant  |           | int32           |         |
+| constant  |           | uint32          |         |
 
 ### class DisjunctiveChaumPedersenProof
 | Name                 | JSON Name | Type            | Notes   |

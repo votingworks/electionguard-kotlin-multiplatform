@@ -12,12 +12,12 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
         return SubmittedBallot(
             proto.ballotId,
             proto.ballotStyleId,
-            convertElementModQ(proto.manifestHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertElementModQ(proto.trackingHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertElementModQ(proto.previousTrackingHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proto.manifestHash?: throw IllegalArgumentException("SubmittedBallot manifestHash cannot be null"), groupContext),
+            convertElementModQ(proto.trackingHash?: throw IllegalArgumentException("SubmittedBallot trackingHash cannot be null"), groupContext),
+            convertElementModQ(proto.previousTrackingHash?: throw IllegalArgumentException("SubmittedBallot previousTrackingHash cannot be null"), groupContext),
             proto.contests.map{ convertContest(it) },
             proto.timestamp,
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("SubmittedBallot cryptoHash cannot be null"), groupContext),
             convertBallotState(proto.state),
         )
     }
@@ -30,11 +30,11 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
         return SubmittedBallot.Contest(
             proto.contestId,
             proto.sequenceOrder,
-            convertElementModQ(proto.contestHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proto.contestHash?: throw IllegalArgumentException("Contest contestHash cannot be null"), groupContext),
             proto.selections.map{ convertSelection(it) },
-            convertCiphertext(proto.ciphertextAccumulation?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertConstantChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Selection value cannot be null")),
+            convertCiphertext(proto.ciphertextAccumulation?: throw IllegalArgumentException("Contest ciphertextAccumulation cannot be null"), groupContext),
+            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Contest cryptoHash cannot be null"), groupContext),
+            convertConstantChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Contest proof cannot be null")),
         )
     }
 
@@ -42,22 +42,22 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
         return SubmittedBallot.Selection(
             proto.selectionId,
             proto.sequenceOrder,
-            convertElementModQ(proto.selectionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertCiphertext(proto.ciphertext?: throw IllegalArgumentException("Selection message cannot be null"), groupContext),
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proto.selectionHash?: throw IllegalArgumentException("Selection selectionHash cannot be null"), groupContext),
+            convertCiphertext(proto.ciphertext?: throw IllegalArgumentException("Selection ciphertext cannot be null"), groupContext),
+            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection cryptoHash cannot be null"), groupContext),
             proto.isPlaceholderSelection,
-            convertDisjunctiveChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Selection value cannot be null")),
-            convertCiphertext(proto.extendedData?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertDisjunctiveChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Selection proof cannot be null")),
+            convertCiphertext(proto.extendedData?: throw IllegalArgumentException("Selection extendedData cannot be null"), groupContext),
         )
     }
 
     fun convertConstantChaumPedersenProof(proof: electionguard.protogen.ConstantChaumPedersenProof): ConstantChaumPedersenProofKnownNonce? {
         return ConstantChaumPedersenProofKnownNonce(
             GenericChaumPedersenProof(
-                convertElementModP(proof.pad?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModP(proof.data?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.challenge?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.response?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+                convertElementModP(proof.pad?: throw IllegalArgumentException("ConstantChaumPedersenProof pad cannot be null"), groupContext),
+                convertElementModP(proof.data?: throw IllegalArgumentException("ConstantChaumPedersenProof data cannot be null"), groupContext),
+                convertElementModQ(proof.challenge?: throw IllegalArgumentException("ConstantChaumPedersenProof challenge cannot be null"), groupContext),
+                convertElementModQ(proof.response?: throw IllegalArgumentException("ConstantChaumPedersenProof response cannot be null"), groupContext),
             ),
             proof.constant
         )
@@ -66,18 +66,18 @@ data class SubmittedBallotConvert(val groupContext: GroupContext) {
     fun convertDisjunctiveChaumPedersenProof(proof: electionguard.protogen.DisjunctiveChaumPedersenProof): DisjunctiveChaumPedersenProofKnownNonce? {
         return DisjunctiveChaumPedersenProofKnownNonce(
             GenericChaumPedersenProof(
-                convertElementModP(proof.proofZeroPad?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModP(proof.proofZeroData?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.proofZeroChallenge?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.proofZeroResponse?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+                convertElementModP(proof.proofZeroPad?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofZeroPad cannot be null"), groupContext),
+                convertElementModP(proof.proofZeroData?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofZeroData cannot be null"), groupContext),
+                convertElementModQ(proof.proofZeroChallenge?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofZeroChallenge cannot be null"), groupContext),
+                convertElementModQ(proof.proofZeroResponse?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofZeroResponse cannot be null"), groupContext),
             ),
             GenericChaumPedersenProof(
-                convertElementModP(proof.proofOnePad?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModP(proof.proofOneData?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.proofOneChallenge?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.proofOneResponse?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+                convertElementModP(proof.proofOnePad?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofOnePad cannot be null"), groupContext),
+                convertElementModP(proof.proofOneData?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofOneData cannot be null"), groupContext),
+                convertElementModQ(proof.proofOneChallenge?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofOneChallenge cannot be null"), groupContext),
+                convertElementModQ(proof.proofOneResponse?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofOneResponse cannot be null"), groupContext),
             ),
-            convertElementModQ(proof.challenge?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            convertElementModQ(proof.challenge?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof challenge cannot be null"), groupContext),
         )
     }
 
