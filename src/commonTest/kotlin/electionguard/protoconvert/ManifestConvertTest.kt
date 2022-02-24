@@ -4,6 +4,7 @@ import electionguard.ballot.Manifest
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
+import electionguard.core.tinyGroup
 import kotlinx.datetime.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -12,15 +13,13 @@ class ManifestConvertTest {
 
     @Test
     fun roundtripManifest() {
-        runTest {
-            val context = productionGroup()
-            val manifest = generateFakeManifest(context)
-            val convertTo = ManifestToProto(context)
-            val proto = convertTo.translateToProto(manifest)
-            val convertFrom = ManifestFromProto(context)
-            val roundtrip = convertFrom.translateFromProto(proto)
-            assertEquals(roundtrip, manifest)
-        }
+        val context = tinyGroup()
+        val manifest = generateFakeManifest(context)
+        val convertTo = ManifestToProto(context)
+        val proto = convertTo.translateToProto(manifest)
+        val convertFrom = ManifestFromProto(context)
+        val roundtrip = convertFrom.translateFromProto(proto)
+        assertEquals(roundtrip, manifest)
     }
 
     companion object {

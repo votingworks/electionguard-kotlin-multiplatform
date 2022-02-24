@@ -10,13 +10,11 @@ class PlaintextBallotConvertTest {
 
     @Test
     fun roundtripPlaintextBallot() {
-        runTest {
-            val ballot = generateFakeBallot();
-            val ballotConvert = PlaintextBallotConvert();
-            val proto = ballotConvert.translateToProto(ballot)
-            val roundtrip = ballotConvert.translateFromProto(proto)
-            assertEquals(roundtrip, ballot)
-        }
+        val ballot = generateFakeBallot();
+        val ballotConvert = PlaintextBallotConvert();
+        val proto = ballotConvert.translateToProto(ballot)
+        val roundtrip = ballotConvert.translateFromProto(proto)
+        assertEquals(roundtrip, ballot)
     }
 
     private fun generateFakeBallot(): PlaintextBallot {
