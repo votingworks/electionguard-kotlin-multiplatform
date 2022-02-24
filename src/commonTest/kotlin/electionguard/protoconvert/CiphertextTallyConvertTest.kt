@@ -4,6 +4,7 @@ import electionguard.ballot.CiphertextTally
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
+import electionguard.core.tinyGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -11,14 +12,12 @@ class CiphertextTallyConvertTest {
 
     @Test
     fun roundtripCiphertextTally() {
-        runTest {
-            val context = productionGroup()
-            val tally = generateFakeTally(context)
-            val tallyConvert = CiphertextTallyConvert(context)
-            val proto = tallyConvert.translateToProto(tally)
-            val roundtrip = tallyConvert.translateFromProto(proto)
-            assertEquals(roundtrip, tally)
-        }
+        val context = tinyGroup()
+        val tally = generateFakeTally(context)
+        val tallyConvert = CiphertextTallyConvert(context)
+        val proto = tallyConvert.translateToProto(tally)
+        val roundtrip = tallyConvert.translateFromProto(proto)
+        assertEquals(roundtrip, tally)
     }
 
     companion object {

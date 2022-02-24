@@ -10,18 +10,16 @@ class SubmittedBallotConvertTest {
 
     @Test
     fun roundtripSubmittedBallot() {
-        runTest {
-            val context = productionGroup()
-            val ballot = generateSubmittedBallot(42, context)
-            val ballotConvert = SubmittedBallotConvert(context)
-            val proto = ballotConvert.translateToProto(ballot)
-            val roundtrip = ballotConvert.translateFromProto(proto)
-            assertEquals(roundtrip, ballot)
-        }
+        val context = tinyGroup()
+        val ballot = generateSubmittedBallot(42, context)
+        val ballotConvert = SubmittedBallotConvert(context)
+        val proto = ballotConvert.translateToProto(ballot)
+        val roundtrip = ballotConvert.translateFromProto(proto)
+        assertEquals(roundtrip, ballot)
     }
 
     companion object {
-        fun generateSubmittedBallot(seq : Int, context: GroupContext): SubmittedBallot {
+        fun generateSubmittedBallot(seq: Int, context: GroupContext): SubmittedBallot {
             val contests = List(9, { generateFakeContest(it, context) })
             //     val ballotId: String,
             //    val ballotStyleId: String,
