@@ -5,6 +5,7 @@ import electionguard.ballot.PlaintextTally
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
+import electionguard.core.tinyGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -12,19 +13,17 @@ class PlaintextTallyConvertTest {
 
     @Test
     fun roundtripPlaintextTally() {
-        runTest {
-            val context = productionGroup()
-            val tally = generateFakeTally(1, context)
-            val tallyConvert = PlaintextTallyConvert(context)
-            val proto = tallyConvert.translateToProto(tally)
-            val roundtrip = tallyConvert.translateFromProto(proto)
-            assertEquals(roundtrip, tally)
-        }
+        val context = tinyGroup()
+        val tally = generateFakeTally(1, context)
+        val tallyConvert = PlaintextTallyConvert(context)
+        val proto = tallyConvert.translateToProto(tally)
+        val roundtrip = tallyConvert.translateFromProto(proto)
+        assertEquals(roundtrip, tally)
     }
 
     companion object {
 
-        fun generateFakeTally(seq : Int, context: GroupContext): PlaintextTally {
+        fun generateFakeTally(seq: Int, context: GroupContext): PlaintextTally {
             val contests = List(7) { generateFakeContest(it, context) }
             return PlaintextTally("tallyId%seq", contests.associate { it.contestId to it })
         }
