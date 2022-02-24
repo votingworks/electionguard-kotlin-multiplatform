@@ -10,7 +10,7 @@ data class ElectionRecord(
     val constants: ElectionConstants,
     val manifest: Manifest,
     val context: ElectionContext,
-    val guardianRecords: List<GuardianRecord>?,
+    val guardianRecords: List<GuardianRecord>,
     val devices: List<EncryptionDevice>,
     val encryptedTally: CiphertextTally?,
     val decryptedTally: PlaintextTally?,

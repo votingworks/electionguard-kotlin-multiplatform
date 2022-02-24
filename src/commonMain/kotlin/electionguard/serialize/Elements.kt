@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 
-package electionguard.publish
+package electionguard.serialize
 
 import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
