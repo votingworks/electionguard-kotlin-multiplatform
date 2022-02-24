@@ -1,4 +1,4 @@
-package electionguard.publish
+package electionguard.serialize
 
 import electionguard.core.Base16.toHex
 import io.ktor.util.*

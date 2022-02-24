@@ -1,8 +1,8 @@
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
-import electionguard.publish.Constants
-import electionguard.publish.constantsFromBytes
+import electionguard.serialize.Constants
+import electionguard.serialize.constantsFromBytes
 import org.gciatto.kt.math.BigInteger
 
 // This implementation uses kt-math (https://github.com/gciatto/kt-math), which is something

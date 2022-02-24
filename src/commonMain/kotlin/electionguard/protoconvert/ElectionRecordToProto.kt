@@ -7,36 +7,60 @@ import pbandk.ByteArr
 data class ElectionRecordToProto(val groupContext: GroupContext) {
 
     fun translateToProto(election: ElectionRecord): electionguard.protogen.ElectionRecord {
-        val manifestConverter = ManifestToProto(groupContext)
-        val manifest = manifestConverter.translateToProto(election.manifest)
+        return translateToProto(
+            election.protoVersion,
+            election.manifest,
+            election.context,
+            election.constants,
+            election.guardianRecords,
+            election.devices,
+            election.encryptedTally,
+            election.decryptedTally,
+            election.availableGuardians,
+        )
+    }
 
-        val ciphertextTally: electionguard.protogen.CiphertextTally? =
-            if (election.encryptedTally == null) { null } else {
-                CiphertextTallyConvert(groupContext).translateToProto(election.encryptedTally)
+    fun translateToProto(
+        version : String,
+        manifest: Manifest,
+        context: ElectionContext,
+        constants: ElectionConstants,
+        guardianRecords: List<GuardianRecord>?,
+        devices: Iterable<EncryptionDevice>,
+        encryptedTally: CiphertextTally?,
+        decryptedTally: PlaintextTally?,
+        availableGuardians: List<AvailableGuardian>?,
+    ): electionguard.protogen.ElectionRecord {
+        val manifestConverter = ManifestToProto(groupContext)
+        val manifestProto = manifestConverter.translateToProto(manifest)
+
+        val ciphertextTallyProto: electionguard.protogen.CiphertextTally? =
+            if (encryptedTally == null) { null } else {
+                CiphertextTallyConvert(groupContext).translateToProto(encryptedTally)
             }
-        val decryptedTally: electionguard.protogen.PlaintextTally? =
-            if (election.decryptedTally == null) { null } else {
-                PlaintextTallyConvert(groupContext).translateToProto(election.decryptedTally)
+        val decryptedTallyProto: electionguard.protogen.PlaintextTally? =
+            if (decryptedTally == null) { null } else {
+                PlaintextTallyConvert(groupContext).translateToProto(decryptedTally)
             }
-        val guardianRecords: List<electionguard.protogen.GuardianRecord> =
-            if (election.guardianRecords == null || election.guardianRecords.isEmpty()) { emptyList() } else {
-                election.guardianRecords.map {convertGuardianRecord(it)}
+        val guardianRecordsProto: List<electionguard.protogen.GuardianRecord> =
+            if (guardianRecords == null || guardianRecords.isEmpty()) { emptyList() } else {
+                guardianRecords.map {convertGuardianRecord(it)}
             }
-        val availableGuardians: List<electionguard.protogen.AvailableGuardian> =
-            if (election.availableGuardians == null || election.availableGuardians.isEmpty()) { emptyList() } else {
-                election.availableGuardians.map {convertAvailableGuardian(it?: throw IllegalStateException("availableGuardian cant be null"))}
+        val availableGuardiansProto: List<electionguard.protogen.AvailableGuardian> =
+            if (availableGuardians == null || availableGuardians.isEmpty()) { emptyList() } else {
+                availableGuardians.map {convertAvailableGuardian(it)}
             }
 
         return electionguard.protogen.ElectionRecord(
-            election.protoVersion,
-            convertConstants(election.constants),
-            manifest,
-            convertContext(election.context),
-            guardianRecords,
-            election.devices.map { convertDevice(it) },
-            ciphertextTally,
-            decryptedTally,
-            availableGuardians,
+            version,
+            convertConstants(constants),
+            manifestProto,
+            convertContext(context),
+            guardianRecordsProto,
+            devices.map { convertDevice(it) },
+            ciphertextTallyProto,
+            decryptedTallyProto,
+            availableGuardiansProto,
         )
     }
 

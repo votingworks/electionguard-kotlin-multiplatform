@@ -4,8 +4,8 @@ import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
 import electionguard.core.Base64.fromBase64
 import electionguard.core.Base64.toBase64
-import electionguard.publish.Constants
-import electionguard.publish.isCompatible
+import electionguard.serialize.Constants
+import electionguard.serialize.isCompatible
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
 internal val b64Production4096P =

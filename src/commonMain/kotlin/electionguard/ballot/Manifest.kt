@@ -4,7 +4,7 @@ import electionguard.core.CryptoHashableElement
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.hashElements
-import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.LocalDateTime
 
 
 /**
@@ -16,8 +16,8 @@ data class Manifest(
     val electionScopeId: String,
     val specVersion: String,
     val electionType: ElectionType,
-    val startDate: UtcOffset,
-    val endDate: UtcOffset,
+    val startDate: LocalDateTime,
+    val endDate: LocalDateTime,
     val geopoliticalUnits: List<GeopoliticalUnit>,
     val parties: List<Party>,
     val candidates: List<Candidate>,
@@ -514,8 +514,8 @@ data class Manifest(
         fun makeContestDescription(
             groupContext: GroupContext,
             contest_id: String,
-            electoral_district_id: String,
             sequence_order: Int,
+            electoral_district_id: String,
             vote_variation: Manifest.VoteVariationType,
             number_elected: Int,
             votes_allowed: Int,
@@ -542,7 +542,7 @@ data class Manifest(
                     contest_id,
                     electoral_district_id,
                     sequence_order,
-                    vote_variation,
+                    vote_variation.name,
                     number_elected,
                     votes_allowed,
                     name,
@@ -579,7 +579,7 @@ data class Manifest(
 
             return Manifest.GeopoliticalUnit(
                 unit_id, name, type, contact_information,
-                groupContext.hashElements(unit_id, name, type, contact_information)
+                groupContext.hashElements(unit_id, name, type.name, contact_information)
             )
         }
 
@@ -614,8 +614,8 @@ data class Manifest(
         fun makeSelectionDescription(
             groupContext: GroupContext,
             selection_id: String,
+            sequence_order: Int,
             candidate_id: String,
-            sequence_order: Int
         ): Manifest.SelectionDescription {
             return Manifest.SelectionDescription(
                 selection_id, sequence_order, candidate_id,

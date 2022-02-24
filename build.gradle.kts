@@ -203,8 +203,6 @@ kotlin {
     }
 }
 
-val protoGenSource by extra("/home/snake/dev/github/electionguard-kotlin-multiplatform/build/generated/source/proto")
-
 val compileProtobuf = tasks.register("compileProtobuf") {
     print("* Compiling protobuf *\n")
     /* project.exec {

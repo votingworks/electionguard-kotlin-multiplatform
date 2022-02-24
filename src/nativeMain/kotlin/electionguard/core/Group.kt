@@ -5,8 +5,8 @@ package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
 import electionguard.core.Base64.toBase64
-import electionguard.publish.Constants
-import electionguard.publish.constantsFromBytes
+import electionguard.serialize.Constants
+import electionguard.serialize.constantsFromBytes
 import hacl.*
 import kotlinx.cinterop.*
 import platform.posix.free
