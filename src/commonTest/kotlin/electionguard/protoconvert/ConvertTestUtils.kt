@@ -28,10 +28,6 @@ fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPeders
     )
 }
 
-//     val publicKey: ElGamalPublicKey,
-//    val commitment: ElementModP,
-//    val challenge: ElementModQ,
-//    val response: ElementModQ
 fun generateSchnorrProof(context: GroupContext): SchnorrProof {
     return SchnorrProof(
         ElGamalPublicKey(generateElementModP(context)),
@@ -46,9 +42,9 @@ fun generateCiphertext(context: GroupContext): ElGamalCiphertext {
 }
 
 fun generateElementModQ(context: GroupContext): ElementModQ {
-    return context.uIntToElementModQ(Random.nextUInt())
+    return context.uIntToElementModQ(Random.nextUInt(134217689.toUInt()))
 }
 
 fun generateElementModP(context: GroupContext): ElementModP {
-    return context.uIntToElementModP(Random.nextUInt())
+    return context.uIntToElementModP(Random.nextUInt(1879047647.toUInt()))
 }
