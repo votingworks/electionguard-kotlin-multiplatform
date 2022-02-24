@@ -1,7 +1,7 @@
 package electionguard.core
 
-import electionguard.publish.Constants
-import electionguard.publish.constantsFromBytes
+import electionguard.serialize.Constants
+import electionguard.serialize.constantsFromBytes
 
 private val tinyGroupContext =
     TinyGroupContext(
