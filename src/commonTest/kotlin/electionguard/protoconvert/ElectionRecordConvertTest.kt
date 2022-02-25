@@ -17,7 +17,7 @@ class ElectionRecordConvertTest {
         val proto = convertTo.translateToProto(electionRecord)
         val convertFrom = ElectionRecordFromProto(context)
         val roundtrip = convertFrom.translateFromProto(proto)
-        assertEquals(roundtrip.version, electionRecord.version)
+        assertEquals(roundtrip.protoVersion, electionRecord.protoVersion)
         assertEquals(roundtrip.constants, electionRecord.constants)
         assertEquals(roundtrip.manifest, electionRecord.manifest)
         assertEquals(roundtrip.context, electionRecord.context)
@@ -27,7 +27,7 @@ class ElectionRecordConvertTest {
         assertEquals(roundtrip.decryptedTally, electionRecord.decryptedTally)
         assertEquals(roundtrip.availableGuardians, electionRecord.availableGuardians)
 
-        // LOOK the line below fails when electionRecord.acceptedBallots is not null with "Out of memory. Java heap space"
+        // LOOK the line below fails with "Out of memory. Java heap space" when electionRecord.acceptedBallots is not null
         //Task :jvmTest FAILED
         //FAILURE: Build failed with an exception.
         //* What went wrong:
