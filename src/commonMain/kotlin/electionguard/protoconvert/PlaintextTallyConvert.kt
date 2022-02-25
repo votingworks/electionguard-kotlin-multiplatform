@@ -45,6 +45,7 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
             throw IllegalArgumentException("both CiphertextDecryptionSelection proof and recoveredParts are null")
         }
         return DecryptionShare.CiphertextDecryptionSelection(
+            proto.selectionId,
             proto.guardianId,
             convertElementModP(proto.share?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
             proof,
@@ -54,6 +55,7 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
 
     private fun convertRecoveredParts(proto: electionguard.protogen.CiphertextCompensatedDecryptionSelection): DecryptionShare.CiphertextCompensatedDecryptionSelection {
         return DecryptionShare.CiphertextCompensatedDecryptionSelection(
+            proto.selectionId,
             proto.guardianId,
             proto.missingGuardianId,
             convertElementModP(proto.share?: throw IllegalArgumentException("DecryptionShare part cannot be null"), groupContext),
@@ -99,6 +101,7 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
             proofOrParts =electionguard.protogen. CiphertextDecryptionSelection.ProofOrParts.RecoveredParts(electionguard.protogen.RecoveredParts(pparts))
         }
         return electionguard.protogen.CiphertextDecryptionSelection(
+            share.selectionId,
             share.guardianId,
             convertElementModP(share.share),
             proofOrParts,
@@ -108,6 +111,7 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
     private fun convertRecoveredParts(part: DecryptionShare.CiphertextCompensatedDecryptionSelection):  electionguard.protogen.CiphertextCompensatedDecryptionSelection {
         return electionguard.protogen.CiphertextCompensatedDecryptionSelection(
                 part.guardianId,
+                part.selectionId,
                 part.missingGuardianId,
                 convertElementModP(part.share),
                 convertElementModP(part.recoveryKey),
