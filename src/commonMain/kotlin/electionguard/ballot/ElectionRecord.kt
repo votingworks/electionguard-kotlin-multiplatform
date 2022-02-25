@@ -4,7 +4,7 @@ import electionguard.core.*
 
 /** The published election record for a collection of ballots, eg from a single encryption device.  */
 data class ElectionRecord(
-    val version: String,
+    val protoVersion: String,
     val constants: ElectionConstants,
     val manifest: Manifest,
     val context: ElectionContext,
@@ -13,8 +13,8 @@ data class ElectionRecord(
     val encryptedTally: CiphertextTally?,
     val decryptedTally: PlaintextTally?,
     val acceptedBallots: Iterable<SubmittedBallot>?,
-    val spoiledBallots: Iterable<PlaintextTally?>?,
-    val availableGuardians: List<AvailableGuardian?>?
+    val spoiledBallots: Iterable<PlaintextTally>?,
+    val availableGuardians: List<AvailableGuardian>?
 )
 
 /**

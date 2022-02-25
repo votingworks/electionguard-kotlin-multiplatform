@@ -28,7 +28,7 @@ data class ElectionRecordToProto(val groupContext: GroupContext) {
             }
 
         return electionguard.protogen.ElectionRecord(
-            election.version,
+            election.protoVersion,
             convertConstants(election.constants),
             manifest,
             convertContext(election.context),

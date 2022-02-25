@@ -180,10 +180,19 @@ public data class PlaintextTallySelection(
 public data class CiphertextDecryptionSelection(
     val guardianId: String = "",
     val share: electionguard.protogen.ElementModP? = null,
-    val proof: electionguard.protogen.ChaumPedersenProof? = null,
-    val recoveredParts: List<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry> = emptyList(),
+    val proofOrParts: ProofOrParts<*>? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
+    public sealed class ProofOrParts<V>(value: V) : pbandk.Message.OneOf<V>(value) {
+        public class Proof(proof: electionguard.protogen.ChaumPedersenProof) : ProofOrParts<electionguard.protogen.ChaumPedersenProof>(proof)
+        public class RecoveredParts(recoveredParts: electionguard.protogen.RecoveredParts) : ProofOrParts<electionguard.protogen.RecoveredParts>(recoveredParts)
+    }
+
+    val proof: electionguard.protogen.ChaumPedersenProof?
+        get() = (proofOrParts as? ProofOrParts.Proof)?.value
+    val recoveredParts: electionguard.protogen.RecoveredParts?
+        get() = (proofOrParts as? ProofOrParts.RecoveredParts)?.value
+
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.CiphertextDecryptionSelection = protoMergeImpl(other)
     override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CiphertextDecryptionSelection> get() = Companion.descriptor
     override val protoSize: Int by lazy { super.protoSize }
@@ -220,6 +229,7 @@ public data class CiphertextDecryptionSelection(
                         name = "proof",
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ChaumPedersenProof.Companion),
+                        oneofMember = true,
                         jsonName = "proof",
                         value = electionguard.protogen.CiphertextDecryptionSelection::proof
                     )
@@ -229,7 +239,8 @@ public data class CiphertextDecryptionSelection(
                         messageDescriptor = this@Companion::descriptor,
                         name = "recovered_parts",
                         number = 4,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry.Companion)),
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.RecoveredParts.Companion),
+                        oneofMember = true,
                         jsonName = "recoveredParts",
                         value = electionguard.protogen.CiphertextDecryptionSelection::recoveredParts
                     )
@@ -243,50 +254,40 @@ public data class CiphertextDecryptionSelection(
             )
         }
     }
+}
 
-    public data class RecoveredPartsEntry(
-        override val key: String = "",
-        override val value: electionguard.protogen.CiphertextCompensatedDecryptionSelection? = null,
-        override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-    ) : pbandk.Message, Map.Entry<String, electionguard.protogen.CiphertextCompensatedDecryptionSelection?> {
-        override operator fun plus(other: pbandk.Message?): electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry = protoMergeImpl(other)
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry> get() = Companion.descriptor
-        override val protoSize: Int by lazy { super.protoSize }
-        public companion object : pbandk.Message.Companion<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry> {
-            public val defaultInstance: electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry by lazy { electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry() }
-            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry = electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry.decodeWithImpl(u)
+@pbandk.Export
+public data class RecoveredParts(
+    val fragments: List<electionguard.protogen.CiphertextCompensatedDecryptionSelection> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.RecoveredParts = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RecoveredParts> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<electionguard.protogen.RecoveredParts> {
+        public val defaultInstance: electionguard.protogen.RecoveredParts by lazy { electionguard.protogen.RecoveredParts() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.RecoveredParts = electionguard.protogen.RecoveredParts.decodeWithImpl(u)
 
-            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry> by lazy {
-                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry, *>>(2)
-                fieldsList.apply {
-                    add(
-                        pbandk.FieldDescriptor(
-                            messageDescriptor = this@Companion::descriptor,
-                            name = "key",
-                            number = 1,
-                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                            jsonName = "key",
-                            value = electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry::key
-                        )
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RecoveredParts> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.RecoveredParts, *>>(1)
+            fieldsList.apply {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "fragments",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.CiphertextCompensatedDecryptionSelection>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.CiphertextCompensatedDecryptionSelection.Companion)),
+                        jsonName = "fragments",
+                        value = electionguard.protogen.RecoveredParts::fragments
                     )
-                    add(
-                        pbandk.FieldDescriptor(
-                            messageDescriptor = this@Companion::descriptor,
-                            name = "value",
-                            number = 2,
-                            type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.CiphertextCompensatedDecryptionSelection.Companion),
-                            jsonName = "value",
-                            value = electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry::value
-                        )
-                    )
-                }
-                pbandk.MessageDescriptor(
-                    fullName = "CiphertextDecryptionSelection.RecoveredPartsEntry",
-                    messageClass = electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry::class,
-                    messageCompanion = this,
-                    fields = fieldsList
                 )
             }
+            pbandk.MessageDescriptor(
+                fullName = "RecoveredParts",
+                messageClass = electionguard.protogen.RecoveredParts::class,
+                messageCompanion = this,
+                fields = fieldsList
+            )
         }
     }
 }
@@ -462,8 +463,14 @@ public fun CiphertextDecryptionSelection?.orDefault(): electionguard.protogen.Ci
 private fun CiphertextDecryptionSelection.protoMergeImpl(plus: pbandk.Message?): CiphertextDecryptionSelection = (plus as? CiphertextDecryptionSelection)?.let {
     it.copy(
         share = share?.plus(plus.share) ?: plus.share,
-        proof = proof?.plus(plus.proof) ?: plus.proof,
-        recoveredParts = recoveredParts + plus.recoveredParts,
+        proofOrParts = when {
+            proofOrParts is CiphertextDecryptionSelection.ProofOrParts.Proof && plus.proofOrParts is CiphertextDecryptionSelection.ProofOrParts.Proof ->
+                CiphertextDecryptionSelection.ProofOrParts.Proof(proofOrParts.value + plus.proofOrParts.value)
+            proofOrParts is CiphertextDecryptionSelection.ProofOrParts.RecoveredParts && plus.proofOrParts is CiphertextDecryptionSelection.ProofOrParts.RecoveredParts ->
+                CiphertextDecryptionSelection.ProofOrParts.RecoveredParts(proofOrParts.value + plus.proofOrParts.value)
+            else ->
+                plus.proofOrParts ?: proofOrParts
+        },
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -472,43 +479,40 @@ private fun CiphertextDecryptionSelection.protoMergeImpl(plus: pbandk.Message?):
 private fun CiphertextDecryptionSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): CiphertextDecryptionSelection {
     var guardianId = ""
     var share: electionguard.protogen.ElementModP? = null
-    var proof: electionguard.protogen.ChaumPedersenProof? = null
-    var recoveredParts: pbandk.ListWithSize.Builder<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry>? = null
+    var proofOrParts: CiphertextDecryptionSelection.ProofOrParts<*>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> share = _fieldValue as electionguard.protogen.ElementModP
-            3 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
-            4 -> recoveredParts = (recoveredParts ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry> }
+            3 -> proofOrParts = CiphertextDecryptionSelection.ProofOrParts.Proof(_fieldValue as electionguard.protogen.ChaumPedersenProof)
+            4 -> proofOrParts = CiphertextDecryptionSelection.ProofOrParts.RecoveredParts(_fieldValue as electionguard.protogen.RecoveredParts)
         }
     }
-    return CiphertextDecryptionSelection(guardianId, share, proof, pbandk.ListWithSize.Builder.fixed(recoveredParts), unknownFields)
+    return CiphertextDecryptionSelection(guardianId, share, proofOrParts, unknownFields)
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForCiphertextDecryptionSelectionRecoveredPartsEntry")
-public fun CiphertextDecryptionSelection.RecoveredPartsEntry?.orDefault(): electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry = this ?: CiphertextDecryptionSelection.RecoveredPartsEntry.defaultInstance
+@pbandk.JsName("orDefaultForRecoveredParts")
+public fun RecoveredParts?.orDefault(): electionguard.protogen.RecoveredParts = this ?: RecoveredParts.defaultInstance
 
-private fun CiphertextDecryptionSelection.RecoveredPartsEntry.protoMergeImpl(plus: pbandk.Message?): CiphertextDecryptionSelection.RecoveredPartsEntry = (plus as? CiphertextDecryptionSelection.RecoveredPartsEntry)?.let {
+private fun RecoveredParts.protoMergeImpl(plus: pbandk.Message?): RecoveredParts = (plus as? RecoveredParts)?.let {
     it.copy(
-        value = value?.plus(plus.value) ?: plus.value,
+        fragments = fragments + plus.fragments,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun CiphertextDecryptionSelection.RecoveredPartsEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): CiphertextDecryptionSelection.RecoveredPartsEntry {
-    var key = ""
-    var value: electionguard.protogen.CiphertextCompensatedDecryptionSelection? = null
+private fun RecoveredParts.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RecoveredParts {
+    var fragments: pbandk.ListWithSize.Builder<electionguard.protogen.CiphertextCompensatedDecryptionSelection>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> key = _fieldValue as String
-            2 -> value = _fieldValue as electionguard.protogen.CiphertextCompensatedDecryptionSelection
+            1 -> fragments = (fragments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CiphertextCompensatedDecryptionSelection> }
         }
     }
-    return CiphertextDecryptionSelection.RecoveredPartsEntry(key, value, unknownFields)
+    return RecoveredParts(pbandk.ListWithSize.Builder.fixed(fragments), unknownFields)
 }
 
 @pbandk.Export

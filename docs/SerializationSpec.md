@@ -1,70 +1,81 @@
 # 🗳 Election Record serialization (proposed specification)
-draft 2/22/2022
+
+draft 2/24/2022 for proto_version = 1.0.0 (MAJOR.MINOR.PATCH)
 
 This covers only the election record, and not any serialized classes used in remote procedure calls.
 
 Notes
 
-  1. Any field may be missing or null. Could try to document when fields must be present.
-  2. Could document the filenames and directory layout.
+1. All fields must be present unless marked as optional.
+2. This specification will be mapped (in both directions) to the 1.0 JSON specification, when thats done.
+3. Proto_version uses [semantic versioning](https://semver.org/), and all versions will be
+     [forward and backwards compatible](https://developers.google.com/protocol-buffers/docs/proto3#updating)
+     starting with ? (1.0 I hope, if the JSON spec is finalized by then).
 
 ## Common
 
 ### class ChaumPedersenProof
-| Name		    | JSON Name	 | Type               | Notes   |
-|-----------|------------|--------------------|---------|
-|           | name       | string  		         | removed |
-|           | usage      | enum ProofUsage  	 | removed |
-| pad       |            | ElementModP        |         |
-| data      |            | ElementModP        |         |
-| challenge |            | ElementModQ        |         |
-| response  |            | ElementModQ        |         |
+
+| Name      | JSON Name | Type            | Notes   |
+|-----------|-----------|-----------------|---------|
+|           | name      | string          | removed |
+|           | usage     | enum ProofUsage | removed |
+| pad       |           | ElementModP     |         |
+| data      |           | ElementModP     |         |
+| challenge |           | ElementModQ     |         |
+| response  |           | ElementModQ     |         |
 
 ### class ElementModQ, ElementModP
-| Name		 | JSON Name		 | Type   | Notes |
-|--------|-------------|--------|-------|
-| value  | data        | bytes	 |       |
 
-### class ElGamalCiphertext|
-| Name		 | JSON Name		 | Type        | Notes |
-|--------|-------------|-------------|-------|
-| pad    |             | ElementModP ||
-| data   |             | ElementModP ||
+| Name  | JSON Name | Type  | Notes                             |
+|-------|-----------|-------|-----------------------------------|
+| value | data      | bytes | bigint is unsigned and big-endian |
+
+### class ElGamalCiphertext
+
+| Name | JSON Name | Type        | Notes |
+|------|-----------|-------------|-------|
+| pad  |           | ElementModP |       |
+| data |           | ElementModP |       |
 
 ### class ElGamalKeyPair LOOK
-| Name		     | JSON Name		 | Type        | Notes |
-|------------|-------------|-------------|-------|
-| secret_key |             | ElementModQ ||
-| public_key |             | ElementModP ||
+
+| Name       | JSON Name | Type        | Notes |
+|------------|-----------|-------------|-------|
+| secret_key |           | ElementModQ |       |
+| public_key |           | ElementModP |       |
 
 ### class SchnorrProof
-| Name		     | JSON Name		 | Type              | Notes   |
-|------------|-------------|-------------------|---------|
-|            | name        | string				        | removed |
-|            | usage       | enum ProofUsage		 | removed |
-| public_key |             | ElementModP       ||
-| commitment |             | ElementModP       ||
-| challenge  |             | ElementModQ       ||
-| response   |             | ElementModQ       ||
 
+| Name       | JSON Name | Type            | Notes   |
+|------------|-----------|-----------------|---------|
+|            | name      | string          | removed |
+|            | usage     | enum ProofUsage | removed |
+| public_key |           | ElementModP     |         |
+| commitment |           | ElementModP     |         |
+| challenge  |           | ElementModQ     |         |
+| response   |           | ElementModQ     |         |
 
 ## Election
 
 ### class ElectionRecord
 
-| Name		              | Type                      | Notes            |
-|---------------------|---------------------------|------------------|
-| version             | string                    | key ceremony     |
-| constants           | ElectionConstants         | key ceremony     |
-| manifest            | Manifest                  | key ceremony     |
-| context             | ElectionContext           | key ceremony     |
-| guardian_records    | List\<GuardianRecord\>    | key ceremony     |
-| devices             | List\<EncryptionDevice\>  | key ceremony ??  |
-| ciphertext_tally    | CiphertextTally           | accumulate tally |
-| plaintext_tally     | PlaintextTally            | decrypt tally    |
-| available_guardians | List\<AvailableGuardian\> | decrypt tally    |
+There is no python SDK version of this class
+
+| Name                | Type                      | Notes                |
+|---------------------|---------------------------|----------------------|
+| proto_version       | string                    | proto schema version |
+| constants           | ElectionConstants         | key ceremony         |
+| manifest            | Manifest                  | key ceremony         |
+| context             | ElectionContext           | key ceremony         |
+| guardian_records    | List\<GuardianRecord\>    | key ceremony         |
+| devices             | List\<EncryptionDevice\>  | key ceremony ??      |
+| ciphertext_tally    | CiphertextTally           | accumulate tally     |
+| plaintext_tally     | PlaintextTally            | decrypt tally        |
+| available_guardians | List\<AvailableGuardian\> | decrypt tally        |
 
 ### class AvailableGuardian
+
 | Name                | Type        | Notes                          |
 |---------------------|-------------|--------------------------------|
 | guardian_id         | string      |                                |
@@ -72,132 +83,144 @@ Notes
 | lagrange_coordinate | ElementModQ |                                |
 
 ### class ElectionConstants
-| Name        | JSON Name  | Type  | Notes |
-|-------------|------------|-------|-------|
-| large_prime |            | bytes ||
-| small_prime |            | bytes ||
-| cofactor    |            | bytes ||
-| generator   |            | bytes ||
+
+| Name        | JSON Name | Type  | Notes                             |
+|-------------|-----------|-------|-----------------------------------|
+| large_prime |           | bytes | bigint is unsigned and big-endian |
+| small_prime |           | bytes | bigint is unsigned and big-endian |
+| cofactor    |           | bytes | bigint is unsigned and big-endian |
+| generator   |           | bytes | bigint is unsigned and big-endian |
 
 ### class ElectionContext
 
-| Name		                    | JSON Name	 | Type                  | Notes |
-|---------------------------|------------|-----------------------|-------|
-| number_of_guardians       |            | uint32                |       |
-| quorum                    |            | uint32                |       |
-| elgamal_public_key        |            | ElementModP           |       |
-| commitment_hash           |            | ElementModQ           |       |
-| manifest_hash             |            | ElementModQ           |       |
-| crypto_base_hash          |            | ElementModQ           |       |
-| crypto_extended_base_hash |            | ElementModQ           |       |
-| extended_data             |            | map\<string, string\> |       |
+| Name                      | JSON Name | Type                  | Notes    |
+|---------------------------|-----------|-----------------------|----------|
+| number_of_guardians       |           | uint32                |          |
+| quorum                    |           | uint32                |          |
+| elgamal_public_key        |           | ElementModP           |          |
+| commitment_hash           |           | ElementModQ           |          |
+| manifest_hash             |           | ElementModQ           |          |
+| crypto_base_hash          |           | ElementModQ           |          |
+| crypto_extended_base_hash |           | ElementModQ           |          |
+| extended_data             |           | map\<string, string\> | optional |
 
 ### class EncryptionDevice
-| Name        | JSON Name  | Type   | Notes                                  |
-|-------------|------------|--------|----------------------------------------|
-| device_id   |            | int64	 | was uuid LOOK maybe just use a string? |
-| session_id  |            | int64	 |                                        |
-| launch_code |            | int64	 |                                        |
-| location    |            | string |                                        |
+
+| Name        | JSON Name | Type   | Notes                                  |
+|-------------|-----------|--------|----------------------------------------|
+| device_id   |           | int64  | was uuid LOOK maybe just use a string? |
+| session_id  |           | int64  |                                        |
+| launch_code |           | int64  |                                        |
+| location    |           | string |                                        |
 
 ### class GuardianRecord
-| Name                 | JSON Name	 | Type                 | Notes                          |
-|----------------------|------------|----------------------|--------------------------------|
-| guardian_id          |            | string               |                                |
-| x_coordinate         |            | uint32               | x_coordinate in the polynomial |
-| election_public_key  |            | ElementModP          |                                |
-| election_commitments |            | List\<ElementModP\>  |                                |
-| election_proofs      |            | List\<SchnorrProof\> |                                |
+
+| Name                 | JSON Name | Type                 | Notes                          |
+|----------------------|-----------|----------------------|--------------------------------|
+| guardian_id          |           | string               |                                |
+| x_coordinate         |           | uint32               | x_coordinate in the polynomial |
+| election_public_key  |           | ElementModP          |                                |
+| election_commitments |           | List\<ElementModP\>  |                                |
+| election_proofs      |           | List\<SchnorrProof\> |                                |
 
 ## Manifest
 
-Could simplify to be just the fields needed by electionguard library.
-Assume that there is an existing system that captures all the metadata that election software need, and that is a
-superset of this.
+Could simplify to be just the fields needed by electionguard library. Assume that there is an existing system that
+captures all the metadata that election software need, which is a superset of this.
 
 Notes
-  1. Could try to keep this record independent of the crypto.
-  2. Could add manifest manifest schema version to allow independent evolution independent from the spec_version
-  3. Could add manifest version for a specific election to allow independent evolution
-  4. If write in candidates are known in advance, PlaintextBallot.ExtendedData is unneeded.
+
+1. Could try to keep this record independent of the crypto.
+2. Could add manifest schema version to allow independent evolution independent from the spec_version
+3. Could add manifest version for a specific election to allow independent evolution
 
 ### class Manifest
-| Name		              | JSON Name		 | Type	                      | Notes                        |
-|---------------------|-------------|----------------------------|------------------------------|
-| election_scope_id   |             | string                     |                              |
-| spec_version        |             | string                     |                              |
-| election_type       | type        | enum ElectionType          |                              |
-| start_date          |             | string                     | ISO 8601 formatted date/time |
-| end_date            |             | string                     | ISO 8601 formatted date/time |
-| geopolitical_units  |             | List\<GeopoliticalUnit\>   |                              |
-| parties             |             | List\<Party\>              |                              |
-| candidates          |             | List\<Candidate\>          |                              |
-| contests            |             | List\<ContestDescription\> |                              |
-| ballot_styles       |             | List\<BallotStyle\>        |                              |
-| name                |             | InternationalizedText      |                              |
-| contact_information |             | ContactInformation         |                              |
+
+| Name                | JSON Name | Type                       | Notes                           |
+|---------------------|-----------|----------------------------|---------------------------------|
+| election_scope_id   |           | string                     |                                 |
+| spec_version        |           | string                     | Probably the python SDK version |
+| election_type       | type      | enum ElectionType          |                                 |
+| start_date          |           | string                     | ISO 8601 formatted date/time    |
+| end_date            |           | string                     | ISO 8601 formatted date/time    |
+| geopolitical_units  |           | List\<GeopoliticalUnit\>   |                                 |
+| parties             |           | List\<Party\>              |                                 |
+| candidates          |           | List\<Candidate\>          |                                 |
+| contests            |           | List\<ContestDescription\> |                                 |
+| ballot_styles       |           | List\<BallotStyle\>        |                                 |
+| name                |           | InternationalizedText      | optional                        |
+| contact_information |           | ContactInformation         | optional                        |
 
 ### class AnnotatedString
-| Name		     | JSON Name		 | Type	  | Notes |
-|------------|-------------|--------|-------|
-| annotation |             | string |       |
-| value      |             | string |       |
+
+| Name       | JSON Name | Type   | Notes |
+|------------|-----------|--------|-------|
+| annotation |           | string |       |
+| value      |           | string |       |
 
 ### class BallotStyle
-| Name	                 | JSON Name  | Type           | Notes                                         |
-|-----------------------|------------|----------------|-----------------------------------------------|
-| ballot_style_id       | object_id  | string         |                                               |
-| geopolitical_unit_ids |            | List\<string\> | matches GeoPoliticalUnit.geopolitical_unit_id |
-| party_ids             |            | List\<string\> | matches Party.party_id                        |
-| image_uri             |            | string         |                                               |
+
+| Name                  | JSON Name | Type           | Notes                                         |
+|-----------------------|-----------|----------------|-----------------------------------------------|
+| ballot_style_id       | object_id | string         |                                               |
+| geopolitical_unit_ids |           | List\<string\> | matches GeoPoliticalUnit.geopolitical_unit_id |
+| party_ids             |           | List\<string\> | optional matches Party.party_id               |
+| image_uri             |           | string         | optional                                      |
 
 ### class Candidate
-| Name		       | JSON Name		 | Type	                 | Notes                                      |
-|--------------|-------------|-----------------------|--------------------------------------------|
-| candidate_id | object_id   | string                |                                            |
-| name         |             | InternationalizedText |                                            |
-| party_id     |             | string                | matches Party.party_id                     |
-| image_uri    |             | string                |                                            |
-| is_write_in  |             | bool                  | assumes all write-ins are known in advance |
+
+| Name         | JSON Name | Type                  | Notes                           |
+|--------------|-----------|-----------------------|---------------------------------|
+| candidate_id | object_id | string                |                                 |
+| name         |           | InternationalizedText |                                 |
+| party_id     |           | string                | optional matches Party.party_id |
+| image_uri    |           | string                | optional                        |
+| is_write_in  |           | bool                  |                                 |
 
 ### class ContactInformation
-| Name		       | JSON Name		 | Type	          | Notes |
-|--------------|-------------|----------------|-------|
-| name         |             | string         |       |
-| address_line |             | List\<string\> |       |
-| email        |             | List\<string\> |       |
-| phone        |             | List\<string\> |       |
+
+| Name         | JSON Name | Type           | Notes    |
+|--------------|-----------|----------------|----------|
+| name         |           | string         | optional |
+| address_line |           | List\<string\> | optional |
+| email        |           | List\<string\> | optional |
+| phone        |           | List\<string\> | optional |
 
 ### class GeopoliticalUnit
-| Name		               | JSON Name		 | Type	                  | Notes |
-|----------------------|-------------|------------------------|-------|
-| geopolitical_unit_id | object_id   | string                 |       |
-| name                 |             | string                 |       |
-| type                 |             | enum ReportingUnitType |       |
-| contact_information  |             | ContactInformation     |       |
+
+| Name                 | JSON Name | Type                   | Notes    |
+|----------------------|-----------|------------------------|----------|
+| geopolitical_unit_id | object_id | string                 |          |
+| name                 |           | string                 |          |
+| type                 |           | enum ReportingUnitType |          |
+| contact_information  |           | ContactInformation     | optional |
 
 ### class InternationalizedText
-| Name		 | JSON Name		 | Type	            | Notes |
-|--------|-------------|------------------|-------|
-| text   |             | List\<Language\> |       |
+
+| Name | JSON Name | Type             | Notes |
+|------|-----------|------------------|-------|
+| text |           | List\<Language\> |       |
 
 ### class Language
-| Name		   | JSON Name		 | Type	  | Notes |
-|----------|-------------|--------|-------|
-| value    |             | string |       |
-| language |             | string |       |
+
+| Name     | JSON Name | Type   | Notes |
+|----------|-----------|--------|-------|
+| value    |           | string |       |
+| language |           | string |       |
 
 ### class Party
-| Name		       | JSON Name		 | Type	                 | Notes |
-|--------------|-------------|-----------------------|-------|
-| party_id     | object_id   | string                |       |
-| name         |             | InternationalizedText |       |
-| abbreviation |             | string                |       |
-| color        |             | string                |       |
-| logo_uri     |             | string                |       |
+
+| Name         | JSON Name | Type                  | Notes    |
+|--------------|-----------|-----------------------|----------|
+| party_id     | object_id | string                |          |
+| name         |           | InternationalizedText |          |
+| abbreviation |           | string                | optional |
+| color        |           | string                | optional |
+| logo_uri     |           | string                | optional |
 
 ### class ContestDescription
-| Name		               | JSON Name		           | Type	                        | Notes                                              |
+
+| Name                 | JSON Name             | Type                         | Notes                                              |
 |----------------------|-----------------------|------------------------------|----------------------------------------------------|
 | contest_id           | object_id             | string                       |                                                    |
 | sequence_order       |                       | uint32                       | deterministic sorting                              |
@@ -207,70 +230,77 @@ Notes
 | votes_allowed        |                       | uint32                       |                                                    |
 | name                 |                       | string                       |                                                    |
 | selections           |                       | List\<SelectionDescription\> |                                                    |
-| ballot_title         |                       | InternationalizedText        |                                                    |
-| ballot_subtitle      |                       | InternationalizedText        |                                                    |
-| primary_party_ids    |                       | List\<string\>               | matches Party.party_id LOOK                        |
+| ballot_title         |                       | InternationalizedText        | optional                                           |
+| ballot_subtitle      |                       | InternationalizedText        | optional                                           |
+| primary_party_ids    |                       | List\<string\>               | optional matches Party.party_id LOOK               |
 
 ### class SelectionDescription
-| Name		         | JSON Name		 | Type	  | Notes                          |
-|----------------|-------------|--------|--------------------------------|
-| selection_id   | object_id   | string |                                |
-| sequence_order |             | uint32 | deterministic sorting          |
-| candidate_id   |             | string | matches Candidate.candidate_id |
 
+| Name           | JSON Name | Type   | Notes                          |
+|----------------|-----------|--------|--------------------------------|
+| selection_id   | object_id | string |                                |
+| sequence_order |           | uint32 | deterministic sorting          |
+| candidate_id   |           | string | matches Candidate.candidate_id |
 
 ## PlaintextTally
 
 ### class PlaintextTally
-| Name		   | JSON Name		 | Type	                         | Notes                                                             |
-|----------|-------------|-------------------------------|-------------------------------------------------------------------|
-| tally_id | object_id   | string                        | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
-| contests |             | List\<PlaintextTallyContest\> |                                                                   |
+
+| Name     | JSON Name | Type                          | Notes                                                             |
+|----------|-----------|-------------------------------|-------------------------------------------------------------------|
+| tally_id | object_id | string                        | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
+| contests |           | List\<PlaintextTallyContest\> |                                                                   |
 
 ### class PlaintextTallyContest
-| Name		     | JSON Name		 | Type	                           | Notes                                  |
-|------------|-------------|---------------------------------|----------------------------------------|
-| contest_id | object_id   | string                          | matches ContestDescription.contest_id. |
-| selections |             | List\<PlaintextTallySelection\> | removed unneeded map                   |
+
+| Name       | JSON Name | Type                            | Notes                                  |
+|------------|-----------|---------------------------------|----------------------------------------|
+| contest_id | object_id | string                          | matches ContestDescription.contest_id. |
+| selections |           | List\<PlaintextTallySelection\> | removed unneeded map                   |
 
 ### class PlaintextTallySelection
-| Name		       | JSON Name		 | Type	                                 | Notes                                      |
-|--------------|-------------|---------------------------------------|--------------------------------------------|
-| selection_id | object_id   | string                                | matches SelectionDescription.selection_id. |
-| tally        |             | int                                   |                                            |
-| value        |             | ElementModP                           |                                            |
-| message      |             | ElGamalCiphertext                     |                                            |
-| shares       |             | List\<CiphertextDecryptionSelection\> | removed unneeded map                       |
+
+| Name         | JSON Name | Type                                  | Notes                                     |
+|--------------|-----------|---------------------------------------|-------------------------------------------|
+| selection_id | object_id | string                                | matches SelectionDescription.selection_id |
+| tally        |           | int                                   |                                           |
+| value        |           | ElementModP                           |                                           |
+| message      |           | ElGamalCiphertext                     |                                           |
+| shares       |           | List\<CiphertextDecryptionSelection\> | removed unneeded map                      |
 
 ### class CiphertextDecryptionSelection
-| Name		          | JSON Name | Type      		                                            | Notes   |
-|-----------------|-----------|---------------------------------------------------------|---------|
-|                 | object_id | string                                                  | removed |
-| guardian_id     |           | string                                                  |         |
-| share           |           | ElementModP                                             |         |
-| proof           |           | ChaumPedersenProof                                      |         |
-| recovered_parts |           | map\<string, CiphertextCompensatedDecryptionSelection\> |         |
+
+| Name            | JSON Name | Type                                                    | Notes                           |
+|-----------------|-----------|---------------------------------------------------------|---------------------------------|
+| selection_id    | object_id | string                                                  | get_tally_shares_for_selection2 |
+| guardian_id     |           | string                                                  |                                 |
+| share           |           | ElementModP                                             |                                 |
+| proof           |           | ChaumPedersenProof                                      |                                 |
+| recovered_parts |           | map\<string, CiphertextCompensatedDecryptionSelection\> |                                 |
 
 ### class CiphertextCompensatedDecryptionSelection(ElectionObjectBase)
-| Name		              | JSON Name | Type      	        | Notes   |
-|---------------------|-----------|--------------------|---------|
-|                     | object_id | string             | removed |
-| guardian_id         |           | string             |         |
-| missing_guardian_id |           | string             |         |
-| share               |           | ElementModP        |         |
-| recovery_key        |           | ElementModP        |         |
-| proof               |           | ChaumPedersenProof |         |
- 
+
+| Name                | JSON Name | Type               | Notes    |
+|---------------------|-----------|--------------------|----------|
+| selection_id        | object_id | string             | unneeded |
+| guardian_id         |           | string             |          |
+| missing_guardian_id |           | string             |          |
+| share               |           | ElementModP        |          |
+| recovery_key        |           | ElementModP        |          |
+| proof               |           | ChaumPedersenProof |          |
+
 ## CiphertextTally
 
 ### class CiphertextTally
-| Name		   | JSON Name | Type		                         | Notes                |
+
+| Name     | JSON Name | Type                           | Notes                |
 |----------|-----------|--------------------------------|----------------------|
 | tally_id | object_id | string                         |                      |
 | contests |           | List\<CiphertextTallyContest\> | removed unneeded map | 
 
 ### class CiphertextTallyContest
-| Name		                   | JSON Name | Type    		                       | Notes                                  |
+
+| Name                     | JSON Name | Type                             | Notes                                  |
 |--------------------------|-----------|----------------------------------|----------------------------------------|
 | contest_id               | object_id | string                           | matches ContestDescription.contest_id  |
 | sequence_order           |           | uint32                           |                                        |
@@ -278,50 +308,54 @@ Notes
 | selections               |           | List\<CiphertextTallySelection\> | removed unneeded map                   |
 
 ### class CiphertextTallySelection|
-| Name		                     | JSON Name | Type    	         | Notes                                     |
+
+| Name                       | JSON Name | Type              | Notes                                     |
 |----------------------------|-----------|-------------------|-------------------------------------------|
 | selection_id               | object_id | string            | matches SelectionDescription.selection_id |
 | sequence_order             |           | uint32            |                                           |
 | selection_description_hash |           | ElementModQ       | matches SelectionDescription.crypto_hash  |
 | ciphertext                 |           | ElGamalCiphertext |                                           |
-    
-    
+
 ## PlaintextBallot
 
 ### class PlaintextBallot
-| Name		          | JSON Name | Type  		                       | Notes                               |
+
+| Name            | JSON Name | Type                           | Notes                               |
 |-----------------|-----------|--------------------------------|-------------------------------------|
 | ballot_id       | object_id | string                         | unique input ballot id              |
 | ballot_style_id | style_id  | string                         | matches BallotStyle.ballot_style_id |
 | contests        |           | List\<PlaintextBallotContest\> |                                     |
 
 ### class PlaintextBallotContest
-| Name		         | JSON Name | Type  		                         | Notes                                  |
+
+| Name           | JSON Name | Type                             | Notes                                  |
 |----------------|-----------|----------------------------------|----------------------------------------|
 | contest_id     | object_id | string                           | matches ContestDescription.contest_id. |
 | sequence_order |           | uint32                           |                                        |
 | selections     |           | List\<PlaintextBallotSelection\> |                                        |
 
 ### class PlaintextBallotSelection
-| Name		                   | JSON Name | Type  		     | Notes                                      |
+
+| Name                     | JSON Name | Type         | Notes                                      |
 |--------------------------|-----------|--------------|--------------------------------------------|
 | selection_id             | object_id | string       | matches SelectionDescription.selection_id. |
 | sequence_order           |           | uint32       |                                            |
 | vote                     |           | uint32       |                                            |
 | is_placeholder_selection |           | bool         |                                            |
-| extended_data            |           | ExtendedData | unused                                     |
+| extended_data            |           | ExtendedData | optional                                   |
 
 ### class ExtendedData|
-| Name		 | JSON Name | Type  		 | Notes |
-|--------|-----------|----------|-------|
-| value  |           | string   |       |
-| length |           | uint32   | why?  | 
 
+| Name   | JSON Name | Type   | Notes |
+|--------|-----------|--------|-------|
+| value  |           | string |       |
+| length |           | uint32 | why?  | 
 
 ## CyphertextBallot
 
 ### class SubmittedBallot
-| Name		                 | JSON Name | Type  		                        | Notes                                |
+
+| Name                   | JSON Name | Type                            | Notes                                |
 |------------------------|-----------|---------------------------------|--------------------------------------|
 | ballot_id              | object_id | string                          | matches PlaintextBallot.ballot_id.   |
 | ballot_style_id        | style_id  | string                          | matches BallotStyle.ballot_style_id. |
@@ -335,7 +369,8 @@ Notes
 | state                  |           | enum BallotState                | CAST, SPOILED                        |
 
 ### class CiphertextBallotContest
-| Name		                  | JSON Name         | Type  		                          | Notes                                          |
+
+| Name                    | JSON Name         | Type                              | Notes                                          |
 |-------------------------|-------------------|-----------------------------------|------------------------------------------------|
 | contest_id              | object_id         | string                            | matches ContestDescription.contest_id  REMOVE? |
 | sequence_order          |                   | uint32                            |                                                |
@@ -347,7 +382,8 @@ Notes
 | proof                   |                   | ConstantChaumPedersenProof        |                                                |
 
 ### class CiphertextBallotSelection
-| Name		                   | JSON Name        | Type  		                      | Notes                                             |
+
+| Name                     | JSON Name        | Type                          | Notes                                             |
 |--------------------------|------------------|-------------------------------|---------------------------------------------------|
 | selection_id             | object_id        | string                        | matches SelectionDescription.selection_id REMOVE? |
 | sequence_order           |                  | uint32                        |                                                   |
@@ -357,10 +393,11 @@ Notes
 | is_placeholder_selection |                  | bool                          |                                                   |
 |                          | nonce            | ElementModQ                   | removed                                           |
 | proof                    |                  | DisjunctiveChaumPedersenProof |                                                   |
-| extended_data            |                  | ElGamalCiphertext             |                                                   |
+| extended_data            |                  | ElGamalCiphertext             | optional                                          |
 
 ### class ConstantChaumPedersenProof
-| Name		    | JSON Name | Type  		        | Notes   |
+
+| Name      | JSON Name | Type            | Notes   |
 |-----------|-----------|-----------------|---------|
 |           | name      | string          | removed |
 |           | usage     | enum ProofUsage | removed |
@@ -368,9 +405,10 @@ Notes
 | data      |           | ElementModP     |         |
 | challenge |           | ElementModQ     |         |
 | response  |           | ElementModQ     |         |
-| constant  |           | int32           |         |
+| constant  |           | uint32          |         |
 
 ### class DisjunctiveChaumPedersenProof
+
 | Name                 | JSON Name | Type            | Notes   |
 |----------------------|-----------|-----------------|---------|
 |                      | name      | string          | removed |

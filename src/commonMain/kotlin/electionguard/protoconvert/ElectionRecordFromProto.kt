@@ -25,7 +25,7 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
 
 
         return ElectionRecord(
-            proto.version,
+            proto.protoVersion,
             convertConstants(proto.constants?: throw IllegalStateException("constants cant be null")),
             manifest,
             convertContext(proto.context?: throw IllegalStateException("context cant be null")),

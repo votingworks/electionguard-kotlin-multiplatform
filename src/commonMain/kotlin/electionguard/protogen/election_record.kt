@@ -4,7 +4,7 @@ package electionguard.protogen
 
 @pbandk.Export
 public data class ElectionRecord(
-    val version: String = "",
+    val protoVersion: String = "",
     val constants: electionguard.protogen.ElectionConstants? = null,
     val manifest: electionguard.protogen.Manifest? = null,
     val context: electionguard.protogen.ElectionContext? = null,
@@ -28,11 +28,11 @@ public data class ElectionRecord(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "version",
+                        name = "proto_version",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "version",
-                        value = electionguard.protogen.ElectionRecord::version
+                        jsonName = "protoVersion",
+                        value = electionguard.protogen.ElectionRecord::protoVersion
                     )
                 )
                 add(
@@ -581,7 +581,7 @@ private fun ElectionRecord.protoMergeImpl(plus: pbandk.Message?): ElectionRecord
 
 @Suppress("UNCHECKED_CAST")
 private fun ElectionRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionRecord {
-    var version = ""
+    var protoVersion = ""
     var constants: electionguard.protogen.ElectionConstants? = null
     var manifest: electionguard.protogen.Manifest? = null
     var context: electionguard.protogen.ElectionContext? = null
@@ -593,7 +593,7 @@ private fun ElectionRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> version = _fieldValue as String
+            1 -> protoVersion = _fieldValue as String
             2 -> constants = _fieldValue as electionguard.protogen.ElectionConstants
             3 -> manifest = _fieldValue as electionguard.protogen.Manifest
             4 -> context = _fieldValue as electionguard.protogen.ElectionContext
@@ -604,7 +604,7 @@ private fun ElectionRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
             9 -> availableGuardians = (availableGuardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.AvailableGuardian> }
         }
     }
-    return ElectionRecord(version, constants, manifest, context,
+    return ElectionRecord(protoVersion, constants, manifest, context,
         pbandk.ListWithSize.Builder.fixed(guardianRecords), pbandk.ListWithSize.Builder.fixed(devices), ciphertextTally, decryptedTally,
         pbandk.ListWithSize.Builder.fixed(availableGuardians), unknownFields)
 }

@@ -4,8 +4,6 @@ import electionguard.ballot.DecryptionShare
 import electionguard.ballot.PlaintextTally
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
-import electionguard.protogen.PlaintextTallyContest
-import electionguard.protogen.PlaintextTallySelection
 
 data class PlaintextTallyConvert(val groupContext: GroupContext) {
 
@@ -16,14 +14,14 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
             )
     }
 
-    private fun convertContest(proto: PlaintextTallyContest): PlaintextTally.Contest {
+    private fun convertContest(proto: electionguard.protogen.PlaintextTallyContest): PlaintextTally.Contest {
         return PlaintextTally.Contest(
             proto.contestId,
             proto.selections.associate{ it.selectionId to convertSelection(it) }
         )
     }
 
-    private fun convertSelection(proto: PlaintextTallySelection): PlaintextTally.Selection {
+    private fun convertSelection(proto: electionguard.protogen.PlaintextTallySelection): PlaintextTally.Selection {
         return PlaintextTally.Selection(
             proto.selectionId,
             proto.tally,
@@ -34,14 +32,17 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
     }
 
     private fun convertShare(proto: electionguard.protogen.CiphertextDecryptionSelection): DecryptionShare.CiphertextDecryptionSelection {
-        // either proof or recoverdParts is non null / non empty
+        // either proof or recoverdParts is non null
         var proof : GenericChaumPedersenProof? = null
-        if (proto.proof != null) {
-            proof = convertChaumPedersenProof(proto.proof, groupContext)
-        }
         var parts : Map<String, DecryptionShare.CiphertextCompensatedDecryptionSelection>? = emptyMap()
-        if (proto.recoveredParts.isNotEmpty()) {
-            parts = proto.recoveredParts.associate { it.key to convertRecoveredParts(it) }
+        if (proto.proof != null) {
+            val pproof = proto.proof?: throw IllegalStateException("CiphertextDecryptionSelection.proof is null");
+            proof = convertChaumPedersenProof(pproof, groupContext)
+        } else if (proto.recoveredParts != null) {
+            val recoveredParts = proto.recoveredParts?: throw IllegalStateException("CiphertextDecryptionSelection.recoveredParts is null");
+            parts = recoveredParts.fragments.associate { it.guardianId to convertRecoveredParts(it) }
+        } else {
+            throw IllegalArgumentException("both CiphertextDecryptionSelection proof and recoveredParts are null")
         }
         return DecryptionShare.CiphertextDecryptionSelection(
             proto.guardianId,
@@ -51,14 +52,13 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertRecoveredParts(proto: electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry): DecryptionShare.CiphertextCompensatedDecryptionSelection {
-        val part : electionguard.protogen.CiphertextCompensatedDecryptionSelection = proto.value?: throw IllegalArgumentException("DecryptionShare cannot be null")
+    private fun convertRecoveredParts(proto: electionguard.protogen.CiphertextCompensatedDecryptionSelection): DecryptionShare.CiphertextCompensatedDecryptionSelection {
         return DecryptionShare.CiphertextCompensatedDecryptionSelection(
-            part.guardianId,
-            part.missingGuardianId,
-            convertElementModP(part.share?: throw IllegalArgumentException("DecryptionShare part cannot be null"), groupContext),
-            convertElementModP(part.recoveryKey?: throw IllegalArgumentException("DecryptionShare recoveryKey cannot be null"), groupContext),
-            convertChaumPedersenProof(part.proof?: throw IllegalArgumentException("DecryptionShare recoveryKey cannot be null"), groupContext),
+            proto.guardianId,
+            proto.missingGuardianId,
+            convertElementModP(proto.share?: throw IllegalArgumentException("DecryptionShare part cannot be null"), groupContext),
+            convertElementModP(proto.recoveryKey?: throw IllegalArgumentException("DecryptionShare recoveryKey cannot be null"), groupContext),
+            convertChaumPedersenProof(proto.proof?: throw IllegalArgumentException("DecryptionShare recoveryKey cannot be null"), groupContext),
         )
     }
 
@@ -72,14 +72,14 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
     }
 
     private fun convertContest(contest: PlaintextTally.Contest): electionguard.protogen.PlaintextTallyContest {
-        return PlaintextTallyContest(
+        return electionguard.protogen.PlaintextTallyContest(
                 contest.contestId,
                 contest.selections.values.map{ convertSelection(it) }
         )
     }
 
-    private fun convertSelection(selection: PlaintextTally.Selection): PlaintextTallySelection {
-        return PlaintextTallySelection(
+    private fun convertSelection(selection: PlaintextTally.Selection): electionguard.protogen.PlaintextTallySelection {
+        return electionguard.protogen.PlaintextTallySelection(
                 selection.selectionId,
                 selection.tally,
                 convertElementModP(selection.value),
@@ -90,32 +90,28 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
 
     private fun convertShare(share: DecryptionShare.CiphertextDecryptionSelection):  electionguard.protogen.CiphertextDecryptionSelection {
         // either proof or recovered_parts is non null / non empty
-        var pproof : electionguard.protogen.ChaumPedersenProof? = null
+        var proofOrParts : electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts<*>? = null
         if (share.proof != null) {
-            pproof = convertChaumPedersenProof(share.proof)
-        }
-        var pparts : List<electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry> = emptyList()
-        if (share.recoveredParts != null && share.recoveredParts.isNotEmpty()) {
-            pparts = share.recoveredParts.map{ convertRecoveredParts(it.value)}
+            proofOrParts = electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts.Proof(convertChaumPedersenProof(share.proof))
+        } else if (share.recoveredParts != null) {
+            val pparts : List<electionguard.protogen.CiphertextCompensatedDecryptionSelection>
+            pparts = share.recoveredParts.map { convertRecoveredParts(it.value) }
+            proofOrParts =electionguard.protogen. CiphertextDecryptionSelection.ProofOrParts.RecoveredParts(electionguard.protogen.RecoveredParts(pparts))
         }
         return electionguard.protogen.CiphertextDecryptionSelection(
             share.guardianId,
             convertElementModP(share.share),
-            pproof,
-            pparts
+            proofOrParts,
         )
     }
 
-    private fun convertRecoveredParts(part: DecryptionShare.CiphertextCompensatedDecryptionSelection):  electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry{
-        return electionguard.protogen.CiphertextDecryptionSelection.RecoveredPartsEntry(
-            part.missingGuardianId,
-            electionguard.protogen.CiphertextCompensatedDecryptionSelection(
+    private fun convertRecoveredParts(part: DecryptionShare.CiphertextCompensatedDecryptionSelection):  electionguard.protogen.CiphertextCompensatedDecryptionSelection {
+        return electionguard.protogen.CiphertextCompensatedDecryptionSelection(
                 part.guardianId,
                 part.missingGuardianId,
                 convertElementModP(part.share),
                 convertElementModP(part.recoveryKey),
                 convertChaumPedersenProof(part.proof),
-            )
         )
     }
 }

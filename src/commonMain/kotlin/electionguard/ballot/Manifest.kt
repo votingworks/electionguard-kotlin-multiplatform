@@ -346,7 +346,7 @@ data class Manifest(
      */
     data class Candidate(
         val candidateId: String,
-        val name: InternationalizedText?,
+        val name: InternationalizedText,
         val partyId: String?,
         val imageUri: String?,
         val isWriteIn: Boolean,
@@ -417,7 +417,7 @@ data class Manifest(
      */
     data class Party(
         val partyId: String,
-        val name: InternationalizedText?,
+        val name: InternationalizedText,
         val abbreviation: String?,
         val color: String?,
         val logoUri: String?,
@@ -503,9 +503,10 @@ data class Manifest(
             image_uri: String?,
             is_write_in: Boolean
         ): Manifest.Candidate {
-
+            val useName = name ?:
+                makeInternationalizedText(groupContext, listOf(makeLanguage(groupContext, "unknown", "en")))
             return Manifest.Candidate(
-                candidate_id, name, party_id, image_uri, is_write_in,
+                candidate_id, useName, party_id, image_uri, is_write_in,
                 groupContext.hashElements(candidate_id, name, party_id, image_uri)
             )
         }
@@ -601,9 +602,11 @@ data class Manifest(
             color: String?,
             logo_uri: String?,
         ): Manifest.Party {
+            val useName = name ?:
+                makeInternationalizedText(groupContext, listOf(makeLanguage(groupContext, "unknown", "en")))
 
             return Manifest.Party(
-                party_id, name, abbreviation, color, logo_uri,
+                party_id, useName, abbreviation, color, logo_uri,
                 groupContext.hashElements(party_id, name, abbreviation, color, logo_uri)
             )
         }
