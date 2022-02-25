@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 2/24/2022 for proto_version = 1.0.0 (MAJOR.MINOR.PATCH)
+draft 2/25/2022 for proto_version = 1.0.0 (MAJOR.MINOR.PATCH)
 
 This covers only the election record, and not any serialized classes used in remote procedure calls.
 
@@ -9,10 +9,10 @@ Notes
 1. All fields must be present unless marked as optional.
 2. This specification will be mapped (in both directions) to the 1.0 JSON specification, when thats done.
 3. Proto_version uses [semantic versioning](https://semver.org/), and all versions will be
-     [forward and backwards compatible](https://developers.google.com/protocol-buffers/docs/proto3#updating)
-     starting with ? (1.0 I hope, if the JSON spec is finalized by then).
+   [forward and backwards compatible](https://developers.google.com/protocol-buffers/docs/proto3#updating)
+   starting with ? (1.0 I hope, if the JSON spec is finalized by then).
 
-## Common.proto
+## common.proto
 
 ### class ChaumPedersenProof
 
@@ -213,19 +213,19 @@ Notes
 
 ### class ContestDescription
 
-| Name                 | JSON Name             | Type                         | Notes                                              |
-|----------------------|-----------------------|------------------------------|----------------------------------------------------|
-| contest_id           | object_id             | string                       |                                                    |
-| sequence_order       |                       | uint32                       | deterministic sorting                              |
-| geopolitical_unit_id | electoral_district_id | string                       | matches GeoPoliticalUnit.geopolitical_unit_id LOOK |
-| vote_variation       |                       | enum VoteVariationType       |                                                    |
-| number_elected       |                       | uint32                       |                                                    |
-| votes_allowed        |                       | uint32                       |                                                    |
-| name                 |                       | string                       |                                                    |
-| selections           |                       | List\<SelectionDescription\> |                                                    |
-| ballot_title         |                       | InternationalizedText        | optional                                           |
-| ballot_subtitle      |                       | InternationalizedText        | optional                                           |
-| primary_party_ids    |                       | List\<string\>               | optional matches Party.party_id LOOK               |
+| Name                 | JSON Name             | Type                         | Notes                                         |
+|----------------------|-----------------------|------------------------------|-----------------------------------------------|
+| contest_id           | object_id             | string                       |                                               |
+| sequence_order       |                       | uint32                       | deterministic sorting                         |
+| geopolitical_unit_id | electoral_district_id | string                       | matches GeoPoliticalUnit.geopolitical_unit_id |
+| vote_variation       |                       | enum VoteVariationType       |                                               |
+| number_elected       |                       | uint32                       |                                               |
+| votes_allowed        |                       | uint32                       |                                               |
+| name                 |                       | string                       |                                               |
+| selections           |                       | List\<SelectionDescription\> |                                               |
+| ballot_title         |                       | InternationalizedText        | optional                                      |
+| ballot_subtitle      |                       | InternationalizedText        | optional                                      |
+| primary_party_ids    |                       | List\<string\>               | optional matches Party.party_id               |
 
 ### class SelectionDescription
 
@@ -263,13 +263,13 @@ Notes
 
 ### class CiphertextDecryptionSelection
 
-| Name            | JSON Name | Type                                                    | Notes                           |
-|-----------------|-----------|---------------------------------------------------------|---------------------------------|
-| selection_id    | object_id | string                                                  | get_tally_shares_for_selection2 |
-| guardian_id     |           | string                                                  |                                 |
-| share           |           | ElementModP                                             |                                 |
-| proof           |           | ChaumPedersenProof                                      |                                 |
-| recovered_parts |           | map\<string, CiphertextCompensatedDecryptionSelection\> |                                 |
+| Name            | JSON Name | Type                                             | Notes                           |
+|-----------------|-----------|--------------------------------------------------|---------------------------------|
+| selection_id    | object_id | string                                           | get_tally_shares_for_selection2 |
+| guardian_id     |           | string                                           |                                 |
+| share           |           | ElementModP                                      |                                 |
+| proof           |           | ChaumPedersenProof                               |                                 |
+| recovered_parts |           | List\<CiphertextCompensatedDecryptionSelection\> | removed unneeded map            |
 
 ### class CiphertextCompensatedDecryptionSelection(ElectionObjectBase)
 
@@ -286,10 +286,10 @@ Notes
 
 ### class CiphertextTally
 
-| Name     | JSON Name | Type                           | Notes                |
-|----------|-----------|--------------------------------|----------------------|
-| tally_id | object_id | string                         |                      |
-| contests |           | List\<CiphertextTallyContest\> | removed unneeded map | 
+| Name     | JSON Name | Type                           | Notes                                                             |
+|----------|-----------|--------------------------------|-------------------------------------------------------------------|
+| tally_id | object_id | string                         | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
+| contests |           | List\<CiphertextTallyContest\> | removed unneeded map                                              | 
 
 ### class CiphertextTallyContest
 
