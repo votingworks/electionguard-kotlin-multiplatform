@@ -12,7 +12,7 @@ Notes
      [forward and backwards compatible](https://developers.google.com/protocol-buffers/docs/proto3#updating)
      starting with ? (1.0 I hope, if the JSON spec is finalized by then).
 
-## Common
+## Common.proto
 
 ### class ChaumPedersenProof
 
@@ -38,13 +38,6 @@ Notes
 | pad  |           | ElementModP |       |
 | data |           | ElementModP |       |
 
-### class ElGamalKeyPair LOOK
-
-| Name       | JSON Name | Type        | Notes |
-|------------|-----------|-------------|-------|
-| secret_key |           | ElementModQ |       |
-| public_key |           | ElementModP |       |
-
 ### class SchnorrProof
 
 | Name       | JSON Name | Type            | Notes   |
@@ -58,7 +51,7 @@ Notes
 
 ## Election
 
-### class ElectionRecord
+### class election_record.proto
 
 There is no python SDK version of this class
 
@@ -123,7 +116,7 @@ There is no python SDK version of this class
 | election_commitments |           | List\<ElementModP\>  |                                |
 | election_proofs      |           | List\<SchnorrProof\> |                                |
 
-## Manifest
+## manifest.proto
 
 Could simplify to be just the fields needed by electionguard library. Assume that there is an existing system that
 captures all the metadata that election software need, which is a superset of this.
@@ -242,7 +235,7 @@ Notes
 | sequence_order |           | uint32 | deterministic sorting          |
 | candidate_id   |           | string | matches Candidate.candidate_id |
 
-## PlaintextTally
+## plaintext_tally.proto
 
 ### class PlaintextTally
 
@@ -289,7 +282,7 @@ Notes
 | recovery_key        |           | ElementModP        |          |
 | proof               |           | ChaumPedersenProof |          |
 
-## CiphertextTally
+## ciphertext_tally.proto
 
 ### class CiphertextTally
 
@@ -316,7 +309,7 @@ Notes
 | selection_description_hash |           | ElementModQ       | matches SelectionDescription.crypto_hash  |
 | ciphertext                 |           | ElGamalCiphertext |                                           |
 
-## PlaintextBallot
+## plaintext_ballot.proto
 
 ### class PlaintextBallot
 
@@ -351,7 +344,7 @@ Notes
 | value  |           | string |       |
 | length |           | uint32 | why?  | 
 
-## CyphertextBallot
+## ciphertext_ballot.proto
 
 ### class SubmittedBallot
 

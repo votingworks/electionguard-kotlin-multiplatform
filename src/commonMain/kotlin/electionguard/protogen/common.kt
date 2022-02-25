@@ -191,53 +191,6 @@ public data class ElGamalCiphertext(
 }
 
 @pbandk.Export
-public data class ElGamalKeyPair(
-    val secretKey: electionguard.protogen.ElementModQ? = null,
-    val publicKey: electionguard.protogen.ElementModP? = null,
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElGamalKeyPair = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElGamalKeyPair> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.ElGamalKeyPair> {
-        public val defaultInstance: electionguard.protogen.ElGamalKeyPair by lazy { electionguard.protogen.ElGamalKeyPair() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElGamalKeyPair = electionguard.protogen.ElGamalKeyPair.decodeWithImpl(u)
-
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElGamalKeyPair> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElGamalKeyPair, *>>(2)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "secret_key",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "secretKey",
-                        value = electionguard.protogen.ElGamalKeyPair::secretKey
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "public_key",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
-                        jsonName = "publicKey",
-                        value = electionguard.protogen.ElGamalKeyPair::publicKey
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "ElGamalKeyPair",
-                messageClass = electionguard.protogen.ElGamalKeyPair::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
-        }
-    }
-}
-
-@pbandk.Export
 public data class SchnorrProof(
     val publicKey: electionguard.protogen.ElementModP? = null,
     val commitment: electionguard.protogen.ElementModP? = null,
@@ -406,32 +359,6 @@ private fun ElGamalCiphertext.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
         }
     }
     return ElGamalCiphertext(pad, data, unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForElGamalKeyPair")
-public fun ElGamalKeyPair?.orDefault(): electionguard.protogen.ElGamalKeyPair = this ?: ElGamalKeyPair.defaultInstance
-
-private fun ElGamalKeyPair.protoMergeImpl(plus: pbandk.Message?): ElGamalKeyPair = (plus as? ElGamalKeyPair)?.let {
-    it.copy(
-        secretKey = secretKey?.plus(plus.secretKey) ?: plus.secretKey,
-        publicKey = publicKey?.plus(plus.publicKey) ?: plus.publicKey,
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun ElGamalKeyPair.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElGamalKeyPair {
-    var secretKey: electionguard.protogen.ElementModQ? = null
-    var publicKey: electionguard.protogen.ElementModP? = null
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> secretKey = _fieldValue as electionguard.protogen.ElementModQ
-            2 -> publicKey = _fieldValue as electionguard.protogen.ElementModP
-        }
-    }
-    return ElGamalKeyPair(secretKey, publicKey, unknownFields)
 }
 
 @pbandk.Export
