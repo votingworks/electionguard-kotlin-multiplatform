@@ -2,10 +2,7 @@ package electionguard.protoconvert
 
 import electionguard.ballot.Manifest
 import electionguard.core.GroupContext
-import electionguard.core.productionGroup
-import electionguard.core.runTest
 import electionguard.core.tinyGroup
-import kotlinx.datetime.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -42,8 +39,8 @@ class ManifestConvertTest {
                 "electionScopeId",
                 "specVersion",
                 Manifest.ElectionType.primary,
-                LocalDateTime.parse("2022-02-22T00:00:00"),
-                LocalDateTime.parse("2022-02-23T23:59:57"),
+                "2022-02-22T00:00:00",
+                "2022-02-23T23:59:57",
                 List(11) { generateGeopoliticalUnit(it, context) },
                 List(12) { generateParty(it, context) },
                 List(13) { generateCandidate(it, context) },

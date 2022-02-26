@@ -48,8 +48,6 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
             proto.devices.map { convertDevice(it) },
             ciphertextTally,
             decryptedTally,
-            null,
-            null,
             availableGuardians
         )
     }
@@ -82,6 +80,7 @@ data class ElectionRecordFromProto(val groupContext: GroupContext) {
         //  missing / null?
 
         return ElectionConstants(
+            constants.name,
             constants.largePrime.array,
             constants.smallPrime.array,
             constants.cofactor.array,

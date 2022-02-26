@@ -53,7 +53,7 @@ Notes
 
 ### class election_record.proto
 
-There is no python SDK version of this class
+There is no python SDK version of this class.
 
 | Name                | Type                      | Notes                |
 |---------------------|---------------------------|----------------------|
@@ -77,12 +77,13 @@ There is no python SDK version of this class
 
 ### class ElectionConstants
 
-| Name        | JSON Name | Type  | Notes                             |
-|-------------|-----------|-------|-----------------------------------|
-| large_prime |           | bytes | bigint is unsigned and big-endian |
-| small_prime |           | bytes | bigint is unsigned and big-endian |
-| cofactor    |           | bytes | bigint is unsigned and big-endian |
-| generator   |           | bytes | bigint is unsigned and big-endian |
+| Name        | JSON Name | Type   | Notes                             |
+|-------------|-----------|--------|-----------------------------------|
+| name        |           | string |                                   |
+| large_prime |           | bytes  | bigint is unsigned and big-endian |
+| small_prime |           | bytes  | bigint is unsigned and big-endian |
+| cofactor    |           | bytes  | bigint is unsigned and big-endian |
+| generator   |           | bytes  | bigint is unsigned and big-endian |
 
 ### class ElectionContext
 
@@ -108,13 +109,13 @@ There is no python SDK version of this class
 
 ### class GuardianRecord
 
-| Name                 | JSON Name | Type                 | Notes                          |
-|----------------------|-----------|----------------------|--------------------------------|
-| guardian_id          |           | string               |                                |
-| x_coordinate         |           | uint32               | x_coordinate in the polynomial |
-| election_public_key  |           | ElementModP          |                                |
-| election_commitments |           | List\<ElementModP\>  |                                |
-| election_proofs      |           | List\<SchnorrProof\> |                                |
+| Name                    | JSON Name            | Type                 | Notes                          |
+|-------------------------|----------------------|----------------------|--------------------------------|
+| guardian_id             |                      | string               |                                |
+| x_coordinate            | sequence_order       | uint32               | x_coordinate in the polynomial |
+| guardian_public_key     | election_public_key  | ElementModP          |                                |
+| coefficient_commitments | election_commitments | List\<ElementModP\>  |                                |
+| coefficient_proofs      | election_proofs      | List\<SchnorrProof\> |                                |
 
 ## manifest.proto
 
@@ -344,7 +345,7 @@ Notes
 | value  |           | string |       |
 | length |           | uint32 | why?  | 
 
-## ciphertext_ballot.proto
+## ciphertext_ballot.proto 
 
 ### class SubmittedBallot
 
