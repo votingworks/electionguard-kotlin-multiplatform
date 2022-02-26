@@ -1,3 +1,4 @@
+
 buildscript {
     repositories {
         google()
@@ -14,10 +15,15 @@ plugins {
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
     id("tech.formatter-kt.formatter") version "0.7.9"
+
+    java
 }
 
 group = "electionguard-kotlin-multiplatform"
 version = "1.0-SNAPSHOT"
+
+val protobufVersion by extra("3.19.4")
+val pbandkVersion by extra("0.13.0")
 
 repositories {
     google()
@@ -137,6 +143,14 @@ kotlin {
                     // us lots of features. On Native, it ultimately just prints to stdout.
                     // On JS, it uses console.log, console.error, etc.
                     implementation("io.github.microutils:kotlin-logging:2.1.21")
+
+                    // A multiplatform Kotlin library for working with date and time.
+                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
+
+                    // A multiplatform Kotlin library for working with date and time.
+                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
+
+                    implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
                 }
             }
         val commonTest by
@@ -186,6 +200,21 @@ kotlin {
         val jsTest by getting { dependencies { implementation(kotlin("test-js", "1.6.10")) } }
         val nativeMain by getting { dependencies {} }
         val nativeTest by getting { dependencies {} }
+    }
+}
+
+val protoGenSource by extra("/home/snake/dev/github/electionguard-kotlin-multiplatform/build/generated/source/proto")
+
+val compileProtobuf = tasks.register("compileProtobuf") {
+    print("* Compiling protobuf *\n")
+    /* project.exec {
+        commandLine = "rm -f ./src/commonMain/kotlin/electionguard/protogen".split(" ")
+    } */
+    val commandLineStr = "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
+            "ciphertext_ballot.proto ciphertext_tally.proto common.proto election_record.proto manifest.proto " +
+            "plaintext_ballot.proto plaintext_tally.proto"
+    project.exec {
+        commandLine = commandLineStr.split(" ")
     }
 }
 
@@ -284,4 +313,16 @@ allprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask> {
         args += "--ignore-scripts"
     }
+}
+
+// Workaround the Gradle bug resolving multi-platform dependencies.
+// Fix courtesy of https://github.com/square/okio/issues/647
+configurations.forEach {
+    if (it.name.toLowerCase().contains("kapt") || it.name.toLowerCase().contains("proto")) {
+        it.attributes.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, Usage.JAVA_RUNTIME))
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
 }

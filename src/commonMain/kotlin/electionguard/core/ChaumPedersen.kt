@@ -34,10 +34,10 @@ data class DisjunctiveChaumPedersenProofKnownNonce(
  * component in other proofs. (See
  * [Chaum-Pedersen 1992](https://link.springer.com/chapter/10.1007/3-540-48071-4_7))
  *
- * @param a g^w
- * @param b h^w
- * @param c hash(a, b, and possibly other state)
- * @param r w + xc
+ * @param a g^w (aka pad)
+ * @param b h^w (aka data)
+ * @param c hash(a, b, and possibly other state) (aka challenge)
+ * @param r w + xc (aka response)
  */
 data class GenericChaumPedersenProof(
     val a: ElementModP,
