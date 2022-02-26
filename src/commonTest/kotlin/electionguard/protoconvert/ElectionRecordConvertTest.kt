@@ -63,14 +63,13 @@ class ElectionRecordConvertTest {
             List(1) { generateEncryptionDevice(it) },
             CiphertextTallyConvertTest.generateFakeTally(context),
             PlaintextTallyConvertTest.generateFakeTally(0, context),
-            null, // List(13) { SubmittedBallotConvertTest.generateSubmittedBallot(it, context) },
-            null, // List(9) { PlaintextTallyConvertTest.generateFakeTally(it, context) },
             List(3) { generateAvailableGuardian(it, context) },
         )
     }
 
     private fun generateElectionConstants(): ElectionConstants {
         return ElectionConstants(
+            "fake",
             ByteArray(4) {42},
             ByteArray(4) {-43},
             ByteArray(4) {44},

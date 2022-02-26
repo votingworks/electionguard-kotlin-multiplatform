@@ -186,6 +186,7 @@ public data class AvailableGuardian(
 
 @pbandk.Export
 public data class ElectionConstants(
+    val name: String = "",
     val largePrime: pbandk.ByteArr = pbandk.ByteArr.empty,
     val smallPrime: pbandk.ByteArr = pbandk.ByteArr.empty,
     val cofactor: pbandk.ByteArr = pbandk.ByteArr.empty,
@@ -200,7 +201,7 @@ public data class ElectionConstants(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConstants = electionguard.protogen.ElectionConstants.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConstants> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConstants, *>>(4)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConstants, *>>(5)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -240,6 +241,16 @@ public data class ElectionConstants(
                         type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
                         jsonName = "generator",
                         value = electionguard.protogen.ElectionConstants::generator
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "name",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "name",
+                        value = electionguard.protogen.ElectionConstants::name
                     )
                 )
             }
@@ -648,6 +659,7 @@ private fun ElectionConstants.protoMergeImpl(plus: pbandk.Message?): ElectionCon
 
 @Suppress("UNCHECKED_CAST")
 private fun ElectionConstants.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionConstants {
+    var name = ""
     var largePrime: pbandk.ByteArr = pbandk.ByteArr.empty
     var smallPrime: pbandk.ByteArr = pbandk.ByteArr.empty
     var cofactor: pbandk.ByteArr = pbandk.ByteArr.empty
@@ -659,9 +671,11 @@ private fun ElectionConstants.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             2 -> smallPrime = _fieldValue as pbandk.ByteArr
             3 -> cofactor = _fieldValue as pbandk.ByteArr
             4 -> generator = _fieldValue as pbandk.ByteArr
+            5 -> name = _fieldValue as String
         }
     }
-    return ElectionConstants(largePrime, smallPrime, cofactor, generator, unknownFields)
+    return ElectionConstants(name, largePrime, smallPrime, cofactor,
+        generator, unknownFields)
 }
 
 @pbandk.Export

@@ -74,6 +74,7 @@ data class ElectionRecordToProto(val groupContext: GroupContext) {
 
     private fun convertConstants(constants: ElectionConstants): electionguard.protogen.ElectionConstants {
         return electionguard.protogen.ElectionConstants(
+            constants.name,
             ByteArr(constants.largePrime),
             ByteArr(constants.smallPrime),
             ByteArr(constants.cofactor),
@@ -118,7 +119,7 @@ data class ElectionRecordToProto(val groupContext: GroupContext) {
          return electionguard.protogen.GuardianRecord(
             guardianRecord.guardianId,
             guardianRecord.xCoordinate,
-            convertElementModP(guardianRecord.electionPublicKey),
+            convertElementModP(guardianRecord.guardianPublicKey),
             guardianRecord.coefficientCommitments.map { convertElementModP(it)},
             guardianRecord.coefficientProofs.map { convertSchnorrProof(it)},
         )

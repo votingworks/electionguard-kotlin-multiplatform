@@ -2,6 +2,18 @@ package electionguard.ballot
 
 import electionguard.core.*
 
+/**
+ * The entire published election record.
+ * @param electionRecord the record of all the public election data (except submittedBallots and spoiledBallots)
+ * @param submittedBallots all submitted ballots (CAST and SPOILED)
+ * @param spoiledBallots decrypted spoiled ballots as PlaintextTally
+ */
+data class ElectionRecordAllData(
+    val electionRecord: ElectionRecord,
+    val submittedBallots: Iterable<SubmittedBallot>?,
+    val spoiledBallots: Iterable<PlaintextTally>?,
+)
+
 /** The published election record for a collection of ballots, eg from a single encryption device.  */
 data class ElectionRecord(
     val protoVersion: String,
@@ -12,14 +24,12 @@ data class ElectionRecord(
     val devices: List<EncryptionDevice>,
     val encryptedTally: CiphertextTally?,
     val decryptedTally: PlaintextTally?,
-    val acceptedBallots: Iterable<SubmittedBallot>?,
-    val spoiledBallots: Iterable<PlaintextTally>?,
     val availableGuardians: List<AvailableGuardian>?
 )
 
 /**
  * An available Guardian when decrypting.
- * @param guardian_id The guardian id
+ * @param guardianId The guardian id
  * @param sequence the guardian x coordinate value
  * @param lagrangeCoordinate the lagrange coordinate when decrypting
  */
@@ -31,6 +41,7 @@ data class AvailableGuardian(
 
 // for now just hang onto the byte array
 data class ElectionConstants(
+    val name : String,
     /** large prime or P.  */
     val largePrime: ByteArray,
     /** small prime or Q. */
@@ -79,7 +90,7 @@ data class EncryptionDevice(
 data class GuardianRecord(
     val guardianId: String,
     val xCoordinate: Int,
-    val electionPublicKey: ElementModP,
+    val guardianPublicKey: ElementModP,
     val coefficientCommitments: List<ElementModP>,
     val coefficientProofs: List<SchnorrProof>
 )
@@ -98,30 +109,30 @@ data class GuardianRecord(
  */
 fun makeCiphertextElectionContext(
     groupContext: GroupContext,
-    number_of_guardians: Int,
+    numberOfGuardians: Int,
     quorum: Int,
     jointPublicKey: ElementModP,
     manifest: Manifest,
-    commitment_hash: ElementModQ,
-    extended_data: Map<String, String>?
+    commitmentHash: ElementModQ,
+    extendedData: Map<String, String>?
 ): ElectionContext {
 
     val crypto_base_hash: ElementModQ = groupContext.hashElements(
         groupContext.constants.large_prime,
         groupContext.constants.small_prime,
         groupContext.constants.generator,
-        number_of_guardians, quorum, manifest.cryptoHashElement()
+        numberOfGuardians, quorum, manifest.cryptoHashElement()
     )
-    val crypto_extended_base_hash: ElementModQ = groupContext.hashElements(crypto_base_hash, commitment_hash)
+    val crypto_extended_base_hash: ElementModQ = groupContext.hashElements(crypto_base_hash, commitmentHash)
 
     return ElectionContext(
-        number_of_guardians,
+        numberOfGuardians,
         quorum,
         jointPublicKey,
         manifest.cryptoHashElement(),
         crypto_base_hash,
         crypto_extended_base_hash,
-        commitment_hash,
-        extended_data
+        commitmentHash,
+        extendedData
     )
 }

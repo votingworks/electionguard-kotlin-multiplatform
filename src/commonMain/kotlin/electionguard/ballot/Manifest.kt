@@ -16,8 +16,8 @@ data class Manifest(
     val electionScopeId: String,
     val specVersion: String,
     val electionType: ElectionType,
-    val startDate: LocalDateTime,
-    val endDate: LocalDateTime,
+    val startDate: String, // LocalDateTime,
+    val endDate: String, // LocalDateTime,
     val geopoliticalUnits: List<GeopoliticalUnit>,
     val parties: List<Party>,
     val candidates: List<Candidate>,
@@ -319,9 +319,7 @@ data class Manifest(
      */
     data class AnnotatedString(val annotation: String, val value: String, val cryptoHash: ElementModQ) :
         CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     /** Classifies a set of contests by their set of parties and geopolitical units  */
@@ -332,9 +330,7 @@ data class Manifest(
         val imageUri: String?,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     /**
@@ -352,9 +348,7 @@ data class Manifest(
         val isWriteIn: Boolean,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     /**
@@ -368,9 +362,7 @@ data class Manifest(
         val name: String?,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     /**
@@ -386,9 +378,7 @@ data class Manifest(
         val contactInformation: ContactInformation?,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     /**
@@ -396,9 +386,7 @@ data class Manifest(
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
      */
     data class InternationalizedText(val text: List<Language>, val cryptoHash: ElementModQ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     /**
@@ -406,9 +394,7 @@ data class Manifest(
      * @see [ISO 639](https://en.wikipedia.org/wiki/ISO_639)
      */
     data class Language(val value: String, val language: String, val cryptoHash: ElementModQ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     /**
@@ -423,9 +409,7 @@ data class Manifest(
         val logoUri: String?,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     /**
@@ -446,10 +430,7 @@ data class Manifest(
         val primaryPartyIds: List<String>,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
 
@@ -463,9 +444,7 @@ data class Manifest(
         val candidateId: String,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-        override fun cryptoHashElement(): ElementModQ {
-            return cryptoHash
-        }
+        override fun cryptoHashElement() = cryptoHash
     }
 
     companion object {
