@@ -2,6 +2,10 @@ package electionguard.core
 
 actual fun ByteArray.sha256(): ByteArray = sha256(this)
 
+actual fun ByteArray.hmacSha256(key: ByteArray): ByteArray {
+    throw UnsupportedOperationException("not implemented yet")
+}
+
 // Note: Node.js has a synchronous SHA256 provider. The browser version, in "SubtleCrypto",
 // is asynchronous. Since nothing else here is asynchronous, we don't want to unnecessarily
 // go down that road. So, for now, here's a first stab at the Node code, untested, and instead

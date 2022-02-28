@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.utils.keysToMap
 
 buildscript {
     repositories {
@@ -208,16 +209,18 @@ val protoGenSource by
 
 val compileProtobuf =
     tasks.register("compileProtobuf") {
-        print("* Compiling protobuf *\n")
-        /* project.exec {
+        doLast {
+            print("* Compiling protobuf *\n")
+            /* project.exec {
          *        commandLine = "rm -f ./src/commonMain/kotlin/electionguard/protogen".split(" ")
          * } */
-        val commandLineStr =
-            "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
-                "ciphertext_ballot.proto ciphertext_tally.proto common.proto " +
-                    "election_record.proto manifest.proto " +
-                "plaintext_ballot.proto plaintext_tally.proto"
-        project.exec { commandLine = commandLineStr.split(" ") }
+            val commandLineStr =
+                "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
+                        "ciphertext_ballot.proto ciphertext_tally.proto common.proto " +
+                        "election_record.proto manifest.proto " +
+                        "plaintext_ballot.proto plaintext_tally.proto"
+            project.exec { commandLine = commandLineStr.split(" ") }
+        }
     }
 
 tasks.register("libhaclBuild") {
@@ -240,6 +243,13 @@ tasks.register("libhaclBuild") {
 
 // hack to make sure that we've compiled the library prior to running cinterop on it
 tasks["cinteropLibhaclNative"].dependsOn("libhaclBuild")
+
+task ("printSha256Tests", JavaExec::class) {
+    classpath = sourceSets["main"].runtimeClasspath
+    main = "electionguard.core.PrintSha256TestsKt"
+}
+
+tasks["printSha256Tests"].dependsOn("jvmMainClasses")
 
 tasks.withType<Test> { testLogging { showStandardStreams = true } }
 
