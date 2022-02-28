@@ -4,8 +4,8 @@ import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
-import electionguard.protoconvert.ElectionRecordFromProto
-import electionguard.protoconvert.ElectionRecordToProto
+import electionguard.protoconvert.importElectionRecord
+import electionguard.protoconvert.publishElectionRecord
 import publish.Consumer
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,10 +37,8 @@ class ConsumerTest {
             val electionRecord = allData.electionRecord
             println(electionRecord)
 
-            val convertTo = ElectionRecordToProto(context)
-            val proto = convertTo.translateToProto(electionRecord)
-            val convertFrom = ElectionRecordFromProto(context)
-            val roundtrip = convertFrom.translateFromProto(proto)
+            val proto = electionRecord.publishElectionRecord()
+            val roundtrip = proto.importElectionRecord(context)
             assertEquals(roundtrip.protoVersion, electionRecord.protoVersion)
             assertEquals(roundtrip.constants, electionRecord.constants)
             assertEquals(roundtrip.manifest, electionRecord.manifest)

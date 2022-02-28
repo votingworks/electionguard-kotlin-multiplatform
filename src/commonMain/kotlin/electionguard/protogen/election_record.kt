@@ -496,7 +496,7 @@ public data class EncryptionDevice(
 public data class GuardianRecord(
     val guardianId: String = "",
     val xCoordinate: Int = 0,
-    val electionPublicKey: electionguard.protogen.ElementModP? = null,
+    val guardianPublicKey: electionguard.protogen.ElementModP? = null,
     val coefficientCommitments: List<electionguard.protogen.ElementModP> = emptyList(),
     val coefficientProofs: List<electionguard.protogen.SchnorrProof> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -534,11 +534,11 @@ public data class GuardianRecord(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "election_public_key",
+                        name = "guardian_public_key",
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
-                        jsonName = "electionPublicKey",
-                        value = electionguard.protogen.GuardianRecord::electionPublicKey
+                        jsonName = "guardianPublicKey",
+                        value = electionguard.protogen.GuardianRecord::guardianPublicKey
                     )
                 )
                 add(
@@ -779,7 +779,7 @@ public fun GuardianRecord?.orDefault(): electionguard.protogen.GuardianRecord = 
 
 private fun GuardianRecord.protoMergeImpl(plus: pbandk.Message?): GuardianRecord = (plus as? GuardianRecord)?.let {
     it.copy(
-        electionPublicKey = electionPublicKey?.plus(plus.electionPublicKey) ?: plus.electionPublicKey,
+        guardianPublicKey = guardianPublicKey?.plus(plus.guardianPublicKey) ?: plus.guardianPublicKey,
         coefficientCommitments = coefficientCommitments + plus.coefficientCommitments,
         coefficientProofs = coefficientProofs + plus.coefficientProofs,
         unknownFields = unknownFields + plus.unknownFields
@@ -790,7 +790,7 @@ private fun GuardianRecord.protoMergeImpl(plus: pbandk.Message?): GuardianRecord
 private fun GuardianRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): GuardianRecord {
     var guardianId = ""
     var xCoordinate = 0
-    var electionPublicKey: electionguard.protogen.ElementModP? = null
+    var guardianPublicKey: electionguard.protogen.ElementModP? = null
     var coefficientCommitments: pbandk.ListWithSize.Builder<electionguard.protogen.ElementModP>? = null
     var coefficientProofs: pbandk.ListWithSize.Builder<electionguard.protogen.SchnorrProof>? = null
 
@@ -798,11 +798,11 @@ private fun GuardianRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): G
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> xCoordinate = _fieldValue as Int
-            3 -> electionPublicKey = _fieldValue as electionguard.protogen.ElementModP
+            3 -> guardianPublicKey = _fieldValue as electionguard.protogen.ElementModP
             4 -> coefficientCommitments = (coefficientCommitments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElementModP> }
             5 -> coefficientProofs = (coefficientProofs ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.SchnorrProof> }
         }
     }
-    return GuardianRecord(guardianId, xCoordinate, electionPublicKey, pbandk.ListWithSize.Builder.fixed(coefficientCommitments),
+    return GuardianRecord(guardianId, xCoordinate, guardianPublicKey, pbandk.ListWithSize.Builder.fixed(coefficientCommitments),
         pbandk.ListWithSize.Builder.fixed(coefficientProofs), unknownFields)
 }

@@ -1,10 +1,9 @@
 package publish
 
 import electionguard.ballot.*
-import electionguard.core.GroupContext
-import electionguard.protoconvert.ElectionRecordToProto
-import electionguard.protoconvert.PlaintextTallyConvert
-import electionguard.protoconvert.SubmittedBallotConvert
+import electionguard.protoconvert.publishElectionRecord
+import electionguard.protoconvert.publishPlaintextTally
+import electionguard.protoconvert.publishSubmittedBallot
 import io.ktor.utils.io.errors.*
 import pbandk.encodeToStream
 import java.io.File
@@ -127,7 +126,6 @@ class Publisher {
     /** Publishes the entire election record as proto.  */
     @Throws(IOException::class)
     fun writeElectionRecordProto(
-        groupContext: GroupContext,
         manifest: Manifest,
         context: ElectionContext,
         constants: ElectionConstants,
@@ -143,19 +141,17 @@ class Publisher {
             throw UnsupportedOperationException("Trying to write to readonly election record")
         }
         if (submittedBallots != null) {
-            val submittedBallotConvert = SubmittedBallotConvert(groupContext)
             FileOutputStream(submittedBallotProtoPath().toFile()).use { out ->
                 for (ballot in submittedBallots) {
-                    val ballotProto = submittedBallotConvert.translateToProto(ballot)
+                    val ballotProto = ballot.publishSubmittedBallot()
                     ballotProto.encodeToStream(out)
                 }
             }
         }
         if (spoiledBallots != null) {
-            val plaintextTallyConvert = PlaintextTallyConvert(groupContext)
             FileOutputStream(spoiledBallotProtoPath().toFile()).use { out ->
                 for (ballot in spoiledBallots) {
-                    val ballotProto = plaintextTallyConvert.translateToProto(ballot)
+                    val ballotProto = ballot.publishPlaintextTally()
                     ballotProto.encodeToStream(out)
                 }
             }
@@ -173,7 +169,7 @@ class Publisher {
         decryptedTally: PlaintextTally?,
         availableGuardians: List<AvailableGuardian>?,
          */
-        val electionRecordProto = ElectionRecordToProto(groupContext).translateToProto(
+        val electionRecordProto = publishElectionRecord(
             "version",
             manifest,
             context,

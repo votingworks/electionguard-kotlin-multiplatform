@@ -13,10 +13,8 @@ class ElectionRecordConvertTest {
     fun roundtripElectionRecord() {
         val context = tinyGroup()
         val electionRecord = generateElectionRecord(context)
-        val convertTo = ElectionRecordToProto(context)
-        val proto = convertTo.translateToProto(electionRecord)
-        val convertFrom = ElectionRecordFromProto(context)
-        val roundtrip = convertFrom.translateFromProto(proto)
+        val proto = electionRecord.publishElectionRecord()
+        val roundtrip = proto.importElectionRecord(context)
         assertEquals(roundtrip.protoVersion, electionRecord.protoVersion)
         assertEquals(roundtrip.constants, electionRecord.constants)
         assertEquals(roundtrip.manifest, electionRecord.manifest)

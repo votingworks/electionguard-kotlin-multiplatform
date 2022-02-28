@@ -14,9 +14,8 @@ class PlaintextTallyConvertTest {
     fun roundtripPlaintextTally() {
         val context = tinyGroup()
         val tally = generateFakeTally(1, context)
-        val tallyConvert = PlaintextTallyConvert(context)
-        val proto = tallyConvert.translateToProto(tally)
-        val roundtrip = tallyConvert.translateFromProto(proto)
+        val proto = tally.publishPlaintextTally()
+        val roundtrip = proto.importPlaintextTally(context)
         for (entry in roundtrip.contests) {
             val contest = tally.contests.get(entry.key) ?: throw RuntimeException("Cant find contest $entry.key")
             val rcontest = entry.value

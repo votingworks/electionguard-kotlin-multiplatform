@@ -12,9 +12,8 @@ class SubmittedBallotConvertTest {
     fun roundtripSubmittedBallot() {
         val context = tinyGroup()
         val ballot = generateSubmittedBallot(42, context)
-        val ballotConvert = SubmittedBallotConvert(context)
-        val proto = ballotConvert.translateToProto(ballot)
-        val roundtrip = ballotConvert.translateFromProto(proto)
+        val proto = ballot.publishSubmittedBallot()
+        val roundtrip = proto.importSubmittedBallot(context)
         assertEquals(roundtrip, ballot)
     }
 

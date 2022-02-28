@@ -16,12 +16,12 @@ class CommonConvertTest {
             ) { fakeElementModP, fakeElementModQ ->
                 val context = productionGroup()
 
-                val protoP = convertElementModP(fakeElementModP)
-                val roundtripP = convertElementModP(protoP, context)
+                val protoP = fakeElementModP.publishElementModP()
+                val roundtripP = protoP.importElementModP(context)
                 assertEquals(roundtripP, fakeElementModP)
 
-                val protoQ = convertElementModQ(fakeElementModQ)
-                val roundtripQ = convertElementModQ(protoQ, context)
+                val protoQ = fakeElementModQ.publishElementModQ()
+                val roundtripQ = protoQ.importElementModQ(context)
                 assertEquals(roundtripQ, fakeElementModQ)
 
             }
@@ -38,8 +38,8 @@ class CommonConvertTest {
                 val context = productionGroup()
                 val ciphertext = ElGamalCiphertext(fakePad, fakeData)
 
-                val proto = convertCiphertext(ciphertext)
-                val roundtrip = convertCiphertext(proto, context)
+                val proto = ciphertext.publishCiphertext()
+                val roundtrip = proto.importCiphertext(context)
                 assertEquals(roundtrip, ciphertext)
             }
         }
@@ -57,8 +57,8 @@ class CommonConvertTest {
                 val context = productionGroup()
                 val proof = GenericChaumPedersenProof(a, b, c, r)
 
-                val proto = convertChaumPedersenProof(proof)
-                val roundtrip = convertChaumPedersenProof(proto, context)
+                val proto = proof.publishChaumPedersenProof()
+                val roundtrip = proto.importChaumPedersenProof(context)
                 assertEquals(roundtrip, proof)
             }
         }
@@ -76,8 +76,8 @@ class CommonConvertTest {
                 val context = productionGroup()
                 val publicKey = ElGamalPublicKey(p)
                 val proof = SchnorrProof(publicKey, commit, c, r)
-                val proto = convertSchnorrProof(proof)
-                val roundtrip = convertSchnorrProof(proto, context)
+                val proto = proof.publishSchnorrProof()
+                val roundtrip = proto.importSchnorrProof(context)
                 assertEquals(roundtrip, proof)
             }
         }
@@ -91,8 +91,8 @@ class CommonConvertTest {
             ) { p ->
                 val context = productionGroup()
                 val publicKey = ElGamalPublicKey(p)
-                val proto = convertElGamalPublicKey(publicKey)
-                val roundtrip = convertElGamalPublicKey(proto, context)
+                val proto = publicKey.publishElGamalPublicKey()
+                val roundtrip = proto.importElGamalPublicKey(context)
                 assertEquals(roundtrip, publicKey)
             }
         }

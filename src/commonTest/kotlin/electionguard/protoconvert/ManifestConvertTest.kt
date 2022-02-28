@@ -1,6 +1,6 @@
 package electionguard.protoconvert
 
-import electionguard.ballot.Manifest
+import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
 import kotlin.test.Test
@@ -12,30 +12,61 @@ class ManifestConvertTest {
     fun roundtripManifest() {
         val context = tinyGroup()
         val manifest = generateFakeManifest(context)
-        val convertTo = ManifestToProto(context)
-        val proto = convertTo.translateToProto(manifest)
-        val convertFrom = ManifestFromProto(context)
-        val roundtrip = convertFrom.translateFromProto(proto)
-        assertEquals(roundtrip, manifest)
+        val proto = manifest.publishManifest()
+        val roundtrip = proto.importManifest(context)
+        assertEquals(roundtrip.electionScopeId, manifest.electionScopeId)
+        assertEquals(roundtrip.specVersion, manifest.specVersion)
+        assertEquals(roundtrip.electionType, manifest.electionType)
+        assertEquals(roundtrip.startDate, manifest.startDate)
+        assertEquals(roundtrip.endDate, manifest.endDate)
+        for (idx in 0 until roundtrip.geopoliticalUnits.size) {
+            val rgpu = roundtrip.geopoliticalUnits[idx]
+            val gpu = manifest.geopoliticalUnits[idx]
+            assertEquals(rgpu.name, gpu.name)
+            assertEquals(rgpu.geopoliticalUnitId, gpu.geopoliticalUnitId)
+            assertEquals(rgpu.contactInformation?.addressLine, gpu.contactInformation?.addressLine)
+            compareAS(rgpu.contactInformation?.email, gpu.contactInformation?.email)
+            compareAS(rgpu.contactInformation?.phone, gpu.contactInformation?.phone)
+            assertEquals(rgpu.contactInformation?.name, gpu.contactInformation?.name)
+            assertEquals(rgpu.contactInformation?.cryptoHashElement(), gpu.contactInformation?.cryptoHashElement())
+            assertEquals(rgpu.contactInformation?.cryptoHash, gpu.contactInformation?.cryptoHash)
+            assertEquals(rgpu.contactInformation, gpu.contactInformation)
+            assertEquals(rgpu.type, gpu.type)
+            assertEquals(rgpu.cryptoHashElement(), gpu.cryptoHashElement())
+            assertEquals(rgpu, gpu)
+        }
+        assertEquals(roundtrip.geopoliticalUnits, manifest.geopoliticalUnits)
+    }
+
+    fun compareAS(list1 : List<Manifest.AnnotatedString>?, list2 : List<Manifest.AnnotatedString>?) {
+        assertEquals((list1 == null), (list2 == null))
+        if ((list1 == null) || (list2 == null)) {
+            return
+        }
+
+        assertEquals(list1.size, list2.size)
+        for (idx in 0 until list1.size) {
+            val as1 = list1[idx]
+            val as2 = list1[idx]
+            assertEquals(as1, as2)
+        }
     }
 
     companion object {
         fun generateFakeManifest(context: GroupContext): Manifest {
-            //     val groupContext: GroupContext,
-            //    val electionScopeId: String,
-            //    val specVersion: String,
-            //    val electionType: ElectionType,
-            //    val startDate: UtcOffset,
-            //    val endDate: UtcOffset,
-            //    val geopoliticalUnits: List<GeopoliticalUnit>,
-            //    val parties: List<Party>,
-            //    val candidates: List<Candidate>,
-            //    val contests: List<ContestDescription>,
-            //    val ballotStyles: List<BallotStyle>,
-            //    val name: InternationalizedText?,
-            //    val contactInformation: ContactInformation?
-            return Manifest(
-                context,
+            //     electionScopeId: String,
+            //    specVersion: String,
+            //    electionType: Manifest.ElectionType,
+            //    startDate: String, // LocalDateTime,
+            //    endDate: String, // LocalDateTime,
+            //    geopoliticalUnits: List<Manifest.GeopoliticalUnit>,
+            //    parties: List<Manifest.Party>,
+            //    candidates: List<Manifest.Candidate>,
+            //    contests: List<Manifest.ContestDescription>,
+            //    ballotStyles: List<Manifest.BallotStyle>,
+            //    name: Manifest.InternationalizedText?,
+            //    contactInformation: Manifest.ContactInformation?
+            return context.manifestOf(
                 "electionScopeId",
                 "specVersion",
                 Manifest.ElectionType.primary,
@@ -57,10 +88,9 @@ class ManifestConvertTest {
         //        val contactInformation: ContactInformation?,
         //        val cryptoHash: ElementModQ
         private fun generateGeopoliticalUnit(cseq: Int, context: GroupContext): Manifest.GeopoliticalUnit {
-            return Manifest.geopoliticalUnitOf(
-                context,
-                "geopoliticalUnitId" + cseq,
-                "name" + cseq,
+            return context.geopoliticalUnitOf(
+                "geopoliticalUnitId$cseq",
+                "name$cseq",
                 Manifest.ReportingUnitType.city,
                 generateContactInformation(context),
             )
@@ -73,9 +103,8 @@ class ManifestConvertTest {
         //        val logoUri: String?,
         //        val cryptoHash: ElementModQ
         private fun generateParty(cseq: Int, context: GroupContext): Manifest.Party {
-            return Manifest.partyOf(
-                context,
-                "party" + cseq,
+            return context.partyOf(
+                "party$cseq",
                 generateInternationalizedText(context),
                 "aggrieved",
                 "color",
@@ -90,11 +119,10 @@ class ManifestConvertTest {
         //        val isWriteIn: Boolean,
         //        val cryptoHash: ElementModQ
         private fun generateCandidate(cseq: Int, context: GroupContext): Manifest.Candidate {
-            return Manifest.candidateOf(
-                context,
-                "candidate" + cseq,
+            return context.candidateOf(
+                "candidate$cseq",
                 generateInternationalizedText(context),
-                "party" + cseq,
+                "party$cseq",
                 "imageUri",
                 false,
             )
@@ -113,9 +141,8 @@ class ManifestConvertTest {
         //        val primaryPartyIds: List<String>,
         //        val cryptoHash: ElementModQ
         private fun generateContest(cseq: Int, context: GroupContext): Manifest.ContestDescription {
-            return Manifest.contestDescriptionOf(
-                context,
-                "contest" + cseq,
+            return context.contestDescriptionOf(
+                "contest$cseq",
                 cseq,
                 "geounit",
                 Manifest.VoteVariationType.n_of_m,
@@ -134,11 +161,10 @@ class ManifestConvertTest {
         //        val candidateId: String,
         //        val cryptoHash: ElementModQ
         private fun generateSelection(sseq: Int, context: GroupContext): Manifest.SelectionDescription {
-            return Manifest.selectionDescriptionOf(
-                context,
-                "selection" + sseq,
+            return context.selectionDescriptionOf(
+                "selection$sseq",
                 sseq,
-                "candidate" + sseq,
+                "candidate$sseq",
             )
         }
 
@@ -148,9 +174,8 @@ class ManifestConvertTest {
         //        val imageUri: String?,
         //        val cryptoHash: ElementModQ
         private fun generateBallotStyle(cseq: Int, context: GroupContext): Manifest.BallotStyle {
-            return Manifest.ballotStyleOf(
-                context,
-                "ballotStyle" + cseq,
+            return context.ballotStyleOf(
+                "ballotStyle$cseq",
                 List(3) { "geode$it" },
                 List(11) { "paltry$it" },
                 "Imagine",
@@ -159,8 +184,7 @@ class ManifestConvertTest {
 
         // val text: List<Language>
         private fun generateInternationalizedText(context: GroupContext): Manifest.InternationalizedText {
-            return Manifest.internationalizedTextOf(
-                context,
+            return context.internationalizedTextOf(
                 List(3) { generateLanguage(it, context) },
             )
         }
@@ -171,8 +195,7 @@ class ManifestConvertTest {
         //        val name: String?,
         //        val cryptoHash: ElementModQ
         private fun generateContactInformation(context: GroupContext): Manifest.ContactInformation {
-            return Manifest.contactInformationOf(
-                context,
+            return context.contactInformationOf(
                 List(3) { "addressLine$it" },
                 List(3) { generateAnnotatedString(it, context) },
                 List(3) { generateAnnotatedString(it, context) },
@@ -182,18 +205,16 @@ class ManifestConvertTest {
 
         // val value: String, val language: String,
         private fun generateLanguage(seq: Int, context: GroupContext): Manifest.Language {
-            return Manifest.makeLanguage(
-                context,
-                "text" + seq,
+            return context.languageOf(
+                "text$seq",
                 "language:$seq:$seq",
             )
         }
 
         // val annotation: String, val value: String,
         private fun generateAnnotatedString(seq: Int, context: GroupContext): Manifest.AnnotatedString {
-            return Manifest.annotatedStringOf(
-                context,
-                "snnotste" + seq,
+            return context.annotatedStringOf(
+                "annotate$seq",
                 "value:$seq:$seq",
             )
         }

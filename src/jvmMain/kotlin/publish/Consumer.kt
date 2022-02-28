@@ -14,7 +14,7 @@ import java.nio.file.Path
 class Consumer(val publisher: Publisher, val groupContext : GroupContext) {
 
     companion object {
-        fun fromElectionRecord(electionRecordDir: String?, groupContext : GroupContext): Consumer {
+        fun fromElectionRecord(electionRecordDir: String, groupContext : GroupContext): Consumer {
             return Consumer(Publisher(Path.of(electionRecordDir), Publisher.Mode.readonly), groupContext)
         }
     }
@@ -41,7 +41,7 @@ class Consumer(val publisher: Publisher, val groupContext : GroupContext) {
         var proto : electionguard.protogen.ElectionRecord
         val filename = publisher.electionRecordProtoPath().toString()
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionRecord.decodeFromStream(inp) }
-        return proto.importElectionRecord()
+        return proto.importElectionRecord(groupContext)
     }
 
 }
