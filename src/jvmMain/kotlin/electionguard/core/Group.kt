@@ -1,8 +1,7 @@
 package electionguard.core
 
+import electionguard.ballot.ElectionConstants
 import electionguard.core.Base64.fromSafeBase64
-import electionguard.publish.Constants
-import electionguard.publish.constantsFromBytes
 import mu.KotlinLogging
 import java.math.BigInteger
 
@@ -91,8 +90,8 @@ class ProductionGroupContext(
 
     override fun isProductionStrength() = true
 
-    override val constants: Constants by lazy {
-        constantsFromBytes(pBytes, qBytes, rBytes, gBytes)
+    override val constants: ElectionConstants by lazy {
+        ElectionConstants(pBytes, qBytes, rBytes, gBytes)
     }
 
     override fun toString() : String = name

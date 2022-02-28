@@ -29,7 +29,14 @@ data class AvailableGuardian(
     var lagrangeCoordinate: ElementModQ
 )
 
-// for now just hang onto the byte array
+/**
+ * A public description of the mathematical group used for the encryption and processing of ballots.
+ * One of these should accompany every batch of encrypted ballots, allowing future code that might
+ * process those ballots to determine what parameters were in use and possibly give a warning or
+ * error if they were unexpected.
+ *
+ * The byte arrays are defined to be big-endian.
+ */
 data class ElectionConstants(
     /** large prime or P.  */
     val largePrime: ByteArray,
@@ -107,8 +114,8 @@ fun makeCiphertextElectionContext(
 ): ElectionContext {
 
     val crypto_base_hash: ElementModQ = groupContext.hashElements(
-        groupContext.constants.large_prime,
-        groupContext.constants.small_prime,
+        groupContext.constants.largePrime,
+        groupContext.constants.smallPrime,
         groupContext.constants.generator,
         number_of_guardians, quorum, manifest.cryptoHashElement()
     )

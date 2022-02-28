@@ -1,6 +1,5 @@
 package electionguard.core
 
-import electionguard.publish.isCompatible
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll

@@ -1,7 +1,6 @@
 package electionguard.core
 
-import electionguard.publish.Constants
-import electionguard.publish.constantsFromBytes
+import electionguard.ballot.ElectionConstants
 
 private val tinyGroupContext =
     TinyGroupContext(
@@ -67,9 +66,9 @@ private class TinyGroupContext(
 
     override fun isProductionStrength() = false
 
-    override val constants: Constants by
+    override val constants: ElectionConstants by
         lazy {
-            constantsFromBytes(p.toByteArray(), q.toByteArray(), r.toByteArray(), g.toByteArray(),)
+            ElectionConstants(p.toByteArray(), q.toByteArray(), r.toByteArray(), g.toByteArray(),)
         }
 
     override fun toString(): String = name

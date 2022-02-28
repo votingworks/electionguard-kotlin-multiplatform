@@ -1,11 +1,12 @@
 package electionguard.core
 
+import electionguard.ballot.ElectionConstants
 import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
 import electionguard.core.Base64.fromBase64
 import electionguard.core.Base64.toBase64
-import electionguard.publish.Constants
-import electionguard.publish.isCompatible
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger("GroupCommon")
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
 internal val b64Production4096P =
@@ -46,7 +47,9 @@ internal const val intTestG = 16384
  */
 enum class ProductionMode(val numBitsInP: Int) {
     Mode4096(4096),
-    Mode3072(3072)
+    Mode3072(3072);
+
+    override fun toString() = "ProductionMode($numBitsInP bits)"
 }
 
 interface Element : CryptoHashableString {
@@ -100,10 +103,10 @@ interface GroupContext {
      * A "description" of this group, suitable for serialization. Write this out alongside your
      * ballots or other external data, to represent the mathematical group used for all of its
      * cryptographic operations. When reading in external and possibly untrusted data, you can
-     * deserialize the JSON back to this type, and then use the [Constants.isCompatible] method to
+     * deserialize the JSON back to this type, and then use the [ElectionConstants.isCompatible] method to
      * validate that external data is compatible with internal values.
      */
-    val constants: Constants
+    val constants: ElectionConstants
 
     /** Useful constant: zero mod p */
     val ZERO_MOD_P: ElementModP
@@ -156,7 +159,7 @@ interface GroupContext {
     fun isCompatible(ctx: GroupContext): Boolean
 
     /** Identifies whether an external [Constants] is "compatible" with this GroupContext. */
-    fun isCompatible(externalConstants: Constants): Boolean =
+    fun isCompatible(externalConstants: ElectionConstants): Boolean =
         constants.isCompatible(externalConstants)
 
     /**
@@ -400,6 +403,10 @@ fun GroupContext.gPowPSmall(e: Int) =
  * @throws IllegalArgumentException if there's an incompatibility.
  */
 fun compatibleContextOrFail(vararg elements: Element): GroupContext {
+    // Engineering note: If this method fails, that means we have a bug in our program.
+    // We should never allow incompatible data to be processed. We should catch
+    // this when we're loading the data in the first place.
+
     if (elements.isEmpty()) throw IllegalArgumentException("no arguments")
 
     val headContext = elements[0].context
@@ -419,3 +426,29 @@ fun compatibleContextOrFail(vararg elements: Element): GroupContext {
  * otherwise returns `null`.
  */
 fun ElementModP.dLog(): Int? = context.dLog(this)
+
+/**
+ * Converts from an external [ElectionConstants] to an internal [GroupContext]. Note the
+ * optional `acceleration` parameter, to specify the speed versus memory tradeoff for
+ * subsequent computation. See [PowRadixOption] for details. Note that this function
+ * can return `null`, which indicates that the [ElectionConstants] were incompatible
+ * with this particular library.
+ *
+ * Also, note that this is a `suspend` function, which means that it must be called
+ * from a suspending environment. see [productionGroup] for details on why.
+ */
+suspend fun ElectionConstants.toGroupContext(
+    acceleration: PowRadixOption = PowRadixOption.LOW_MEMORY_USE)
+: GroupContext? {
+    val group4096 = productionGroup(acceleration = acceleration, mode = ProductionMode.Mode4096)
+    val group3072 = productionGroup(acceleration = acceleration, mode = ProductionMode.Mode3072)
+
+    return when {
+        group4096.isCompatible(this) -> group4096
+        group3072.isCompatible(this) -> group3072
+        else -> {
+            logger.error { "unrecognized cryptographic parameters; this election was encrypted using a library incompatible with this one: $this" }
+            null
+        }
+    }
+}

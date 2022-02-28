@@ -5,8 +5,7 @@ package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
 import electionguard.core.Base64.toBase64
-import electionguard.publish.Constants
-import electionguard.publish.constantsFromBytes
+import electionguard.ballot.ElectionConstants
 import hacl.*
 import kotlinx.cinterop.*
 import platform.posix.free
@@ -306,8 +305,8 @@ class ProductionGroupContext(
         dlogger = DLog(this)
     }
 
-    override val constants: Constants by lazy {
-        constantsFromBytes(pBytes, qBytes, rBytes, gBytes)
+    override val constants: ElectionConstants by lazy {
+        ElectionConstants(pBytes, qBytes, rBytes, gBytes)
     }
 
     override fun isProductionStrength() = true
