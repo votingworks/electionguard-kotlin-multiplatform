@@ -203,20 +203,22 @@ kotlin {
     }
 }
 
-val protoGenSource by extra("/home/snake/dev/github/electionguard-kotlin-multiplatform/build/generated/source/proto")
+val protoGenSource by
+    extra("/home/snake/dev/github/electionguard-kotlin-multiplatform/build/generated/source/proto")
 
-val compileProtobuf = tasks.register("compileProtobuf") {
-    print("* Compiling protobuf *\n")
-    /* project.exec {
-        commandLine = "rm -f ./src/commonMain/kotlin/electionguard/protogen".split(" ")
-    } */
-    val commandLineStr = "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
-            "ciphertext_ballot.proto ciphertext_tally.proto common.proto election_record.proto manifest.proto " +
-            "plaintext_ballot.proto plaintext_tally.proto"
-    project.exec {
-        commandLine = commandLineStr.split(" ")
+val compileProtobuf =
+    tasks.register("compileProtobuf") {
+        print("* Compiling protobuf *\n")
+        /* project.exec {
+         *        commandLine = "rm -f ./src/commonMain/kotlin/electionguard/protogen".split(" ")
+         * } */
+        val commandLineStr =
+            "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
+                "ciphertext_ballot.proto ciphertext_tally.proto common.proto " +
+                    "election_record.proto manifest.proto " +
+                "plaintext_ballot.proto plaintext_tally.proto"
+        project.exec { commandLine = commandLineStr.split(" ") }
     }
-}
 
 tasks.register("libhaclBuild") {
     doLast {
@@ -319,10 +321,10 @@ allprojects {
 // Fix courtesy of https://github.com/square/okio/issues/647
 configurations.forEach {
     if (it.name.toLowerCase().contains("kapt") || it.name.toLowerCase().contains("proto")) {
-        it.attributes.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, Usage.JAVA_RUNTIME))
+        it.attributes
+            .attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, Usage.JAVA_RUNTIME))
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-}
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
+    .configureEach { kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn" }

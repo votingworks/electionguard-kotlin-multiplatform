@@ -20,7 +20,8 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
             return null
         }
 
-        val contestMap = proto.contests.associate { it.contestId to convertContest(it) }.noNullValuesOrNull()
+        val contestMap =
+            proto.contests.associate { it.contestId to convertContest(it) }.noNullValuesOrNull()
 
         if (contestMap == null) {
             logger.error { "Failed to convert PlaintextTally" }
@@ -30,7 +31,9 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
         return PlaintextTally(proto.tallyId, contestMap)
     }
 
-    private fun convertContest(proto: electionguard.protogen.PlaintextTallyContest?): PlaintextTally.Contest? {
+    private fun convertContest(
+        proto: electionguard.protogen.PlaintextTallyContest?
+    ): PlaintextTally.Contest? {
         if (proto == null) {
             return null
         }
@@ -41,7 +44,10 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
             return null
         }
 
-        val selectionMap = proto.selections.associate { it.selectionId to convertSelection(it) }.noNullValuesOrNull()
+        val selectionMap =
+            proto.selections
+                .associate { it.selectionId to convertSelection(it) }
+                .noNullValuesOrNull()
 
         if (selectionMap == null) {
             logger.error { "Failed to convert PlaintextTallyContest" }
@@ -51,7 +57,9 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
         return PlaintextTally.Contest(proto.contestId, selectionMap)
     }
 
-    private fun convertSelection(proto: electionguard.protogen.PlaintextTallySelection?): PlaintextTally.Selection? {
+    private fun convertSelection(
+        proto: electionguard.protogen.PlaintextTallySelection?
+    ): PlaintextTally.Selection? {
         if (proto == null) {
             return null
         }
@@ -71,16 +79,12 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
             return null
         }
 
-        return PlaintextTally.Selection(
-            proto.selectionId,
-            proto.tally,
-            value,
-            message,
-            shares
-        )
+        return PlaintextTally.Selection(proto.selectionId, proto.tally, value, message, shares)
     }
 
-    private fun convertShare(proto: electionguard.protogen.CiphertextDecryptionSelection?): DecryptionShare.CiphertextDecryptionSelection? {
+    private fun convertShare(
+        proto: electionguard.protogen.CiphertextDecryptionSelection?
+    ): DecryptionShare.CiphertextDecryptionSelection? {
         if (proto == null) {
             return null
         }
@@ -88,11 +92,14 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
         val share = convertElementModP(proto.share, groupContext)
         val proof = convertChaumPedersenProof(proto.proof, groupContext)
         val recoveredParts = proto.recoveredParts
-        val parts = if (recoveredParts != null) {
-              recoveredParts.fragments.associate { it.guardianId to convertRecoveredParts(it) }.noNullValuesOrNull()
-        } else {
-            null
-        }
+        val parts =
+            if (recoveredParts != null) {
+                recoveredParts.fragments
+                    .associate { it.guardianId to convertRecoveredParts(it) }
+                    .noNullValuesOrNull()
+            } else {
+                null
+            }
 
         if (share == null) {
             logger.error { "Missing CiphertextDecryptionSelection share" }
@@ -101,11 +108,16 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
 
         when {
             proof == null && parts == null -> {
-                logger.error { "Failed to convert CiphertextDecryptionSelection: no proof or parts present" }
+                logger.error {
+                    "Failed to convert CiphertextDecryptionSelection: no proof or parts present"
+                }
                 return null
             }
             proof != null && parts != null -> {
-                logger.error { "Failed to convert CiphertextDecryptionSelection: both proof *and* parts present" }
+                logger.error {
+                    "Failed to convert CiphertextDecryptionSelection: both proof *and* parts " +
+                        "present"
+                }
                 return null
             }
         }
@@ -122,7 +134,9 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertRecoveredParts(proto: electionguard.protogen.CiphertextCompensatedDecryptionSelection?): DecryptionShare.CiphertextCompensatedDecryptionSelection? {
+    private fun convertRecoveredParts(
+        proto: electionguard.protogen.CiphertextCompensatedDecryptionSelection?
+    ): DecryptionShare.CiphertextCompensatedDecryptionSelection? {
         if (proto == null) {
             return null
         }
@@ -149,55 +163,74 @@ data class PlaintextTallyConvert(val groupContext: GroupContext) {
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     fun translateToProto(tally: PlaintextTally): electionguard.protogen.PlaintextTally {
-        return electionguard.protogen.PlaintextTally(
-            tally.tallyId,
-            tally.contests.values.map{ convertContest(it) }
-        )
+        return electionguard.protogen
+            .PlaintextTally(tally.tallyId, tally.contests.values.map { convertContest(it) })
     }
 
-    private fun convertContest(contest: PlaintextTally.Contest): electionguard.protogen.PlaintextTallyContest {
-        return electionguard.protogen.PlaintextTallyContest(
+    private fun convertContest(
+        contest: PlaintextTally.Contest
+    ): electionguard.protogen.PlaintextTallyContest {
+        return electionguard.protogen
+            .PlaintextTallyContest(
                 contest.contestId,
-                contest.selections.values.map{ convertSelection(it) }
-        )
+                contest.selections.values.map { convertSelection(it) }
+            )
     }
 
-    private fun convertSelection(selection: PlaintextTally.Selection): electionguard.protogen.PlaintextTallySelection {
-        return electionguard.protogen.PlaintextTallySelection(
+    private fun convertSelection(
+        selection: PlaintextTally.Selection
+    ): electionguard.protogen.PlaintextTallySelection {
+        return electionguard.protogen
+            .PlaintextTallySelection(
                 selection.selectionId,
                 selection.tally,
                 convertElementModP(selection.value),
                 convertCiphertext(selection.message),
-                selection.shares.map{ convertShare(it) }
-        )
+                selection.shares.map { convertShare(it) }
+            )
     }
 
-    private fun convertShare(share: DecryptionShare.CiphertextDecryptionSelection):  electionguard.protogen.CiphertextDecryptionSelection {
+    private fun convertShare(
+        share: DecryptionShare.CiphertextDecryptionSelection
+    ): electionguard.protogen.CiphertextDecryptionSelection {
         // either proof or recovered_parts is non null / non empty
-        var proofOrParts : electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts<*>? = null
+        var proofOrParts : electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts<*>? =
+            null
         if (share.proof != null) {
-            proofOrParts = electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts.Proof(convertChaumPedersenProof(share.proof))
+            proofOrParts =
+                electionguard.protogen
+                    .CiphertextDecryptionSelection
+                    .ProofOrParts
+                    .Proof(convertChaumPedersenProof(share.proof))
         } else if (share.recoveredParts != null) {
             val pparts : List<electionguard.protogen.CiphertextCompensatedDecryptionSelection>
             pparts = share.recoveredParts.map { convertRecoveredParts(it.value) }
-            proofOrParts =electionguard.protogen. CiphertextDecryptionSelection.ProofOrParts.RecoveredParts(electionguard.protogen.RecoveredParts(pparts))
+            proofOrParts =
+                electionguard.protogen
+                    .CiphertextDecryptionSelection
+                    .ProofOrParts
+                    .RecoveredParts(electionguard.protogen.RecoveredParts(pparts))
         }
-        return electionguard.protogen.CiphertextDecryptionSelection(
-            share.selectionId,
-            share.guardianId,
-            convertElementModP(share.share),
-            proofOrParts,
-        )
+        return electionguard.protogen
+            .CiphertextDecryptionSelection(
+                share.selectionId,
+                share.guardianId,
+                convertElementModP(share.share),
+                proofOrParts,
+            )
     }
 
-    private fun convertRecoveredParts(part: DecryptionShare.CiphertextCompensatedDecryptionSelection):  electionguard.protogen.CiphertextCompensatedDecryptionSelection {
-        return electionguard.protogen.CiphertextCompensatedDecryptionSelection(
+    private fun convertRecoveredParts(
+        part: DecryptionShare.CiphertextCompensatedDecryptionSelection
+    ): electionguard.protogen.CiphertextCompensatedDecryptionSelection {
+        return electionguard.protogen
+            .CiphertextCompensatedDecryptionSelection(
                 part.guardianId,
                 part.selectionId,
                 part.missingGuardianId,
                 convertElementModP(part.share),
                 convertElementModP(part.recoveryKey),
                 convertChaumPedersenProof(part.proof),
-        )
+            )
     }
 }

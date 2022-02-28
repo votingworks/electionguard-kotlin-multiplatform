@@ -1,13 +1,9 @@
 package electionguard.core
 
 import electionguard.ballot.ElectionConstants
-import electionguard.core.Base16.toHex
 import io.ktor.util.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.decodeFromJsonElement
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("Constants")
@@ -18,7 +14,7 @@ private val logger = KotlinLogging.logger("Constants")
  */
 fun ElectionConstants.isCompatible(other: ElectionConstants): Boolean =
     other.largePrime.contentEquals(largePrime) && other.smallPrime.contentEquals(smallPrime) &&
-            other.generator.contentEquals(generator) && other.cofactor.contentEquals(cofactor)
+        other.generator.contentEquals(generator) && other.cofactor.contentEquals(cofactor)
 
 /**
  * Validates whether external data, possibly encrypted using obsolete group context parameters, is

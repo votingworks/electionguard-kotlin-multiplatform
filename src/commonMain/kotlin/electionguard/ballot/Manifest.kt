@@ -8,10 +8,12 @@ import kotlinx.datetime.UtcOffset
 import mu.KotlinLogging
 private val logger = KotlinLogging.logger("Manifest")
 
-
 /**
- * The Election Manifest: defines the candidates, contests, and associated information for a specific election.
- * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election)
+ * The Election Manifest: defines the candidates, contests, and associated information for a
+ * specific election.
+ *
+ * @see
+ *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election)
  */
 data class Manifest(
     val groupContext: GroupContext,
@@ -28,7 +30,6 @@ data class Manifest(
     val name: InternationalizedText?,
     val contactInformation: ContactInformation?
 ) : CryptoHashableElement {
-
     override fun cryptoHashElement(): ElementModQ {
         return groupContext.hashElements(
             electionScopeId,
@@ -47,159 +48,130 @@ data class Manifest(
 
     /**
      * The type of election.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election-type)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election-type)
      */
     enum class ElectionType {
         unknown,
 
-        /**
-         * For an election held typically on the national day for elections.
-         */
+        /** For an election held typically on the national day for elections. */
         general,
 
         /**
-         * For a primary election that is for a specific party where voter eligibility is based on registration.
+         * For a primary election that is for a specific party where voter eligibility is based on
+         * registration.
          */
         partisan_primary_closed,
 
         /**
-         * For a primary election that is for a specific party where voter declares desired party or chooses in private.
+         * For a primary election that is for a specific party where voter declares desired party or
+         * chooses in private.
          */
         partisan_primary_open,
 
-        /**
-         * For a primary election without a specified type, such as a nonpartisan primary.
-         */
+        /** For a primary election without a specified type, such as a nonpartisan primary. */
         primary,
 
         /**
-         * For an election to decide a prior contest that ended with no candidate receiving a majority of the votes.
+         * For an election to decide a prior contest that ended with no candidate receiving a
+         * majority of the votes.
          */
         runoff,
 
         /**
-         * For an election held out of sequence for special circumstances, for example, to fill a vacated office.
+         * For an election held out of sequence for special circumstances, for example, to fill a
+         * vacated office.
          */
         special,
 
         /**
-         * Used when the election type is not listed in this enumeration. If used, include a specific value of the OtherType element.
+         * Used when the election type is not listed in this enumeration. If used, include a
+         * specific value of the OtherType element.
          */
         other
     }
 
     /**
      * The type of geopolitical unit.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/reporting-unit-type)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/reporting-unit-type)
      */
     enum class ReportingUnitType {
         unknown,
 
-        /**
-         * Used to report batches of ballots that might cross precinct boundaries.
-         */
+        /** Used to report batches of ballots that might cross precinct boundaries. */
         ballot_batch,
 
-        /**
-         * Used for a ballot-style area that's generally composed of precincts.
-         */
+        /** Used for a ballot-style area that's generally composed of precincts. */
         ballot_style_area,
 
-        /**
-         * Used as a synonym for a county.
-         */
+        /** Used as a synonym for a county. */
         borough,
 
-        /**
-         * Used for a city that reports results or for the district that encompasses it.
-         */
+        /** Used for a city that reports results or for the district that encompasses it. */
         city,
 
-        /**
-         * Used for city council districts.
-         */
+        /** Used for city council districts. */
         city_council,
 
         /**
-         * Used for one or more precincts that have been combined for the purposes of reporting. If the term ward is
-         * used interchangeably with combined precinct, use combined-precinct for the ReportingUnitType.
+         * Used for one or more precincts that have been combined for the purposes of reporting. If
+         * the term ward is used interchangeably with combined precinct, use combined-precinct for
+         * the ReportingUnitType.
          */
         combined_precinct,
 
-        /**
-         * Used for national legislative body districts.
-         */
+        /** Used for national legislative body districts. */
         congressional,
 
-        /**
-         * Used for a country.
-         */
+        /** Used for a country. */
         country,
 
         /**
-         * Used for a county or for the district that encompasses it. Synonymous with borough and parish in some localities.
+         * Used for a county or for the district that encompasses it. Synonymous with borough and
+         * parish in some localities.
          */
         county,
 
-        /**
-         * Used for county council districts.
-         */
+        /** Used for county council districts. */
         county_council,
 
-        /**
-         * Used for a dropbox for absentee ballots.
-         */
+        /** Used for a dropbox for absentee ballots. */
         drop_box,
 
-        /**
-         * Used for judicial districts.
-         */
+        /** Used for judicial districts. */
         judicial,
 
         /**
-         * Used as applicable for various units such as towns, townships, villages that report votes, or for the
-         * district that encompasses them.
+         * Used as applicable for various units such as towns, townships, villages that report
+         * votes, or for the district that encompasses them.
          */
         municipality,
 
-        /**
-         * Used for a polling place.
-         */
+        /** Used for a polling place. */
         polling_place,
 
-        /**
-         * Used if the terms for ward or district are used interchangeably with precinct.
-         */
+        /** Used if the terms for ward or district are used interchangeably with precinct. */
         precinct,
 
-        /**
-         * Used for a school district.
-         */
+        /** Used for a school district. */
         school,
 
-        /**
-         * Used for a special district.
-         */
+        /** Used for a special district. */
         special,
 
-        /**
-         * Used for splits of precincts.
-         */
+        /** Used for splits of precincts. */
         split_precinct,
 
-        /**
-         * Used for a state or for the district that encompasses it.
-         */
+        /** Used for a state or for the district that encompasses it. */
         state,
 
-        /**
-         * Used for a state house or assembly district.
-         */
+        /** Used for a state house or assembly district. */
         state_house,
 
-        /**
-         * Used for a state senate district.
-         */
+        /** Used for a state senate district. */
         state_senate,
 
         /**
@@ -212,121 +184,113 @@ data class Manifest(
          */
         township,
 
-        /**
-         * Used for a utility district.
-         */
+        /** Used for a utility district. */
         utility,
 
         /**
-         * Used for a type of municipality that reports votes or for the district that encompasses it.
+         * Used for a type of municipality that reports votes or for the district that encompasses
+         * it.
          */
         village,
 
-        /**
-         * Used for a vote center.
-         */
+        /** Used for a vote center. */
         vote_center,
 
-        /**
-         * Used for combinations or groupings of precincts or other units.
-         */
+        /** Used for combinations or groupings of precincts or other units. */
         ward,
 
-        /**
-         * Used for a water district.
-         */
+        /** Used for a water district. */
         water,
 
         /**
-         * Used for other types of reporting units that aren't included in this enumeration.
-         * If used, provide the item's custom type in an OtherType element.
+         * Used for other types of reporting units that aren't included in this enumeration. If
+         * used, provide the item's custom type in an OtherType element.
          */
         other
     }
 
     /**
      * Enumeration for contest algorithm or rules in the contest.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/vote-variation)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/vote-variation)
      */
     enum class VoteVariationType {
-        /**
-         * Each voter can select up to one option.
-         */
+        /** Each voter can select up to one option. */
         one_of_m,
 
-        /**
-         * Approval voting, where each voter can select as many options as desired.
-         */
+        /** Approval voting, where each voter can select as many options as desired. */
         approval,
 
         /**
-         * Borda count, where each voter can rank the options, and the rankings are assigned point values.
+         * Borda count, where each voter can rank the options, and the rankings are assigned point
+         * values.
          */
         borda,
 
-        /**
-         * Cumulative voting, where each voter can distribute their vote to up to N options.
-         */
+        /** Cumulative voting, where each voter can distribute their vote to up to N options. */
         cumulative,
 
-        /**
-         * A 1-of-m method where the winner needs more than 50% of the vote to be elected.
-         */
+        /** A 1-of-m method where the winner needs more than 50% of the vote to be elected. */
         majority,
 
-        /**
-         * A method where each voter can select up to N options.
-         */
+        /** A method where each voter can select up to N options. */
         n_of_m,
 
         /**
-         * A 1-of-m method where the option with the most votes is elected, regardless of whether the option has
-         * more than 50% of the vote.
+         * A 1-of-m method where the option with the most votes is elected, regardless of whether
+         * the option has more than 50% of the vote.
          */
         plurality,
 
         /**
-         * A proportional representation method, which is any system that elects winners in proportion to the total vote.
-         * For the single transferable vote (STV) method, use rcv instead.
+         * A proportional representation method, which is any system that elects winners in
+         * proportion to the total vote. For the single transferable vote (STV) method, use rcv
+         * instead.
          */
         proportional,
 
-        /**
-         * Range voting, where each voter can select a score for each option.
-         */
+        /** Range voting, where each voter can select a score for each option. */
         range,
 
         /**
-         * Ranked choice voting (RCV), where each voter can rank the options, and the ballots are counted in rounds.
-         * Also known as instant-runoff voting (IRV) and the single transferable vote (STV).
+         * Ranked choice voting (RCV), where each voter can rank the options, and the ballots are
+         * counted in rounds. Also known as instant-runoff voting (IRV) and the single transferable
+         * vote (STV).
          */
         rcv,
 
         /**
-         * A 1-of-m method where the winner needs more than some predetermined fraction of the vote to be elected,
-         * and where the fraction is more than 50%. For example, the winner might need three-fifths or two-thirds of the vote.
+         * A 1-of-m method where the winner needs more than some predetermined fraction of the vote
+         * to be elected, and where the fraction is more than 50%. For example, the winner might
+         * need three-fifths or two-thirds of the vote.
          */
         super_majority,
 
         /**
-         * The vote variation is a type that isn't included in this enumeration. If used, provide the item's custom type
-         * in an OtherType element.
+         * The vote variation is a type that isn't included in this enumeration. If used, provide
+         * the item's custom type in an OtherType element.
          */
         other
     }
 
     /**
      * An annotated character string.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/annotated-string)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/annotated-string)
      */
-    data class AnnotatedString(val annotation: String, val value: String, val cryptoHash: ElementModQ) :
-        CryptoHashableElement {
+    data class AnnotatedString(
+        val annotation: String,
+        val value: String,
+        val cryptoHash: ElementModQ
+    ) : CryptoHashableElement {
         override fun cryptoHashElement(): ElementModQ {
             return cryptoHash
         }
     }
 
-    /** Classifies a set of contests by their set of parties and geopolitical units  */
+    /** Classifies a set of contests by their set of parties and geopolitical units */
     data class BallotStyle(
         val ballotStyleId: String,
         val geopoliticalUnitIds: List<String>,
@@ -340,11 +304,13 @@ data class Manifest(
     }
 
     /**
-     * A candidate in a contest.
-     * Note: The ElectionGuard Data Spec deviates from the NIST model in that selections for any contest type
-     * are considered a "candidate". for instance, on a yes-no referendum contest, two `candidate` objects
-     * would be included in the model to represent the `affirmative` and `negative` selections for the contest.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/candidate)
+     * A candidate in a contest. Note: The ElectionGuard Data Spec deviates from the NIST model in
+     * that selections for any contest type are considered a "candidate". for instance, on a yes-no
+     * referendum contest, two `candidate` objects would be included in the model to represent the
+     * `affirmative` and `negative` selections for the contest.
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/candidate)
      */
     data class Candidate(
         val candidateId: String,
@@ -361,7 +327,9 @@ data class Manifest(
 
     /**
      * Contact information about persons, boards of authorities, organizations, etc.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
      */
     data class ContactInformation(
         val addressLine: List<String>,
@@ -376,10 +344,12 @@ data class Manifest(
     }
 
     /**
-     * A physical or virtual unit of representation or vote/seat aggregation.
-     * Use this entity to define geopolitical units such as cities, districts, jurisdictions, or precincts
-     * to associate contests, offices, vote counts, or other information with those geographies.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
+     * A physical or virtual unit of representation or vote/seat aggregation. Use this entity to
+     * define geopolitical units such as cities, districts, jurisdictions, or precincts to associate
+     * contests, offices, vote counts, or other information with those geographies.
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
      */
     data class GeopoliticalUnit(
         val geopoliticalUnitId: String,
@@ -395,9 +365,13 @@ data class Manifest(
 
     /**
      * Text that may have translations in multiple languages.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
      */
-    data class InternationalizedText(val text: List<Language>, val cryptoHash: ElementModQ) : CryptoHashableElement {
+    data class InternationalizedText(val text: List<Language>, val cryptoHash: ElementModQ) :
+        CryptoHashableElement {
+
         override fun cryptoHashElement(): ElementModQ {
             return cryptoHash
         }
@@ -405,9 +379,12 @@ data class Manifest(
 
     /**
      * The ISO-639 language code.
+     *
      * @see [ISO 639](https://en.wikipedia.org/wiki/ISO_639)
      */
-    data class Language(val value: String, val language: String, val cryptoHash: ElementModQ) : CryptoHashableElement {
+    data class Language(val value: String, val language: String, val cryptoHash: ElementModQ) :
+        CryptoHashableElement {
+
         override fun cryptoHashElement(): ElementModQ {
             return cryptoHash
         }
@@ -415,7 +392,9 @@ data class Manifest(
 
     /**
      * A political party.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
      */
     data class Party(
         val partyId: String,
@@ -432,7 +411,9 @@ data class Manifest(
 
     /**
      * The metadata that describes the structure and type of one contest in the election.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
      */
     data class ContestDescription(
         val contestId: String,
@@ -448,16 +429,16 @@ data class Manifest(
         val primaryPartyIds: List<String>,
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
-
         override fun cryptoHashElement(): ElementModQ {
             return cryptoHash
         }
     }
 
-
     /**
      * A ballot selection for a specific candidate in a contest.
-     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
+     *
+     * @see
+     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
      */
     data class SelectionDescription(
         val selectionId: String,
@@ -477,7 +458,11 @@ data class Manifest(
             annotation: String,
             value: String
         ): Manifest.AnnotatedString {
-            return Manifest.AnnotatedString(annotation, value, groupContext.hashElements(annotation, value))
+            return Manifest.AnnotatedString(
+                annotation,
+                value,
+                groupContext.hashElements(annotation, value)
+            )
         }
 
         fun makeBallotStyle(
@@ -490,8 +475,8 @@ data class Manifest(
 
             return Manifest.BallotStyle(
                 styleId,
-                geopoliticalUnitIds?: emptyList(),
-                partyIds?: emptyList(),
+                geopoliticalUnitIds ?: emptyList(),
+                partyIds ?: emptyList(),
                 imageUri,
                 groupContext.hashElements(styleId, geopoliticalUnitIds, partyIds, imageUri)
             )
@@ -505,10 +490,18 @@ data class Manifest(
             image_uri: String?,
             is_write_in: Boolean
         ): Manifest.Candidate {
-            val useName = name ?:
-                makeInternationalizedText(groupContext, listOf(makeLanguage(groupContext, "unknown", "en")))
+            val useName =
+                name
+                    ?: makeInternationalizedText(
+                        groupContext,
+                        listOf(makeLanguage(groupContext, "unknown", "en"))
+                    )
             return Manifest.Candidate(
-                candidate_id, useName, party_id, image_uri, is_write_in,
+                candidate_id,
+                useName,
+                party_id,
+                image_uri,
+                is_write_in,
                 groupContext.hashElements(candidate_id, name, party_id, image_uri)
             )
         }
@@ -525,7 +518,7 @@ data class Manifest(
             ballot_selections: List<Manifest.SelectionDescription>,
             ballot_title: Manifest.InternationalizedText?,
             ballot_subtitle: Manifest.InternationalizedText?,
-            primary_party_ids : List<String>
+            primary_party_ids: List<String>
         ): Manifest.ContestDescription? {
 
             if (vote_variation == null) {
@@ -563,7 +556,6 @@ data class Manifest(
             )
         }
 
-
         fun makeContactInformation(
             groupContext: GroupContext,
             address_line: List<String>,
@@ -573,7 +565,10 @@ data class Manifest(
         ): Manifest.ContactInformation {
 
             return Manifest.ContactInformation(
-                address_line, email, phone, name,
+                address_line,
+                email,
+                phone,
+                name,
                 groupContext.hashElements(name, address_line, email, phone)
             )
         }
@@ -591,7 +586,10 @@ data class Manifest(
             }
 
             return Manifest.GeopoliticalUnit(
-                unit_id, name, type, contact_information,
+                unit_id,
+                name,
+                type,
+                contact_information,
                 groupContext.hashElements(unit_id, name, type, contact_information)
             )
         }
@@ -603,7 +601,11 @@ data class Manifest(
             return Manifest.InternationalizedText(text, groupContext.hashElements(text))
         }
 
-        fun makeLanguage(groupContext: GroupContext, value: String, language: String): Manifest.Language {
+        fun makeLanguage(
+            groupContext: GroupContext,
+            value: String,
+            language: String
+        ): Manifest.Language {
             return Manifest.Language(value, language, groupContext.hashElements(value, language))
         }
 
@@ -615,11 +617,19 @@ data class Manifest(
             color: String?,
             logo_uri: String?,
         ): Manifest.Party {
-            val useName = name ?:
-                makeInternationalizedText(groupContext, listOf(makeLanguage(groupContext, "unknown", "en")))
+            val useName =
+                name
+                    ?: makeInternationalizedText(
+                        groupContext,
+                        listOf(makeLanguage(groupContext, "unknown", "en"))
+                    )
 
             return Manifest.Party(
-                party_id, useName, abbreviation, color, logo_uri,
+                party_id,
+                useName,
+                abbreviation,
+                color,
+                logo_uri,
                 groupContext.hashElements(party_id, name, abbreviation, color, logo_uri)
             )
         }
@@ -631,10 +641,11 @@ data class Manifest(
             sequence_order: Int
         ): Manifest.SelectionDescription {
             return Manifest.SelectionDescription(
-                selection_id, sequence_order, candidate_id,
+                selection_id,
+                sequence_order,
+                candidate_id,
                 groupContext.hashElements(selection_id, candidate_id, sequence_order)
             )
         }
     }
-
 }

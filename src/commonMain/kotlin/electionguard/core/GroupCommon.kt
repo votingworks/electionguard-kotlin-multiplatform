@@ -103,8 +103,8 @@ interface GroupContext {
      * A "description" of this group, suitable for serialization. Write this out alongside your
      * ballots or other external data, to represent the mathematical group used for all of its
      * cryptographic operations. When reading in external and possibly untrusted data, you can
-     * deserialize the JSON back to this type, and then use the [ElectionConstants.isCompatible] method to
-     * validate that external data is compatible with internal values.
+     * deserialize the JSON back to this type, and then use the [ElectionConstants.isCompatible]
+     * method to validate that external data is compatible with internal values.
      */
     val constants: ElectionConstants
 
@@ -174,10 +174,7 @@ interface GroupContext {
      * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
      * Java's BigInteger. Guarantees the result is in [minimum, Q), by computing the result mod Q.
      */
-    fun safeBinaryToElementModQ(
-        b: ByteArray,
-        minimum: Int = 0,
-    ): ElementModQ
+    fun safeBinaryToElementModQ(b: ByteArray, minimum: Int = 0,): ElementModQ
 
     /**
      * Converts a [ByteArray] to an [ElementModP]. The input array is assumed to be in big-endian
@@ -428,18 +425,17 @@ fun compatibleContextOrFail(vararg elements: Element): GroupContext {
 fun ElementModP.dLog(): Int? = context.dLog(this)
 
 /**
- * Converts from an external [ElectionConstants] to an internal [GroupContext]. Note the
- * optional `acceleration` parameter, to specify the speed versus memory tradeoff for
- * subsequent computation. See [PowRadixOption] for details. Note that this function
- * can return `null`, which indicates that the [ElectionConstants] were incompatible
- * with this particular library.
+ * Converts from an external [ElectionConstants] to an internal [GroupContext]. Note the optional
+ * `acceleration` parameter, to specify the speed versus memory tradeoff for subsequent computation.
+ * See [PowRadixOption] for details. Note that this function can return `null`, which indicates that
+ * the [ElectionConstants] were incompatible with this particular library.
  *
- * Also, note that this is a `suspend` function, which means that it must be called
- * from a suspending environment. see [productionGroup] for details on why.
+ * Also, note that this is a `suspend` function, which means that it must be called from a
+ * suspending environment. see [productionGroup] for details on why.
  */
 suspend fun ElectionConstants.toGroupContext(
-    acceleration: PowRadixOption = PowRadixOption.LOW_MEMORY_USE)
-: GroupContext? {
+    acceleration: PowRadixOption = PowRadixOption.LOW_MEMORY_USE
+) : GroupContext? {
     val group4096 = productionGroup(acceleration = acceleration, mode = ProductionMode.Mode4096)
     val group3072 = productionGroup(acceleration = acceleration, mode = ProductionMode.Mode3072)
 
@@ -447,7 +443,10 @@ suspend fun ElectionConstants.toGroupContext(
         group4096.isCompatible(this) -> group4096
         group3072.isCompatible(this) -> group3072
         else -> {
-            logger.error { "unrecognized cryptographic parameters; this election was encrypted using a library incompatible with this one: $this" }
+            logger.error {
+                "unrecognized cryptographic parameters; this election was encrypted using a " +
+                    "library incompatible with this one: $this"
+            }
             null
         }
     }

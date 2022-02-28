@@ -23,7 +23,8 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         }
 
         val electionType = convert(proto.electionType)
-        val geopoliticalUnits = proto.geopoliticalUnits.map { convertGeopoliticalUnit(it) }.noNullValuesOrNull()
+        val geopoliticalUnits =
+            proto.geopoliticalUnits.map { convertGeopoliticalUnit(it) }.noNullValuesOrNull()
 
         if (electionType == null || geopoliticalUnits == null) {
             logger.error { "missing electionType or geopoliticalUnits in Manifest" }
@@ -50,11 +51,15 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertAnnotatedString(annotated: electionguard.protogen.AnnotatedString): Manifest.AnnotatedString {
+    private fun convertAnnotatedString(
+        annotated: electionguard.protogen.AnnotatedString
+    ): Manifest.AnnotatedString {
         return Manifest.makeAnnotatedString(groupContext, annotated.annotation, annotated.value)
     }
 
-    private fun convertBallotStyle(proto: electionguard.protogen.BallotStyle): Manifest.BallotStyle {
+    private fun convertBallotStyle(
+        proto: electionguard.protogen.BallotStyle
+    ): Manifest.BallotStyle {
         return Manifest.makeBallotStyle(
             groupContext,
             proto.ballotStyleId,
@@ -75,7 +80,9 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertContactInformation(proto: electionguard.protogen.ContactInformation?): Manifest.ContactInformation? {
+    private fun convertContactInformation(
+        proto: electionguard.protogen.ContactInformation?
+    ): Manifest.ContactInformation? {
         if (proto == null) {
             return null
         }
@@ -88,7 +95,9 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertContestDescription(proto: electionguard.protogen.ContestDescription?): Manifest.ContestDescription? {
+    private fun convertContestDescription(
+        proto: electionguard.protogen.ContestDescription?
+    ): Manifest.ContestDescription? {
         if (proto == null) {
             return null
         }
@@ -109,7 +118,9 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertVoteVariationType(type: electionguard.protogen.ContestDescription.VoteVariationType?): Manifest.VoteVariationType? {
+    private fun convertVoteVariationType(
+        type: electionguard.protogen.ContestDescription.VoteVariationType?
+    ): Manifest.VoteVariationType? {
         if (type == null) {
             return null
         }
@@ -121,7 +132,9 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         return result
     }
 
-    private fun convert(type: electionguard.protogen.Manifest.ElectionType?): Manifest.ElectionType? {
+    private fun convert(
+        type: electionguard.protogen.Manifest.ElectionType?
+    ): Manifest.ElectionType? {
         if (type == null) {
             return null
         }
@@ -133,7 +146,9 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         return result
     }
 
-    private fun convertReportingUnitType(type: electionguard.protogen.GeopoliticalUnit.ReportingUnitType?): Manifest.ReportingUnitType? {
+    private fun convertReportingUnitType(
+        type: electionguard.protogen.GeopoliticalUnit.ReportingUnitType?
+    ): Manifest.ReportingUnitType? {
         if (type == null) {
             return null
         }
@@ -145,7 +160,9 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         return result
     }
 
-    private fun convertGeopoliticalUnit(proto : electionguard.protogen.GeopoliticalUnit?): Manifest.GeopoliticalUnit? {
+    private fun convertGeopoliticalUnit(
+        proto: electionguard.protogen.GeopoliticalUnit?
+    ): Manifest.GeopoliticalUnit? {
         if (proto == null) {
             return null
         }
@@ -159,21 +176,20 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertInternationalizedText(proto: electionguard.protogen.InternationalizedText?): Manifest.InternationalizedText? {
+    private fun convertInternationalizedText(
+        proto: electionguard.protogen.InternationalizedText?
+    ): Manifest.InternationalizedText? {
         if (proto == null) {
             return null
         }
         return Manifest.makeInternationalizedText(
             groupContext,
-            proto.text.map( { convertLanguage(it) }
-            ))
+            proto.text.map({ convertLanguage(it) })
+        )
     }
 
     private fun convertLanguage(proto: electionguard.protogen.Language): Manifest.Language {
-        return Manifest.makeLanguage(
-            groupContext,
-            proto.value,
-            proto.language)
+        return Manifest.makeLanguage(groupContext, proto.value, proto.language)
     }
 
     private fun convertParty(proto: electionguard.protogen.Party): Manifest.Party {
@@ -187,7 +203,9 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertSelectionDescription(proto: electionguard.protogen.SelectionDescription): Manifest.SelectionDescription {
+    private fun convertSelectionDescription(
+        proto: electionguard.protogen.SelectionDescription
+    ): Manifest.SelectionDescription {
         return Manifest.makeSelectionDescription(
             groupContext,
             proto.selectionId,

@@ -55,10 +55,10 @@ fun ULong.toByteArray(): ByteArray =
 fun UInt.toByteArray(): ByteArray = this.toULong().toByteArray()
 
 /**
- * If there are any null values in the map, the result is null, otherwise the result is the
- * same map, but typed without the nulls.
+ * If there are any null values in the map, the result is null, otherwise the result is the same
+ * map, but typed without the nulls.
  */
-fun <K, V: Any> Map<K, V?>.noNullValuesOrNull(): Map<K, V>? {
+fun <K, V : Any> Map<K, V?>.noNullValuesOrNull(): Map<K, V>? {
     return if (this.any { it.value == null }) {
         null
     } else {
@@ -68,11 +68,11 @@ fun <K, V: Any> Map<K, V?>.noNullValuesOrNull(): Map<K, V>? {
 }
 
 /**
- * If there are any null values in the list, the result is null, otherwise the result is the
- * same list, but typed without the nulls. Similar to [requireNoNulls], but returns `null`
- * rather than throwing an exception.
+ * If there are any null values in the list, the result is null, otherwise the result is the same
+ * list, but typed without the nulls. Similar to [requireNoNulls], but returns `null` rather than
+ * throwing an exception.
  */
-fun <T: Any> List<T?>.noNullValuesOrNull(): List<T>? {
+fun <T : Any> List<T?>.noNullValuesOrNull(): List<T>? {
     return if (this.any { it == null }) {
         null
     } else {
@@ -82,11 +82,11 @@ fun <T: Any> List<T?>.noNullValuesOrNull(): List<T>? {
 }
 
 /**
- * Normally, Kotlin's `Enum.valueOf` or [enumValueOf] method will throw an exception for an
- * invalid input. This method will instead return `null` if the string doesn't map to a valid
- * value of the enum.
+ * Normally, Kotlin's `Enum.valueOf` or [enumValueOf] method will throw an exception for an invalid
+ * input. This method will instead return `null` if the string doesn't map to a valid value of the
+ * enum.
  */
-inline fun <reified T: Enum<T>> safeEnumValueOf(name: String?): T? {
+inline fun <reified T : Enum<T>> safeEnumValueOf(name: String?): T? {
     if (name == null) {
         return null
     }

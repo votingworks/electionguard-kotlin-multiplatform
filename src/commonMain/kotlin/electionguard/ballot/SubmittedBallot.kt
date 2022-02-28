@@ -18,11 +18,14 @@ data class SubmittedBallot(
 ) {
 
     enum class BallotState {
-        /** A ballot that has been explicitly cast  */
+        /** A ballot that has been explicitly cast */
         CAST,
-        /** A ballot that has been explicitly spoiled  */
+        /** A ballot that has been explicitly spoiled */
         SPOILED,
-        /** A ballot whose state is unknown to ElectionGuard and will not be included in any election results.  */
+        /**
+         * A ballot whose state is unknown to ElectionGuard and will not be included in any election
+         * results.
+         */
         UNKNOWN
     }
 
