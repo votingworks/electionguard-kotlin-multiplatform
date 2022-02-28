@@ -62,6 +62,7 @@ class Sha256Tests {
         runTest {
             (0..9).forEach { i ->
                 assertContentEquals(hashes[i], inputs[i].sha256())
+                assertContentEquals(hashes[i], internalSha256(inputs[i]))
             }
         }
     }
@@ -71,6 +72,7 @@ class Sha256Tests {
         runTest {
             (0..9).forEach { i ->
                 assertContentEquals(hmacs[i], inputs[i].hmacSha256(keys[i]))
+                assertContentEquals(hmacs[i], internalHmacSha256(keys[i], inputs[i]))
             }
         }
     }
