@@ -15,10 +15,10 @@ fun internalHmacSha256(key: ByteArray, data: ByteArray): ByteArray {
         internalSha256(key)
     }
 
-    val k_ipad = ByteArray(32) { i -> k[i] xor 0x36 }
-    val k_opad = ByteArray(32) { i -> k[i] xor 0x5c }
+    val ipad = ByteArray(32) { i -> k[i] xor 0x36 }
+    val opad = ByteArray(32) { i -> k[i] xor 0x5c }
 
-    return internalSha256(k_opad, internalSha256(k_ipad, data))
+    return internalSha256(opad, internalSha256(ipad, data))
 }
 
 /* *******************************************************************************************************************
@@ -47,14 +47,14 @@ fun internalSha256(input: ByteArray): ByteArray {
 private fun internalSha256(input1: ByteArray, input2: ByteArray): ByteArray {
     val ctx = Sha256Ctx()
 
-    // we're manually concatenating the buffers to avoid what seems to be a bug in sha256Update
+    // manually concatenating the buffers so we can run with internal or external hash function
+    // (for debugging)
     val buf = ByteArray(input1.size + input2.size) { i ->
         if (i < input1.size) input1[i] else input2[i - input1.size]
     }
     sha256Update(ctx, buf)
     return sha256Final(ctx)
 }
-
 
 private val k = longArrayOf(
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
