@@ -3,87 +3,98 @@ package electionguard.protoconvert
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 
-data class ElectionRecordFromProto(val groupContext: GroupContext) {
-
-    fun translateFromProto(proto: electionguard.protogen.ElectionRecord): ElectionRecord {
-        val manifestConverter = ManifestFromProto(groupContext)
-        val manifest = manifestConverter.translateFromProto(proto.manifest?: throw IllegalStateException("manifest cant be null"))
-
-
-        val ciphertextTally: CiphertextTally? =
-            if (proto.ciphertextTally == null) { null } else {
-                CiphertextTallyConvert(groupContext).translateFromProto(proto.ciphertextTally)
-            }
-        val decryptedTally: PlaintextTally? =
-            if (proto.decryptedTally == null) { null } else {
-                PlaintextTallyConvert(groupContext).translateFromProto(proto.decryptedTally)
-            }
-        val availableGuardians: List<AvailableGuardian>? =
-            if (proto.availableGuardians.isEmpty()) { null } else {
-                proto.availableGuardians.map {convertAvailableGuardian(it)}
-            }
-
-
-        return ElectionRecord(
-            proto.protoVersion,
-            convertConstants(proto.constants?: throw IllegalStateException("constants cant be null")),
-            manifest,
-            convertContext(proto.context?: throw IllegalStateException("context cant be null")),
-            proto.guardianRecords.map { convertGuardianRecord(it) },
-            proto.devices.map { convertDevice(it) },
-            ciphertextTally,
-            decryptedTally,
-            availableGuardians
+fun electionguard.protogen.ElectionRecord.importElectionRecord(): ElectionRecord {
+    if (this.constants == null) {
+        throw IllegalStateException("constants cant be null")
+    }
+    val electionConstants = ElectionConstants(
+        this.constants.name,
+        this.constants.largePrime.array,
+        this.constants.smallPrime.array,
+        this.constants.cofactor.array,
+        this.constants.generator.array,
         )
+
+    // LOOK how to do this ? @danwallach ??
+    val groupContext : GroupContext.from(electionConstants)
+
+    if (this.manifest == null) {
+        throw IllegalStateException("manifest cant be null")
+    }
+    if (this.context == null) {
+        throw IllegalStateException("context cant be null")
     }
 
-    private fun convertAvailableGuardian(proto: electionguard.protogen.AvailableGuardian): AvailableGuardian {
-        return AvailableGuardian(
-            proto.guardianId,
-            proto.xCoordinate,
-            convertElementModQ(proto.lagrangeCoordinate?: throw IllegalStateException("context cant be null"), groupContext)
-        )
-    }
+    return ElectionRecord(
+        this.protoVersion,
+        electionConstants,
+        this.manifest.importManifest(groupContext),
+        this.context.importContext(groupContext),
+        this.guardianRecords.map { it.importGuardianRecord(groupContext) },
+        this.devices.map { it.importDevice() },
+        this.ciphertextTally?.let { this.ciphertextTally.importCiphertextTally(groupContext) },
+        this.decryptedTally?.let { this.decryptedTally.importPlaintextTally(groupContext) },
+        this.availableGuardians.map { it.importAvailableGuardian(groupContext) },
+    )
+}
 
-    private fun convertConstants(constants: electionguard.protogen.ElectionConstants): ElectionConstants {
-        return ElectionConstants(
-            constants.name,
-            constants.largePrime.array,
-            constants.smallPrime.array,
-            constants.cofactor.array,
-            constants.generator.array,
-        )
+private fun electionguard.protogen.AvailableGuardian.importAvailableGuardian(groupContext : GroupContext): AvailableGuardian {
+    if (this.lagrangeCoordinate == null) {
+        throw IllegalStateException("lagrangeCoordinate cant be null")
     }
+    return AvailableGuardian(
+        this.guardianId,
+        this.xCoordinate,
+        this.lagrangeCoordinate.importElementModQ(groupContext),
+    )
+}
 
-    private fun convertContext(context: electionguard.protogen.ElectionContext): ElectionContext {
-        return ElectionContext(
-            context.numberOfGuardians,
-            context.quorum,
-            convertElementModP(context.jointPublicKey?: throw IllegalStateException("jointPublicKey cant be null"), groupContext),
-            convertElementModQ(context.manifestHash?: throw IllegalStateException("manifestHash cant be null"), groupContext),
-            convertElementModQ(context.cryptoBaseHash?: throw IllegalStateException("cryptoBaseHash cant be null"), groupContext),
-            convertElementModQ(context.cryptoExtendedBaseHash?: throw IllegalStateException("cryptoExtendedBaseHash cant be null"), groupContext),
-            convertElementModQ(context.commitmentHash?: throw IllegalStateException("commitmentHash cant be null"), groupContext),
-            context.extendedData.associate{ it.key to it.value}
-        )
+private fun electionguard.protogen.ElectionContext.importContext(groupContext : GroupContext): ElectionContext {
+    if (this.jointPublicKey == null) {
+        throw IllegalStateException("jointPublicKey cant be null")
     }
+    if (this.manifestHash == null) {
+        throw IllegalStateException("manifestHash cant be null")
+    }
+    if (this.cryptoBaseHash == null) {
+        throw IllegalStateException("cryptoBaseHash cant be null")
+    }
+    if (this.cryptoExtendedBaseHash == null) {
+        throw IllegalStateException("cryptoExtendedBaseHash cant be null")
+    }
+    if (this.commitmentHash == null) {
+        throw IllegalStateException("commitmentHash cant be null")
+    }
+    return ElectionContext(
+        this.numberOfGuardians,
+        this.quorum,
+        this.jointPublicKey.importElementModP(groupContext),
+        this.manifestHash.importElementModQ(groupContext),
+        this.cryptoBaseHash.importElementModQ(groupContext),
+        this.cryptoExtendedBaseHash.importElementModQ(groupContext),
+        this.commitmentHash.importElementModQ(groupContext),
+        this.extendedData.associate { it.key to it.value }
+    )
+}
 
-    private fun convertDevice(device: electionguard.protogen.EncryptionDevice): EncryptionDevice {
-        return EncryptionDevice(
-            device.deviceId,
-            device.sessionId,
-            device.launchCode,
-            device.location
-        )
-    }
+private fun electionguard.protogen.EncryptionDevice.importDevice(): EncryptionDevice {
+    return EncryptionDevice(
+        this.deviceId,
+        this.sessionId,
+        this.launchCode,
+        this.location
+    )
+}
 
-    private fun convertGuardianRecord(guardianRecord: electionguard.protogen.GuardianRecord): GuardianRecord {
-         return GuardianRecord(
-            guardianRecord.guardianId,
-            guardianRecord.xCoordinate,
-            convertElementModP(guardianRecord.electionPublicKey?: throw IllegalStateException("electionPublicKey cant be null"), groupContext),
-            guardianRecord.coefficientCommitments.map { convertElementModP(it, groupContext)},
-            guardianRecord.coefficientProofs.map { convertSchnorrProof(it, groupContext)},
-        )
+private fun electionguard.protogen.GuardianRecord.importGuardianRecord(groupContext : GroupContext): GuardianRecord {
+    if (this.electionPublicKey == null) {
+        throw IllegalStateException("electionPublicKey cant be null")
     }
+    return GuardianRecord(
+        this.guardianId,
+        this.xCoordinate,
+        this.electionPublicKey.importElementModP(groupContext),
+        this.coefficientCommitments.map { it.importElementModP(groupContext) },
+        this.coefficientProofs.map { it.importSchnorrProof(groupContext) },
+    )
 }

@@ -6,147 +6,222 @@ import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
 
-data class SubmittedBallotConvert(val groupContext: GroupContext) {
+fun electionguard.protogen.SubmittedBallot.importSubmittedBallot(groupContext: GroupContext): SubmittedBallot {
+    if (this.manifestHash == null) {
+        throw IllegalStateException("manifestHash cant be null")
+    }
+    if (this.trackingHash == null) {
+        throw IllegalStateException("trackingHash cant be null")
+    }
+    if (this.previousTrackingHash == null) {
+        throw IllegalStateException("previousTrackingHash cant be null")
+    }
+    if (this.cryptoHash == null) {
+        throw IllegalStateException("cryptoHash cant be null")
+    }
+    return SubmittedBallot(
+        this.ballotId,
+        this.ballotStyleId,
+        this.manifestHash.importElementModQ(groupContext),
+        this.trackingHash.importElementModQ(groupContext),
+        this.previousTrackingHash.importElementModQ(groupContext),
+        this.contests.map { it.importContest(groupContext) },
+        this.timestamp,
+        this.cryptoHash.importElementModQ(groupContext),
+        this.state.importBallotState(),
+    )
+}
 
-    fun translateFromProto(proto: electionguard.protogen.SubmittedBallot): SubmittedBallot {
-        return SubmittedBallot(
-            proto.ballotId,
-            proto.ballotStyleId,
-            convertElementModQ(proto.manifestHash?: throw IllegalArgumentException("SubmittedBallot manifestHash cannot be null"), groupContext),
-            convertElementModQ(proto.trackingHash?: throw IllegalArgumentException("SubmittedBallot trackingHash cannot be null"), groupContext),
-            convertElementModQ(proto.previousTrackingHash?: throw IllegalArgumentException("SubmittedBallot previousTrackingHash cannot be null"), groupContext),
-            proto.contests.map{ convertContest(it) },
-            proto.timestamp,
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("SubmittedBallot cryptoHash cannot be null"), groupContext),
-            convertBallotState(proto.state),
-        )
+private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState(): SubmittedBallot.BallotState {
+    return SubmittedBallot.BallotState.valueOf(
+        this.name ?: throw IllegalArgumentException("BallotState cannot be null")
+    )
+}
+
+private fun electionguard.protogen.CiphertextBallotContest.importContest(groupContext: GroupContext): SubmittedBallot.Contest {
+    if (this.contestHash == null) {
+        throw IllegalStateException("manifestHash cant be null")
+    }
+    if (this.ciphertextAccumulation == null) {
+        throw IllegalStateException("ciphertextAccumulation cant be null")
+    }
+    if (this.cryptoHash == null) {
+        throw IllegalStateException("cryptoHash cant be null")
+    }
+    if (this.proof == null) {
+        throw IllegalStateException("proof cant be null")
+    }
+    return SubmittedBallot.Contest(
+        this.contestId,
+        this.sequenceOrder,
+        this.contestHash.importElementModQ(groupContext),
+        this.selections.map { it.importSelection(groupContext) },
+        this.ciphertextAccumulation.importCiphertext(groupContext),
+        this.cryptoHash.importElementModQ(groupContext),
+        this.proof.importConstantChaumPedersenProof(groupContext),
+    )
+}
+
+private fun electionguard.protogen.CiphertextBallotSelection.importSelection(groupContext: GroupContext): SubmittedBallot.Selection {
+    if (this.selectionHash == null) {
+        throw IllegalStateException("selectionHash cant be null")
+    }
+    if (this.ciphertext == null) {
+        throw IllegalStateException("ciphertext cant be null")
+    }
+    if (this.cryptoHash == null) {
+        throw IllegalStateException("cryptoHash cant be null")
+    }
+    if (this.proof == null) {
+        throw IllegalStateException("proof cant be null")
+    }
+    return SubmittedBallot.Selection(
+        this.selectionId,
+        this.sequenceOrder,
+        this.selectionHash.importElementModQ(groupContext),
+        this.ciphertext.importCiphertext(groupContext),
+        this.cryptoHash.importElementModQ(groupContext),
+        this.isPlaceholderSelection,
+        this.proof.importDisjunctiveChaumPedersenProof(groupContext),
+        this.extendedData?.let { this.extendedData.importCiphertext(groupContext) },
+    )
+}
+
+fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPedersenProof(groupContext: GroupContext): ConstantChaumPedersenProofKnownNonce {
+    if (this.pad == null) {
+        throw IllegalStateException("pad cant be null")
+    }
+    if (this.data == null) {
+        throw IllegalStateException("data cant be null")
+    }
+    if (this.challenge == null) {
+        throw IllegalStateException("challenge cant be null")
+    }
+    if (this.response == null) {
+        throw IllegalStateException("response cant be null")
+    }
+    return ConstantChaumPedersenProofKnownNonce(
+        GenericChaumPedersenProof(
+            this.pad.importElementModP(groupContext),
+            this.data.importElementModP(groupContext),
+            this.challenge.importElementModQ(groupContext),
+            this.response.importElementModQ(groupContext),
+        ),
+        this.constant
+    )
+}
+
+fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumPedersenProof(groupContext: GroupContext): DisjunctiveChaumPedersenProofKnownNonce {
+    if (this.proofZeroPad == null) {
+        throw IllegalStateException("proofZeroPad cant be null")
+    }
+    if (this.proofZeroData == null) {
+        throw IllegalStateException("proofZeroData cant be null")
+    }
+    if (this.proofZeroChallenge == null) {
+        throw IllegalStateException("proofZeroChallenge cant be null")
+    }
+    if (this.proofZeroResponse == null) {
+        throw IllegalStateException("proofZeroResponse cant be null")
+    }
+    if (this.proofOnePad == null) {
+        throw IllegalStateException("proofOnePad cant be null")
+    }
+    if (this.proofOneData == null) {
+        throw IllegalStateException("proofOneData cant be null")
+    }
+    if (this.proofOneChallenge == null) {
+        throw IllegalStateException("proofOneChallenge cant be null")
+    }
+    if (this.proofOneResponse == null) {
+        throw IllegalStateException("proofOneResponse cant be null")
+    }
+    if (this.challenge == null) {
+        throw IllegalStateException("challenge cant be null")
     }
 
-    private fun convertBallotState(proto: electionguard.protogen.SubmittedBallot.BallotState): SubmittedBallot.BallotState {
-        return SubmittedBallot.BallotState.valueOf(proto.name?: throw IllegalArgumentException("BallotState cannot be null"))
-    }
+    return DisjunctiveChaumPedersenProofKnownNonce(
+        GenericChaumPedersenProof(
+            this.proofZeroPad.importElementModP(groupContext),
+            this.proofZeroData.importElementModP(groupContext),
+            this.proofZeroChallenge.importElementModQ(groupContext),
+            this.proofZeroResponse.importElementModQ(groupContext),
+        ),
+        GenericChaumPedersenProof(
+            this.proofOnePad.importElementModP(groupContext),
+            this.proofOneData.importElementModP(groupContext),
+            this.proofOneChallenge.importElementModQ(groupContext),
+            this.proofOneResponse.importElementModQ(groupContext),
+        ),
+        this.challenge.importElementModQ(groupContext),
+    )
+}
 
-    private fun convertContest(proto: electionguard.protogen.CiphertextBallotContest): SubmittedBallot.Contest {
-        return SubmittedBallot.Contest(
-            proto.contestId,
-            proto.sequenceOrder,
-            convertElementModQ(proto.contestHash?: throw IllegalArgumentException("Contest contestHash cannot be null"), groupContext),
-            proto.selections.map{ convertSelection(it) },
-            convertCiphertext(proto.ciphertextAccumulation?: throw IllegalArgumentException("Contest ciphertextAccumulation cannot be null"), groupContext),
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Contest cryptoHash cannot be null"), groupContext),
-            convertConstantChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Contest proof cannot be null")),
-        )
-    }
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private fun convertSelection(proto: electionguard.protogen.CiphertextBallotSelection): SubmittedBallot.Selection {
-        return SubmittedBallot.Selection(
-            proto.selectionId,
-            proto.sequenceOrder,
-            convertElementModQ(proto.selectionHash?: throw IllegalArgumentException("Selection selectionHash cannot be null"), groupContext),
-            convertCiphertext(proto.ciphertext?: throw IllegalArgumentException("Selection ciphertext cannot be null"), groupContext),
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection cryptoHash cannot be null"), groupContext),
-            proto.isPlaceholderSelection,
-            convertDisjunctiveChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Selection proof cannot be null")),
-            convertCiphertext(proto.extendedData?: throw IllegalArgumentException("Selection extendedData cannot be null"), groupContext),
-        )
-    }
+fun SubmittedBallot.publishSubmittedBallot(): electionguard.protogen.SubmittedBallot {
+    return electionguard.protogen.SubmittedBallot(
+        this.ballotId,
+        this.ballotStyleId,
+        this.manifestHash.publishElementModQ(),
+        this.trackingHash.publishElementModQ(),
+        this.previousTrackingHash.publishElementModQ(),
+        this.contests.map { it.publishContest() },
+        this.timestamp,
+        this.cryptoHash.publishElementModQ(),
+        this.state.publishBallotState()
+    )
+}
 
-    fun convertConstantChaumPedersenProof(proof: electionguard.protogen.ConstantChaumPedersenProof): ConstantChaumPedersenProofKnownNonce? {
-        return ConstantChaumPedersenProofKnownNonce(
-            GenericChaumPedersenProof(
-                convertElementModP(proof.pad?: throw IllegalArgumentException("ConstantChaumPedersenProof pad cannot be null"), groupContext),
-                convertElementModP(proof.data?: throw IllegalArgumentException("ConstantChaumPedersenProof data cannot be null"), groupContext),
-                convertElementModQ(proof.challenge?: throw IllegalArgumentException("ConstantChaumPedersenProof challenge cannot be null"), groupContext),
-                convertElementModQ(proof.response?: throw IllegalArgumentException("ConstantChaumPedersenProof response cannot be null"), groupContext),
-            ),
-            proof.constant
-        )
-    }
+private fun SubmittedBallot.BallotState.publishBallotState(): electionguard.protogen.SubmittedBallot.BallotState {
+    return electionguard.protogen.SubmittedBallot.BallotState.fromName(this.name)
+}
 
-    fun convertDisjunctiveChaumPedersenProof(proof: electionguard.protogen.DisjunctiveChaumPedersenProof): DisjunctiveChaumPedersenProofKnownNonce? {
-        return DisjunctiveChaumPedersenProofKnownNonce(
-            GenericChaumPedersenProof(
-                convertElementModP(proof.proofZeroPad?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofZeroPad cannot be null"), groupContext),
-                convertElementModP(proof.proofZeroData?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofZeroData cannot be null"), groupContext),
-                convertElementModQ(proof.proofZeroChallenge?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofZeroChallenge cannot be null"), groupContext),
-                convertElementModQ(proof.proofZeroResponse?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofZeroResponse cannot be null"), groupContext),
-            ),
-            GenericChaumPedersenProof(
-                convertElementModP(proof.proofOnePad?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofOnePad cannot be null"), groupContext),
-                convertElementModP(proof.proofOneData?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofOneData cannot be null"), groupContext),
-                convertElementModQ(proof.proofOneChallenge?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofOneChallenge cannot be null"), groupContext),
-                convertElementModQ(proof.proofOneResponse?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof proofOneResponse cannot be null"), groupContext),
-            ),
-            convertElementModQ(proof.challenge?: throw IllegalArgumentException("DisjunctiveChaumPedersenProof challenge cannot be null"), groupContext),
-        )
-    }
+private fun SubmittedBallot.Contest.publishContest(): electionguard.protogen.CiphertextBallotContest {
+    return electionguard.protogen.CiphertextBallotContest(
+        this.contestId,
+        this.sequenceOrder,
+        this.contestHash.publishElementModQ(),
+        this.selections.map { it.publishSelection() },
+        this.ciphertextAccumulation.publishCiphertext(),
+        this.cryptoHash.publishElementModQ(),
+        this.proof?.let { this.proof.publishConstantChaumPedersenProof() },
+    )
+}
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+private fun SubmittedBallot.Selection.publishSelection(): electionguard.protogen.CiphertextBallotSelection {
+    return electionguard.protogen.CiphertextBallotSelection(
+        this.selectionId,
+        this.sequenceOrder,
+        this.selectionHash.publishElementModQ(),
+        this.ciphertext.publishCiphertext(),
+        this.cryptoHash.publishElementModQ(),
+        this.isPlaceholderSelection,
+        this.proof?.let { this.proof.publishDisjunctiveChaumPedersenProof() },
+        this.extendedData?.let { this.extendedData.publishCiphertext() },
+    )
+}
 
-    fun translateToProto(ballot: SubmittedBallot): electionguard.protogen.SubmittedBallot {
-        return electionguard.protogen.SubmittedBallot(
-            ballot.ballotId,
-            ballot.ballotStyleId,
-            convertElementModQ(ballot.manifestHash),
-            convertElementModQ(ballot.trackingHash),
-            convertElementModQ(ballot.previousTrackingHash),
-            ballot.contests.map{ convertContest(it) },
-            ballot.timestamp,
-            convertElementModQ(ballot.cryptoHash),
-            convertBallotState(ballot.state)
-        )
-    }
+fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof(): electionguard.protogen.ConstantChaumPedersenProof {
+    return electionguard.protogen.ConstantChaumPedersenProof(
+        this.proof.a.publishElementModP(),
+        this.proof.b.publishElementModP(),
+        this.proof.c.publishElementModQ(),
+        this.proof.r.publishElementModQ(),
+        this.constant
+    )
+}
 
-    private fun convertBallotState(type: SubmittedBallot.BallotState ): electionguard.protogen.SubmittedBallot.BallotState{
-        return electionguard.protogen.SubmittedBallot.BallotState.fromName(type.name)
-    }
-
-    private fun convertContest(contest: SubmittedBallot.Contest): electionguard.protogen.CiphertextBallotContest {
-        return electionguard.protogen.CiphertextBallotContest(
-                contest.contestId,
-                contest.sequenceOrder,
-            convertElementModQ(contest.contestHash),
-            contest.selections.map{ convertSelection(it) },
-            convertCiphertext(contest.ciphertextAccumulation),
-            convertElementModQ(contest.cryptoHash),
-            if (contest.proof == null) { null } else { convertConstantChaumPedersenProof(contest.proof) },
-        )
-    }
-
-    private fun convertSelection(selection: SubmittedBallot.Selection): electionguard.protogen.CiphertextBallotSelection {
-        return electionguard.protogen.CiphertextBallotSelection(
-                selection.selectionId,
-                selection.sequenceOrder,
-                convertElementModQ(selection.selectionHash),
-                convertCiphertext(selection.ciphertext),
-            convertElementModQ(selection.cryptoHash),
-            selection.isPlaceholderSelection,
-            if (selection.proof == null) { null } else { convertDisjunctiveChaumPedersenProof(selection.proof) },
-            if (selection.extendedData == null) { null } else { convertCiphertext(selection.extendedData) },
-            )
-    }
-
-    fun convertConstantChaumPedersenProof(proof: ConstantChaumPedersenProofKnownNonce):  electionguard.protogen.ConstantChaumPedersenProof {
-        return electionguard.protogen.ConstantChaumPedersenProof(
-                convertElementModP(proof.proof.a),
-                convertElementModP(proof.proof.b),
-                convertElementModQ(proof.proof.c),
-                convertElementModQ(proof.proof.r),
-            proof.constant
-        )
-    }
-
-    fun convertDisjunctiveChaumPedersenProof(proof: DisjunctiveChaumPedersenProofKnownNonce): electionguard.protogen.DisjunctiveChaumPedersenProof {
-        return electionguard.protogen.DisjunctiveChaumPedersenProof(
-            convertElementModP(proof.proof0.a),
-            convertElementModP(proof.proof0.b),
-            convertElementModQ(proof.proof0.c),
-            convertElementModQ(proof.proof0.r),
-            convertElementModP(proof.proof1.a),
-            convertElementModP(proof.proof1.b),
-            convertElementModQ(proof.proof1.c),
-            convertElementModQ(proof.proof1.r),
-            convertElementModQ(proof.c),
-        )
-    }
+fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof(): electionguard.protogen.DisjunctiveChaumPedersenProof {
+    return electionguard.protogen.DisjunctiveChaumPedersenProof(
+        this.proof0.a.publishElementModP(),
+        this.proof0.b.publishElementModP(),
+        this.proof0.c.publishElementModQ(),
+        this.proof0.r.publishElementModQ(),
+        this.proof1.a.publishElementModP(),
+        this.proof1.b.publishElementModP(),
+        this.proof1.c.publishElementModQ(),
+        this.proof1.r.publishElementModQ(),
+        this.c.publishElementModQ(),
+    )
 }

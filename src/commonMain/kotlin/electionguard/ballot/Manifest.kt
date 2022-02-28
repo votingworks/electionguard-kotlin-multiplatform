@@ -1,10 +1,6 @@
 package electionguard.ballot
 
-import electionguard.core.CryptoHashableElement
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.hashElements
-import kotlinx.datetime.LocalDateTime
+import electionguard.core.*
 
 
 /**
@@ -12,7 +8,7 @@ import kotlinx.datetime.LocalDateTime
  * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election)
  */
 data class Manifest(
-    val groupContext: GroupContext,
+    val groupContext : GroupContext,
     val electionScopeId: String,
     val specVersion: String,
     val electionType: ElectionType,
@@ -449,23 +445,23 @@ data class Manifest(
 
     companion object {
 
-        fun makeAnnotatedString(
+        fun annotatedStringOf(
             groupContext: GroupContext,
             annotation: String,
             value: String
-        ): Manifest.AnnotatedString {
-            return Manifest.AnnotatedString(annotation, value, groupContext.hashElements(annotation, value))
+        ): AnnotatedString {
+            return AnnotatedString(annotation, value, groupContext.hashElements(annotation, value))
         }
 
-        fun makeBallotStyle(
+        fun ballotStyleOf(
             groupContext: GroupContext,
             styleId: String,
             geopoliticalUnitIds: List<String>?,
             partyIds: List<String>?,
             imageUri: String?
-        ): Manifest.BallotStyle {
+        ): BallotStyle {
 
-            return Manifest.BallotStyle(
+            return BallotStyle(
                 styleId,
                 geopoliticalUnitIds?: emptyList(),
                 partyIds?: emptyList(),
@@ -474,131 +470,131 @@ data class Manifest(
             )
         }
 
-        fun makeCandidate(
+        fun candidateOf(
             groupContext: GroupContext,
-            candidate_id: String,
-            name: Manifest.InternationalizedText?,
-            party_id: String?,
-            image_uri: String?,
-            is_write_in: Boolean
-        ): Manifest.Candidate {
+            candidateId: String,
+            name: InternationalizedText?,
+            partyId: String?,
+            imageUri: String?,
+            isWriteIn: Boolean
+        ): Candidate {
             val useName = name ?:
-                makeInternationalizedText(groupContext, listOf(makeLanguage(groupContext, "unknown", "en")))
-            return Manifest.Candidate(
-                candidate_id, useName, party_id, image_uri, is_write_in,
-                groupContext.hashElements(candidate_id, name, party_id, image_uri)
+            internationalizedTextOf(groupContext, listOf(makeLanguage(groupContext, "unknown", "en")))
+            return Candidate(
+                candidateId, useName, partyId, imageUri, isWriteIn,
+                groupContext.hashElements(candidateId, name, partyId, imageUri)
             )
         }
 
-        fun makeContestDescription(
+        fun contestDescriptionOf(
             groupContext: GroupContext,
-            contest_id: String,
-            sequence_order: Int,
-            electoral_district_id: String,
-            vote_variation: Manifest.VoteVariationType,
-            number_elected: Int,
-            votes_allowed: Int,
+            contestId: String,
+            sequenceOrder: Int,
+            electoralDistrictId: String,
+            voteVariation: VoteVariationType,
+            numberElected: Int,
+            votesAllowed: Int,
             name: String,
-            ballot_selections: List<Manifest.SelectionDescription>,
-            ballot_title: Manifest.InternationalizedText?,
-            ballot_subtitle: Manifest.InternationalizedText?,
-            primary_party_ids : List<String>
-        ): Manifest.ContestDescription {
+            ballotSelections: List<SelectionDescription>,
+            ballotTitle: InternationalizedText?,
+            ballotSubtitle: InternationalizedText?,
+            primaryPartyIds : List<String>
+        ): ContestDescription {
 
-            return Manifest.ContestDescription(
-                contest_id,
-                sequence_order,
-                electoral_district_id,
-                vote_variation,
-                number_elected,
-                votes_allowed,
+            return ContestDescription(
+                contestId,
+                sequenceOrder,
+                electoralDistrictId,
+                voteVariation,
+                numberElected,
+                votesAllowed,
                 name,
-                ballot_selections,
-                ballot_title,
-                ballot_subtitle,
-                primary_party_ids,
+                ballotSelections,
+                ballotTitle,
+                ballotSubtitle,
+                primaryPartyIds,
                 groupContext.hashElements(
-                    contest_id,
-                    electoral_district_id,
-                    sequence_order,
-                    vote_variation.name,
-                    number_elected,
-                    votes_allowed,
+                    contestId,
+                    electoralDistrictId,
+                    sequenceOrder,
+                    voteVariation.name,
+                    numberElected,
+                    votesAllowed,
                     name,
-                    ballot_selections,
-                    ballot_title,
-                    ballot_subtitle,
-                    primary_party_ids
+                    ballotSelections,
+                    ballotTitle,
+                    ballotSubtitle,
+                    primaryPartyIds
                 )
             )
         }
 
 
-        fun makeContactInformation(
+        fun contactInformationOf(
             groupContext: GroupContext,
-            address_line: List<String>,
-            email: List<Manifest.AnnotatedString>,
-            phone: List<Manifest.AnnotatedString>,
+            addressLine: List<String>,
+            email: List<AnnotatedString>,
+            phone: List<AnnotatedString>,
             name: String?
-        ): Manifest.ContactInformation {
+        ): ContactInformation {
 
-            return Manifest.ContactInformation(
-                address_line, email, phone, name,
-                groupContext.hashElements(name, address_line, email, phone)
+            return ContactInformation(
+                addressLine, email, phone, name,
+                groupContext.hashElements(name, addressLine, email, phone)
             )
         }
 
-        fun makeGeopoliticalUnit(
+        fun geopoliticalUnitOf(
             groupContext: GroupContext,
-            unit_id: String,
+            unitId: String,
             name: String,
-            type: Manifest.ReportingUnitType,
-            contact_information: Manifest.ContactInformation?
-        ): Manifest.GeopoliticalUnit {
+            type: ReportingUnitType,
+            contactInformation: ContactInformation?
+        ): GeopoliticalUnit {
 
-            return Manifest.GeopoliticalUnit(
-                unit_id, name, type, contact_information,
-                groupContext.hashElements(unit_id, name, type.name, contact_information)
+            return GeopoliticalUnit(
+                unitId, name, type, contactInformation,
+                groupContext.hashElements(unitId, name, type.name, contactInformation)
             )
         }
 
-        fun makeInternationalizedText(
+        fun internationalizedTextOf(
             groupContext: GroupContext,
-            text: List<Manifest.Language>
-        ): Manifest.InternationalizedText {
-            return Manifest.InternationalizedText(text, groupContext.hashElements(text))
+            text: List<Language>
+        ): InternationalizedText {
+            return InternationalizedText(text, groupContext.hashElements(text))
         }
 
-        fun makeLanguage(groupContext: GroupContext, value: String, language: String): Manifest.Language {
-            return Manifest.Language(value, language, groupContext.hashElements(value, language))
+        fun makeLanguage(groupContext: GroupContext, value: String, language: String): Language {
+            return Language(value, language, groupContext.hashElements(value, language))
         }
 
-        fun makeParty(
+        fun partyOf(
             groupContext: GroupContext,
-            party_id: String,
-            name: Manifest.InternationalizedText?,
+            partyId: String,
+            name: InternationalizedText?,
             abbreviation: String?,
             color: String?,
-            logo_uri: String?,
-        ): Manifest.Party {
+            logoUri: String?,
+        ): Party {
             val useName = name ?:
-                makeInternationalizedText(groupContext, listOf(makeLanguage(groupContext, "unknown", "en")))
+            internationalizedTextOf(groupContext, listOf(makeLanguage(groupContext, "unknown", "en")))
 
-            return Manifest.Party(
-                party_id, useName, abbreviation, color, logo_uri,
-                groupContext.hashElements(party_id, name, abbreviation, color, logo_uri)
+            return Party(
+                partyId, useName, abbreviation, color, logoUri,
+                groupContext.hashElements(partyId, name, abbreviation, color, logoUri)
             )
         }
 
-        fun makeSelectionDescription(
+        fun selectionDescriptionOf(
             groupContext: GroupContext,
-            selection_id: String,
-            sequence_order: Int,
-            candidate_id: String,
-        ): Manifest.SelectionDescription {
-            return Manifest.SelectionDescription(
-                selection_id, sequence_order, candidate_id,
-                groupContext.hashElements(selection_id, candidate_id, sequence_order)
+            selectionId: String,
+            sequenceOrder: Int,
+            candidateId: String,
+        ): SelectionDescription {
+            return SelectionDescription(
+                selectionId, sequenceOrder, candidateId,
+                groupContext.hashElements(selectionId, candidateId, sequenceOrder)
             )
         }
     }

@@ -2,79 +2,70 @@ package electionguard.protoconvert
 
 import electionguard.ballot.PlaintextBallot
 
-class PlaintextBallotConvert {
-
-    fun translateFromProto(ballot: electionguard.protogen.PlaintextBallot): PlaintextBallot {
+    fun electionguard.protogen.PlaintextBallot.importPlaintextBallot(): PlaintextBallot {
         return PlaintextBallot(
-            ballot.ballotId,
-            ballot.ballotStyleId,
-            ballot.contests.map{ convertContest(it) }
+            this.ballotId,
+            this.ballotStyleId,
+            this.contests.map{ it.importContest() }
             )
     }
 
-    private fun convertContest(contest: electionguard.protogen.PlaintextBallotContest): PlaintextBallot.Contest {
+    private fun electionguard.protogen.PlaintextBallotContest.importContest(): PlaintextBallot.Contest {
         return PlaintextBallot.Contest(
-            contest.contestId,
-            contest.sequenceOrder,
-            contest.selections.map{ convertSelection(it) }
+            this.contestId,
+            this.sequenceOrder,
+            this.selections.map{ it.importSelection() }
         )
     }
 
-    private fun convertSelection(selection: electionguard.protogen.PlaintextBallotSelection): PlaintextBallot.Selection {
+    private fun electionguard.protogen.PlaintextBallotSelection.importSelection(): PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
-            selection.selectionId,
-            selection.sequenceOrder,
-            selection.vote,
-            selection.isPlaceholderSelection,
-            convertExtendedData(selection.extendedData)
+            this.selectionId,
+            this.sequenceOrder,
+            this.vote,
+            this.isPlaceholderSelection,
+            this.extendedData?.let { this.extendedData.importExtendedData() }
         )
     }
 
-    private fun convertExtendedData(data: electionguard.protogen.ExtendedData?): PlaintextBallot.ExtendedData? {
-        if (data == null) {
-            return null
-        }
+    private fun electionguard.protogen.ExtendedData.importExtendedData(): PlaintextBallot.ExtendedData? {
         return PlaintextBallot.ExtendedData(
-            data.value,
-            data.length
+            this.value,
+            this.length
         )
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    fun translateToProto(ballot: PlaintextBallot): electionguard.protogen.PlaintextBallot {
+    fun PlaintextBallot.publishPlaintextBallot(): electionguard.protogen.PlaintextBallot {
         return electionguard.protogen.PlaintextBallot(
-            ballot.ballotId,
-            ballot.ballotStyleId,
-            ballot.contests.map{ convertContest(it) }
+            this.ballotId,
+            this.ballotStyleId,
+            this.contests.map{ it.publishContest() }
         )
     }
 
-    private fun convertContest(contest: PlaintextBallot.Contest): electionguard.protogen.PlaintextBallotContest {
+    private fun PlaintextBallot.Contest.publishContest(): electionguard.protogen.PlaintextBallotContest {
         return electionguard.protogen.PlaintextBallotContest(
-            contest.contestId,
-            contest.sequenceOrder,
-            contest.selections.map{ convertSelection(it) }
+            this.contestId,
+            this.sequenceOrder,
+            this.selections.map{ it.publishSelection() }
         )
     }
 
-    private fun convertSelection(selection: PlaintextBallot.Selection): electionguard.protogen.PlaintextBallotSelection {
+    private fun PlaintextBallot.Selection.publishSelection(): electionguard.protogen.PlaintextBallotSelection {
         return electionguard.protogen.PlaintextBallotSelection(
-            selection.selectionId,
-            selection.sequenceOrder,
-            selection.vote,
-            selection.isPlaceholderSelection,
-            convertExtendedData(selection.extendedData)
+            this.selectionId,
+            this.sequenceOrder,
+            this.vote,
+            this.isPlaceholderSelection,
+            this.extendedData?.let {this.extendedData.publishExtendedData() }
         )
     }
 
-    private fun convertExtendedData(data: PlaintextBallot.ExtendedData?): electionguard.protogen.ExtendedData? {
-        if (data == null) {
-            return null
-        }
+    private fun PlaintextBallot.ExtendedData.publishExtendedData(): electionguard.protogen.ExtendedData {
         return electionguard.protogen.ExtendedData(
-            data.value,
-            data.length
+            this.value,
+            this.length
         )
     }
-}

@@ -2,60 +2,64 @@ package electionguard.protoconvert
 
 import electionguard.ballot.CiphertextTally
 import electionguard.core.GroupContext
-import electionguard.protogen.CiphertextTallyContest
-import electionguard.protogen.CiphertextTallySelection
 
-data class CiphertextTallyConvert(val groupContext: GroupContext) {
+fun electionguard.protogen.CiphertextTally.importCiphertextTally(groupContext: GroupContext): CiphertextTally {
+    return CiphertextTally(
+        this.tallyId,
+        this.contests.associate { it.contestId to it.importContest(groupContext) }
+    )
+}
 
-    fun translateFromProto(proto: electionguard.protogen.CiphertextTally): CiphertextTally {
-        return CiphertextTally(
-            proto.tallyId,
-            proto.contests.associate{ it.contestId to convertContest(it) }
-        )
+private fun electionguard.protogen.CiphertextTallyContest.importContest(groupContext: GroupContext): CiphertextTally.Contest {
+    if (this.contestDescriptionHash == null) {
+        throw IllegalStateException("contestDescriptionHash cant be null")
     }
+    return CiphertextTally.Contest(
+        this.contestId,
+        this.sequenceOrder,
+        this.contestDescriptionHash.importElementModQ(groupContext),
+        this.selections.associate { it.selectionId to it.importSelection(groupContext) }
+    )
+}
 
-    private fun convertContest(proto: CiphertextTallyContest): CiphertextTally.Contest {
-        return CiphertextTally.Contest(
-            proto.contestId,
-            proto.sequenceOrder,
-            convertElementModQ(proto.contestDescriptionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            proto.selections.associate{ it.selectionId to convertSelection(it) }
-        )
+private fun electionguard.protogen.CiphertextTallySelection.importSelection(groupContext: GroupContext): CiphertextTally.Selection {
+    if (this.selectionDescriptionHash == null) {
+        throw IllegalStateException("selectionDescriptionHash cant be null")
     }
-
-    private fun convertSelection(proto: CiphertextTallySelection): CiphertextTally.Selection {
-        return CiphertextTally.Selection(
-            proto.selectionId,
-            proto.sequenceOrder,
-            convertElementModQ(proto.selectionDescriptionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertCiphertext(proto.ciphertext?: throw IllegalArgumentException("Selection message cannot be null"), groupContext),
-        )
+    if (this.ciphertext == null) {
+        throw IllegalStateException("ciphertext cant be null")
     }
+    return CiphertextTally.Selection(
+        this.selectionId,
+        this.sequenceOrder,
+        this.selectionDescriptionHash.importElementModQ(groupContext),
+        this.ciphertext.importCiphertext(groupContext),
+    )
+}
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
-    fun translateToProto(tally: CiphertextTally): electionguard.protogen.CiphertextTally {
-        return electionguard.protogen.CiphertextTally(
-            tally.tallyId,
-            tally.contests.map{ convertContest(it.value) }
-        )
-    }
+fun CiphertextTally.publishCiphertextTally(): electionguard.protogen.CiphertextTally {
+    return electionguard.protogen.CiphertextTally(
+        this.tallyId,
+        this.contests.values.map { it.publishContest() }
+    )
+}
 
-    private fun convertContest(contest: CiphertextTally.Contest): electionguard.protogen.CiphertextTallyContest {
-        return electionguard.protogen.CiphertextTallyContest(
-                contest.contestId,
-                contest.sequenceOrder,
-                convertElementModQ(contest.contestDescriptionHash),
-                contest.selections.values.map{ convertSelection(it) }
-        )
-    }
+private fun CiphertextTally.Contest.publishContest(): electionguard.protogen.CiphertextTallyContest {
+    return electionguard.protogen.CiphertextTallyContest(
+        this.contestId,
+        this.sequenceOrder,
+        this.contestDescriptionHash.publishElementModQ(),
+        this.selections.values.map { it.publishSelection() }
+    )
+}
 
-    private fun convertSelection(selection: CiphertextTally.Selection): electionguard.protogen.CiphertextTallySelection {
-        return electionguard.protogen.CiphertextTallySelection(
-                selection.selectionId,
-                selection.sequenceOrder,
-                convertElementModQ(selection.selectionDescriptionHash),
-                convertCiphertext(selection.ciphertext)
-        )
-    }
+private fun CiphertextTally.Selection.publishSelection(): electionguard.protogen.CiphertextTallySelection {
+    return electionguard.protogen.CiphertextTallySelection(
+        this.selectionId,
+        this.sequenceOrder,
+        this.selectionDescriptionHash.publishElementModQ(),
+        this.ciphertext.publishCiphertext()
+    )
 }

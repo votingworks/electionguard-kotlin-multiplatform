@@ -3,13 +3,13 @@ package publish
 import electionguard.ballot.ElectionRecord
 import electionguard.ballot.ElectionRecordAllData
 import electionguard.core.GroupContext
+import electionguard.protoconvert.importElectionRecord
 import pbandk.decodeFromStream
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.function.Predicate
 
 class Consumer(val publisher: Publisher, val groupContext : GroupContext) {
 
@@ -41,10 +41,7 @@ class Consumer(val publisher: Publisher, val groupContext : GroupContext) {
         var proto : electionguard.protogen.ElectionRecord
         val filename = publisher.electionRecordProtoPath().toString()
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionRecord.decodeFromStream(inp) }
-
-        val electionRecordFromProto = electionguard.protoconvert.ElectionRecordFromProto(groupContext)
-        val fromProto: ElectionRecord = electionRecordFromProto.translateFromProto(proto)
-        return fromProto;
+        return proto.importElectionRecord()
     }
 
 }

@@ -1,127 +1,106 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.*
-import electionguard.core.GroupContext
 import pbandk.ByteArr
 
-data class ElectionRecordToProto(val groupContext: GroupContext) {
+fun ElectionRecord.translateToProto(): electionguard.protogen.ElectionRecord {
+    return translateToProto(
+        this.protoVersion,
+        this.manifest,
+        this.context,
+        this.constants,
+        this.guardianRecords,
+        this.devices,
+        this.encryptedTally,
+        this.decryptedTally,
+        this.availableGuardians,
+    )
+}
 
-    fun translateToProto(election: ElectionRecord): electionguard.protogen.ElectionRecord {
-        return translateToProto(
-            election.protoVersion,
-            election.manifest,
-            election.context,
-            election.constants,
-            election.guardianRecords,
-            election.devices,
-            election.encryptedTally,
-            election.decryptedTally,
-            election.availableGuardians,
-        )
-    }
+fun translateToProto(
+    version: String,
+    manifest: Manifest,
+    context: ElectionContext,
+    constants: ElectionConstants,
+    guardianRecords: List<GuardianRecord>?,
+    devices: Iterable<EncryptionDevice>,
+    encryptedTally: CiphertextTally?,
+    decryptedTally: PlaintextTally?,
+    availableGuardians: List<AvailableGuardian>?,
+): electionguard.protogen.ElectionRecord {
 
-    fun translateToProto(
-        version : String,
-        manifest: Manifest,
-        context: ElectionContext,
-        constants: ElectionConstants,
-        guardianRecords: List<GuardianRecord>?,
-        devices: Iterable<EncryptionDevice>,
-        encryptedTally: CiphertextTally?,
-        decryptedTally: PlaintextTally?,
-        availableGuardians: List<AvailableGuardian>?,
-    ): electionguard.protogen.ElectionRecord {
-        val manifestConverter = ManifestToProto(groupContext)
-        val manifestProto = manifestConverter.translateToProto(manifest)
+    return electionguard.protogen.ElectionRecord(
+        version,
+        constants.publishConstants(),
+        manifest.publishManifest(),
+        context.publishContext(),
+        guardianRecords?.map { it.publishGuardianRecord() } ?: emptyList(),
+        devices.map { it.publishDevice() },
+        encryptedTally?.let { encryptedTally.publishCiphertextTally() },
+        decryptedTally?.let { decryptedTally.publishPlaintextTally() },
+        availableGuardians?.map { it.publishAvailableGuardian() } ?: emptyList(),
+    )
+}
 
-        val ciphertextTallyProto: electionguard.protogen.CiphertextTally? =
-            if (encryptedTally == null) { null } else {
-                CiphertextTallyConvert(groupContext).translateToProto(encryptedTally)
-            }
-        val decryptedTallyProto: electionguard.protogen.PlaintextTally? =
-            if (decryptedTally == null) { null } else {
-                PlaintextTallyConvert(groupContext).translateToProto(decryptedTally)
-            }
-        val guardianRecordsProto: List<electionguard.protogen.GuardianRecord> =
-            if (guardianRecords == null || guardianRecords.isEmpty()) { emptyList() } else {
-                guardianRecords.map {convertGuardianRecord(it)}
-            }
-        val availableGuardiansProto: List<electionguard.protogen.AvailableGuardian> =
-            if (availableGuardians == null || availableGuardians.isEmpty()) { emptyList() } else {
-                availableGuardians.map {convertAvailableGuardian(it)}
-            }
+private fun AvailableGuardian.publishAvailableGuardian(): electionguard.protogen.AvailableGuardian {
+    return electionguard.protogen.AvailableGuardian(
+        this.guardianId,
+        this.xCoordinate,
+        this.lagrangeCoordinate.publishElementModQ(),
+    )
+}
 
-        return electionguard.protogen.ElectionRecord(
-            version,
-            convertConstants(constants),
-            manifestProto,
-            convertContext(context),
-            guardianRecordsProto,
-            devices.map { convertDevice(it) },
-            ciphertextTallyProto,
-            decryptedTallyProto,
-            availableGuardiansProto,
-        )
-    }
+private fun ElectionConstants.publishConstants(): electionguard.protogen.ElectionConstants {
+    return electionguard.protogen.ElectionConstants(
+        this.name,
+        ByteArr(this.largePrime),
+        ByteArr(this.smallPrime),
+        ByteArr(this.cofactor),
+        ByteArr(this.generator),
+    )
+}
 
-    private fun convertAvailableGuardian(proto: AvailableGuardian): electionguard.protogen.AvailableGuardian {
-        return electionguard.protogen.AvailableGuardian(
-            proto.guardianId,
-            proto.xCoordinate,
-            convertElementModQ(proto.lagrangeCoordinate)
-        )
-    }
-
-    private fun convertConstants(constants: ElectionConstants): electionguard.protogen.ElectionConstants {
-        return electionguard.protogen.ElectionConstants(
-            constants.name,
-            ByteArr(constants.largePrime),
-            ByteArr(constants.smallPrime),
-            ByteArr(constants.cofactor),
-            ByteArr(constants.generator),
-        )
-    }
-
-    private fun convertContext(context: ElectionContext): electionguard.protogen.ElectionContext {
-        val extendedData: List<electionguard.protogen.ElectionContext.ExtendedDataEntry> =
-            if (context.extendedData == null) { emptyList() } else {
-                context.extendedData.map{(key, value) -> convertExtendedData(key, value)}
-            }
+private fun ElectionContext.publishContext(): electionguard.protogen.ElectionContext {
+    val extendedData: List<electionguard.protogen.ElectionContext.ExtendedDataEntry> =
+        if (this.extendedData == null) {
+            emptyList()
+        } else {
+            this.extendedData.map { (key, value) -> publishExtendedData(key, value) }
+        }
 
 
-        return electionguard.protogen.ElectionContext(
-            context.numberOfGuardians,
-            context.quorum,
-            convertElementModP(context.jointPublicKey),
-            convertElementModQ(context.manifestHash),
-            convertElementModQ(context.cryptoBaseHash),
-            convertElementModQ(context.cryptoExtendedBaseHash),
-            convertElementModQ(context.commitmentHash),
-            extendedData
-        )
-    }
+    return electionguard.protogen.ElectionContext(
+        this.numberOfGuardians,
+        this.quorum,
+        this.jointPublicKey.publishElementModP(),
+        this.manifestHash.publishElementModQ(),
+        this.cryptoBaseHash.publishElementModQ(),
+        this.cryptoExtendedBaseHash.publishElementModQ(),
+        this.commitmentHash.publishElementModQ(),
+        extendedData
+    )
+}
 
-    private fun convertExtendedData(key : String, value : String): electionguard.protogen.ElectionContext.ExtendedDataEntry {
-        return electionguard.protogen.ElectionContext.ExtendedDataEntry(key, value)
-    }
+private fun publishExtendedData(key: String, value: String): electionguard.protogen.ElectionContext.ExtendedDataEntry {
+    return electionguard.protogen.ElectionContext.ExtendedDataEntry(key, value)
+}
 
 
-    private fun convertDevice(device: EncryptionDevice): electionguard.protogen.EncryptionDevice {
-        return electionguard.protogen.EncryptionDevice(
-            device.deviceId,
-            device.sessionId,
-            device.launchCode,
-            device.location
-        )
-    }
+private fun EncryptionDevice.publishDevice(): electionguard.protogen.EncryptionDevice {
+    return electionguard.protogen.EncryptionDevice(
+        this.deviceId,
+        this.sessionId,
+        this.launchCode,
+        this.location
+    )
+}
 
-    private fun convertGuardianRecord(guardianRecord: GuardianRecord): electionguard.protogen.GuardianRecord {
-         return electionguard.protogen.GuardianRecord(
-            guardianRecord.guardianId,
-            guardianRecord.xCoordinate,
-            convertElementModP(guardianRecord.guardianPublicKey),
-            guardianRecord.coefficientCommitments.map { convertElementModP(it)},
-            guardianRecord.coefficientProofs.map { convertSchnorrProof(it)},
-        )
-    }
+private fun GuardianRecord.publishGuardianRecord(): electionguard.protogen.GuardianRecord {
+    return electionguard.protogen.GuardianRecord(
+        this.guardianId,
+        this.xCoordinate,
+        this.guardianPublicKey.publishElementModP(),
+        this.coefficientCommitments.map { it.publishElementModP() },
+        this.coefficientProofs.map { it.publishSchnorrProof() },
+    )
 }

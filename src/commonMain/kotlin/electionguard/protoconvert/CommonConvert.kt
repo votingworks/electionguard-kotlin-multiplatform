@@ -4,94 +4,87 @@ import electionguard.core.*
 import electionguard.core.ElGamalPublicKey
 import pbandk.ByteArr
 
-fun convertElementModQ(modQ: electionguard.protogen.ElementModQ, groupContext: GroupContext): ElementModQ {
-    return groupContext.safeBinaryToElementModQ(modQ.value.array)
+fun electionguard.protogen.ElementModQ.importElementModQ(groupContext: GroupContext): ElementModQ {
+    return groupContext.safeBinaryToElementModQ(this.value.array)
 }
 
-fun convertElementModP(modP: electionguard.protogen.ElementModP, groupContext: GroupContext): ElementModP {
-    return groupContext.safeBinaryToElementModP(modP.value.array)
+fun electionguard.protogen.ElementModP.importElementModP(groupContext: GroupContext): ElementModP {
+    return groupContext.safeBinaryToElementModP(this.value.array)
 }
 
-fun convertCiphertext(
-    ciphertext: electionguard.protogen.ElGamalCiphertext,
-    groupContext: GroupContext
-): ElGamalCiphertext {
-    if (ciphertext.pad == null || ciphertext.data == null) {
+fun electionguard.protogen.ElGamalCiphertext.importCiphertext(groupContext: GroupContext): ElGamalCiphertext {
+    if (this.pad == null || this.data == null) {
         throw IllegalArgumentException("ElGamalCiphertext pad and value cannot be null")
     }
     return ElGamalCiphertext(
-        convertElementModP(ciphertext.pad, groupContext),
-        convertElementModP(ciphertext.data, groupContext)
+        this.pad.importElementModP(groupContext),
+        this.data.importElementModP(groupContext)
     )
 }
 
-fun convertChaumPedersenProof(proof: electionguard.protogen.ChaumPedersenProof,
-                              groupContext: GroupContext): GenericChaumPedersenProof {
-    if (proof.pad == null || proof.data == null || proof.challenge == null || proof.response == null) {
+fun electionguard.protogen.ChaumPedersenProof.importChaumPedersenProof(groupContext: GroupContext): GenericChaumPedersenProof {
+    if (this.pad == null || this.data == null || this.challenge == null || this.response == null) {
         throw IllegalArgumentException("ElGamalCiphertext pad and value cannot be null")
     }
     return GenericChaumPedersenProof(
-        convertElementModP(proof.pad, groupContext),
-        convertElementModP(proof.data, groupContext),
-        convertElementModQ(proof.challenge, groupContext),
-        convertElementModQ(proof.response, groupContext)
+        this.pad.importElementModP(groupContext),
+        this.data.importElementModP(groupContext),
+        this.challenge.importElementModQ(groupContext),
+        this.response.importElementModQ(groupContext)
     )
 }
 
-fun convertSchnorrProof(proof: electionguard.protogen.SchnorrProof,
-                        groupContext: GroupContext): SchnorrProof {
-    if (proof.publicKey == null || proof.commitment == null || proof.challenge == null || proof.response == null) {
+fun electionguard.protogen.SchnorrProof.importSchnorrProof(groupContext: GroupContext): SchnorrProof {
+    if (this.publicKey == null || this.commitment == null || this.challenge == null || this.response == null) {
         throw IllegalArgumentException("SchnorrProof fields cannot be null")
     }
     return SchnorrProof(
-        convertElGamalPublicKey(proof.publicKey, groupContext),
-        convertElementModP(proof.commitment, groupContext),
-        convertElementModQ(proof.challenge, groupContext),
-        convertElementModQ(proof.response, groupContext)
+        this.publicKey.importElGamalPublicKey(groupContext),
+        this.commitment.importElementModP(groupContext),
+        this.challenge.importElementModQ(groupContext),
+        this.response.importElementModQ(groupContext)
     )
 }
 
-fun convertElGamalPublicKey(publicKey: electionguard.protogen.ElementModP,
-                            groupContext: GroupContext) : ElGamalPublicKey {
-    return ElGamalPublicKey(convertElementModP(publicKey, groupContext))
+fun electionguard.protogen.ElementModP.importElGamalPublicKey(groupContext: GroupContext) : ElGamalPublicKey {
+    return ElGamalPublicKey(this.importElementModP(groupContext))
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fun convertElementModQ(modQ: ElementModQ): electionguard.protogen.ElementModQ {
-    return electionguard.protogen.ElementModQ(ByteArr(modQ.byteArray()))
+fun ElementModQ.publishElementModQ(): electionguard.protogen.ElementModQ {
+    return electionguard.protogen.ElementModQ(ByteArr(this.byteArray()))
 }
 
-fun convertElementModP(modP: ElementModP): electionguard.protogen.ElementModP {
-    return electionguard.protogen.ElementModP(ByteArr(modP.byteArray()))
+fun ElementModP.publishElementModP(): electionguard.protogen.ElementModP {
+    return electionguard.protogen.ElementModP(ByteArr(this.byteArray()))
 }
 
-fun convertCiphertext(
-    ciphertext: ElGamalCiphertext): electionguard.protogen.ElGamalCiphertext {
+fun ElGamalCiphertext.publishCiphertext(): electionguard.protogen.ElGamalCiphertext {
     return electionguard.protogen.ElGamalCiphertext(
-        convertElementModP(ciphertext.pad),
-        convertElementModP(ciphertext.data)
+        this.pad.publishElementModP(),
+        this.data.publishElementModP()
     )
 }
 
-fun convertChaumPedersenProof(proof: GenericChaumPedersenProof): electionguard.protogen.ChaumPedersenProof {
+fun GenericChaumPedersenProof.publishChaumPedersenProof(): electionguard.protogen.ChaumPedersenProof {
     return electionguard.protogen.ChaumPedersenProof(
-        convertElementModP(proof.a),
-        convertElementModP(proof.b),
-        convertElementModQ(proof.c),
-        convertElementModQ(proof.r)
+        this.a.publishElementModP(),
+        this.b.publishElementModP(),
+        this.c.publishElementModQ(),
+        this.r.publishElementModQ()
     )
 }
 
-fun convertSchnorrProof(proof: SchnorrProof): electionguard.protogen.SchnorrProof {
+fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen.SchnorrProof(
-        convertElGamalPublicKey(proof.publicKey),
-        convertElementModP(proof.commitment),
-        convertElementModQ(proof.challenge),
-        convertElementModQ(proof.response)
+        this.publicKey.publishElGamalPublicKey(),
+        this.commitment.publishElementModP(),
+        this.challenge.publishElementModQ(),
+        this.response.publishElementModQ()
     )
 }
 
-fun convertElGamalPublicKey(publicKey: ElGamalPublicKey) : electionguard.protogen.ElementModP {
-    return convertElementModP(publicKey.key)
+fun ElGamalPublicKey.publishElGamalPublicKey() : electionguard.protogen.ElementModP {
+    return this.key.publishElementModP()
 }
