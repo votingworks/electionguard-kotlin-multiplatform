@@ -57,7 +57,7 @@ class ManifestConvertTest {
         //        val contactInformation: ContactInformation?,
         //        val cryptoHash: ElementModQ
         private fun generateGeopoliticalUnit(cseq: Int, context: GroupContext): Manifest.GeopoliticalUnit {
-            return Manifest.makeGeopoliticalUnit(
+            return Manifest.geopoliticalUnitOf(
                 context,
                 "geopoliticalUnitId" + cseq,
                 "name" + cseq,
@@ -73,7 +73,7 @@ class ManifestConvertTest {
         //        val logoUri: String?,
         //        val cryptoHash: ElementModQ
         private fun generateParty(cseq: Int, context: GroupContext): Manifest.Party {
-            return Manifest.makeParty(
+            return Manifest.partyOf(
                 context,
                 "party" + cseq,
                 generateInternationalizedText(context),
@@ -90,7 +90,7 @@ class ManifestConvertTest {
         //        val isWriteIn: Boolean,
         //        val cryptoHash: ElementModQ
         private fun generateCandidate(cseq: Int, context: GroupContext): Manifest.Candidate {
-            return Manifest.makeCandidate(
+            return Manifest.candidateOf(
                 context,
                 "candidate" + cseq,
                 generateInternationalizedText(context),
@@ -113,7 +113,7 @@ class ManifestConvertTest {
         //        val primaryPartyIds: List<String>,
         //        val cryptoHash: ElementModQ
         private fun generateContest(cseq: Int, context: GroupContext): Manifest.ContestDescription {
-            return Manifest.makeContestDescription(
+            return Manifest.contestDescriptionOf(
                 context,
                 "contest" + cseq,
                 cseq,
@@ -134,7 +134,7 @@ class ManifestConvertTest {
         //        val candidateId: String,
         //        val cryptoHash: ElementModQ
         private fun generateSelection(sseq: Int, context: GroupContext): Manifest.SelectionDescription {
-            return Manifest.makeSelectionDescription(
+            return Manifest.selectionDescriptionOf(
                 context,
                 "selection" + sseq,
                 sseq,
@@ -148,7 +148,7 @@ class ManifestConvertTest {
         //        val imageUri: String?,
         //        val cryptoHash: ElementModQ
         private fun generateBallotStyle(cseq: Int, context: GroupContext): Manifest.BallotStyle {
-            return Manifest.makeBallotStyle(
+            return Manifest.ballotStyleOf(
                 context,
                 "ballotStyle" + cseq,
                 List(3) { "geode$it" },
@@ -159,7 +159,7 @@ class ManifestConvertTest {
 
         // val text: List<Language>
         private fun generateInternationalizedText(context: GroupContext): Manifest.InternationalizedText {
-            return Manifest.makeInternationalizedText(
+            return Manifest.internationalizedTextOf(
                 context,
                 List(3) { generateLanguage(it, context) },
             )
@@ -171,7 +171,7 @@ class ManifestConvertTest {
         //        val name: String?,
         //        val cryptoHash: ElementModQ
         private fun generateContactInformation(context: GroupContext): Manifest.ContactInformation {
-            return Manifest.makeContactInformation(
+            return Manifest.contactInformationOf(
                 context,
                 List(3) { "addressLine$it" },
                 List(3) { generateAnnotatedString(it, context) },
@@ -191,7 +191,7 @@ class ManifestConvertTest {
 
         // val annotation: String, val value: String,
         private fun generateAnnotatedString(seq: Int, context: GroupContext): Manifest.AnnotatedString {
-            return Manifest.makeAnnotatedString(
+            return Manifest.annotatedStringOf(
                 context,
                 "snnotste" + seq,
                 "value:$seq:$seq",
