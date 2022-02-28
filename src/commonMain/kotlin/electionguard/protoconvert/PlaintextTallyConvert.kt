@@ -2,65 +2,147 @@ package electionguard.protoconvert
 
 import electionguard.ballot.DecryptionShare
 import electionguard.ballot.PlaintextTally
-import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
+import electionguard.core.noNullValuesOrNull
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger("PlaintextTallyConvert")
 
 data class PlaintextTallyConvert(val groupContext: GroupContext) {
 
-    fun translateFromProto(proto: electionguard.protogen.PlaintextTally): PlaintextTally {
-        return PlaintextTally(
-            proto.tallyId,
-            proto.contests.associate{ it.contestId to convertContest(it) }
-            )
+    fun translateFromProto(proto: electionguard.protogen.PlaintextTally?): PlaintextTally? {
+        if (proto == null) {
+            return null
+        }
+
+        // TODO: can it ever occur that we have zero contests?
+        if (proto.contests.isEmpty()) {
+            logger.error { "No contests in PlaintextTally" }
+            return null
+        }
+
+        val contestMap = proto.contests.associate { it.contestId to convertContest(it) }.noNullValuesOrNull()
+
+        if (contestMap == null) {
+            logger.error { "Failed to convert PlaintextTally" }
+            return null
+        }
+
+        return PlaintextTally(proto.tallyId, contestMap)
     }
 
-    private fun convertContest(proto: electionguard.protogen.PlaintextTallyContest): PlaintextTally.Contest {
-        return PlaintextTally.Contest(
-            proto.contestId,
-            proto.selections.associate{ it.selectionId to convertSelection(it) }
-        )
+    private fun convertContest(proto: electionguard.protogen.PlaintextTallyContest?): PlaintextTally.Contest? {
+        if (proto == null) {
+            return null
+        }
+
+        // TODO: can it ever occur that we have zero selections?
+        if (proto.selections.isEmpty()) {
+            logger.error { "No selections in PlaintextTallyContest" }
+            return null
+        }
+
+        val selectionMap = proto.selections.associate { it.selectionId to convertSelection(it) }.noNullValuesOrNull()
+
+        if (selectionMap == null) {
+            logger.error { "Failed to convert PlaintextTallyContest" }
+            return null
+        }
+
+        return PlaintextTally.Contest(proto.contestId, selectionMap)
     }
 
-    private fun convertSelection(proto: electionguard.protogen.PlaintextTallySelection): PlaintextTally.Selection {
+    private fun convertSelection(proto: electionguard.protogen.PlaintextTallySelection?): PlaintextTally.Selection? {
+        if (proto == null) {
+            return null
+        }
+
+        val value = convertElementModP(proto.value, groupContext)
+        val message = convertCiphertext(proto.message, groupContext)
+        val shares = proto.shares.map { convertShare(it) }.noNullValuesOrNull()
+
+        if (value == null || message == null || shares == null) {
+            logger.error { "Failed to convert PlaintextTallySelection" }
+            return null
+        }
+
+        // TODO: can it ever occur that we have zero shares?
+        if (shares.isEmpty()) {
+            logger.error { "No shares in PlaintextTallySelection" }
+            return null
+        }
+
         return PlaintextTally.Selection(
             proto.selectionId,
             proto.tally,
-            convertElementModP(proto.value?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertCiphertext(proto.message?: throw IllegalArgumentException("Selection message cannot be null"), groupContext),
-            proto.shares.map{ convertShare(it) }
+            value,
+            message,
+            shares
         )
     }
 
-    private fun convertShare(proto: electionguard.protogen.CiphertextDecryptionSelection): DecryptionShare.CiphertextDecryptionSelection {
-        // either proof or recoverdParts is non null
-        var proof : GenericChaumPedersenProof? = null
-        var parts : Map<String, DecryptionShare.CiphertextCompensatedDecryptionSelection>? = emptyMap()
-        if (proto.proof != null) {
-            val pproof = proto.proof?: throw IllegalStateException("CiphertextDecryptionSelection.proof is null");
-            proof = convertChaumPedersenProof(pproof, groupContext)
-        } else if (proto.recoveredParts != null) {
-            val recoveredParts = proto.recoveredParts?: throw IllegalStateException("CiphertextDecryptionSelection.recoveredParts is null");
-            parts = recoveredParts.fragments.associate { it.guardianId to convertRecoveredParts(it) }
-        } else {
-            throw IllegalArgumentException("both CiphertextDecryptionSelection proof and recoveredParts are null")
+    private fun convertShare(proto: electionguard.protogen.CiphertextDecryptionSelection?): DecryptionShare.CiphertextDecryptionSelection? {
+        if (proto == null) {
+            return null
         }
+
+        val share = convertElementModP(proto.share, groupContext)
+        val proof = convertChaumPedersenProof(proto.proof, groupContext)
+        val recoveredParts = proto.recoveredParts
+        val parts = if (recoveredParts != null) {
+              recoveredParts.fragments.associate { it.guardianId to convertRecoveredParts(it) }.noNullValuesOrNull()
+        } else {
+            null
+        }
+
+        if (share == null) {
+            logger.error { "Missing CiphertextDecryptionSelection share" }
+            return null
+        }
+
+        when {
+            proof == null && parts == null -> {
+                logger.error { "Failed to convert CiphertextDecryptionSelection: no proof or parts present" }
+                return null
+            }
+            proof != null && parts != null -> {
+                logger.error { "Failed to convert CiphertextDecryptionSelection: both proof *and* parts present" }
+                return null
+            }
+        }
+
+        // If we get here, one of proof or parts is non-null, and we'll replace a
+        // null parts value with an empty map.
+
         return DecryptionShare.CiphertextDecryptionSelection(
             proto.selectionId,
             proto.guardianId,
-            convertElementModP(proto.share?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            share,
             proof,
-            parts
+            parts ?: emptyMap()
         )
     }
 
-    private fun convertRecoveredParts(proto: electionguard.protogen.CiphertextCompensatedDecryptionSelection): DecryptionShare.CiphertextCompensatedDecryptionSelection {
+    private fun convertRecoveredParts(proto: electionguard.protogen.CiphertextCompensatedDecryptionSelection?): DecryptionShare.CiphertextCompensatedDecryptionSelection? {
+        if (proto == null) {
+            return null
+        }
+
+        val share = convertElementModP(proto.share, groupContext)
+        val recoveryKey = convertElementModP(proto.recoveryKey, groupContext)
+        val proof = convertChaumPedersenProof(proto.proof, groupContext)
+
+        if (share == null || recoveryKey == null || proof == null) {
+            logger.error { "Failed to convert CiphertextCompensatedDecryptionSelection" }
+            return null
+        }
+
         return DecryptionShare.CiphertextCompensatedDecryptionSelection(
             proto.selectionId,
             proto.guardianId,
             proto.missingGuardianId,
-            convertElementModP(proto.share?: throw IllegalArgumentException("DecryptionShare part cannot be null"), groupContext),
-            convertElementModP(proto.recoveryKey?: throw IllegalArgumentException("DecryptionShare recoveryKey cannot be null"), groupContext),
-            convertChaumPedersenProof(proto.proof?: throw IllegalArgumentException("DecryptionShare recoveryKey cannot be null"), groupContext),
+            share,
+            recoveryKey,
+            proof
         )
     }
 

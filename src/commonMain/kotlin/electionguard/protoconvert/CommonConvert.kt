@@ -3,57 +3,88 @@ package electionguard.protoconvert
 import electionguard.core.*
 import electionguard.core.ElGamalPublicKey
 import pbandk.ByteArr
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger("CommonConvert")
 
-fun convertElementModQ(modQ: electionguard.protogen.ElementModQ, groupContext: GroupContext): ElementModQ {
-    return groupContext.safeBinaryToElementModQ(modQ.value.array)
-}
+/**
+ * Converts a deserialized ElementModQ to the internal representation, returning `null` if
+ * the input was missing, out of bounds, or otherwise malformed. `null` is accepted as an
+ * input, for convenience. If `null` is passed as input, `null` is returned.
+ */
+fun convertElementModQ(modQ: electionguard.protogen.ElementModQ?, groupContext: GroupContext): ElementModQ? =
+    if (modQ == null) null else groupContext.binaryToElementModQ(modQ.value.array)
 
-fun convertElementModP(modP: electionguard.protogen.ElementModP, groupContext: GroupContext): ElementModP {
-    return groupContext.safeBinaryToElementModP(modP.value.array)
-}
+/**
+ * Converts a deserialized ElementModP to the internal representation, returning `null` if
+ * the input was missing, out of bounds, or otherwise malformed. `null` is accepted as an
+ * input, for convenience. If `null` is passed as input, `null` is returned.
+ */
+fun convertElementModP(modP: electionguard.protogen.ElementModP?, groupContext: GroupContext): ElementModP? =
+    if (modP == null) null else groupContext.binaryToElementModP(modP.value.array)
 
 fun convertCiphertext(
-    ciphertext: electionguard.protogen.ElGamalCiphertext,
+    ciphertext: electionguard.protogen.ElGamalCiphertext?,
     groupContext: GroupContext
-): ElGamalCiphertext {
-    if (ciphertext.pad == null || ciphertext.data == null) {
-        throw IllegalArgumentException("ElGamalCiphertext pad and value cannot be null")
+): ElGamalCiphertext? {
+    if (ciphertext == null) return null
+
+    val pad = convertElementModP(ciphertext.pad, groupContext)
+    val data = convertElementModP(ciphertext.data, groupContext)
+
+    if (pad == null || data == null) {
+        logger.error { "ElGamalCiphertext pad or value was malformed or out of bounds" }
+        return null
     }
-    return ElGamalCiphertext(
-        convertElementModP(ciphertext.pad, groupContext),
-        convertElementModP(ciphertext.data, groupContext)
-    )
+
+    return ElGamalCiphertext(pad, data);
 }
 
-fun convertChaumPedersenProof(proof: electionguard.protogen.ChaumPedersenProof,
-                              groupContext: GroupContext): GenericChaumPedersenProof {
-    if (proof.pad == null || proof.data == null || proof.challenge == null || proof.response == null) {
-        throw IllegalArgumentException("ElGamalCiphertext pad and value cannot be null")
+fun convertChaumPedersenProof(proof: electionguard.protogen.ChaumPedersenProof?,
+                              groupContext: GroupContext): GenericChaumPedersenProof? {
+    // TODO: this should probably be a ConstantChaumPedersenProofKnownSecretKey, which needs to know
+    //   what the constant actually is. That should be nearby in the serialized data.
+
+    if (proof == null) return null
+
+    val pad = convertElementModP(proof.pad, groupContext)
+    val data = convertElementModP(proof.data, groupContext)
+    val challenge = convertElementModQ(proof.challenge, groupContext)
+    val response = convertElementModQ(proof.response, groupContext)
+
+    if (pad == null || data == null || challenge == null || response == null) {
+        logger.error { "one or more ChaumPedersenProof inputs was malformed or out of bounds" }
+        return null
     }
-    return GenericChaumPedersenProof(
-        convertElementModP(proof.pad, groupContext),
-        convertElementModP(proof.data, groupContext),
-        convertElementModQ(proof.challenge, groupContext),
-        convertElementModQ(proof.response, groupContext)
-    )
+
+    return GenericChaumPedersenProof(pad, data, challenge, response)
 }
 
-fun convertSchnorrProof(proof: electionguard.protogen.SchnorrProof,
-                        groupContext: GroupContext): SchnorrProof {
-    if (proof.publicKey == null || proof.commitment == null || proof.challenge == null || proof.response == null) {
-        throw IllegalArgumentException("SchnorrProof fields cannot be null")
+fun convertSchnorrProof(proof: electionguard.protogen.SchnorrProof?,
+                        groupContext: GroupContext): SchnorrProof? {
+
+    if (proof == null) return null
+
+    val publicKey = convertElGamalPublicKey(proof.publicKey, groupContext)
+    val commitment = convertElementModP(proof.commitment, groupContext)
+    val challenge = convertElementModQ(proof.challenge, groupContext)
+    val response = convertElementModQ(proof.response, groupContext)
+
+    if (publicKey == null || commitment == null || challenge == null || response == null) {
+        logger.error { "one or more SchnorrProof inputs was malformed or out of bounds" }
+        return null
     }
-    return SchnorrProof(
-        convertElGamalPublicKey(proof.publicKey, groupContext),
-        convertElementModP(proof.commitment, groupContext),
-        convertElementModQ(proof.challenge, groupContext),
-        convertElementModQ(proof.response, groupContext)
-    )
+
+    return SchnorrProof(publicKey, commitment, challenge, response)
 }
 
-fun convertElGamalPublicKey(publicKey: electionguard.protogen.ElementModP,
-                            groupContext: GroupContext) : ElGamalPublicKey {
-    return ElGamalPublicKey(convertElementModP(publicKey, groupContext))
+fun convertElGamalPublicKey(publicKey: electionguard.protogen.ElementModP?,
+                            groupContext: GroupContext) : ElGamalPublicKey? {
+    val key = convertElementModP(publicKey, groupContext)
+    if (key == null) {
+        logger.error { "ElGamalPublicKey was malformed or out of bounds" }
+        return null
+    }
+    return ElGamalPublicKey(key)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////

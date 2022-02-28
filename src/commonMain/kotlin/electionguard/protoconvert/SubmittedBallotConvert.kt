@@ -1,83 +1,169 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.SubmittedBallot
-import electionguard.core.ConstantChaumPedersenProofKnownNonce
-import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
-import electionguard.core.GenericChaumPedersenProof
-import electionguard.core.GroupContext
+import electionguard.core.*
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger("SubmittedBallotConvert")
 
 data class SubmittedBallotConvert(val groupContext: GroupContext) {
 
-    fun translateFromProto(proto: electionguard.protogen.SubmittedBallot): SubmittedBallot {
+    fun translateFromProto(proto: electionguard.protogen.SubmittedBallot?): SubmittedBallot? {
+        if (proto == null) {
+            return null
+        }
+
+        val manifestHash = convertElementModQ(proto.manifestHash, groupContext)
+        val trackingHash = convertElementModQ(proto.trackingHash, groupContext)
+        val previousTrackingHash = convertElementModQ(proto.previousTrackingHash, groupContext)
+        val cryptoHash = convertElementModQ(proto.cryptoHash, groupContext)
+        val ballotState = convertBallotState(proto.state)
+        val contests = proto.contests.map{ convertContest(it) }.noNullValuesOrNull()
+
+        // TODO: should we also check that the contests lists is non-empty?
+
+        if (manifestHash == null || trackingHash == null || previousTrackingHash == null || cryptoHash == null || ballotState == null || contests == null) {
+            logger.error { "Failed to convert submitted ballot, missing fields" }
+            return null
+        }
+
         return SubmittedBallot(
             proto.ballotId,
             proto.ballotStyleId,
-            convertElementModQ(proto.manifestHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertElementModQ(proto.trackingHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertElementModQ(proto.previousTrackingHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            proto.contests.map{ convertContest(it) },
+            manifestHash,
+            trackingHash,
+            previousTrackingHash,
+            contests,
             proto.timestamp,
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertBallotState(proto.state),
+            cryptoHash,
+            ballotState,
         )
     }
 
-    private fun convertBallotState(proto: electionguard.protogen.SubmittedBallot.BallotState): SubmittedBallot.BallotState {
-        return SubmittedBallot.BallotState.valueOf(proto.name?: throw IllegalArgumentException("BallotState cannot be null"))
+    private fun convertBallotState(proto: electionguard.protogen.SubmittedBallot.BallotState?): SubmittedBallot.BallotState? {
+        if (proto == null) {
+            return null
+        }
+
+        val name = proto.name
+        if (name == null) {
+            logger.error { "Failed to convert ballot state, missing name" }
+            return null
+        }
+
+        try {
+            return SubmittedBallot.BallotState.valueOf(name)
+        } catch (e: IllegalArgumentException) {
+            logger.error { "Failed to convert ballot state, unknown name: $name" }
+            return null
+        }
     }
 
-    private fun convertContest(proto: electionguard.protogen.CiphertextBallotContest): SubmittedBallot.Contest {
+    private fun convertContest(proto: electionguard.protogen.CiphertextBallotContest?): SubmittedBallot.Contest? {
+        if (proto == null) {
+            return null
+        }
+
+        val contestHash = convertElementModQ(proto.contestHash, groupContext)
+        val ciphertextAccumulation = convertCiphertext(proto.ciphertextAccumulation, groupContext)
+        val cryptoHash = convertElementModQ(proto.cryptoHash, groupContext)
+        val proof = convertConstantChaumPedersenProof(proto.proof)
+        val selections = proto.selections.map { convertSelection(it) }.noNullValuesOrNull()
+
+        // TODO: should we also check if the selections is empty or the wrong length?
+
+        if (contestHash == null || ciphertextAccumulation == null || cryptoHash == null || proof == null || selections == null) {
+            logger.error { "Failed to convert contest, missing fields" }
+            return null
+        }
+
         return SubmittedBallot.Contest(
             proto.contestId,
             proto.sequenceOrder,
-            convertElementModQ(proto.contestHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            proto.selections.map{ convertSelection(it) },
-            convertCiphertext(proto.ciphertextAccumulation?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertConstantChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Selection value cannot be null")),
+            contestHash,
+            selections,
+            ciphertextAccumulation,
+            cryptoHash,
+            proof
         )
     }
 
-    private fun convertSelection(proto: electionguard.protogen.CiphertextBallotSelection): SubmittedBallot.Selection {
+    private fun convertSelection(proto: electionguard.protogen.CiphertextBallotSelection?): SubmittedBallot.Selection? {
+        if (proto == null) {
+            return null
+        }
+
+        val selectionHash = convertElementModQ(proto.selectionHash, groupContext)
+        val ciphertext = convertCiphertext(proto.ciphertext, groupContext)
+        val cryptoHash = convertElementModQ(proto.cryptoHash, groupContext)
+        val proof = convertDisjunctiveChaumPedersenProof(proto.proof)
+        val extendedData = convertCiphertext(proto.extendedData, groupContext)
+
+        if (selectionHash == null || ciphertext == null || cryptoHash == null || proof == null || extendedData == null) {
+            logger.error { "Failed to convert selection, missing fields" }
+            return null
+        }
+
         return SubmittedBallot.Selection(
             proto.selectionId,
             proto.sequenceOrder,
-            convertElementModQ(proto.selectionHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            convertCiphertext(proto.ciphertext?: throw IllegalArgumentException("Selection message cannot be null"), groupContext),
-            convertElementModQ(proto.cryptoHash?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            selectionHash,
+            ciphertext,
+            cryptoHash,
             proto.isPlaceholderSelection,
-            convertDisjunctiveChaumPedersenProof(proto.proof?: throw IllegalArgumentException("Selection value cannot be null")),
-            convertCiphertext(proto.extendedData?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            proof,
+            extendedData
         )
     }
 
-    fun convertConstantChaumPedersenProof(proof: electionguard.protogen.ConstantChaumPedersenProof): ConstantChaumPedersenProofKnownNonce? {
+    fun convertConstantChaumPedersenProof(proof: electionguard.protogen.ConstantChaumPedersenProof?): ConstantChaumPedersenProofKnownNonce? {
+        if (proof == null) {
+            return null
+        }
+        val pad = convertElementModP(proof.pad, groupContext)
+        val data = convertElementModP(proof.data, groupContext)
+        val challenge = convertElementModQ(proof.challenge, groupContext)
+        val response = convertElementModQ(proof.response, groupContext)
+
+        if (pad == null || data == null || challenge == null || response == null) {
+            logger.error { "Failed to convert constant Chaum-Pedersen proof, missing fields" }
+            return null
+        }
+
         return ConstantChaumPedersenProofKnownNonce(
-            GenericChaumPedersenProof(
-                convertElementModP(proof.pad?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModP(proof.data?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.challenge?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.response?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            ),
+            GenericChaumPedersenProof(pad, data, challenge, response),
             proof.constant
         )
     }
 
-    fun convertDisjunctiveChaumPedersenProof(proof: electionguard.protogen.DisjunctiveChaumPedersenProof): DisjunctiveChaumPedersenProofKnownNonce? {
+    fun convertDisjunctiveChaumPedersenProof(proof: electionguard.protogen.DisjunctiveChaumPedersenProof?): DisjunctiveChaumPedersenProofKnownNonce? {
+        if (proof == null) {
+            return null
+        }
+
+        val proofZeroPad = convertElementModP(proof.proofZeroPad, groupContext)
+        val proofZeroData = convertElementModP(proof.proofZeroData, groupContext)
+        val proofZeroChallenge = convertElementModQ(proof.proofZeroChallenge, groupContext)
+        val proofZeroResponse = convertElementModQ(proof.proofZeroResponse, groupContext)
+
+        val proofOnePad = convertElementModP(proof.proofOnePad, groupContext)
+        val proofOneData = convertElementModP(proof.proofOneData, groupContext)
+        val proofOneChallenge = convertElementModQ(proof.proofOneChallenge, groupContext)
+        val proofOneResponse = convertElementModQ(proof.proofOneResponse, groupContext)
+
+        val proofChallenge = convertElementModQ(proof.challenge, groupContext)
+
+        if (proofZeroPad == null || proofZeroData == null || proofZeroChallenge == null || proofZeroResponse == null ||
+            proofOnePad == null || proofOneData == null || proofOneChallenge == null || proofOneResponse == null ||
+            proofChallenge == null) {
+            logger.error { "Failed to convert disjunctive Chaum-Pedersen proof, missing fields" }
+            return null
+        }
+
+
         return DisjunctiveChaumPedersenProofKnownNonce(
-            GenericChaumPedersenProof(
-                convertElementModP(proof.proofZeroPad?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModP(proof.proofZeroData?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.proofZeroChallenge?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.proofZeroResponse?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            ),
-            GenericChaumPedersenProof(
-                convertElementModP(proof.proofOnePad?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModP(proof.proofOneData?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.proofOneChallenge?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-                convertElementModQ(proof.proofOneResponse?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
-            ),
-            convertElementModQ(proof.challenge?: throw IllegalArgumentException("Selection value cannot be null"), groupContext),
+            GenericChaumPedersenProof(proofZeroPad, proofZeroData, proofZeroChallenge, proofZeroResponse),
+            GenericChaumPedersenProof(proofOnePad, proofOneData, proofOneChallenge, proofOneResponse),
+            proofChallenge
         )
     }
 

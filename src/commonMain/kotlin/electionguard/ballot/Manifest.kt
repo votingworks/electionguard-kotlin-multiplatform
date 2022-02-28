@@ -5,6 +5,8 @@ import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.hashElements
 import kotlinx.datetime.UtcOffset
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger("Manifest")
 
 
 /**
@@ -516,7 +518,7 @@ data class Manifest(
             contest_id: String,
             electoral_district_id: String,
             sequence_order: Int,
-            vote_variation: Manifest.VoteVariationType,
+            vote_variation: Manifest.VoteVariationType?,
             number_elected: Int,
             votes_allowed: Int,
             name: String,
@@ -524,7 +526,14 @@ data class Manifest(
             ballot_title: Manifest.InternationalizedText?,
             ballot_subtitle: Manifest.InternationalizedText?,
             primary_party_ids : List<String>
-        ): Manifest.ContestDescription {
+        ): Manifest.ContestDescription? {
+
+            if (vote_variation == null) {
+                logger.error { "Contest description has no vote variation" }
+                return null
+            }
+
+            // TODO: other error conditions here, like empty lists?
 
             return Manifest.ContestDescription(
                 contest_id,
@@ -573,9 +582,13 @@ data class Manifest(
             groupContext: GroupContext,
             unit_id: String,
             name: String,
-            type: Manifest.ReportingUnitType,
+            type: Manifest.ReportingUnitType?,
             contact_information: Manifest.ContactInformation?
-        ): Manifest.GeopoliticalUnit {
+        ): Manifest.GeopoliticalUnit? {
+            if (type == null) {
+                logger.error { "Geopolitical unit has no type" }
+                return null
+            }
 
             return Manifest.GeopoliticalUnit(
                 unit_id, name, type, contact_information,

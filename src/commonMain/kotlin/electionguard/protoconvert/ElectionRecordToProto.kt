@@ -20,11 +20,11 @@ data class ElectionRecordToProto(val groupContext: GroupContext) {
             }
         val guardianRecords: List<electionguard.protogen.GuardianRecord> =
             if (election.guardianRecords == null || election.guardianRecords.isEmpty()) { emptyList() } else {
-                election.guardianRecords.map {convertGuardianRecord(it)}
+                election.guardianRecords.map { convertGuardianRecord(it) }
             }
         val availableGuardians: List<electionguard.protogen.AvailableGuardian> =
             if (election.availableGuardians == null || election.availableGuardians.isEmpty()) { emptyList() } else {
-                election.availableGuardians.map {convertAvailableGuardian(it?: throw IllegalStateException("availableGuardian cant be null"))}
+                election.availableGuardians.map { convertAvailableGuardian(it) }
             }
 
         return electionguard.protogen.ElectionRecord(

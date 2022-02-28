@@ -53,3 +53,47 @@ fun ULong.toByteArray(): ByteArray =
 
 /** Convert an unsigned 32-bit int into a big-endian 4-byte array. */
 fun UInt.toByteArray(): ByteArray = this.toULong().toByteArray()
+
+/**
+ * If there are any null values in the map, the result is null, otherwise the result is the
+ * same map, but typed without the nulls.
+ */
+fun <K, V: Any> Map<K, V?>.noNullValuesOrNull(): Map<K, V>? {
+    return if (this.any { it.value == null }) {
+        null
+    } else {
+        @Suppress("UNCHECKED_CAST")
+        this as Map<K, V>
+    }
+}
+
+/**
+ * If there are any null values in the list, the result is null, otherwise the result is the
+ * same list, but typed without the nulls. Similar to [requireNoNulls], but returns `null`
+ * rather than throwing an exception.
+ */
+fun <T: Any> List<T?>.noNullValuesOrNull(): List<T>? {
+    return if (this.any { it == null }) {
+        null
+    } else {
+        @Suppress("UNCHECKED_CAST")
+        this as List<T>
+    }
+}
+
+/**
+ * Normally, Kotlin's `Enum.valueOf` or [enumValueOf] method will throw an exception for an
+ * invalid input. This method will instead return `null` if the string doesn't map to a valid
+ * value of the enum.
+ */
+inline fun <reified T: Enum<T>> safeEnumValueOf(name: String?): T? {
+    if (name == null) {
+        return null
+    }
+
+    return try {
+        enumValueOf<T>(name)
+    } catch (e: IllegalArgumentException) {
+        null
+    }
+}

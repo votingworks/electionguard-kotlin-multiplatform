@@ -2,24 +2,50 @@ package electionguard.protoconvert
 
 import electionguard.ballot.Manifest
 import electionguard.core.GroupContext
+import electionguard.core.noNullValuesOrNull
+import electionguard.core.safeEnumValueOf
 import kotlinx.datetime.UtcOffset
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger("ManifestFromProto")
 
 data class ManifestFromProto(val groupContext: GroupContext) {
 
-    fun translateFromProto(proto: electionguard.protogen.Manifest): Manifest {
+    fun translateFromProto(proto: electionguard.protogen.Manifest?): Manifest? {
+        if (proto == null) {
+            return null
+        }
+
+        val contests = proto.contests.map { convertContestDescription(it) }.noNullValuesOrNull()
+
+        if (contests == null) {
+            logger.error { "missing contests in Manifest" }
+            return null
+        }
+
+        val electionType = convert(proto.electionType)
+        val geopoliticalUnits = proto.geopoliticalUnits.map { convertGeopoliticalUnit(it) }.noNullValuesOrNull()
+
+        if (electionType == null || geopoliticalUnits == null) {
+            logger.error { "missing electionType or geopoliticalUnits in Manifest" }
+            return null
+        }
+
+        // TODO: presumably there are many more error conditions that we need to check for here,
+        //   like having zero ballot styles, zero candidates, etc.
+
         return Manifest(
             groupContext,
             proto.electionScopeId,
             proto.specVersion,
-            convert(proto.electionType),
+            electionType,
             UtcOffset.parse(proto.startDate),
             UtcOffset.parse(proto.endDate),
-            proto.geopoliticalUnits.map {convertGeopoliticalUnit(it)},
-            proto.parties.map{convertParty(it)},
-            proto.candidates.map{convertCandidate(it)},
-            proto.contests.map{convertContestDescription(it)},
-            proto.ballotStyles.map{convertBallotStyle(it)},
-            if (proto.name == null) { null } else { convertInternationalizedText(proto.name) },
+            geopoliticalUnits,
+            proto.parties.map { convertParty(it) },
+            proto.candidates.map { convertCandidate(it) },
+            contests,
+            proto.ballotStyles.map { convertBallotStyle(it) },
+            convertInternationalizedText(proto.name),
             convertContactInformation(proto.contactInformation),
         )
     }
@@ -62,7 +88,11 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertContestDescription(proto: electionguard.protogen.ContestDescription): Manifest.ContestDescription {
+    private fun convertContestDescription(proto: electionguard.protogen.ContestDescription?): Manifest.ContestDescription? {
+        if (proto == null) {
+            return null
+        }
+
         return Manifest.makeContestDescription(
             groupContext,
             proto.contestId,
@@ -79,25 +109,53 @@ data class ManifestFromProto(val groupContext: GroupContext) {
         )
     }
 
-    private fun convertVoteVariationType(type: electionguard.protogen.ContestDescription.VoteVariationType): Manifest.VoteVariationType {
-        return Manifest.VoteVariationType.valueOf(type.name?: throw IllegalStateException(type.toString()))
+    private fun convertVoteVariationType(type: electionguard.protogen.ContestDescription.VoteVariationType?): Manifest.VoteVariationType? {
+        if (type == null) {
+            return null
+        }
+
+        val result = safeEnumValueOf<Manifest.VoteVariationType>(type.name)
+        if (result == null) {
+            logger.error { "Vote variation type $type has missing or incorrect name" }
+        }
+        return result
     }
 
-    private fun convert(type: electionguard.protogen.Manifest.ElectionType): Manifest.ElectionType {
-        return Manifest.ElectionType.valueOf(type.name?: throw IllegalStateException(type.toString()))
+    private fun convert(type: electionguard.protogen.Manifest.ElectionType?): Manifest.ElectionType? {
+        if (type == null) {
+            return null
+        }
+
+        val result = safeEnumValueOf<Manifest.ElectionType>(type.name)
+        if (result == null) {
+            logger.error { "Vote election type $type has missing or incorrect name" }
+        }
+        return result
     }
 
-    private fun convertReportingUnitType(type: electionguard.protogen.GeopoliticalUnit.ReportingUnitType): Manifest.ReportingUnitType {
-        return Manifest.ReportingUnitType.valueOf(type.name?: throw IllegalStateException(type.toString()))
+    private fun convertReportingUnitType(type: electionguard.protogen.GeopoliticalUnit.ReportingUnitType?): Manifest.ReportingUnitType? {
+        if (type == null) {
+            return null
+        }
+
+        val result = safeEnumValueOf<Manifest.ReportingUnitType>(type.name)
+        if (result == null) {
+            logger.error { "Reporting unit type $type has missing or incorrect name" }
+        }
+        return result
     }
 
-    private fun convertGeopoliticalUnit(proto : electionguard.protogen.GeopoliticalUnit): Manifest.GeopoliticalUnit {
+    private fun convertGeopoliticalUnit(proto : electionguard.protogen.GeopoliticalUnit?): Manifest.GeopoliticalUnit? {
+        if (proto == null) {
+            return null
+        }
+
         return Manifest.makeGeopoliticalUnit(
             groupContext,
             proto.geopoliticalUnitId,
             proto.name,
             convertReportingUnitType(proto.type),
-            if (proto.contactInformation == null) { null } else {convertContactInformation(proto.contactInformation)}
+            convertContactInformation(proto.contactInformation)
         )
     }
 
