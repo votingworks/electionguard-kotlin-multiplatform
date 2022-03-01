@@ -91,7 +91,7 @@ class ProductionGroupContext(
     override fun isProductionStrength() = true
 
     override val constants: ElectionConstants by lazy {
-        ElectionConstants(pBytes, qBytes, rBytes, gBytes)
+        ElectionConstants(name, pBytes, qBytes, rBytes, gBytes)
     }
 
     override fun toString() : String = name
