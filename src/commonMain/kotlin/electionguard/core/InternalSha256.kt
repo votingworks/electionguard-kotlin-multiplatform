@@ -5,7 +5,7 @@ import kotlin.experimental.xor
 /**
  * This is a "pure Kotlin" implementation of HMAC-SHA256. It's useful for testing, and if we really
  * have to, we can use it in production, but it's not going to be as fast as a tuned implementation.
- * That's in `SHA256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
+ * That's in `Sha256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
  * platform.
  */
 fun internalHmacSha256(key: ByteArray, data: ByteArray): ByteArray {
@@ -38,7 +38,7 @@ fun internalHmacSha256(key: ByteArray, data: ByteArray): ByteArray {
 /**
  * This is a "pure Kotlin" implementation of SHA256. It's useful for testing, and if we really have
  * to, we can use it in production, but it's not going to be as fast as a tuned implementation.
- * That's in `SHA256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
+ * That's in `Sha256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
  * platform.
  */
 fun internalSha256(input: ByteArray): ByteArray {
