@@ -2,10 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.*
 
-fun GroupContext.annotatedStringOf(
-    annotation: String,
-    value: String
-): Manifest.AnnotatedString {
+fun GroupContext.annotatedStringOf(annotation: String, value: String): Manifest.AnnotatedString {
     return Manifest.AnnotatedString(annotation, value, this.hashElements(annotation, value))
 }
 
@@ -33,7 +30,11 @@ fun GroupContext.candidateOf(
 ): Manifest.Candidate {
     val useName = name ?: this.internationalizedTextUnknown()
     return Manifest.Candidate(
-        candidateId, useName, partyId, imageUri, isWriteIn,
+        candidateId,
+        useName,
+        partyId,
+        imageUri,
+        isWriteIn,
         this.hashElements(candidateId, name, partyId, imageUri),
     )
 }
@@ -49,7 +50,7 @@ fun GroupContext.contestDescriptionOf(
     ballotSelections: List<Manifest.SelectionDescription>,
     ballotTitle: Manifest.InternationalizedText?,
     ballotSubtitle: Manifest.InternationalizedText?,
-    primaryPartyIds : List<String>
+    primaryPartyIds: List<String>
 ): Manifest.ContestDescription {
 
     return Manifest.ContestDescription(
@@ -87,7 +88,10 @@ fun GroupContext.contactInformationOf(
     name: String?
 ): Manifest.ContactInformation {
     return Manifest.ContactInformation(
-        addressLine, email, phone, name,
+        addressLine,
+        email,
+        phone,
+        name,
         this.hashElements(name, addressLine, email, phone),
     )
 }
@@ -99,7 +103,10 @@ fun GroupContext.geopoliticalUnitOf(
     contactInformation: Manifest.ContactInformation?
 ): Manifest.GeopoliticalUnit {
     return Manifest.GeopoliticalUnit(
-        unitId, name, type, contactInformation,
+        unitId,
+        name,
+        type,
+        contactInformation,
         this.hashElements(unitId, name, type.name, contactInformation),
     )
 }
@@ -111,13 +118,11 @@ fun GroupContext.internationalizedTextOf(
 }
 
 fun GroupContext.internationalizedTextUnknown(): Manifest.InternationalizedText {
-    val text = listOf( this.languageOf("unknown", "en"))
+    val text = listOf(this.languageOf("unknown", "en"))
     return Manifest.InternationalizedText(text, this.hashElements(text))
 }
 
-fun GroupContext.languageOf(
-    value: String,
-    language: String): Manifest.Language {
+fun GroupContext.languageOf(value: String, language: String): Manifest.Language {
     return Manifest.Language(value, language, this.hashElements(value, language))
 }
 
@@ -130,7 +135,11 @@ fun GroupContext.partyOf(
 ): Manifest.Party {
     val useName = name ?: this.internationalizedTextUnknown()
     return Manifest.Party(
-        partyId, useName, abbreviation, color, logoUri,
+        partyId,
+        useName,
+        abbreviation,
+        color,
+        logoUri,
         this.hashElements(partyId, name, abbreviation, color, logoUri),
     )
 }
@@ -141,7 +150,9 @@ fun GroupContext.selectionDescriptionOf(
     candidateId: String,
 ): Manifest.SelectionDescription {
     return Manifest.SelectionDescription(
-        selectionId, sequenceOrder, candidateId,
+        selectionId,
+        sequenceOrder,
+        candidateId,
         this.hashElements(selectionId, candidateId, sequenceOrder),
     )
 }
@@ -174,18 +185,18 @@ fun GroupContext.manifestOf(
         name,
         contactInformation,
         this.hashElements( // follows the python code
-                    electionScopeId,
-                    electionType.name,
-                    startDate.toString(), // to_iso_date_string
-                    endDate.toString(),
-                    name,
-                    contactInformation,
-                    geopoliticalUnits,
-                    parties,
-                    candidates, // where did python add this ?
-                    contests,
-                    ballotStyles,
-                ),
+            electionScopeId,
+            electionType.name,
+            startDate.toString(), // to_iso_date_string
+            endDate.toString(),
+            name,
+            contactInformation,
+            geopoliticalUnits,
+            parties,
+            candidates, // where did python add this ?
+            contests,
+            ballotStyles,
+        ),
     )
 }
 
@@ -447,8 +458,11 @@ data class Manifest(
      * @see
      *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/annotated-string)
      */
-    data class AnnotatedString(val annotation: String, val value: String, val cryptoHash: ElementModQ) :
-        CryptoHashableElement {
+    data class AnnotatedString(
+        val annotation: String,
+        val value: String,
+        val cryptoHash: ElementModQ
+    ) : CryptoHashableElement {
         override fun cryptoHashElement() = cryptoHash
     }
 
@@ -523,10 +537,9 @@ data class Manifest(
      * @see
      *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
      */
-    data class InternationalizedText(
-        val text: List<Language>,
-        val cryptoHash: ElementModQ
-    ) : CryptoHashableElement {
+    data class InternationalizedText(val text: List<Language>, val cryptoHash: ElementModQ) :
+        CryptoHashableElement {
+
         override fun cryptoHashElement() = cryptoHash
     }
 
@@ -535,11 +548,9 @@ data class Manifest(
      *
      * @see [ISO 639](https://en.wikipedia.org/wiki/ISO_639)
      */
-    data class Language(
-        val value: String,
-        val language: String,
-        val cryptoHash: ElementModQ
-        ) : CryptoHashableElement {
+    data class Language(val value: String, val language: String, val cryptoHash: ElementModQ) :
+        CryptoHashableElement {
+
         override fun cryptoHashElement() = cryptoHash
     }
 
@@ -596,5 +607,5 @@ data class Manifest(
         val cryptoHash: ElementModQ
     ) : CryptoHashableElement {
         override fun cryptoHashElement() = cryptoHash
-        }
     }
+}

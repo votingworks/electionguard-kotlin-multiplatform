@@ -2,8 +2,8 @@ package electionguard.ballot
 
 /**
  * The plaintext representation of a voter's ballot selections for all the contests in an election.
- * The ballotId is a unique Ballot ID created by the external system.
- * This is used both as input, and for the roundtrip: input -> encrypt -> decrypt -> output.
+ * The ballotId is a unique Ballot ID created by the external system. This is used both as input,
+ * and for the roundtrip: input -> encrypt -> decrypt -> output.
  */
 data class PlaintextBallot(
     val ballotId: String,
@@ -11,18 +11,14 @@ data class PlaintextBallot(
     val contests: List<Contest>
 ) {
 
-    /**
-     * The plaintext representation of a voter's selections for one contest.
-     */
+    /** The plaintext representation of a voter's selections for one contest. */
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
         val sequenceOrder: Int,
         val selections: List<Selection>,
     );
 
-    /**
-     * The plaintext representation of one selection for a particular contest.
-     */
+    /** The plaintext representation of one selection for a particular contest. */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int,

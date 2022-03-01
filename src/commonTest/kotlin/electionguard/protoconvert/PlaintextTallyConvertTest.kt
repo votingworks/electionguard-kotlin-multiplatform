@@ -19,10 +19,14 @@ class PlaintextTallyConvertTest {
         val roundtrip = proto.importPlaintextTally(context)
         assertNotNull(roundtrip)
         for (entry in roundtrip.contests) {
-            val contest = tally.contests.get(entry.key) ?: throw RuntimeException("Cant find contest $entry.key")
+            val contest =
+                tally.contests.get(entry.key)
+                    ?: throw RuntimeException("Cant find contest $entry.key")
             val rcontest = entry.value
             for (entry2 in rcontest.selections) {
-                val selection = contest.selections.get(entry2.key) ?: throw RuntimeException("Cant find selection $entry2.key")
+                val selection =
+                    contest.selections.get(entry2.key)
+                        ?: throw RuntimeException("Cant find selection $entry2.key")
                 val rselection = entry2.value
                 for (shareIdx in 0 until rselection.shares.size) {
                     val share = selection.shares[shareIdx]
@@ -43,10 +47,16 @@ class PlaintextTallyConvertTest {
 
         private fun generateFakeContest(cseq: Int, context: GroupContext): PlaintextTally.Contest {
             val selections = List(11) { generateFakeSelection(it, context) }
-            return PlaintextTally.Contest("contest$cseq", selections.associate { it.selectionId to it })
+            return PlaintextTally.Contest(
+                "contest$cseq",
+                selections.associate { it.selectionId to it }
+            )
         }
 
-        private fun generateFakeSelection(sseq: Int, context: GroupContext): PlaintextTally.Selection {
+        private fun generateFakeSelection(
+            sseq: Int,
+            context: GroupContext
+        ): PlaintextTally.Selection {
             val dselections = List(11) { generateCiphertextDecryptionSelection(it, context) }
             //         val selectionId: String, // matches SelectionDescription.selectionId
             //        val tally: Int,
@@ -66,7 +76,8 @@ class PlaintextTallyConvertTest {
             sseq: Int,
             context: GroupContext
         ): DecryptionShare.CiphertextDecryptionSelection {
-            val cdselections = List(11) { generateCiphertextCompensatedDecryptionSelection(it, context) }
+            val cdselections =
+                List(11) { generateCiphertextCompensatedDecryptionSelection(it, context) }
             val proofOrParts = Random.nextBoolean()
             //          val guardianId : String,
             //        val share: ElementModP,
@@ -102,5 +113,4 @@ class PlaintextTallyConvertTest {
             )
         }
     }
-
 }

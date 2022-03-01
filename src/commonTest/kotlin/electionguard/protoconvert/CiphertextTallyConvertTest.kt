@@ -33,7 +33,10 @@ class CiphertextTallyConvertTest {
             )
         }
 
-        private fun generateFakeSelection(sseq: Int, context: GroupContext): CiphertextTally.Selection {
+        private fun generateFakeSelection(
+            sseq: Int,
+            context: GroupContext
+        ): CiphertextTally.Selection {
             //         val selectionId: String,
             //        val sequenceOrder: Int,
             //        val selectionDescriptionHash: ElementModQ,
@@ -46,5 +49,4 @@ class CiphertextTallyConvertTest {
             )
         }
     }
-
 }

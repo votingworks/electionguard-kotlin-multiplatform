@@ -27,11 +27,16 @@ class PlaintextBallotConvertTest {
 
     private fun generateFakeSelection(sseq: Int): PlaintextBallot.Selection {
         val vote: Int = if (Random.nextBoolean()) 1 else 0
-        return PlaintextBallot.Selection("selection$sseq", sseq, vote, false, generateExtendedData(sseq))
+        return PlaintextBallot.Selection(
+            "selection$sseq",
+            sseq,
+            vote,
+            false,
+            generateExtendedData(sseq)
+        )
     }
 
     private fun generateExtendedData(sseq: Int): PlaintextBallot.ExtendedData {
         return PlaintextBallot.ExtendedData("ExtendedData$sseq", sseq)
-
     }
 }

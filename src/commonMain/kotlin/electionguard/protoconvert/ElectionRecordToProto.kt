@@ -29,35 +29,38 @@ fun publishElectionRecord(
     availableGuardians: List<AvailableGuardian>?,
 ): electionguard.protogen.ElectionRecord {
 
-    return electionguard.protogen.ElectionRecord(
-        version,
-        constants.publishConstants(),
-        manifest.publishManifest(),
-        context.publishContext(),
-        guardianRecords?.map { it.publishGuardianRecord() } ?: emptyList(),
-        devices.map { it.publishDevice() },
-        encryptedTally?.let { encryptedTally.publishCiphertextTally() },
-        decryptedTally?.let { decryptedTally.publishPlaintextTally() },
-        availableGuardians?.map { it.publishAvailableGuardian() } ?: emptyList(),
-    )
+    return electionguard.protogen
+        .ElectionRecord(
+            version,
+            constants.publishConstants(),
+            manifest.publishManifest(),
+            context.publishContext(),
+            guardianRecords?.map { it.publishGuardianRecord() } ?: emptyList(),
+            devices.map { it.publishDevice() },
+            encryptedTally?.let { encryptedTally.publishCiphertextTally() },
+            decryptedTally?.let { decryptedTally.publishPlaintextTally() },
+            availableGuardians?.map { it.publishAvailableGuardian() } ?: emptyList(),
+        )
 }
 
 private fun AvailableGuardian.publishAvailableGuardian(): electionguard.protogen.AvailableGuardian {
-    return electionguard.protogen.AvailableGuardian(
-        this.guardianId,
-        this.xCoordinate,
-        this.lagrangeCoordinate.publishElementModQ(),
-    )
+    return electionguard.protogen
+        .AvailableGuardian(
+            this.guardianId,
+            this.xCoordinate,
+            this.lagrangeCoordinate.publishElementModQ(),
+        )
 }
 
 private fun ElectionConstants.publishConstants(): electionguard.protogen.ElectionConstants {
-    return electionguard.protogen.ElectionConstants(
-        this.name,
-        ByteArr(this.largePrime),
-        ByteArr(this.smallPrime),
-        ByteArr(this.cofactor),
-        ByteArr(this.generator),
-    )
+    return electionguard.protogen
+        .ElectionConstants(
+            this.name,
+            ByteArr(this.largePrime),
+            ByteArr(this.smallPrime),
+            ByteArr(this.cofactor),
+            ByteArr(this.generator),
+        )
 }
 
 private fun ElectionContext.publishContext(): electionguard.protogen.ElectionContext {
@@ -68,39 +71,38 @@ private fun ElectionContext.publishContext(): electionguard.protogen.ElectionCon
             this.extendedData.map { (key, value) -> publishExtendedData(key, value) }
         }
 
-
-    return electionguard.protogen.ElectionContext(
-        this.numberOfGuardians,
-        this.quorum,
-        this.jointPublicKey.publishElementModP(),
-        this.manifestHash.publishElementModQ(),
-        this.cryptoBaseHash.publishElementModQ(),
-        this.cryptoExtendedBaseHash.publishElementModQ(),
-        this.commitmentHash.publishElementModQ(),
-        extendedData
-    )
+    return electionguard.protogen
+        .ElectionContext(
+            this.numberOfGuardians,
+            this.quorum,
+            this.jointPublicKey.publishElementModP(),
+            this.manifestHash.publishElementModQ(),
+            this.cryptoBaseHash.publishElementModQ(),
+            this.cryptoExtendedBaseHash.publishElementModQ(),
+            this.commitmentHash.publishElementModQ(),
+            extendedData
+        )
 }
 
-private fun publishExtendedData(key: String, value: String): electionguard.protogen.ElectionContext.ExtendedDataEntry {
+private fun publishExtendedData(
+    key: String,
+    value: String
+): electionguard.protogen.ElectionContext.ExtendedDataEntry {
     return electionguard.protogen.ElectionContext.ExtendedDataEntry(key, value)
 }
 
-
 private fun EncryptionDevice.publishDevice(): electionguard.protogen.EncryptionDevice {
-    return electionguard.protogen.EncryptionDevice(
-        this.deviceId,
-        this.sessionId,
-        this.launchCode,
-        this.location
-    )
+    return electionguard.protogen
+        .EncryptionDevice(this.deviceId, this.sessionId, this.launchCode, this.location)
 }
 
 private fun GuardianRecord.publishGuardianRecord(): electionguard.protogen.GuardianRecord {
-    return electionguard.protogen.GuardianRecord(
-        this.guardianId,
-        this.xCoordinate,
-        this.guardianPublicKey.publishElementModP(),
-        this.coefficientCommitments.map { it.publishElementModP() },
-        this.coefficientProofs.map { it.publishSchnorrProof() },
-    )
+    return electionguard.protogen
+        .GuardianRecord(
+            this.guardianId,
+            this.xCoordinate,
+            this.guardianPublicKey.publishElementModP(),
+            this.coefficientCommitments.map { it.publishElementModP() },
+            this.coefficientProofs.map { it.publishSchnorrProof() },
+        )
 }

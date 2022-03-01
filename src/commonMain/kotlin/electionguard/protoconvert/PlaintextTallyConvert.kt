@@ -18,7 +18,9 @@ fun electionguard.protogen.PlaintextTally.importPlaintextTally(
     }
 
     val contestMap =
-        this.contests.associate { it.contestId to it.importContest(groupContext) }.noNullValuesOrNull()
+        this.contests
+            .associate { it.contestId to it.importContest(groupContext) }
+            .noNullValuesOrNull()
 
     if (contestMap == null) {
         logger.error { "Failed to convert PlaintextTally" }
@@ -73,53 +75,55 @@ private fun electionguard.protogen.PlaintextTallySelection.importSelection(
 }
 
 private fun electionguard.protogen.CiphertextDecryptionSelection.importShare(
-        groupContext: GroupContext)
-    : DecryptionShare.CiphertextDecryptionSelection? {
+    groupContext: GroupContext
+) : DecryptionShare.CiphertextDecryptionSelection? {
 
-        val share = groupContext.importElementModP(this.share)
-        val proof = groupContext.importChaumPedersenProof(this.proof)
-        val recoveredParts = this.recoveredParts
-        val parts =
-            if (recoveredParts != null) {
-                recoveredParts.fragments
-                    .associate { it.guardianId to it.importRecoveredParts(groupContext) }
-                    .noNullValuesOrNull()
-            } else {
-                null
-            }
-
-        if (share == null) {
-            logger.error { "Missing CiphertextDecryptionSelection share" }
-            return null
+    val share = groupContext.importElementModP(this.share)
+    val proof = groupContext.importChaumPedersenProof(this.proof)
+    val recoveredParts = this.recoveredParts
+    val parts =
+        if (recoveredParts != null) {
+            recoveredParts.fragments
+                .associate { it.guardianId to it.importRecoveredParts(groupContext) }
+                .noNullValuesOrNull()
+        } else {
+            null
         }
 
-        when {
-            proof == null && parts == null -> {
-                logger.error {
-                    "Failed to convert CiphertextDecryptionSelection: no proof or parts present"
-                }
-                return null
-            }
-            proof != null && parts != null -> {
-                logger.error {
-                    "Failed to convert CiphertextDecryptionSelection: both proof *and* parts " +
-                        "present"
-                }
-                return null
-            }
-        }
-
-        // If we get here, one of proof or parts is non-null
-        return DecryptionShare.CiphertextDecryptionSelection(
-            this.selectionId,
-            this.guardianId,
-            share,
-            proof,
-            parts,
-        )
+    if (share == null) {
+        logger.error { "Missing CiphertextDecryptionSelection share" }
+        return null
     }
 
-private fun electionguard.protogen.CiphertextCompensatedDecryptionSelection.importRecoveredParts(groupContext: GroupContext): DecryptionShare.CiphertextCompensatedDecryptionSelection? {
+    when {
+        proof == null && parts == null -> {
+            logger.error {
+                "Failed to convert CiphertextDecryptionSelection: no proof or parts present"
+            }
+            return null
+        }
+        proof != null && parts != null -> {
+            logger.error {
+                "Failed to convert CiphertextDecryptionSelection: both proof *and* parts " +
+                    "present"
+            }
+            return null
+        }
+    }
+
+    // If we get here, one of proof or parts is non-null
+    return DecryptionShare.CiphertextDecryptionSelection(
+        this.selectionId,
+        this.guardianId,
+        share,
+        proof,
+        parts,
+    )
+}
+
+private fun electionguard.protogen.CiphertextCompensatedDecryptionSelection.importRecoveredParts(
+    groupContext: GroupContext
+): DecryptionShare.CiphertextCompensatedDecryptionSelection? {
     val share = groupContext.importElementModP(this.share)
     val recoveryKey = groupContext.importElementModP(this.recoveryKey)
     val proof = groupContext.importChaumPedersenProof(this.proof)
@@ -141,60 +145,68 @@ private fun electionguard.protogen.CiphertextCompensatedDecryptionSelection.impo
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-
 fun PlaintextTally.publishPlaintextTally(): electionguard.protogen.PlaintextTally {
-    return electionguard.protogen.PlaintextTally(
-        this.tallyId,
-        this.contests.values.map { it.publishContest() }
-    )
+    return electionguard.protogen
+        .PlaintextTally(this.tallyId, this.contests.values.map { it.publishContest() })
 }
 
 private fun PlaintextTally.Contest.publishContest(): electionguard.protogen.PlaintextTallyContest {
-    return electionguard.protogen.PlaintextTallyContest(
-        this.contestId,
-        this.selections.values.map { it.publishSelection() }
-    )
+    return electionguard.protogen
+        .PlaintextTallyContest(this.contestId, this.selections.values.map { it.publishSelection() })
 }
 
-private fun PlaintextTally.Selection.publishSelection(): electionguard.protogen.PlaintextTallySelection {
-    return electionguard.protogen.PlaintextTallySelection(
-        this.selectionId,
-        this.tally,
-        this.value.publishElementModP(),
-        this.message.publishCiphertext(),
-        this.shares.map { it.publishShare() }
-    )
-}
-
-private fun DecryptionShare.CiphertextDecryptionSelection.publishShare(): electionguard.protogen.CiphertextDecryptionSelection {
-    // either proof or recovered_parts is non null
-    val proofOrParts: electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts<*>?
-    if (this.proof != null) {
-        proofOrParts =
-            electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts.Proof(this.proof.publishChaumPedersenProof())
-    } else if (this.recoveredParts != null) {
-        val pparts = this.recoveredParts.map { it.value.publishRecoveredParts() }
-        proofOrParts = electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts.RecoveredParts(
-            electionguard.protogen.RecoveredParts(pparts)
-        )
-    } else {
-        throw IllegalStateException("CiphertextDecryptionSelection must have proof or recoveredParts")
+private fun PlaintextTally.Selection.publishSelection():
+    electionguard.protogen.PlaintextTallySelection {
+        return electionguard.protogen
+            .PlaintextTallySelection(
+                this.selectionId,
+                this.tally,
+                this.value.publishElementModP(),
+                this.message.publishCiphertext(),
+                this.shares.map { it.publishShare() }
+            )
     }
-    return electionguard.protogen.CiphertextDecryptionSelection(
-        this.selectionId,
-        this.guardianId,
-        this.share.publishElementModP(),
-        proofOrParts,
-    )
-}
 
-private fun DecryptionShare.CiphertextCompensatedDecryptionSelection.publishRecoveredParts(): electionguard.protogen.CiphertextCompensatedDecryptionSelection {
-    return electionguard.protogen.CiphertextCompensatedDecryptionSelection(
-        this.selectionId,
-        this.guardianId,
-        this.missingGuardianId,
-        this.share.publishElementModP(),
-        this.recoveryKey.publishElementModP(),
-        this.proof.publishChaumPedersenProof(),
-    )
-}
+private fun DecryptionShare.CiphertextDecryptionSelection.publishShare():
+    electionguard.protogen.CiphertextDecryptionSelection {
+        // either proof or recovered_parts is non null
+        val proofOrParts: electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts<*>?
+        if (this.proof != null) {
+            proofOrParts =
+                electionguard.protogen
+                    .CiphertextDecryptionSelection
+                    .ProofOrParts
+                    .Proof(this.proof.publishChaumPedersenProof())
+        } else if (this.recoveredParts != null) {
+            val pparts = this.recoveredParts.map { it.value.publishRecoveredParts() }
+            proofOrParts =
+                electionguard.protogen
+                    .CiphertextDecryptionSelection
+                    .ProofOrParts
+                    .RecoveredParts(electionguard.protogen.RecoveredParts(pparts))
+        } else {
+            throw IllegalStateException(
+                "CiphertextDecryptionSelection must have proof or recoveredParts"
+            )
+        }
+        return electionguard.protogen
+            .CiphertextDecryptionSelection(
+                this.selectionId,
+                this.guardianId,
+                this.share.publishElementModP(),
+                proofOrParts,
+            )
+    }
+
+private fun DecryptionShare.CiphertextCompensatedDecryptionSelection.publishRecoveredParts():
+    electionguard.protogen.CiphertextCompensatedDecryptionSelection {
+        return electionguard.protogen
+            .CiphertextCompensatedDecryptionSelection(
+                this.selectionId,
+                this.guardianId,
+                this.missingGuardianId,
+                this.share.publishElementModP(),
+                this.recoveryKey.publishElementModP(),
+                this.proof.publishChaumPedersenProof(),
+            )
+    }

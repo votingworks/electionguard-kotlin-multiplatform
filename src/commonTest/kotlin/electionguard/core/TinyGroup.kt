@@ -68,7 +68,13 @@ private class TinyGroupContext(
 
     override val constants: ElectionConstants by
         lazy {
-            ElectionConstants(name, p.toByteArray(), q.toByteArray(), r.toByteArray(), g.toByteArray(),)
+            ElectionConstants(
+                name,
+                p.toByteArray(),
+                q.toByteArray(),
+                r.toByteArray(),
+                g.toByteArray(),
+            )
         }
 
     override fun toString(): String = name

@@ -38,7 +38,10 @@ class SubmittedBallotConvertTest {
                 contests,
                 42,
                 generateElementModQ(context),
-                if (Random.nextBoolean()) SubmittedBallot.BallotState.CAST else SubmittedBallot.BallotState.SPOILED,
+                if (Random.nextBoolean())
+                    SubmittedBallot.BallotState.CAST
+                else
+                    SubmittedBallot.BallotState.SPOILED,
             )
         }
 
@@ -52,7 +55,8 @@ class SubmittedBallotConvertTest {
             //        val cryptoHash: ElementModQ,
             //        val proof: ConstantChaumPedersenProofKnownNonce?,
             return SubmittedBallot.Contest(
-                "contest" + cseq, cseq,
+                "contest" + cseq,
+                cseq,
                 generateElementModQ(context),
                 selections,
                 generateCiphertext(context),
@@ -61,19 +65,21 @@ class SubmittedBallotConvertTest {
             )
         }
 
-        /*
-            val selectionId: String,
-        val sequenceOrder: Int,
-        val selectionHash: ElementModQ,
-        val ciphertext: ElGamalCiphertext,
-        val cryptoHash: ElementModQ,
-        val isPlaceholderSelection: Boolean,
-        val proof: DisjunctiveChaumPedersenProofKnownNonce?,
-        val extendedData: ElGamalCiphertext?,
-     */
-        private fun generateFakeSelection(sseq: Int, context: GroupContext): SubmittedBallot.Selection {
+        /* val selectionId: String,
+         *        val sequenceOrder: Int,
+         *        val selectionHash: ElementModQ,
+         *        val ciphertext: ElGamalCiphertext,
+         *        val cryptoHash: ElementModQ,
+         *        val isPlaceholderSelection: Boolean,
+         *        val proof: DisjunctiveChaumPedersenProofKnownNonce?,
+         *        val extendedData: ElGamalCiphertext?, */
+        private fun generateFakeSelection(
+            sseq: Int,
+            context: GroupContext
+        ): SubmittedBallot.Selection {
             return SubmittedBallot.Selection(
-                "selection" + sseq, sseq,
+                "selection" + sseq,
+                sseq,
                 generateElementModQ(context),
                 generateCiphertext(context),
                 generateElementModQ(context),

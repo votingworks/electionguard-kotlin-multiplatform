@@ -10,38 +10,33 @@ class CommonConvertTest {
     @Test
     fun convertElementMod() {
         runTest {
-            checkAll(
-                validElementsModP(productionGroup()),
-                elementsModQ(productionGroup()),
-            ) { fakeElementModP, fakeElementModQ ->
-                val context = productionGroup()
+            checkAll(validElementsModP(productionGroup()), elementsModQ(productionGroup()),)
+                { fakeElementModP, fakeElementModQ ->
+                    val context = productionGroup()
 
-                val protoP = fakeElementModP.publishElementModP()
-                val roundtripP = context.importElementModP(protoP)
-                assertEquals(roundtripP, fakeElementModP)
+                    val protoP = fakeElementModP.publishElementModP()
+                    val roundtripP = context.importElementModP(protoP)
+                    assertEquals(roundtripP, fakeElementModP)
 
-                val protoQ = fakeElementModQ.publishElementModQ()
-                val roundtripQ = context.importElementModQ(protoQ)
-                assertEquals(roundtripQ, fakeElementModQ)
-
-            }
+                    val protoQ = fakeElementModQ.publishElementModQ()
+                    val roundtripQ = context.importElementModQ(protoQ)
+                    assertEquals(roundtripQ, fakeElementModQ)
+                }
         }
     }
 
     @Test
     fun convertCiphertext() {
         runTest {
-            checkAll(
-                validElementsModP(productionGroup()),
-                validElementsModP(productionGroup()),
-            ) { fakePad, fakeData ->
-                val context = productionGroup()
-                val ciphertext = ElGamalCiphertext(fakePad, fakeData)
+            checkAll(validElementsModP(productionGroup()), validElementsModP(productionGroup()),)
+                { fakePad, fakeData ->
+                    val context = productionGroup()
+                    val ciphertext = ElGamalCiphertext(fakePad, fakeData)
 
-                val proto = ciphertext.publishCiphertext()
-                val roundtrip = context.importCiphertext(proto)
-                assertEquals(roundtrip, ciphertext)
-            }
+                    val proto = ciphertext.publishCiphertext()
+                    val roundtrip = context.importCiphertext(proto)
+                    assertEquals(roundtrip, ciphertext)
+                }
         }
     }
 
@@ -86,9 +81,7 @@ class CommonConvertTest {
     @Test
     fun convertElGamalPublicKey() {
         runTest {
-            checkAll(
-                validElementsModP(productionGroup()),
-            ) { p ->
+            checkAll(validElementsModP(productionGroup()),) { p ->
                 val context = productionGroup()
                 val publicKey = ElGamalPublicKey(p)
                 val proto = publicKey.publishElGamalPublicKey()

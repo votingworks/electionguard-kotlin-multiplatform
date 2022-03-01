@@ -27,7 +27,8 @@ class ElectionRecordConvertTest {
         assertEquals(roundtrip.decryptedTally, electionRecord.decryptedTally)
         assertEquals(roundtrip.availableGuardians, electionRecord.availableGuardians)
 
-        // LOOK the line below fails with "Out of memory. Java heap space" when electionRecord.acceptedBallots is not null
+        // LOOK the line below fails with "Out of memory. Java heap space" when
+        // electionRecord.acceptedBallots is not null
         //Task :jvmTest FAILED
         //FAILURE: Build failed with an exception.
         //* What went wrong:
@@ -70,10 +71,10 @@ class ElectionRecordConvertTest {
     private fun generateElectionConstants(): ElectionConstants {
         return ElectionConstants(
             "fake",
-            ByteArray(4) {42},
-            ByteArray(4) {-43},
-            ByteArray(4) {44},
-            ByteArray(4) {-45}
+            ByteArray(4) { 42 },
+            ByteArray(4) { -43 },
+            ByteArray(4) { 44 },
+            ByteArray(4) { -45 }
         )
     }
 
@@ -118,20 +119,10 @@ class ElectionRecordConvertTest {
     //    val launchCode: Long,
     //    val location: String,
     private fun generateEncryptionDevice(seq: Int): EncryptionDevice {
-        return EncryptionDevice(
-            Long.MAX_VALUE,
-            seq + 1L,
-            seq + 42L,
-            "location $seq",
-        )
+        return EncryptionDevice(Long.MAX_VALUE, seq + 1L, seq + 42L, "location $seq",)
     }
 
-    private fun generateAvailableGuardian(seq : Int, context: GroupContext): AvailableGuardian {
-        return AvailableGuardian(
-            "aguardian $seq",
-            seq + 1,
-            generateElementModQ(context),
-        )
+    private fun generateAvailableGuardian(seq: Int, context: GroupContext): AvailableGuardian {
+        return AvailableGuardian("aguardian $seq", seq + 1, generateElementModQ(context),)
     }
-
 }

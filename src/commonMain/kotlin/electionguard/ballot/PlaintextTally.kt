@@ -6,7 +6,7 @@ import electionguard.core.ElementModP
 data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest>) {
     /**
      * The plaintext representation of the counts of one contest in the election.
-
+     *
      * @param contestId equals the Manifest.ContestDescription.contestId.
      * @param selections The collection of selections in the contest, keyed by selection.object_id.
      */
@@ -17,7 +17,7 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
 
     /**
      * The plaintext representation of the counts of one selection of one contest in the election.
-
+     *
      * @param selectionId equals the Manifest.SelectionDescription.selectionId.
      * @param tally the actual count.
      * @param value g^tally or M in the spec.

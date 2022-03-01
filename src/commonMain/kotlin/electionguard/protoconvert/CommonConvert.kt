@@ -11,25 +11,23 @@ private val logger = KotlinLogging.logger("CommonConvert")
  * was missing, out of bounds, or otherwise malformed. `null` is accepted as an input, for
  * convenience. If `null` is passed as input, `null` is returned.
  */
-fun GroupContext.importElementModQ(
-    modQ: electionguard.protogen.ElementModQ?
-): ElementModQ? = if (modQ == null) null else this.binaryToElementModQ(modQ.value.array)
+fun GroupContext.importElementModQ(modQ: electionguard.protogen.ElementModQ?): ElementModQ? =
+    if (modQ == null) null else this.binaryToElementModQ(modQ.value.array)
 
 /**
  * Converts a deserialized ElementModP to the internal representation, returning `null` if the input
  * was missing, out of bounds, or otherwise malformed. `null` is accepted as an input, for
  * convenience. If `null` is passed as input, `null` is returned.
  */
- fun GroupContext.importElementModP(
-    modP: electionguard.protogen.ElementModP?,
-): ElementModP? = if (modP == null) null else this.binaryToElementModP(modP.value.array)
+fun GroupContext.importElementModP(modP: electionguard.protogen.ElementModP?,): ElementModP? =
+    if (modP == null) null else this.binaryToElementModP(modP.value.array)
 
 fun GroupContext.importCiphertext(
     ciphertext: electionguard.protogen.ElGamalCiphertext?,
 ): ElGamalCiphertext? {
     if (ciphertext == null) return null
 
-    val pad =  this.importElementModP(ciphertext.pad)
+    val pad = this.importElementModP(ciphertext.pad)
     val data = this.importElementModP(ciphertext.data)
 
     if (pad == null || data == null) {
@@ -61,9 +59,7 @@ fun GroupContext.importChaumPedersenProof(
     return GenericChaumPedersenProof(pad, data, challenge, response)
 }
 
-fun GroupContext.importSchnorrProof(
-    proof: electionguard.protogen.SchnorrProof?,
-): SchnorrProof? {
+fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?,): SchnorrProof? {
 
     if (proof == null) return null
 
@@ -102,27 +98,28 @@ fun ElementModP.publishElementModP(): electionguard.protogen.ElementModP {
 }
 
 fun ElGamalCiphertext.publishCiphertext(): electionguard.protogen.ElGamalCiphertext {
-    return electionguard.protogen.ElGamalCiphertext(
-        this.pad.publishElementModP(),
-        this.data.publishElementModP()
-    )
+    return electionguard.protogen
+        .ElGamalCiphertext(this.pad.publishElementModP(), this.data.publishElementModP())
 }
 
-fun GenericChaumPedersenProof.publishChaumPedersenProof(): electionguard.protogen.ChaumPedersenProof {
-    return electionguard.protogen.ChaumPedersenProof(
-        this.a.publishElementModP(),
-        this.b.publishElementModP(),
-        this.c.publishElementModQ(),
-        this.r.publishElementModQ()
-        )
-}
+fun GenericChaumPedersenProof.publishChaumPedersenProof():
+    electionguard.protogen.ChaumPedersenProof {
+        return electionguard.protogen
+            .ChaumPedersenProof(
+                this.a.publishElementModP(),
+                this.b.publishElementModP(),
+                this.c.publishElementModQ(),
+                this.r.publishElementModQ()
+            )
+    }
 
 fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
-    return electionguard.protogen.SchnorrProof(
-        this.publicKey.publishElGamalPublicKey(),
-        this.commitment.publishElementModP(),
-        this.challenge.publishElementModQ(),
-        this.response.publishElementModQ()
+    return electionguard.protogen
+        .SchnorrProof(
+            this.publicKey.publishElGamalPublicKey(),
+            this.commitment.publishElementModP(),
+            this.challenge.publishElementModQ(),
+            this.response.publishElementModQ()
         )
 }
 

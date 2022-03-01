@@ -4,14 +4,18 @@ import electionguard.core.*
 import kotlin.random.Random
 import kotlin.random.nextUInt
 
-fun generateConstantChaumPedersenProofKnownNonce(context: GroupContext): ConstantChaumPedersenProofKnownNonce {
+fun generateConstantChaumPedersenProofKnownNonce(
+    context: GroupContext
+): ConstantChaumPedersenProofKnownNonce {
     return ConstantChaumPedersenProofKnownNonce(
         generateGenericChaumPedersenProof(context),
         Random.nextInt(),
     )
 }
 
-fun generateDisjunctiveChaumPedersenProofKnownNonce(context: GroupContext): DisjunctiveChaumPedersenProofKnownNonce {
+fun generateDisjunctiveChaumPedersenProofKnownNonce(
+    context: GroupContext
+): DisjunctiveChaumPedersenProofKnownNonce {
     return DisjunctiveChaumPedersenProofKnownNonce(
         generateGenericChaumPedersenProof(context),
         generateGenericChaumPedersenProof(context),

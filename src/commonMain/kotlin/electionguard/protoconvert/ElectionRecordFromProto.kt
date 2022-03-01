@@ -7,13 +7,17 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("ElectionRecordFromProto")
 
-fun electionguard.protogen.ElectionRecord.importElectionRecord(groupContext : GroupContext): ElectionRecord? {
+fun electionguard.protogen.ElectionRecord.importElectionRecord(
+    groupContext: GroupContext
+): ElectionRecord? {
     val electionConstants = this.constants?.let { convertConstants(this.constants) }
 
     val manifest = this.manifest?.let { this.manifest.importManifest(groupContext) }
 
     val availableGuardians: List<AvailableGuardian>? =
-        this.availableGuardians.map { it.importAvailableGuardian(groupContext) }.noNullValuesOrNull()
+        this.availableGuardians
+            .map { it.importAvailableGuardian(groupContext) }
+            .noNullValuesOrNull()
 
     val electionContext = this.context?.let { this.context.importContext(groupContext) }
 
@@ -80,8 +84,7 @@ private fun electionguard.protogen.ElectionContext.importContext(
     val jointPublicKey = groupContext.importElementModP(this.jointPublicKey)
     val manifestHash = groupContext.importElementModQ(this.manifestHash)
     val cryptoBaseHash = groupContext.importElementModQ(this.cryptoBaseHash)
-    val cryptoExtendedBaseHash =
-        groupContext.importElementModQ(this.cryptoExtendedBaseHash)
+    val cryptoExtendedBaseHash = groupContext.importElementModQ(this.cryptoExtendedBaseHash)
     val commitmentHash = groupContext.importElementModQ(this.commitmentHash)
 
     if (jointPublicKey == null || manifestHash == null || cryptoBaseHash == null ||
@@ -110,12 +113,7 @@ private fun electionguard.protogen.EncryptionDevice.importDevice(): EncryptionDe
     // TODO: do we have to worry about any of the fields of the deserialized protobuf being
     //  missing / null?
 
-    return EncryptionDevice(
-        this.deviceId,
-        this.sessionId,
-        this.launchCode,
-        this.location
-    )
+    return EncryptionDevice(this.deviceId, this.sessionId, this.launchCode, this.location)
 }
 
 private fun electionguard.protogen.GuardianRecord.importGuardianRecord(
@@ -126,15 +124,13 @@ private fun electionguard.protogen.GuardianRecord.importGuardianRecord(
     val coefficientCommitments =
         this.coefficientCommitments.map { groupContext.importElementModP(it) }.noNullValuesOrNull()
     val coefficientProofs =
-        this.coefficientProofs.map { groupContext.importSchnorrProof(it) }
-            .noNullValuesOrNull()
+        this.coefficientProofs.map { groupContext.importSchnorrProof(it) }.noNullValuesOrNull()
 
     // TODO: do we have to worry about any of the fields of the deserialized protobuf being
     //  missing / null?
     //   Or the coefficient lists being empty?
 
-    if (electionPublicKey == null || coefficientCommitments == null || coefficientProofs == null
-    ) {
+    if (electionPublicKey == null || coefficientCommitments == null || coefficientProofs == null) {
         logger.error { "Failed to translate guardian record from proto, missing fields" }
         return null
     }

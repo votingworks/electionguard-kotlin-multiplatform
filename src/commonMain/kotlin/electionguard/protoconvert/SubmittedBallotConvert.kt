@@ -39,21 +39,22 @@ fun electionguard.protogen.SubmittedBallot.importSubmittedBallot(
     )
 }
 
-private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState(): SubmittedBallot.BallotState? {
+private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState():
+    SubmittedBallot.BallotState? {
 
-    val name = this.name
-    if (name == null) {
-        logger.error { "Failed to convert ballot state, missing name" }
-        return null
-    }
+        val name = this.name
+        if (name == null) {
+            logger.error { "Failed to convert ballot state, missing name" }
+            return null
+        }
 
-    try {
-        return SubmittedBallot.BallotState.valueOf(name)
-    } catch (e: IllegalArgumentException) {
-        logger.error { "Failed to convert ballot state, unknown name: $name" }
-        return null
+        try {
+            return SubmittedBallot.BallotState.valueOf(name)
+        } catch (e: IllegalArgumentException) {
+            logger.error { "Failed to convert ballot state, unknown name: $name" }
+            return null
+        }
     }
-}
 
 private fun electionguard.protogen.CiphertextBallotContest.importContest(
     groupContext: GroupContext
@@ -163,12 +164,7 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
             proofZeroChallenge,
             proofZeroResponse,
         ),
-        GenericChaumPedersenProof(
-            proofOnePad,
-            proofOneData,
-            proofOneChallenge,
-            proofOneResponse,
-        ),
+        GenericChaumPedersenProof(proofOnePad, proofOneData, proofOneChallenge, proofOneResponse,),
         proofChallenge,
     )
 }
@@ -176,68 +172,78 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun SubmittedBallot.publishSubmittedBallot(): electionguard.protogen.SubmittedBallot {
-    return electionguard.protogen.SubmittedBallot(
-        this.ballotId,
-        this.ballotStyleId,
-        this.manifestHash.publishElementModQ(),
-        this.trackingHash.publishElementModQ(),
-        this.previousTrackingHash.publishElementModQ(),
-        this.contests.map { it.publishContest() },
-        this.timestamp,
-        this.cryptoHash.publishElementModQ(),
-        this.state.publishBallotState()
-    )
+    return electionguard.protogen
+        .SubmittedBallot(
+            this.ballotId,
+            this.ballotStyleId,
+            this.manifestHash.publishElementModQ(),
+            this.trackingHash.publishElementModQ(),
+            this.previousTrackingHash.publishElementModQ(),
+            this.contests.map { it.publishContest() },
+            this.timestamp,
+            this.cryptoHash.publishElementModQ(),
+            this.state.publishBallotState()
+        )
 }
 
-private fun SubmittedBallot.BallotState.publishBallotState(): electionguard.protogen.SubmittedBallot.BallotState {
-    return electionguard.protogen.SubmittedBallot.BallotState.fromName(this.name)
-}
+private fun SubmittedBallot.BallotState.publishBallotState():
+    electionguard.protogen.SubmittedBallot.BallotState {
+        return electionguard.protogen.SubmittedBallot.BallotState.fromName(this.name)
+    }
 
-private fun SubmittedBallot.Contest.publishContest(): electionguard.protogen.CiphertextBallotContest {
-    return electionguard.protogen.CiphertextBallotContest(
-        this.contestId,
-        this.sequenceOrder,
-        this.contestHash.publishElementModQ(),
-        this.selections.map { it.publishSelection() },
-        this.ciphertextAccumulation.publishCiphertext(),
-        this.cryptoHash.publishElementModQ(),
-        this.proof?.let { this.proof.publishConstantChaumPedersenProof() },
-    )
-}
+private fun SubmittedBallot.Contest.publishContest():
+    electionguard.protogen.CiphertextBallotContest {
+        return electionguard.protogen
+            .CiphertextBallotContest(
+                this.contestId,
+                this.sequenceOrder,
+                this.contestHash.publishElementModQ(),
+                this.selections.map { it.publishSelection() },
+                this.ciphertextAccumulation.publishCiphertext(),
+                this.cryptoHash.publishElementModQ(),
+                this.proof?.let { this.proof.publishConstantChaumPedersenProof() },
+            )
+    }
 
-private fun SubmittedBallot.Selection.publishSelection(): electionguard.protogen.CiphertextBallotSelection {
-    return electionguard.protogen.CiphertextBallotSelection(
-        this.selectionId,
-        this.sequenceOrder,
-        this.selectionHash.publishElementModQ(),
-        this.ciphertext.publishCiphertext(),
-        this.cryptoHash.publishElementModQ(),
-        this.isPlaceholderSelection,
-        this.proof?.let { this.proof.publishDisjunctiveChaumPedersenProof() },
-        this.extendedData?.let { this.extendedData.publishCiphertext() },
-    )
-}
+private fun SubmittedBallot.Selection.publishSelection():
+    electionguard.protogen.CiphertextBallotSelection {
+        return electionguard.protogen
+            .CiphertextBallotSelection(
+                this.selectionId,
+                this.sequenceOrder,
+                this.selectionHash.publishElementModQ(),
+                this.ciphertext.publishCiphertext(),
+                this.cryptoHash.publishElementModQ(),
+                this.isPlaceholderSelection,
+                this.proof?.let { this.proof.publishDisjunctiveChaumPedersenProof() },
+                this.extendedData?.let { this.extendedData.publishCiphertext() },
+            )
+    }
 
-fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof(): electionguard.protogen.ConstantChaumPedersenProof {
-    return electionguard.protogen.ConstantChaumPedersenProof(
-        this.proof.a.publishElementModP(),
-        this.proof.b.publishElementModP(),
-        this.proof.c.publishElementModQ(),
-        this.proof.r.publishElementModQ(),
-        this.constant
-    )
-}
+fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof():
+    electionguard.protogen.ConstantChaumPedersenProof {
+        return electionguard.protogen
+            .ConstantChaumPedersenProof(
+                this.proof.a.publishElementModP(),
+                this.proof.b.publishElementModP(),
+                this.proof.c.publishElementModQ(),
+                this.proof.r.publishElementModQ(),
+                this.constant
+            )
+    }
 
-fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof(): electionguard.protogen.DisjunctiveChaumPedersenProof {
-    return electionguard.protogen.DisjunctiveChaumPedersenProof(
-        this.proof0.a.publishElementModP(),
-        this.proof0.b.publishElementModP(),
-        this.proof0.c.publishElementModQ(),
-        this.proof0.r.publishElementModQ(),
-        this.proof1.a.publishElementModP(),
-        this.proof1.b.publishElementModP(),
-        this.proof1.c.publishElementModQ(),
-        this.proof1.r.publishElementModQ(),
-        this.c.publishElementModQ(),
-    )
-}
+fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof():
+    electionguard.protogen.DisjunctiveChaumPedersenProof {
+        return electionguard.protogen
+            .DisjunctiveChaumPedersenProof(
+                this.proof0.a.publishElementModP(),
+                this.proof0.b.publishElementModP(),
+                this.proof0.c.publishElementModQ(),
+                this.proof0.r.publishElementModQ(),
+                this.proof1.a.publishElementModP(),
+                this.proof1.b.publishElementModP(),
+                this.proof1.c.publishElementModQ(),
+                this.proof1.r.publishElementModQ(),
+                this.c.publishElementModQ(),
+            )
+    }

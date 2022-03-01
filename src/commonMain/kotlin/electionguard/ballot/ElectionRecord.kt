@@ -4,7 +4,9 @@ import electionguard.core.*
 
 /**
  * The entire published election record.
- * @param electionRecord the record of all the public election data (except submittedBallots and spoiledBallots)
+ *
+ * @param electionRecord the record of all the public election data (except submittedBallots and
+ *     spoiledBallots)
  * @param submittedBallots all submitted ballots (CAST and SPOILED)
  * @param spoiledBallots decrypted spoiled ballots as PlaintextTally
  */
@@ -14,7 +16,9 @@ data class ElectionRecordAllData(
     val spoiledBallots: Iterable<PlaintextTally>?,
 )
 
-/** The published election record for a collection of ballots, eg from a single encryption device.  */
+/**
+ * The published election record for a collection of ballots, eg from a single encryption device.
+ */
 data class ElectionRecord(
     val protoVersion: String,
     val constants: ElectionConstants,
@@ -29,6 +33,7 @@ data class ElectionRecord(
 
 /**
  * An available Guardian when decrypting.
+ *
  * @param guardianId The guardian id
  * @param sequence the guardian x coordinate value
  * @param lagrangeCoordinate the lagrange coordinate when decrypting

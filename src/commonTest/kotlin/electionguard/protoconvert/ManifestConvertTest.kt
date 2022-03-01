@@ -30,7 +30,10 @@ class ManifestConvertTest {
             compareAS(rgpu.contactInformation?.email, gpu.contactInformation?.email)
             compareAS(rgpu.contactInformation?.phone, gpu.contactInformation?.phone)
             assertEquals(rgpu.contactInformation?.name, gpu.contactInformation?.name)
-            assertEquals(rgpu.contactInformation?.cryptoHashElement(), gpu.contactInformation?.cryptoHashElement())
+            assertEquals(
+                rgpu.contactInformation?.cryptoHashElement(),
+                gpu.contactInformation?.cryptoHashElement()
+            )
             assertEquals(rgpu.contactInformation?.cryptoHash, gpu.contactInformation?.cryptoHash)
             assertEquals(rgpu.contactInformation, gpu.contactInformation)
             assertEquals(rgpu.type, gpu.type)
@@ -41,7 +44,7 @@ class ManifestConvertTest {
         assertEquals(roundtrip, manifest)
     }
 
-    fun compareAS(list1 : List<Manifest.AnnotatedString>?, list2 : List<Manifest.AnnotatedString>?) {
+    fun compareAS(list1: List<Manifest.AnnotatedString>?, list2: List<Manifest.AnnotatedString>?) {
         assertEquals((list1 == null), (list2 == null))
         if ((list1 == null) || (list2 == null)) {
             return
@@ -90,7 +93,10 @@ class ManifestConvertTest {
         //        val type: ReportingUnitType,
         //        val contactInformation: ContactInformation?,
         //        val cryptoHash: ElementModQ
-        private fun generateGeopoliticalUnit(cseq: Int, context: GroupContext): Manifest.GeopoliticalUnit {
+        private fun generateGeopoliticalUnit(
+            cseq: Int,
+            context: GroupContext
+        ): Manifest.GeopoliticalUnit {
             return context.geopoliticalUnitOf(
                 "geopoliticalUnitId$cseq",
                 "name$cseq",
@@ -163,12 +169,11 @@ class ManifestConvertTest {
         //        val sequenceOrder: Int,
         //        val candidateId: String,
         //        val cryptoHash: ElementModQ
-        private fun generateSelection(sseq: Int, context: GroupContext): Manifest.SelectionDescription {
-            return context.selectionDescriptionOf(
-                "selection$sseq",
-                sseq,
-                "candidate$sseq",
-            )
+        private fun generateSelection(
+            sseq: Int,
+            context: GroupContext
+        ): Manifest.SelectionDescription {
+            return context.selectionDescriptionOf("selection$sseq", sseq, "candidate$sseq",)
         }
 
         //         val ballotStyleId: String,
@@ -186,10 +191,10 @@ class ManifestConvertTest {
         }
 
         // val text: List<Language>
-        private fun generateInternationalizedText(context: GroupContext): Manifest.InternationalizedText {
-            return context.internationalizedTextOf(
-                List(3) { generateLanguage(it, context) },
-            )
+        private fun generateInternationalizedText(
+            context: GroupContext
+        ): Manifest.InternationalizedText {
+            return context.internationalizedTextOf(List(3) { generateLanguage(it, context) },)
         }
 
         //         val addressLine: List<String>,
@@ -208,18 +213,15 @@ class ManifestConvertTest {
 
         // val value: String, val language: String,
         private fun generateLanguage(seq: Int, context: GroupContext): Manifest.Language {
-            return context.languageOf(
-                "text$seq",
-                "language:$seq:$seq",
-            )
+            return context.languageOf("text$seq", "language:$seq:$seq",)
         }
 
         // val annotation: String, val value: String,
-        private fun generateAnnotatedString(seq: Int, context: GroupContext): Manifest.AnnotatedString {
-            return context.annotatedStringOf(
-                "annotate$seq",
-                "value:$seq:$seq",
-            )
+        private fun generateAnnotatedString(
+            seq: Int,
+            context: GroupContext
+        ): Manifest.AnnotatedString {
+            return context.annotatedStringOf("annotate$seq", "value:$seq:$seq",)
         }
     }
 }
