@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.utils.keysToMap
+
 
 buildscript {
     repositories {
@@ -212,13 +212,14 @@ val compileProtobuf =
         doLast {
             print("* Compiling protobuf *\n")
             /* project.exec {
-         *        commandLine = "rm -f ./src/commonMain/kotlin/electionguard/protogen".split(" ")
-         * } */
+             *        commandLine = "rm -f ./src/commonMain/kotlin/electionguard/protogen".split("
+             * ")
+             * } */
             val commandLineStr =
-                "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
-                        "ciphertext_ballot.proto ciphertext_tally.proto common.proto " +
-                        "election_record.proto manifest.proto " +
-                        "plaintext_ballot.proto plaintext_tally.proto"
+                "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto" +
+                    " " + "ciphertext_ballot.proto ciphertext_tally.proto common.proto " +
+                    "election_record.proto manifest.proto " +
+                    "plaintext_ballot.proto plaintext_tally.proto"
             project.exec { commandLine = commandLineStr.split(" ") }
         }
     }
