@@ -1,53 +1,135 @@
 package electionguard.core
 
-actual fun ByteArray.sha256(): ByteArray = sha256(this)
+import kotlin.experimental.xor
 
-// Note: Node.js has a synchronous SHA256 provider. The browser version, in "SubtleCrypto",
-// is asynchronous. Since nothing else here is asynchronous, we don't want to unnecessarily
-// go down that road. So, for now, here's a first stab at the Node code, untested, and instead
-// a pure-Kotlin version that should work just fine.
+/**
+ * This is a "pure Kotlin" implementation of HMAC-SHA256. It's useful for testing, and if we really
+ * have to, we can use it in production, but it's not going to be as fast as a tuned implementation.
+ * That's in `Sha256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
+ * platform.
+ */
+fun internalHmacSha256(key: ByteArray, data: ByteArray): ByteArray {
+    val k =
+        when {
+            key.size == 64 -> key
+            key.size < 64 -> ByteArray(64) { i -> if (i < key.size) key[i] else 0 }
+            else ->
+                internalSha256(key)
+                    .let { shaKey -> ByteArray(64) { i -> if (i < 32) shaKey[i] else 0 } }
+        }
 
-//import org.khronos.webgl.Uint8Array
-//
-//actual fun ByteArray.sha256(): ByteArray {
-//    if (isNodeJs()) {
-//        val c = js("require")("crypto")
-//        val buffer: Uint8Array = c.createHash("sha256").update(this).digest()
-//        return buffer.unsafeCast<ByteArray>()
-//    } else if (isBrowser()) {
-//
-//    } else {
-//        throw NotImplementedError("we don't have sha256 on this platform")
-//    }
-//}
+    // Still not sure what's wrong here, but based on testHmacSha256Homebrew(), the bug isn't
+    // in our sha256 implementation. It's in our hmac wrapper.
 
+    val ipad = ByteArray(64) { i -> k[i] xor 0x36 }
+    val opad = ByteArray(64) { i -> k[i] xor 0x5c }
+
+    return internalSha256(opad, internalSha256(ipad, data))
+}
 /* *******************************************************************************************************************
  * SHA-256 hash algorithm implementation.
  *
- * Original C implementation by Brad Conte (brad@bradconte.com), https://github.com/B-Con/crypto-algorithms.
+ * Original C implementation by Brad Conte (brad@bradconte.com),
+ * https://github.com/B-Con/crypto-algorithms.
  * Ported to Kotlin and modified by asyncant.
  * https://github.com/asyncant/sha256-kt/blob/master/src/commonMain/kotlin/com/asyncant/crypto/Sha256.kt
- *
  * Like the original C implementation, this code is released into the public domain.
- *
  * ***************************************************************************************************************** */
-
-private fun sha256(text: ByteArray): ByteArray {
+/**
+ * This is a "pure Kotlin" implementation of SHA256. It's useful for testing, and if we really have
+ * to, we can use it in production, but it's not going to be as fast as a tuned implementation.
+ * That's in `Sha256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
+ * platform.
+ */
+fun internalSha256(input: ByteArray): ByteArray {
     val ctx = Sha256Ctx()
-    sha256Update(ctx, text)
+    sha256Update(ctx, input)
     return sha256Final(ctx)
 }
 
-private val k = longArrayOf(
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-).map { it.toInt() }.toIntArray()
+fun internalByteConcat(input1: ByteArray, input2: ByteArray): ByteArray =
+    ByteArray(input1.size + input2.size) { i ->
+        if (i < input1.size) input1[i] else input2[i - input1.size]
+    }
+
+private fun internalSha256(input1: ByteArray, input2: ByteArray): ByteArray {
+    val ctx = Sha256Ctx()
+
+    // manually concatenating the buffers so we can run with internal or external hash function
+    // (for debugging)
+    val buf = internalByteConcat(input1, input2)
+    sha256Update(ctx, buf)
+    return sha256Final(ctx)
+}
+
+private val k =
+    longArrayOf(
+        0x428a2f98,
+        0x71374491,
+        0xb5c0fbcf,
+        0xe9b5dba5,
+        0x3956c25b,
+        0x59f111f1,
+        0x923f82a4,
+        0xab1c5ed5,
+        0xd807aa98,
+        0x12835b01,
+        0x243185be,
+        0x550c7dc3,
+        0x72be5d74,
+        0x80deb1fe,
+        0x9bdc06a7,
+        0xc19bf174,
+        0xe49b69c1,
+        0xefbe4786,
+        0x0fc19dc6,
+        0x240ca1cc,
+        0x2de92c6f,
+        0x4a7484aa,
+        0x5cb0a9dc,
+        0x76f988da,
+        0x983e5152,
+        0xa831c66d,
+        0xb00327c8,
+        0xbf597fc7,
+        0xc6e00bf3,
+        0xd5a79147,
+        0x06ca6351,
+        0x14292967,
+        0x27b70a85,
+        0x2e1b2138,
+        0x4d2c6dfc,
+        0x53380d13,
+        0x650a7354,
+        0x766a0abb,
+        0x81c2c92e,
+        0x92722c85,
+        0xa2bfe8a1,
+        0xa81a664b,
+        0xc24b8b70,
+        0xc76c51a3,
+        0xd192e819,
+        0xd6990624,
+        0xf40e3585,
+        0x106aa070,
+        0x19a4c116,
+        0x1e376c08,
+        0x2748774c,
+        0x34b0bcb5,
+        0x391c0cb3,
+        0x4ed8aa4a,
+        0x5b9cca4f,
+        0x682e6ff3,
+        0x748f82ee,
+        0x78a5636f,
+        0x84c87814,
+        0x8cc70208,
+        0x90befffa,
+        0xa4506ceb,
+        0xbef9a3f7,
+        0xc67178f2
+    ).map { it.toInt() }
+        .toIntArray()
 
 private class Sha256Ctx {
     var data: ByteArray = ByteArray(64)
@@ -186,9 +268,8 @@ private fun rotateRight(a: Int, b: Int) = a ushr b or (a shl (32 - b))
 private fun ByteArray.copyToIntArray(sourceOffset: Int, count: Int, target: IntArray) {
     for (i in 0 until count) {
         val j = sourceOffset + i * 4
-        target[i] = (this[j].toInt() and 0xFF shl 24) or
-                (this[j + 1].toInt() and 0xFF shl 16) or
-                (this[j + 2].toInt() and 0xFF shl 8) or
-                (this[j + 3].toInt() and 0xFF)
+        target[i] =
+            (this[j].toInt() and 0xFF shl 24) or (this[j + 1].toInt() and 0xFF shl 16) or
+                (this[j + 2].toInt() and 0xFF shl 8) or (this[j + 3].toInt() and 0xFF)
     }
 }
