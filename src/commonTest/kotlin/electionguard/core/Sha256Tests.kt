@@ -1,8 +1,9 @@
 package electionguard.core
 
+import electionguard.core.Base16.fromHex
 import electionguard.core.Base64.fromSafeBase64
-import kotlin.test.Test
-import kotlin.test.assertContentEquals
+import kotlin.experimental.xor
+import kotlin.test.*
 
 class Sha256Tests {
     val inputs: List<ByteArray> = arrayListOf(
@@ -59,21 +60,31 @@ class Sha256Tests {
 
     @Test
     fun testSha256() {
-        runTest {
-            (0..9).forEach { i ->
-                assertContentEquals(hashes[i], inputs[i].sha256())
-                assertContentEquals(hashes[i], internalSha256(inputs[i]))
-            }
+        (0..9).forEach { i ->
+            assertContentEquals(hashes[i], inputs[i].sha256())
+            assertContentEquals(hashes[i], internalSha256(inputs[i]))
         }
     }
 
     @Test
     fun testHmacSha256() {
-        runTest {
-            (0..9).forEach { i ->
-                assertContentEquals(hmacs[i], inputs[i].hmacSha256(keys[i]))
-                assertContentEquals(hmacs[i], internalHmacSha256(keys[i], inputs[i]))
-            }
+        (0..9).forEach { i ->
+            assertContentEquals(hmacs[i], inputs[i].hmacSha256(keys[i]))
+            assertContentEquals(hmacs[i], internalHmacSha256(keys[i], inputs[i]))
         }
+    }
+
+    @Test
+    fun testHmacSha256Homebrew() {
+        val key = ("0b".repeat(32)).fromHex() ?: fail("shouldn't be null")
+        val data = "4869205468657265".fromHex() ?: fail("shouldn't be null")
+        val realHmac = data.hmacSha256(key)
+
+        val ipad = ByteArray(32) { 0x0b.toByte() xor 0x36 }
+        val opad = ByteArray(32) { 0x0b.toByte() xor 0x5c }
+        val homebrewHmac = internalByteConcat(opad, internalByteConcat(ipad, data).sha256()).sha256()
+        assertContentEquals(realHmac, homebrewHmac)
+
+//            assertContentEquals(hmac, internalHmacSha256(key, data))
     }
 }

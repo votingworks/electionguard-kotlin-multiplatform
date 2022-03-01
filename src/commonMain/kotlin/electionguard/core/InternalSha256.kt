@@ -11,9 +11,14 @@ import kotlin.experimental.xor
 fun internalHmacSha256(key: ByteArray, data: ByteArray): ByteArray {
     val k = if (key.size == 32) {
         key
+    } else if (key.size < 32) {
+        ByteArray(32) { i -> if (i < key.size) key[i] else 0 }
     } else {
         internalSha256(key)
     }
+
+    // Still not sure what's wrong here, but based on testHmacSha256Homebrew(), the bug isn't
+    // in our sha256 implementation. It's in our hmac wrapper.
 
     val ipad = ByteArray(32) { i -> k[i] xor 0x36 }
     val opad = ByteArray(32) { i -> k[i] xor 0x5c }
@@ -44,14 +49,17 @@ fun internalSha256(input: ByteArray): ByteArray {
     return sha256Final(ctx)
 }
 
+fun internalByteConcat(input1: ByteArray, input2: ByteArray): ByteArray =
+    ByteArray(input1.size + input2.size) { i ->
+        if (i < input1.size) input1[i] else input2[i - input1.size]
+    }
+
 private fun internalSha256(input1: ByteArray, input2: ByteArray): ByteArray {
     val ctx = Sha256Ctx()
 
     // manually concatenating the buffers so we can run with internal or external hash function
     // (for debugging)
-    val buf = ByteArray(input1.size + input2.size) { i ->
-        if (i < input1.size) input1[i] else input2[i - input1.size]
-    }
+    val buf = internalByteConcat(input1, input2)
     sha256Update(ctx, buf)
     return sha256Final(ctx)
 }
