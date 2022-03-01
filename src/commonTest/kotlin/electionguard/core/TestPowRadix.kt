@@ -70,25 +70,21 @@ class TestPowRadix {
 
     @Test
     fun bitSlicingBasics() {
-        // Yes, this isn't actually a property test, but this puts the test into
-        // a "suspend" context, allowing testGroup() to work correctly.
-        runTest {
-            val option = PowRadixOption.LOW_MEMORY_USE
-            val ctx = productionGroup(option)
-            val g = ctx.G_MOD_P
-            val powRadix = PowRadix(g, option)
+        val option = PowRadixOption.LOW_MEMORY_USE
+        val ctx = productionGroup(option)
+        val g = ctx.G_MOD_P
+        val powRadix = PowRadix(g, option)
 
-            val bytes = 258.toElementModQ(ctx).byteArray()
-            // validate it's big-endian
-            assertEquals(1, bytes[bytes.size - 2])
-            assertEquals(2, bytes[bytes.size - 1])
+        val bytes = 258.toElementModQ(ctx).byteArray()
+        // validate it's big-endian
+        assertEquals(1, bytes[bytes.size - 2])
+        assertEquals(2, bytes[bytes.size - 1])
 
-            val slices = bytes.kBitsPerSlice(option, powRadix.tableLength)
-            // validate it's little-endian
-            assertEquals(2.toUShort(), slices[0])
-            assertEquals(1.toUShort(), slices[1])
-            assertEquals(0.toUShort(), slices[2])
-        }
+        val slices = bytes.kBitsPerSlice(option, powRadix.tableLength)
+        // validate it's little-endian
+        assertEquals(2.toUShort(), slices[0])
+        assertEquals(1.toUShort(), slices[1])
+        assertEquals(0.toUShort(), slices[2])
     }
 
     @Test

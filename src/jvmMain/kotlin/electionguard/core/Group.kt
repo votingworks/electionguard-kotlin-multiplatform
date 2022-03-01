@@ -33,7 +33,7 @@ private val productionGroups3072 =
         )
     }
 
-actual suspend fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) : GroupContext =
+actual fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) : GroupContext =
     when(mode) {
         ProductionMode.Mode4096 -> productionGroups4096[acceleration] ?: throw Error("can't happen")
         ProductionMode.Mode3072 -> productionGroups3072[acceleration] ?: throw Error("can't happen")

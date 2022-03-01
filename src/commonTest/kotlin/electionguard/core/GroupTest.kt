@@ -16,7 +16,7 @@ class GroupTest {
     @Test
     fun basicsSm() = basics { tinyGroup() }
 
-    fun basics(contextF: suspend () -> GroupContext) {
+    fun basics(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             val three = 3.toElementModQ(context)
@@ -37,7 +37,7 @@ class GroupTest {
     @Test
     fun comparisonOperationsSm() = comparisonOperations { tinyGroup() }
 
-    fun comparisonOperations(contextF: suspend () -> GroupContext) {
+    fun comparisonOperations(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             val three = 3.toElementModQ(context)
@@ -59,7 +59,7 @@ class GroupTest {
     @Test
     fun generatorsWorkSm() = generatorsWork { tinyGroup() }
 
-    fun generatorsWork(contextF: suspend () -> GroupContext) {
+    fun generatorsWork(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             forAll(propTestFastConfig, elementsModP(context)) { it.inBounds() }
@@ -78,7 +78,7 @@ class GroupTest {
     @Test
     fun validResiduesForGPowPSm() = validResiduesForGPowP { tinyGroup() }
 
-    fun validResiduesForGPowP(contextF: suspend () -> GroupContext) {
+    fun validResiduesForGPowP(contextF: () -> GroupContext) {
         runTest {
             forAll(propTestFastConfig, validElementsModP(contextF())) { it.isValidResidue() }
         }
@@ -131,7 +131,7 @@ class GroupTest {
     @Test
     fun additionBasicsSm() = additionBasics { tinyGroup() }
 
-    fun additionBasics(contextF: suspend () -> GroupContext) {
+    fun additionBasics(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             checkAll(
@@ -158,7 +158,7 @@ class GroupTest {
     @Test
     fun additionWrappingQSm() = additionWrappingQ { tinyGroup() }
 
-    fun additionWrappingQ(contextF: suspend () -> GroupContext) {
+    fun additionWrappingQ(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             checkAll(propTestFastConfig, Arb.int(min=0, max= intTestQ - 1)) { i ->
@@ -181,7 +181,7 @@ class GroupTest {
     @Test
     fun multiplicationBasicsPSm() = multiplicationBasicsP { tinyGroup() }
 
-    fun multiplicationBasicsP(contextF: suspend () -> GroupContext) {
+    fun multiplicationBasicsP(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             checkAll(
@@ -208,7 +208,7 @@ class GroupTest {
     @Test
     fun multiplicationBasicsQsm() = multiplicationBasicsQ { tinyGroup() }
 
-    fun multiplicationBasicsQ(contextF: suspend () -> GroupContext) {
+    fun multiplicationBasicsQ(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             checkAll(
@@ -235,7 +235,7 @@ class GroupTest {
     @Test
     fun subtractionBasicsSm() = subtractionBasics { tinyGroup() }
 
-    fun subtractionBasics(contextF: suspend () -> GroupContext) {
+    fun subtractionBasics(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             checkAll(
@@ -260,7 +260,7 @@ class GroupTest {
     @Test
     fun negationSm() = negation { tinyGroup() }
 
-    fun negation(contextF: suspend () -> GroupContext) {
+    fun negation(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             forAll(propTestFastConfig, elementsModQ(context)) { context.ZERO_MOD_Q == (-it) + it }
@@ -278,7 +278,7 @@ class GroupTest {
     @Test
     fun multiplicativeInversesPSm() = multiplicativeInversesP { tinyGroup() }
 
-    fun multiplicativeInversesP(contextF: suspend () -> GroupContext) {
+    fun multiplicativeInversesP(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             // our inverse code only works for elements in the subgroup, which makes it faster
@@ -299,7 +299,7 @@ class GroupTest {
     @Test
     fun multiplicativeInversesQSm() = multiplicativeInversesQ { tinyGroup() }
 
-    fun multiplicativeInversesQ(contextF: suspend () -> GroupContext) {
+    fun multiplicativeInversesQ(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             checkAll(propTestFastConfig, elementsModQNoZero(context)) {
@@ -317,7 +317,7 @@ class GroupTest {
     @Test
     fun divisionPSm() = divisionP { tinyGroup() }
 
-    fun divisionP(contextF: suspend () -> GroupContext) {
+    fun divisionP(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             forAll(propTestFastConfig, validElementsModP(context), validElementsModP(context))
@@ -331,7 +331,7 @@ class GroupTest {
     @Test
     fun exponentiationQ3072() = exponentiationQ { productionGroup(mode = ProductionMode.Mode3072) }
 
-    fun exponentiationQ(contextF: suspend () -> GroupContext) {
+    fun exponentiationQ(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             val qMinus1 = context.ZERO_MOD_Q - context.ONE_MOD_Q
@@ -367,7 +367,7 @@ class GroupTest {
     @Test
     fun exponentiationSm() = exponentiation { tinyGroup() }
 
-    fun exponentiation(contextF: suspend () -> GroupContext) {
+    fun exponentiation(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             forAll(propTestFastConfig, elementsModQ(context), elementsModQ(context)) { a, b ->
@@ -384,7 +384,7 @@ class GroupTest {
     fun acceleratedExponentiation3072() =
         acceleratedExponentiation { productionGroup(mode = ProductionMode.Mode3072) }
 
-    fun acceleratedExponentiation(contextF: suspend () -> GroupContext) {
+    fun acceleratedExponentiation(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             forAll(propTestFastConfig, elementsModQ(context), elementsModQ(context)) { a, b ->
@@ -408,7 +408,7 @@ class GroupTest {
     @Test
     fun subgroupInversesSm() = subgroupInverses { tinyGroup() }
 
-    fun subgroupInverses(contextF: suspend () -> GroupContext) {
+    fun subgroupInverses(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             forAll(propTestFastConfig, elementsModQ(context)) {
@@ -430,7 +430,7 @@ class GroupTest {
     @Test
     fun iterableAdditionSm() = iterableAddition { tinyGroup() }
 
-    fun iterableAddition(contextF: suspend () -> GroupContext) {
+    fun iterableAddition(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             checkAll(
@@ -457,7 +457,7 @@ class GroupTest {
     @Test
     fun iterableMultiplicationSm() = iterableMultiplication { tinyGroup() }
 
-    fun iterableMultiplication(contextF: suspend () -> GroupContext) {
+    fun iterableMultiplication(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             checkAll(

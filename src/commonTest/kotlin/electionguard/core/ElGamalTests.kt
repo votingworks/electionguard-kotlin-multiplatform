@@ -34,7 +34,7 @@ class ElGamalTests {
         encryptionBasics { tinyGroup() }
     }
 
-    fun encryptionBasics(contextF: suspend () -> GroupContext) {
+    fun encryptionBasics(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
             forAll(

@@ -429,11 +429,8 @@ fun ElementModP.dLog(): Int? = context.dLog(this)
  * `acceleration` parameter, to specify the speed versus memory tradeoff for subsequent computation.
  * See [PowRadixOption] for details. Note that this function can return `null`, which indicates that
  * the [ElectionConstants] were incompatible with this particular library.
- *
- * Also, note that this is a `suspend` function, which means that it must be called from a
- * suspending environment. see [productionGroup] for details on why.
  */
-suspend fun ElectionConstants.toGroupContext(
+fun ElectionConstants.toGroupContext(
     acceleration: PowRadixOption = PowRadixOption.LOW_MEMORY_USE
 ) : GroupContext? {
     val group4096 = productionGroup(acceleration = acceleration, mode = ProductionMode.Mode4096)

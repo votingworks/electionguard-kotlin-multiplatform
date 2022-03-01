@@ -6,9 +6,8 @@ import kotlin.test.assertFalse
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 /**
- * Kotest requires its properties to be executed as a suspending function, and the call to
- * [productionGroup] is suspending, which you need to call before doing virtually any unit test. To
- * make this all work, we're using [kotlinx.coroutines.test.runTest] to make it Note that this
+ * Kotest requires its properties to be executed as a suspending function. To
+ * make this all work, we're using [kotlinx.coroutines.test.runTest] to do it. Note that this
  * internal `runTest` function requires that it be called *at most once per test method*. It's fine
  * to put multiple asserts or `forAll` calls or whatever else inside the `runTest` lambda body.
  */
