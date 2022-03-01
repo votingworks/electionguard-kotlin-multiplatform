@@ -30,4 +30,22 @@ class HashTest {
             }
         }
     }
+
+    @Test
+    fun basicHmacProperties() {
+        runTest {
+            val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
+            checkAll(
+                propTestFastConfig,
+                elementsModQ(context),
+                elementsModQ(context),
+                elementsModQ(context)
+            ) { key, q1, q2 ->
+                val hmac = HmacProcessor(key)
+                val h1 = hmac.hmacElements(q1)
+                val h2 = hmac.hmacElements(q2)
+                if (q1 == q2) assertEquals(h1, h2) else assertNotEquals(h1, h2)
+            }
+        }
+    }
 }

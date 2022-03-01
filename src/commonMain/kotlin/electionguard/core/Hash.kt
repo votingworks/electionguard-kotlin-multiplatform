@@ -20,6 +20,34 @@ interface CryptoHashableElement {
     fun cryptoHashElement(): Element
 }
 
+/** Wrapper class to serve as an HMAC-SHA256 machine for the given key. */
+class HmacProcessor(hmacKey: ElementModQ) {
+    private val hmacKeyBytes = hmacKey.byteArray()
+    private val context = hmacKey.context
+
+    /**
+     * Given zero or more elements, calculate their cryptographic HMAC using HMAC-SHA256, with the
+     * given [hmacKey]. Specifically handled types are [Element], [String], and [Iterable]
+     * containers of those types, as well as anything implementing [CryptoHashableString] or
+     * [CryptoHashableElement]. Unsupported types yield an [IllegalArgumentException].
+     *
+     * Of course, infinitely long iterables cannot be hashed, and will cause this function to run
+     * forever or until it runs out of memory.
+     *
+     * @param elements Zero or more elements of any of the accepted types.
+     * @return A cryptographic HMAC of these elements, converted to strings and suitably
+     *     concatenated.
+     */
+    fun hmacElements(vararg elements: Any?): ElementModQ = this.hmacElementsHelper(elements)
+
+    private fun hmacElementsHelper(elements: Array<out Any?>): ElementModQ =
+        context.hashElementsHelper(
+            { this.hmacElementsHelper(it) },
+            { it.hmacSha256(hmacKeyBytes) },
+            elements
+        )
+}
+
 /**
  * Given zero or more elements, calculate their cryptographic hash using SHA256. Specifically
  * handled types are [Element], [String], and [Iterable] containers of those types, as well as
@@ -32,7 +60,16 @@ interface CryptoHashableElement {
  * @param elements Zero or more elements of any of the accepted types.
  * @return A cryptographic hash of these elements, converted to strings and suitably concatenated.
  */
-fun GroupContext.hashElements(vararg elements: Any?): ElementModQ {
+fun GroupContext.hashElements(vararg elements: Any?): ElementModQ = hashElementsHelper(elements)
+
+private fun GroupContext.hashElementsHelper(elements: Array<out Any?>): ElementModQ =
+    hashElementsHelper({ hashElementsHelper(it) }, { it.sha256() }, elements)
+
+private fun GroupContext.hashElementsHelper(
+    recursive: (Array<out Any?>) -> ElementModQ,
+    byteHash: (ByteArray) -> ByteArray,
+    elements: Array<out Any?>
+) : ElementModQ {
     val hashMe =
         elements.joinToString(prefix = "|", separator = "|", postfix = "|") {
             when (it) {
@@ -54,12 +91,12 @@ fun GroupContext.hashElements(vararg elements: Any?): ElementModQ {
                     if (it.none())
                         "null"
                     else
-                        hashElements(*(it.toList().toTypedArray())).cryptoHashString()
+                        recursive(it.toList().toTypedArray()).cryptoHashString()
                 else -> throw IllegalArgumentException("unknown type in hashElements: ${it::class}")
             }
         }
 
-    val digest = hashMe.encodeToByteArray().sha256()
+    val digest = byteHash(hashMe.encodeToByteArray())
     return safeBinaryToElementModQ(digest)
 }
 
