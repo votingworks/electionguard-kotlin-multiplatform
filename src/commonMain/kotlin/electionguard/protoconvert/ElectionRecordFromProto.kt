@@ -4,168 +4,146 @@ import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.noNullValuesOrNull
 import mu.KotlinLogging
+
 private val logger = KotlinLogging.logger("ElectionRecordFromProto")
 
-data class ElectionRecordFromProto(val groupContext: GroupContext) {
+fun electionguard.protogen.ElectionRecord.importElectionRecord(groupContext : GroupContext): ElectionRecord? {
+    val electionConstants = this.constants?.let { convertConstants(this.constants) }
 
-    fun translateFromProto(proto: electionguard.protogen.ElectionRecord?): ElectionRecord? {
-        if (proto == null) {
-            return null
-        }
+    val manifest = this.manifest?.let { this.manifest.importManifest(groupContext) }
 
-        val manifestConverter = ManifestFromProto(groupContext)
-        val manifest = manifestConverter.translateFromProto(proto.manifest)
+    val availableGuardians: List<AvailableGuardian>? =
+        this.availableGuardians.map { it.importAvailableGuardian(groupContext) }.noNullValuesOrNull()
 
-        val ciphertextTally: CiphertextTally? =
-            CiphertextTallyConvert(groupContext).translateFromProto(proto.ciphertextTally)
+    val electionContext = this.context?.let { this.context.importContext(groupContext) }
 
-        val decryptedTally: PlaintextTally? =
-            PlaintextTallyConvert(groupContext).translateFromProto(proto.decryptedTally)
+    val guardianRecords =
+        this.guardianRecords.map { it.importGuardianRecord(groupContext) }.noNullValuesOrNull()
 
-        val availableGuardians: List<AvailableGuardian>? =
-            proto.availableGuardians.map { convertAvailableGuardian(it) }.noNullValuesOrNull()
-
-        val constants = convertConstants(proto.constants)
-
-        val electionContext = convertContext(proto.context)
-
-        val guardianRecords =
-            proto.guardianRecords.map { convertGuardianRecord(it) }.noNullValuesOrNull()
-
-        if (constants == null || manifest == null || electionContext == null ||
-            guardianRecords == null || availableGuardians == null || availableGuardians.isEmpty()
-        ) {
-            logger.error { "Failed to translate election record from proto, missing fields" }
-            return null
-        }
-
-        return ElectionRecord(
-            proto.protoVersion,
-            constants,
-            manifest,
-            electionContext,
-            guardianRecords,
-            proto.devices.map { convertDevice(it) },
-            ciphertextTally,
-            decryptedTally,
-            availableGuardians
-        )
+    if (electionConstants == null || manifest == null || electionContext == null ||
+        guardianRecords == null || guardianRecords.isEmpty() || availableGuardians == null
+    ) {
+        logger.error { "Failed to translate election record from proto, missing fields" }
+        return null
     }
 
-    private fun convertAvailableGuardian(
-        proto: electionguard.protogen.AvailableGuardian?
-    ): AvailableGuardian? {
-        if (proto == null) {
-            return null
-        }
+    return ElectionRecord(
+        this.protoVersion,
+        electionConstants,
+        manifest,
+        electionContext,
+        guardianRecords,
+        this.devices.map { it.importDevice() },
+        this.ciphertextTally?.let { this.ciphertextTally.importCiphertextTally(groupContext) },
+        this.decryptedTally?.let { this.decryptedTally.importPlaintextTally(groupContext) },
+        availableGuardians,
+    )
+}
 
-        val lagrangeCoordinate = convertElementModQ(proto.lagrangeCoordinate, groupContext)
+private fun electionguard.protogen.AvailableGuardian.importAvailableGuardian(
+    groupContext: GroupContext
+): AvailableGuardian? {
 
-        if (lagrangeCoordinate == null) {
-            logger.error { "lagrangeCoordinate was malformed or out of bounds" }
-            return null
-        }
+    val lagrangeCoordinate = groupContext.importElementModQ(this.lagrangeCoordinate)
 
-        return AvailableGuardian(proto.guardianId, proto.xCoordinate, lagrangeCoordinate)
+    if (lagrangeCoordinate == null) {
+        logger.error { "lagrangeCoordinate was malformed or out of bounds" }
+        return null
     }
 
-    private fun convertConstants(
-        constants: electionguard.protogen.ElectionConstants?
-    ): ElectionConstants? {
-        if (constants == null) {
-            return null
-        }
+    return AvailableGuardian(this.guardianId, this.xCoordinate, lagrangeCoordinate)
+}
 
-        // TODO: do we have to worry about any of the fields of the deserialized protobuf being
-        //  missing / null?
-
-        return ElectionConstants(
-            constants.name,
-            constants.largePrime.array,
-            constants.smallPrime.array,
-            constants.cofactor.array,
-            constants.generator.array,
-        )
+private fun convertConstants(
+    constants: electionguard.protogen.ElectionConstants?
+): ElectionConstants? {
+    if (constants == null) {
+        return null
     }
 
-    private fun convertContext(context: electionguard.protogen.ElectionContext?): ElectionContext? {
-        if (context == null) {
-            return null
-        }
-        val jointPublicKey = convertElementModP(context.jointPublicKey, groupContext)
-        val manifestHash = convertElementModQ(context.manifestHash, groupContext)
-        val cryptoBaseHash = convertElementModQ(context.cryptoBaseHash, groupContext)
-        val cryptoExtendedBaseHash =
-            convertElementModQ(context.cryptoExtendedBaseHash, groupContext)
-        val commitmentHash = convertElementModQ(context.commitmentHash, groupContext)
+    // TODO: do we have to worry about any of the fields of the deserialized protobuf being
+    //  missing / null?
 
-        if (jointPublicKey == null || manifestHash == null || cryptoBaseHash == null ||
-            cryptoExtendedBaseHash == null || commitmentHash == null
-        ) {
-            logger.error { "Failed to translate election context from proto, missing fields" }
-            return null
-        }
+    return ElectionConstants(
+        constants.name,
+        constants.largePrime.array,
+        constants.smallPrime.array,
+        constants.cofactor.array,
+        constants.generator.array,
+    )
+}
 
-        // TODO: do we have to worry about any of the fields of the deserialized protobuf being
-        //  missing / null?
+private fun electionguard.protogen.ElectionContext.importContext(
+    groupContext: GroupContext
+): ElectionContext? {
 
-        return ElectionContext(
-            context.numberOfGuardians,
-            context.quorum,
-            jointPublicKey,
-            manifestHash,
-            cryptoBaseHash,
-            cryptoExtendedBaseHash,
-            commitmentHash,
-            context.extendedData.associate { it.key to it.value }
-        )
+    val jointPublicKey = groupContext.importElementModP(this.jointPublicKey)
+    val manifestHash = groupContext.importElementModQ(this.manifestHash)
+    val cryptoBaseHash = groupContext.importElementModQ(this.cryptoBaseHash)
+    val cryptoExtendedBaseHash =
+        groupContext.importElementModQ(this.cryptoExtendedBaseHash)
+    val commitmentHash = groupContext.importElementModQ(this.commitmentHash)
+
+    if (jointPublicKey == null || manifestHash == null || cryptoBaseHash == null ||
+        cryptoExtendedBaseHash == null || commitmentHash == null
+    ) {
+        logger.error { "Failed to translate election context from proto, missing fields" }
+        return null
     }
 
-    private fun convertDevice(device: electionguard.protogen.EncryptionDevice): EncryptionDevice {
+    // TODO: do we have to worry about any of the fields of the deserialized protobuf being
+    //  missing / null?
 
-        // TODO: do we have to worry about any of the fields of the deserialized protobuf being
-        //  missing / null?
+    return ElectionContext(
+        this.numberOfGuardians,
+        this.quorum,
+        jointPublicKey,
+        manifestHash,
+        cryptoBaseHash,
+        cryptoExtendedBaseHash,
+        commitmentHash,
+        this.extendedData.associate { it.key to it.value }
+    )
+}
 
-        return EncryptionDevice(
-            device.deviceId,
-            device.sessionId,
-            device.launchCode,
-            device.location
-        )
+private fun electionguard.protogen.EncryptionDevice.importDevice(): EncryptionDevice {
+    // TODO: do we have to worry about any of the fields of the deserialized protobuf being
+    //  missing / null?
+
+    return EncryptionDevice(
+        this.deviceId,
+        this.sessionId,
+        this.launchCode,
+        this.location
+    )
+}
+
+private fun electionguard.protogen.GuardianRecord.importGuardianRecord(
+    groupContext: GroupContext
+): GuardianRecord? {
+
+    val electionPublicKey = groupContext.importElementModP(this.guardianPublicKey)
+    val coefficientCommitments =
+        this.coefficientCommitments.map { groupContext.importElementModP(it) }.noNullValuesOrNull()
+    val coefficientProofs =
+        this.coefficientProofs.map { groupContext.importSchnorrProof(it) }
+            .noNullValuesOrNull()
+
+    // TODO: do we have to worry about any of the fields of the deserialized protobuf being
+    //  missing / null?
+    //   Or the coefficient lists being empty?
+
+    if (electionPublicKey == null || coefficientCommitments == null || coefficientProofs == null
+    ) {
+        logger.error { "Failed to translate guardian record from proto, missing fields" }
+        return null
     }
 
-    private fun convertGuardianRecord(
-        guardianRecord: electionguard.protogen.GuardianRecord?
-    ): GuardianRecord? {
-        if (guardianRecord == null) {
-            return null
-        }
-        val electionPublicKey = convertElementModP(guardianRecord.electionPublicKey, groupContext)
-        val coefficientCommitments =
-            guardianRecord.coefficientCommitments
-                .map { convertElementModP(it, groupContext) }
-                .noNullValuesOrNull()
-        val coefficientProofs =
-            guardianRecord.coefficientProofs
-                .map { convertSchnorrProof(it, groupContext) }
-                .noNullValuesOrNull()
-
-        // TODO: do we have to worry about any of the fields of the deserialized protobuf being
-        //  missing / null?
-        //   Or the coefficient lists being empty?
-
-        if (electionPublicKey == null || coefficientCommitments == null || coefficientProofs == null
-        ) {
-            logger.error { "Failed to translate guardian record from proto, missing fields" }
-            return null
-        }
-
-        return GuardianRecord(
-            guardianRecord.guardianId,
-            guardianRecord.xCoordinate,
-            electionPublicKey,
-            coefficientCommitments,
-            coefficientProofs,
-        )
-    }
+    return GuardianRecord(
+        this.guardianId,
+        this.xCoordinate,
+        electionPublicKey,
+        coefficientCommitments,
+        coefficientProofs,
+    )
 }

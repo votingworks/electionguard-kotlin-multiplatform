@@ -3,8 +3,18 @@ package electionguard.ballot
 import electionguard.core.*
 
 /**
- * The published election record for a collection of ballots, eg from a single encryption device.
+ * The entire published election record.
+ * @param electionRecord the record of all the public election data (except submittedBallots and spoiledBallots)
+ * @param submittedBallots all submitted ballots (CAST and SPOILED)
+ * @param spoiledBallots decrypted spoiled ballots as PlaintextTally
  */
+data class ElectionRecordAllData(
+    val electionRecord: ElectionRecord,
+    val submittedBallots: Iterable<SubmittedBallot>?,
+    val spoiledBallots: Iterable<PlaintextTally>?,
+)
+
+/** The published election record for a collection of ballots, eg from a single encryption device.  */
 data class ElectionRecord(
     val protoVersion: String,
     val constants: ElectionConstants,
@@ -14,15 +24,12 @@ data class ElectionRecord(
     val devices: List<EncryptionDevice>,
     val encryptedTally: CiphertextTally?,
     val decryptedTally: PlaintextTally?,
-    val acceptedBallots: Iterable<SubmittedBallot>?,
-    val spoiledBallots: Iterable<PlaintextTally>?,
     val availableGuardians: List<AvailableGuardian>?
 )
 
 /**
  * An available Guardian when decrypting.
- *
- * @param guardian_id The guardian id
+ * @param guardianId The guardian id
  * @param sequence the guardian x coordinate value
  * @param lagrangeCoordinate the lagrange coordinate when decrypting
  */
@@ -41,6 +48,7 @@ data class AvailableGuardian(
  * The byte arrays are defined to be big-endian.
  */
 data class ElectionConstants(
+    val name : String,
     /** large prime or P. */
     val largePrime: ByteArray,
     /** small prime or Q. */
@@ -92,55 +100,7 @@ data class EncryptionDevice(
 data class GuardianRecord(
     val guardianId: String,
     val xCoordinate: Int,
-    val electionPublicKey: ElementModP,
+    val guardianPublicKey: ElementModP,
     val coefficientCommitments: List<ElementModP>,
     val coefficientProofs: List<SchnorrProof>
 )
-
-/////////////////////////////////////////////////
-/**
- * Makes a CiphertextElectionContext object. python: election.make_ciphertext_election_context().
- * python: make_ciphertext_election_context()
- *
- * @param number_of_guardians The number of guardians necessary to generate the public key.
- * @param quorum The quorum of guardians necessary to decrypt an election. Must be less than
- *     number_of_guardians.
- * @param jointPublicKey the joint public key of the election, K.
- * @param manifest the election manifest.
- * @param commitment_hash all the public commitments for all the guardians = H(K 1,0 , K 1,1 , K 1,2
- *     , ... , K 1,k−1 , K 2,0 , K 2,1 , K 2,2 , ... , K 2,k−1 , ... , K n,0 , K n,1 , K n,2 , ... ,
- *     K n,k−1 )
- */
-fun makeCiphertextElectionContext(
-    groupContext: GroupContext,
-    number_of_guardians: Int,
-    quorum: Int,
-    jointPublicKey: ElementModP,
-    manifest: Manifest,
-    commitment_hash: ElementModQ,
-    extended_data: Map<String, String>?
-): ElectionContext {
-
-    val crypto_base_hash: ElementModQ =
-        groupContext.hashElements(
-            groupContext.constants.largePrime,
-            groupContext.constants.smallPrime,
-            groupContext.constants.generator,
-            number_of_guardians,
-            quorum,
-            manifest.cryptoHashElement()
-        )
-    val crypto_extended_base_hash: ElementModQ =
-        groupContext.hashElements(crypto_base_hash, commitment_hash)
-
-    return ElectionContext(
-        number_of_guardians,
-        quorum,
-        jointPublicKey,
-        manifest.cryptoHashElement(),
-        crypto_base_hash,
-        crypto_extended_base_hash,
-        commitment_hash,
-        extended_data
-    )
-}

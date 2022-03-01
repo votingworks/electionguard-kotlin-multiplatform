@@ -7,6 +7,7 @@ import electionguard.core.tinyGroup
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class PlaintextTallyConvertTest {
 
@@ -16,6 +17,7 @@ class PlaintextTallyConvertTest {
         val tally = generateFakeTally(1, context)
         val proto = tally.publishPlaintextTally()
         val roundtrip = proto.importPlaintextTally(context)
+        assertNotNull(roundtrip)
         for (entry in roundtrip.contests) {
             val contest = tally.contests.get(entry.key) ?: throw RuntimeException("Cant find contest $entry.key")
             val rcontest = entry.value
@@ -25,9 +27,6 @@ class PlaintextTallyConvertTest {
                 for (shareIdx in 0 until rselection.shares.size) {
                     val share = selection.shares[shareIdx]
                     val rshare = rselection.shares[shareIdx]
-                    if (!rshare.equals(share)) {
-                        println("BAD")
-                    }
                     assertEquals(rshare, share)
                 }
             }

@@ -21,23 +21,22 @@ class Consumer(val publisher: Publisher, val groupContext : GroupContext) {
 
     @Throws(IOException::class)
     fun readElectionRecord(): ElectionRecordAllData {
-        val electionRecord: ElectionRecord
-        if (Files.exists(publisher.electionRecordProtoPath())) {
+        val where = publisher.electionRecordProtoPath()
+        val electionRecord: ElectionRecord?
+        if (Files.exists(where)) {
             electionRecord = readElectionRecordProto()
         } else {
-            throw FileNotFoundException(
-                java.lang.String.format(
-                    "No election record found in %s",
-                    publisher.electionRecordProtoPath()
-                )
-            )
+            throw FileNotFoundException("No election record found in $where")
+        }
+        if (electionRecord == null) {
+            throw IOException("Malformed election record found in $where")
         }
 
         return ElectionRecordAllData(electionRecord, null, null)
     }
 
     @Throws(IOException::class)
-    fun readElectionRecordProto(): ElectionRecord {
+    fun readElectionRecordProto(): ElectionRecord? {
         var proto : electionguard.protogen.ElectionRecord
         val filename = publisher.electionRecordProtoPath().toString()
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionRecord.decodeFromStream(inp) }

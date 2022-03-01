@@ -1,216 +1,158 @@
 package electionguard.protoconvert
 
-import electionguard.ballot.Manifest
+import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.noNullValuesOrNull
 import electionguard.core.safeEnumValueOf
-import kotlinx.datetime.UtcOffset
 import mu.KotlinLogging
+
 private val logger = KotlinLogging.logger("ManifestFromProto")
 
-data class ManifestFromProto(val groupContext: GroupContext) {
+fun electionguard.protogen.Manifest.importManifest(groupContext: GroupContext): Manifest? {
 
-    fun translateFromProto(proto: electionguard.protogen.Manifest?): Manifest? {
-        if (proto == null) {
-            return null
-        }
+    val contests = this.contests.map { it.importContestDescription(groupContext) }.noNullValuesOrNull()
 
-        val contests = proto.contests.map { convertContestDescription(it) }.noNullValuesOrNull()
-
-        if (contests == null) {
-            logger.error { "missing contests in Manifest" }
-            return null
-        }
-
-        val electionType = convert(proto.electionType)
-        val geopoliticalUnits =
-            proto.geopoliticalUnits.map { convertGeopoliticalUnit(it) }.noNullValuesOrNull()
-
-        if (electionType == null || geopoliticalUnits == null) {
-            logger.error { "missing electionType or geopoliticalUnits in Manifest" }
-            return null
-        }
-
-        // TODO: presumably there are many more error conditions that we need to check for here,
-        //   like having zero ballot styles, zero candidates, etc.
-
-        return Manifest(
-            groupContext,
-            proto.electionScopeId,
-            proto.specVersion,
-            electionType,
-            UtcOffset.parse(proto.startDate),
-            UtcOffset.parse(proto.endDate),
-            geopoliticalUnits,
-            proto.parties.map { convertParty(it) },
-            proto.candidates.map { convertCandidate(it) },
-            contests,
-            proto.ballotStyles.map { convertBallotStyle(it) },
-            convertInternationalizedText(proto.name),
-            convertContactInformation(proto.contactInformation),
-        )
+    if (contests == null) {
+        logger.error { "missing contests in Manifest" }
+        return null
     }
 
-    private fun convertAnnotatedString(
-        annotated: electionguard.protogen.AnnotatedString
-    ): Manifest.AnnotatedString {
-        return Manifest.makeAnnotatedString(groupContext, annotated.annotation, annotated.value)
+    val electionType = this.electionType.importElectionType()
+    if (electionType == null) {
+        logger.error { "missing electionType in Manifest" }
+        return null
     }
 
-    private fun convertBallotStyle(
-        proto: electionguard.protogen.BallotStyle
-    ): Manifest.BallotStyle {
-        return Manifest.makeBallotStyle(
-            groupContext,
-            proto.ballotStyleId,
-            proto.geopoliticalUnitIds,
-            proto.partyIds,
-            proto.imageUrl
-        )
+    val geopoliticalUnits = this.geopoliticalUnits.map { it.importGeopoliticalUnit(groupContext) }.noNullValuesOrNull()
+    if (geopoliticalUnits == null) {
+        logger.error { "missing geopoliticalUnits in Manifest" }
+        return null
     }
 
-    private fun convertCandidate(proto: electionguard.protogen.Candidate): Manifest.Candidate {
-        return Manifest.makeCandidate(
-            groupContext,
-            proto.candidateId,
-            convertInternationalizedText(proto.name),
-            proto.partyId,
-            proto.imageUrl,
-            proto.isWriteIn
-        )
+    return groupContext.manifestOf(
+        this.electionScopeId,
+        this.specVersion,
+        this.electionType.importElectionType()?: Manifest.ElectionType.unknown,
+        this.startDate, // LocalDateTime.parse(this.startDate),
+        this.endDate, // LocalDateTime.parse(this.endDate),
+        this.geopoliticalUnits.map { it.importGeopoliticalUnit(groupContext) },
+        this.parties.map { it.importParty(groupContext) },
+        this.candidates.map { it.importCandidate(groupContext) },
+        this.contests.map { it.importContestDescription(groupContext) },
+        this.ballotStyles.map { it.importBallotStyle(groupContext) },
+        this.name?.let { this.name.importInternationalizedText(groupContext) },
+        this.contactInformation?.let { this.contactInformation.importContactInformation(groupContext) },
+    )
+}
+
+private fun electionguard.protogen.AnnotatedString.importAnnotatedString(groupContext: GroupContext): Manifest.AnnotatedString {
+    return groupContext.annotatedStringOf(this.annotation, this.value)
+}
+
+private fun electionguard.protogen.BallotStyle.importBallotStyle(groupContext: GroupContext): Manifest.BallotStyle {
+    return groupContext.ballotStyleOf(
+        this.ballotStyleId,
+        this.geopoliticalUnitIds,
+        this.partyIds,
+        this.imageUrl
+    )
+}
+
+private fun electionguard.protogen.Candidate.importCandidate(groupContext: GroupContext): Manifest.Candidate {
+    return groupContext.candidateOf(
+        this.candidateId,
+        this.name?.let { this.name.importInternationalizedText(groupContext) },
+        this.partyId,
+        this.imageUrl,
+        this.isWriteIn
+    )
+}
+
+private fun electionguard.protogen.ContactInformation.importContactInformation(groupContext: GroupContext): Manifest.ContactInformation {
+    return groupContext.contactInformationOf(
+        this.addressLine,
+        this.email.map { it.importAnnotatedString(groupContext) },
+        this.phone.map { it.importAnnotatedString(groupContext) },
+        this.name,
+    )
+}
+
+private fun electionguard.protogen.ContestDescription.importContestDescription(groupContext: GroupContext): Manifest.ContestDescription {
+    return groupContext.contestDescriptionOf(
+        this.contestId,
+        this.sequenceOrder,
+        this.geopoliticalUnitId,
+        this.voteVariation.importVoteVariationType() ?: Manifest.VoteVariationType.other, // TODO ok?
+        this.numberElected,
+        this.votesAllowed,
+        this.name,
+        this.selections.map { it.importSelectionDescription(groupContext) },
+        this.ballotTitle?.let { this.ballotTitle.importInternationalizedText(groupContext) },
+        this.ballotSubtitle?.let { this.ballotSubtitle.importInternationalizedText(groupContext) },
+        this.primaryPartyIds
+    )
+}
+
+private fun electionguard.protogen.ContestDescription.VoteVariationType.importVoteVariationType(): Manifest.VoteVariationType? {
+    val result = safeEnumValueOf<Manifest.VoteVariationType>(this.name)
+    if (result == null) {
+        logger.error { "Vote variation type $this has missing or incorrect name" }
     }
+    return result
+}
 
-    private fun convertContactInformation(
-        proto: electionguard.protogen.ContactInformation?
-    ): Manifest.ContactInformation? {
-        if (proto == null) {
-            return null
-        }
-        return Manifest.makeContactInformation(
-            groupContext,
-            proto.addressLine,
-            proto.email.map { convertAnnotatedString(it) },
-            proto.phone.map { convertAnnotatedString(it) },
-            proto.name,
-        )
+private fun electionguard.protogen.Manifest.ElectionType.importElectionType(): Manifest.ElectionType? {
+    val result = safeEnumValueOf<Manifest.ElectionType>(this.name)
+    if (result == null) {
+        logger.error { "Vote election type $this has missing or incorrect name" }
     }
+    return result
+}
 
-    private fun convertContestDescription(
-        proto: electionguard.protogen.ContestDescription?
-    ): Manifest.ContestDescription? {
-        if (proto == null) {
-            return null
-        }
-
-        return Manifest.makeContestDescription(
-            groupContext,
-            proto.contestId,
-            proto.geopoliticalUnitId,
-            proto.sequenceOrder,
-            convertVoteVariationType(proto.voteVariation),
-            proto.numberElected,
-            proto.votesAllowed,
-            proto.name,
-            proto.selections.map { convertSelectionDescription(it) },
-            convertInternationalizedText(proto.ballotTitle),
-            convertInternationalizedText(proto.ballotSubtitle),
-            proto.primaryPartyIds
-        )
+private fun electionguard.protogen.GeopoliticalUnit.ReportingUnitType.importReportingUnitType(): Manifest.ReportingUnitType? {
+    val result = safeEnumValueOf<Manifest.ReportingUnitType>(this.name)
+    if (result == null) {
+        logger.error { "Reporting unit type $this has missing or incorrect name" }
     }
+    return result
+}
 
-    private fun convertVoteVariationType(
-        type: electionguard.protogen.ContestDescription.VoteVariationType?
-    ): Manifest.VoteVariationType? {
-        if (type == null) {
-            return null
-        }
+private fun electionguard.protogen.GeopoliticalUnit.importGeopoliticalUnit(groupContext: GroupContext): Manifest.GeopoliticalUnit {
+    return groupContext.geopoliticalUnitOf(
+        this.geopoliticalUnitId,
+        this.name,
+        this.type.importReportingUnitType()?: Manifest.ReportingUnitType.unknown, // TODO ok?
+        this.contactInformation?.let { this.contactInformation.importContactInformation(groupContext) },
+    )
+}
 
-        val result = safeEnumValueOf<Manifest.VoteVariationType>(type.name)
-        if (result == null) {
-            logger.error { "Vote variation type $type has missing or incorrect name" }
-        }
-        return result
-    }
+private fun electionguard.protogen.InternationalizedText.importInternationalizedText(groupContext: GroupContext): Manifest.InternationalizedText {
+    return groupContext.internationalizedTextOf(
+        this.text.map({ it.importLanguage(groupContext) }
+        ))
+}
 
-    private fun convert(
-        type: electionguard.protogen.Manifest.ElectionType?
-    ): Manifest.ElectionType? {
-        if (type == null) {
-            return null
-        }
+private fun electionguard.protogen.Language.importLanguage(groupContext: GroupContext): Manifest.Language {
+    return groupContext.languageOf(
+        this.value,
+        this.language
+    )
+}
 
-        val result = safeEnumValueOf<Manifest.ElectionType>(type.name)
-        if (result == null) {
-            logger.error { "Vote election type $type has missing or incorrect name" }
-        }
-        return result
-    }
+private fun electionguard.protogen.Party.importParty(groupContext: GroupContext): Manifest.Party {
+    return groupContext.partyOf(
+        this.partyId,
+        this.name?.let { this.name.importInternationalizedText(groupContext) },
+        this.abbreviation,
+        this.color,
+        this.logoUri
+    )
+}
 
-    private fun convertReportingUnitType(
-        type: electionguard.protogen.GeopoliticalUnit.ReportingUnitType?
-    ): Manifest.ReportingUnitType? {
-        if (type == null) {
-            return null
-        }
-
-        val result = safeEnumValueOf<Manifest.ReportingUnitType>(type.name)
-        if (result == null) {
-            logger.error { "Reporting unit type $type has missing or incorrect name" }
-        }
-        return result
-    }
-
-    private fun convertGeopoliticalUnit(
-        proto: electionguard.protogen.GeopoliticalUnit?
-    ): Manifest.GeopoliticalUnit? {
-        if (proto == null) {
-            return null
-        }
-
-        return Manifest.makeGeopoliticalUnit(
-            groupContext,
-            proto.geopoliticalUnitId,
-            proto.name,
-            convertReportingUnitType(proto.type),
-            convertContactInformation(proto.contactInformation)
-        )
-    }
-
-    private fun convertInternationalizedText(
-        proto: electionguard.protogen.InternationalizedText?
-    ): Manifest.InternationalizedText? {
-        if (proto == null) {
-            return null
-        }
-        return Manifest.makeInternationalizedText(
-            groupContext,
-            proto.text.map({ convertLanguage(it) })
-        )
-    }
-
-    private fun convertLanguage(proto: electionguard.protogen.Language): Manifest.Language {
-        return Manifest.makeLanguage(groupContext, proto.value, proto.language)
-    }
-
-    private fun convertParty(proto: electionguard.protogen.Party): Manifest.Party {
-        return Manifest.makeParty(
-            groupContext,
-            proto.partyId,
-            convertInternationalizedText(proto.name),
-            proto.abbreviation,
-            proto.color,
-            proto.logoUri
-        )
-    }
-
-    private fun convertSelectionDescription(
-        proto: electionguard.protogen.SelectionDescription
-    ): Manifest.SelectionDescription {
-        return Manifest.makeSelectionDescription(
-            groupContext,
-            proto.selectionId,
-            proto.candidateId,
-            proto.sequenceOrder
-        )
-    }
+private fun electionguard.protogen.SelectionDescription.importSelectionDescription(groupContext: GroupContext): Manifest.SelectionDescription {
+    return groupContext.selectionDescriptionOf(
+        this.selectionId,
+        this.sequenceOrder,
+        this.candidateId,
+    )
 }

@@ -17,11 +17,11 @@ class CommonConvertTest {
                 val context = productionGroup()
 
                 val protoP = fakeElementModP.publishElementModP()
-                val roundtripP = protoP.importElementModP(context)
+                val roundtripP = context.importElementModP(protoP)
                 assertEquals(roundtripP, fakeElementModP)
 
                 val protoQ = fakeElementModQ.publishElementModQ()
-                val roundtripQ = protoQ.importElementModQ(context)
+                val roundtripQ = context.importElementModQ(protoQ)
                 assertEquals(roundtripQ, fakeElementModQ)
 
             }
@@ -39,7 +39,7 @@ class CommonConvertTest {
                 val ciphertext = ElGamalCiphertext(fakePad, fakeData)
 
                 val proto = ciphertext.publishCiphertext()
-                val roundtrip = proto.importCiphertext(context)
+                val roundtrip = context.importCiphertext(proto)
                 assertEquals(roundtrip, ciphertext)
             }
         }
@@ -58,7 +58,7 @@ class CommonConvertTest {
                 val proof = GenericChaumPedersenProof(a, b, c, r)
 
                 val proto = proof.publishChaumPedersenProof()
-                val roundtrip = proto.importChaumPedersenProof(context)
+                val roundtrip = context.importChaumPedersenProof(proto)
                 assertEquals(roundtrip, proof)
             }
         }
@@ -77,7 +77,7 @@ class CommonConvertTest {
                 val publicKey = ElGamalPublicKey(p)
                 val proof = SchnorrProof(publicKey, commit, c, r)
                 val proto = proof.publishSchnorrProof()
-                val roundtrip = proto.importSchnorrProof(context)
+                val roundtrip = context.importSchnorrProof(proto)
                 assertEquals(roundtrip, proof)
             }
         }
@@ -92,7 +92,7 @@ class CommonConvertTest {
                 val context = productionGroup()
                 val publicKey = ElGamalPublicKey(p)
                 val proto = publicKey.publishElGamalPublicKey()
-                val roundtrip = proto.importElGamalPublicKey(context)
+                val roundtrip = context.importElGamalPublicKey(proto)
                 assertEquals(roundtrip, publicKey)
             }
         }

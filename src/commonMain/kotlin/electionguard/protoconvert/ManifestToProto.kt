@@ -1,157 +1,120 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.Manifest
-import electionguard.core.GroupContext
 
-data class ManifestToProto(val groupContext: GroupContext) {
+fun Manifest.publishManifest(): electionguard.protogen.Manifest {
+    return electionguard.protogen.Manifest(
+        this.electionScopeId,
+        this.specVersion,
+        this.electionType.publishElectionType(),
+        this.startDate,
+        this.endDate,
+        this.geopoliticalUnits.map { it.publishGeopoliticalUnit() },
+        this.parties.map { it.publishParty() },
+        this.candidates.map { it.publishCandidate() },
+        this.contests.map { it.publishContestDescription() },
+        this.ballotStyles.map { it.publishBallotStyle() },
+        this.name?.let { this.name.publishInternationalizedText() },
+        this.contactInformation?.let { this.contactInformation.publishContactInformation() },
+    )
+}
 
-    fun translateToProto(manifest: Manifest): electionguard.protogen.Manifest {
-        return electionguard.protogen
-            .Manifest(
-                manifest.electionScopeId,
-                manifest.specVersion,
-                convertElectionType(manifest.electionType),
-                manifest.startDate.toString(),
-                manifest.endDate.toString(),
-                manifest.geopoliticalUnits.map { convertGeopoliticalUnit(it) },
-                manifest.parties.map { convertParty(it) },
-                manifest.candidates.map { convertCandidate(it) },
-                manifest.contests.map { convertContestDescription(it) },
-                manifest.ballotStyles.map { convertBallotStyle(it) },
-                if (manifest.name == null) { null } else {
-                    convertInternationalizedText(manifest.name)
-                },
-                convertContactInformation(manifest.contactInformation),
-            )
-    }
+private fun Manifest.AnnotatedString.publishAnnotatedString(): electionguard.protogen.AnnotatedString {
+    return electionguard.protogen.AnnotatedString(this.annotation, this.value)
+}
 
-    private fun convertAnnotatedString(
-        annotated: Manifest.AnnotatedString
-    ): electionguard.protogen.AnnotatedString {
-        return electionguard.protogen.AnnotatedString(annotated.annotation, annotated.value)
-    }
+private fun Manifest.BallotStyle.publishBallotStyle(): electionguard.protogen.BallotStyle {
+    return electionguard.protogen.BallotStyle(
+        this.ballotStyleId,
+        this.geopoliticalUnitIds,
+        this.partyIds,
+        this.imageUri ?: ""
+    )
+}
 
-    private fun convertBallotStyle(
-        style: Manifest.BallotStyle
-    ): electionguard.protogen.BallotStyle {
-        return electionguard.protogen
-            .BallotStyle(
-                style.ballotStyleId,
-                style.geopoliticalUnitIds,
-                style.partyIds,
-                style.imageUri ?: ""
-            )
-    }
+private fun Manifest.Candidate.publishCandidate(): electionguard.protogen.Candidate {
+    return electionguard.protogen.Candidate(
+        this.candidateId,
+        this.name.publishInternationalizedText(),
+        this.partyId ?: "",
+        this.imageUri ?: "",
+        this.isWriteIn
+    )
+}
 
-    private fun convertCandidate(candidate: Manifest.Candidate): electionguard.protogen.Candidate {
-        return electionguard.protogen
-            .Candidate(
-                candidate.candidateId,
-                convertInternationalizedText(candidate.name),
-                candidate.partyId ?: "",
-                candidate.imageUri ?: "",
-                candidate.isWriteIn
-            )
-    }
+private fun Manifest.ContactInformation.publishContactInformation(): electionguard.protogen.ContactInformation {
+    return electionguard.protogen.ContactInformation(
+        this.name ?: "",
+        this.addressLine,
+        this.email.map { it.publishAnnotatedString() },
+        this.phone.map { it.publishAnnotatedString() },
+    )
+}
 
-    private fun convertContactInformation(
-        contact: Manifest.ContactInformation?
-    ): electionguard.protogen.ContactInformation? {
-        if (contact == null) {
-            return null
-        }
-        return electionguard.protogen
-            .ContactInformation(
-                contact.name ?: "",
-                contact.addressLine,
-                contact.email.map { convertAnnotatedString(it) },
-                contact.phone.map { convertAnnotatedString(it) },
-            )
-    }
+private fun Manifest.ContestDescription.publishContestDescription(): electionguard.protogen.ContestDescription {
+    return electionguard.protogen.ContestDescription(
+        this.contestId,
+        this.sequenceOrder,
+        this.geopoliticalUnitId,
+        this.voteVariation.publishVoteVariationType(),
+        this.numberElected,
+        this.votesAllowed,
+        this.name,
+        this.selections.map { it.publishSelectionDescription() },
+        this.ballotTitle?.let { this.ballotTitle.publishInternationalizedText() },
+        this.ballotSubtitle?.let { this.ballotSubtitle.publishInternationalizedText() },
+        this.primaryPartyIds
+    )
+}
 
-    private fun convertContestDescription(
-        contest: Manifest.ContestDescription
-    ): electionguard.protogen.ContestDescription {
-        return electionguard.protogen
-            .ContestDescription(
-                contest.contestId,
-                contest.sequenceOrder,
-                contest.geopoliticalUnitId,
-                convertVoteVariationType(contest.voteVariation),
-                contest.numberElected,
-                contest.votesAllowed,
-                contest.name,
-                contest.selections.map { convertSelectionDescription(it) },
-                convertInternationalizedText(contest.ballotTitle),
-                convertInternationalizedText(contest.ballotSubtitle),
-                contest.primaryPartyIds
-            )
-    }
+private fun Manifest.VoteVariationType.publishVoteVariationType(): electionguard.protogen.ContestDescription.VoteVariationType {
+    return electionguard.protogen.ContestDescription.VoteVariationType.fromName(this.name)
+}
 
-    private fun convertVoteVariationType(
-        type: Manifest.VoteVariationType
-    ): electionguard.protogen.ContestDescription.VoteVariationType {
-        return electionguard.protogen.ContestDescription.VoteVariationType.fromName(type.name)
-    }
+private fun Manifest.ElectionType.publishElectionType(): electionguard.protogen.Manifest.ElectionType {
+    return electionguard.protogen.Manifest.ElectionType.fromName(this.name)
+}
 
-    private fun convertElectionType(
-        type: Manifest.ElectionType
-    ): electionguard.protogen.Manifest.ElectionType {
-        return electionguard.protogen.Manifest.ElectionType.fromName(type.name)
-    }
+private fun Manifest.ReportingUnitType.publishReportingUnitType(): electionguard.protogen.GeopoliticalUnit.ReportingUnitType {
+    return electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromName(this.name)
+}
 
-    private fun convertReportingUnitType(
-        type: Manifest.ReportingUnitType
-    ): electionguard.protogen.GeopoliticalUnit.ReportingUnitType {
-        return electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromName(type.name)
-    }
+private fun Manifest.GeopoliticalUnit.publishGeopoliticalUnit(): electionguard.protogen.GeopoliticalUnit {
+    return electionguard.protogen.GeopoliticalUnit(
+        this.geopoliticalUnitId,
+        this.name,
+        this.type.publishReportingUnitType(),
+        this.contactInformation?.let { this.contactInformation.publishContactInformation() }
+    )
+}
 
-    private fun convertGeopoliticalUnit(
-        geounit: Manifest.GeopoliticalUnit
-    ): electionguard.protogen.GeopoliticalUnit {
-        return electionguard.protogen
-            .GeopoliticalUnit(
-                geounit.geopoliticalUnitId,
-                geounit.name,
-                convertReportingUnitType(geounit.type),
-                if (geounit.contactInformation == null) { null } else {
-                    convertContactInformation(geounit.contactInformation)
-                }
-            )
-    }
+private fun Manifest.InternationalizedText.publishInternationalizedText(): electionguard.protogen.InternationalizedText {
+    return electionguard.protogen.InternationalizedText(
+        this.text.map { it.publishLanguage() }
+    )
+}
 
-    private fun convertInternationalizedText(
-        itext: Manifest.InternationalizedText?
-    ): electionguard.protogen.InternationalizedText? {
-        if (itext == null) {
-            return null
-        }
-        return electionguard.protogen.InternationalizedText(itext.text.map({ convertLanguage(it) }))
-    }
+private fun Manifest.Language.publishLanguage(): electionguard.protogen.Language {
+    return electionguard.protogen.Language(
+        this.value,
+        this.language
+    )
+}
 
-    private fun convertLanguage(language: Manifest.Language): electionguard.protogen.Language {
-        return electionguard.protogen.Language(language.value, language.language)
-    }
+private fun Manifest.Party.publishParty(): electionguard.protogen.Party {
+    return electionguard.protogen.Party(
+        this.partyId,
+        this.name.publishInternationalizedText(),
+        this.abbreviation ?: "",
+        this.color ?: "",
+        this.logoUri ?: ""
+    )
+}
 
-    private fun convertParty(party: Manifest.Party): electionguard.protogen.Party {
-        return electionguard.protogen
-            .Party(
-                party.partyId,
-                convertInternationalizedText(party.name),
-                party.abbreviation ?: "",
-                party.color ?: "",
-                party.logoUri ?: ""
-            )
-    }
-
-    private fun convertSelectionDescription(
-        selection: Manifest.SelectionDescription
-    ): electionguard.protogen.SelectionDescription {
-        return electionguard.protogen
-            .SelectionDescription(
-                selection.selectionId,
-                selection.sequenceOrder,
-                selection.candidateId,
-            )
-    }
+private fun Manifest.SelectionDescription.publishSelectionDescription(): electionguard.protogen.SelectionDescription {
+    return electionguard.protogen.SelectionDescription(
+        this.selectionId,
+        this.sequenceOrder,
+        this.candidateId,
+    )
 }

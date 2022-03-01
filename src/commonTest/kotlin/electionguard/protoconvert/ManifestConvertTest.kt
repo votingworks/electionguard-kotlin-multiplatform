@@ -5,6 +5,7 @@ import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ManifestConvertTest {
 
@@ -14,6 +15,7 @@ class ManifestConvertTest {
         val manifest = generateFakeManifest(context)
         val proto = manifest.publishManifest()
         val roundtrip = proto.importManifest(context)
+        assertNotNull(roundtrip)
         assertEquals(roundtrip.electionScopeId, manifest.electionScopeId)
         assertEquals(roundtrip.specVersion, manifest.specVersion)
         assertEquals(roundtrip.electionType, manifest.electionType)
@@ -36,6 +38,7 @@ class ManifestConvertTest {
             assertEquals(rgpu, gpu)
         }
         assertEquals(roundtrip.geopoliticalUnits, manifest.geopoliticalUnits)
+        assertEquals(roundtrip, manifest)
     }
 
     fun compareAS(list1 : List<Manifest.AnnotatedString>?, list2 : List<Manifest.AnnotatedString>?) {

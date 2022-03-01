@@ -5,6 +5,7 @@ import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ElectionRecordConvertTest {
@@ -15,6 +16,7 @@ class ElectionRecordConvertTest {
         val electionRecord = generateElectionRecord(context)
         val proto = electionRecord.publishElectionRecord()
         val roundtrip = proto.importElectionRecord(context)
+        assertNotNull(roundtrip)
         assertEquals(roundtrip.protoVersion, electionRecord.protoVersion)
         assertEquals(roundtrip.constants, electionRecord.constants)
         assertEquals(roundtrip.manifest, electionRecord.manifest)
