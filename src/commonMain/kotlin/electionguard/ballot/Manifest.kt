@@ -185,18 +185,18 @@ fun GroupContext.manifestOf(
         name,
         contactInformation,
         this.hashElements( // follows the python code
-            electionScopeId,
-            electionType.name,
-            startDate.toString(), // to_iso_date_string
-            endDate.toString(),
-            name,
-            contactInformation,
-            geopoliticalUnits,
-            parties,
-            candidates, // where did python add this ?
-            contests,
-            ballotStyles,
-        ),
+                    electionScopeId,
+                    electionType.name,
+                    startDate.toString(), // to_iso_date_string
+                    endDate.toString(),
+                    name,
+                    contactInformation,
+                    geopoliticalUnits,
+                    parties,
+                    candidates, // TODO did python add this ?
+                    contests,
+                    ballotStyles,
+                ),
     )
 }
 

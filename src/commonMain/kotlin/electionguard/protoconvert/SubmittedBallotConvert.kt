@@ -95,9 +95,7 @@ private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
     val proof = this.proof?.let { it.importDisjunctiveChaumPedersenProof(groupContext) }
     val extendedData = groupContext.importCiphertext(this.extendedData)
 
-    if (selectionHash == null || ciphertext == null || cryptoHash == null || proof == null ||
-        extendedData == null
-    ) {
+    if (selectionHash == null || ciphertext == null || cryptoHash == null || proof == null) {
         logger.error { "Failed to convert selection, missing fields" }
         return null
     }
