@@ -56,7 +56,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
         if (!Files.exists(publisher.submittedBallotProtoPath())) {
             return emptyList()
         }
-        return SubmittedBallotIterable({ true })
+        return SubmittedBallotIterable { true }
     }
 
     // all submitted ballots cast only
@@ -64,7 +64,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
         if (!Files.exists(publisher.submittedBallotProtoPath())) {
             return emptyList()
         }
-        return SubmittedBallotIterable({ it.state == electionguard.protogen.SubmittedBallot.BallotState.CAST })
+        return SubmittedBallotIterable { it.state == electionguard.protogen.SubmittedBallot.BallotState.CAST }
     }
 
     // all spoiled ballots spoiled only
@@ -72,7 +72,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
         if (!Files.exists(publisher.submittedBallotProtoPath())) {
             return emptyList()
         }
-        return SubmittedBallotIterable({ it.state == electionguard.protogen.SubmittedBallot.BallotState.SPOILED })
+        return SubmittedBallotIterable { it.state == electionguard.protogen.SubmittedBallot.BallotState.SPOILED }
     }
 
     // all spoiled ballot tallies
@@ -91,7 +91,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
         }
     }
 
-    private inner class SpoiledBallotTallyIterable() : Iterable<PlaintextTally> {
+    private inner class SpoiledBallotTallyIterable : Iterable<PlaintextTally> {
         override fun iterator(): Iterator<PlaintextTally> {
             return SpoiledBallotTallyIterator(publisher.spoiledBallotProtoPath().toString())
         }
@@ -101,7 +101,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
     // Making them Closeable makes sure that the FileInputStream gets closed.
     // use in a try-with-resources block
     private inner class SubmittedBallotIterator(
-        val filename: String,
+        filename: String,
         val filter: Predicate<electionguard.protogen.SubmittedBallot>,
     ) : AbstractIterator<SubmittedBallot>() {
 
@@ -121,18 +121,15 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
             val ballotProto = electionguard.protogen.SubmittedBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
             if (!filter.test(ballotProto)) {
                 computeNext() // LOOK fix recursion
-                return;
+                return
             }
-            val ballot = ballotProto.importSubmittedBallot(groupContext)
-            if (ballot == null) {
-                throw RuntimeException("Ballot didnt parse")
-            }
+            val ballot = ballotProto.importSubmittedBallot(groupContext) ?: throw RuntimeException("Ballot didnt parse")
             setNext(ballot)
         }
     }
 
     private inner class SpoiledBallotTallyIterator(
-        val filename: String,
+        filename: String,
     ) : AbstractIterator<PlaintextTally>() {
 
         private val input: FileInputStream
@@ -150,17 +147,14 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
             }
             val message = input.readNBytes(length)
             val tallyProto = electionguard.protogen.PlaintextTally.decodeFromByteBuffer(ByteBuffer.wrap(message))
-            val tally = tallyProto.importPlaintextTally(groupContext)
-            if (tally == null) {
-                throw RuntimeException("Tally didnt parse")
-            }
+            val tally = tallyProto.importPlaintextTally(groupContext) ?: throw RuntimeException("Tally didnt parse")
             setNext(tally)
         }
     }
 }
 
 // variable length (base 128) int32
-fun readVlen(input: InputStream): Int {
+private fun readVlen(input: InputStream): Int {
     var ib: Int = input.read()
     if (ib == -1) {
         return -1
@@ -175,7 +169,7 @@ fun readVlen(input: InputStream): Int {
         }
         val im = ib.and(0x7F).shl(shift)
         result = result.or(im)
-        shift = shift + 7
+        shift += 7
     }
     return result
 }
