@@ -351,18 +351,18 @@ Notes
 
 ### class SubmittedBallot
 
-| Name                   | JSON Name | Type                            | Notes                                |
-|------------------------|-----------|---------------------------------|--------------------------------------|
-| ballot_id              | object_id | string                          | matches PlaintextBallot.ballot_id.   |
-| ballot_style_id        | style_id  | string                          | matches BallotStyle.ballot_style_id. |
-| manifest_hash          |           | ElementModQ                     |                                      |
-| previous_tracking_hash | code_seed | ElementModQ                     |                                      |
-| tracking_hash          | code      | ElementModQ                     |                                      |
-| contests               |           | List\<CiphertextBallotContest\> |                                      |
-| timestamp              |           | int64                           | seconds since the unix epoch UTC     |
-| crypto_hash            |           | ElementModQ                     |                                      |
-|                        | nonce     | ElementModQ                     | removed                              |
-| state                  |           | enum BallotState                | CAST, SPOILED                        |
+| Name            | JSON Name | Type                            | Notes                                |
+|-----------------|-----------|---------------------------------|--------------------------------------|
+| ballot_id       | object_id | string                          | matches PlaintextBallot.ballot_id.   |
+| ballot_style_id | style_id  | string                          | matches BallotStyle.ballot_style_id. |
+| manifest_hash   |           | ElementModQ                     |                                      |
+| code_seed       |           | ElementModQ                     |                                      |
+| code            |           | ElementModQ                     |                                      |
+| contests        |           | List\<CiphertextBallotContest\> |                                      |
+| timestamp       |           | int64                           | seconds since the unix epoch UTC     |
+| crypto_hash     |           | ElementModQ                     |                                      |
+|                 | nonce     | ElementModQ                     | removed                              |
+| state           |           | enum BallotState                | CAST, SPOILED                        |
 
 ### class CiphertextBallotContest
 
