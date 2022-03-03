@@ -11,8 +11,8 @@ fun electionguard.protogen.SubmittedBallot.importSubmittedBallot(
 ): SubmittedBallot? {
 
     val manifestHash = groupContext.importElementModQ(this.manifestHash)
-    val trackingHash = groupContext.importElementModQ(this.trackingHash)
-    val previousTrackingHash = groupContext.importElementModQ(this.previousTrackingHash)
+    val trackingHash = groupContext.importElementModQ(this.code)
+    val previousTrackingHash = groupContext.importElementModQ(this.codeSeed)
     val cryptoHash = groupContext.importElementModQ(this.cryptoHash)
     val ballotState = this.state.importBallotState()
     val contests = this.contests.map { it.importContest(groupContext) }.noNullValuesOrNull()
@@ -177,8 +177,8 @@ fun SubmittedBallot.publishSubmittedBallot(): electionguard.protogen.SubmittedBa
             this.ballotId,
             this.ballotStyleId,
             this.manifestHash.publishElementModQ(),
-            this.trackingHash.publishElementModQ(),
-            this.previousTrackingHash.publishElementModQ(),
+            this.code.publishElementModQ(),
+            this.codeSeed.publishElementModQ(),
             this.contests.map { it.publishContest() },
             this.timestamp,
             this.cryptoHash.publishElementModQ(),
