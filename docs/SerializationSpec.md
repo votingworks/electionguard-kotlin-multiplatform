@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 2/25/2022 for proto_version = 1.0.0 (MAJOR.MINOR.PATCH)
+draft 3/02/2022 for proto_version = 1.0.0 (MAJOR.MINOR.PATCH)
 
 This covers only the election record, and not any serialized classes used in remote procedure calls.
 
@@ -69,6 +69,8 @@ There is no python SDK version of this class.
 
 ### class AvailableGuardian
 
+There is no python SDK version of this class. Can be constructed from the LagrangeCoefficients JSON.
+
 | Name                | Type        | Notes                          |
 |---------------------|-------------|--------------------------------|
 | guardian_id         | string      |                                |
@@ -79,7 +81,7 @@ There is no python SDK version of this class.
 
 | Name        | JSON Name | Type   | Notes                             |
 |-------------|-----------|--------|-----------------------------------|
-| name        |           | string |                                   |
+| name        |           | string | not present in JSON               |
 | large_prime |           | bytes  | bigint is unsigned and big-endian |
 | small_prime |           | bytes  | bigint is unsigned and big-endian |
 | cofactor    |           | bytes  | bigint is unsigned and big-endian |
@@ -223,10 +225,10 @@ Notes
 | number_elected       |                       | uint32                       |                                               |
 | votes_allowed        |                       | uint32                       |                                               |
 | name                 |                       | string                       |                                               |
-| selections           |                       | List\<SelectionDescription\> |                                               |
+| selections           | ballot_selections     | List\<SelectionDescription\> |                                               |
 | ballot_title         |                       | InternationalizedText        | optional                                      |
 | ballot_subtitle      |                       | InternationalizedText        | optional                                      |
-| primary_party_ids    |                       | List\<string\>               | optional matches Party.party_id               |
+| primary_party_ids    |                       | List\<string\>               | optional, match Party.party_id                |
 
 ### class SelectionDescription
 
@@ -345,22 +347,22 @@ Notes
 | value  |           | string |       |
 | length |           | uint32 | why?  | 
 
-## ciphertext_ballot.proto 
+## ciphertext_ballot.proto
 
 ### class SubmittedBallot
 
-| Name            | JSON Name | Type                            | Notes                                |
-|-----------------|-----------|---------------------------------|--------------------------------------|
-| ballot_id       | object_id | string                          | matches PlaintextBallot.ballot_id.   |
-| ballot_style_id | style_id  | string                          | matches BallotStyle.ballot_style_id. |
-| manifest_hash   |           | ElementModQ                     |                                      |
-| code_seed       |           | ElementModQ                     |                                      |
-| code            |           | ElementModQ                     |                                      |
-| contests        |           | List\<CiphertextBallotContest\> |                                      |
-| timestamp       |           | int64                           | seconds since the unix epoch UTC     |
-| crypto_hash     |           | ElementModQ                     |                                      |
-|                 | nonce     | ElementModQ                     | removed                              |
-| state           |           | enum BallotState                | CAST, SPOILED                        |
+| Name              | JSON Name | Type                            | Notes                                |
+|-------------------|-----------|---------------------------------|--------------------------------------|
+| ballot_id         | object_id | string                          | matches PlaintextBallot.ballot_id.   |
+| ballot_style_id   | style_id  | string                          | matches BallotStyle.ballot_style_id. |
+| manifest_hash     |           | ElementModQ                     |                                      |
+| code_seed         |           | ElementModQ                     |                                      |
+| code              |           | ElementModQ                     |                                      |
+| contests          |           | List\<CiphertextBallotContest\> |                                      |
+| timestamp         |           | int64                           | seconds since the unix epoch UTC     |
+| crypto_hash       |           | ElementModQ                     |                                      |
+|                   | nonce     | ElementModQ                     | removed                              |
+| state             |           | enum BallotState                | CAST, SPOILED                        |
 
 ### class CiphertextBallotContest
 
