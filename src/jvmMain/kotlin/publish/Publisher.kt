@@ -170,7 +170,7 @@ class Publisher {
         availableGuardians: List<AvailableGuardian>?,
          */
         val electionRecordProto = publishElectionRecord(
-            "version",
+            PROTO_VERSION,
             manifest,
             context,
             constants,
@@ -200,6 +200,7 @@ class Publisher {
     }
 
     companion object {
+        const val PROTO_VERSION = "1.0.0"
         const val ELECTION_RECORD_DIR = "election_record"
 
         //// proto

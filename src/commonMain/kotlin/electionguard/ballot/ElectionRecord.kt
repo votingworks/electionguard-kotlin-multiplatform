@@ -12,8 +12,8 @@ import electionguard.core.*
  */
 data class ElectionRecordAllData(
     val electionRecord: ElectionRecord,
-    val submittedBallots: Iterable<SubmittedBallot>?,
-    val spoiledBallots: Iterable<PlaintextTally>?,
+    val submittedBallots: Iterable<SubmittedBallot>,
+    val spoiledBallots: Iterable<PlaintextTally>,
 )
 
 /**

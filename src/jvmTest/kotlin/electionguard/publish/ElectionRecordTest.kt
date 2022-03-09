@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ConsumerTest {
+class ElectionRecordTest {
 
     @Test
     fun readElectionRecordWrittenByDecryptorJava() {
@@ -38,7 +38,7 @@ class ConsumerTest {
 
     fun readElectionRecord(context: GroupContext, topdir: String) {
         val consumer: Consumer = Consumer.fromElectionRecord(topdir, context)
-        val allData: ElectionRecordAllData = consumer.readElectionRecord()
+        val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
         val electionRecord = allData.electionRecord
 
         val proto = electionRecord.publishElectionRecord()
