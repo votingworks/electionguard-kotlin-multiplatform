@@ -1,4 +1,4 @@
-package publish
+package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.protoconvert.publishElectionRecord
@@ -13,30 +13,23 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 
 /** Publishes the Manifest Record to Json or protobuf files.  */
-class Publisher {
-    enum class Mode {
-        readonly,   // read files only
-        writeonly,  // write new files, but do not create directories
-        createIfMissing,  // create directories if not already exist
-        createNew   // create clean directories
-    }
-
+actual class Publisher {
     private val topdir: String
-    private val createMode: Mode
+    private val createPublisherMode: PublisherMode
     private val electionRecordDir: Path
 
-    constructor(where: String, createMode: Mode) {
+    actual constructor(where: String, publisherMode: PublisherMode) {
         this.topdir = where
-        this.createMode = createMode
+        this.createPublisherMode = publisherMode
         this.electionRecordDir = Path.of(where).resolve(ELECTION_RECORD_DIR)
         
-        if (createMode == Mode.createNew) {
+        if (createPublisherMode == PublisherMode.createNew) {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
             } else {
                 removeAllFiles()
             }
-        } else if (createMode == Mode.createIfMissing) {
+        } else if (createPublisherMode == PublisherMode.createIfMissing) {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
             }
@@ -45,19 +38,19 @@ class Publisher {
         }
     }
 
-    internal constructor(electionRecordDir: Path, createMode : Mode) {
-        this.createMode = createMode
+    internal constructor(electionRecordDir: Path, createPublisherMode : PublisherMode) {
+        this.createPublisherMode = createPublisherMode
         topdir = electionRecordDir.toAbsolutePath().toString()
         this.electionRecordDir = electionRecordDir
         
-        if (createMode == Mode.createNew) {
+        if (createPublisherMode == PublisherMode.createNew) {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
             } else {
                 removeAllFiles()
             }
 
-        } else if (createMode == Mode.createIfMissing) {
+        } else if (createPublisherMode == PublisherMode.createIfMissing) {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
             }
@@ -125,7 +118,7 @@ class Publisher {
 
     /** Publishes the entire election record as proto.  */
     @Throws(IOException::class)
-    fun writeElectionRecordProto(
+    actual fun writeElectionRecordProto(
         manifest: Manifest,
         context: ElectionContext,
         constants: ElectionConstants,
@@ -137,7 +130,7 @@ class Publisher {
         spoiledBallots: Iterable<PlaintextTally>?,
         availableGuardians: List<AvailableGuardian>?
     ) {
-        if (createMode == Mode.readonly) {
+        if (createPublisherMode == PublisherMode.readonly) {
             throw UnsupportedOperationException("Trying to write to readonly election record")
         }
         if (submittedBallots != null) {
@@ -187,10 +180,10 @@ class Publisher {
     /** Copy accepted ballots file from the inputDir to this election record.  */
     @Throws(IOException::class)
     fun copyAcceptedBallots(inputDir: String) {
-        if (createMode == Mode.readonly) {
+        if (createPublisherMode == PublisherMode.readonly) {
             throw UnsupportedOperationException("Trying to write to readonly election record")
         }
-        val source: Path = Publisher(inputDir, Mode.writeonly).submittedBallotProtoPath()
+        val source: Path = Publisher(inputDir, PublisherMode.writeonly).submittedBallotProtoPath()
         val dest: Path = submittedBallotProtoPath()
         if (source == dest) {
             return

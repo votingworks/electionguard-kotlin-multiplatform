@@ -3,9 +3,11 @@ package electionguard.publish
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
-import publish.Consumer
+import mu.KotlinLogging
 import kotlin.test.Test
 import kotlin.test.assertEquals
+
+private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
 
@@ -13,7 +15,7 @@ class ElectionRecordIterablesTest {
     fun readBallotTalliesWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-             readSpoiledBallotTallies(context, "src/commonTest/data/workflow/decryptor/election_record/")
+             readSpoiledBallotTallies(context, "src/commonTest/data/workflow/decryptor/")
         }
     }
 
@@ -21,9 +23,9 @@ class ElectionRecordIterablesTest {
     fun readBallotsWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-            readBallots(context, "src/commonTest/data/workflow/decryptor/election_record/")
-            readCastBallots(context, "src/commonTest/data/workflow/decryptor/election_record/")
-            readSpoiledBallots(context, "src/commonTest/data/workflow/decryptor/election_record/")
+            readBallots(context, "src/commonTest/data/workflow/decryptor/")
+            readCastBallots(context, "src/commonTest/data/workflow/decryptor/")
+            readSpoiledBallots(context, "src/commonTest/data/workflow/decryptor/")
         }
     }
 
@@ -31,48 +33,52 @@ class ElectionRecordIterablesTest {
     fun readBallotsWrittenByEncryptorJava() {
         runTest {
             val context = productionGroup()
-            readBallots(context, "src/commonTest/data/workflow/encryptor/election_record/")
-            readCastBallots(context, "src/commonTest/data/workflow/encryptor/election_record/")
-            readSpoiledBallots(context, "src/commonTest/data/workflow/encryptor/election_record/")
+            readBallots(context, "src/commonTest/data/workflow/encryptor/")
+            readCastBallots(context, "src/commonTest/data/workflow/encryptor/")
+            readSpoiledBallots(context, "src/commonTest/data/workflow/encryptor/")
         }
     }
 
     fun readBallots(context: GroupContext, topdir: String) {
-        val consumer: Consumer = Consumer.fromElectionRecord(topdir, context)
+        val consumer = Consumer(topdir, context)
         val iterator = consumer.iterateSubmittedBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
-            System.out.printf("  %d ConsumerTest.readBallots %s %s%n", count++, ballot.ballotId, ballot.state)
+            logger.debug {"  $count readBallots ${ballot.ballotId} ${ballot.state}"}
+            count++
         }
         assertEquals(count, 11)
     }
 
     fun readCastBallots(context: GroupContext, topdir: String) {
-        val consumer: Consumer = Consumer.fromElectionRecord(topdir, context)
+        val consumer = Consumer(topdir, context)
         val iterator = consumer.iterateCastBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
-            System.out.printf("  %d ConsumerTest.readCastBallots %s %s%n", count++, ballot.ballotId, ballot.state)
+            logger.debug {"  $count readCastBallots ${ballot.ballotId} ${ballot.state}"}
+            count++
         }
         assertEquals(count, 5)
     }
 
     fun readSpoiledBallots(context: GroupContext, topdir: String) {
-        val consumer: Consumer = Consumer.fromElectionRecord(topdir, context)
+        val consumer = Consumer(topdir, context)
         val iterator = consumer.iterateSpoiledBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
-            System.out.printf("  %d ConsumerTest.readCastBallots %s %s%n", count++, ballot.ballotId, ballot.state)
+            logger.debug {"  $count readSpoiledBallots ${ballot.ballotId} ${ballot.state}"}
+            count++
         }
         assertEquals(count, 6)
     }
 
     fun readSpoiledBallotTallies(context: GroupContext, topdir: String) {
-        val consumer: Consumer = Consumer.fromElectionRecord(topdir, context)
+        val consumer = Consumer(topdir, context)
         val iterator = consumer.iterateSpoiledBallotTallies().iterator()
         var count = 0;
         for (tally in iterator) {
-            System.out.printf("  %d ConsumerTest.readSpoiledBallotTallies %s%n", count++, tally.tallyId)
+            logger.debug {"  $count readSpoiledBallotTallies ${tally.tallyId}"}
+            count++
         }
         assertEquals(count, 6)
     }

@@ -1,4 +1,4 @@
-package publish
+package electionguard.publish
 
 import electionguard.ballot.ElectionRecord
 import electionguard.ballot.ElectionRecordAllData
@@ -16,19 +16,14 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.function.Predicate
 
-class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
+actual class Consumer actual constructor(electionRecordDir: String, val groupContext: GroupContext) {
 
-    companion object {
-        fun fromElectionRecord(electionRecordDir: String, groupContext: GroupContext): Consumer {
-            return Consumer(Publisher(Path.of(electionRecordDir), Publisher.Mode.readonly), groupContext)
-        }
-    }
+    val publisher = Publisher(electionRecordDir, PublisherMode.readonly)
 
     @Throws(IOException::class)
-    fun readElectionRecordAllData(): ElectionRecordAllData {
+    actual fun readElectionRecordAllData(): ElectionRecordAllData {
         val where = publisher.electionRecordProtoPath()
         val electionRecord: ElectionRecord?
         if (Files.exists(where)) {
@@ -44,7 +39,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
     }
 
     @Throws(IOException::class)
-    fun readElectionRecordProto(): ElectionRecord? {
+    actual fun readElectionRecordProto(): ElectionRecord? {
         var proto: electionguard.protogen.ElectionRecord
         val filename = publisher.electionRecordProtoPath().toString()
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionRecord.decodeFromStream(inp) }
@@ -52,7 +47,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
     }
 
     // all submitted ballots cast or spoiled
-    fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
         if (!Files.exists(publisher.submittedBallotProtoPath())) {
             return emptyList()
         }
@@ -60,7 +55,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
     }
 
     // all submitted ballots cast only
-    fun iterateCastBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateCastBallots(): Iterable<SubmittedBallot> {
         if (!Files.exists(publisher.submittedBallotProtoPath())) {
             return emptyList()
         }
@@ -68,7 +63,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
     }
 
     // all spoiled ballots spoiled only
-    fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
         if (!Files.exists(publisher.submittedBallotProtoPath())) {
             return emptyList()
         }
@@ -76,7 +71,7 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
     }
 
     // all spoiled ballot tallies
-    fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
+    actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
         if (!Files.exists(publisher.spoiledBallotProtoPath())) {
             return emptyList()
         }
@@ -140,7 +135,6 @@ class Consumer(val publisher: Publisher, val groupContext: GroupContext) {
 
         override fun computeNext() {
             val length = readVlen(input)
-            System.out.printf("readVlen %d%n", length)
             if (length < 0) {
                 input.close()
                 return done()
