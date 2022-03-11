@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 3/02/2022 for proto_version = 1.0.0 (MAJOR.MINOR.PATCH)
+draft 3/10/2022 for proto_version = 1.0.0 (MAJOR.MINOR.PATCH)
 
 This covers only the election record, and not any serialized classes used in remote procedure calls.
 
@@ -123,12 +123,6 @@ There is no python SDK version of this class. Can be constructed from the Lagran
 
 Could simplify to be just the fields needed by electionguard library. Assume that there is an existing system that
 captures all the metadata that election software need, which is a superset of this.
-
-Notes
-
-1. Could try to keep this record independent of the crypto.
-2. Could add manifest schema version to allow independent evolution independent from the spec_version
-3. Could add manifest version for a specific election to allow independent evolution
 
 ### class Manifest
 
@@ -266,13 +260,13 @@ Notes
 
 ### class CiphertextDecryptionSelection
 
-| Name            | JSON Name | Type                                             | Notes                           |
-|-----------------|-----------|--------------------------------------------------|---------------------------------|
-| selection_id    | object_id | string                                           | get_tally_shares_for_selection2 |
-| guardian_id     |           | string                                           |                                 |
-| share           |           | ElementModP                                      |                                 |
-| proof           |           | ChaumPedersenProof                               |                                 |
-| recovered_parts |           | List\<CiphertextCompensatedDecryptionSelection\> | removed unneeded map            |
+| Name            | JSON Name | Type                                             | Notes                          |
+|-----------------|-----------|--------------------------------------------------|--------------------------------|
+| selection_id    | object_id | string                                           | get_tally_shares_for_selection |
+| guardian_id     |           | string                                           |                                |
+| share           |           | ElementModP                                      |                                |
+| proof           |           | ChaumPedersenProof                               |                                |
+| recovered_parts |           | List\<CiphertextCompensatedDecryptionSelection\> | removed unneeded map           |
 
 ### class CiphertextCompensatedDecryptionSelection(ElectionObjectBase)
 
@@ -296,21 +290,21 @@ Notes
 
 ### class CiphertextTallyContest
 
-| Name                     | JSON Name | Type                             | Notes                                  |
-|--------------------------|-----------|----------------------------------|----------------------------------------|
-| contest_id               | object_id | string                           | matches ContestDescription.contest_id  |
-| sequence_order           |           | uint32                           |                                        |
-| contest_description_hash |           | ElementModQ                      | matches ContestDescription.crypto_hash |
-| selections               |           | List\<CiphertextTallySelection\> | removed unneeded map                   |
+| Name                     | JSON Name        | Type                             | Notes                                     |
+|--------------------------|------------------|----------------------------------|-------------------------------------------|
+| contest_id               | object_id        | string                           | matches ContestDescription.contest_id     |
+| sequence_order           |                  | uint32                           | matches ContestDescription.sequence_order |
+| contest_description_hash | description_hash | ElementModQ                      | matches ContestDescription.crypto_hash    |
+| selections               |                  | List\<CiphertextTallySelection\> | removed unneeded map                      |
 
 ### class CiphertextTallySelection|
 
-| Name                       | JSON Name | Type              | Notes                                     |
-|----------------------------|-----------|-------------------|-------------------------------------------|
-| selection_id               | object_id | string            | matches SelectionDescription.selection_id |
-| sequence_order             |           | uint32            |                                           |
-| selection_description_hash |           | ElementModQ       | matches SelectionDescription.crypto_hash  |
-| ciphertext                 |           | ElGamalCiphertext |                                           |
+| Name                       | JSON Name        | Type              | Notes                                       |
+|----------------------------|------------------|-------------------|---------------------------------------------|
+| selection_id               | object_id        | string            | matches SelectionDescription.selection_id   |
+| sequence_order             |                  | uint32            | matches SelectionDescription.sequence_order |
+| selection_description_hash | description_hash | ElementModQ       | matches SelectionDescription.crypto_hash    |
+| ciphertext                 |                  | ElGamalCiphertext |                                             |
 
 ## plaintext_ballot.proto
 
@@ -324,21 +318,21 @@ Notes
 
 ### class PlaintextBallotContest
 
-| Name           | JSON Name | Type                             | Notes                                  |
-|----------------|-----------|----------------------------------|----------------------------------------|
-| contest_id     | object_id | string                           | matches ContestDescription.contest_id. |
-| sequence_order |           | uint32                           |                                        |
-| selections     |           | List\<PlaintextBallotSelection\> |                                        |
+| Name           | JSON Name | Type                             | Notes                                     |
+|----------------|-----------|----------------------------------|-------------------------------------------|
+| contest_id     | object_id | string                           | matches ContestDescription.contest_id     |
+| sequence_order |           | uint32                           | matches ContestDescription.sequence_order |
+| selections     |           | List\<PlaintextBallotSelection\> |                                           |
 
 ### class PlaintextBallotSelection
 
-| Name                     | JSON Name | Type         | Notes                                      |
-|--------------------------|-----------|--------------|--------------------------------------------|
-| selection_id             | object_id | string       | matches SelectionDescription.selection_id. |
-| sequence_order           |           | uint32       |                                            |
-| vote                     |           | uint32       |                                            |
-| is_placeholder_selection |           | bool         |                                            |
-| extended_data            |           | ExtendedData | optional                                   |
+| Name                     | JSON Name | Type         | Notes                                       |
+|--------------------------|-----------|--------------|---------------------------------------------|
+| selection_id             | object_id | string       | matches SelectionDescription.selection_id   |
+| sequence_order           |           | uint32       | matches SelectionDescription.sequence_order |
+| vote                     |           | uint32       |                                             |
+| is_placeholder_selection |           | bool         |                                             |
+| extended_data            |           | ExtendedData | optional                                    |
 
 ### class ExtendedData|
 
@@ -351,45 +345,45 @@ Notes
 
 ### class SubmittedBallot
 
-| Name              | JSON Name | Type                            | Notes                                |
-|-------------------|-----------|---------------------------------|--------------------------------------|
-| ballot_id         | object_id | string                          | matches PlaintextBallot.ballot_id.   |
-| ballot_style_id   | style_id  | string                          | matches BallotStyle.ballot_style_id. |
-| manifest_hash     |           | ElementModQ                     |                                      |
-| code_seed         |           | ElementModQ                     |                                      |
-| code              |           | ElementModQ                     |                                      |
-| contests          |           | List\<CiphertextBallotContest\> |                                      |
-| timestamp         |           | int64                           | seconds since the unix epoch UTC     |
-| crypto_hash       |           | ElementModQ                     |                                      |
-|                   | nonce     | ElementModQ                     | removed                              |
-| state             |           | enum BallotState                | CAST, SPOILED                        |
+| Name              | JSON Name | Type                            | Notes                               |
+|-------------------|-----------|---------------------------------|-------------------------------------|
+| ballot_id         | object_id | string                          | matches PlaintextBallot.ballot_id   |
+| ballot_style_id   | style_id  | string                          | matches BallotStyle.ballot_style_id |
+| manifest_hash     |           | ElementModQ                     | matches Manifest.crypto_hash        |
+| code_seed         |           | ElementModQ                     |                                     |
+| code              |           | ElementModQ                     |                                     |
+| contests          |           | List\<CiphertextBallotContest\> |                                     |
+| timestamp         |           | int64                           | seconds since the unix epoch UTC    |
+| crypto_hash       |           | ElementModQ                     |                                     |
+|                   | nonce     | ElementModQ                     | removed                             |
+| state             |           | enum BallotState                | CAST, SPOILED                       |
 
 ### class CiphertextBallotContest
 
-| Name                    | JSON Name         | Type                              | Notes                                          |
-|-------------------------|-------------------|-----------------------------------|------------------------------------------------|
-| contest_id              | object_id         | string                            | matches ContestDescription.contest_id  REMOVE? |
-| sequence_order          |                   | uint32                            |                                                |
-| contest_hash            | description_hash  | ElementModQ                       | matches ContestDescription.crypto_hash         |                                                                     |
-| selections              | ballot_selections | List\<CiphertextBallotSelection\> |                                                |
-| ciphertext_accumulation |                   | ElGamalCiphertext                 |                                                |
-| crypto_hash             |                   | ElementModQ                       |                                                |
-|                         | nonce             | ElementModQ                       | removed                                        |
-| proof                   |                   | ConstantChaumPedersenProof        |                                                |
+| Name                    | JSON Name         | Type                              | Notes                                     |
+|-------------------------|-------------------|-----------------------------------|-------------------------------------------|
+| contest_id              | object_id         | string                            | matches ContestDescription.contest_id     |
+| sequence_order          |                   | uint32                            | matches ContestDescription.sequence_order |
+| contest_hash            | description_hash  | ElementModQ                       | matches ContestDescription.crypto_hash    |                                                                     |
+| selections              | ballot_selections | List\<CiphertextBallotSelection\> |                                           |
+| ciphertext_accumulation |                   | ElGamalCiphertext                 |                                           |
+| crypto_hash             |                   | ElementModQ                       |                                           |
+|                         | nonce             | ElementModQ                       | removed                                   |
+| proof                   |                   | ConstantChaumPedersenProof        |                                           |
 
 ### class CiphertextBallotSelection
 
-| Name                     | JSON Name        | Type                          | Notes                                             |
-|--------------------------|------------------|-------------------------------|---------------------------------------------------|
-| selection_id             | object_id        | string                        | matches SelectionDescription.selection_id REMOVE? |
-| sequence_order           |                  | uint32                        |                                                   |
-| selection_hash           | description_hash | ElementModQ                   | matches SelectionDescription.crypto_hash          |
-| ciphertext               |                  | ElGamalCiphertext             |                                                   |
-| crypto_hash              |                  | ElementModQ                   |                                                   |
-| is_placeholder_selection |                  | bool                          |                                                   |
-|                          | nonce            | ElementModQ                   | removed                                           |
-| proof                    |                  | DisjunctiveChaumPedersenProof |                                                   |
-| extended_data            |                  | ElGamalCiphertext             | optional                                          |
+| Name                     | JSON Name        | Type                          | Notes                                       |
+|--------------------------|------------------|-------------------------------|---------------------------------------------|
+| selection_id             | object_id        | string                        | matches SelectionDescription.selection_id   |
+| sequence_order           |                  | uint32                        | matches SelectionDescription.sequence_order |
+| selection_hash           | description_hash | ElementModQ                   | matches SelectionDescription.crypto_hash    |
+| ciphertext               |                  | ElGamalCiphertext             |                                             |
+| crypto_hash              |                  | ElementModQ                   |                                             |
+| is_placeholder_selection |                  | bool                          |                                             |
+|                          | nonce            | ElementModQ                   | removed                                     |
+| proof                    |                  | DisjunctiveChaumPedersenProof |                                             |
+| extended_data            |                  | ElGamalCiphertext             | optional                                    |
 
 ### class ConstantChaumPedersenProof
 
