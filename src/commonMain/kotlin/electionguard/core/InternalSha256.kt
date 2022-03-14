@@ -47,17 +47,12 @@ fun internalSha256(input: ByteArray): ByteArray {
     return sha256Final(ctx)
 }
 
-fun internalByteConcat(input1: ByteArray, input2: ByteArray): ByteArray =
-    ByteArray(input1.size + input2.size) { i ->
-        if (i < input1.size) input1[i] else input2[i - input1.size]
-    }
-
 private fun internalSha256(input1: ByteArray, input2: ByteArray): ByteArray {
     val ctx = Sha256Ctx()
 
     // manually concatenating the buffers so we can run with internal or external hash function
     // (for debugging)
-    val buf = internalByteConcat(input1, input2)
+    val buf = input1 + input2
     sha256Update(ctx, buf)
     return sha256Final(ctx)
 }

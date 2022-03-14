@@ -1,5 +1,7 @@
 package electionguard.core
 
+import kotlin.experimental.xor
+
 /**
  * Our own assert function, which isn't available in the Kotlin standard library on JavaScript, even
  * though it's available on JVM and Native. If `condition` is `false`, then an `AssertionError` is
@@ -25,7 +27,10 @@ fun GroupContext.assertCompatible(other: GroupContext) {
 /** Computes the SHA256 hash of the given string's UTF-8 representation. */
 fun String.sha256(): ByteArray = encodeToByteArray().sha256()
 
-/** Convert an unsigned 64-bit long into a big-endian 8-byte array. */
+/**
+ * Convert an unsigned 64-bit long into a big-endian byte array of size 1, 2, 4, or 8 bytes, as
+ * necessary to fit the value.
+ */
 fun ULong.toByteArray(): ByteArray =
     when {
         this <= UByte.MAX_VALUE -> byteArrayOf((this and 0xffU).toByte())
@@ -51,8 +56,42 @@ fun ULong.toByteArray(): ByteArray =
             )
     }
 
-/** Convert an unsigned 32-bit int into a big-endian 4-byte array. */
-fun UInt.toByteArray(): ByteArray = this.toULong().toByteArray()
+/** ByteArray concatenation. */
+operator fun ByteArray.plus(input2: ByteArray): ByteArray =
+    ByteArray(this.size + input2.size) { i ->
+        if (i < this.size) this[i] else input2[i - this.size]
+    }
+
+/** ByteArray concatenation for many individual byte arrays. Only allocates memory once. */
+fun concatByteArrays(vararg bytes: ByteArray): ByteArray {
+    val totalLength = bytes.sumOf { it.size }
+    val result = ByteArray(totalLength)
+    var offset = 0
+    for (ba in bytes) {
+        for (b in ba) {
+            result[offset++] = b
+        }
+    }
+
+    return result
+}
+
+/** ByteArray xor, requires both inputs to be the same length. */
+infix fun ByteArray.xor(b: ByteArray): ByteArray {
+    if (this.size != b.size) {
+        throw IllegalArgumentException("inputs to ByteArray.xor must be the same size")
+    }
+    return ByteArray(size) { this[it] xor b[it] }
+}
+
+/**
+ * Convert an integer to a big-endian array of four bytes. Negative numbers will be in
+ * twos-complement.
+ */
+fun Int.toByteArray() = this.toUInt().toByteArray()
+
+/** Convert an integer to a big-endian array of four bytes. */
+fun UInt.toByteArray() = ByteArray(4) { (this shr (24 - 8 * it) and 0xffU).toByte() }
 
 /**
  * If there are any null values in the map, the result is null, otherwise the result is the same
