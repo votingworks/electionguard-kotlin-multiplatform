@@ -3,6 +3,9 @@ package electionguard.core
 import mu.KotlinLogging
 private val logger = KotlinLogging.logger("HashedElGamal")
 
+/**
+ * The ciphertext representation of an arbitrary byte-array, encrypted with an ElGamal public key.
+ */
 data class HashedElGamalCiphertext(val c0: ElementModP, val c1: ByteArray, val c2: ByteArray)
 
 /**
@@ -79,60 +82,33 @@ fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? {
 }
 
 /**
- *  NIST 800-108-compliant key derivation function (KDF) state.
+ * NIST 800-108-compliant key derivation function (KDF) state.
  * [See the spec](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf),
  * section 5.1.
  *
- *  @param key 32 bytes, suitable for use in HMAC-SHA256 @param label A string that identifies the
- * purpose for the derived keying material @param context A string containing the information
- * related to the derived keying material. It may include identities of parties who are deriving
- * and/or using the derived keying material.
+ *  - The [key] must be 32 bytes long, suitable for use in HMAC-SHA256.
+ *  - The [label] is a string that identifies the purpose for the derived keying material.
+ *  - The [context] is a string containing the information related to the derived keying material.
+ *    It may include identities of parties who are deriving and/or using the derived keying
+ *    material.
  */
 class KDF(val key: ByteArray, label: String, context: String) {
+    // we're going to convert the strings as UTF-8
     val labelBytes = label.encodeToByteArray()
     val lengthBytes = (32 * 8).toByteArray()
     val contextBytes = context.encodeToByteArray()
 
-    /** Get the requested nonce from the sequence. */
+    /** Get the requested key bits from the sequence. */
     operator fun get(index: Int): ByteArray {
         // NIST spec: K(i) := PRF (KI, [i] || Label || 0x00 || Context || [L])
-        // we're going to convert the strings as UTF-8
-        val input = index.toByteArray() + labelBytes + byteArrayOf(0) + contextBytes + lengthBytes
+        val input =
+            concatByteArrays(
+                index.toByteArray(),
+                labelBytes,
+                byteArrayOf(0),
+                contextBytes,
+                lengthBytes
+            )
         return input.hmacSha256(key)
     }
-
-    /**
-     * Get an infinite (lazy) sequences of KDF byte-arrays. Equivalent to indexing with [KDF.get]
-     * starting at 0.
-     */
-    fun asSequence(): Sequence<ByteArray> = generateSequence(0) { it + 1 }.map { this[it] }
-
-    /** Gets a list of the desired number (`n`) of byte-arrays. */
-    fun take(n: Int): List<ByteArray> = asSequence().take(n).toList()
-
-    /** If you want a two-tuple (Kotlin's [Pair]) of byte-arrays, this is helpful. */
-    fun asPair() = Pair(this[0], this[1])
-
-    /** If you want a three-tuple (Kotlin's [Triple]) of byte-arrays, this is helpful. */
-    fun asTriple() = Triple(this[0], this[1], this[2])
-
-    // Destructuring operators, likely how byte-arrays will be most commonly used
-
-    operator fun component1() = this[0]
-
-    operator fun component2() = this[1]
-
-    operator fun component3() = this[2]
-
-    operator fun component4() = this[3]
-
-    operator fun component5() = this[4]
-
-    operator fun component6() = this[5]
-
-    operator fun component7() = this[6]
-
-    operator fun component8() = this[7]
-
-    operator fun component9() = this[8]
 }
