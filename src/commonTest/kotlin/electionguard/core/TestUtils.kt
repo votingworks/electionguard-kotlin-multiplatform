@@ -1,8 +1,5 @@
 package electionguard.core
 
-import io.kotest.property.Arb
-import io.kotest.property.arbitrary.uInt
-import io.kotest.property.checkAll
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -72,18 +69,5 @@ class TestUtils {
             byteArrayOf(1, 2, 3, 4, 5, 6),
             concatByteArrays(byteArrayOf(1, 2), byteArrayOf(3), byteArrayOf(), byteArrayOf(4, 5, 6))
         )
-    }
-
-    @Test
-    fun byteArrayXor() {
-        runTest {
-            checkAll(Arb.uInt(min = 1U), Arb.uInt()) { i, m ->
-                val iBytes = i.toByteArray()
-                val mBytes = m.toByteArray()
-
-                assertContentNotEquals(mBytes, mBytes xor iBytes)
-                assertContentEquals(mBytes, (mBytes xor iBytes) xor iBytes)
-            }
-        }
     }
 }

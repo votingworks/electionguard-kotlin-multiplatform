@@ -38,6 +38,9 @@ fun validElementsModP(ctx: GroupContext): Arb<ElementModP> =
 fun elGamalKeypairs(ctx: GroupContext): Arb<ElGamalKeypair> =
     elementsModQ(ctx, minimum = 2).map { elGamalKeyPairFromSecret(it) }
 
+/** Generates arbitrary UInt256 values. */
+fun uint256s(): Arb<UInt256> = Arb.byteArray(Arb.constant(32), Arb.byte()).map { UInt256(it) }
+
 /**
  * Property-based testing can run slowly. This will speed things up by turning off shrinking and
  * using fewer iterations. Typical usage:

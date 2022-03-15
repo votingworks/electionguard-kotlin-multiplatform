@@ -31,13 +31,13 @@ class ManifestConvertTest {
             compareAS(rgpu.contactInformation?.phone, gpu.contactInformation?.phone)
             assertEquals(rgpu.contactInformation?.name, gpu.contactInformation?.name)
             assertEquals(
-                rgpu.contactInformation?.cryptoHashElement(),
-                gpu.contactInformation?.cryptoHashElement()
+                rgpu.contactInformation?.cryptoHashUInt256(),
+                gpu.contactInformation?.cryptoHashUInt256()
             )
             assertEquals(rgpu.contactInformation?.cryptoHash, gpu.contactInformation?.cryptoHash)
             assertEquals(rgpu.contactInformation, gpu.contactInformation)
             assertEquals(rgpu.type, gpu.type)
-            assertEquals(rgpu.cryptoHashElement(), gpu.cryptoHashElement())
+            assertEquals(rgpu.cryptoHashUInt256(), gpu.cryptoHashUInt256())
             assertEquals(rgpu, gpu)
         }
         assertEquals(roundtrip.geopoliticalUnits, manifest.geopoliticalUnits)

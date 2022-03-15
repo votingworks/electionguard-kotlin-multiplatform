@@ -3,7 +3,7 @@ package electionguard.core
 import hacl.*
 import kotlinx.cinterop.convert
 
-actual fun ByteArray.sha256(): ByteArray {
+actual fun ByteArray.sha256(): UInt256 {
     val state = Hacl_Streaming_SHA2_create_in_256()
     val output = ByteArray(32)
 
@@ -17,10 +17,10 @@ actual fun ByteArray.sha256(): ByteArray {
 
     Hacl_Streaming_SHA2_free_256(state)
 
-    return output
+    return UInt256(output)
 }
 
-actual fun ByteArray.hmacSha256(key: ByteArray): ByteArray {
+actual fun ByteArray.hmacSha256(key: ByteArray): UInt256 {
     val output = ByteArray(32)
     output.useNative { o ->
         this.useNative { d ->
@@ -29,5 +29,5 @@ actual fun ByteArray.hmacSha256(key: ByteArray): ByteArray {
             }
         }
     }
-    return output
+    return UInt256(output)
 }

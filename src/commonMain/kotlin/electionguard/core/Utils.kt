@@ -1,7 +1,5 @@
 package electionguard.core
 
-import kotlin.experimental.xor
-
 /**
  * Our own assert function, which isn't available in the Kotlin standard library on JavaScript, even
  * though it's available on JVM and Native. If `condition` is `false`, then an `AssertionError` is
@@ -25,7 +23,10 @@ fun GroupContext.assertCompatible(other: GroupContext) {
 }
 
 /** Computes the SHA256 hash of the given string's UTF-8 representation. */
-fun String.sha256(): ByteArray = encodeToByteArray().sha256()
+fun String.sha256(): UInt256 = encodeToByteArray().sha256()
+
+/** Computes the HMAC-SHA256 of the given byte array using the given key. */
+fun ByteArray.hmacSha256(key: UInt256): UInt256 = hmacSha256(key.bytes)
 
 /**
  * Convert an unsigned 64-bit long into a big-endian byte array of size 1, 2, 4, or 8 bytes, as
@@ -74,14 +75,6 @@ fun concatByteArrays(vararg bytes: ByteArray): ByteArray {
     }
 
     return result
-}
-
-/** ByteArray xor, requires both inputs to be the same length. */
-infix fun ByteArray.xor(b: ByteArray): ByteArray {
-    if (this.size != b.size) {
-        throw IllegalArgumentException("inputs to ByteArray.xor must be the same size")
-    }
-    return ByteArray(size) { this[it] xor b[it] }
 }
 
 /**

@@ -8,14 +8,22 @@ import kotlin.experimental.xor
  * That's in `Sha256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
  * platform.
  */
-fun internalHmacSha256(key: ByteArray, data: ByteArray): ByteArray {
+fun internalHmacSha256(key: UInt256, data: ByteArray): UInt256 = internalHmacSha256(key.bytes, data)
+
+/**
+ * This is a "pure Kotlin" implementation of HMAC-SHA256. It's useful for testing, and if we really
+ * have to, we can use it in production, but it's not going to be as fast as a tuned implementation.
+ * That's in `Sha256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
+ * platform.
+ */
+fun internalHmacSha256(key: ByteArray, data: ByteArray): UInt256 {
     val k =
         when {
             key.size == 64 -> key
             key.size < 64 -> ByteArray(64) { i -> if (i < key.size) key[i] else 0 }
             else ->
                 internalSha256(key)
-                    .let { shaKey -> ByteArray(64) { i -> if (i < 32) shaKey[i] else 0 } }
+                    .let { shaKey -> ByteArray(64) { i -> if (i < 32) shaKey.bytes[i] else 0 } }
         }
 
     // Still not sure what's wrong here, but based on testHmacSha256Homebrew(), the bug isn't
@@ -24,7 +32,7 @@ fun internalHmacSha256(key: ByteArray, data: ByteArray): ByteArray {
     val ipad = ByteArray(64) { i -> k[i] xor 0x36 }
     val opad = ByteArray(64) { i -> k[i] xor 0x5c }
 
-    return internalSha256(opad, internalSha256(ipad, data))
+    return UInt256(internalSha256TwoArg(opad, internalSha256TwoArg(ipad, data)))
 }
 /* *******************************************************************************************************************
  * SHA-256 hash algorithm implementation.
@@ -41,13 +49,13 @@ fun internalHmacSha256(key: ByteArray, data: ByteArray): ByteArray {
  * That's in `Sha256.kt`, which wraps JVM, native, and maybe JS implementations, different on each
  * platform.
  */
-fun internalSha256(input: ByteArray): ByteArray {
+fun internalSha256(input: ByteArray): UInt256 {
     val ctx = Sha256Ctx()
     sha256Update(ctx, input)
-    return sha256Final(ctx)
+    return UInt256(sha256Final(ctx))
 }
 
-private fun internalSha256(input1: ByteArray, input2: ByteArray): ByteArray {
+private fun internalSha256TwoArg(input1: ByteArray, input2: ByteArray): ByteArray {
     val ctx = Sha256Ctx()
 
     // manually concatenating the buffers so we can run with internal or external hash function

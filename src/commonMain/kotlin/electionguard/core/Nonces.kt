@@ -17,7 +17,8 @@ package electionguard.core
  * ```
  */
 class Nonces(seed: ElementModQ, vararg headers: Any) {
-    val internalSeed = if (headers.isNotEmpty()) seed.context.hashElements(seed, *headers) else seed
+    val internalSeed =
+        if (headers.isNotEmpty()) hashElements(seed, *headers).toElementModQ(seed.context) else seed
 
     override fun equals(other: Any?) =
         when (other) {
@@ -38,7 +39,7 @@ operator fun Nonces.get(index: Int): ElementModQ = getWithHeaders(index)
  * Headers can be included to optionally help specify what a nonce is being used for.
  */
 fun Nonces.getWithHeaders(index: Int, vararg headers: String) =
-    internalSeed.context.hashElements(internalSeed, index, *headers)
+    hashElements(internalSeed, index, *headers).toElementModQ(internalSeed.context)
 
 /**
  * Get an infinite (lazy) sequences of nonces. Equivalent to indexing with [Nonces.get] starting at

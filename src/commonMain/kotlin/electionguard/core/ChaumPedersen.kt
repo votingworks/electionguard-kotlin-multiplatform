@@ -150,7 +150,7 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             val b0 = publicKey powP u
             val a1 = context.gPowP(v)
             val b1 = context.gPowP(w) * (publicKey powP v)
-            val c = context.hashElements(hashHeader, alpha, beta, a0, b0, a1, b1)
+            val c = hashElements(hashHeader, alpha, beta, a0, b0, a1, b1).toElementModQ(context)
             val c0 = c - w
             val c1 = w
             val v0 = u + c0 * nonce
@@ -172,7 +172,7 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             val b0 = context.gPowP(w) * (publicKey powP v)
             val a1 = context.gPowP(u)
             val b1 = publicKey powP u
-            val c = context.hashElements(hashHeader, alpha, beta, a0, b0, a1, b1)
+            val c = hashElements(hashHeader, alpha, beta, a0, b0, a1, b1).toElementModQ(context)
             val c0 = -w
             val c1 = c + w
             val v0 = v + c0 * nonce
@@ -281,7 +281,9 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     val (alpha, beta) = ciphertext
     val consistentC = proof0.c + proof1.c == c
     val validHash =
-        c == context.hashElements(hashHeader, alpha, beta, proof0.a, proof0.b, proof1.a, proof1.b)
+        c ==
+            hashElements(hashHeader, alpha, beta, proof0.a, proof0.b, proof1.a, proof1.b)
+                .toElementModQ(context)
 
     val valid0 =
         proof0.isValid(
@@ -352,7 +354,7 @@ fun GenericChaumPedersenProof.isValid(
     val inBoundsH = h.isValidResidue()
     val inBoundsHx = hx.isValidResidue()
 
-    val expectedC = context.hashElements(hashHeader, a, b, *alsoHash)
+    val expectedC = hashElements(hashHeader, a, b, *alsoHash).toElementModQ(context)
     val hashGood = !(checkC) || (c == expectedC)
 
     val agxc = a * (gx powP c) // should yield g^{w + xc}
@@ -416,7 +418,7 @@ fun genericChaumPedersenProofOf(
     val a = g powP w
     val b = h powP w
 
-    val c = context.hashElements(hashHeader, a, b, *alsoHash)
+    val c = hashElements(hashHeader, a, b, *alsoHash).toElementModQ(context)
     val r = w + x * c
 
     return GenericChaumPedersenProof(a, b, c, r)

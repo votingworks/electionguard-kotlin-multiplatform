@@ -426,7 +426,7 @@ class ChaumPedersenTest {
                         proof0 = proof.proof1,
                         proof1 = proof.proof0,
                         c =
-                            context.hashElements(
+                            hashElements(
                                 hashHeader,
                                 ciphertext.pad,
                                 ciphertext.data,
@@ -434,7 +434,7 @@ class ChaumPedersenTest {
                                 proof.proof1.b,
                                 proof.proof0.a,
                                 proof.proof0.b
-                            )
+                            ).toElementModQ(context)
                     )
 
                 assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))

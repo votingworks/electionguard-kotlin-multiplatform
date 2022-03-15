@@ -404,7 +404,7 @@ class ProductionGroupContext(
             // But if we've got more than 256 bits, we need a fallback solution.
 
             if (b.size > MAX_BYTES_Q) {
-                return hashElements(b.toBase64())
+                return hashElements(b.toBase64()).toElementModQ(this)
             }
 
             val minimum256 = minimum.toUInt().toHaclBignum256()

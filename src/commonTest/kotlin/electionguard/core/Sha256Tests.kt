@@ -19,7 +19,7 @@ class Sha256Tests {
             "P4sfzDH7p2ttMIGdL/Xv0QZJ0NzIKo7XsYXMxq/r4uMlQAy+NELkkZpBzvw/V7BfdxmO7a2KRw4mZKPzlh1b/V3RFvWwf6uWJRr/ulDuvCEkOPB1ndB3nN/pScM2O9l00QMRL9v9eMz+IRkPPSgnb+H5rJ5ZjS9Fko5KoZX/Vsc=",
         ).map { it.fromSafeBase64() }
 
-    val keys: List<ByteArray> =
+    val keys: List<UInt256> =
         arrayListOf(
             "VTHopnAQhaTI104GE8K9Y8XNgKa7MfzW/n4VymG3nng=",
             "WCSbQ4G3lVL4G7cK6MMGJiAcnjYPdipoT7qgtu4QlMc=",
@@ -31,9 +31,9 @@ class Sha256Tests {
             "+t8ZVOjkseaxpt8RIR1shQKe5UjNaw9lswI00IneOWw=",
             "aYAUQe3r4zRuUc53b47xOsEhwmQeVhiQHcKjV2f+Ks0=",
             "GvY+0UG+GIjmby3yFM8NMwEu1xNJOm+6Q9sIzRT/C9A=",
-        ).map { it.fromSafeBase64() }
+        ).map { UInt256(it.fromSafeBase64()) }
 
-    val hashes: List<ByteArray> =
+    val hashes: List<UInt256> =
         arrayListOf(
             "T67GzUyPGucRhZPSUE1310Nd/Gpxe0cW/umLBYPlbaM=",
             "WuDmdZb540ouDLuIeJ1akvvnyQ1JX9AdNbn92oUCYTo=",
@@ -45,9 +45,9 @@ class Sha256Tests {
             "aE+nfwOU2bYB7F7t4ZCmBoyxZF7ijHXz4uO3ilaAfhk=",
             "mcUdI6EPiHPn6gv6d2dSNwDoX6CGfxHT6/B+mLiL+5M=",
             "FqOKtZb5oBDg0rKG/vR+cgw/sg5UbeiuXB5psZ6b+Hw=",
-        ).map { it.fromSafeBase64() }
+        ).map { UInt256(it.fromSafeBase64()) }
 
-    val hmacs: List<ByteArray> =
+    val hmacs: List<UInt256> =
         arrayListOf(
             "dm2zvlv1TW9f309Tgag4fWaAwWmDin6GXLheZGygogw=",
             "pRrrzzc1uDcclk8uQe7z2nBKx+9DEqCvDZLhXWaKwBw=",
@@ -59,14 +59,14 @@ class Sha256Tests {
             "JvQ+JIzWpDFSZClEr+VvZpi2c/o3uPR82DuPrAM+afo=",
             "dh4R4/QYQMHRfdkoMSx53ShZ/ULdJ6/N6aRr0/apec0=",
             "COE+427z9bEIOcbMsl2sJFoCiG//XDpbjGZJ/GC8HGg=",
-        ).map { it.fromSafeBase64() }
+        ).map { UInt256(it.fromSafeBase64()) }
 
     @Test
     fun testSha256() {
         (0..9)
             .forEach { i ->
-                assertContentEquals(hashes[i], inputs[i].sha256())
-                assertContentEquals(hashes[i], internalSha256(inputs[i]))
+                assertEquals(hashes[i], inputs[i].sha256())
+                assertEquals(hashes[i], internalSha256(inputs[i]))
             }
     }
 
@@ -74,8 +74,8 @@ class Sha256Tests {
     fun testHmacSha256() {
         (0..9)
             .forEach { i ->
-                assertContentEquals(hmacs[i], inputs[i].hmacSha256(keys[i]))
-                assertContentEquals(hmacs[i], internalHmacSha256(keys[i], inputs[i]))
+                assertEquals(hmacs[i], inputs[i].hmacSha256(keys[i]))
+                assertEquals(hmacs[i], internalHmacSha256(keys[i], inputs[i]))
             }
     }
 
@@ -93,10 +93,12 @@ class Sha256Tests {
 
         val key = "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b".fromSafeHex()
         val data = "4869205468657265".fromSafeHex()
-        val hmac = "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7".fromSafeHex()
+        val hmac =
+            "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7".fromSafeHex()
+                .toUInt256()
 
-        assertContentEquals(hmac, data.hmacSha256(key))
-        assertContentEquals(hmac, internalHmacSha256(key, data))
+        assertEquals(hmac, data.hmacSha256(key))
+        assertEquals(hmac, internalHmacSha256(key, data))
     }
 
     @Test
@@ -112,10 +114,12 @@ class Sha256Tests {
         //
         val key = "4a656665".fromSafeHex()
         val data = "7768617420646f2079612077616e7420666f72206e6f7468696e673f".fromSafeHex()
-        val hmac = "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843".fromSafeHex()
+        val hmac =
+            "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843".fromSafeHex()
+                .toUInt256()
 
-        assertContentEquals(hmac, data.hmacSha256(key))
-        assertContentEquals(hmac, internalHmacSha256(key, data))
+        assertEquals(hmac, data.hmacSha256(key))
+        assertEquals(hmac, internalHmacSha256(key, data))
     }
 
     @Test
@@ -137,10 +141,12 @@ class Sha256Tests {
         val data =
             "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
                 .fromSafeHex()
-        val hmac = "773ea91e36800e46854db8ebd09181a72959098b3ef8c122d9635514ced565fe".fromSafeHex()
+        val hmac =
+            "773ea91e36800e46854db8ebd09181a72959098b3ef8c122d9635514ced565fe".fromSafeHex()
+                .toUInt256()
 
-        assertContentEquals(hmac, data.hmacSha256(key))
-        assertContentEquals(hmac, internalHmacSha256(key, data))
+        assertEquals(hmac, data.hmacSha256(key))
+        assertEquals(hmac, internalHmacSha256(key, data))
     }
 
     @Test
@@ -162,10 +168,12 @@ class Sha256Tests {
         val data =
             "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
                 .fromSafeHex()
-        val hmac = "82558a389a443c0ea4cc819899f2083a85f0faa3e578f8077a2e3ff46729665b".fromSafeHex()
+        val hmac =
+            "82558a389a443c0ea4cc819899f2083a85f0faa3e578f8077a2e3ff46729665b".fromSafeHex()
+                .toUInt256()
 
-        assertContentEquals(hmac, data.hmacSha256(key))
-        assertContentEquals(hmac, internalHmacSha256(key, data))
+        assertEquals(hmac, data.hmacSha256(key))
+        assertEquals(hmac, internalHmacSha256(key, data))
     }
 
     // we're skipping test 5, doesn't seem very interesting
@@ -198,10 +206,12 @@ class Sha256Tests {
         val data =
             "54657374205573696e67204c6172676572205468616e20426c6f636b2d53697a65204b6579202d2048617368204b6579204669727374"
                 .fromSafeHex()
-        val hmac = "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54".fromSafeHex()
+        val hmac =
+            "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54".fromSafeHex()
+                .toUInt256()
 
-        assertContentEquals(hmac, data.hmacSha256(key))
-        assertContentEquals(hmac, internalHmacSha256(key, data))
+        assertEquals(hmac, data.hmacSha256(key))
+        assertEquals(hmac, internalHmacSha256(key, data))
     }
 
     @Test
@@ -237,9 +247,11 @@ class Sha256Tests {
         val data =
             "5468697320697320612074657374207573696e672061206c6172676572207468616e20626c6f636b2d73697a65206b657920616e642061206c6172676572207468616e20626c6f636b2d73697a6520646174612e20546865206b6579206e6565647320746f20626520686173686564206265666f7265206265696e6720757365642062792074686520484d414320616c676f726974686d2e"
                 .fromSafeHex()
-        val hmac = "9b09ffa71b942fcb27635fbcd5b0e944bfdc63644f0713938a7f51535c3a35e2".fromSafeHex()
+        val hmac =
+            "9b09ffa71b942fcb27635fbcd5b0e944bfdc63644f0713938a7f51535c3a35e2".fromSafeHex()
+                .toUInt256()
 
-        assertContentEquals(hmac, data.hmacSha256(key))
-        assertContentEquals(hmac, internalHmacSha256(key, data))
+        assertEquals(hmac, data.hmacSha256(key))
+        assertEquals(hmac, internalHmacSha256(key, data))
     }
 }

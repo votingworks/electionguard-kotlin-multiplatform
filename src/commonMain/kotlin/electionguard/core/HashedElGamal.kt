@@ -6,7 +6,12 @@ private val logger = KotlinLogging.logger("HashedElGamal")
 /**
  * The ciphertext representation of an arbitrary byte-array, encrypted with an ElGamal public key.
  */
-data class HashedElGamalCiphertext(val c0: ElementModP, val c1: ByteArray, val c2: ByteArray)
+data class HashedElGamalCiphertext(
+    val c0: ElementModP,
+    val c1: ByteArray,
+    val c2: UInt256,
+    val length: Int
+)
 
 /**
  * Given an array of plaintext bytes, encrypts those bytes using the "hashed ElGamal" stream cipher,
@@ -27,27 +32,29 @@ fun ByteArray.hashedElGamalEncrypt(
     key: ElGamalPublicKey,
     nonce: ElementModQ = key.context.randomElementModQ(minimum = 2)
 ): HashedElGamalCiphertext {
-    val context = key.context
-    val messageBlocks: List<ByteArray> =
+    val length = size * 8 // NIST spec says we want the length in bits
+    val messageBlocks: List<UInt256> =
         this.toList()
             .chunked(32) { block ->
                 // pad each block of the message to 32 bytes
                 val result = ByteArray(32) { 0 }
                 block.forEachIndexed { index, byte -> result[index] = byte }
-                result
+                UInt256(result)
             }
 
     // spec: (alpha, beta) = (g^R mod p, K^R mod p)
     // by encrypting a zero, we achieve exactly this
     val (alpha, beta) = 0.encrypt(key, nonce)
-    val kdfKey = context.hashElements(alpha, beta).byteArray()
-    val kdf = KDF(kdfKey, "", "")
+    val kdfKey = hashElements(alpha, beta)
+    val kdf = KDF(kdfKey, "", "", length)
     val k0 = kdf[0]
     val c0 = alpha.byteArray()
-    val c1 = concatByteArrays(*messageBlocks.mapIndexed { i, p -> p xor kdf[i + 1] }.toTypedArray())
+    val encryptedBlocks =
+        messageBlocks.mapIndexed { i, p -> p xor kdf[i + 1] }.map { it.bytes }.toTypedArray()
+    val c1 = concatByteArrays(*encryptedBlocks)
     val c2 = (c0 + c1).hmacSha256(k0)
 
-    return HashedElGamalCiphertext(alpha, c1, c2)
+    return HashedElGamalCiphertext(alpha, c1, c2, length)
 }
 
 /**
@@ -63,20 +70,21 @@ fun HashedElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = decrypt(keypair.s
 fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? {
     val alpha = c0
     val beta = c0 powP secretKey.key
-    val kdfKey = secretKey.context.hashElements(alpha, beta).byteArray()
-    val kdf = KDF(kdfKey, "", "")
+    val kdfKey = hashElements(alpha, beta)
+    val kdf = KDF(kdfKey, "", "", length)
     val k0 = kdf[0]
 
     val expectedHmac = (c0.byteArray() + c1).hmacSha256(k0)
 
-    if (!expectedHmac.contentEquals(c2)) {
+    if (expectedHmac != c2) {
         logger.error { "HashedElGamalCiphertext decryption failure: HMAC doesn't match" }
         return null
     }
 
-    val ciphertextBlocks = c1.toList().chunked(32) { it.toByteArray() }
-    val plaintext =
-        concatByteArrays(*ciphertextBlocks.mapIndexed { i, c -> c xor kdf[i + 1] }.toTypedArray())
+    val ciphertextBlocks = c1.toList().chunked(32) { it.toByteArray().toUInt256() }
+    val plaintextBlocks =
+        ciphertextBlocks.mapIndexed { i, c -> c xor kdf[i + 1] }.map { it.bytes }.toTypedArray()
+    val plaintext = concatByteArrays(*plaintextBlocks)
 
     return plaintext
 }
@@ -91,15 +99,16 @@ fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? {
  *  - The [context] is a string containing the information related to the derived keying material.
  *    It may include identities of parties who are deriving and/or using the derived keying
  *    material.
+ *  - The [length] specifies the length of the encrypted message in *bits*, not bytes.
  */
-class KDF(val key: ByteArray, label: String, context: String) {
+class KDF(val key: UInt256, label: String, context: String, length: Int) {
     // we're going to convert the strings as UTF-8
     val labelBytes = label.encodeToByteArray()
-    val lengthBytes = (32 * 8).toByteArray()
+    val lengthBytes = length.toByteArray()
     val contextBytes = context.encodeToByteArray()
 
     /** Get the requested key bits from the sequence. */
-    operator fun get(index: Int): ByteArray {
+    operator fun get(index: Int): UInt256 {
         // NIST spec: K(i) := PRF (KI, [i] || Label || 0x00 || Context || [L])
         val input =
             concatByteArrays(

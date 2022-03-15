@@ -21,7 +21,7 @@ data class SchnorrProof(
 fun ElGamalKeypair.schnorrProof(nonce: ElementModQ): SchnorrProof {
     val context = compatibleContextOrFail(publicKey.key, secretKey.key, nonce)
     val h = context.gPowP(nonce)
-    val c = context.hashElements(publicKey, h)
+    val c = hashElements(publicKey, h).toElementModQ(context)
     val u = nonce + secretKey.key * c
 
     return SchnorrProof(publicKey, h, c, u)
@@ -38,7 +38,7 @@ fun ElGamalPublicKey.hasValidSchnorrProof(proof: SchnorrProof): Boolean {
     val validPublicKey = k.key.isValidResidue()
     val inBoundsH = h.inBounds()
     val inBoundsU = u.inBounds()
-    val c = context.hashElements(k, h)
+    val c = hashElements(k, h).toElementModQ(context)
     val validChallenge = c == challenge
     val validProof = context.gPowP(u) == h * (k powP c)
     val samePublicKey = this == proof.publicKey

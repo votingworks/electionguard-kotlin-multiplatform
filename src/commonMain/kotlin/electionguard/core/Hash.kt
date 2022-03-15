@@ -2,29 +2,36 @@ package electionguard.core
 
 /**
  * Any ElectionGuard type can implement this interface, and is then supported by [hashElements]. If
- * both [CryptoHashableString] and [CryptoHashableElement] are implemented by the same class, the
- * former will be used in preference to the latter.
+ * multiple CryptoHashable interfaces are implemented, [CryptoHashableString] is the highest
+ * priority, followed by [CryptoHashableUInt256], and lastly [CryptoHashableElement].
  */
 interface CryptoHashableString {
-    /** Returns a string suitable for input to a hash function. */
+    /** Returns a string suitable for input to a cryptographic hash function. */
     fun cryptoHashString(): String
 }
 
 /**
  * Any ElectionGuard type can implement this interface, and is then supported by [hashElements]. If
- * both [CryptoHashableString] and [CryptoHashableElement] are implemented by the same class, the
- * former will be used in preference to the latter.
+ * multiple CryptoHashable interfaces are implemented, [CryptoHashableString] is the highest
+ * priority, followed by [CryptoHashableUInt256], and lastly [CryptoHashableElement].
+ */
+interface CryptoHashableUInt256 {
+    /** Returns a [UInt256], suitable for input to a cryptographic hash function. */
+    fun cryptoHashUInt256(): UInt256
+}
+
+/**
+ * Any ElectionGuard type can implement this interface, and is then supported by [hashElements]. If
+ * multiple CryptoHashable interfaces are implemented, [CryptoHashableString] is the highest
+ * priority, followed by [CryptoHashableUInt256], and lastly [CryptoHashableElement].
  */
 interface CryptoHashableElement {
-    /** Returns an [Element], suitable for input to a hash function. */
+    /** Returns an [Element], suitable for input to a cryptographic hash function. */
     fun cryptoHashElement(): Element
 }
 
 /** Wrapper class to serve as an HMAC-SHA256 machine for the given key. */
-class HmacProcessor(hmacKey: ElementModQ) {
-    private val hmacKeyBytes = hmacKey.byteArray()
-    private val context = hmacKey.context
-
+class HmacProcessor(val hmacKey: UInt256) {
     /**
      * Given zero or more elements, calculate their cryptographic HMAC using HMAC-SHA256, with the
      * given [hmacKey]. Specifically handled types are [Element], [String], and [Iterable]
@@ -38,14 +45,10 @@ class HmacProcessor(hmacKey: ElementModQ) {
      * @return A cryptographic HMAC of these elements, converted to strings and suitably
      *     concatenated.
      */
-    fun hmacElements(vararg elements: Any?): ElementModQ = this.hmacElementsHelper(elements)
+    fun hmacElements(vararg elements: Any?): UInt256 = hmacElementsHelper(elements)
 
-    private fun hmacElementsHelper(elements: Array<out Any?>): ElementModQ =
-        context.hashElementsHelper(
-            { this.hmacElementsHelper(it) },
-            { it.hmacSha256(hmacKeyBytes) },
-            elements
-        )
+    private fun hmacElementsHelper(elements: Array<out Any?>): UInt256 =
+        hashElementsHelper({ hmacElementsHelper(it) }, { it.hmacSha256(hmacKey) }, elements)
 }
 
 /**
@@ -60,21 +63,22 @@ class HmacProcessor(hmacKey: ElementModQ) {
  * @param elements Zero or more elements of any of the accepted types.
  * @return A cryptographic hash of these elements, converted to strings and suitably concatenated.
  */
-fun GroupContext.hashElements(vararg elements: Any?): ElementModQ = hashElementsHelper(elements)
+fun hashElements(vararg elements: Any?): UInt256 = hashElementsHelper(elements)
 
-private fun GroupContext.hashElementsHelper(elements: Array<out Any?>): ElementModQ =
+private fun hashElementsHelper(elements: Array<out Any?>): UInt256 =
     hashElementsHelper({ hashElementsHelper(it) }, { it.sha256() }, elements)
 
-private fun GroupContext.hashElementsHelper(
-    recursive: (Array<out Any?>) -> ElementModQ,
-    byteHash: (ByteArray) -> ByteArray,
+private fun hashElementsHelper(
+    recursive: (Array<out Any?>) -> UInt256,
+    byteHash: (ByteArray) -> UInt256,
     elements: Array<out Any?>
-) : ElementModQ {
+) : UInt256 {
     val hashMe =
         elements.joinToString(prefix = "|", separator = "|", postfix = "|") {
             when (it) {
                 null -> "null"
                 is CryptoHashableString -> it.cryptoHashString()
+                is CryptoHashableUInt256 -> it.cryptoHashUInt256().cryptoHashString()
                 is CryptoHashableElement -> it.cryptoHashElement().cryptoHashString()
                 is String -> it
                 is Number, UInt, ULong, UShort, UByte -> it.toString()
@@ -97,7 +101,7 @@ private fun GroupContext.hashElementsHelper(
         }
 
     val digest = byteHash(hashMe.encodeToByteArray())
-    return safeBinaryToElementModQ(digest)
+    return digest
 }
 
 // TODO: do we need to be able to hash anything else that wouldn't already be covered
