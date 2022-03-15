@@ -10,7 +10,7 @@ data class HashedElGamalCiphertext(
     val c0: ElementModP,
     val c1: ByteArray,
     val c2: UInt256,
-    val length: Int
+    val numBytes: Int
 )
 
 /**
@@ -32,7 +32,6 @@ fun ByteArray.hashedElGamalEncrypt(
     key: ElGamalPublicKey,
     nonce: ElementModQ = key.context.randomElementModQ(minimum = 2)
 ): HashedElGamalCiphertext {
-    val length = size * 8 // NIST spec says we want the length in bits
     val messageBlocks: List<UInt256> =
         this.toList()
             .chunked(32) { block ->
@@ -42,19 +41,22 @@ fun ByteArray.hashedElGamalEncrypt(
                 UInt256(result)
             }
 
-    // spec: (alpha, beta) = (g^R mod p, K^R mod p)
+    // ElectionGuard spec: (alpha, beta) = (g^R mod p, K^R mod p)
     // by encrypting a zero, we achieve exactly this
     val (alpha, beta) = 0.encrypt(key, nonce)
     val kdfKey = hashElements(alpha, beta)
-    val kdf = KDF(kdfKey, "", "", length)
+
+    // NIST spec: the length is the size of the message in *bits*, but that's annoying
+    // to use anywhere else, so we're otherwise just tracking the size in bytes.
+    val kdf = KDF(kdfKey, "", "", size * 8)
     val k0 = kdf[0]
     val c0 = alpha.byteArray()
     val encryptedBlocks =
-        messageBlocks.mapIndexed { i, p -> p xor kdf[i + 1] }.map { it.bytes }.toTypedArray()
+        messageBlocks.mapIndexed { i, p -> (p xor kdf[i + 1]).bytes }.toTypedArray()
     val c1 = concatByteArrays(*encryptedBlocks)
     val c2 = (c0 + c1).hmacSha256(k0)
 
-    return HashedElGamalCiphertext(alpha, c1, c2, length)
+    return HashedElGamalCiphertext(alpha, c1, c2, size)
 }
 
 /**
@@ -71,7 +73,7 @@ fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? {
     val alpha = c0
     val beta = c0 powP secretKey.key
     val kdfKey = hashElements(alpha, beta)
-    val kdf = KDF(kdfKey, "", "", length)
+    val kdf = KDF(kdfKey, "", "", numBytes * 8)
     val k0 = kdf[0]
 
     val expectedHmac = (c0.byteArray() + c1).hmacSha256(k0)
@@ -83,10 +85,16 @@ fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? {
 
     val ciphertextBlocks = c1.toList().chunked(32) { it.toByteArray().toUInt256() }
     val plaintextBlocks =
-        ciphertextBlocks.mapIndexed { i, c -> c xor kdf[i + 1] }.map { it.bytes }.toTypedArray()
+        ciphertextBlocks.mapIndexed { i, c -> (c xor kdf[i + 1]).bytes }.toTypedArray()
     val plaintext = concatByteArrays(*plaintextBlocks)
 
-    return plaintext
+    return if (plaintext.size == numBytes) {
+        plaintext
+    } else {
+        // Truncate trailing values, which should be zeros. No need to check, because
+        // we've already validated the HMAC on the data.
+        plaintext.copyOfRange(0, numBytes)
+    }
 }
 
 /**
