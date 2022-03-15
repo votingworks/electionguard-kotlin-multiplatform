@@ -22,7 +22,7 @@ data class CiphertextTally(
 
     /**
      * The homomorphic accumulation of all of the CiphertextBallot.Selection for a specific
-     * selection and contest. The object_id is the Manifest.SelectionDescription.object_id.
+     * selection and contest. The selectionId is the Manifest.SelectionDescription.object_id.
      */
     data class Selection(
         val selectionId: String,

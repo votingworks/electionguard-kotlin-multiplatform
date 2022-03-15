@@ -6,7 +6,6 @@ import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.protoconvert.importElectionRecord
 import electionguard.protoconvert.publishElectionRecord
-import publish.Consumer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -20,7 +19,7 @@ class ElectionRecordTest {
             val context = productionGroup()
             readElectionRecord(
                 context,
-                "src/commonTest/data/workflow/decryptor/election_record/"
+                "src/commonTest/data/workflow/decryptor/"
             )
         }
     }
@@ -31,13 +30,13 @@ class ElectionRecordTest {
             val context = productionGroup()
             readElectionRecord(
                 context,
-                "src/commonTest/data/workflow/encryptor/election_record/"
+                "src/commonTest/data/workflow/encryptor/"
             )
         }
     }
 
     fun readElectionRecord(context: GroupContext, topdir: String) {
-        val consumer: Consumer = Consumer.fromElectionRecord(topdir, context)
+        val consumer = Consumer(topdir, context)
         val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
         val electionRecord = allData.electionRecord
 
