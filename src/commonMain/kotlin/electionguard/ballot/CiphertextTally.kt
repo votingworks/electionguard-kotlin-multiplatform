@@ -2,6 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModQ
+import electionguard.core.UInt256
 
 /** The encrypted representation of the summed votes for a collection of ballots */
 data class CiphertextTally(
@@ -16,7 +17,7 @@ data class CiphertextTally(
     data class Contest(
         val contestId: String,
         val sequenceOrder: Int,
-        val contestDescriptionHash: ElementModQ,
+        val contestDescriptionHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: Map<String, Selection> // map<selectionId, selection>
     )
 
@@ -27,7 +28,7 @@ data class CiphertextTally(
     data class Selection(
         val selectionId: String,
         val sequenceOrder: Int,
-        val selectionDescriptionHash: ElementModQ,
+        val selectionDescriptionHash: UInt256, // matches SelectionDescription.cryptoHash
         val ciphertext: ElGamalCiphertext,
     )
 }

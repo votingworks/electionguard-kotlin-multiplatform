@@ -91,10 +91,10 @@ class ElectionRecordConvertTest {
             42,
             24,
             generateElementModP(context),
-            generateElementModQ(context),
-            generateElementModQ(context),
-            generateElementModQ(context),
-            generateElementModQ(context),
+            generateUInt256(context),
+            generateUInt256(context),
+            generateUInt256(context),
+            generateUInt256(context),
             mapOf("you" to "me", "me" to "you", "had" to "to"),
         )
     }

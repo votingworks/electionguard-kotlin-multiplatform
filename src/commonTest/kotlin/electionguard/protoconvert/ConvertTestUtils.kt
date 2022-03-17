@@ -49,6 +49,10 @@ fun generateElementModQ(context: GroupContext): ElementModQ {
     return context.uIntToElementModQ(Random.nextUInt(134217689.toUInt()))
 }
 
+fun generateUInt256(context: GroupContext): UInt256 {
+    return generateElementModQ(context).toUInt256();
+}
+
 fun generateElementModP(context: GroupContext): ElementModP {
     return context.uIntToElementModP(Random.nextUInt(1879047647.toUInt()))
 }

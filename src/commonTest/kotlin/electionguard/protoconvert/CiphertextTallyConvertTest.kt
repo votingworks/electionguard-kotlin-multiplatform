@@ -28,7 +28,7 @@ class CiphertextTallyConvertTest {
             return CiphertextTally.Contest(
                 "contest" + cseq,
                 cseq,
-                generateElementModQ(context),
+                generateUInt256(context),
                 selections.associate { it.selectionId to it },
             )
         }
@@ -44,7 +44,7 @@ class CiphertextTallyConvertTest {
             return CiphertextTally.Selection(
                 "selection" + sseq,
                 sseq,
-                generateElementModQ(context),
+                generateUInt256(context),
                 generateCiphertext(context),
             )
         }

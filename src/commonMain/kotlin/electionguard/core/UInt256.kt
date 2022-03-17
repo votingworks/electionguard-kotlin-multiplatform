@@ -45,7 +45,14 @@ fun UInt256.isZero(): Boolean = UInt256.ZERO == this
  */
 fun ByteArray.toUInt256(): UInt256 {
     if (size > 32) {
-        throw IllegalArgumentException("Input has $size bytes; UInt256 only supports 32")
+        // BigInteger sometimes has leading zeroes, so remove them
+        val leading = size - 32
+        for (idx in 0 until leading) {
+            if (this.get(idx).compareTo(0) != 0) {
+                throw IllegalArgumentException("Input has $size bytes; UInt256 only supports 32")
+            }
+        }
+        return UInt256(this.copyOfRange(leading, this.size))
     }
     val leftPad = ByteArray(32 - size) { 0 }
     return UInt256(leftPad + this)
@@ -58,7 +65,7 @@ fun ByteArray.toUInt256(): UInt256 {
 fun UInt256.toElementModQ(context: GroupContext): ElementModQ =
     context.safeBinaryToElementModQ(bytes)
 
-fun ElementModQ.toUInt256(): UInt256 = UInt256(this.byteArray())
+fun ElementModQ.toUInt256(): UInt256 = this.byteArray().toUInt256()
 fun ULong.toUInt256(): UInt256 = this.toByteArray().toUInt256()
 fun UInt.toUInt256(): UInt256 = this.toULong().toByteArray().toUInt256()
 fun UShort.toUInt256(): UInt256 = this.toULong().toByteArray().toUInt256()
