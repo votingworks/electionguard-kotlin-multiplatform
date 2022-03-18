@@ -32,12 +32,12 @@ class SubmittedBallotConvertTest {
             return SubmittedBallot(
                 "ballotId $seq",
                 "ballotIdStyle",
-                generateElementModQ(context),
-                generateElementModQ(context),
-                generateElementModQ(context),
+                generateUInt256(context),
+                generateUInt256(context),
+                generateUInt256(context),
                 contests,
                 42,
-                generateElementModQ(context),
+                generateUInt256(context),
                 if (Random.nextBoolean())
                     SubmittedBallot.BallotState.CAST
                 else
@@ -57,10 +57,10 @@ class SubmittedBallotConvertTest {
             return SubmittedBallot.Contest(
                 "contest" + cseq,
                 cseq,
-                generateElementModQ(context),
+                generateUInt256(context),
                 selections,
                 generateCiphertext(context),
-                generateElementModQ(context),
+                generateUInt256(context),
                 generateConstantChaumPedersenProofKnownNonce(context),
             )
         }
@@ -80,9 +80,9 @@ class SubmittedBallotConvertTest {
             return SubmittedBallot.Selection(
                 "selection" + sseq,
                 sseq,
-                generateElementModQ(context),
+                generateUInt256(context),
                 generateCiphertext(context),
-                generateElementModQ(context),
+                generateUInt256(context),
                 false,
                 generateDisjunctiveChaumPedersenProofKnownNonce(context),
                 generateCiphertext(context),

@@ -84,10 +84,10 @@ data class ElectionContext(
     val quorum: Int,
     /** The joint public key (K) in the ElectionGuard Spec. */
     val jointPublicKey: ElementModP,
-    val manifestHash: ElementModQ,
-    val cryptoBaseHash: ElementModQ,
-    val cryptoExtendedBaseHash: ElementModQ,
-    val commitmentHash: ElementModQ,
+    val manifestHash: UInt256, // matches Manifest.cryptoHash
+    val cryptoBaseHash: UInt256,
+    val cryptoExtendedBaseHash: UInt256,
+    val commitmentHash: UInt256,
     val extendedData: Map<String, String>?
 )
 

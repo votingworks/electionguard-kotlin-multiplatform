@@ -10,10 +10,10 @@ fun electionguard.protogen.SubmittedBallot.importSubmittedBallot(
     groupContext: GroupContext
 ): SubmittedBallot? {
 
-    val manifestHash = groupContext.importElementModQ(this.manifestHash)
-    val trackingHash = groupContext.importElementModQ(this.code)
-    val previousTrackingHash = groupContext.importElementModQ(this.codeSeed)
-    val cryptoHash = groupContext.importElementModQ(this.cryptoHash)
+    val manifestHash = groupContext.importUInt256(this.manifestHash)
+    val trackingHash = groupContext.importUInt256(this.code)
+    val previousTrackingHash = groupContext.importUInt256(this.codeSeed)
+    val cryptoHash = groupContext.importUInt256(this.cryptoHash)
     val ballotState = this.state.importBallotState()
     val contests = this.contests.map { it.importContest(groupContext) }.noNullValuesOrNull()
 
@@ -59,9 +59,9 @@ private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState
 private fun electionguard.protogen.CiphertextBallotContest.importContest(
     groupContext: GroupContext
 ): SubmittedBallot.Contest? {
-    val contestHash = groupContext.importElementModQ(this.contestHash)
+    val contestHash = groupContext.importUInt256(this.contestHash)
     val ciphertextAccumulation = groupContext.importCiphertext(this.ciphertextAccumulation)
-    val cryptoHash = groupContext.importElementModQ(this.cryptoHash)
+    val cryptoHash = groupContext.importUInt256(this.cryptoHash)
     val proof = this.proof?.let { this.proof.importConstantChaumPedersenProof(groupContext) }
     val selections = this.selections.map { it.importSelection(groupContext) }.noNullValuesOrNull()
 
@@ -89,9 +89,9 @@ private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
     groupContext: GroupContext
 ): SubmittedBallot.Selection? {
 
-    val selectionHash = groupContext.importElementModQ(this.selectionHash)
+    val selectionHash = groupContext.importUInt256(this.selectionHash)
     val ciphertext = groupContext.importCiphertext(this.ciphertext)
-    val cryptoHash = groupContext.importElementModQ(this.cryptoHash)
+    val cryptoHash = groupContext.importUInt256(this.cryptoHash)
     val proof = this.proof?.let { it.importDisjunctiveChaumPedersenProof(groupContext) }
     val extendedData = groupContext.importCiphertext(this.extendedData)
 
@@ -174,12 +174,12 @@ fun SubmittedBallot.publishSubmittedBallot(): electionguard.protogen.SubmittedBa
         .SubmittedBallot(
             this.ballotId,
             this.ballotStyleId,
-            this.manifestHash.publishElementModQ(),
-            this.code.publishElementModQ(),
-            this.codeSeed.publishElementModQ(),
+            this.manifestHash.publishUInt256(),
+            this.code.publishUInt256(),
+            this.codeSeed.publishUInt256(),
             this.contests.map { it.publishContest() },
             this.timestamp,
-            this.cryptoHash.publishElementModQ(),
+            this.cryptoHash.publishUInt256(),
             this.state.publishBallotState()
         )
 }
@@ -195,10 +195,10 @@ private fun SubmittedBallot.Contest.publishContest():
             .CiphertextBallotContest(
                 this.contestId,
                 this.sequenceOrder,
-                this.contestHash.publishElementModQ(),
+                this.contestHash.publishUInt256(),
                 this.selections.map { it.publishSelection() },
                 this.ciphertextAccumulation.publishCiphertext(),
-                this.cryptoHash.publishElementModQ(),
+                this.cryptoHash.publishUInt256(),
                 this.proof?.let { this.proof.publishConstantChaumPedersenProof() },
             )
     }
@@ -209,9 +209,9 @@ private fun SubmittedBallot.Selection.publishSelection():
             .CiphertextBallotSelection(
                 this.selectionId,
                 this.sequenceOrder,
-                this.selectionHash.publishElementModQ(),
+                this.selectionHash.publishUInt256(),
                 this.ciphertext.publishCiphertext(),
-                this.cryptoHash.publishElementModQ(),
+                this.cryptoHash.publishUInt256(),
                 this.isPlaceholderSelection,
                 this.proof?.let { this.proof.publishDisjunctiveChaumPedersenProof() },
                 this.extendedData?.let { this.extendedData.publishCiphertext() },

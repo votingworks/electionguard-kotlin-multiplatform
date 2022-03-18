@@ -27,7 +27,7 @@ private fun electionguard.protogen.CiphertextTallyContest.importContest(
     groupContext: GroupContext
 ): CiphertextTally.Contest? {
 
-    val contestHash = groupContext.importElementModQ(this.contestDescriptionHash)
+    val contestHash = groupContext.importUInt256(this.contestDescriptionHash)
 
     if (contestHash == null) {
         logger.error { "Contest description hash was malformed or out of bounds" }
@@ -51,7 +51,7 @@ private fun electionguard.protogen.CiphertextTallySelection.importSelection(
     groupContext: GroupContext
 ): CiphertextTally.Selection? {
 
-    val selectionDescriptionHash = groupContext.importElementModQ(this.selectionDescriptionHash)
+    val selectionDescriptionHash = groupContext.importUInt256(this.selectionDescriptionHash)
     val ciphertext = groupContext.importCiphertext(this.ciphertext)
 
     if (selectionDescriptionHash == null || ciphertext == null) {
@@ -80,7 +80,7 @@ private fun CiphertextTally.Contest.publishContest():
             .CiphertextTallyContest(
                 this.contestId,
                 this.sequenceOrder,
-                this.contestDescriptionHash.publishElementModQ(),
+                this.contestDescriptionHash.publishUInt256(),
                 this.selections.values.map { it.publishSelection() }
             )
     }
@@ -91,7 +91,7 @@ private fun CiphertextTally.Selection.publishSelection():
             .CiphertextTallySelection(
                 this.selectionId,
                 this.sequenceOrder,
-                this.selectionDescriptionHash.publishElementModQ(),
+                this.selectionDescriptionHash.publishUInt256(),
                 this.ciphertext.publishCiphertext()
             )
     }

@@ -82,10 +82,10 @@ private fun electionguard.protogen.ElectionContext.importContext(
 ): ElectionContext? {
 
     val jointPublicKey = groupContext.importElementModP(this.jointPublicKey)
-    val manifestHash = groupContext.importElementModQ(this.manifestHash)
-    val cryptoBaseHash = groupContext.importElementModQ(this.cryptoBaseHash)
-    val cryptoExtendedBaseHash = groupContext.importElementModQ(this.cryptoExtendedBaseHash)
-    val commitmentHash = groupContext.importElementModQ(this.commitmentHash)
+    val manifestHash = groupContext.importUInt256(this.manifestHash)
+    val cryptoBaseHash = groupContext.importUInt256(this.cryptoBaseHash)
+    val cryptoExtendedBaseHash = groupContext.importUInt256(this.cryptoExtendedBaseHash)
+    val commitmentHash = groupContext.importUInt256(this.commitmentHash)
 
     if (jointPublicKey == null || manifestHash == null || cryptoBaseHash == null ||
         cryptoExtendedBaseHash == null || commitmentHash == null

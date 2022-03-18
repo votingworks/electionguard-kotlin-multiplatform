@@ -76,10 +76,10 @@ private fun ElectionContext.publishContext(): electionguard.protogen.ElectionCon
             this.numberOfGuardians,
             this.quorum,
             this.jointPublicKey.publishElementModP(),
-            this.manifestHash.publishElementModQ(),
-            this.cryptoBaseHash.publishElementModQ(),
-            this.cryptoExtendedBaseHash.publishElementModQ(),
-            this.commitmentHash.publishElementModQ(),
+            this.manifestHash.publishUInt256(),
+            this.cryptoBaseHash.publishUInt256(),
+            this.cryptoExtendedBaseHash.publishUInt256(),
+            this.commitmentHash.publishUInt256(),
             extendedData
         )
 }

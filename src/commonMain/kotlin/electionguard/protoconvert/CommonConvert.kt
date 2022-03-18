@@ -14,6 +14,10 @@ private val logger = KotlinLogging.logger("CommonConvert")
 fun GroupContext.importElementModQ(modQ: electionguard.protogen.ElementModQ?): ElementModQ? =
     if (modQ == null) null else this.binaryToElementModQ(modQ.value.array)
 
+// dont actually need the GroupContext
+fun GroupContext.importUInt256(modQ: electionguard.protogen.UInt256?): UInt256? =
+    if (modQ == null) null else modQ.value.array.toUInt256()
+
 /**
  * Converts a deserialized ElementModP to the internal representation, returning `null` if the input
  * was missing, out of bounds, or otherwise malformed. `null` is accepted as an input, for
@@ -91,6 +95,14 @@ fun GroupContext.importElGamalPublicKey(
 
 fun ElementModQ.publishElementModQ(): electionguard.protogen.ElementModQ {
     return electionguard.protogen.ElementModQ(ByteArr(this.byteArray()))
+}
+
+fun UInt256.publishUInt256(): electionguard.protogen.UInt256 {
+    val ba = this.bytes
+    val bba =  ByteArr(ba)
+    val uq =  electionguard.protogen.UInt256(bba)
+    return uq
+    // return electionguard.protogen.UInt256(ByteArr(this.bytes))
 }
 
 fun ElementModP.publishElementModP(): electionguard.protogen.ElementModP {

@@ -211,8 +211,8 @@ data class Manifest(
     val electionScopeId: String,
     val specVersion: String,
     val electionType: ElectionType,
-    val startDate: String, // LocalDateTime,
-    val endDate: String, // LocalDateTime,
+    val startDate: String, // ISO 8601 formatted date/time
+    val endDate: String, // ISO 8601 formatted date/time
     val geopoliticalUnits: List<GeopoliticalUnit>,
     val parties: List<Party>,
     val candidates: List<Candidate>,
