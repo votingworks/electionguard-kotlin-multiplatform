@@ -92,7 +92,7 @@ private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
     val selectionHash = importUInt256(this.selectionHash)
     val ciphertext = groupContext.importCiphertext(this.ciphertext)
     val cryptoHash = importUInt256(this.cryptoHash)
-    val proof = this.proof?.let { it.importDisjunctiveChaumPedersenProof(groupContext) }
+    val proof = this.proof?.importDisjunctiveChaumPedersenProof(groupContext)
     val extendedData = groupContext.importCiphertext(this.extendedData)
 
     if (selectionHash == null || ciphertext == null || cryptoHash == null || proof == null) {
@@ -162,7 +162,7 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
             proofZeroChallenge,
             proofZeroResponse,
         ),
-        GenericChaumPedersenProof(proofOnePad, proofOneData, proofOneChallenge, proofOneResponse,),
+        GenericChaumPedersenProof(proofOnePad, proofOneData, proofOneChallenge, proofOneResponse),
         proofChallenge,
     )
 }

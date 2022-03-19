@@ -14,7 +14,6 @@ private val logger = KotlinLogging.logger("CommonConvert")
 fun GroupContext.importElementModQ(modQ: electionguard.protogen.ElementModQ?): ElementModQ? =
     if (modQ == null) null else this.binaryToElementModQ(modQ.value.array)
 
-// dont actually need the GroupContext
 fun importUInt256(modQ: electionguard.protogen.UInt256?): UInt256? =
     if (modQ == null) null else modQ.value.array.toUInt256()
 

@@ -44,14 +44,14 @@ class ElectionRecordValidateTest {
         assertEquals(3, allData.guardianRecords.size)
         assertEquals(1, allData.devices.size)
         assertEquals("deviceName", allData.devices[0].location)
-        assertEquals("accumulateTally", allData.encryptedTally?.tallyId)
-        assertEquals("accumulateTally", allData.decryptedTally?.tallyId)
+        assertEquals("accumulateTally", allData.encryptedTally.tallyId)
+        assertEquals("accumulateTally", allData.decryptedTally.tallyId)
         assertNotNull(allData.decryptedTally)
-        val contests = allData.decryptedTally?.contests
+        val contests = allData.decryptedTally.contests
         assertNotNull(contests)
         val contest = contests["justice-supreme-court"]
         assertNotNull(contest)
-        assertEquals(2, allData.availableGuardians?.size)
+        assertEquals(2, allData.availableGuardians.size)
 
         return allData
     }

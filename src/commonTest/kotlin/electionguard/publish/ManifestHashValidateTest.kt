@@ -14,8 +14,7 @@ class ManifestHashValidateTest {
         runTest {
             val context = productionGroup()
             val consumer = Consumer(input, context)
-            val electionRecord: ElectionRecord =
-                consumer.readElectionRecord() ?: throw IllegalArgumentException("electionRecord expected")
+            val electionRecord: ElectionRecord = consumer.readElectionRecord()
             validateManifestHash(electionRecord.manifest)
         }
     }

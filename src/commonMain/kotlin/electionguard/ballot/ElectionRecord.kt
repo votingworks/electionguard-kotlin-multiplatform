@@ -43,7 +43,7 @@ data class ElectionRecord(
  * An available Guardian when decrypting.
  *
  * @param guardianId The guardian id
- * @param sequence the guardian x coordinate value
+ * @param xCoordinate the guardian x coordinate value
  * @param lagrangeCoordinate the lagrange coordinate when decrypting
  */
 data class AvailableGuardian(
