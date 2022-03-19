@@ -9,7 +9,6 @@ import electionguard.protoconvert.publishElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class ElectionRecordTest {
 
@@ -17,7 +16,7 @@ class ElectionRecordTest {
     fun readElectionRecordWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-            readElectionRecord(
+            readElectionRecordAll(
                 context,
                 "src/commonTest/data/workflow/decryptor/"
             )
@@ -35,26 +34,40 @@ class ElectionRecordTest {
         }
     }
 
-    fun readElectionRecord(context: GroupContext, topdir: String) {
+    fun readElectionRecordAll(context: GroupContext, topdir: String) {
         val consumer = Consumer(topdir, context)
         val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
-        val electionRecord = allData.electionRecord
 
-        val proto = electionRecord.publishElectionRecord()
+        val proto = allData.publishElectionRecord()
         val roundtrip = proto.importElectionRecord(context)
         assertNotNull(roundtrip)
-        assertEquals(roundtrip.protoVersion, electionRecord.protoVersion)
-        assertEquals(roundtrip.constants, electionRecord.constants)
-        assertEquals(roundtrip.manifest, electionRecord.manifest)
-        assertEquals(roundtrip.context, electionRecord.context)
-        assertEquals(roundtrip.guardianRecords, electionRecord.guardianRecords)
-        assertEquals(roundtrip.devices, electionRecord.devices)
-        assertEquals(roundtrip.encryptedTally, electionRecord.encryptedTally)
-        assertEquals(roundtrip.decryptedTally, electionRecord.decryptedTally)
-        assertEquals(roundtrip.availableGuardians, electionRecord.availableGuardians)
+        assertEquals(roundtrip.protoVersion, allData.protoVersion)
+        assertEquals(roundtrip.constants, allData.constants)
+        assertEquals(roundtrip.manifest, allData.manifest)
+        assertEquals(roundtrip.context, allData.context)
+        assertEquals(roundtrip.guardianRecords, allData.guardianRecords)
+        assertEquals(roundtrip.devices, allData.devices)
+        assertEquals(roundtrip.encryptedTally, allData.encryptedTally)
+        assertEquals(roundtrip.decryptedTally, allData.decryptedTally)
+        assertEquals(roundtrip.availableGuardians, allData.availableGuardians)
+    }
 
-        assertTrue(roundtrip.equals(electionRecord))
-        assertEquals(roundtrip, electionRecord)
+    fun readElectionRecord(context: GroupContext, topdir: String) {
+        val consumer = Consumer(topdir, context)
+        val allData: ElectionRecord = consumer.readElectionRecord()
+
+        val proto = allData.publishElectionRecord()
+        val roundtrip = proto.importElectionRecord(context)
+        assertNotNull(roundtrip)
+        assertEquals(roundtrip.protoVersion, allData.protoVersion)
+        assertEquals(roundtrip.constants, allData.constants)
+        assertEquals(roundtrip.manifest, allData.manifest)
+        assertEquals(roundtrip.context, allData.context)
+        assertEquals(roundtrip.guardianRecords, allData.guardianRecords)
+        assertEquals(roundtrip.devices, allData.devices)
+        assertEquals(roundtrip.encryptedTally, allData.encryptedTally)
+        assertEquals(roundtrip.decryptedTally, allData.decryptedTally)
+        assertEquals(roundtrip.availableGuardians, allData.availableGuardians)
     }
 
 }

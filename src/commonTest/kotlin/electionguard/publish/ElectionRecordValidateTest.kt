@@ -20,7 +20,7 @@ class ElectionRecordValidateTest {
         }
     }
 
-    fun validateTally(group : GroupContext, tally : PlaintextTally, nguardians : Int) {
+    fun validateTally(group : GroupContext, tally : PlaintextTally, nguardians : Int?) {
         for (contest in tally.contests.values) {
             for (selection in contest.selections.values) {
                 val actual : Int? = group.dLog(selection.value)
@@ -31,30 +31,29 @@ class ElectionRecordValidateTest {
     }
 
 
-    fun readElectionRecord(context: GroupContext, topdir: String) : ElectionRecord {
+    fun readElectionRecord(context: GroupContext, topdir: String) : ElectionRecordAllData {
         val consumer = Consumer(topdir, context)
         val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
-        val electionRecord = allData.electionRecord
 
-        assertNotNull(electionRecord)
-        assertEquals(PROTO_VERSION, electionRecord.protoVersion)
-        assertEquals("", electionRecord.constants.name)
-        assertEquals("v0.95", electionRecord.manifest.specVersion)
-        assertEquals(3, electionRecord.context.numberOfGuardians)
-        assertEquals(2, electionRecord.context.quorum)
-        assertEquals(3, electionRecord.guardianRecords.size)
-        assertEquals(1, electionRecord.devices.size)
-        assertEquals("deviceName", electionRecord.devices[0].location)
-        assertEquals("accumulateTally", electionRecord.encryptedTally?.tallyId)
-        assertEquals("accumulateTally", electionRecord.decryptedTally?.tallyId)
-        assertNotNull(electionRecord.decryptedTally)
-        val contests = electionRecord.decryptedTally?.contests
+        assertNotNull(allData)
+        assertEquals(PROTO_VERSION, allData.protoVersion)
+        assertEquals("", allData.constants.name)
+        assertEquals("v0.95", allData.manifest.specVersion)
+        assertEquals(3, allData.context.numberOfGuardians)
+        assertEquals(2, allData.context.quorum)
+        assertEquals(3, allData.guardianRecords.size)
+        assertEquals(1, allData.devices.size)
+        assertEquals("deviceName", allData.devices[0].location)
+        assertEquals("accumulateTally", allData.encryptedTally?.tallyId)
+        assertEquals("accumulateTally", allData.decryptedTally?.tallyId)
+        assertNotNull(allData.decryptedTally)
+        val contests = allData.decryptedTally?.contests
         assertNotNull(contests)
         val contest = contests["justice-supreme-court"]
         assertNotNull(contest)
-        assertEquals(2, electionRecord.availableGuardians?.size)
+        assertEquals(2, allData.availableGuardians?.size)
 
-        return electionRecord
+        return allData
     }
 
 }

@@ -3,7 +3,7 @@ package electionguard.ballot
 import electionguard.core.*
 
 /**
- * The entire published election record.
+ * The entire published election record, all data assumed present
  *
  * @param electionRecord the record of all the public election data (except submittedBallots and
  *     spoiledBallots)
@@ -11,21 +11,29 @@ import electionguard.core.*
  * @param spoiledBallots decrypted spoiled ballots as PlaintextTally
  */
 data class ElectionRecordAllData(
-    val electionRecord: ElectionRecord,
-    val submittedBallots: Iterable<SubmittedBallot>,
-    val spoiledBallots: Iterable<PlaintextTally>,
-)
-
-/**
- * The published election record for a collection of ballots, eg from a single encryption device.
- */
-data class ElectionRecord(
     val protoVersion: String,
     val constants: ElectionConstants,
     val manifest: Manifest,
     val context: ElectionContext,
     val guardianRecords: List<GuardianRecord>,
     val devices: List<EncryptionDevice>,
+    val encryptedTally: CiphertextTally,
+    val decryptedTally: PlaintextTally,
+    val availableGuardians: List<AvailableGuardian>,
+    val submittedBallots: Iterable<SubmittedBallot>,
+    val spoiledBallots: Iterable<PlaintextTally>,
+)
+
+/**
+ * The published election record, many fields are optional.
+ */
+data class ElectionRecord(
+    val protoVersion: String,
+    val constants: ElectionConstants,
+    val manifest: Manifest,
+    val context: ElectionContext?,
+    val guardianRecords: List<GuardianRecord>?,
+    val devices: List<EncryptionDevice>?,
     val encryptedTally: CiphertextTally?,
     val decryptedTally: PlaintextTally?,
     val availableGuardians: List<AvailableGuardian>?

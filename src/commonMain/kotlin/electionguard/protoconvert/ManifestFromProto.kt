@@ -1,17 +1,16 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.*
-import electionguard.core.GroupContext
 import electionguard.core.noNullValuesOrNull
 import electionguard.core.safeEnumValueOf
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestFromProto")
 
-fun electionguard.protogen.Manifest.importManifest(groupContext: GroupContext): Manifest? {
+fun electionguard.protogen.Manifest.importManifest(): Manifest? {
 
     val contests =
-        this.contests.map { it.importContestDescription(groupContext) }.noNullValuesOrNull()
+        this.contests.map { it.importContestDescription() }.noNullValuesOrNull()
 
     if (contests == null) {
         logger.error { "missing contests in Manifest" }
@@ -25,39 +24,35 @@ fun electionguard.protogen.Manifest.importManifest(groupContext: GroupContext): 
     }
 
     val geopoliticalUnits =
-        this.geopoliticalUnits.map { it.importGeopoliticalUnit(groupContext) }.noNullValuesOrNull()
+        this.geopoliticalUnits.map { it.importGeopoliticalUnit() }.noNullValuesOrNull()
     if (geopoliticalUnits == null) {
         logger.error { "missing geopoliticalUnits in Manifest" }
         return null
     }
 
-    return groupContext.manifestOf(
+    return Manifest(
         this.electionScopeId,
         this.specVersion,
         this.electionType.importElectionType() ?: Manifest.ElectionType.unknown,
         this.startDate, // LocalDateTime.parse(this.startDate),
         this.endDate, // LocalDateTime.parse(this.endDate),
-        this.geopoliticalUnits.map { it.importGeopoliticalUnit(groupContext) },
-        this.parties.map { it.importParty(groupContext) },
-        this.candidates.map { it.importCandidate(groupContext) },
-        this.contests.map { it.importContestDescription(groupContext) },
-        this.ballotStyles.map { it.importBallotStyle(groupContext) },
-        this.name?.let { this.name.importInternationalizedText(groupContext) },
+        this.geopoliticalUnits.map { it.importGeopoliticalUnit() },
+        this.parties.map { it.importParty() },
+        this.candidates.map { it.importCandidate() },
+        this.contests.map { it.importContestDescription() },
+        this.ballotStyles.map { it.importBallotStyle() },
+        this.name?.let { this.name.importInternationalizedText() },
         this.contactInformation
-            ?.let { this.contactInformation.importContactInformation(groupContext) },
+            ?.let { this.contactInformation.importContactInformation() },
     )
 }
 
-private fun electionguard.protogen.AnnotatedString.importAnnotatedString(
-    groupContext: GroupContext
-): Manifest.AnnotatedString {
-    return groupContext.annotatedStringOf(this.annotation, this.value)
+private fun electionguard.protogen.AnnotatedString.importAnnotatedString(): Manifest.AnnotatedString {
+    return Manifest.AnnotatedString(this.annotation, this.value)
 }
 
-private fun electionguard.protogen.BallotStyle.importBallotStyle(
-    groupContext: GroupContext
-): Manifest.BallotStyle {
-    return groupContext.ballotStyleOf(
+private fun electionguard.protogen.BallotStyle.importBallotStyle(): Manifest.BallotStyle {
+    return Manifest.BallotStyle(
         this.ballotStyleId,
         this.geopoliticalUnitIds,
         this.partyIds,
@@ -65,33 +60,27 @@ private fun electionguard.protogen.BallotStyle.importBallotStyle(
     )
 }
 
-private fun electionguard.protogen.Candidate.importCandidate(
-    groupContext: GroupContext
-): Manifest.Candidate {
-    return groupContext.candidateOf(
+private fun electionguard.protogen.Candidate.importCandidate(): Manifest.Candidate {
+    return Manifest.Candidate(
         this.candidateId,
-        this.name?.let { this.name.importInternationalizedText(groupContext) },
+        if (this.name != null) this.name.importInternationalizedText() else internationalizedTextUnknown(),
         this.partyId,
         this.imageUrl,
         this.isWriteIn
     )
 }
 
-private fun electionguard.protogen.ContactInformation.importContactInformation(
-    groupContext: GroupContext
-): Manifest.ContactInformation {
-    return groupContext.contactInformationOf(
+private fun electionguard.protogen.ContactInformation.importContactInformation(): Manifest.ContactInformation {
+    return Manifest.ContactInformation(
         this.addressLine,
-        this.email.map { it.importAnnotatedString(groupContext) },
-        this.phone.map { it.importAnnotatedString(groupContext) },
+        this.email.map { it.importAnnotatedString() },
+        this.phone.map { it.importAnnotatedString() },
         this.name,
     )
 }
 
-private fun electionguard.protogen.ContestDescription.importContestDescription(
-    groupContext: GroupContext
-): Manifest.ContestDescription {
-    return groupContext.contestDescriptionOf(
+private fun electionguard.protogen.ContestDescription.importContestDescription(): Manifest.ContestDescription {
+    return Manifest.ContestDescription(
         this.contestId,
         this.sequenceOrder,
         this.geopoliticalUnitId,
@@ -100,9 +89,9 @@ private fun electionguard.protogen.ContestDescription.importContestDescription(
         this.numberElected,
         this.votesAllowed,
         this.name,
-        this.selections.map { it.importSelectionDescription(groupContext) },
-        this.ballotTitle?.let { this.ballotTitle.importInternationalizedText(groupContext) },
-        this.ballotSubtitle?.let { this.ballotSubtitle.importInternationalizedText(groupContext) },
+        this.selections.map { it.importSelectionDescription() },
+        this.ballotTitle?.let { this.ballotTitle.importInternationalizedText() },
+        this.ballotSubtitle?.let { this.ballotSubtitle.importInternationalizedText() },
         this.primaryPartyIds
     )
 }
@@ -134,44 +123,36 @@ private fun electionguard.protogen.GeopoliticalUnit.ReportingUnitType.importRepo
         return result
     }
 
-private fun electionguard.protogen.GeopoliticalUnit.importGeopoliticalUnit(
-    groupContext: GroupContext
-): Manifest.GeopoliticalUnit {
-    return groupContext.geopoliticalUnitOf(
+private fun electionguard.protogen.GeopoliticalUnit.importGeopoliticalUnit(): Manifest.GeopoliticalUnit {
+    return Manifest.GeopoliticalUnit(
         this.geopoliticalUnitId,
         this.name,
         this.type.importReportingUnitType() ?: Manifest.ReportingUnitType.unknown, // TODO ok?
         this.contactInformation
-            ?.let { this.contactInformation.importContactInformation(groupContext) },
+            ?.let { this.contactInformation.importContactInformation() },
     )
 }
 
-private fun electionguard.protogen.InternationalizedText.importInternationalizedText(
-    groupContext: GroupContext
-): Manifest.InternationalizedText {
-    return groupContext.internationalizedTextOf(this.text.map({ it.importLanguage(groupContext) }))
+private fun electionguard.protogen.InternationalizedText.importInternationalizedText(): Manifest.InternationalizedText {
+    return Manifest.InternationalizedText(this.text.map({ it.importLanguage() }))
 }
 
-private fun electionguard.protogen.Language.importLanguage(
-    groupContext: GroupContext
-): Manifest.Language {
-    return groupContext.languageOf(this.value, this.language)
+private fun electionguard.protogen.Language.importLanguage(): Manifest.Language {
+    return Manifest.Language(this.value, this.language)
 }
 
-private fun electionguard.protogen.Party.importParty(groupContext: GroupContext): Manifest.Party {
-    return groupContext.partyOf(
+private fun electionguard.protogen.Party.importParty(): Manifest.Party {
+    return Manifest.Party(
         this.partyId,
-        this.name?.let { this.name.importInternationalizedText(groupContext) },
+        if (this.name != null) this.name.importInternationalizedText() else internationalizedTextUnknown(),
         this.abbreviation,
         this.color,
-        this.logoUri
+        this.logoUri,
     )
 }
 
-private fun electionguard.protogen.SelectionDescription.importSelectionDescription(
-    groupContext: GroupContext
-): Manifest.SelectionDescription {
-    return groupContext.selectionDescriptionOf(
+private fun electionguard.protogen.SelectionDescription.importSelectionDescription(): Manifest.SelectionDescription {
+    return Manifest.SelectionDescription(
         this.selectionId,
         this.sequenceOrder,
         this.candidateId,

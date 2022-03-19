@@ -9,10 +9,10 @@ private val logger = KotlinLogging.logger("ElectionRecordFromProto")
 
 fun electionguard.protogen.ElectionRecord.importElectionRecord(
     groupContext: GroupContext
-): ElectionRecord? {
+): ElectionRecord {
     val electionConstants = this.constants?.let { convertConstants(this.constants) }
 
-    val manifest = this.manifest?.let { this.manifest.importManifest(groupContext) }
+    val manifest = this.manifest?.let { this.manifest.importManifest() }
 
     val availableGuardians: List<AvailableGuardian>? =
         this.availableGuardians
@@ -24,11 +24,9 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
     val guardianRecords =
         this.guardianRecords.map { it.importGuardianRecord(groupContext) }.noNullValuesOrNull()
 
-    if (electionConstants == null || manifest == null || electionContext == null ||
-        guardianRecords == null || guardianRecords.isEmpty() || availableGuardians == null
-    ) {
+    if (electionConstants == null || manifest == null) {
         logger.error { "Failed to translate election record from proto, missing fields" }
-        return null
+        throw IllegalStateException("Failed to translate election record from proto, missing fields")
     }
 
     return ElectionRecord(
@@ -82,10 +80,10 @@ private fun electionguard.protogen.ElectionContext.importContext(
 ): ElectionContext? {
 
     val jointPublicKey = groupContext.importElementModP(this.jointPublicKey)
-    val manifestHash = groupContext.importUInt256(this.manifestHash)
-    val cryptoBaseHash = groupContext.importUInt256(this.cryptoBaseHash)
-    val cryptoExtendedBaseHash = groupContext.importUInt256(this.cryptoExtendedBaseHash)
-    val commitmentHash = groupContext.importUInt256(this.commitmentHash)
+    val manifestHash = importUInt256(this.manifestHash)
+    val cryptoBaseHash = importUInt256(this.cryptoBaseHash)
+    val cryptoExtendedBaseHash = importUInt256(this.cryptoExtendedBaseHash)
+    val commitmentHash = importUInt256(this.commitmentHash)
 
     if (jointPublicKey == null || manifestHash == null || cryptoBaseHash == null ||
         cryptoExtendedBaseHash == null || commitmentHash == null
