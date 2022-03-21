@@ -59,13 +59,12 @@ class CommonConvertTest {
         runTest {
             checkAll(
                 validElementsModP(productionGroup()),
-                validElementsModP(productionGroup()),
                 elementsModQ(productionGroup()),
                 elementsModQ(productionGroup()),
-            ) { p, commit, c, r ->
+            ) { p, c, r ->
                 val context = productionGroup()
                 val publicKey = ElGamalPublicKey(p)
-                val proof = SchnorrProof(publicKey, commit, c, r)
+                val proof = SchnorrProof(publicKey, c, r)
                 val proto = proof.publishSchnorrProof()
                 val roundtrip = context.importSchnorrProof(proto)
                 assertEquals(roundtrip, proof)

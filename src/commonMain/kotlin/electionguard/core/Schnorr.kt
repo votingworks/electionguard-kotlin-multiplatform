@@ -9,7 +9,6 @@ private val logger = KotlinLogging.logger("Schnorr")
  */
 data class SchnorrProof(
     val publicKey: ElGamalPublicKey,
-    val commitment: ElementModP,
     val challenge: ElementModQ,
     val response: ElementModQ
 )
@@ -24,7 +23,7 @@ fun ElGamalKeypair.schnorrProof(nonce: ElementModQ): SchnorrProof {
     val c = hashElements(publicKey, h).toElementModQ(context)
     val u = nonce + secretKey.key * c
 
-    return SchnorrProof(publicKey, h, c, u)
+    return SchnorrProof(publicKey, c, u)
 }
 
 /**
@@ -32,23 +31,23 @@ fun ElGamalKeypair.schnorrProof(nonce: ElementModQ): SchnorrProof {
  * `publicKey` field inside the proof.
  */
 fun ElGamalPublicKey.hasValidSchnorrProof(proof: SchnorrProof): Boolean {
-    val (k, h, challenge, u) = proof
-    val context = compatibleContextOrFail(this.key, k.key, h, challenge, u)
+    val (k, challenge, u) = proof
+    val context = compatibleContextOrFail(this.key, k.key, challenge, u)
 
     val validPublicKey = k.key.isValidResidue()
-    val inBoundsH = h.inBounds()
     val inBoundsU = u.inBounds()
+
+    val h = context.gPowP(u) / this.powP(challenge)
+
     val c = hashElements(k, h).toElementModQ(context)
     val validChallenge = c == challenge
     val validProof = context.gPowP(u) == h * (k powP c)
     val samePublicKey = this == proof.publicKey
-    val success =
-        validPublicKey && inBoundsH && inBoundsU && validChallenge && validProof && samePublicKey
+    val success = validPublicKey && inBoundsU && validChallenge && validProof && samePublicKey
 
     if (!success) {
         val resultMap =
             mapOf(
-                "inBoundsH" to inBoundsH,
                 "inBoundsU" to inBoundsU,
                 "validPublicKey" to validPublicKey,
                 "validChallenge" to validChallenge,
