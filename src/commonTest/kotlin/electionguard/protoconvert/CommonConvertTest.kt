@@ -44,13 +44,11 @@ class CommonConvertTest {
     fun convertChaumPedersenProof() {
         runTest {
             checkAll(
-                validElementsModP(productionGroup()),
-                validElementsModP(productionGroup()),
                 elementsModQ(productionGroup()),
                 elementsModQ(productionGroup()),
-            ) { a, b, c, r ->
+            ) { c, r ->
                 val context = productionGroup()
-                val proof = GenericChaumPedersenProof(a, b, c, r)
+                val proof = GenericChaumPedersenProof(c, r)
 
                 val proto = proof.publishChaumPedersenProof()
                 val roundtrip = context.importChaumPedersenProof(proto)

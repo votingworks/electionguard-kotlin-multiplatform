@@ -25,8 +25,6 @@ fun generateDisjunctiveChaumPedersenProofKnownNonce(
 
 fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPedersenProof {
     return GenericChaumPedersenProof(
-        generateElementModP(context),
-        generateElementModP(context),
         generateElementModQ(context),
         generateElementModQ(context),
     )

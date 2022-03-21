@@ -34,17 +34,35 @@ data class DisjunctiveChaumPedersenProofKnownNonce(
  * component in other proofs. (See
  * [Chaum-Pedersen 1992](https://link.springer.com/chapter/10.1007/3-540-48071-4_7))
  *
- * @param a g^w (aka pad)
- * @param b h^w (aka data)
  * @param c hash(a, b, and possibly other state) (aka challenge)
  * @param r w + xc (aka response)
  */
 data class GenericChaumPedersenProof(
-    val a: ElementModP,
-    val b: ElementModP,
     val c: ElementModQ,
     val r: ElementModQ
 )
+
+/**
+ * Expanded form of the [GenericChaumPedersenProof], with the `a` and `b` values recomputed.
+ * This should not be serialized.
+ */
+internal data class ExpandedGenericChaumPedersenProof(val a: ElementModP, val b: ElementModP, val c: ElementModQ, val r: ElementModQ)
+
+/**
+ * Given a [GenericChaumPedersenProof], computes the `a` and `b` values that are needed for
+ * proofs and such, but are removed for serialization.
+ */
+internal fun GenericChaumPedersenProof.expand(
+    g: ElementModP,
+    gx: ElementModP,
+    h: ElementModP,
+    hx: ElementModP
+): ExpandedGenericChaumPedersenProof {
+    val negC = -c
+    val a = (g powP r) * (gx powP negC)
+    val b = (h powP r) * (hx powP negC)
+    return ExpandedGenericChaumPedersenProof(a, b, c, r)
+}
 
 /**
  * Produces a proof that a given ElGamal encryption corresponds to a specific total value. This
@@ -156,8 +174,8 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             val v0 = u + c0 * nonce
             val v1 = v + c1 * nonce
 
-            val realZeroProof = GenericChaumPedersenProof(a0, b0, c0, v0)
-            val fakeOneProof = GenericChaumPedersenProof(a1, b1, c1, v1)
+            val realZeroProof = GenericChaumPedersenProof(c0, v0)
+            val fakeOneProof = GenericChaumPedersenProof(c1, v1)
 
             DisjunctiveChaumPedersenProofKnownNonce(realZeroProof, fakeOneProof, c)
         }
@@ -178,8 +196,8 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             val v0 = v + c0 * nonce
             val v1 = u + c1 * nonce
 
-            val fakeZeroProof = GenericChaumPedersenProof(a0, b0, c0, v0)
-            val realOneProof = GenericChaumPedersenProof(a1, b1, c1, v1)
+            val fakeZeroProof = GenericChaumPedersenProof(c0, v0)
+            val realOneProof = GenericChaumPedersenProof(c1, v1)
 
             DisjunctiveChaumPedersenProofKnownNonce(fakeZeroProof, realOneProof, c)
         }
@@ -209,7 +227,8 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
 ) : Boolean {
     val context =
         compatibleContextOrFail(
-            this.proof.a,
+            this.proof.c,
+            this.proof.r,
             ciphertext.data,
             ciphertext.pad,
             publicKey.key,
@@ -245,7 +264,8 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
 ) : Boolean {
     val context =
         compatibleContextOrFail(
-            this.proof.a,
+            this.proof.c,
+            this.proof.r,
             ciphertext.data,
             ciphertext.pad,
             publicKey.key,
@@ -280,13 +300,26 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
         compatibleContextOrFail(this.c, ciphertext.data, ciphertext.pad, publicKey.key, hashHeader)
     val (alpha, beta) = ciphertext
     val consistentC = proof0.c + proof1.c == c
+    val eproof0 = proof0.expand(
+        g = context.G_MOD_P,
+        gx = ciphertext.pad,
+        h = publicKey.key,
+        hx = ciphertext.data,
+    )
+    val eproof1 = proof1.expand(
+        g = context.G_MOD_P,
+        gx = ciphertext.pad,
+        h = publicKey.key,
+        hx = ciphertext.data * context.GINV_MOD_P,
+    )
+
     val validHash =
         c ==
-            hashElements(hashHeader, alpha, beta, proof0.a, proof0.b, proof1.a, proof1.b)
+            hashElements(hashHeader, alpha, beta, eproof0.a, eproof0.b, eproof1.a, eproof1.b)
                 .toElementModQ(context)
 
     val valid0 =
-        proof0.isValid(
+        eproof0.isValid(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
             h = publicKey.key,
@@ -296,7 +329,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
         )
 
     val valid1 =
-        proof1.isValid(
+        eproof1.isValid(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
             h = publicKey.key,
@@ -346,9 +379,19 @@ fun GenericChaumPedersenProof.isValid(
     alsoHash: Array<Element> = emptyArray(),
     checkC: Boolean = true
 ): Boolean {
-    val context = compatibleContextOrFail(this.a, g, gx, h, hx, hashHeader, *alsoHash)
-    val inBoundsA = a.isValidResidue()
-    val inBoundsB = b.isValidResidue()
+    return expand(g, gx, h, hx).isValid(g, gx, h, hx, hashHeader, alsoHash, checkC)
+}
+
+internal fun ExpandedGenericChaumPedersenProof.isValid(
+    g: ElementModP,
+    gx: ElementModP,
+    h: ElementModP,
+    hx: ElementModP,
+    hashHeader: ElementModQ,
+    alsoHash: Array<Element> = emptyArray(),
+    checkC: Boolean = true
+): Boolean {
+    val context = compatibleContextOrFail(c, r, g, gx, h, hx, hashHeader, *alsoHash)
     val inBoundsG = g.isValidResidue()
     val inBoundsGx = gx.isValidResidue()
     val inBoundsH = h.isValidResidue()
@@ -368,7 +411,7 @@ fun GenericChaumPedersenProof.isValid(
     val goodH = bhxc == hr
 
     val success =
-        (hashGood && inBoundsA && inBoundsB && inBoundsG && inBoundsGx && inBoundsH && inBoundsHx &&
+        (hashGood && inBoundsG && inBoundsGx && inBoundsH && inBoundsHx &&
             goodG && goodH)
 
     if (!success)
@@ -376,8 +419,6 @@ fun GenericChaumPedersenProof.isValid(
             "Invalid generic Chaum-Pedersen proof: " +
                 mapOf(
                     "hashGood" to hashGood,
-                    "inBoundsA" to inBoundsA,
-                    "inBoundsB" to inBoundsB,
                     "inBoundsG" to inBoundsG,
                     "inBoundsGx" to inBoundsGx,
                     "inBoundsH" to inBoundsH,
@@ -421,7 +462,7 @@ fun genericChaumPedersenProofOf(
     val c = hashElements(hashHeader, a, b, *alsoHash).toElementModQ(context)
     val r = w + x * c
 
-    return GenericChaumPedersenProof(a, b, c, r)
+    return GenericChaumPedersenProof(c, r)
 }
 
 /**
@@ -446,9 +487,9 @@ fun fakeGenericChaumPedersenProofOf(
 ): GenericChaumPedersenProof {
     compatibleContextOrFail(g, gx, h, hx, c, seed)
     val r = Nonces(seed, "generic-chaum-pedersen-proof")[0]
-    val gr = g powP r
-    val hr = h powP r
-    val a = gr / (gx powP c)
-    val b = hr / (hx powP c)
-    return GenericChaumPedersenProof(a, b, c, r)
+//    val gr = g powP r
+//    val hr = h powP r
+//    val a = gr / (gx powP c)
+//    val b = hr / (hx powP c)
+    return GenericChaumPedersenProof(c, r)
 }
