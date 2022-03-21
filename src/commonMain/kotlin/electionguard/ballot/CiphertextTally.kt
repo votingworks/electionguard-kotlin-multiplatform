@@ -1,7 +1,6 @@
 package electionguard.ballot
 
 import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElementModQ
 import electionguard.core.UInt256
 
 /** The encrypted representation of the summed votes for a collection of ballots */

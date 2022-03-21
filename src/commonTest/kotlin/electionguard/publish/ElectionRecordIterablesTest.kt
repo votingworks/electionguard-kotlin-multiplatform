@@ -3,9 +3,9 @@ package electionguard.publish
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
-import mu.KotlinLogging
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
@@ -15,7 +15,7 @@ class ElectionRecordIterablesTest {
     fun readBallotTalliesWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-             readSpoiledBallotTallies(context, "src/commonTest/data/workflow/decryptor/")
+            readSpoiledBallotTallies(context, "src/commonTest/data/workflow/decryptor/")
         }
     }
 
@@ -44,7 +44,7 @@ class ElectionRecordIterablesTest {
         val iterator = consumer.iterateSubmittedBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
-            logger.debug {"  $count readBallots ${ballot.ballotId} ${ballot.state}"}
+            logger.debug { "  $count readBallots ${ballot.ballotId} ${ballot.state}" }
             count++
         }
         assertEquals(count, 11)
@@ -55,7 +55,7 @@ class ElectionRecordIterablesTest {
         val iterator = consumer.iterateCastBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
-            logger.debug {"  $count readCastBallots ${ballot.ballotId} ${ballot.state}"}
+            logger.debug { "  $count readCastBallots ${ballot.ballotId} ${ballot.state}" }
             count++
         }
         assertEquals(count, 5)
@@ -66,7 +66,7 @@ class ElectionRecordIterablesTest {
         val iterator = consumer.iterateSpoiledBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
-            logger.debug {"  $count readSpoiledBallots ${ballot.ballotId} ${ballot.state}"}
+            logger.debug { "  $count readSpoiledBallots ${ballot.ballotId} ${ballot.state}" }
             count++
         }
         assertEquals(count, 6)
@@ -77,10 +77,9 @@ class ElectionRecordIterablesTest {
         val iterator = consumer.iterateSpoiledBallotTallies().iterator()
         var count = 0;
         for (tally in iterator) {
-            logger.debug {"  $count readSpoiledBallotTallies ${tally.tallyId}"}
+            logger.debug { "  $count readSpoiledBallotTallies ${tally.tallyId}" }
             count++
         }
         assertEquals(count, 6)
     }
-
 }

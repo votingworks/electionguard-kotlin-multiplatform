@@ -24,10 +24,7 @@ fun generateDisjunctiveChaumPedersenProofKnownNonce(
 }
 
 fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPedersenProof {
-    return GenericChaumPedersenProof(
-        generateElementModQ(context),
-        generateElementModQ(context),
-    )
+    return GenericChaumPedersenProof(generateElementModQ(context), generateElementModQ(context),)
 }
 
 fun generateSchnorrProof(context: GroupContext): SchnorrProof {

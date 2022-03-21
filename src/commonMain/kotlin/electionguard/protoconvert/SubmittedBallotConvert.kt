@@ -115,8 +115,6 @@ private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
 fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPedersenProof(
     groupContext: GroupContext
 ): ConstantChaumPedersenProofKnownNonce? {
-    val pad = groupContext.importElementModP(this.pad)
-    val data = groupContext.importElementModP(this.data)
     val challenge = groupContext.importElementModQ(this.challenge)
     val response = groupContext.importElementModQ(this.response)
 
@@ -126,7 +124,7 @@ fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPederse
     }
 
     return ConstantChaumPedersenProofKnownNonce(
-        GenericChaumPedersenProof(pad, data, challenge, response),
+        GenericChaumPedersenProof(challenge, response),
         this.constant
     )
 }
@@ -135,34 +133,24 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
     groupContext: GroupContext
 ): DisjunctiveChaumPedersenProofKnownNonce? {
 
-    val proofZeroPad = groupContext.importElementModP(this.proofZeroPad)
-    val proofZeroData = groupContext.importElementModP(this.proofZeroData)
     val proofZeroChallenge = groupContext.importElementModQ(this.proofZeroChallenge)
     val proofZeroResponse = groupContext.importElementModQ(this.proofZeroResponse)
 
-    val proofOnePad = groupContext.importElementModP(this.proofOnePad)
-    val proofOneData = groupContext.importElementModP(this.proofOneData)
     val proofOneChallenge = groupContext.importElementModQ(this.proofOneChallenge)
     val proofOneResponse = groupContext.importElementModQ(this.proofOneResponse)
 
     val proofChallenge = groupContext.importElementModQ(this.challenge)
 
-    if (proofZeroPad == null || proofZeroData == null || proofZeroChallenge == null ||
-        proofZeroResponse == null || proofOnePad == null || proofOneData == null ||
-        proofOneChallenge == null || proofOneResponse == null || proofChallenge == null
+    if (proofZeroChallenge == null || proofZeroResponse == null || proofOneChallenge == null ||
+        proofOneResponse == null || proofChallenge == null
     ) {
         logger.error { "Failed to convert disjunctive Chaum-Pedersen proof, missing fields" }
         return null
     }
 
     return DisjunctiveChaumPedersenProofKnownNonce(
-        GenericChaumPedersenProof(
-            proofZeroPad,
-            proofZeroData,
-            proofZeroChallenge,
-            proofZeroResponse,
-        ),
-        GenericChaumPedersenProof(proofOnePad, proofOneData, proofOneChallenge, proofOneResponse),
+        GenericChaumPedersenProof(proofZeroChallenge, proofZeroResponse,),
+        GenericChaumPedersenProof(proofOneChallenge, proofOneResponse,),
         proofChallenge,
     )
 }
@@ -222,8 +210,8 @@ fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof():
     electionguard.protogen.ConstantChaumPedersenProof {
         return electionguard.protogen
             .ConstantChaumPedersenProof(
-                this.proof.a.publishElementModP(),
-                this.proof.b.publishElementModP(),
+                this.proof.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
+                this.proof.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
                 this.proof.c.publishElementModQ(),
                 this.proof.r.publishElementModQ(),
                 this.constant
@@ -234,12 +222,12 @@ fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof
     electionguard.protogen.DisjunctiveChaumPedersenProof {
         return electionguard.protogen
             .DisjunctiveChaumPedersenProof(
-                this.proof0.a.publishElementModP(),
-                this.proof0.b.publishElementModP(),
+                this.proof0.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
+                this.proof0.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
                 this.proof0.c.publishElementModQ(),
                 this.proof0.r.publishElementModQ(),
-                this.proof1.a.publishElementModP(),
-                this.proof1.b.publishElementModP(),
+                this.proof1.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
+                this.proof1.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
                 this.proof1.c.publishElementModQ(),
                 this.proof1.r.publishElementModQ(),
                 this.c.publishElementModQ(),

@@ -30,7 +30,6 @@ class ElectionRecordValidateTest {
         }
     }
 
-
     fun readElectionRecord(context: GroupContext, topdir: String) : ElectionRecordAllData {
         val consumer = Consumer(topdir, context)
         val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
@@ -55,5 +54,4 @@ class ElectionRecordValidateTest {
 
         return allData
     }
-
 }

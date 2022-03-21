@@ -27,8 +27,8 @@ data class SubmittedBallot(
     }
 
     data class Contest(
-        val contestId: String,  // matches ContestDescription.contestIdd
-        val sequenceOrder: Int,  // matches ContestDescription.sequenceOrderv
+        val contestId: String, // matches ContestDescription.contestIdd
+        val sequenceOrder: Int, // matches ContestDescription.sequenceOrderv
         val contestHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: List<Selection>,
         val ciphertextAccumulation: ElGamalCiphertext,
@@ -38,7 +38,7 @@ data class SubmittedBallot(
 
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
-        val sequenceOrder: Int,  // matches SelectionDescription.sequenceOrder
+        val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
         val selectionHash: UInt256, // matches SelectionDescription.cryptoHash
         val ciphertext: ElGamalCiphertext,
         val cryptoHash: UInt256,

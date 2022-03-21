@@ -69,5 +69,4 @@ class ElectionRecordTest {
         assertEquals(roundtrip.decryptedTally, allData.decryptedTally)
         assertEquals(roundtrip.availableGuardians, allData.availableGuardians)
     }
-
 }
