@@ -68,16 +68,15 @@ fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?,
     if (proof == null) return null
 
     val publicKey = this.importElGamalPublicKey(proof.publicKey)
-    val commitment = this.importElementModP(proof.commitment)
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
 
-    if (publicKey == null || commitment == null || challenge == null || response == null) {
+    if (publicKey == null || challenge == null || response == null) {
         logger.error { "one or more SchnorrProof inputs was malformed or out of bounds" }
         return null
     }
 
-    return SchnorrProof(publicKey, commitment, challenge, response)
+    return SchnorrProof(publicKey, challenge, response)
 }
 
 fun GroupContext.importElGamalPublicKey(
@@ -129,7 +128,7 @@ fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen
         .SchnorrProof(
             this.publicKey.publishElGamalPublicKey(),
-            this.commitment.publishElementModP(),
+            this.publicKey.context.G_MOD_P.publishElementModP(), // TODO: REMOVE!
             this.challenge.publishElementModQ(),
             this.response.publishElementModQ()
         )
