@@ -13,5 +13,7 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
           cache: 'gradle'
-      - name: Build / Test
-        run: ./gradlew jvmTest nativeTest --no-daemon
+      - name: JVM Test
+        run: ./gradlew jvmTest
+      - name: Native Test
+        run: ./gradlew nativeTest
