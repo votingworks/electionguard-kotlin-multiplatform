@@ -37,20 +37,22 @@ data class DisjunctiveChaumPedersenProofKnownNonce(
  * @param c hash(a, b, and possibly other state) (aka challenge)
  * @param r w + xc (aka response)
  */
-data class GenericChaumPedersenProof(
+data class GenericChaumPedersenProof(val c: ElementModQ, val r: ElementModQ)
+
+/**
+ * Expanded form of the [GenericChaumPedersenProof], with the `a` and `b` values recomputed. This
+ * should not be serialized.
+ */
+internal data class ExpandedGenericChaumPedersenProof(
+    val a: ElementModP,
+    val b: ElementModP,
     val c: ElementModQ,
     val r: ElementModQ
 )
 
 /**
- * Expanded form of the [GenericChaumPedersenProof], with the `a` and `b` values recomputed.
- * This should not be serialized.
- */
-internal data class ExpandedGenericChaumPedersenProof(val a: ElementModP, val b: ElementModP, val c: ElementModQ, val r: ElementModQ)
-
-/**
- * Given a [GenericChaumPedersenProof], computes the `a` and `b` values that are needed for
- * proofs and such, but are removed for serialization.
+ * Given a [GenericChaumPedersenProof], computes the `a` and `b` values that are needed for proofs
+ * and such, but are removed for serialization.
  */
 internal fun GenericChaumPedersenProof.expand(
     g: ElementModP,
@@ -300,18 +302,20 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
         compatibleContextOrFail(this.c, ciphertext.data, ciphertext.pad, publicKey.key, hashHeader)
     val (alpha, beta) = ciphertext
     val consistentC = proof0.c + proof1.c == c
-    val eproof0 = proof0.expand(
-        g = context.G_MOD_P,
-        gx = ciphertext.pad,
-        h = publicKey.key,
-        hx = ciphertext.data,
-    )
-    val eproof1 = proof1.expand(
-        g = context.G_MOD_P,
-        gx = ciphertext.pad,
-        h = publicKey.key,
-        hx = ciphertext.data * context.GINV_MOD_P,
-    )
+    val eproof0 =
+        proof0.expand(
+            g = context.G_MOD_P,
+            gx = ciphertext.pad,
+            h = publicKey.key,
+            hx = ciphertext.data,
+        )
+    val eproof1 =
+        proof1.expand(
+            g = context.G_MOD_P,
+            gx = ciphertext.pad,
+            h = publicKey.key,
+            hx = ciphertext.data * context.GINV_MOD_P,
+        )
 
     val validHash =
         c ==
@@ -410,9 +414,7 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
 
     val goodH = bhxc == hr
 
-    val success =
-        (hashGood && inBoundsG && inBoundsGx && inBoundsH && inBoundsHx &&
-            goodG && goodH)
+    val success = (hashGood && inBoundsG && inBoundsGx && inBoundsH && inBoundsHx && goodG && goodH)
 
     if (!success)
         logger.warn {
@@ -487,9 +489,9 @@ fun fakeGenericChaumPedersenProofOf(
 ): GenericChaumPedersenProof {
     compatibleContextOrFail(g, gx, h, hx, c, seed)
     val r = Nonces(seed, "generic-chaum-pedersen-proof")[0]
-//    val gr = g powP r
-//    val hr = h powP r
-//    val a = gr / (gx powP c)
-//    val b = hr / (hx powP c)
+    //    val gr = g powP r
+    //    val hr = h powP r
+    //    val a = gr / (gx powP c)
+    //    val b = hr / (hx powP c)
     return GenericChaumPedersenProof(c, r)
 }

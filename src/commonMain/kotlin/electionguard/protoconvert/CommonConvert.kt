@@ -50,8 +50,8 @@ fun GroupContext.importChaumPedersenProof(
 
     if (proof == null) return null
 
-//    val pad = this.importElementModP(proof.pad)
-//    val data = this.importElementModP(proof.data)
+    //    val pad = this.importElementModP(proof.pad)
+    //    val data = this.importElementModP(proof.data)
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
 
@@ -99,8 +99,8 @@ fun ElementModQ.publishElementModQ(): electionguard.protogen.ElementModQ {
 
 fun UInt256.publishUInt256(): electionguard.protogen.UInt256 {
     val ba = this.bytes
-    val bba =  ByteArr(ba)
-    val uq =  electionguard.protogen.UInt256(bba)
+    val bba = ByteArr(ba)
+    val uq = electionguard.protogen.UInt256(bba)
     return uq
     // return electionguard.protogen.UInt256(ByteArr(this.bytes))
 }

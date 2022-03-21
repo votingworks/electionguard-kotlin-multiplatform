@@ -43,10 +43,7 @@ class CommonConvertTest {
     @Test
     fun convertChaumPedersenProof() {
         runTest {
-            checkAll(
-                elementsModQ(productionGroup()),
-                elementsModQ(productionGroup()),
-            ) { c, r ->
+            checkAll(elementsModQ(productionGroup()), elementsModQ(productionGroup()),) { c, r ->
                 val context = productionGroup()
                 val proof = GenericChaumPedersenProof(c, r)
 

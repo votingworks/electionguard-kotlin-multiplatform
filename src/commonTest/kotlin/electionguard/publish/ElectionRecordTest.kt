@@ -17,10 +17,7 @@ class ElectionRecordTest {
     fun readElectionRecordWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-            readElectionRecord(
-                context,
-                "src/commonTest/data/workflow/decryptor/"
-            )
+            readElectionRecord(context, "src/commonTest/data/workflow/decryptor/")
         }
     }
 
@@ -28,10 +25,7 @@ class ElectionRecordTest {
     fun readElectionRecordWrittenByEncryptorJava() {
         runTest {
             val context = productionGroup()
-            readElectionRecord(
-                context,
-                "src/commonTest/data/workflow/encryptor/"
-            )
+            readElectionRecord(context, "src/commonTest/data/workflow/encryptor/")
         }
     }
 
@@ -56,5 +50,4 @@ class ElectionRecordTest {
         assertTrue(roundtrip.equals(electionRecord))
         assertEquals(roundtrip, electionRecord)
     }
-
 }
