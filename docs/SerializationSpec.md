@@ -1,29 +1,22 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 3/17/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 3/21/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 This covers only the election record, and not any serialized classes used in remote procedure calls.
 
 Notes
 
 1. All fields must be present unless marked as optional.
-2. This specification will be mapped (in both directions) to the 1.0 JSON specification, when thats done.
-3. Proto_version uses [semantic versioning](https://semver.org/), and all versions will be
-   [forward and backwards compatible](https://developers.google.com/protocol-buffers/docs/proto3#updating)
-   starting with ? (1.0 I hope, if the JSON spec is finalized by then).
+2. Proto_version uses [semantic versioning](https://semver.org/)
 
 ## common.proto
 
-### class ChaumPedersenProof
+### class GenericChaumPedersenProof
 
-| Name      | JSON Name | Type            | Notes   |
-|-----------|-----------|-----------------|---------|
-|           | name      | string          | removed |
-|           | usage     | enum ProofUsage | removed |
-| pad       |           | ElementModP     |         |
-| data      |           | ElementModP     |         |
-| challenge |           | ElementModQ     |         |
-| response  |           | ElementModQ     |         |
+| Name      | Type           | Notes   |
+|-----------|----------------|---------|
+| challenge | ElementModQ    |         |
+| response  | ElementModQ    |         |
 
 ### class ElementModQ, ElementModP
 
@@ -40,19 +33,13 @@ Notes
 
 ### class SchnorrProof
 
-| Name       | JSON Name | Type            | Notes   |
-|------------|-----------|-----------------|---------|
-|            | name      | string          | removed |
-|            | usage     | enum ProofUsage | removed |
-| public_key |           | ElementModP     |         |
-| commitment |           | ElementModP     |         |
-| challenge  |           | ElementModQ     |         |
-| response   |           | ElementModQ     |         |
+| Name       | Type        | Notes   |
+|------------|-------------|---------|
+| public_key | ElementModP |         |
+| challenge  | ElementModQ |         |
+| response   | ElementModQ |         |
 
 ### class UInt256
-
-Used as a hash, when Group operations are no longer needed on it.
-JSON uses ElementModQ.
 
 | Name  | Type | Notes                                      |
 |-------|------|--------------------------------------------|
@@ -78,8 +65,6 @@ There is no python SDK version of this class.
 | available_guardians | List\<AvailableGuardian\> | decrypt tally        |
 
 ### class AvailableGuardian
-
-There is no python SDK version of this class. Can be constructed from the LagrangeCoefficients JSON.
 
 | Name                | Type        | Notes                          |
 |---------------------|-------------|--------------------------------|
@@ -131,9 +116,6 @@ There is no python SDK version of this class. Can be constructed from the Lagran
 
 ## manifest.proto
 
-Could simplify to be just the fields needed by electionguard library. Assume that there is an existing system that
-captures all the metadata that election software need, which is a superset of this.
-
 ### class Manifest
 
 | Name                | JSON Name | Type                       | Notes                           |
@@ -150,6 +132,7 @@ captures all the metadata that election software need, which is a superset of th
 | ballot_styles       |           | List\<BallotStyle\>        |                                 |
 | name                |           | InternationalizedText      | optional                        |
 | contact_information |           | ContactInformation         | optional                        |
+| crypto_hash         |           | UInt256                    | optional                        |
 
 ### class AnnotatedString
 
@@ -233,6 +216,7 @@ captures all the metadata that election software need, which is a superset of th
 | ballot_title         |                       | InternationalizedText        | optional                                      |
 | ballot_subtitle      |                       | InternationalizedText        | optional                                      |
 | primary_party_ids    |                       | List\<string\>               | optional, match Party.party_id                |
+| crypto_hash          |                       | UInt256                      | optional                                      |
 
 ### class SelectionDescription
 
@@ -241,6 +225,7 @@ captures all the metadata that election software need, which is a superset of th
 | selection_id   | object_id | string |                                |
 | sequence_order |           | uint32 | deterministic sorting          |
 | candidate_id   |           | string | matches Candidate.candidate_id |
+| crypto_hash          |                       | UInt256                      | optional                                      |
 
 ## plaintext_tally.proto
 
@@ -256,7 +241,7 @@ captures all the metadata that election software need, which is a superset of th
 | Name       | JSON Name | Type                            | Notes                                  |
 |------------|-----------|---------------------------------|----------------------------------------|
 | contest_id | object_id | string                          | matches ContestDescription.contest_id. |
-| selections |           | List\<PlaintextTallySelection\> | removed unneeded map                   |
+| selections |           | List\<PlaintextTallySelection\> |                                        |
 
 ### class PlaintextTallySelection
 
@@ -266,7 +251,7 @@ captures all the metadata that election software need, which is a superset of th
 | tally        |           | int                                   |                                           |
 | value        |           | ElementModP                           |                                           |
 | message      |           | ElGamalCiphertext                     |                                           |
-| shares       |           | List\<CiphertextDecryptionSelection\> | removed unneeded map                      |
+| shares       |           | List\<CiphertextDecryptionSelection\> |                                           |
 
 ### class CiphertextDecryptionSelection
 
@@ -276,7 +261,7 @@ captures all the metadata that election software need, which is a superset of th
 | guardian_id     |           | string                                           |                                |
 | share           |           | ElementModP                                      |                                |
 | proof           |           | ChaumPedersenProof                               |                                |
-| recovered_parts |           | List\<CiphertextCompensatedDecryptionSelection\> | removed unneeded map           |
+| recovered_parts |           | List\<CiphertextCompensatedDecryptionSelection\> |                                |
 
 ### class CiphertextCompensatedDecryptionSelection(ElectionObjectBase)
 
@@ -296,7 +281,7 @@ captures all the metadata that election software need, which is a superset of th
 | Name     | JSON Name | Type                           | Notes                                                             |
 |----------|-----------|--------------------------------|-------------------------------------------------------------------|
 | tally_id | object_id | string                         | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
-| contests |           | List\<CiphertextTallyContest\> | removed unneeded map                                              | 
+| contests |           | List\<CiphertextTallyContest\> |                                                                   | 
 
 ### class CiphertextTallyContest
 
@@ -305,7 +290,7 @@ captures all the metadata that election software need, which is a superset of th
 | contest_id               | object_id        | string                           | matches ContestDescription.contest_id     |
 | sequence_order           |                  | uint32                           | matches ContestDescription.sequence_order |
 | contest_description_hash | description_hash | UInt256                          | matches ContestDescription.crypto_hash    |
-| selections               |                  | List\<CiphertextTallySelection\> | removed unneeded map                      |
+| selections               |                  | List\<CiphertextTallySelection\> |                                           |
 
 ### class CiphertextTallySelection|
 
@@ -365,7 +350,6 @@ captures all the metadata that election software need, which is a superset of th
 | contests          |           | List\<CiphertextBallotContest\> |                                     |
 | timestamp         |           | int64                           | seconds since the unix epoch UTC    |
 | crypto_hash       |           | UInt256                         |                                     |
-|                   | nonce     | ElementModQ                     | removed                             |
 | state             |           | enum BallotState                | CAST, SPOILED                       |
 
 ### class CiphertextBallotContest
@@ -378,7 +362,6 @@ captures all the metadata that election software need, which is a superset of th
 | selections              | ballot_selections | List\<CiphertextBallotSelection\> |                                           |
 | ciphertext_accumulation |                   | ElGamalCiphertext                 |                                           |
 | crypto_hash             |                   | UInt256                           |                                           |
-|                         | nonce             | ElementModQ                       | removed                                   |
 | proof                   |                   | ConstantChaumPedersenProof        |                                           |
 
 ### class CiphertextBallotSelection
@@ -391,34 +374,20 @@ captures all the metadata that election software need, which is a superset of th
 | ciphertext               |                  | ElGamalCiphertext             |                                             |
 | crypto_hash              |                  | UInt256                       |                                             |
 | is_placeholder_selection |                  | bool                          |                                             |
-|                          | nonce            | ElementModQ                   | removed                                     |
 | proof                    |                  | DisjunctiveChaumPedersenProof |                                             |
 | extended_data            |                  | ElGamalCiphertext             | optional                                    |
 
 ### class ConstantChaumPedersenProof
 
-| Name      | JSON Name | Type            | Notes   |
-|-----------|-----------|-----------------|---------|
-|           | name      | string          | removed |
-|           | usage     | enum ProofUsage | removed |
-| pad       |           | ElementModP     |         |
-| data      |           | ElementModP     |         |
-| challenge |           | ElementModQ     |         |
-| response  |           | ElementModQ     |         |
-| constant  |           | uint32          |         |
+| Name      | Type                      | Notes |
+|-----------|---------------------------|-------|
+| constant  | uint32                    |       |
+| proof     | GenericChaumPedersenProof |       |
 
 ### class DisjunctiveChaumPedersenProof
 
-| Name                 | JSON Name | Type            | Notes   |
-|----------------------|-----------|-----------------|---------|
-|                      | name      | string          | removed |
-|                      | usage     | enum ProofUsage | removed |
-| proof_zero_pad       |           | ElementModP     |         |
-| proof_zero_data      |           | ElementModP     |         |
-| proof_zero_challenge |           | ElementModQ     |         |
-| proof_zero_response  |           | ElementModQ     |         |
-| proof_one_pad        |           | ElementModP     |         |
-| proof_one_data       |           | ElementModP     |         |
-| proof_one_challenge  |           | ElementModQ     |         |
-| proof_one_response   |           | ElementModQ     |         |
-| challenge            |           | ElementModQ     |         |
+| Name      | Type                      | Notes |
+|-----------|---------------------------|-------|
+| challenge | ElementModQ               |       |
+| proof0    | GenericChaumPedersenProof |       |
+| proof1    | GenericChaumPedersenProof |       |
