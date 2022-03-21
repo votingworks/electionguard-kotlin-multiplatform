@@ -118,7 +118,7 @@ fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPederse
     val challenge = groupContext.importElementModQ(this.challenge)
     val response = groupContext.importElementModQ(this.response)
 
-    if (pad == null || data == null || challenge == null || response == null) {
+    if (challenge == null || response == null) {
         logger.error { "Failed to convert constant Chaum-Pedersen proof, missing fields" }
         return null
     }
@@ -210,11 +210,8 @@ fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof():
     electionguard.protogen.ConstantChaumPedersenProof {
         return electionguard.protogen
             .ConstantChaumPedersenProof(
-                this.proof.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
-                this.proof.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
-                this.proof.c.publishElementModQ(),
-                this.proof.r.publishElementModQ(),
-                this.constant
+                this.constant,
+                this.proof.publishChaumPedersenProof(),
             )
     }
 
@@ -222,14 +219,8 @@ fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof
     electionguard.protogen.DisjunctiveChaumPedersenProof {
         return electionguard.protogen
             .DisjunctiveChaumPedersenProof(
-                this.proof0.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
-                this.proof0.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
-                this.proof0.c.publishElementModQ(),
-                this.proof0.r.publishElementModQ(),
-                this.proof1.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
-                this.proof1.r.context.G_MOD_P.publishElementModP(),  // TODO: remove!
-                this.proof1.c.publishElementModQ(),
-                this.proof1.r.publishElementModQ(),
                 this.c.publishElementModQ(),
+                this.proof0.publishChaumPedersenProof(),
+                this.proof1.publishChaumPedersenProof(),
             )
     }

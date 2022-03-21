@@ -42,20 +42,18 @@ fun GroupContext.importCiphertext(
 }
 
 fun GroupContext.importChaumPedersenProof(
-    proof: electionguard.protogen.ChaumPedersenProof?,
+    proof: electionguard.protogen.GenericChaumPedersenProof?,
 ): GenericChaumPedersenProof? {
     // TODO: this should probably be a ConstantChaumPedersenProofKnownSecretKey, which needs to know
     //   what the constant actually is. That should be nearby in the serialized data.
 
     if (proof == null) return null
 
-    //    val pad = this.importElementModP(proof.pad)
-    //    val data = this.importElementModP(proof.data)
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
 
     if (challenge == null || response == null) {
-        logger.error { "one or more ChaumPedersenProof inputs was malformed or out of bounds" }
+        logger.error { "GenericChaumPedersenProof fields are missing or malformed or out of bounds" }
         return null
     }
 
@@ -113,11 +111,9 @@ fun ElGamalCiphertext.publishCiphertext(): electionguard.protogen.ElGamalCiphert
 }
 
 fun GenericChaumPedersenProof.publishChaumPedersenProof():
-    electionguard.protogen.ChaumPedersenProof {
+    electionguard.protogen.GenericChaumPedersenProof {
         return electionguard.protogen
-            .ChaumPedersenProof(
-                this.c.context.G_MOD_P.publishElementModP(), // TODO: REMOVE!
-                this.c.context.G_MOD_P.publishElementModP(), // TODO: REMOVE!
+            .GenericChaumPedersenProof(
                 this.c.publishElementModQ(),
                 this.r.publishElementModQ()
             )
@@ -127,7 +123,6 @@ fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen
         .SchnorrProof(
             this.publicKey.publishElGamalPublicKey(),
-            this.publicKey.context.G_MOD_P.publishElementModP(), // TODO: REMOVE!
             this.challenge.publishElementModQ(),
             this.response.publishElementModQ()
         )
