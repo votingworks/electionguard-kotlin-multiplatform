@@ -13,7 +13,7 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
         val selections: Map<String, Selection>,
-    );
+    )
 
     /**
      * The plaintext representation of the counts of one selection of one contest in the election.

@@ -10,10 +10,10 @@ fun electionguard.protogen.SubmittedBallot.importSubmittedBallot(
     groupContext: GroupContext
 ): SubmittedBallot? {
 
-    val manifestHash = groupContext.importUInt256(this.manifestHash)
-    val trackingHash = groupContext.importUInt256(this.code)
-    val previousTrackingHash = groupContext.importUInt256(this.codeSeed)
-    val cryptoHash = groupContext.importUInt256(this.cryptoHash)
+    val manifestHash = importUInt256(this.manifestHash)
+    val trackingHash = importUInt256(this.code)
+    val previousTrackingHash = importUInt256(this.codeSeed)
+    val cryptoHash = importUInt256(this.cryptoHash)
     val ballotState = this.state.importBallotState()
     val contests = this.contests.map { it.importContest(groupContext) }.noNullValuesOrNull()
 
@@ -59,9 +59,9 @@ private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState
 private fun electionguard.protogen.CiphertextBallotContest.importContest(
     groupContext: GroupContext
 ): SubmittedBallot.Contest? {
-    val contestHash = groupContext.importUInt256(this.contestHash)
+    val contestHash = importUInt256(this.contestHash)
     val ciphertextAccumulation = groupContext.importCiphertext(this.ciphertextAccumulation)
-    val cryptoHash = groupContext.importUInt256(this.cryptoHash)
+    val cryptoHash = importUInt256(this.cryptoHash)
     val proof = this.proof?.let { this.proof.importConstantChaumPedersenProof(groupContext) }
     val selections = this.selections.map { it.importSelection(groupContext) }.noNullValuesOrNull()
 
@@ -89,10 +89,10 @@ private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
     groupContext: GroupContext
 ): SubmittedBallot.Selection? {
 
-    val selectionHash = groupContext.importUInt256(this.selectionHash)
+    val selectionHash = importUInt256(this.selectionHash)
     val ciphertext = groupContext.importCiphertext(this.ciphertext)
-    val cryptoHash = groupContext.importUInt256(this.cryptoHash)
-    val proof = this.proof?.let { it.importDisjunctiveChaumPedersenProof(groupContext) }
+    val cryptoHash = importUInt256(this.cryptoHash)
+    val proof = this.proof?.importDisjunctiveChaumPedersenProof(groupContext)
     val extendedData = groupContext.importCiphertext(this.extendedData)
 
     if (selectionHash == null || ciphertext == null || cryptoHash == null || proof == null) {
@@ -162,7 +162,7 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
             proofZeroChallenge,
             proofZeroResponse,
         ),
-        GenericChaumPedersenProof(proofOnePad, proofOneData, proofOneChallenge, proofOneResponse,),
+        GenericChaumPedersenProof(proofOnePad, proofOneData, proofOneChallenge, proofOneResponse),
         proofChallenge,
     )
 }

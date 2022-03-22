@@ -165,8 +165,8 @@ actual class Publisher {
         val electionRecordProto = publishElectionRecord(
             PROTO_VERSION,
             manifest,
-            context,
             constants,
+            context,
             guardianRecords,
             devices,
             ciphertextTally,

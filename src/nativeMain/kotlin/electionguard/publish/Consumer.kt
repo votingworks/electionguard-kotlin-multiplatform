@@ -14,7 +14,7 @@ actual class Consumer actual constructor(
         TODO("Not yet implemented")
     }
 
-    actual fun readElectionRecordProto(): ElectionRecord? {
+    actual fun readElectionRecord(): ElectionRecord {
         TODO("Not yet implemented")
     }
 

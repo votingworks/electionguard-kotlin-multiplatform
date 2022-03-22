@@ -16,7 +16,7 @@ data class PlaintextBallot(
         val contestId: String, // matches ContestDescription.contestId
         val sequenceOrder: Int,
         val selections: List<Selection>,
-    );
+    )
 
     /** The plaintext representation of one selection for a particular contest. */
     data class Selection(

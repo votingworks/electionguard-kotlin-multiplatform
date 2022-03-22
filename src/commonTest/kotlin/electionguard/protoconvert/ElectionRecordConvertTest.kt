@@ -58,7 +58,7 @@ class ElectionRecordConvertTest {
         return ElectionRecord(
             "version",
             generateElectionConstants(),
-            ManifestConvertTest.generateFakeManifest(context),
+            ManifestConvertTest.generateFakeManifest(),
             generateElectionContext(context),
             List(3) { generateGuardianRecord(it, context) },
             List(1) { generateEncryptionDevice(it) },

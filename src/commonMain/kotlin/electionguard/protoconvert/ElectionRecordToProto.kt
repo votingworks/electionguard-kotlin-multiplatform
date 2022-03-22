@@ -3,12 +3,26 @@ package electionguard.protoconvert
 import electionguard.ballot.*
 import pbandk.ByteArr
 
+fun ElectionRecordAllData.publishElectionRecord(): electionguard.protogen.ElectionRecord {
+    return publishElectionRecord(
+        this.protoVersion,
+        this.manifest,
+        this.constants,
+        this.context,
+        this.guardianRecords,
+        this.devices,
+        this.encryptedTally,
+        this.decryptedTally,
+        this.availableGuardians,
+    )
+}
+
 fun ElectionRecord.publishElectionRecord(): electionguard.protogen.ElectionRecord {
     return publishElectionRecord(
         this.protoVersion,
         this.manifest,
-        this.context,
         this.constants,
+        this.context,
         this.guardianRecords,
         this.devices,
         this.encryptedTally,
@@ -20,10 +34,10 @@ fun ElectionRecord.publishElectionRecord(): electionguard.protogen.ElectionRecor
 fun publishElectionRecord(
     version: String,
     manifest: Manifest,
-    context: ElectionContext,
     constants: ElectionConstants,
+    context: ElectionContext?,
     guardianRecords: List<GuardianRecord>?,
-    devices: Iterable<EncryptionDevice>,
+    devices: Iterable<EncryptionDevice>?,
     encryptedTally: CiphertextTally?,
     decryptedTally: PlaintextTally?,
     availableGuardians: List<AvailableGuardian>?,
@@ -34,9 +48,9 @@ fun publishElectionRecord(
             version,
             constants.publishConstants(),
             manifest.publishManifest(),
-            context.publishContext(),
+            context?.publishContext(),
             guardianRecords?.map { it.publishGuardianRecord() } ?: emptyList(),
-            devices.map { it.publishDevice() },
+            devices?.map { it.publishDevice() } ?: emptyList(),
             encryptedTally?.let { encryptedTally.publishCiphertextTally() },
             decryptedTally?.let { decryptedTally.publishPlaintextTally() },
             availableGuardians?.map { it.publishAvailableGuardian() } ?: emptyList(),

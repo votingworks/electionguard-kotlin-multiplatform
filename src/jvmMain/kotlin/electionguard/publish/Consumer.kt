@@ -27,19 +27,27 @@ actual class Consumer actual constructor(electionRecordDir: String, val groupCon
         val where = publisher.electionRecordProtoPath()
         val electionRecord: ElectionRecord?
         if (Files.exists(where)) {
-            electionRecord = readElectionRecordProto()
+            electionRecord = readElectionRecord()
         } else {
             throw FileNotFoundException("No election record found in $where")
         }
-        if (electionRecord == null) {
-            throw IOException("Malformed election record found in $where")
-        }
 
-        return ElectionRecordAllData(electionRecord, iterateSubmittedBallots(), emptyList())
+        return ElectionRecordAllData(
+            electionRecord.protoVersion,
+            electionRecord.constants,
+            electionRecord.manifest,
+            electionRecord.context?: throw RuntimeException("missing context"),
+            electionRecord.guardianRecords?: emptyList(),
+            electionRecord.devices?: emptyList(),
+            electionRecord.encryptedTally?: throw RuntimeException("missing encryptedTally"),
+            electionRecord.decryptedTally?: throw RuntimeException("missing decryptedTally"),
+            electionRecord.availableGuardians?: emptyList(),
+            iterateSubmittedBallots(),
+            emptyList())
     }
 
     @Throws(IOException::class)
-    actual fun readElectionRecordProto(): ElectionRecord? {
+    actual fun readElectionRecord(): ElectionRecord {
         var proto: electionguard.protogen.ElectionRecord
         val filename = publisher.electionRecordProtoPath().toString()
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionRecord.decodeFromStream(inp) }

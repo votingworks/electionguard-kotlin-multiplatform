@@ -16,6 +16,7 @@ public data class Manifest(
     val ballotStyles: List<electionguard.protogen.BallotStyle> = emptyList(),
     val name: electionguard.protogen.InternationalizedText? = null,
     val contactInformation: electionguard.protogen.ContactInformation? = null,
+    val cryptoHash: electionguard.protogen.UInt256? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.Manifest = protoMergeImpl(other)
@@ -26,7 +27,7 @@ public data class Manifest(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.Manifest = electionguard.protogen.Manifest.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.Manifest> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.Manifest, *>>(12)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.Manifest, *>>(13)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -146,6 +147,16 @@ public data class Manifest(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ContactInformation.Companion),
                         jsonName = "contactInformation",
                         value = electionguard.protogen.Manifest::contactInformation
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "crypto_hash",
+                        number = 13,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "cryptoHash",
+                        value = electionguard.protogen.Manifest::cryptoHash
                     )
                 )
             }
@@ -733,6 +744,7 @@ public data class ContestDescription(
     val ballotTitle: electionguard.protogen.InternationalizedText? = null,
     val ballotSubtitle: electionguard.protogen.InternationalizedText? = null,
     val primaryPartyIds: List<String> = emptyList(),
+    val cryptoHash: electionguard.protogen.UInt256? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.ContestDescription = protoMergeImpl(other)
@@ -743,7 +755,7 @@ public data class ContestDescription(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ContestDescription = electionguard.protogen.ContestDescription.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ContestDescription> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ContestDescription, *>>(11)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ContestDescription, *>>(12)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -855,6 +867,16 @@ public data class ContestDescription(
                         value = electionguard.protogen.ContestDescription::primaryPartyIds
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "crypto_hash",
+                        number = 12,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "cryptoHash",
+                        value = electionguard.protogen.ContestDescription::cryptoHash
+                    )
+                )
             }
             pbandk.MessageDescriptor(
                 fullName = "ContestDescription",
@@ -898,6 +920,7 @@ public data class SelectionDescription(
     val selectionId: String = "",
     val sequenceOrder: Int = 0,
     val candidateId: String = "",
+    val cryptoHash: electionguard.protogen.UInt256? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.SelectionDescription = protoMergeImpl(other)
@@ -908,7 +931,7 @@ public data class SelectionDescription(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.SelectionDescription = electionguard.protogen.SelectionDescription.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.SelectionDescription> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.SelectionDescription, *>>(3)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.SelectionDescription, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -940,6 +963,16 @@ public data class SelectionDescription(
                         value = electionguard.protogen.SelectionDescription::candidateId
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "crypto_hash",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "cryptoHash",
+                        value = electionguard.protogen.SelectionDescription::cryptoHash
+                    )
+                )
             }
             pbandk.MessageDescriptor(
                 fullName = "SelectionDescription",
@@ -964,6 +997,7 @@ private fun Manifest.protoMergeImpl(plus: pbandk.Message?): Manifest = (plus as?
         ballotStyles = ballotStyles + plus.ballotStyles,
         name = name?.plus(plus.name) ?: plus.name,
         contactInformation = contactInformation?.plus(plus.contactInformation) ?: plus.contactInformation,
+        cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -982,6 +1016,7 @@ private fun Manifest.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Manifes
     var ballotStyles: pbandk.ListWithSize.Builder<electionguard.protogen.BallotStyle>? = null
     var name: electionguard.protogen.InternationalizedText? = null
     var contactInformation: electionguard.protogen.ContactInformation? = null
+    var cryptoHash: electionguard.protogen.UInt256? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -997,11 +1032,13 @@ private fun Manifest.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Manifes
             10 -> ballotStyles = (ballotStyles ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.BallotStyle> }
             11 -> name = _fieldValue as electionguard.protogen.InternationalizedText
             12 -> contactInformation = _fieldValue as electionguard.protogen.ContactInformation
+            13 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
         }
     }
     return Manifest(electionScopeId, specVersion, electionType, startDate,
         endDate, pbandk.ListWithSize.Builder.fixed(geopoliticalUnits), pbandk.ListWithSize.Builder.fixed(parties), pbandk.ListWithSize.Builder.fixed(candidates),
-        pbandk.ListWithSize.Builder.fixed(contests), pbandk.ListWithSize.Builder.fixed(ballotStyles), name, contactInformation, unknownFields)
+        pbandk.ListWithSize.Builder.fixed(contests), pbandk.ListWithSize.Builder.fixed(ballotStyles), name, contactInformation,
+        cryptoHash, unknownFields)
 }
 
 @pbandk.Export
@@ -1239,6 +1276,7 @@ private fun ContestDescription.protoMergeImpl(plus: pbandk.Message?): ContestDes
         ballotTitle = ballotTitle?.plus(plus.ballotTitle) ?: plus.ballotTitle,
         ballotSubtitle = ballotSubtitle?.plus(plus.ballotSubtitle) ?: plus.ballotSubtitle,
         primaryPartyIds = primaryPartyIds + plus.primaryPartyIds,
+        cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1256,6 +1294,7 @@ private fun ContestDescription.Companion.decodeWithImpl(u: pbandk.MessageDecoder
     var ballotTitle: electionguard.protogen.InternationalizedText? = null
     var ballotSubtitle: electionguard.protogen.InternationalizedText? = null
     var primaryPartyIds: pbandk.ListWithSize.Builder<String>? = null
+    var cryptoHash: electionguard.protogen.UInt256? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -1270,11 +1309,12 @@ private fun ContestDescription.Companion.decodeWithImpl(u: pbandk.MessageDecoder
             9 -> ballotTitle = _fieldValue as electionguard.protogen.InternationalizedText
             10 -> ballotSubtitle = _fieldValue as electionguard.protogen.InternationalizedText
             11 -> primaryPartyIds = (primaryPartyIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
+            12 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
         }
     }
     return ContestDescription(contestId, sequenceOrder, geopoliticalUnitId, voteVariation,
         numberElected, votesAllowed, name, pbandk.ListWithSize.Builder.fixed(selections),
-        ballotTitle, ballotSubtitle, pbandk.ListWithSize.Builder.fixed(primaryPartyIds), unknownFields)
+        ballotTitle, ballotSubtitle, pbandk.ListWithSize.Builder.fixed(primaryPartyIds), cryptoHash, unknownFields)
 }
 
 @pbandk.Export
@@ -1283,6 +1323,7 @@ public fun SelectionDescription?.orDefault(): electionguard.protogen.SelectionDe
 
 private fun SelectionDescription.protoMergeImpl(plus: pbandk.Message?): SelectionDescription = (plus as? SelectionDescription)?.let {
     it.copy(
+        cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1292,13 +1333,15 @@ private fun SelectionDescription.Companion.decodeWithImpl(u: pbandk.MessageDecod
     var selectionId = ""
     var sequenceOrder = 0
     var candidateId = ""
+    var cryptoHash: electionguard.protogen.UInt256? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
             3 -> candidateId = _fieldValue as String
+            4 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
         }
     }
-    return SelectionDescription(selectionId, sequenceOrder, candidateId, unknownFields)
+    return SelectionDescription(selectionId, sequenceOrder, candidateId, cryptoHash, unknownFields)
 }
