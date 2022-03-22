@@ -115,6 +115,7 @@ fun GenericChaumPedersenProof.publishChaumPedersenProof():
     electionguard.protogen.GenericChaumPedersenProof {
         return electionguard.protogen
             .GenericChaumPedersenProof(
+                null, null, // 1.0 0nly
                 this.c.publishElementModQ(),
                 this.r.publishElementModQ()
             )
@@ -124,6 +125,7 @@ fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen
         .SchnorrProof(
             this.publicKey.publishElGamalPublicKey(),
+            null, // 1.0 0nly
             this.challenge.publishElementModQ(),
             this.response.publishElementModQ()
         )

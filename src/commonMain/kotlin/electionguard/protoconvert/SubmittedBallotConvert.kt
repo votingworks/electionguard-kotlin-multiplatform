@@ -115,16 +115,21 @@ private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
 fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPedersenProof(
     groupContext: GroupContext
 ): ConstantChaumPedersenProofKnownNonce? {
-    val challenge = groupContext.importElementModQ(this.proof?.challenge)
-    val response = groupContext.importElementModQ(this.proof?.response)
+    var proof = groupContext.importChaumPedersenProof(this.proof)
 
-    if (challenge == null || response == null) {
-        logger.error { "Failed to convert constant Chaum-Pedersen proof, missing fields" }
-        return null
+    if (proof == null) { // 1.0
+        val challenge = groupContext.importElementModQ(this.challenge)
+        val response = groupContext.importElementModQ(this.response)
+
+        if (challenge == null || response == null) {
+            logger.error { "Failed to convert constant Chaum-Pedersen 1.0 proof, missing fields" }
+            return null
+        }
+        proof = GenericChaumPedersenProof(challenge, response)
     }
 
     return ConstantChaumPedersenProofKnownNonce(
-        GenericChaumPedersenProof(challenge, response),
+        proof,
         this.constant
     )
 }
@@ -132,9 +137,32 @@ fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPederse
 fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumPedersenProof(
     groupContext: GroupContext
 ): DisjunctiveChaumPedersenProofKnownNonce? {
-    val proof0 = groupContext.importChaumPedersenProof(this.proof0)
-    val proof1 = groupContext.importChaumPedersenProof(this.proof1)
+    var proof0 = groupContext.importChaumPedersenProof(this.proof0)
+    var proof1 = groupContext.importChaumPedersenProof(this.proof1)
     val proofChallenge = groupContext.importElementModQ(this.challenge)
+
+    if (proof0 == null && proof1 == null) { // 1.0 election record
+        val proofZeroPad = groupContext.importElementModP(this.proofZeroPad)
+        val proofZeroData = groupContext.importElementModP(this.proofZeroData)
+        val proofZeroChallenge = groupContext.importElementModQ(this.proofZeroChallenge)
+        val proofZeroResponse = groupContext.importElementModQ(this.proofZeroResponse)
+
+        val proofOnePad = groupContext.importElementModP(this.proofOnePad)
+        val proofOneData = groupContext.importElementModP(this.proofOneData)
+        val proofOneChallenge = groupContext.importElementModQ(this.proofOneChallenge)
+        val proofOneResponse = groupContext.importElementModQ(this.proofOneResponse)
+
+        if (proofZeroPad == null || proofZeroData == null || proofZeroChallenge == null ||
+            proofZeroResponse == null || proofOnePad == null || proofOneData == null ||
+            proofOneChallenge == null || proofOneResponse == null || proofChallenge == null
+        ) {
+            logger.error { "Failed to convert disjunctive Chaum-Pedersen proof, missing 1.0 fields" }
+            return null
+        }
+
+        proof0 = GenericChaumPedersenProof(proofZeroChallenge, proofZeroResponse)
+        proof1 = GenericChaumPedersenProof(proofOneChallenge, proofOneResponse)
+    }
 
     if (proof0 == null || proof1 == null || proofChallenge == null) {
         logger.error { "Failed to convert disjunctive Chaum-Pedersen proof, missing fields" }
@@ -203,6 +231,7 @@ fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof():
     electionguard.protogen.ConstantChaumPedersenProof {
         return electionguard.protogen
             .ConstantChaumPedersenProof(
+                null, null, null, null, // 1.0 0nly
                 this.constant,
                 this.proof.publishChaumPedersenProof(),
             )
@@ -212,6 +241,8 @@ fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof
     electionguard.protogen.DisjunctiveChaumPedersenProof {
         return electionguard.protogen
             .DisjunctiveChaumPedersenProof(
+                null, null, null, null, // 1.0 0nly
+                null, null, null, null, // 1.0 0nly
                 this.c.publishElementModQ(),
                 this.proof0.publishChaumPedersenProof(),
                 this.proof1.publishChaumPedersenProof(),
