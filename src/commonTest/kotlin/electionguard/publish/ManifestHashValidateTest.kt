@@ -6,8 +6,9 @@ import electionguard.core.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/** Test Manifest hash values against the ones that python and java generate. */
 class ManifestHashValidateTest {
-    val input = "/home/snake/tmp/electionguard/TestHashAgainstPython/"
+    val input = "src/commonTest/data/testPython/"
 
     @Test
     fun readElectionRecordWrittenByEncryptorJava() {
@@ -64,7 +65,5 @@ class ManifestHashValidateTest {
             println("  Expected crypto_hash: $ccryptoHash")
             assertEquals(contest.cryptoHash, ccryptoHash)
         }
-
-
     }
 }
