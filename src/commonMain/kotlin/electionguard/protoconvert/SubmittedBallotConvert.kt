@@ -170,8 +170,8 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
     }
 
     return DisjunctiveChaumPedersenProofKnownNonce(
-        GenericChaumPedersenProof(proofZeroChallenge, proofZeroResponse,),
-        GenericChaumPedersenProof(proofOneChallenge, proofOneResponse,),
+        proof0,
+        proof1,
         proofChallenge,
     )
 }
