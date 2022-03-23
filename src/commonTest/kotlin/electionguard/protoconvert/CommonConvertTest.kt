@@ -43,14 +43,9 @@ class CommonConvertTest {
     @Test
     fun convertChaumPedersenProof() {
         runTest {
-            checkAll(
-                validElementsModP(productionGroup()),
-                validElementsModP(productionGroup()),
-                elementsModQ(productionGroup()),
-                elementsModQ(productionGroup()),
-            ) { a, b, c, r ->
+            checkAll(elementsModQ(productionGroup()), elementsModQ(productionGroup()),) { c, r ->
                 val context = productionGroup()
-                val proof = GenericChaumPedersenProof(a, b, c, r)
+                val proof = GenericChaumPedersenProof(c, r)
 
                 val proto = proof.publishChaumPedersenProof()
                 val roundtrip = context.importChaumPedersenProof(proto)
@@ -64,13 +59,12 @@ class CommonConvertTest {
         runTest {
             checkAll(
                 validElementsModP(productionGroup()),
-                validElementsModP(productionGroup()),
                 elementsModQ(productionGroup()),
                 elementsModQ(productionGroup()),
-            ) { p, commit, c, r ->
+            ) { p, c, r ->
                 val context = productionGroup()
                 val publicKey = ElGamalPublicKey(p)
-                val proof = SchnorrProof(publicKey, commit, c, r)
+                val proof = SchnorrProof(publicKey, c, r)
                 val proto = proof.publishSchnorrProof()
                 val roundtrip = context.importSchnorrProof(proto)
                 assertEquals(roundtrip, proof)

@@ -42,24 +42,22 @@ fun GroupContext.importCiphertext(
 }
 
 fun GroupContext.importChaumPedersenProof(
-    proof: electionguard.protogen.ChaumPedersenProof?,
+    proof: electionguard.protogen.GenericChaumPedersenProof?,
 ): GenericChaumPedersenProof? {
     // TODO: this should probably be a ConstantChaumPedersenProofKnownSecretKey, which needs to know
     //   what the constant actually is. That should be nearby in the serialized data.
 
     if (proof == null) return null
 
-    val pad = this.importElementModP(proof.pad)
-    val data = this.importElementModP(proof.data)
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
 
-    if (pad == null || data == null || challenge == null || response == null) {
-        logger.error { "one or more ChaumPedersenProof inputs was malformed or out of bounds" }
+    if (challenge == null || response == null) {
+        logger.error { "GenericChaumPedersenProof fields are missing or malformed or out of bounds" }
         return null
     }
 
-    return GenericChaumPedersenProof(pad, data, challenge, response)
+    return GenericChaumPedersenProof(challenge, response)
 }
 
 fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?,): SchnorrProof? {
@@ -67,16 +65,15 @@ fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?,
     if (proof == null) return null
 
     val publicKey = this.importElGamalPublicKey(proof.publicKey)
-    val commitment = this.importElementModP(proof.commitment)
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
 
-    if (publicKey == null || commitment == null || challenge == null || response == null) {
+    if (publicKey == null || challenge == null || response == null) {
         logger.error { "one or more SchnorrProof inputs was malformed or out of bounds" }
         return null
     }
 
-    return SchnorrProof(publicKey, commitment, challenge, response)
+    return SchnorrProof(publicKey, challenge, response)
 }
 
 fun GroupContext.importElGamalPublicKey(
@@ -98,8 +95,8 @@ fun ElementModQ.publishElementModQ(): electionguard.protogen.ElementModQ {
 
 fun UInt256.publishUInt256(): electionguard.protogen.UInt256 {
     val ba = this.bytes
-    val bba =  ByteArr(ba)
-    val uq =  electionguard.protogen.UInt256(bba)
+    val bba = ByteArr(ba)
+    val uq = electionguard.protogen.UInt256(bba)
     return uq
     // return electionguard.protogen.UInt256(ByteArr(this.bytes))
 }
@@ -114,11 +111,10 @@ fun ElGamalCiphertext.publishCiphertext(): electionguard.protogen.ElGamalCiphert
 }
 
 fun GenericChaumPedersenProof.publishChaumPedersenProof():
-    electionguard.protogen.ChaumPedersenProof {
+    electionguard.protogen.GenericChaumPedersenProof {
         return electionguard.protogen
-            .ChaumPedersenProof(
-                this.a.publishElementModP(),
-                this.b.publishElementModP(),
+            .GenericChaumPedersenProof(
+                null, null, // 1.0 0nly
                 this.c.publishElementModQ(),
                 this.r.publishElementModQ()
             )
@@ -128,7 +124,7 @@ fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen
         .SchnorrProof(
             this.publicKey.publishElGamalPublicKey(),
-            this.commitment.publishElementModP(),
+            null, // 1.0 0nly
             this.challenge.publishElementModQ(),
             this.response.publishElementModQ()
         )

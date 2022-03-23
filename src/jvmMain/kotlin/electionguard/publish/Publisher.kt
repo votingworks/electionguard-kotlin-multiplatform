@@ -193,7 +193,7 @@ actual class Publisher {
     }
 
     companion object {
-        const val PROTO_VERSION = "1.0.0"
+        const val PROTO_VERSION = "2.0.0"
         const val ELECTION_RECORD_DIR = "election_record"
 
         //// proto

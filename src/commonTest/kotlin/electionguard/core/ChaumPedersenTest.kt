@@ -421,27 +421,9 @@ class ChaumPedersenTest {
                 assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader))
 
                 // now, swap the proofs around and verify it fails
-                val badProof =
-                    proof.copy(
-                        proof0 = proof.proof1,
-                        proof1 = proof.proof0,
-                        c =
-                            hashElements(
-                                hashHeader,
-                                ciphertext.pad,
-                                ciphertext.data,
-                                proof.proof1.a,
-                                proof.proof1.b,
-                                proof.proof0.a,
-                                proof.proof0.b
-                            ).toElementModQ(context)
-                    )
+                val badProof = proof.copy(proof0 = proof.proof1, proof1 = proof.proof0, c = proof.c)
 
                 assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
-
-                assertFalse(
-                    badProof.copy(c = proof.c).isValid(ciphertext, keypair.publicKey, hashHeader)
-                )
             }
         }
     }

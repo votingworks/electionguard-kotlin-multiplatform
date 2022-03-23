@@ -3,22 +3,22 @@
 package electionguard.protogen
 
 @pbandk.Export
-public data class ChaumPedersenProof(
+public data class GenericChaumPedersenProof(
     val pad: electionguard.protogen.ElementModP? = null,
     val data: electionguard.protogen.ElementModP? = null,
     val challenge: electionguard.protogen.ElementModQ? = null,
     val response: electionguard.protogen.ElementModQ? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ChaumPedersenProof = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ChaumPedersenProof> get() = Companion.descriptor
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.GenericChaumPedersenProof = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.GenericChaumPedersenProof> get() = Companion.descriptor
     override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.ChaumPedersenProof> {
-        public val defaultInstance: electionguard.protogen.ChaumPedersenProof by lazy { electionguard.protogen.ChaumPedersenProof() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ChaumPedersenProof = electionguard.protogen.ChaumPedersenProof.decodeWithImpl(u)
+    public companion object : pbandk.Message.Companion<electionguard.protogen.GenericChaumPedersenProof> {
+        public val defaultInstance: electionguard.protogen.GenericChaumPedersenProof by lazy { electionguard.protogen.GenericChaumPedersenProof() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.GenericChaumPedersenProof = electionguard.protogen.GenericChaumPedersenProof.decodeWithImpl(u)
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ChaumPedersenProof> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ChaumPedersenProof, *>>(4)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.GenericChaumPedersenProof> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.GenericChaumPedersenProof, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -27,7 +27,7 @@ public data class ChaumPedersenProof(
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "pad",
-                        value = electionguard.protogen.ChaumPedersenProof::pad
+                        value = electionguard.protogen.GenericChaumPedersenProof::pad
                     )
                 )
                 add(
@@ -37,7 +37,7 @@ public data class ChaumPedersenProof(
                         number = 2,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "data",
-                        value = electionguard.protogen.ChaumPedersenProof::data
+                        value = electionguard.protogen.GenericChaumPedersenProof::data
                     )
                 )
                 add(
@@ -47,7 +47,7 @@ public data class ChaumPedersenProof(
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "challenge",
-                        value = electionguard.protogen.ChaumPedersenProof::challenge
+                        value = electionguard.protogen.GenericChaumPedersenProof::challenge
                     )
                 )
                 add(
@@ -57,13 +57,13 @@ public data class ChaumPedersenProof(
                         number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "response",
-                        value = electionguard.protogen.ChaumPedersenProof::response
+                        value = electionguard.protogen.GenericChaumPedersenProof::response
                     )
                 )
             }
             pbandk.MessageDescriptor(
-                fullName = "ChaumPedersenProof",
-                messageClass = electionguard.protogen.ChaumPedersenProof::class,
+                fullName = "GenericChaumPedersenProof",
+                messageClass = electionguard.protogen.GenericChaumPedersenProof::class,
                 messageCompanion = this,
                 fields = fieldsList
             )
@@ -296,10 +296,10 @@ public data class UInt256(
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForChaumPedersenProof")
-public fun ChaumPedersenProof?.orDefault(): electionguard.protogen.ChaumPedersenProof = this ?: ChaumPedersenProof.defaultInstance
+@pbandk.JsName("orDefaultForGenericChaumPedersenProof")
+public fun GenericChaumPedersenProof?.orDefault(): electionguard.protogen.GenericChaumPedersenProof = this ?: GenericChaumPedersenProof.defaultInstance
 
-private fun ChaumPedersenProof.protoMergeImpl(plus: pbandk.Message?): ChaumPedersenProof = (plus as? ChaumPedersenProof)?.let {
+private fun GenericChaumPedersenProof.protoMergeImpl(plus: pbandk.Message?): GenericChaumPedersenProof = (plus as? GenericChaumPedersenProof)?.let {
     it.copy(
         pad = pad?.plus(plus.pad) ?: plus.pad,
         data = data?.plus(plus.data) ?: plus.data,
@@ -310,7 +310,7 @@ private fun ChaumPedersenProof.protoMergeImpl(plus: pbandk.Message?): ChaumPeder
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun ChaumPedersenProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ChaumPedersenProof {
+private fun GenericChaumPedersenProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder): GenericChaumPedersenProof {
     var pad: electionguard.protogen.ElementModP? = null
     var data: electionguard.protogen.ElementModP? = null
     var challenge: electionguard.protogen.ElementModQ? = null
@@ -324,7 +324,7 @@ private fun ChaumPedersenProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder
             4 -> response = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
-    return ChaumPedersenProof(pad, data, challenge, response, unknownFields)
+    return GenericChaumPedersenProof(pad, data, challenge, response, unknownFields)
 }
 
 @pbandk.Export

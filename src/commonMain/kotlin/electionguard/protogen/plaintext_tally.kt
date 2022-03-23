@@ -185,11 +185,11 @@ public data class CiphertextDecryptionSelection(
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     public sealed class ProofOrParts<V>(value: V) : pbandk.Message.OneOf<V>(value) {
-        public class Proof(proof: electionguard.protogen.ChaumPedersenProof) : ProofOrParts<electionguard.protogen.ChaumPedersenProof>(proof)
+        public class Proof(proof: electionguard.protogen.GenericChaumPedersenProof) : ProofOrParts<electionguard.protogen.GenericChaumPedersenProof>(proof)
         public class RecoveredParts(recoveredParts: electionguard.protogen.RecoveredParts) : ProofOrParts<electionguard.protogen.RecoveredParts>(recoveredParts)
     }
 
-    val proof: electionguard.protogen.ChaumPedersenProof?
+    val proof: electionguard.protogen.GenericChaumPedersenProof?
         get() = (proofOrParts as? ProofOrParts.Proof)?.value
     val recoveredParts: electionguard.protogen.RecoveredParts?
         get() = (proofOrParts as? ProofOrParts.RecoveredParts)?.value
@@ -239,7 +239,7 @@ public data class CiphertextDecryptionSelection(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof",
                         number = 4,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ChaumPedersenProof.Companion),
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.GenericChaumPedersenProof.Companion),
                         oneofMember = true,
                         jsonName = "proof",
                         value = electionguard.protogen.CiphertextDecryptionSelection::proof
@@ -310,7 +310,7 @@ public data class CiphertextCompensatedDecryptionSelection(
     val missingGuardianId: String = "",
     val share: electionguard.protogen.ElementModP? = null,
     val recoveryKey: electionguard.protogen.ElementModP? = null,
-    val proof: electionguard.protogen.ChaumPedersenProof? = null,
+    val proof: electionguard.protogen.GenericChaumPedersenProof? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.CiphertextCompensatedDecryptionSelection = protoMergeImpl(other)
@@ -378,7 +378,7 @@ public data class CiphertextCompensatedDecryptionSelection(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof",
                         number = 6,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ChaumPedersenProof.Companion),
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.GenericChaumPedersenProof.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.CiphertextCompensatedDecryptionSelection::proof
                     )
@@ -509,7 +509,7 @@ private fun CiphertextDecryptionSelection.Companion.decodeWithImpl(u: pbandk.Mes
             1 -> selectionId = _fieldValue as String
             2 -> guardianId = _fieldValue as String
             3 -> share = _fieldValue as electionguard.protogen.ElementModP
-            4 -> proofOrParts = CiphertextDecryptionSelection.ProofOrParts.Proof(_fieldValue as electionguard.protogen.ChaumPedersenProof)
+            4 -> proofOrParts = CiphertextDecryptionSelection.ProofOrParts.Proof(_fieldValue as electionguard.protogen.GenericChaumPedersenProof)
             5 -> proofOrParts = CiphertextDecryptionSelection.ProofOrParts.RecoveredParts(_fieldValue as electionguard.protogen.RecoveredParts)
         }
     }
@@ -559,7 +559,7 @@ private fun CiphertextCompensatedDecryptionSelection.Companion.decodeWithImpl(u:
     var missingGuardianId = ""
     var share: electionguard.protogen.ElementModP? = null
     var recoveryKey: electionguard.protogen.ElementModP? = null
-    var proof: electionguard.protogen.ChaumPedersenProof? = null
+    var proof: electionguard.protogen.GenericChaumPedersenProof? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -568,7 +568,7 @@ private fun CiphertextCompensatedDecryptionSelection.Companion.decodeWithImpl(u:
             3 -> missingGuardianId = _fieldValue as String
             4 -> share = _fieldValue as electionguard.protogen.ElementModP
             5 -> recoveryKey = _fieldValue as electionguard.protogen.ElementModP
-            6 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
+            6 -> proof = _fieldValue as electionguard.protogen.GenericChaumPedersenProof
         }
     }
     return CiphertextCompensatedDecryptionSelection(selectionId, guardianId, missingGuardianId, share,
