@@ -4,24 +4,31 @@ import electionguard.ballot.*
 import electionguard.protoconvert.publishElectionRecord
 import electionguard.protoconvert.publishPlaintextTally
 import electionguard.protoconvert.publishSubmittedBallot
+import electionguard.publish.ElectionRecordPath.Companion.ELECTION_RECORD_DIR
+import electionguard.publish.ElectionRecordPath.Companion.ELECTION_RECORD_FILE_NAME
+import electionguard.publish.ElectionRecordPath.Companion.PROTO_VERSION
+import electionguard.publish.ElectionRecordPath.Companion.SPOILED_BALLOT_FILE
+import electionguard.publish.ElectionRecordPath.Companion.SUBMITTED_BALLOT_PROTO
 import io.ktor.utils.io.errors.*
 import pbandk.encodeToStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 
 /** Publishes the Manifest Record to Json or protobuf files.  */
 actual class Publisher {
-    private val topdir: String
+    private val topDir: String
     private val createPublisherMode: PublisherMode
     private val electionRecordDir: Path
 
-    actual constructor(where: String, publisherMode: PublisherMode) {
-        this.topdir = where
+    actual constructor(topDir: String, publisherMode: PublisherMode) {
+        this.topDir = topDir
         this.createPublisherMode = publisherMode
-        this.electionRecordDir = Path.of(where).resolve(ELECTION_RECORD_DIR)
+        this.electionRecordDir = Path.of(topDir).resolve(ELECTION_RECORD_DIR)
         
         if (createPublisherMode == PublisherMode.createNew) {
             if (!Files.exists(electionRecordDir)) {
@@ -40,7 +47,7 @@ actual class Publisher {
 
     internal constructor(electionRecordDir: Path, createPublisherMode : PublisherMode) {
         this.createPublisherMode = createPublisherMode
-        topdir = electionRecordDir.toAbsolutePath().toString()
+        this.topDir = electionRecordDir.toAbsolutePath().toString()
         this.electionRecordDir = electionRecordDir
         
         if (createPublisherMode == PublisherMode.createNew) {
@@ -120,8 +127,8 @@ actual class Publisher {
     @Throws(IOException::class)
     actual fun writeElectionRecordProto(
         manifest: Manifest,
-        context: ElectionContext,
         constants: ElectionConstants,
+        context: ElectionContext?,
         guardianRecords: List<GuardianRecord>,
         devices: Iterable<EncryptionDevice>,
         submittedBallots: Iterable<SubmittedBallot>?,
@@ -137,7 +144,7 @@ actual class Publisher {
             FileOutputStream(submittedBallotProtoPath().toFile()).use { out ->
                 for (ballot in submittedBallots) {
                     val ballotProto = ballot.publishSubmittedBallot()
-                    ballotProto.encodeToStream(out)
+                    writeDelimitedTo(ballotProto, out)
                 }
             }
         }
@@ -145,23 +152,11 @@ actual class Publisher {
             FileOutputStream(spoiledBallotProtoPath().toFile()).use { out ->
                 for (ballot in spoiledBallots) {
                     val ballotProto = ballot.publishPlaintextTally()
-                    ballotProto.encodeToStream(out)
+                    writeDelimitedTo(ballotProto, out)
                 }
             }
         }
 
-        /*
-        translateToProto(
-        version : String,
-        manifest: Manifest,
-        context: ElectionContext,
-        constants: ElectionConstants,
-        guardianRecords: List<GuardianRecord>?,
-        devices: Iterable<EncryptionDevice>,
-        encryptedTally: CiphertextTally?,
-        decryptedTally: PlaintextTally?,
-        availableGuardians: List<AvailableGuardian>?,
-         */
         val electionRecordProto = publishElectionRecord(
             PROTO_VERSION,
             manifest,
@@ -192,16 +187,23 @@ actual class Publisher {
         Files.copy(source, dest, StandardCopyOption.COPY_ATTRIBUTES)
     }
 
-    companion object {
-        const val PROTO_VERSION = "2.0.0"
-        const val ELECTION_RECORD_DIR = "election_record"
+    private fun writeDelimitedTo(proto: pbandk.Message, output: OutputStream) {
+        val bb = ByteArrayOutputStream()
+        proto.encodeToStream(bb)
+        writeVlen(bb.size(), output)
+        output.write(bb.toByteArray())
+    }
 
-        //// proto
-        const val PROTO_SUFFIX = ".protobuf"
-        const val ELECTION_RECORD_FILE_NAME = "electionRecord" + PROTO_SUFFIX
-        const val GUARDIANS_FILE = "guardians" + PROTO_SUFFIX
-        const val SUBMITTED_BALLOT_PROTO = "submittedBallots" + PROTO_SUFFIX
-        const val SPOILED_BALLOT_FILE = "spoiledBallotsTally" + PROTO_SUFFIX
-        const val TRUSTEES_FILE = "trustees" + PROTO_SUFFIX
+    private fun writeVlen(value: Int, output: OutputStream) {
+        var value = value
+        while (true) {
+            if (value and 0x7F.inv() == 0) {
+                output.write(value)
+                return
+            } else {
+                output.write(value and 0x7F or 0x80)
+                value = value ushr 7
+            }
+        }
     }
 }

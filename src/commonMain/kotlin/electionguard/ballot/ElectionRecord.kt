@@ -85,10 +85,7 @@ data class ElectionConstants(
 data class ElectionContext(
     /** The number of guardians necessary to generate the public key. */
     val numberOfGuardians: Int,
-    /**
-     * The quorum of guardians necessary to decrypt an election. Must be less than
-     * number_of_guardians.
-     */
+    /** The quorum of guardians necessary to decrypt an election. Must be <= number_of_guardians. */
     val quorum: Int,
     /** The joint public key (K) in the ElectionGuard Spec. */
     val jointPublicKey: ElementModP,

@@ -3,13 +3,12 @@ package electionguard.publish
 import electionguard.ballot.*
 
 /** Read/write the Election Record as protobuf files. */
-expect class Publisher(where: String, publisherMode: PublisherMode) {
-
-    /** Publishes the entire election record as proto. */
+expect class Publisher(topDir: String, publisherMode: PublisherMode) {
+    /** Publishes the election record. */
     fun writeElectionRecordProto(
         manifest: Manifest,
-        context: ElectionContext,
         constants: ElectionConstants,
+        context: ElectionContext?,
         guardianRecords: List<GuardianRecord>,
         devices: Iterable<EncryptionDevice>,
         submittedBallots: Iterable<SubmittedBallot>?,
@@ -26,6 +25,3 @@ enum class PublisherMode {
     createIfMissing, // create directories if not already exist
     createNew // create clean directories
 }
-
-// expect classes cant have companion object, so this is PROTO_VERSION not Publisher.PROTO_VERSION
-const val PROTO_VERSION = "1.0.0"
