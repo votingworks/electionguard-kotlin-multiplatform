@@ -6,6 +6,7 @@ package electionguard.core
  */
 class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
     val key = inputKey.acceleratePow()
+    val dlogger = dLoggerOf(inputKey)
 
     override fun equals(other: Any?) =
         when {
@@ -22,6 +23,12 @@ class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
 
     /** Helper function so we don't have to extract the key all the time. */
     infix fun powP(exponent: ElementModQ): ElementModP = key powP exponent
+
+    /**
+     * Computes the discrete log of the input, with the public key as the base.
+     * Only yields an answer for "small" exponents, otherwise returns null.
+    */
+    fun dLog(input: ElementModP): Int? = dlogger.dLog(input)
 }
 
 /**
@@ -130,7 +137,7 @@ fun ElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): Int? {
     compatibleContextOrFail(pad, data, secretKey.key)
     val blind = pad powP secretKey.negativeKey
     val gPowM = data * blind
-    return gPowM.dLog()
+    return gPowM.dLogG()
 }
 
 /** Decrypts using the secret key from the keypair. If the decryption fails, `null` is returned. */
@@ -141,7 +148,7 @@ fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: Eleme
     compatibleContextOrFail(pad, data, publicKey.key, nonce)
     val blind = publicKey powP nonce
     val gPowM = data / blind
-    return gPowM.dLog()
+    return gPowM.dLogG()
 }
 
 /** Homomorphically "adds" two ElGamal ciphertexts together through piecewise multiplication. */

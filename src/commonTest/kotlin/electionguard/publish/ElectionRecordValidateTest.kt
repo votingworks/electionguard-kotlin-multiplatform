@@ -24,7 +24,7 @@ class ElectionRecordValidateTest {
     fun validateTally(group : GroupContext, tally : PlaintextTally, nguardians : Int?) {
         for (contest in tally.contests.values) {
             for (selection in contest.selections.values) {
-                val actual : Int? = group.dLog(selection.value)
+                val actual : Int? = group.dLogG(selection.value)
                 assertEquals(selection.tally, actual)
                 assertEquals(nguardians, selection.shares.size)
             }

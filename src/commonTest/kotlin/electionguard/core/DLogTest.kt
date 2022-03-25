@@ -13,7 +13,7 @@ class DLogTest {
         runTest {
             forAll(propTestFastConfig, Arb.int(min=0, max=small)) {
                 val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
-                it == context.gPowP(it.toElementModQ(context)).dLog()
+                it == context.gPowP(it.toElementModQ(context)).dLogG()
             }
         }
     }

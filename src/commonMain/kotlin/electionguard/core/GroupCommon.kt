@@ -153,12 +153,12 @@ interface GroupContext {
     /**
      * Identifies whether two internal GroupContexts are "compatible", so elements made in one
      * context would work in the other. Groups with the same primes will be compatible. Note that
-     * this is meant to be fast, so only makes superficial checks. The [Constants] variant of this
+     * this is meant to be fast, so only makes superficial checks. The [ElectionConstants] variant of this
      * method validates that all the group constants are the same.
      */
     fun isCompatible(ctx: GroupContext): Boolean
 
-    /** Identifies whether an external [Constants] is "compatible" with this GroupContext. */
+    /** Identifies whether an external [ElectionConstants] is "compatible" with this GroupContext. */
     fun isCompatible(externalConstants: ElectionConstants): Boolean =
         constants.isCompatible(externalConstants)
 
@@ -220,7 +220,7 @@ interface GroupContext {
      * Computes the discrete log, base g, of p. Only yields an answer for "small" exponents,
      * otherwise returns null.
      */
-    fun dLog(p: ElementModP): Int?
+    fun dLogG(p: ElementModP): Int?
 }
 
 interface ElementModQ : Element, Comparable<ElementModQ> {
@@ -422,7 +422,7 @@ fun compatibleContextOrFail(vararg elements: Element): GroupContext {
  * Computes the discrete log, base g, of this element. Only yields an answer for "small" exponents,
  * otherwise returns `null`.
  */
-fun ElementModP.dLog(): Int? = context.dLog(this)
+fun ElementModP.dLogG(): Int? = context.dLogG(this)
 
 /**
  * Converts from an external [ElectionConstants] to an internal [GroupContext]. Note the optional
