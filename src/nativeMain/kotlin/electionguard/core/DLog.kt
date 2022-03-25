@@ -6,12 +6,15 @@ import kotlinx.coroutines.sync.withLock
 
 private const val MAX_DLOG: Int = 1_000_000_000
 
-actual fun dLoggerOf(context: GroupContext) = DLog(context)
+actual fun dLoggerOf(base: ElementModP) = DLog(base)
 
-actual class DLog(val context: GroupContext) {
-    private val dLogMapping = mutableMapOf(context.ONE_MOD_P to 0)
+actual class DLog(val b: ElementModP) {
+    actual val base: ElementModP
+    get() = b
 
-    private var dLogMaxElement = context.ONE_MOD_P
+    private val dLogMapping = mutableMapOf(b.context.ONE_MOD_P to 0)
+
+    private var dLogMaxElement = b.context.ONE_MOD_P
     private var dLogMaxExponent = 0
 
     private val mutex = Mutex()
@@ -39,7 +42,7 @@ actual class DLog(val context: GroupContext) {
                             error = true
                             break
                         } else {
-                            dLogMaxElement *= context.G_MOD_P
+                            dLogMaxElement *= b
                             dLogMapping[dLogMaxElement] = dLogMaxExponent
                         }
                     }

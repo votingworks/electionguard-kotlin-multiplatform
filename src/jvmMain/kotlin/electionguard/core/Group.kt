@@ -84,7 +84,7 @@ class ProductionGroupContext(
         zeroModQ = ProductionElementModQ(0U.toBigInteger(), this)
         oneModQ = ProductionElementModQ(1U.toBigInteger(), this)
         twoModQ = ProductionElementModQ(2U.toBigInteger(), this)
-        dlogger = DLog(this)
+        dlogger = DLog(gModP)
         qMinus1Q = (zeroModQ - oneModQ) as ProductionElementModQ
     }
 
@@ -229,7 +229,7 @@ class ProductionGroupContext(
 
     override fun gPowP(e: ElementModQ) = gModP powP e
 
-    override fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
+    override fun dLogG(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
 private fun Element.getCompat(other: ProductionGroupContext): BigInteger {

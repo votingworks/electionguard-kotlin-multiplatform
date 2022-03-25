@@ -48,7 +48,7 @@ private class TinyGroupContext(
     val zeroModQ: ElementModQ
     val oneModQ: ElementModQ
     val twoModQ: ElementModQ
-    val dlogger: DLog by lazy { dLoggerOf(this) }
+    val dlogger: DLog
     val qMinus1Q: ElementModQ
 
     init {
@@ -62,6 +62,7 @@ private class TinyGroupContext(
         oneModQ = TinyElementModQ(1U, this)
         twoModQ = TinyElementModQ(2U, this)
         qMinus1Q = zeroModQ - oneModQ
+        dlogger = dLoggerOf(gModP)
     }
 
     override fun isProductionStrength() = false
@@ -179,7 +180,7 @@ private class TinyGroupContext(
 
     override fun gPowP(e: ElementModQ): ElementModP = gModP powP e
 
-    override fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
+    override fun dLogG(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
 private class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {

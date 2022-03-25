@@ -7,9 +7,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_DLOG: Int = 1_000_000_000
 
-actual fun dLoggerOf(context: GroupContext) = DLog(context)
+actual fun dLoggerOf(base: ElementModP) = DLog(base)
 
-actual class DLog(val context: GroupContext) {
+actual class DLog(val b: ElementModP) {
+    actual val base: ElementModP
+    get() = b
+
     // We're taking advantage of Java's ConcurrentHashMap, which allows us to know
     // we can safely attempt reads on the map without needing our global lock, which
     // we only need to use for writes.
@@ -17,10 +20,10 @@ actual class DLog(val context: GroupContext) {
     private val dLogMapping: MutableMap<ElementModP, Int> =
         ConcurrentHashMap<ElementModP, Int>()
             .apply {
-                this[context.ONE_MOD_P] = 0
+                this[b.context.ONE_MOD_P] = 0
             }
 
-    private var dLogMaxElement = context.ONE_MOD_P
+    private var dLogMaxElement = b.context.ONE_MOD_P
     private var dLogMaxExponent = 0
 
     private val mutex = Mutex()
@@ -42,7 +45,7 @@ actual class DLog(val context: GroupContext) {
                                 error = true
                                 break
                             } else {
-                                dLogMaxElement *= context.G_MOD_P
+                                dLogMaxElement *= b
                                 dLogMapping[dLogMaxElement] = dLogMaxExponent
                             }
                         }
