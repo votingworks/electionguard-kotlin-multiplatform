@@ -52,17 +52,22 @@ internal data class ExpandedGenericChaumPedersenProof(
 
 /**
  * Given a [GenericChaumPedersenProof], computes the `a` and `b` values that are needed for proofs
- * and such, but are removed for serialization.
+ * and such, but are removed for serialization. The `rDeltaForB` modifies the recomputation of the
+ * "b" value. Where it normally computes `h ^ r`, it now computes `h ^ {r + rDeltaForB}`. This
+ * is necessary for the changes to how disjunctive proofs are computed in ElectionGuard 2.0.
+ * If not specified, `rDeltaForB` is zero.
  */
 internal fun GenericChaumPedersenProof.expand(
     g: ElementModP,
     gx: ElementModP,
     h: ElementModP,
-    hx: ElementModP
+    hx: ElementModP,
+    rDeltaForB: ElementModQ? = null
 ): ExpandedGenericChaumPedersenProof {
     val negC = -c
     val a = (g powP r) * (gx powP negC)
-    val b = (h powP r) * (hx powP negC)
+    val rPlusDelta = if (rDeltaForB != null) r + rDeltaForB else r
+    val b = (h powP rPlusDelta) * (hx powP negC)
     return ExpandedGenericChaumPedersenProof(a, b, c, r)
 }
 
@@ -156,12 +161,16 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
     seed: ElementModQ,
     hashHeader: ElementModQ
 ): DisjunctiveChaumPedersenProofKnownNonce {
+    // Note: this is using the "base k" optimizations (2022) and is not compatible
+    // with ElectionGuard 1.0.
+
     val context =
         compatibleContextOrFail(this.data, this.pad, nonce, publicKey.key, seed, hashHeader)
     return when (plaintext) {
         0 -> {
-            // Note: this is using Benaloh's revised equations ("Efficient Implementation of
-            // ElectionGuard Ballot Encryption and Proofs", 2021).
+            // From the spec:
+            // (a0, b0) = (g^u, K^u)
+            // (a1, b1) = (g^v, K^w · K^v) = (g^v, K^{w+v})
 
             val (alpha, beta) = this
             val (u, v, w) = Nonces(seed, "disjoint-chaum-pedersen-proof")
@@ -169,7 +178,7 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             val a0 = context.gPowP(u)
             val b0 = publicKey powP u
             val a1 = context.gPowP(v)
-            val b1 = context.gPowP(w) * (publicKey powP v)
+            val b1 = publicKey powP (v + w)
             val c = hashElements(hashHeader, alpha, beta, a0, b0, a1, b1).toElementModQ(context)
             val c0 = c - w
             val c1 = w
@@ -182,14 +191,15 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             DisjunctiveChaumPedersenProofKnownNonce(realZeroProof, fakeOneProof, c)
         }
         1 -> {
-            // Note: this is using Benaloh's revised equations ("Efficient Implementation of
-            // ElectionGuard Ballot Encryption and Proofs", 2021).
+            // From the spec:
+            // (a0, b0) = (g^v, K^{w+v})
+            // (a1, b1) = (g^u, K^u)
 
             val (alpha, beta) = this
             val (u, v, w) = Nonces(seed, "disjoint-chaum-pedersen-proof")
 
             val a0 = context.gPowP(v)
-            val b0 = context.gPowP(w) * (publicKey powP v)
+            val b0 = publicKey powP (w + v)
             val a1 = context.gPowP(u)
             val b1 = publicKey powP u
             val c = hashElements(hashHeader, alpha, beta, a0, b0, a1, b1).toElementModQ(context)
@@ -243,7 +253,8 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
         hx = ciphertext.data * context.gPowP(-constant.toElementModQ(context)),
         alsoHash = arrayOf(ciphertext.pad, ciphertext.data),
         hashHeader = hashHeader,
-        checkC = true
+        checkC = true,
+        rDeltaForB = constant.toElementModQ(context)
     ) and (if (expectedConstant != -1) constant == expectedConstant else true)
 }
 
@@ -315,6 +326,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             gx = ciphertext.pad,
             h = publicKey.key,
             hx = ciphertext.data * context.GINV_MOD_P,
+            rDeltaForB = proof1.c
         )
 
     val validHash =
@@ -372,6 +384,10 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
  *     hash (Q')
  * @param alsoHash Optional additional values to include in the hash challenge computation hash
  * @param checkC If false, the challenge constant is not verified. (default: true)
+ * @param rDeltaForB modifies the recomputation of the
+ *     "b" value. Where it normally computes `h ^ r`, it now computes `h ^ {r + rDeltaForB}`. This
+ *     is necessary for the changes to how disjunctive proofs are computed in ElectionGuard 2.0.
+ *     If not specified, `rDeltaForB` is zero.
  * @return true if the proof is valid
  */
 fun GenericChaumPedersenProof.isValid(
@@ -381,9 +397,10 @@ fun GenericChaumPedersenProof.isValid(
     hx: ElementModP,
     hashHeader: ElementModQ,
     alsoHash: Array<Element> = emptyArray(),
-    checkC: Boolean = true
+    checkC: Boolean = true,
+    rDeltaForB: ElementModQ? = null
 ): Boolean {
-    return expand(g, gx, h, hx).isValid(g, gx, h, hx, hashHeader, alsoHash, checkC)
+    return expand(g, gx, h, hx, rDeltaForB).isValid(g, gx, h, hx, hashHeader, alsoHash, checkC)
 }
 
 internal fun ExpandedGenericChaumPedersenProof.isValid(
