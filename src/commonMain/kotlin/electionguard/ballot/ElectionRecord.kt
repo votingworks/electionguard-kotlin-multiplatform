@@ -24,9 +24,7 @@ data class ElectionRecordAllData(
     val spoiledBallots: Iterable<PlaintextTally>,
 )
 
-/**
- * The published election record, many fields are optional.
- */
+/** The published election record, many fields are optional. */
 data class ElectionRecord(
     val protoVersion: String,
     val constants: ElectionConstants,
