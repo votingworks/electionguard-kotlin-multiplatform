@@ -25,9 +25,9 @@ class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
     infix fun powP(exponent: ElementModQ): ElementModP = key powP exponent
 
     /**
-     * Computes the discrete log of the input, with the public key as the base.
-     * Only yields an answer for "small" exponents, otherwise returns null.
-    */
+     * Computes the discrete log of the input, with the public key as the base. Only yields an
+     * answer for "small" exponents, otherwise returns null.
+     */
     fun dLog(input: ElementModP): Int? = dlogger.dLog(input)
 }
 
@@ -92,9 +92,8 @@ fun elGamalKeyPairFromRandom(context: GroupContext) =
 
 /**
  * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
- * deterministic, or it will be chosen at random.
- * Note that this implementation uses the new "base k" optimizations, so is not compatible
- * with ElectionGuard 1.0.
+ * deterministic, or it will be chosen at random. Note that this implementation uses the new "base
+ * k" optimizations, so is not compatible with ElectionGuard 1.0.
  *
  * @throws ArithmeticException if the nonce is zero or if the message is negative
  */
@@ -123,9 +122,8 @@ fun Int.encrypt(
 
 /**
  * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
- * deterministic, or it will be chosen at random.
- * Note that this implementation uses the new "base k" optimizations, so is not compatible
- * with ElectionGuard 1.0.
+ * deterministic, or it will be chosen at random. Note that this implementation uses the new "base
+ * k" optimizations, so is not compatible with ElectionGuard 1.0.
  */
 fun Int.encrypt(
     keypair: ElGamalKeypair,
@@ -133,9 +131,8 @@ fun Int.encrypt(
 ) = this.encrypt(keypair.publicKey, nonce)
 
 /**
- * Decrypts using the secret key. if the decryption fails, `null` is returned.
- * Note that this implementation uses the new "base k" optimizations, so is not compatible
- * with ElectionGuard 1.0.
+ * Decrypts using the secret key. if the decryption fails, `null` is returned. Note that this
+ * implementation uses the new "base k" optimizations, so is not compatible with ElectionGuard 1.0.
  */
 fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair): Int? {
     val (secretKey, publicKey) = keypair
@@ -152,9 +149,9 @@ fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair): Int? {
 }
 
 /**
- * Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned.
- * Note that this implementation uses the new "base k" optimizations, so is not compatible
- * with ElectionGuard 1.0.
+ * Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned. Note that
+ * this implementation uses the new "base k" optimizations, so is not compatible with ElectionGuard
+ * 1.0.
  */
 fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ): Int? {
     compatibleContextOrFail(pad, data, publicKey.key, nonce)

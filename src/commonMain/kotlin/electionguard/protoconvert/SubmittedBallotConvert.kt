@@ -117,7 +117,8 @@ fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPederse
 ): ConstantChaumPedersenProofKnownNonce? {
     var proof = groupContext.importChaumPedersenProof(this.proof)
 
-    if (proof == null) { // 1.0
+    if (proof == null) {
+        // 1.0
         val challenge = groupContext.importElementModQ(this.challenge)
         val response = groupContext.importElementModQ(this.response)
 
@@ -128,10 +129,7 @@ fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPederse
         proof = GenericChaumPedersenProof(challenge, response)
     }
 
-    return ConstantChaumPedersenProofKnownNonce(
-        proof,
-        this.constant
-    )
+    return ConstantChaumPedersenProofKnownNonce(proof, this.constant)
 }
 
 fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumPedersenProof(
@@ -141,7 +139,8 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
     var proof1 = groupContext.importChaumPedersenProof(this.proof1)
     val proofChallenge = groupContext.importElementModQ(this.challenge)
 
-    if (proof0 == null && proof1 == null) { // 1.0 election record
+    if (proof0 == null && proof1 == null) {
+        // 1.0 election record
         val proofZeroPad = groupContext.importElementModP(this.proofZeroPad)
         val proofZeroData = groupContext.importElementModP(this.proofZeroData)
         val proofZeroChallenge = groupContext.importElementModQ(this.proofZeroChallenge)
@@ -156,7 +155,9 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
             proofZeroResponse == null || proofOnePad == null || proofOneData == null ||
             proofOneChallenge == null || proofOneResponse == null || proofChallenge == null
         ) {
-            logger.error { "Failed to convert disjunctive Chaum-Pedersen proof, missing 1.0 fields" }
+            logger.error {
+                "Failed to convert disjunctive Chaum-Pedersen proof, missing 1.0 fields"
+            }
             return null
         }
 
@@ -169,11 +170,7 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
         return null
     }
 
-    return DisjunctiveChaumPedersenProofKnownNonce(
-        proof0,
-        proof1,
-        proofChallenge,
-    )
+    return DisjunctiveChaumPedersenProofKnownNonce(proof0, proof1, proofChallenge,)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -231,7 +228,10 @@ fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof():
     electionguard.protogen.ConstantChaumPedersenProof {
         return electionguard.protogen
             .ConstantChaumPedersenProof(
-                null, null, null, null, // 1.0 0nly
+                null,
+                null,
+                null,
+                null, // 1.0 0nly
                 this.constant,
                 this.proof.publishChaumPedersenProof(),
             )
@@ -241,8 +241,14 @@ fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof
     electionguard.protogen.DisjunctiveChaumPedersenProof {
         return electionguard.protogen
             .DisjunctiveChaumPedersenProof(
-                null, null, null, null, // 1.0 0nly
-                null, null, null, null, // 1.0 0nly
+                null,
+                null,
+                null,
+                null, // 1.0 0nly
+                null,
+                null,
+                null,
+                null, // 1.0 0nly
                 this.c.publishElementModQ(),
                 this.proof0.publishChaumPedersenProof(),
                 this.proof1.publishChaumPedersenProof(),

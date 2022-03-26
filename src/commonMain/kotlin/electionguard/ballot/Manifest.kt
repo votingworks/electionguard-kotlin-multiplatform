@@ -42,25 +42,23 @@ fun contestDescriptionCryptoHash(
     ballotTitle: Manifest.InternationalizedText?,
     ballotSubtitle: Manifest.InternationalizedText?,
     primaryPartyIds: List<String>
-) = hashElements(
-    contestId,
-    geopoliticalUnitId,
-    sequenceOrder,
-    voteVariation.name,
-    numberElected,
-    votesAllowed,
-    name,
-    selections,
-    ballotTitle,
-    ballotSubtitle,
-    // primaryPartyIds,
-)
+) =
+    hashElements(
+        contestId,
+        geopoliticalUnitId,
+        sequenceOrder,
+        voteVariation.name,
+        numberElected,
+        votesAllowed,
+        name,
+        selections,
+        ballotTitle,
+        ballotSubtitle,
+        // primaryPartyIds,
+    )
 
-fun selectionDescriptionCryptoHash(
-    selectionId: String,
-    sequenceOrder: Int,
-    candidateId: String,
-) = hashElements(selectionId, candidateId, sequenceOrder)
+fun selectionDescriptionCryptoHash(selectionId: String, sequenceOrder: Int, candidateId: String,) =
+    hashElements(selectionId, candidateId, sequenceOrder)
 
 fun internationalizedTextUnknown(): Manifest.InternationalizedText {
     val text = listOf(Manifest.Language("unknown", "en"))
@@ -87,21 +85,21 @@ data class Manifest(
     val ballotStyles: List<BallotStyle>,
     val name: InternationalizedText?,
     val contactInformation: ContactInformation?,
-    val cryptoHash: UInt256 = manifestCryptoHash(
-        electionScopeId,
-        electionType,
-        startDate,
-        endDate,
-        geopoliticalUnits,
-        parties,
-        candidates,
-        contests,
-        ballotStyles,
-        name,
-        contactInformation
-    ),
+    val cryptoHash: UInt256 =
+        manifestCryptoHash(
+            electionScopeId,
+            electionType,
+            startDate,
+            endDate,
+            geopoliticalUnits,
+            parties,
+            candidates,
+            contests,
+            ballotStyles,
+            name,
+            contactInformation
+        ),
 ) : CryptoHashableUInt256 {
-
     override fun cryptoHashUInt256() = cryptoHash
 
     /**
@@ -352,7 +350,8 @@ data class Manifest(
         val geopoliticalUnitIds: List<String>,
         val partyIds: List<String>,
         val imageUri: String?,
-        val cryptoHash: UInt256 = hashElements(ballotStyleId, geopoliticalUnitIds, partyIds, imageUri),
+        val cryptoHash: UInt256 =
+            hashElements(ballotStyleId, geopoliticalUnitIds, partyIds, imageUri),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
@@ -406,7 +405,8 @@ data class Manifest(
         val name: String,
         val type: ReportingUnitType,
         val contactInformation: ContactInformation?,
-        val cryptoHash: UInt256 = hashElements(geopoliticalUnitId, name, type.name, contactInformation),
+        val cryptoHash: UInt256 =
+            hashElements(geopoliticalUnitId, name, type.name, contactInformation),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
@@ -433,7 +433,7 @@ data class Manifest(
         val value: String,
         val language: String,
         val cryptoHash: UInt256 = hashElements(value, language),
-        ) : CryptoHashableUInt256 {
+    ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
 
@@ -472,19 +472,20 @@ data class Manifest(
         val ballotTitle: InternationalizedText?,
         val ballotSubtitle: InternationalizedText?,
         val primaryPartyIds: List<String>,
-        val cryptoHash: UInt256 = contestDescriptionCryptoHash(
-            contestId,
-            sequenceOrder,
-            geopoliticalUnitId,
-            voteVariation,
-            numberElected,
-            votesAllowed,
-            name,
-            selections,
-            ballotTitle,
-            ballotSubtitle,
-            primaryPartyIds,
-        ),
+        val cryptoHash: UInt256 =
+            contestDescriptionCryptoHash(
+                contestId,
+                sequenceOrder,
+                geopoliticalUnitId,
+                voteVariation,
+                numberElected,
+                votesAllowed,
+                name,
+                selections,
+                ballotTitle,
+                ballotSubtitle,
+                primaryPartyIds,
+            ),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
@@ -499,7 +500,8 @@ data class Manifest(
         val selectionId: String,
         val sequenceOrder: Int,
         val candidateId: String,
-        val cryptoHash: UInt256 = selectionDescriptionCryptoHash(selectionId, sequenceOrder, candidateId),
+        val cryptoHash: UInt256 =
+            selectionDescriptionCryptoHash(selectionId, sequenceOrder, candidateId),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }

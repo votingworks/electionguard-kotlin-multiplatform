@@ -26,7 +26,9 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
 
     if (electionConstants == null || manifest == null) {
         logger.error { "Failed to translate election record from proto, missing fields" }
-        throw IllegalStateException("Failed to translate election record from proto, missing fields")
+        throw IllegalStateException(
+            "Failed to translate election record from proto, missing fields"
+        )
     }
 
     return ElectionRecord(

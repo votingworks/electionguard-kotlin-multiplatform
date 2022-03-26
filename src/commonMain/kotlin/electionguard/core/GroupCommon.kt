@@ -153,12 +153,14 @@ interface GroupContext {
     /**
      * Identifies whether two internal GroupContexts are "compatible", so elements made in one
      * context would work in the other. Groups with the same primes will be compatible. Note that
-     * this is meant to be fast, so only makes superficial checks. The [ElectionConstants] variant of this
-     * method validates that all the group constants are the same.
+     * this is meant to be fast, so only makes superficial checks. The [ElectionConstants] variant
+     * of this method validates that all the group constants are the same.
      */
     fun isCompatible(ctx: GroupContext): Boolean
 
-    /** Identifies whether an external [ElectionConstants] is "compatible" with this GroupContext. */
+    /**
+     * Identifies whether an external [ElectionConstants] is "compatible" with this GroupContext.
+     */
     fun isCompatible(externalConstants: ElectionConstants): Boolean =
         constants.isCompatible(externalConstants)
 
