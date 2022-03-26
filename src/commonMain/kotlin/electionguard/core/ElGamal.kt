@@ -93,6 +93,8 @@ fun elGamalKeyPairFromRandom(context: GroupContext) =
 /**
  * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
  * deterministic, or it will be chosen at random.
+ * Note that this implementation uses the new "base k" optimizations, so is not compatible
+ * with ElectionGuard 1.0.
  *
  * @throws ArithmeticException if the nonce is zero or if the message is negative
  */
@@ -114,9 +116,7 @@ fun Int.encrypt(
     // is much larger than that.
 
     val pad = context.gPowP(nonce)
-    val expM = context.gPowPSmall(this)
-    val keyN = publicKey powP nonce
-    val data = expM * keyN
+    val data = publicKey powP (nonce + this.toElementModQ(context))
 
     return ElGamalCiphertext(pad, data)
 }
@@ -124,29 +124,49 @@ fun Int.encrypt(
 /**
  * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
  * deterministic, or it will be chosen at random.
+ * Note that this implementation uses the new "base k" optimizations, so is not compatible
+ * with ElectionGuard 1.0.
  */
 fun Int.encrypt(
     keypair: ElGamalKeypair,
     nonce: ElementModQ = keypair.context.randomElementModQ(minimum = 1)
 ) = this.encrypt(keypair.publicKey, nonce)
 
-/** Decrypts using the secret key. if the decryption fails, `null` is returned. */
-fun ElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): Int? {
+/**
+ * Decrypts using the secret key. if the decryption fails, `null` is returned.
+ * Note that this implementation uses the new "base k" optimizations, so is not compatible
+ * with ElectionGuard 1.0.
+ */
+fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair): Int? {
+    val (secretKey, publicKey) = keypair
     compatibleContextOrFail(pad, data, secretKey.key)
+
+    // pad = g ^ R
+    // data = publicKey ^ { m + R }
+    // blind = alpha ^ {-s} = publicKey ^ {-R}
     val blind = pad powP secretKey.negativeKey
-    val gPowM = data * blind
-    return gPowM.dLogG()
+
+    // data * blind = publicKey ^ m
+    val kPowM = data * blind
+    return publicKey.dLog(kPowM)
 }
 
-/** Decrypts using the secret key from the keypair. If the decryption fails, `null` is returned. */
-fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = decrypt(keypair.secretKey)
-
-/** Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned. */
+/**
+ * Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned.
+ * Note that this implementation uses the new "base k" optimizations, so is not compatible
+ * with ElectionGuard 1.0.
+ */
 fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ): Int? {
     compatibleContextOrFail(pad, data, publicKey.key, nonce)
-    val blind = publicKey powP nonce
-    val gPowM = data / blind
-    return gPowM.dLogG()
+
+    // pad = g ^ R
+    // data = publicKey ^ { m + R }
+    // blind = alpha ^ {-s} = publicKey ^ {-R}
+    val blind = publicKey powP (-nonce)
+
+    // data * blind = publicKey ^ m
+    val kPowM = data * blind
+    return publicKey.dLog(kPowM)
 }
 
 /** Homomorphically "adds" two ElGamal ciphertexts together through piecewise multiplication. */
