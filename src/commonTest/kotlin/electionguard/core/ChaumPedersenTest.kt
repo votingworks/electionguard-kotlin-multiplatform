@@ -374,8 +374,11 @@ class ChaumPedersenTest {
                     hashHeader
                 )
 
-            assertTrue(goodProof0.isValid(message0, keypair.publicKey, hashHeader))
-            assertTrue(goodProof1.isValid(message1, keypair.publicKey, hashHeader))
+            val good0 = goodProof0.isValid(message0, keypair.publicKey, hashHeader)
+            val good1 = goodProof1.isValid(message1, keypair.publicKey, hashHeader)
+
+            assertTrue(good0)
+            assertTrue(good1)
 
             assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader))
             assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader))
