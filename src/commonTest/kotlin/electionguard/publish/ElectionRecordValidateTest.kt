@@ -2,6 +2,7 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.core.*
+import electionguard.publish.ElectionRecordPath.Companion.PROTO_VERSION
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -35,7 +36,7 @@ class ElectionRecordValidateTest {
         val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
 
         assertNotNull(allData)
-        assertEquals(PROTO_VERSION, allData.protoVersion)
+        assertEquals("1.0.0", allData.protoVersion)
         assertEquals("", allData.constants.name)
         assertEquals("v0.95", allData.manifest.specVersion)
         assertEquals(3, allData.context.numberOfGuardians)

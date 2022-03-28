@@ -6,7 +6,7 @@ import electionguard.ballot.PlaintextTally
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.GroupContext
 
-expect class Consumer(electionRecordDir: String, groupContext: GroupContext) {
+expect class Consumer(topDir: String, groupContext: GroupContext) {
     fun readElectionRecordAllData(): ElectionRecordAllData
     fun readElectionRecord(): ElectionRecord
     fun iterateSubmittedBallots(): Iterable<SubmittedBallot>
