@@ -2,7 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.*
 
-data class SubmittedBallot(
+data class CiphertextBallot(
     val ballotId: String,
     val ballotStyleId: String,
     val manifestHash: UInt256, // matches Manifest.cryptoHash
@@ -11,26 +11,21 @@ data class SubmittedBallot(
     val contests: List<Contest>,
     val timestamp: Long,
     val cryptoHash: UInt256,
-    val state: BallotState,
+    val masterNonce: UInt256,
 ) {
-
-    enum class BallotState {
-        /** A ballot that has been explicitly cast */
-        CAST,
-        /** A ballot that has been explicitly spoiled */
-        SPOILED,
-        /** A ballot whose state is unknown to ElectionGuard and will not be included in results. */
-        UNKNOWN
+    fun ballotNonce() : UInt256 {
+        return hashElements(this.manifestHash, this.ballotId, this.masterNonce)
     }
 
     data class Contest(
         val contestId: String, // matches ContestDescription.contestIdd
-        val sequenceOrder: Int, // matches ContestDescription.sequenceOrderv
+        val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
         val contestHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: List<Selection>,
         val ciphertextAccumulation: ElGamalCiphertext,
         val cryptoHash: UInt256,
         val proof: ConstantChaumPedersenProofKnownNonce?,
+        val contestNonce: UInt256,
     )  : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
@@ -42,8 +37,9 @@ data class SubmittedBallot(
         val ciphertext: ElGamalCiphertext,
         val cryptoHash: UInt256,
         val isPlaceholderSelection: Boolean,
-        val proof: DisjunctiveChaumPedersenProofKnownNonce?,
+        val proof: DisjunctiveChaumPedersenProofKnownNonce,
         val extendedData: ElGamalCiphertext?,
+        val selectionNonce: UInt256,
     )  : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }

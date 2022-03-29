@@ -44,15 +44,15 @@ fun contestDescriptionCryptoHash(
     primaryPartyIds: List<String>
 ) = hashElements(
     contestId,
-    geopoliticalUnitId,
     sequenceOrder,
+    geopoliticalUnitId,
     voteVariation.name,
-    numberElected,
-    votesAllowed,
-    name,
-    selections,
     ballotTitle,
     ballotSubtitle,
+    name,
+    numberElected,
+    votesAllowed,
+    selections,
     // primaryPartyIds,
 )
 
@@ -60,7 +60,7 @@ fun selectionDescriptionCryptoHash(
     selectionId: String,
     sequenceOrder: Int,
     candidateId: String,
-) = hashElements(selectionId, candidateId, sequenceOrder)
+) = hashElements(selectionId, sequenceOrder, candidateId)
 
 fun internationalizedTextUnknown(): Manifest.InternationalizedText {
     val text = listOf(Manifest.Language("unknown", "en"))

@@ -24,7 +24,7 @@ data class PlaintextBallot(
         val sequenceOrder: Int,
         val vote: Int,
         val isPlaceholderSelection: Boolean,
-        val extendedData: ExtendedData?
+        val extendedData: ExtendedData?,
     )
 
     /** Used to indicate a write-in candidate. */
