@@ -95,7 +95,7 @@ class Encryptor(
             encryptedContests,
             timestamp,
             cryptoHash,
-            randomMasterNonce.toUInt256(),
+            randomMasterNonce,
         )
         return encryptedBallot
     }
@@ -167,7 +167,7 @@ class Encryptor(
 
         val texts: List<ElGamalCiphertext> = encryptedSelections.map {it.ciphertext}
         val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
-        val nonces: Iterable<ElementModQ> = encryptedSelections.map {it.selectionNonce.toElementModQ(group)}
+        val nonces: Iterable<ElementModQ> = encryptedSelections.map {it.selectionNonce}
         val aggNonce: ElementModQ = with (group) { nonces.addQ() }
 
         val proof : ConstantChaumPedersenProofKnownNonce = ciphertextAccumulation.constantChaumPedersenProofKnownNonce(
@@ -186,7 +186,7 @@ class Encryptor(
             ciphertextAccumulation,
             cryptoHash,
             proof,
-            contestNonce.toUInt256(),
+            contestNonce,
         )
 
         return encrypted_contest
@@ -242,7 +242,7 @@ class Encryptor(
             isPlaceholder,
             proof,
             null,
-            selectionNonce.toUInt256(),
+            selectionNonce,
         )
         return encryptedSelection
     }
@@ -276,7 +276,7 @@ class Encryptor(
             true,
             proof,
             null,
-            selectionNonce.toUInt256(),
+            selectionNonce,
         )
         return encryptedSelection
     }

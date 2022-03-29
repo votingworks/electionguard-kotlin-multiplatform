@@ -11,7 +11,7 @@ data class CiphertextBallot(
     val contests: List<Contest>,
     val timestamp: Long,
     val cryptoHash: UInt256,
-    val masterNonce: UInt256,
+    val masterNonce: ElementModQ,
 ) {
     fun ballotNonce() : UInt256 {
         return hashElements(this.manifestHash, this.ballotId, this.masterNonce)
@@ -25,7 +25,7 @@ data class CiphertextBallot(
         val ciphertextAccumulation: ElGamalCiphertext,
         val cryptoHash: UInt256,
         val proof: ConstantChaumPedersenProofKnownNonce?,
-        val contestNonce: UInt256,
+        val contestNonce: ElementModQ,
     )  : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
@@ -39,7 +39,7 @@ data class CiphertextBallot(
         val isPlaceholderSelection: Boolean,
         val proof: DisjunctiveChaumPedersenProofKnownNonce,
         val extendedData: ElGamalCiphertext?,
-        val selectionNonce: UInt256,
+        val selectionNonce: ElementModQ,
     )  : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }

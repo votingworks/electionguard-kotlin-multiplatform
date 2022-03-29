@@ -49,8 +49,10 @@ fun ByteArray.toUInt256(): UInt256 {
 
 /** Make ByteArray have exactly [want] bytes by zero padding or removeing leading zeros.
  * Throws an [IllegalArgumentException] if not possible. */
-fun ByteArray.normalize(want : Int): ByteArray {
-    return if (size > want) {
+fun ByteArray.normalize(want: Int): ByteArray {
+    return if (size == want) {
+        this
+    } else if (size > want) {
         // BigInteger sometimes has leading zeroes, so remove them
         val leading = size - want
         for (idx in 0 until leading) {
@@ -64,6 +66,7 @@ fun ByteArray.normalize(want : Int): ByteArray {
         leftPad + this
     }
 }
+
 
 /**
  * Safely converts a [UInt256] to an [ElementModQ], wrapping values outside the range back to the
