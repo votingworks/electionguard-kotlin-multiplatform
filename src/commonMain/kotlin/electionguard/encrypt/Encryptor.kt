@@ -35,6 +35,8 @@ class Encryptor(
     val cryptoExtendedBaseHash = context.cryptoExtendedBaseHash
     val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
 
+    // encryptionSeed; see issue 272 in python repo python uses device.crypto_hash,
+    // spec says  "extended base hash" :  6.B H0 = H(Qbar)
     fun encrypt(ballots: Iterable<PlaintextBallot>, encryptionSeed: ElementModQ): List<CiphertextBallot> {
         var previousTrackingHash = encryptionSeed
         val encryptedBallots = ArrayList<CiphertextBallot>()

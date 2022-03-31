@@ -2,10 +2,12 @@ package electionguard.publish
 
 import electionguard.ballot.ElectionRecord
 import electionguard.ballot.ElectionRecordAllData
+import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.GroupContext
 import electionguard.protoconvert.importElectionRecord
+import electionguard.protoconvert.importPlaintextBallot
 import electionguard.protoconvert.importPlaintextTally
 import electionguard.protoconvert.importSubmittedBallot
 import pbandk.decodeFromByteBuffer
@@ -55,6 +57,33 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         return proto.importElectionRecord(groupContext)
     }
 
+    // all spoiled ballot tallies
+    actual fun iteratePlaintextBallots(ballotDir : String): Iterable<PlaintextBallot> {
+        if (!Files.exists(Path.of(path.plaintextBallotProtoPath(ballotDir)))) {
+            return emptyList()
+        }
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir))}
+    }
+
+    private inner class PlaintextBallotIterator(
+        filename: String,
+    ) : AbstractIterator<PlaintextBallot>() {
+
+        private val input: FileInputStream = FileInputStream(filename)
+
+        override fun computeNext() {
+            val length = readVlen(input)
+            if (length < 0) {
+                input.close()
+                return done()
+            }
+            val message = input.readNBytes(length)
+            val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
+            val ballot = ballotProto.importPlaintextBallot() ?: throw RuntimeException("Ballot didnt parse")
+            setNext(ballot)
+        }
+    }
+
     // all submitted ballots, cast or spoiled
     actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
         if (!Files.exists(Path.of(path.submittedBallotProtoPath()))) {
@@ -84,8 +113,6 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
     }
 
     // Create iterators, so that we never have to read in all ballots at once.
-    // Making them Closeable makes sure that the FileInputStream gets closed.
-    // use in a try-with-resources block
     private inner class SubmittedBallotIterator(
         val filter: Predicate<electionguard.protogen.SubmittedBallot>,
     ) : AbstractIterator<SubmittedBallot>() {

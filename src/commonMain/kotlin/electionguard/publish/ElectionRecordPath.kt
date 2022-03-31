@@ -10,6 +10,7 @@ data class ElectionRecordPath(val topDir : String) {
         const val PROTO_SUFFIX = ".protobuf"
         const val ELECTION_RECORD_FILE_NAME = "electionRecord" + PROTO_SUFFIX
         const val GUARDIANS_FILE = "guardians" + PROTO_SUFFIX
+        const val PLAINTEXT_BALLOT_PROTO = "plaintextBallots" + PROTO_SUFFIX
         const val SUBMITTED_BALLOT_PROTO = "submittedBallots" + PROTO_SUFFIX
         const val SPOILED_BALLOT_FILE = "spoiledBallotsTally" + PROTO_SUFFIX
         const val TRUSTEES_FILE = "trustees" + PROTO_SUFFIX
@@ -17,6 +18,10 @@ data class ElectionRecordPath(val topDir : String) {
 
     fun electionRecordProtoPath(): String {
         return "$electionRecordDir/$ELECTION_RECORD_FILE_NAME"
+    }
+
+    fun plaintextBallotProtoPath(ballotDir : String): String {
+        return "$ballotDir/$PLAINTEXT_BALLOT_PROTO"
     }
 
     fun submittedBallotProtoPath(): String {

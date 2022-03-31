@@ -110,6 +110,9 @@ kotlin {
 
                     // A multiplatform Kotlin library for working with protobuf.
                     implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
+
+                    // A multiplatform Kotlin library for command-line parsing (could use enableEndorsedLibs instead)
+                    implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
                 }
             }
         val commonTest by
