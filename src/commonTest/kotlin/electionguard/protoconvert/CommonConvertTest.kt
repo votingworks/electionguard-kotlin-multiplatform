@@ -64,7 +64,8 @@ class CommonConvertTest {
             ) { p, c, r ->
                 val context = productionGroup()
                 val publicKey = ElGamalPublicKey(p)
-                val proof = SchnorrProof(publicKey, c, r)
+                // TODO: update for new "checksum" structure of Schnorr proof?
+                val proof = SchnorrProof(publicKey.key.byteArray().copyOfRange(0, 4), c, r)
                 val proto = proof.publishSchnorrProof()
                 val roundtrip = context.importSchnorrProof(proto)
                 assertEquals(roundtrip, proof)
