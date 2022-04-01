@@ -48,7 +48,7 @@ fun main() {
     runBlocking {
         ProductionMode.values()
             .forEach { mode ->
-                PowRadixOption.values()
+                PowRadixOption.values().filter { it != PowRadixOption.EXTREME_MEMORY_USE }
                     .forEach { powRadixOption ->
                         println("=======================================================")
                         println("Initializing benchmark for $powRadixOption, $mode")
