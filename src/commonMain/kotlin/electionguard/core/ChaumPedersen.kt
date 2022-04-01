@@ -3,9 +3,6 @@ package electionguard.core
 import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ChaumPedersen")
 
-// Reference specification:
-// https://github.com/microsoft/electionguard/releases/tag/v0.95.0
-
 /** Proof that the ciphertext is a given constant. */
 data class ConstantChaumPedersenProofKnownNonce(
     val proof: GenericChaumPedersenProof,
@@ -47,27 +44,24 @@ internal data class ExpandedGenericChaumPedersenProof(
     val a: ElementModP,
     val b: ElementModP,
     val c: ElementModQ,
-    val r: ElementModQ
+    val r: ElementModQ,
 )
 
 /**
  * Given a [GenericChaumPedersenProof], computes the `a` and `b` values that are needed for proofs
- * and such, but are removed for serialization. The `rDeltaForB` modifies the recomputation of the
- * "b" value. Where it normally computes `h ^ r`, it now computes `h ^ {r + rDeltaForB}`. This
- * is necessary for the changes to how disjunctive proofs are computed in ElectionGuard 2.0.
- * If not specified, `rDeltaForB` is zero.
+ * and such, but are removed for serialization.
  */
 internal fun GenericChaumPedersenProof.expand(
     g: ElementModP,
     gx: ElementModP,
     h: ElementModP,
     hx: ElementModP,
-    rDeltaForB: ElementModQ? = null
 ): ExpandedGenericChaumPedersenProof {
     val negC = -c
-    val a = (g powP r) * (gx powP negC)
-    val rPlusDelta = if (rDeltaForB != null) r + rDeltaForB else r
-    val b = (h powP rPlusDelta) * (hx powP negC)
+    val gr = g powP r // g^r = g^{w + xc}
+    val hr = h powP r // h^r = h^{w + xc}
+    val a = gr * (gx powP negC) // cancelling out the xc, getting g^w
+    val b = hr * (hx powP negC) // cancelling out the xc, getting h^w
     return ExpandedGenericChaumPedersenProof(a, b, c, r)
 }
 
@@ -89,8 +83,7 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownNonce(
     seed: ElementModQ,
     hashHeader: ElementModQ
 ): ConstantChaumPedersenProofKnownNonce {
-    val context =
-        compatibleContextOrFail(this.data, this.pad, nonce, publicKey.key, seed, hashHeader)
+    val context = compatibleContextOrFail(pad, nonce, publicKey.key, seed, hashHeader)
     return ConstantChaumPedersenProofKnownNonce(
         genericChaumPedersenProofOf(
             g = context.G_MOD_P,
@@ -120,15 +113,7 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownSecretKey(
     seed: ElementModQ,
     hashHeader: ElementModQ
 ) : ConstantChaumPedersenProofKnownSecretKey {
-    val context =
-        compatibleContextOrFail(
-            this.data,
-            this.pad,
-            keypair.secretKey.key,
-            keypair.publicKey.key,
-            seed,
-            hashHeader
-        )
+    val context = compatibleContextOrFail(pad, keypair.secretKey.key, seed, hashHeader)
     return ConstantChaumPedersenProofKnownSecretKey(
         genericChaumPedersenProofOf(
             g = context.G_MOD_P,
@@ -161,24 +146,16 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
     seed: ElementModQ,
     hashHeader: ElementModQ
 ): DisjunctiveChaumPedersenProofKnownNonce {
-    // Note: this is using the "base k" optimizations (2022) and is not compatible
-    // with ElectionGuard 1.0.
-
-    val context =
-        compatibleContextOrFail(this.data, this.pad, nonce, publicKey.key, seed, hashHeader)
+    val context = compatibleContextOrFail(pad, nonce, publicKey.key, seed, hashHeader)
     return when (plaintext) {
         0 -> {
-            // From the spec:
-            // (a0, b0) = (g^u, K^u)
-            // (a1, b1) = (g^v, K^w · K^v) = (g^v, K^{w+v})
-
             val (alpha, beta) = this
             val (u, v, w) = Nonces(seed, "disjoint-chaum-pedersen-proof")
 
             val a0 = context.gPowP(u)
             val b0 = publicKey powP u
             val a1 = context.gPowP(v)
-            val b1 = publicKey powP (v + w)
+            val b1 = publicKey powP (w + v)
             val c = hashElements(hashHeader, alpha, beta, a0, b0, a1, b1).toElementModQ(context)
             val c0 = c - w
             val c1 = w
@@ -191,10 +168,6 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
             DisjunctiveChaumPedersenProofKnownNonce(realZeroProof, fakeOneProof, c)
         }
         1 -> {
-            // From the spec:
-            // (a0, b0) = (g^v, K^{w+v})
-            // (a1, b1) = (g^u, K^u)
-
             val (alpha, beta) = this
             val (u, v, w) = Nonces(seed, "disjoint-chaum-pedersen-proof")
 
@@ -237,24 +210,17 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
     hashHeader: ElementModQ,
     expectedConstant: Int = -1
 ) : Boolean {
-    val context =
-        compatibleContextOrFail(
-            this.proof.c,
-            this.proof.r,
-            ciphertext.data,
-            ciphertext.pad,
-            publicKey.key,
-            hashHeader
-        )
+    val context = compatibleContextOrFail(proof.c, ciphertext.pad, hashHeader)
+
+    val constantQ = -(constant.toElementModQ(context))
     return proof.isValid(
         g = context.G_MOD_P,
         gx = ciphertext.pad,
         h = publicKey.key,
-        hx = ciphertext.data * context.gPowP(-constant.toElementModQ(context)),
+        hx = ciphertext.data * (publicKey powP constantQ),
         alsoHash = arrayOf(ciphertext.pad, ciphertext.data),
         hashHeader = hashHeader,
         checkC = true,
-        rDeltaForB = constant.toElementModQ(context)
     ) and (if (expectedConstant != -1) constant == expectedConstant else true)
 }
 
@@ -275,20 +241,14 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
     hashHeader: ElementModQ,
     expectedConstant: Int = -1
 ) : Boolean {
-    val context =
-        compatibleContextOrFail(
-            this.proof.c,
-            this.proof.r,
-            ciphertext.data,
-            ciphertext.pad,
-            publicKey.key,
-            hashHeader
-        )
+    val context = compatibleContextOrFail(proof.c, ciphertext.pad, publicKey.key, hashHeader)
+
+    val constantQ = -(constant.toElementModQ(context))
     return proof.isValid(
         g = context.G_MOD_P,
         gx = publicKey.key,
         h = ciphertext.pad,
-        hx = ciphertext.data * context.gPowP(-constant.toElementModQ(context)),
+        hx = ciphertext.data * (publicKey powP constantQ),
         alsoHash = arrayOf(ciphertext.pad, ciphertext.data),
         hashHeader = hashHeader,
         checkC = true
@@ -309,8 +269,8 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     publicKey: ElGamalPublicKey,
     hashHeader: ElementModQ
 ): Boolean {
-    val context =
-        compatibleContextOrFail(this.c, ciphertext.data, ciphertext.pad, publicKey.key, hashHeader)
+    val context = compatibleContextOrFail(c, ciphertext.pad, publicKey.key, hashHeader)
+
     val (alpha, beta) = ciphertext
     val consistentC = proof0.c + proof1.c == c
     val eproof0 =
@@ -325,8 +285,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
             h = publicKey.key,
-            hx = ciphertext.data * context.GINV_MOD_P,
-            rDeltaForB = proof1.c
+            hx = ciphertext.data * publicKey.inverseKey
         )
 
     val validHash =
@@ -349,7 +308,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
             h = publicKey.key,
-            hx = ciphertext.data * context.GINV_MOD_P,
+            hx = ciphertext.data * publicKey.inverseKey,
             checkC = false,
             hashHeader = hashHeader,
         )
@@ -384,10 +343,6 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
  *     hash (Q')
  * @param alsoHash Optional additional values to include in the hash challenge computation hash
  * @param checkC If false, the challenge constant is not verified. (default: true)
- * @param rDeltaForB modifies the recomputation of the
- *     "b" value. Where it normally computes `h ^ r`, it now computes `h ^ {r + rDeltaForB}`. This
- *     is necessary for the changes to how disjunctive proofs are computed in ElectionGuard 2.0.
- *     If not specified, `rDeltaForB` is zero.
  * @return true if the proof is valid
  */
 fun GenericChaumPedersenProof.isValid(
@@ -398,9 +353,8 @@ fun GenericChaumPedersenProof.isValid(
     hashHeader: ElementModQ,
     alsoHash: Array<Element> = emptyArray(),
     checkC: Boolean = true,
-    rDeltaForB: ElementModQ? = null
 ): Boolean {
-    return expand(g, gx, h, hx, rDeltaForB).isValid(g, gx, h, hx, hashHeader, alsoHash, checkC)
+    return expand(g, gx, h, hx).isValid(g, gx, h, hx, hashHeader, alsoHash, checkC)
 }
 
 internal fun ExpandedGenericChaumPedersenProof.isValid(
@@ -412,26 +366,16 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
     alsoHash: Array<Element> = emptyArray(),
     checkC: Boolean = true
 ): Boolean {
-    val context = compatibleContextOrFail(c, r, g, gx, h, hx, hashHeader, *alsoHash)
+    val context = compatibleContextOrFail(c, g, gx, h, hx, hashHeader)
+
     val inBoundsG = g.isValidResidue()
     val inBoundsGx = gx.isValidResidue()
     val inBoundsH = h.isValidResidue()
     val inBoundsHx = hx.isValidResidue()
 
-    val expectedC = hashElements(hashHeader, a, b, *alsoHash).toElementModQ(context)
-    val hashGood = !(checkC) || (c == expectedC)
+    val hashGood = !checkC || c == hashElements(hashHeader, a, b, *alsoHash).toElementModQ(context)
 
-    val agxc = a * (gx powP c) // should yield g^{w + xc}
-    val gr = g powP r // should also yield g^{w + xc}
-
-    val goodG = agxc == gr
-
-    val bhxc = b * (hx powP c)
-    val hr = h powP r
-
-    val goodH = bhxc == hr
-
-    val success = (hashGood && inBoundsG && inBoundsGx && inBoundsH && inBoundsHx && goodG && goodH)
+    val success = (hashGood && inBoundsG && inBoundsGx && inBoundsH && inBoundsHx)
 
     if (!success)
         logger.warn {
@@ -442,8 +386,6 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
                     "inBoundsGx" to inBoundsGx,
                     "inBoundsH" to inBoundsH,
                     "inBoundsHx" to inBoundsHx,
-                    "good_g" to goodG,
-                    "good_h" to goodH,
                 ).toString()
         }
 
@@ -473,7 +415,8 @@ fun genericChaumPedersenProofOf(
     hashHeader: ElementModQ,
     alsoHash: Array<Element> = emptyArray()
 ): GenericChaumPedersenProof {
-    val context = compatibleContextOrFail(g, h, x, seed, hashHeader, *alsoHash)
+    val context = compatibleContextOrFail(g, h, x, seed, hashHeader)
+
     val w = Nonces(seed, "generic-chaum-pedersen-proof")[0]
     val a = g powP w
     val b = h powP w
@@ -495,20 +438,12 @@ fun genericChaumPedersenProofOf(
  *
  * The seed is used for generating the random numbers used in the proof. Otherwise everything is
  * completely deterministic.
+ *
+ * Note that there's no need to specify g, gx, h, and hx, since those values are completely
+ * unnecessary to produce a fake proof of their correspondence!
  */
-fun fakeGenericChaumPedersenProofOf(
-    g: ElementModP,
-    gx: ElementModP,
-    h: ElementModP,
-    hx: ElementModP,
-    c: ElementModQ,
-    seed: ElementModQ
-): GenericChaumPedersenProof {
-    compatibleContextOrFail(g, gx, h, hx, c, seed)
+fun fakeGenericChaumPedersenProofOf(c: ElementModQ, seed: ElementModQ): GenericChaumPedersenProof {
+    compatibleContextOrFail(c, seed)
     val r = Nonces(seed, "generic-chaum-pedersen-proof")[0]
-    //    val gr = g powP r
-    //    val hr = h powP r
-    //    val a = gr / (gx powP c)
-    //    val b = hr / (hx powP c)
     return GenericChaumPedersenProof(c, r)
 }
