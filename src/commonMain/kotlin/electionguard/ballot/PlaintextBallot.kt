@@ -16,6 +16,7 @@ data class PlaintextBallot(
         val contestId: String, // matches ContestDescription.contestId
         val sequenceOrder: Int,
         val selections: List<Selection>,
+        val maxSelections: Int // maximum allowed by the contest's definition
     )
 
     /** The plaintext representation of one selection for a particular contest. */

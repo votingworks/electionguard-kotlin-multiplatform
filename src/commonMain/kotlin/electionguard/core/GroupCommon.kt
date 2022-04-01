@@ -399,19 +399,17 @@ fun GroupContext.gPowPSmall(e: Int) =
  *
  * @throws IllegalArgumentException if there's an incompatibility.
  */
-fun compatibleContextOrFail(vararg elements: Element): GroupContext {
+fun compatibleContextOrFail(vararg elements: Element?): GroupContext {
     // Engineering note: If this method fails, that means we have a bug in our program.
     // We should never allow incompatible data to be processed. We should catch
     // this when we're loading the data in the first place.
 
-    if (elements.isEmpty()) throw IllegalArgumentException("no arguments")
+    val nonNullElements = elements.filterNotNull()
 
-    val headContext = elements[0].context
+    if (nonNullElements.isEmpty()) throw IllegalArgumentException("no non-null 0arguments")
 
-    // Note: this is comparing the head of the list to itself, which seems inefficient,
-    // but adding something like drop(1) in here would allocate an ArrayList and
-    // entail a bunch of copying overhead. What's here is almost certainly cheaper.
-    val allCompat = elements.all { it.context.isCompatible(headContext) }
+    val headContext = nonNullElements[0].context
+    val allCompat = nonNullElements.all { it.context.isCompatible(headContext) }
 
     if (!allCompat) throw IllegalArgumentException("incompatible contexts")
 
