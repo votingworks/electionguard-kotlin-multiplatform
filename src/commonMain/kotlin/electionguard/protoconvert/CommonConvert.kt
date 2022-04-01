@@ -60,11 +60,10 @@ fun GroupContext.importChaumPedersenProof(
     return GenericChaumPedersenProof(challenge, response)
 }
 
-fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?,): SchnorrProof? {
+fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?): SchnorrProof? {
 
     if (proof == null) return null
 
-//    val publicKey = this.importElGamalPublicKey(proof.publicKey)
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
 
@@ -73,8 +72,7 @@ fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?,
         return null
     }
 
-    // TODO: change serialization around the new publicKeyChecksum feature
-    return SchnorrProof(byteArrayOf(0, 1, 2, 3), challenge, response)
+    return SchnorrProof(challenge, response)
 }
 
 fun GroupContext.importElGamalPublicKey(

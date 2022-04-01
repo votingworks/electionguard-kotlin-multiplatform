@@ -5,11 +5,9 @@ private val logger = KotlinLogging.logger("Schnorr")
 
 /**
  * Representation of a proof that the prover know the private key corresponding to the given public
- * key. (The public key is not included, to keep the proof small, but the first four (most significant)
- * bytes are kept around as a checksum.)
+ * key. (The public key is not included, to keep the proof small.)
  */
 data class SchnorrProof(
-    val publicKeyChecksum: ByteArray,
     val challenge: ElementModQ,
     val response: ElementModQ
 )
@@ -29,9 +27,7 @@ fun ElGamalKeypair.schnorrProof(
     val c = hashElements(cryptoBaseHash, publicKey, h).toElementModQ(context)
     val u = nonce + secretKey.key * c
 
-    val pkChecksumBytes = publicKey.key.byteArray().copyOfRange(0, 4)
-
-    return SchnorrProof(pkChecksumBytes, c, u)
+    return SchnorrProof(c, u)
 }
 
 /**
@@ -39,10 +35,9 @@ fun ElGamalKeypair.schnorrProof(
  * given public key (i.e., `this` public key).
  */
 fun ElGamalPublicKey.hasValidSchnorrProof(cryptoBaseHash: ElementModQ, proof: SchnorrProof): Boolean {
-    val (checksum, challenge, u) = proof
+    val (challenge, u) = proof
     val context = compatibleContextOrFail(this.key, challenge, u)
 
-    val matchingChecksum = this.key.byteArray().copyOfRange(0, 4).contentEquals(checksum)
     val inBoundsU = u.inBounds()
 
     val gPowU = context.gPowP(u)
@@ -51,13 +46,12 @@ fun ElGamalPublicKey.hasValidSchnorrProof(cryptoBaseHash: ElementModQ, proof: Sc
 
     val validChallenge = c == challenge
 
-    val success = matchingChecksum && inBoundsU && validChallenge
+    val success = inBoundsU && validChallenge
 
     if (!success) {
         val resultMap =
             mapOf(
                 "inBoundsU" to inBoundsU,
-                "matchingChecksum" to matchingChecksum,
                 "validChallenge" to validChallenge,
                 "proof" to this
             )

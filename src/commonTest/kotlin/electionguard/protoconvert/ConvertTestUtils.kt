@@ -29,7 +29,6 @@ fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPeders
 
 fun generateSchnorrProof(context: GroupContext): SchnorrProof {
     return SchnorrProof(
-        byteArrayOf(0, 1, 2, 3), // TODO: replace with first four bytes of the public key?
         generateElementModQ(context),
         generateElementModQ(context),
     )
