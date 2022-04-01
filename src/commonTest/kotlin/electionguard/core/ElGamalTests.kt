@@ -55,8 +55,8 @@ class ElGamalTests {
 
             checkAll(elGamalKeypairs(context), smallInts()) { keypair, message ->
                 val encryption = message.encrypt(keypair)
-                val decryption1 = encryption.decrypt(keypair)
-                assertEquals(message, decryption1)
+                val decryption = encryption.decrypt(keypair)
+                assertEquals(message, decryption)
             }
         }
     }
