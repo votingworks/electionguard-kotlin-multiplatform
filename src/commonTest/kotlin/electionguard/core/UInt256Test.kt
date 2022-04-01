@@ -1,5 +1,6 @@
 package electionguard.core
 
+import electionguard.core.Base16.fromSafeHex
 import io.kotest.property.arbitrary.filterNot
 import io.kotest.property.checkAll
 import kotlin.test.Test
@@ -22,5 +23,18 @@ class UInt256Test {
     fun smallConstants() {
         assertTrue(UInt256.ZERO.isZero())
         assertEquals(UInt256.ZERO, 0U.toUInt256())
+    }
+
+    @Test
+    fun testElementModQ() {
+        runTest {
+            val group = productionGroup()
+            val s1u = "C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromSafeHex()
+                .toUInt256()
+            assertEquals(32, s1u.bytes.size)
+
+            val s1q = s1u.toElementModQ(group)
+            assertEquals(64, s1q.cryptoHashString().length)
+        }
     }
 }

@@ -100,6 +100,7 @@ private fun hashElementsHelper(
             }
         }
 
+    // println("  hashAll: $hashMe")
     val digest = byteHash(hashMe.encodeToByteArray())
     return digest
 }

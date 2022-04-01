@@ -10,7 +10,7 @@ import kotlin.experimental.xor
  */
 data class UInt256(val bytes: ByteArray) : CryptoHashableString {
     init {
-        require (bytes.size == 32) { "UInt256 must have exactly 32 bytes" }
+        require(bytes.size == 32) { "UInt256 must have exactly 32 bytes" }
     }
 
     override fun equals(other: Any?): Boolean = other is UInt256 && other.bytes.contentEquals(bytes)
@@ -44,19 +44,29 @@ fun UInt256.isZero(): Boolean = UInt256.ZERO == this
  * fits. Otherwise, throws an [IllegalArgumentException].
  */
 fun ByteArray.toUInt256(): UInt256 {
-    if (size > 32) {
+    return UInt256(this.normalize(32))
+}
+
+/** Make ByteArray have exactly [want] bytes by zero padding or removeing leading zeros.
+ * Throws an [IllegalArgumentException] if not possible. */
+fun ByteArray.normalize(want: Int): ByteArray {
+    return if (size == want) {
+        this
+    } else if (size > want) {
         // BigInteger sometimes has leading zeroes, so remove them
-        val leading = size - 32
+        val leading = size - want
         for (idx in 0 until leading) {
             if (this.get(idx).compareTo(0) != 0) {
                 throw IllegalArgumentException("Input has $size bytes; UInt256 only supports 32")
             }
         }
-        return UInt256(this.copyOfRange(leading, this.size))
+        this.copyOfRange(leading, this.size)
+    } else {
+        val leftPad = ByteArray(want - size) { 0 }
+        leftPad + this
     }
-    val leftPad = ByteArray(32 - size) { 0 }
-    return UInt256(leftPad + this)
 }
+
 
 /**
  * Safely converts a [UInt256] to an [ElementModQ], wrapping values outside the range back to the

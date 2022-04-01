@@ -66,7 +66,9 @@ val ElGamalKeypair.context: GroupContext
  * homomorphic addition). (See
  * [ElGamal 1982](https://ieeexplore.ieee.org/abstract/document/1057074))
  */
-data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)
+data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)  : CryptoHashableUInt256 {
+    override fun cryptoHashUInt256() = hashElements(pad, data)
+}
 
 /**
  * Given an ElGamal secret key, derives the corresponding secret/public key pair.

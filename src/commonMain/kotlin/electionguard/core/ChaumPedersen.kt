@@ -70,7 +70,7 @@ internal fun GenericChaumPedersenProof.expand(
  * Produces a proof that a given ElGamal encryption corresponds to a specific total value. This
  * requires the prover to know the nonce (the r behind the g^r).
  *
- * @param plaintext The plaintext constant value used to make the ElGamal ciphertext (L in the spec)
+ * @param plaintext The total allowed votes (L in the spec)
  * @param nonce The aggregate nonce used creating the ElGamal ciphertext (r in the spec)
  * @param publicKey The ElGamal public key for the election
  * @param seed Used to generate other random values here
