@@ -1,11 +1,13 @@
 package electionguard.core
 
 /**
- * A thin wrapper around an ElementModP that allows us to ensure that we're accelerating
- * exponentiation when using the key.
+ * A wrapper around an ElementModP that allows us to ensure that we're accelerating exponentiation
+ * when using the key and storing related values that we use frequently.
  */
 class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
     val key = inputKey.acceleratePow()
+    val inverseKey = inputKey.multInv() // not accelerated because not used for pow
+    private val dlogger = dLoggerOf(inputKey)
 
     override fun equals(other: Any?) =
         when {
@@ -20,12 +22,15 @@ class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
 
     override fun cryptoHashString(): String = key.cryptoHashString()
 
-    /** Helper function so we don't have to extract the key all the time. */
+    /** Helper function. `key powP e` is shorthand for `key.key powP e`. */
     infix fun powP(exponent: ElementModQ): ElementModP = key powP exponent
+
+    /** Helper function to compute the discrete log with this public key as the base. */
+    fun dLog(input: ElementModP): Int? = dlogger.dLog(input)
 }
 
 /**
- * A thin wrapper around an ElementModQ that allows us to hang onto a pre-computed `negativeKey`,
+ * A wrapper around an ElementModQ that allows us to hang onto a pre-computed `negativeKey`,
  * accelerating several operations that use the secret key.
  */
 class ElGamalSecretKey(val key: ElementModQ) : CryptoHashableString {
@@ -109,9 +114,10 @@ fun Int.encrypt(
     // is much larger than that.
 
     val pad = context.gPowP(nonce)
-    val expM = context.gPowPSmall(this)
-    val keyN = publicKey powP nonce
-    val data = expM * keyN
+
+    // New encoding, suggested by Olivier Pereira, to accelerate computation:
+    // the message goes into the exponent of the public key along with the nonce.
+    val data = publicKey.key powP (nonce + this.toElementModQ(context))
 
     return ElGamalCiphertext(pad, data)
 }
@@ -125,23 +131,22 @@ fun Int.encrypt(
     nonce: ElementModQ = keypair.context.randomElementModQ(minimum = 1)
 ) = this.encrypt(keypair.publicKey, nonce)
 
-/** Decrypts using the secret key. if the decryption fails, `null` is returned. */
-fun ElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): Int? {
-    compatibleContextOrFail(pad, data, secretKey.key)
-    val blind = pad powP secretKey.negativeKey
-    val gPowM = data * blind
-    return gPowM.dLog()
-}
-
 /** Decrypts using the secret key from the keypair. If the decryption fails, `null` is returned. */
-fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = decrypt(keypair.secretKey)
+fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair): Int? {
+    compatibleContextOrFail(pad, data, keypair.secretKey.key)
+    val blind = pad powP keypair.secretKey.negativeKey
+    val kPowM = data * blind
+
+    return keypair.publicKey.dLog(kPowM)
+}
 
 /** Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned. */
 fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ): Int? {
     compatibleContextOrFail(pad, data, publicKey.key, nonce)
-    val blind = publicKey powP nonce
-    val gPowM = data / blind
-    return gPowM.dLog()
+
+    val blind = publicKey powP (-nonce)
+    val kPowM = data * blind // data * blind = publicKey ^ m
+    return publicKey.dLog(kPowM)
 }
 
 /** Homomorphically "adds" two ElGamal ciphertexts together through piecewise multiplication. */

@@ -302,7 +302,7 @@ class ProductionGroupContext(
                 ?: throw RuntimeException("failed to make montCtxQ")
         }
 
-        dlogger = DLog(this)
+        dlogger = DLog(gModP)
     }
 
     override val constants: ElectionConstants by lazy {
@@ -504,7 +504,7 @@ class ProductionGroupContext(
 
     override fun gPowP(e: ElementModQ) = gModP powP e
 
-    override fun dLog(p: ElementModP): Int? = dlogger.dLog(p)
+    override fun dLogG(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
 class ProductionElementModQ(val element: HaclBignum256, val groupContext: ProductionGroupContext): ElementModQ,

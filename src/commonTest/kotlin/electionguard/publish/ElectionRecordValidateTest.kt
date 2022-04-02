@@ -13,18 +13,20 @@ class ElectionRecordValidateTest {
     fun readElectionRecordAndValidate() {
         runTest {
             val group = productionGroup()
-            val electionRecord = readElectionRecord(
+            val electionRecord =
+                readElectionRecord(group, "src/commonTest/data/workflow/decryptor/")
+            validateTally(
                 group,
-                "src/commonTest/data/workflow/decryptor/"
+                assertNotNull(electionRecord.decryptedTally),
+                electionRecord.context.numberOfGuardians
             )
-            validateTally(group, assertNotNull(electionRecord.decryptedTally), electionRecord.context.numberOfGuardians)
         }
     }
 
-    fun validateTally(group : GroupContext, tally : PlaintextTally, nguardians : Int?) {
+    fun validateTally(group: GroupContext, tally: PlaintextTally, nguardians: Int?) {
         for (contest in tally.contests.values) {
             for (selection in contest.selections.values) {
-                val actual : Int? = group.dLog(selection.value)
+                val actual : Int? = group.dLogG(selection.value)
                 assertEquals(selection.tally, actual)
                 assertEquals(nguardians, selection.shares.size)
             }

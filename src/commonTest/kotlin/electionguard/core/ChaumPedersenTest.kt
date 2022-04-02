@@ -132,17 +132,22 @@ class ChaumPedersenTest {
                         keypair.publicKey,
                         context.ONE_MOD_Q,
                         expectedConstant = constant
-                    )
+                    ),
+                    "first proof is valid"
                 )
                 assertFalse(
                     proof.isValid(
                         message,
                         keypair.publicKey,
                         context.ONE_MOD_Q,
-                        expectedConstant = badConstant
-                    )
+                        expectedConstant = constant + 1
+                    ),
+                    "modified constant invalidates proof"
                 )
-                assertFalse(proof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q))
+                assertFalse(
+                    proof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q),
+                    "modified message invalidates proof"
+                )
 
                 val badProof =
                     badMessage.constantChaumPedersenProofKnownNonce(
@@ -152,7 +157,10 @@ class ChaumPedersenTest {
                         seed = seed,
                         hashHeader = context.ONE_MOD_Q
                     )
-                assertFalse(badProof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q))
+                assertFalse(
+                    badProof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q),
+                    "modified proof with consistent message is invalid"
+                )
 
                 val badProof2 =
                     message.constantChaumPedersenProofKnownNonce(
@@ -162,10 +170,14 @@ class ChaumPedersenTest {
                         seed = seed,
                         hashHeader = context.ONE_MOD_Q
                     )
-                assertFalse(badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
+                assertFalse(
+                    badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q),
+                    "modified proof with inconsistent message is invalid"
+                )
 
-                val badProof3 = proof.copy(constant = intTestQ - 1)
-                assertFalse(badProof3.isValid(message, keypair.publicKey, context.ONE_MOD_Q))
+                //                val badProof3 = proof.copy(constant = Int.MAX_VALUE)
+                //                assertFalse(badProof3.isValid(message, keypair.publicKey,
+                // ONE_MOD_Q))
             }
         }
     }
@@ -447,7 +459,7 @@ class ChaumPedersenTest {
                 val gx = g powP x
                 val hNotX = h powP notX
 
-                val badProof = fakeGenericChaumPedersenProofOf(g, gx, h, hNotX, c, seed)
+                val badProof = fakeGenericChaumPedersenProofOf(c, seed)
                 assertTrue(
                     badProof.isValid(g, gx, h, hNotX, hashHeader, checkC = false),
                     "if we don't check c, the proof will validate"

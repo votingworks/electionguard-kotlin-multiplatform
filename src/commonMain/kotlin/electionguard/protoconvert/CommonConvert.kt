@@ -53,7 +53,9 @@ fun GroupContext.importChaumPedersenProof(
     val response = this.importElementModQ(proof.response)
 
     if (challenge == null || response == null) {
-        logger.error { "GenericChaumPedersenProof fields are missing or malformed or out of bounds" }
+        logger.error {
+            "GenericChaumPedersenProof fields are missing or malformed or out of bounds"
+        }
         return null
     }
 
@@ -113,7 +115,8 @@ fun GenericChaumPedersenProof.publishChaumPedersenProof():
     electionguard.protogen.GenericChaumPedersenProof {
         return electionguard.protogen
             .GenericChaumPedersenProof(
-                null, null, // 1.0 0nly
+                null,
+                null, // 1.0 0nly
                 this.c.publishElementModQ(),
                 this.r.publishElementModQ()
             )

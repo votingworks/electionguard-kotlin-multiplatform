@@ -24,6 +24,7 @@ ADD_LIBRARY(hacl STATIC
 )
 
 target_include_directories(hacl PUBLIC
+  $/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libhacl/include>
   $<INSTALL_INTERFACE:libhacl/include>  # <prefix>/libhacl/include
 )
