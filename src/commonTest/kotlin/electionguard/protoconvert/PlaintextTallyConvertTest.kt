@@ -75,7 +75,7 @@ class PlaintextTallyConvertTest {
         private fun generateCiphertextDecryptionSelection(
             sseq: Int,
             context: GroupContext
-        ): DecryptionShare.CiphertextDecryptionSelection {
+        ): DecryptionShare.DecryptionShareSelection {
             val cdselections =
                 List(11) { generateCiphertextCompensatedDecryptionSelection(it, context) }
             val proofOrParts = Random.nextBoolean()
@@ -83,13 +83,13 @@ class PlaintextTallyConvertTest {
             //        val share: ElementModP,
             //        val proof : GenericChaumPedersenProof?,
             //        val recoveredParts: Map<String, CiphertextCompensatedDecryptionSelection>?)
-            return DecryptionShare.CiphertextDecryptionSelection(
+            return DecryptionShare.DecryptionShareSelection(
                 "selection$sseq",
                 "guardian$sseq",
                 generateElementModP(context),
                 if (proofOrParts) generateGenericChaumPedersenProof(context) else null,
                 if (proofOrParts) null else {
-                    cdselections.associate { it.guardianId to it }
+                    cdselections
                 },
             )
         }
@@ -97,14 +97,13 @@ class PlaintextTallyConvertTest {
         private fun generateCiphertextCompensatedDecryptionSelection(
             sseq: Int,
             context: GroupContext
-        ): DecryptionShare.CiphertextCompensatedDecryptionSelection {
+        ): DecryptionShare.DecryptionShareCompensatedSelection {
             //          val guardianId : String,
             //        val missingGuardianId : String,
             //        val share : ElementModP,
             //        val recoveryKey : ElementModP,
             //        val proof : GenericChaumPedersenProof
-            return DecryptionShare.CiphertextCompensatedDecryptionSelection(
-                "selection$sseq",
+            return DecryptionShare.DecryptionShareCompensatedSelection(
                 "guardian$sseq",
                 "guardian" + (sseq + 7),
                 generateElementModP(context),

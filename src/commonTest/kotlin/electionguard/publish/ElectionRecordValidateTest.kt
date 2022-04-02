@@ -14,7 +14,7 @@ class ElectionRecordValidateTest {
         runTest {
             val group = productionGroup()
             val electionRecord =
-                readElectionRecord(group, "src/commonTest/data/workflow/decryptor/")
+                readElectionRecord(group, "src/commonTest/data/testJava/decryptor/")
             validateTally(
                 group,
                 assertNotNull(electionRecord.decryptedTally),

@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class TestConsumer {
-    private val topdir = "src/commonTest/data/workflow/decryptor/"
+    private val topdir = "src/commonTest/data/testJava/decryptor/"
 
     @Test
     fun readElectionRecordNative() {
