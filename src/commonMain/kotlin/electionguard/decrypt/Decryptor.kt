@@ -42,7 +42,7 @@ class Decryptor(val group: GroupContext, val context: ElectionContext) {
 
         // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝.
         val decryptedValue: ElementModP = selection.ciphertext.data / allSharesProductM
-        val dlogM: Int = group.dLog(decryptedValue)?: throw RuntimeException("dlog failed") // TODO
+        val dlogM: Int = group.dLogG(decryptedValue)?: throw RuntimeException("dlog failed") // TODO
 
         return PlaintextTally.Selection(
             selection.selectionId,

@@ -7,11 +7,11 @@ class RunBatchEncryptionTest {
     @Test
     fun testRunBatchEncryptionTest() {
         main(arrayOf("-in",
-                "/home/snake/tmp/electionguard/kickstart/encryptor",
+                "src/commonTest/data/testJava/kickstart/encryptor",
                 "-ballots",
-                "/home/snake/tmp/electionguard/kickstart/encryptor/election_private_data/plaintext_ballots",
+                "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots",
                 "-out",
-                "/home/snake/tmp/electionguard/kotlin/runBatchEncryption",
+                "src/commonTest/data/workflow/runBatchEncryption",
                 "-device",
                 "CountyCook-precinct079-device24358"))
     }

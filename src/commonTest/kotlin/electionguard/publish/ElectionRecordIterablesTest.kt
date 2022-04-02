@@ -15,7 +15,7 @@ class ElectionRecordIterablesTest {
     fun readBallotTalliesWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-            readSpoiledBallotTallies(context, "src/commonTest/data/workflow/decryptor/")
+            readSpoiledBallotTallies(context, "src/commonTest/data/testJava/decryptor/")
         }
     }
 
@@ -23,9 +23,9 @@ class ElectionRecordIterablesTest {
     fun readBallotsWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-            readBallots(context, "src/commonTest/data/workflow/decryptor/")
-            readCastBallots(context, "src/commonTest/data/workflow/decryptor/")
-            readSpoiledBallots(context, "src/commonTest/data/workflow/decryptor/")
+            readBallots(context, "src/commonTest/data/testJava/decryptor/")
+            readCastBallots(context, "src/commonTest/data/testJava/decryptor/")
+            readSpoiledBallots(context, "src/commonTest/data/testJava/decryptor/")
         }
     }
 
@@ -33,9 +33,9 @@ class ElectionRecordIterablesTest {
     fun readBallotsWrittenByEncryptorJava() {
         runTest {
             val context = productionGroup()
-            readBallots(context, "src/commonTest/data/workflow/encryptor/")
-            readCastBallots(context, "src/commonTest/data/workflow/encryptor/")
-            readSpoiledBallots(context, "src/commonTest/data/workflow/encryptor/")
+            readBallots(context, "src/commonTest/data/testJava/encryptor/")
+            readCastBallots(context, "src/commonTest/data/testJava/encryptor/")
+            readSpoiledBallots(context, "src/commonTest/data/testJava/encryptor/")
         }
     }
 

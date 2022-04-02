@@ -16,7 +16,7 @@ class ElectionRecordTest {
     fun readElectionRecordWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-            readElectionRecordAll(context, "src/commonTest/data/workflow/decryptor/")
+            readElectionRecordAll(context, "src/commonTest/data/testJava/decryptor/")
         }
     }
 
@@ -24,7 +24,7 @@ class ElectionRecordTest {
     fun readElectionRecordWrittenByEncryptorJava() {
         runTest {
             val context = productionGroup()
-            readElectionRecord(context, "src/commonTest/data/workflow/encryptor/")
+            readElectionRecord(context, "src/commonTest/data/testJava/encryptor/")
         }
     }
 

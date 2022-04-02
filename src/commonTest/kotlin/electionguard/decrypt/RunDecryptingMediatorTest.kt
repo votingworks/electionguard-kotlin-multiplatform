@@ -17,12 +17,17 @@ import kotlin.test.Test
 /** Test DecryptingMediator with in-process DecryptingTrustee's. Cannot use this in production */
 class RunDecryptingMediatorTest {
 
-    @Test
+    // @Test
     fun testDecryptingMediator() {
         val group = productionGroup()
-        val inputDir =  "/home/snake/tmp/electionguard/kotlin/runTallyAccumulation"
-        val outputDir =  "/home/snake/tmp/electionguard/kotlin/runDecryptingMediator"
-        runDecryptingMediator(group, inputDir, outputDir, decryptingTrustees)
+        val inputDir =  "src/commonTest/data/workflow/runTallyAccumulation"
+        val guardianDir =  "src/commonTest/data/testJava/kickstart/keyCeremony/election_private_data"
+        val outputDir =  "src/commonTest/data/workflow/runDecryptingMediator"
+        runDecryptingMediator(group, inputDir, outputDir, makeDecryptingTrustees(guardianDir))
+    }
+
+    fun makeDecryptingTrustees(guardianDir : String) : List<DecryptingTrustee> {
+        return emptyList()
     }
 
     fun runDecryptingMediator(group: GroupContext, inputDir: String, outputDir: String, decryptingTrustees : List<DecryptingTrustee>) {
