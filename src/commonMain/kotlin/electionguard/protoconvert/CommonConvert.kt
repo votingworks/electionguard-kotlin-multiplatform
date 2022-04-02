@@ -60,20 +60,19 @@ fun GroupContext.importChaumPedersenProof(
     return GenericChaumPedersenProof(challenge, response)
 }
 
-fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?,): SchnorrProof? {
+fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?): SchnorrProof? {
 
     if (proof == null) return null
 
-    val publicKey = this.importElGamalPublicKey(proof.publicKey)
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
 
-    if (publicKey == null || challenge == null || response == null) {
+    if (challenge == null || response == null) {
         logger.error { "one or more SchnorrProof inputs was malformed or out of bounds" }
         return null
     }
 
-    return SchnorrProof(publicKey, challenge, response)
+    return SchnorrProof(challenge, response)
 }
 
 fun GroupContext.importElGamalPublicKey(
@@ -123,7 +122,7 @@ fun GenericChaumPedersenProof.publishChaumPedersenProof():
 fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen
         .SchnorrProof(
-            this.publicKey.publishElGamalPublicKey(),
+            null,
             null, // 1.0 0nly
             this.challenge.publishElementModQ(),
             this.response.publishElementModQ()

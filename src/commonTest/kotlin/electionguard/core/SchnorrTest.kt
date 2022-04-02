@@ -17,32 +17,32 @@ class SchnorrTest {
             checkAll(
                 elGamalKeypairs(tinyGroup()),
                 elementsModQ(tinyGroup()),
+                elementsModQ(tinyGroup()),
                 validElementsModP(tinyGroup()),
                 elementsModQ(tinyGroup())
-            ) { kp, n, fakeElementModP, fakeElementModQ ->
-                val goodProof = kp.schnorrProof(n)
-                assertTrue(kp.publicKey.hasValidSchnorrProof(goodProof))
+            ) { kp, n, baseHash, fakeElementModP, fakeElementModQ ->
+                val goodProof = kp.schnorrProof(baseHash, n)
+                assertTrue(kp.publicKey.hasValidSchnorrProof(baseHash, goodProof))
 
                 val fakePublicKey = ElGamalPublicKey(fakeElementModP)
 
-                val badProof1 = goodProof.copy(publicKey = fakePublicKey)
-                val badProof3 = goodProof.copy(challenge = fakeElementModQ)
-                val badProof4 = goodProof.copy(response = fakeElementModQ)
+                val badProof1 = goodProof.copy(challenge = fakeElementModQ)
+                val badProof2 = goodProof.copy(response = fakeElementModQ)
 
                 // The generator might have generated replacement values equal to the
                 // originals, so we need to be a little bit careful here.
 
                 assertTrue(
-                    goodProof.publicKey == fakePublicKey ||
-                        !kp.publicKey.hasValidSchnorrProof(badProof1)
-                )
-                assertTrue(
                     goodProof.challenge == fakeElementModQ ||
-                        !kp.publicKey.hasValidSchnorrProof(badProof3)
+                            !kp.publicKey.hasValidSchnorrProof(baseHash, badProof1)
                 )
                 assertTrue(
                     goodProof.response == fakeElementModQ ||
-                        !kp.publicKey.hasValidSchnorrProof(badProof4)
+                            !kp.publicKey.hasValidSchnorrProof(baseHash, badProof2)
+                )
+                assertTrue(
+                    kp.publicKey.key == fakeElementModP ||
+                            !fakePublicKey.hasValidSchnorrProof(baseHash, goodProof)
                 )
             }
         }

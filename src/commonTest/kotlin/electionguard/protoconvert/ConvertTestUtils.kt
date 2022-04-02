@@ -29,7 +29,6 @@ fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPeders
 
 fun generateSchnorrProof(context: GroupContext): SchnorrProof {
     return SchnorrProof(
-        ElGamalPublicKey(generateElementModP(context)),
         generateElementModQ(context),
         generateElementModQ(context),
     )
