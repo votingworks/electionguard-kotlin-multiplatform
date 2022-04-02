@@ -44,6 +44,9 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
 
         fun accumulate(ballotId : String, ballotContest: SubmittedBallot.Contest) {
             for (ballotSelection in ballotContest.selections) {
+                if (ballotSelection.isPlaceholderSelection) {
+                    continue
+                }
                 val selection = selections[ballotSelection.selectionId]
                 if (selection == null) {
                     logger.warn { "Ballot $ballotId has illegal selection ${ballotSelection.selectionId} in contest ${ballotContest.contestId}"}
@@ -70,7 +73,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         fun build(): CiphertextTally.Selection {
             return CiphertextTally.Selection(
                 manifestSelection.selectionId, manifestSelection.sequenceOrder, manifestSelection.cryptoHash,
-                ciphertextAccumulate.encryptedSum()
+                ciphertextAccumulate.encryptedSum(),
             )
         }
     }

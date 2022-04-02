@@ -30,6 +30,6 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
         val tally: Int,
         val value: ElementModP,
         val message: ElGamalCiphertext,
-        val shares: List<DecryptionShare.CiphertextDecryptionSelection>,
+        val shares: List<DecryptionShare.DecryptionShareSelection>,
     )
 }
