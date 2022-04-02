@@ -45,15 +45,15 @@ fun contestDescriptionCryptoHash(
 ) =
     hashElements(
         contestId,
-        geopoliticalUnitId,
         sequenceOrder,
+        geopoliticalUnitId,
         voteVariation.name,
-        numberElected,
-        votesAllowed,
-        name,
-        selections,
         ballotTitle,
         ballotSubtitle,
+        name,
+        numberElected,
+        votesAllowed,
+        selections,
         // primaryPartyIds,
     )
 
