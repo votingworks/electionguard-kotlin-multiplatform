@@ -2,10 +2,12 @@ package electionguard.publish
 
 import electionguard.ballot.ElectionRecord
 import electionguard.ballot.ElectionRecordAllData
+import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.GroupContext
 import electionguard.protoconvert.importElectionRecord
+import electionguard.protoconvert.importPlaintextBallot
 import electionguard.protoconvert.importPlaintextTally
 import electionguard.protoconvert.importSubmittedBallot
 import io.ktor.utils.io.errors.*
@@ -55,6 +57,29 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
     actual fun readElectionRecord(): ElectionRecord {
         val proto = electionguard.protogen.ElectionRecord.decodeFromByteArray(gulp(path.electionRecordProtoPath()))
         return proto.importElectionRecord(groupContext)
+    }
+
+    actual fun iteratePlaintextBallots(ballotDir : String): Iterable<PlaintextBallot> {
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir)) }
+    }
+
+    private inner class PlaintextBallotIterator(
+        val filename: String,
+    ) : AbstractIterator<PlaintextBallot>() {
+
+        private val file = openFile(filename)
+
+        override fun computeNext() {
+            val length = readVlen(file, filename)
+            if (length <= 0) {
+                fclose(file)
+                return done()
+            }
+            val message = readFromFile(file, length.toULong(), filename)
+            val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteArray(message)
+            val ballot = ballotProto.importPlaintextBallot()
+            setNext(ballot)
+        }
     }
 
     actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
