@@ -3,38 +3,43 @@
 package electionguard.decrypt
 
 import electionguard.ballot.ElectionRecord
-import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
+
 import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 /** Test DecryptingMediator with in-process DecryptingTrustee's. Cannot use this in production */
 class RunDecryptingMediatorTest {
 
-    // @Test
+    @Test
     fun testDecryptingMediator() {
         val group = productionGroup()
         val inputDir =  "src/commonTest/data/workflow/runTallyAccumulation"
         val guardianDir =  "src/commonTest/data/testJava/kickstart/keyCeremony/election_private_data"
         val outputDir =  "src/commonTest/data/workflow/runDecryptingMediator"
-        runDecryptingMediator(group, inputDir, outputDir, makeDecryptingTrustees(guardianDir))
+        runDecryptingMediator(group, inputDir, outputDir, makeDecryptingTrustees(group, guardianDir))
     }
 
-    fun makeDecryptingTrustees(guardianDir : String) : List<DecryptingTrustee> {
-        return emptyList()
+    fun makeDecryptingTrustees(group: GroupContext, guardianDir: String) : List<DecryptingTrusteeIF> {
+        val consumer = Consumer(guardianDir, group)
+        return consumer.readTrustees(guardianDir)
     }
 
-    fun runDecryptingMediator(group: GroupContext, inputDir: String, outputDir: String, decryptingTrustees : List<DecryptingTrustee>) {
+    fun runDecryptingMediator(group: GroupContext, inputDir: String, outputDir: String, decryptingTrustees : List<DecryptingTrusteeIF>) {
         val consumer = Consumer(inputDir, group)
         val electionRecord: ElectionRecord = consumer.readElectionRecord()
         val decryptor = DecryptingMediator(group, electionRecord.context!!, decryptingTrustees)
         val decryptedTally = with(decryptor) { electionRecord.encryptedTally!!.decrypt() }
+
+        val pkeys: Iterable<ElementModP> = decryptingTrustees.map {it.electionPublicKey()}
+        val pkey = with (group) { pkeys.multP() }
+        assertEquals(electionRecord.context!!.jointPublicKey, pkey)
 
         val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
         publisher.writeElectionRecordProto(
@@ -49,37 +54,5 @@ class RunDecryptingMediatorTest {
             null,
             decryptor.computeAvailableGuardians(),
         )
-    }
-
-    class DecryptingTrusteeTest(val id : String, val xCoordinate : Int, val publicKey : ElementModP) : DecryptingTrustee {
-        override fun id(): String {
-            return id
-        }
-
-        override fun xCoordinate(): Int {
-            return xCoordinate
-        }
-
-        override fun electionPublicKey(): ElementModP {
-            return publicKey
-        }
-
-        override fun partialDecrypt(
-            texts: List<ElGamalCiphertext>,
-            extended_base_hash: ElementModQ,
-            nonce_seed: ElementModQ?
-        ): List<PartialDecryptionProof> {
-            TODO("Not yet implemented")
-        }
-
-        override fun compensatedDecrypt(
-            missing_guardian_id: String,
-            texts: List<ElGamalCiphertext>,
-            extended_base_hash: ElementModQ,
-            nonce_seed: ElementModQ?
-        ): List<DecryptionProofRecovery> {
-            TODO("Not yet implemented")
-        }
-
     }
 }

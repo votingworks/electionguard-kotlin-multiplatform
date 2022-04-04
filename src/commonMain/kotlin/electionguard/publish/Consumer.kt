@@ -6,6 +6,7 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.GroupContext
+import electionguard.decrypt.DecryptingTrusteeIF
 
 expect class Consumer(topDir: String, groupContext: GroupContext) {
     fun readElectionRecordAllData(): ElectionRecordAllData
@@ -15,4 +16,6 @@ expect class Consumer(topDir: String, groupContext: GroupContext) {
     fun iterateCastBallots(): Iterable<SubmittedBallot>
     fun iterateSpoiledBallots(): Iterable<SubmittedBallot>
     fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally>
+
+    fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF>
 }

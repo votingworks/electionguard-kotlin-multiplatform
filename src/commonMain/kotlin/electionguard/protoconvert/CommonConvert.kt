@@ -38,7 +38,7 @@ fun GroupContext.importCiphertext(
         return null
     }
 
-    return ElGamalCiphertext(pad, data);
+    return ElGamalCiphertext(pad, data)
 }
 
 fun GroupContext.importChaumPedersenProof(
@@ -60,6 +60,22 @@ fun GroupContext.importChaumPedersenProof(
     }
 
     return GenericChaumPedersenProof(challenge, response)
+}
+
+fun GroupContext.importHashedCiphertext(
+    ciphertext: electionguard.protogen.HashedElGamalCiphertext?,
+): HashedElGamalCiphertext? {
+    if (ciphertext == null) return null
+
+    val c0 = this.importElementModP(ciphertext.c0)
+    val c2 = importUInt256(ciphertext.c2)
+
+    if (c0 == null || c2 == null) {
+        logger.error { "HashedElGamalCiphertext fields missing" }
+        return null
+    }
+
+    return HashedElGamalCiphertext(c0, ciphertext.c1.array, c2, ciphertext.numBytes)
 }
 
 fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?): SchnorrProof? {
@@ -118,9 +134,19 @@ fun GenericChaumPedersenProof.publishChaumPedersenProof():
                 null,
                 null, // 1.0 0nly
                 this.c.publishElementModQ(),
-                this.r.publishElementModQ()
+                this.r.publishElementModQ(),
             )
     }
+
+fun HashedElGamalCiphertext.publishHashedCiphertext() :
+    electionguard.protogen.HashedElGamalCiphertext {
+    return electionguard.protogen.HashedElGamalCiphertext(
+        this.c0.publishElementModP(),
+        ByteArr(this.c1),
+        this.c2.publishUInt256(),
+        this.numBytes,
+    )
+}
 
 fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen

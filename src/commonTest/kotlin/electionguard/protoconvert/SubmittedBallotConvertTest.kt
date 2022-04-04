@@ -85,7 +85,7 @@ class SubmittedBallotConvertTest {
                 generateUInt256(context),
                 false,
                 generateDisjunctiveChaumPedersenProofKnownNonce(context),
-                generateCiphertext(context),
+                generateHashedCiphertext(context),
             )
         }
     }

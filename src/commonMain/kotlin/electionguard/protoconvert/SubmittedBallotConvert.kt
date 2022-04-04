@@ -93,7 +93,7 @@ private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
     val ciphertext = groupContext.importCiphertext(this.ciphertext)
     val cryptoHash = importUInt256(this.cryptoHash)
     val proof = this.proof?.importDisjunctiveChaumPedersenProof(groupContext)
-    val extendedData = groupContext.importCiphertext(this.extendedData)
+    val extendedData = groupContext.importHashedCiphertext(this.extendedData)
 
     if (selectionHash == null || ciphertext == null || cryptoHash == null || proof == null) {
         logger.error { "Failed to convert selection, missing fields" }
@@ -220,7 +220,7 @@ private fun SubmittedBallot.Selection.publishSelection():
                 this.cryptoHash.publishUInt256(),
                 this.isPlaceholderSelection,
                 this.proof?.let { this.proof.publishDisjunctiveChaumPedersenProof() },
-                this.extendedData?.let { this.extendedData.publishCiphertext() },
+                this.extendedData?.let { this.extendedData.publishHashedCiphertext() },
             )
     }
 

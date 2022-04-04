@@ -1,8 +1,9 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 3/22/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 4/3/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
-This covers only the election record, and not any serialized classes used in remote procedure calls.
+This covers only the election record, and not any serialized classes used in remote procedure calls 
+or private data.
 
 Notes
 
@@ -10,13 +11,6 @@ Notes
 2. Proto_version uses [semantic versioning](https://semver.org/)
 
 ## common.proto
-
-### message GenericChaumPedersenProof
-
-| Name      | Type           | Notes   |
-|-----------|----------------|---------|
-| challenge | ElementModQ    |         |
-| response  | ElementModQ    |         |
 
 ### message ElementModQ, ElementModP
 
@@ -30,6 +24,22 @@ Notes
 |------|-------------|-------|
 | pad  | ElementModP |       |
 | data | ElementModP |       |
+
+### message GenericChaumPedersenProof
+
+| Name      | Type           | Notes   |
+|-----------|----------------|---------|
+| challenge | ElementModQ    |         |
+| response  | ElementModQ    |         |
+
+### message HashedElGamalCiphertext
+
+| Name     | Type        | Notes |
+|----------|-------------|-------|
+| c0       | ElementModP |       |
+| c1       | bytes       |       |
+| c2       | UInt256     |       |
+| numBytes | uint32      |       |
 
 ### message SchnorrProof
 
@@ -319,20 +329,13 @@ Notes
 
 ### message PlaintextBallotSelection
 
-| Name                     | Type         | Notes                                       |
-|--------------------------|--------------|---------------------------------------------|
-| selection_id             | string       | matches SelectionDescription.selection_id   |
-| sequence_order           | uint32       | matches SelectionDescription.sequence_order |
-| vote                     | uint32       |                                             |
-| is_placeholder_selection | bool         |                                             |
-| extended_data            | ExtendedData | optional                                    |
-
-### message ExtendedData
-
-| Name   | Type   | Notes |
-|--------|--------|-------|
-| value  | string |       |
-| length | uint32 | why?  | 
+| Name                     | Type    | Notes                                       |
+|--------------------------|---------|---------------------------------------------|
+| selection_id             | string  | matches SelectionDescription.selection_id   |
+| sequence_order           | uint32  | matches SelectionDescription.sequence_order |
+| vote                     | uint32  |                                             |
+| is_placeholder_selection | bool    |                                             |
+| extended_data            | string? | optional                                    |
 
 ## ciphertext_ballot.proto
 
@@ -373,9 +376,9 @@ Notes
 | crypto_hash              | UInt256                       |                                             |
 | is_placeholder_selection | bool                          |                                             |
 | proof                    | DisjunctiveChaumPedersenProof |                                             |
-| extended_data            | ElGamalCiphertext             | optional                                    |
+| extended_data            | HashedElGamalCiphertext       | optional                                    |
 
-### message ConstantChaumPedersenProof
+### message ConstantChaumPedersenProofElGamalCiphertext
 
 | Name      | Type                      | Notes |
 |-----------|---------------------------|-------|

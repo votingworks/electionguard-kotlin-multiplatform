@@ -18,7 +18,7 @@ import electionguard.core.toElementModQ
 class DecryptingMediator(
     val group: GroupContext,
     val context: ElectionContext,
-    val decryptingTrustees : List<DecryptingTrustee>) {
+    val decryptingTrustees : List<DecryptingTrusteeIF>) {
 
     fun CiphertextTally.decrypt() : PlaintextTally {
         val tallyShares : MutableList<DecryptionShare> = ArrayList()
@@ -57,7 +57,7 @@ class DecryptingMediator(
    * @return a DecryptionShare
    */
  fun CiphertextTally.computeDecryptionShareForTally(
-     guardian: DecryptingTrustee,
+     guardian: DecryptingTrusteeIF,
  ): DecryptionShare {
 
      // Get all the Ciphertext that need to be decrypted, and do so in one call
@@ -69,7 +69,7 @@ class DecryptingMediator(
      }
      // returned in order
      val results: List<PartialDecryptionProof> =
-         guardian.partialDecrypt(texts, context.cryptoExtendedBaseHash.toElementModQ(group), null)
+         guardian.partialDecrypt(group, texts, context.cryptoExtendedBaseHash.toElementModQ(group), null)
 
      // Create the guardian's DecryptionShare for the tally
      var count = 0;
@@ -77,20 +77,26 @@ class DecryptingMediator(
      for (tallyContest in this.contests.values) {
          val selections : MutableList<DecryptionShareSelection> = ArrayList()
          for (selection in tallyContest.selections.values) {
-            val proof : PartialDecryptionProof = results.get(count);
+             val proof: PartialDecryptionProof = results.get(count);
              selections.add(
-                 DecryptionShareSelection(selection.selectionId, guardian.id(), proof.partialDecryption, proof.proof, null)
-             )
-             contests.add(
-                 DecryptionShareContest(
-                     tallyContest.contestId,
+                 DecryptionShareSelection(
+                     selection.selectionId,
                      guardian.id(),
-                     tallyContest.contestDescriptionHash.toElementModQ(group),
-                     selections
+                     proof.partialDecryption,
+                     proof.proof,
+                     null
                  )
              )
              count++
          }
+         contests.add(
+             DecryptionShareContest(
+                 tallyContest.contestId,
+                 guardian.id(),
+                 tallyContest.contestDescriptionHash.toElementModQ(group),
+                 selections
+             )
+         )
      }
 
      return DecryptionShare(
