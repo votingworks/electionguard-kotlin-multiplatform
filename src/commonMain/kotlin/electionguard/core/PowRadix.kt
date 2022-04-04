@@ -39,10 +39,10 @@ enum class PowRadixOption(val numBits: Int, val description: String) {
 }
 
 /**
- * The basis is to be used with future calls to the `pow` method, such that `PowRadix(basis,
- * ...).pow(e) == basis powP e, except the computation will run much faster. By specifying which
- * `PowRadixOption` to use, the table will either use more or less memory, corresponding to greater
- * acceleration.
+ * The basis is to be used with future calls to the `pow` method, such that
+ * `PowRadix(basis, ...).pow(e) == basis powP e`, except the computation will run much faster. By
+ * specifying which `PowRadixOption` to use, the table will either use more or less memory,
+ * corresponding to greater acceleration.
  *
  * @see PowRadixOption
  */
@@ -70,7 +70,7 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
                         Array(numColumns) { column ->
                             if (column == 0) basis.context.ONE_MOD_P else {
                                 val finalColumn = runningBasis
-                                runningBasis = runningBasis * rowBasis
+                                runningBasis *= rowBasis
                                 finalColumn
                             }
                         }
@@ -86,10 +86,10 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
         if (acceleration.numBits == 0) return basis powP e else {
             val slices = e.byteArray().kBitsPerSlice(acceleration, tableLength)
             var y = e.context.ONE_MOD_P
-            for (i in 0..(tableLength - 1)) {
+            for (i in 0 until tableLength) {
                 val eSlice = slices[i].toInt() // from UShort to Int so we can do an array lookup
                 val nextProd = table[i][eSlice]
-                y = y * nextProd
+                y *= nextProd
             }
             return y
         }

@@ -2,7 +2,8 @@ package electionguard.core
 
 /**
  * A wrapper around an ElementModP that allows us to ensure that we're accelerating exponentiation
- * when using the key and storing related values that we use frequently.
+ * when using the key. Also contains the [inverseKey] (i.e., the multiplicative inverse mod `p`)
+ * and supports computing discrete logs ([dLog]) with the key as the base.
  */
 class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
     val key = inputKey.acceleratePow()
@@ -30,10 +31,15 @@ class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
 }
 
 /**
- * A wrapper around an ElementModQ that allows us to hang onto a pre-computed `negativeKey`,
- * accelerating several operations that use the secret key.
+ * A wrapper around an ElementModQ that allows us to hang onto a pre-computed [negativeKey]
+ * (i.e., the additive inverse mod `q`). The secret key must be in [2, Q).
  */
 class ElGamalSecretKey(val key: ElementModQ) : CryptoHashableString {
+    init {
+        if (key < key.context.TWO_MOD_Q)
+            throw ArithmeticException("secret key must be in [2, Q)")
+    }
+
     val negativeKey: ElementModQ = -key
 
     override fun equals(other: Any?) =
@@ -70,6 +76,17 @@ val ElGamalKeypair.context: GroupContext
  * An "exponential ElGamal ciphertext" (i.e., with the plaintext in the exponent to allow for
  * homomorphic addition). (See
  * [ElGamal 1982](https://ieeexplore.ieee.org/abstract/document/1057074))
+ *
+ * In a "normal" ElGamal encryption where the message goes into the exponent, a secret key `a`
+ * with corresponding public key `g^a`, message `M` and nonce `R` would be encoded as the tuple
+ * `<g^R, (g^a)^r * g^M>`.
+ *
+ * In this particular ElGamal implementation, we're instead encoding the ciphertext as
+ * `<g^R, (g^a)^{R+M}>`. This accelerates both the encryption process and the process of generating
+ * the corresponding Chaum-Pedersen proofs.
+ *
+ * This also means that this ElGamal ciphertext is *not compatible with ElectionGuard 1.0*, but
+ * is anticipated to be the standard for ElectionGuard 2.0 and later.
  */
 data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)  : CryptoHashableUInt256 {
     override fun cryptoHashUInt256() = hashElements(pad, data)
@@ -81,10 +98,7 @@ data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)  : Cry
  * @throws ArithmeticException if the secret key is less than two
  */
 fun elGamalKeyPairFromSecret(secret: ElementModQ) =
-    if (secret < secret.context.TWO_MOD_Q)
-        throw ArithmeticException("secret key must be in [2, Q)")
-    else
-        ElGamalKeypair(ElGamalSecretKey(secret), ElGamalPublicKey(secret.context.gPowP(secret)))
+    ElGamalKeypair(ElGamalSecretKey(secret), ElGamalPublicKey(secret.context.gPowP(secret)))
 
 /** Generates a random ElGamal keypair. */
 fun elGamalKeyPairFromRandom(context: GroupContext) =
@@ -114,9 +128,6 @@ fun Int.encrypt(
     // is much larger than that.
 
     val pad = context.gPowP(nonce)
-
-    // New encoding, suggested by Olivier Pereira, to accelerate computation:
-    // the message goes into the exponent of the public key along with the nonce.
     val data = publicKey.key powP (nonce + this.toElementModQ(context))
 
     return ElGamalCiphertext(pad, data)
