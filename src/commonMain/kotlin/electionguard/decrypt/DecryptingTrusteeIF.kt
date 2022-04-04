@@ -19,33 +19,33 @@ interface DecryptingTrusteeIF {
      * Compute a partial decryption of an elgamal encryption.
      *
      * @param texts:            list of `ElGamalCiphertext` that will be partially decrypted
-     * @param extended_base_hash: the extended base hash of the election that
-     * @param nonce_seed:         an optional value used to generate the `ChaumPedersenProof`
+     * @param extendedBaseHash: the extended base hash of the election that
+     * @param nonceSeed:         an optional value used to generate the `ChaumPedersenProof`
      *                            if no value is provided, a random number will be used.
      * @return a PartialDecryptionProof of the partial decryption and its proof
      */
     fun partialDecrypt(
         group: GroupContext,
         texts : List<ElGamalCiphertext>,
-        extended_base_hash : ElementModQ,
-        nonce_seed: ElementModQ?
+        extendedBaseHash : ElementModQ,
+        nonceSeed: ElementModQ?
     ): List<PartialDecryptionProof>
 
 
     /**
      * Compute a compensated partial decryption of an elgamal encryption on behalf of the missing guardian.
      *
-     * @param missing_guardian_id: the guardian
+     * @param missingGuardianId: the guardian
      * @param texts:               the ciphertext(s) that will be decrypted
-     * @param extended_base_hash:  the extended base hash of the election used to generate the ElGamal Ciphertext
-     * @param nonce_seed:          an optional value used to generate the `ChaumPedersenProof`
+     * @param extendedBaseHash:  the extended base hash of the election used to generate the ElGamal Ciphertext
+     * @param nonceSeed:          an optional value used to generate the `ChaumPedersenProof`
      *                             if no value is provided, a random number will be used.
      * @return a DecryptionProofRecovery with the decryption and its proof and a recovery key
      */
     fun compensatedDecrypt(
-        missing_guardian_id : String,
+        missingGuardianId : String,
         texts : List<ElGamalCiphertext>,
-        extended_base_hash : ElementModQ,
-        nonce_seed: ElementModQ?
+        extendedBaseHash : ElementModQ,
+        nonceSeed: ElementModQ?
     ):  List<DecryptionProofRecovery>
 }

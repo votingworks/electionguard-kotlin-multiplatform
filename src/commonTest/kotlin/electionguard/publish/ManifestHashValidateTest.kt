@@ -20,7 +20,7 @@ class ManifestHashValidateTest {
             val context = productionGroup()
             val consumer = Consumer(input, context)
             val electionRecord: ElectionRecord = consumer.readElectionRecord()
-            showManifestHash(electionRecord.manifest)
+            validateManifestHash(electionRecord.manifest)
         }
     }
 

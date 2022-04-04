@@ -8,7 +8,7 @@ import electionguard.ballot.DecryptionShare.DecryptionShareSelection
 import electionguard.ballot.ElectionContext
 import electionguard.ballot.PlaintextTally
 import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElementModQ
+import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.toElementModQ
 
@@ -44,7 +44,7 @@ class DecryptingMediator(
             }
         }
 
-        val decryptor = Decryptor(group, context)
+        val decryptor = Decryptor(group, ElGamalPublicKey(context.jointPublicKey))
         return decryptor.decryptTally(this, tallySharesBySelectionId)
     }
 
@@ -113,20 +113,17 @@ class DecryptingMediator(
             val seq_orders: List<Int> = decryptingTrustees
                 .filter { !it.id().equals(decryptingTrustee.id()) }
                 .map { it.xCoordinate() }
-            val coeff: ElementModQ = computeLagrangeCoefficient(decryptingTrustee.xCoordinate(), seq_orders)
+            val coeff: Int = computeLagrangeCoefficient(decryptingTrustee.xCoordinate(), seq_orders)
             result.add(AvailableGuardian(decryptingTrustee.id(), decryptingTrustee.xCoordinate(), coeff))
         }
         return result
     }
 
-    fun computeLagrangeCoefficient(coordinate: Int, degrees: List<Int>): ElementModQ {
-        val product: Int = degrees.reduce { a, b -> a * b }
-        val numerator = product.toElementModQ(group)
+    fun computeLagrangeCoefficient(coordinate: Int, degrees: List<Int>): Int {
+        val numerator: Int = degrees.reduce { a, b -> a * b }
 
-        // denominator = mult_q(*[(degree - coordinate) for degree in degrees])
         val diff: List<Int> = degrees.map { degree: Int -> degree - coordinate }
-        val productDiff = diff.reduce { a, b -> a * b }
-        val denominator = productDiff.toElementModQ(group)
+        val denominator = diff.reduce { a, b -> a * b }
 
         return numerator / denominator
     }

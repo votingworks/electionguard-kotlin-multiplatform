@@ -16,7 +16,7 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
 
     val availableGuardians: List<AvailableGuardian>? =
         this.availableGuardians
-            .map { it.importAvailableGuardian(groupContext) }
+            .map { it.importAvailableGuardian() }
             .noNullValuesOrNull()
 
     val electionContext = this.context?.let { this.context.importContext(groupContext) }
@@ -44,18 +44,8 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
     )
 }
 
-private fun electionguard.protogen.AvailableGuardian.importAvailableGuardian(
-    groupContext: GroupContext
-): AvailableGuardian? {
-
-    val lagrangeCoordinate = groupContext.importElementModQ(this.lagrangeCoordinate)
-
-    if (lagrangeCoordinate == null) {
-        logger.error { "lagrangeCoordinate was malformed or out of bounds" }
-        return null
-    }
-
-    return AvailableGuardian(this.guardianId, this.xCoordinate, lagrangeCoordinate)
+private fun electionguard.protogen.AvailableGuardian.importAvailableGuardian(): AvailableGuardian {
+    return AvailableGuardian(this.guardianId, this.xCoordinate, this.lagrangeCoordinate)
 }
 
 private fun convertConstants(

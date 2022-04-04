@@ -130,7 +130,7 @@ public data class ElectionRecord(
 public data class AvailableGuardian(
     val guardianId: String = "",
     val xCoordinate: Int = 0,
-    val lagrangeCoordinate: electionguard.protogen.ElementModQ? = null,
+    val lagrangeCoordinate: Int = 0,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.AvailableGuardian = protoMergeImpl(other)
@@ -168,7 +168,7 @@ public data class AvailableGuardian(
                         messageDescriptor = this@Companion::descriptor,
                         name = "lagrange_coordinate",
                         number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        type = pbandk.FieldDescriptor.Type.Primitive.SInt32(),
                         jsonName = "lagrangeCoordinate",
                         value = electionguard.protogen.AvailableGuardian::lagrangeCoordinate
                     )
@@ -626,7 +626,6 @@ public fun AvailableGuardian?.orDefault(): electionguard.protogen.AvailableGuard
 
 private fun AvailableGuardian.protoMergeImpl(plus: pbandk.Message?): AvailableGuardian = (plus as? AvailableGuardian)?.let {
     it.copy(
-        lagrangeCoordinate = lagrangeCoordinate?.plus(plus.lagrangeCoordinate) ?: plus.lagrangeCoordinate,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -635,13 +634,13 @@ private fun AvailableGuardian.protoMergeImpl(plus: pbandk.Message?): AvailableGu
 private fun AvailableGuardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): AvailableGuardian {
     var guardianId = ""
     var xCoordinate = 0
-    var lagrangeCoordinate: electionguard.protogen.ElementModQ? = null
+    var lagrangeCoordinate = 0
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> xCoordinate = _fieldValue as Int
-            3 -> lagrangeCoordinate = _fieldValue as electionguard.protogen.ElementModQ
+            3 -> lagrangeCoordinate = _fieldValue as Int
         }
     }
     return AvailableGuardian(guardianId, xCoordinate, lagrangeCoordinate, unknownFields)
