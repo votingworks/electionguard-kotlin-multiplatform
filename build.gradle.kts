@@ -6,10 +6,10 @@ buildscript {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.6.10"
+    kotlin("multiplatform") version "1.6.20"
 
     // cross-platform serialization support
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("plugin.serialization") version "1.6.20"
 
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
@@ -58,7 +58,7 @@ kotlin {
             hostOs == "Mac OS X"-> macosX64("native")
             hostOs == "Linux" -> linuxX64("native")
             isMingwX64 -> mingwX64("native")
-            else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+            else -> throw GradleException("Host OS is not supported.")
         }
 
     nativeTarget.apply {
@@ -88,8 +88,8 @@ kotlin {
         val commonMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-common", "1.6.10"))
-                    implementation(kotlin("stdlib", "1.6.10"))
+                    implementation(kotlin("stdlib-common", "1.6.20"))
+                    implementation(kotlin("stdlib", "1.6.20"))
 
                     // JSON serialization and DSL
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
@@ -98,7 +98,7 @@ kotlin {
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
 
                     // Useful, portable routines
-                    implementation("io.ktor:ktor-utils:1.6.7")
+                    implementation("io.ktor:ktor-utils:1.6.8")
 
                     // Portable logging interface. On the JVM, we'll get "logback", which gives
                     // us lots of features. On Native, it ultimately just prints to stdout.
@@ -118,8 +118,8 @@ kotlin {
         val commonTest by
             getting {
                 dependencies {
-                    implementation(kotlin("test-common", "1.6.10"))
-                    implementation(kotlin("test-annotations-common", "1.6.10"))
+                    implementation(kotlin("test-common", "1.6.20"))
+                    implementation(kotlin("test-annotations-common", "1.6.20"))
 
                     // runTest() for running suspend functions in tests
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
@@ -131,7 +131,7 @@ kotlin {
         val jvmMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-jdk8", "1.6.10"))
+                    implementation(kotlin("stdlib-jdk8", "1.6.20"))
 
                     // Progress bars
                     implementation("me.tongfei:progressbar:0.9.2")
@@ -147,7 +147,7 @@ kotlin {
                 dependencies {
                     // Unclear if we really need all the extra features of JUnit5, but it would
                     // at least be handy if we could get its parallel test runner to work.
-                    implementation(kotlin("test-junit5", "1.6.10"))
+                    implementation(kotlin("test-junit5", "1.6.20"))
                 }
             }
         val nativeMain by getting { dependencies {} }

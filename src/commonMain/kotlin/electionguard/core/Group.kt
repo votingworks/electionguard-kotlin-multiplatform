@@ -4,8 +4,9 @@ package electionguard.core
  * Fetches the production-strength [GroupContext] with the desired amount of acceleration via
  * precomputation, which can result in significant extra memory usage.
  *
- * @see PowRadixOption for the different memory use vs. performance profiles
- * @see ProductionMode specifies the particular set of cryptographic constants we'll be using
+ * See [PowRadixOption] for the different memory use vs. performance profiles.
+ *
+ * Also, [ProductionMode] specifies the particular set of cryptographic constants we'll be using.
  */
 expect fun productionGroup(
     acceleration: PowRadixOption = PowRadixOption.LOW_MEMORY_USE,
