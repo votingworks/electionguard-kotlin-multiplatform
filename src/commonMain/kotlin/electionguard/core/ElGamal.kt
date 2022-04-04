@@ -151,6 +151,19 @@ fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair): Int? {
     return keypair.publicKey.dLog(kPowM)
 }
 
+/** Compute the share of the decryption from the secret key. */
+fun ElGamalCiphertext.computeShare(secretKey: ElGamalSecretKey): ElementModP {
+    compatibleContextOrFail(pad, data, secretKey.key)
+    return pad powP secretKey.key
+}
+
+fun ElGamalCiphertext.decryptWithShares(publicKey: ElGamalPublicKey, shares: Iterable<ElementModP>): Int? {
+    val context = compatibleContextOrFail(pad, data, ) // shares)
+    val allSharesProductM: ElementModP = with (context) { shares.multP() }
+    val decryptedValue: ElementModP = this.data / allSharesProductM
+    return publicKey.dLog(decryptedValue)
+}
+
 /** Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned. */
 fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ): Int? {
     compatibleContextOrFail(pad, data, publicKey.key, nonce)

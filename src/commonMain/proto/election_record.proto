@@ -27,7 +27,7 @@ message ElectionRecord {
 message AvailableGuardian {
   string guardian_id = 1;
   uint32 x_coordinate = 2;
-  ElementModQ lagrange_coordinate = 3;
+  sint32 lagrange_coordinate = 3;
 }
 
 // The constants for mathematical functions during the election.

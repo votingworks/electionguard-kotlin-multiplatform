@@ -2,12 +2,12 @@ package electionguard.decrypt
 
 import electionguard.ballot.CiphertextTally
 import electionguard.ballot.DecryptionShare
-import electionguard.ballot.ElectionContext
 import electionguard.ballot.PlaintextTally
+import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 
-class Decryptor(val group: GroupContext, val context: ElectionContext) {
+class Decryptor(val group: GroupContext, val publicKey: ElGamalPublicKey) {
 
     fun decryptTally(tally: CiphertextTally, shares: Map<String, List<DecryptionShare.DecryptionShareSelection>>): PlaintextTally {
         val contests: MutableMap<String, PlaintextTally.Contest> = HashMap()
@@ -42,7 +42,7 @@ class Decryptor(val group: GroupContext, val context: ElectionContext) {
 
         // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝.
         val decryptedValue: ElementModP = selection.ciphertext.data / allSharesProductM
-        val dlogM: Int = group.dLogG(decryptedValue)?: throw RuntimeException("dlog failed") // TODO
+        val dlogM: Int = publicKey.dLog(decryptedValue)?: throw RuntimeException("dlog failed") // TODO on fail
 
         return PlaintextTally.Selection(
             selection.selectionId,

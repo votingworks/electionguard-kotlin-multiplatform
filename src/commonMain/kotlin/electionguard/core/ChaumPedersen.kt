@@ -408,14 +408,19 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
  * @param alsoHash Optional additional values to include in the hash challenge computation hash.
  */
 fun genericChaumPedersenProofOf(
-    g: ElementModP,
-    h: ElementModP,
-    x: ElementModQ,
+    g: ElementModP,  // G ?
+    h: ElementModP,  // A = G^r
+    x: ElementModQ,  // secret key s
     seed: ElementModQ,
     hashHeader: ElementModQ,
     alsoHash: Array<Element> = emptyArray()
 ): GenericChaumPedersenProof {
     val context = compatibleContextOrFail(g, h, x, seed, hashHeader)
+
+    // The proof generates a random value w ∈ Z q , computes the commitments (a , b) = (g^w , A^w),
+    // obtains the challenge value as c = H( Q̄, A, B, a , b, M)
+    // and the response r = (w + c * s) mod q.
+    // The proof is (a, b, c, r)
 
     val w = Nonces(seed, "generic-chaum-pedersen-proof")[0]
     val a = g powP w

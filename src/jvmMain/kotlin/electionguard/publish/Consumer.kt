@@ -6,6 +6,8 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.GroupContext
+import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.protoconvert.importDecryptingTrustee
 import electionguard.protoconvert.importElectionRecord
 import electionguard.protoconvert.importPlaintextBallot
 import electionguard.protoconvert.importPlaintextTally
@@ -38,12 +40,12 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
             electionRecord.protoVersion,
             electionRecord.constants,
             electionRecord.manifest,
-            electionRecord.context?: throw RuntimeException("missing context"),
-            electionRecord.guardianRecords?: emptyList(),
-            electionRecord.devices?: emptyList(),
-            electionRecord.encryptedTally?: throw RuntimeException("missing encryptedTally"),
-            electionRecord.decryptedTally?: throw RuntimeException("missing decryptedTally"),
-            electionRecord.availableGuardians?: emptyList(),
+            electionRecord.context ?: throw RuntimeException("missing context"),
+            electionRecord.guardianRecords ?: emptyList(),
+            electionRecord.devices ?: emptyList(),
+            electionRecord.encryptedTally ?: throw RuntimeException("missing encryptedTally"),
+            electionRecord.decryptedTally ?: throw RuntimeException("missing decryptedTally"),
+            electionRecord.availableGuardians ?: emptyList(),
             iterateSubmittedBallots(),
             iterateSpoiledBallotTallies(),
         )
@@ -58,11 +60,11 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
     }
 
     // all spoiled ballot tallies
-    actual fun iteratePlaintextBallots(ballotDir : String): Iterable<PlaintextBallot> {
+    actual fun iteratePlaintextBallots(ballotDir: String): Iterable<PlaintextBallot> {
         if (!Files.exists(Path.of(path.plaintextBallotProtoPath(ballotDir)))) {
             return emptyList()
         }
-        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir))}
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir)) }
     }
 
     private inner class PlaintextBallotIterator(
@@ -79,7 +81,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
             }
             val message = input.readNBytes(length)
             val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
-            val ballot = ballotProto.importPlaintextBallot() ?: throw RuntimeException("Ballot didnt parse")
+            val ballot = ballotProto.importPlaintextBallot()
             setNext(ballot)
         }
     }
@@ -89,7 +91,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         if (!Files.exists(Path.of(path.submittedBallotProtoPath()))) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator({ true })}
+        return Iterable { SubmittedBallotIterator({ true }) }
     }
 
     // only cast SubmittedBallots
@@ -99,7 +101,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         }
         val filter =
             Predicate<electionguard.protogen.SubmittedBallot> { it.state == electionguard.protogen.SubmittedBallot.BallotState.CAST }
-        return Iterable { SubmittedBallotIterator(filter)}
+        return Iterable { SubmittedBallotIterator(filter) }
     }
 
     // only spoiled SubmittedBallots
@@ -109,7 +111,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         }
         val filter =
             Predicate<electionguard.protogen.SubmittedBallot> { it.state == electionguard.protogen.SubmittedBallot.BallotState.SPOILED }
-        return Iterable { SubmittedBallotIterator(filter)}
+        return Iterable { SubmittedBallotIterator(filter) }
     }
 
     // Create iterators, so that we never have to read in all ballots at once.
@@ -131,7 +133,8 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
                 if (!filter.test(ballotProto)) {
                     continue // skip it
                 }
-                val ballot = ballotProto.importSubmittedBallot(groupContext) ?: throw RuntimeException("Ballot didnt parse")
+                val ballot =
+                    ballotProto.importSubmittedBallot(groupContext) ?: throw RuntimeException("Ballot didnt parse")
                 setNext(ballot)
                 break
             }
@@ -143,7 +146,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         if (!Files.exists(Path.of(path.spoiledBallotProtoPath()))) {
             return emptyList()
         }
-        return Iterable { SpoiledBallotTallyIterator(path.spoiledBallotProtoPath())}
+        return Iterable { SpoiledBallotTallyIterator(path.spoiledBallotProtoPath()) }
     }
 
     private inner class SpoiledBallotTallyIterator(
@@ -163,6 +166,35 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
             val tally = tallyProto.importPlaintextTally(groupContext) ?: throw RuntimeException("Tally didnt parse")
             setNext(tally)
         }
+    }
+
+    actual fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF> {
+        val trusteeDirPath = Path.of(trusteeDir)
+
+        if (!Files.exists(trusteeDirPath) || !Files.isDirectory(trusteeDirPath)) {
+            return emptyList()
+        }
+        val result = ArrayList<DecryptingTrusteeIF>()
+        for (filename in trusteeDirPath.toFile().listFiles()!!) {
+            val trusteeProto = readTrusteeProto(filename.absolutePath)
+            if (trusteeProto != null) {
+                result.add(trusteeProto.importDecryptingTrustee(groupContext))
+            }
+        }
+        return result
+    }
+
+    fun readTrusteeProto(filename: String): electionguard.protogen.DecryptingTrustee? {
+        var trusteeProto: electionguard.protogen.DecryptingTrustee? = null
+        FileInputStream(filename).use { input ->
+            val length = readVlen(input)
+            if (length > 0) {
+                val message = input.readNBytes(length)
+                trusteeProto =
+                    electionguard.protogen.DecryptingTrustee.decodeFromByteBuffer(ByteBuffer.wrap(message))
+            }
+        }
+        return trusteeProto
     }
 }
 

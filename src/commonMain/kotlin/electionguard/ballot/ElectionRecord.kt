@@ -47,7 +47,7 @@ data class ElectionRecord(
 data class AvailableGuardian(
     var guardianId: String,
     var xCoordinate: Int,
-    var lagrangeCoordinate: ElementModQ
+    var lagrangeCoordinate: Int
 )
 
 /**

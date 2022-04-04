@@ -18,6 +18,7 @@ import electionguard.core.encryptedSum
 import electionguard.core.get
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
+import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
@@ -235,6 +236,13 @@ class Encryptor(
         val elgamalCrypto = elgamalEncryption.cryptoHashUInt256()
         val cryptoHash = hashElements(selectionId, selectionDescription.cryptoHash, elgamalCrypto)
 
+        val extendedDataCiphertext =
+            if (extendedData != null) {
+                val extendedDataBytes = extendedData.value.encodeToByteArray()
+                val extendedDataNonce = Nonces(selectionNonce, "extended-data")[0]
+                extendedDataBytes.hashedElGamalEncrypt(elgamalPublicKey, extendedDataNonce)
+            } else null
+
         val encryptedSelection: CiphertextBallot.Selection = CiphertextBallot.Selection(
             this.selectionId,
             this.sequenceOrder,
@@ -243,7 +251,7 @@ class Encryptor(
             cryptoHash,
             isPlaceholder,
             proof,
-            null,
+            extendedDataCiphertext,
             selectionNonce,
         )
         return encryptedSelection

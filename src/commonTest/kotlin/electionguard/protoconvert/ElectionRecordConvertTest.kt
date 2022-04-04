@@ -123,6 +123,6 @@ class ElectionRecordConvertTest {
     }
 
     private fun generateAvailableGuardian(seq: Int, context: GroupContext): AvailableGuardian {
-        return AvailableGuardian("aguardian $seq", seq + 1, generateElementModQ(context),)
+        return AvailableGuardian("aguardian $seq", seq + 1, seq - 1,)
     }
 }

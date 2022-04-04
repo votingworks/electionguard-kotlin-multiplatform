@@ -6,6 +6,7 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.GroupContext
+import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.protoconvert.importElectionRecord
 import electionguard.protoconvert.importPlaintextBallot
 import electionguard.protoconvert.importPlaintextTally
@@ -148,6 +149,11 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
             setNext(tally)
         }
     }
+
+    actual fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF> {
+        return emptyList()
+    }
+
 }
 
 @Throws(IOException::class)

@@ -8,7 +8,7 @@ import electionguard.ballot.DecryptionShare.DecryptionShareSelection
 import electionguard.ballot.ElectionContext
 import electionguard.ballot.PlaintextTally
 import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElementModQ
+import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.toElementModQ
 
@@ -18,7 +18,7 @@ import electionguard.core.toElementModQ
 class DecryptingMediator(
     val group: GroupContext,
     val context: ElectionContext,
-    val decryptingTrustees : List<DecryptingTrustee>) {
+    val decryptingTrustees : List<DecryptingTrusteeIF>) {
 
     fun CiphertextTally.decrypt() : PlaintextTally {
         val tallyShares : MutableList<DecryptionShare> = ArrayList()
@@ -44,7 +44,7 @@ class DecryptingMediator(
             }
         }
 
-        val decryptor = Decryptor(group, context)
+        val decryptor = Decryptor(group, ElGamalPublicKey(context.jointPublicKey))
         return decryptor.decryptTally(this, tallySharesBySelectionId)
     }
 
@@ -57,7 +57,7 @@ class DecryptingMediator(
    * @return a DecryptionShare
    */
  fun CiphertextTally.computeDecryptionShareForTally(
-     guardian: DecryptingTrustee,
+     guardian: DecryptingTrusteeIF,
  ): DecryptionShare {
 
      // Get all the Ciphertext that need to be decrypted, and do so in one call
@@ -69,7 +69,7 @@ class DecryptingMediator(
      }
      // returned in order
      val results: List<PartialDecryptionProof> =
-         guardian.partialDecrypt(texts, context.cryptoExtendedBaseHash.toElementModQ(group), null)
+         guardian.partialDecrypt(group, texts, context.cryptoExtendedBaseHash.toElementModQ(group), null)
 
      // Create the guardian's DecryptionShare for the tally
      var count = 0;
@@ -77,20 +77,26 @@ class DecryptingMediator(
      for (tallyContest in this.contests.values) {
          val selections : MutableList<DecryptionShareSelection> = ArrayList()
          for (selection in tallyContest.selections.values) {
-            val proof : PartialDecryptionProof = results.get(count);
+             val proof: PartialDecryptionProof = results.get(count);
              selections.add(
-                 DecryptionShareSelection(selection.selectionId, guardian.id(), proof.partialDecryption, proof.proof, null)
-             )
-             contests.add(
-                 DecryptionShareContest(
-                     tallyContest.contestId,
+                 DecryptionShareSelection(
+                     selection.selectionId,
                      guardian.id(),
-                     tallyContest.contestDescriptionHash.toElementModQ(group),
-                     selections
+                     proof.partialDecryption,
+                     proof.proof,
+                     null
                  )
              )
              count++
          }
+         contests.add(
+             DecryptionShareContest(
+                 tallyContest.contestId,
+                 guardian.id(),
+                 tallyContest.contestDescriptionHash.toElementModQ(group),
+                 selections
+             )
+         )
      }
 
      return DecryptionShare(
@@ -107,20 +113,17 @@ class DecryptingMediator(
             val seq_orders: List<Int> = decryptingTrustees
                 .filter { !it.id().equals(decryptingTrustee.id()) }
                 .map { it.xCoordinate() }
-            val coeff: ElementModQ = computeLagrangeCoefficient(decryptingTrustee.xCoordinate(), seq_orders)
+            val coeff: Int = computeLagrangeCoefficient(decryptingTrustee.xCoordinate(), seq_orders)
             result.add(AvailableGuardian(decryptingTrustee.id(), decryptingTrustee.xCoordinate(), coeff))
         }
         return result
     }
 
-    fun computeLagrangeCoefficient(coordinate: Int, degrees: List<Int>): ElementModQ {
-        val product: Int = degrees.reduce { a, b -> a * b }
-        val numerator = product.toElementModQ(group)
+    fun computeLagrangeCoefficient(coordinate: Int, degrees: List<Int>): Int {
+        val numerator: Int = degrees.reduce { a, b -> a * b }
 
-        // denominator = mult_q(*[(degree - coordinate) for degree in degrees])
         val diff: List<Int> = degrees.map { degree: Int -> degree - coordinate }
-        val productDiff = diff.reduce { a, b -> a * b }
-        val denominator = productDiff.toElementModQ(group)
+        val denominator = diff.reduce { a, b -> a * b }
 
         return numerator / denominator
     }

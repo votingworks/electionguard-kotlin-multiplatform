@@ -62,7 +62,7 @@ private fun AvailableGuardian.publishAvailableGuardian(): electionguard.protogen
         .AvailableGuardian(
             this.guardianId,
             this.xCoordinate,
-            this.lagrangeCoordinate.publishElementModQ(),
+            this.lagrangeCoordinate,
         )
 }
 
