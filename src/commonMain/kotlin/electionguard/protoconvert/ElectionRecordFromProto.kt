@@ -45,7 +45,7 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
 }
 
 private fun electionguard.protogen.AvailableGuardian.importAvailableGuardian(): AvailableGuardian {
-    return AvailableGuardian(this.guardianId, this.xCoordinate, this.lagrangeCoordinate)
+    return AvailableGuardian(this.guardianId, this.xCoordinate, this.lagrangeCoordinateInt)
 }
 
 private fun convertConstants(

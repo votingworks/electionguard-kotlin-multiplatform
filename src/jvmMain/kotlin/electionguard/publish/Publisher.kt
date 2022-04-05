@@ -111,6 +111,7 @@ actual class Publisher {
     }
 
     ////////////////////
+    // duplicated from ElectionRecordPath so that we can use java.nio.file.Path
     fun electionRecordProtoPath(): Path {
         return electionRecordDir.resolve(ELECTION_RECORD_FILE_NAME).toAbsolutePath()
     }
@@ -194,8 +195,8 @@ actual class Publisher {
         output.write(bb.toByteArray())
     }
 
-    private fun writeVlen(value: Int, output: OutputStream) {
-        var value = value
+    private fun writeVlen(input: Int, output: OutputStream) {
+        var value = input
         while (true) {
             if (value and 0x7F.inv() == 0) {
                 output.write(value)

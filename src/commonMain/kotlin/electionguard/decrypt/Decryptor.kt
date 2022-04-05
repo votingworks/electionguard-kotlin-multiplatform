@@ -24,7 +24,8 @@ class Decryptor(val group: GroupContext, val publicKey: ElGamalPublicKey) {
     ): PlaintextTally.Contest {
         val selections: MutableMap<String, PlaintextTally.Selection> = HashMap()
         for (tallySelection in contest.selections.values) {
-            val sshares = shares.get("${contest.contestId}#@${tallySelection.selectionId}")?: throw RuntimeException("shares.get failed") // TODO
+            val id = "${contest.contestId}#@${tallySelection.selectionId}"
+            val sshares = shares.get(id)?: throw RuntimeException("*** $id share not found") // TODO
             val plaintextTallySelection = decryptSelectionWithDecryptionShares(tallySelection, sshares)
             selections[tallySelection.selectionId] = plaintextTallySelection
         }
