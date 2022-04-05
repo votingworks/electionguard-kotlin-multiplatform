@@ -11,7 +11,7 @@ import electionguard.publish.Consumer
 import kotlin.test.Test
 
 class EncryptTest {
-    val input = "src/commonTest/data/testPython/"
+    val input = "src/commonTest/data/testPython"
 
     @Test
     fun testEncryption() {

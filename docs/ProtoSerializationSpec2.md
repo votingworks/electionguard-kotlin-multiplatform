@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 4/3/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 4/5/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 This covers only the election record, and not any serialized classes used in remote procedure calls 
 or private data.
@@ -74,11 +74,11 @@ Notes
 
 ### message AvailableGuardian
 
-| Name                | Type        | Notes                          |
-|---------------------|-------------|--------------------------------|
-| guardian_id         | string      |                                |
-| x_coordinate        | string      | x_coordinate in the polynomial |
-| lagrange_coordinate | ElementModQ |                                |
+| Name                    | Type   | Notes                          |
+|-------------------------|--------|--------------------------------|
+| guardian_id             | string |                                |
+| x_coordinate            | string | x_coordinate in the polynomial |
+| lagrange_coordinate_int | sint32 |                                |
 
 ### message ElectionConstants
 
