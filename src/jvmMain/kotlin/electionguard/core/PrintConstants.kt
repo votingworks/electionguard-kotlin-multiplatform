@@ -64,7 +64,7 @@ fun helper(header: String, numBits: Int, p: BigInteger, q: BigInteger, r: BigInt
     println("internal val b64${desc}G = \"$gBase64\"")
     println()
 
-    val montgomeryI = BigInteger.ONE.shiftLeft(numBits - 1) // 2^{4096} or 2^{3072}
+    val montgomeryI = BigInteger.ONE shl numBits // 2^{4096} or 2^{3072}
     val montgomeryIMinusOne = montgomeryI - BigInteger.ONE
     val montgomeryIPrime = montgomeryI.modPow(p - BigInteger.TWO, p)
     val montgomeryPPrime = (montgomeryI - p).modPow(p - BigInteger.TWO, montgomeryI)
