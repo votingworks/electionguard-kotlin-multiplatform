@@ -242,6 +242,11 @@ private class TinyElementModP(val element: UInt, val groupContext: TinyGroupCont
     override fun hashCode(): Int = element.hashCode()
 
     override fun toString(): String = "ElementModP($element)"
+
+    override fun toMontgomeryElementModP(): MontgomeryElementModP =
+        TinyMontgomeryElementModP(
+            ((element.toULong() shl intTestPBits) % groupContext.p).toUInt(),
+            groupContext)
 }
 
 private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : ElementModQ {
@@ -270,7 +275,7 @@ private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupCont
         // writing it as a vanilla while-loop. This function is rarely used in real code,
         // so efficient doesn't matter as much as correctness.
 
-        // We're using Long, rather than UInt, to insure that we never experience over-
+        // We're using Long, rather than UInt, to ensure that we never experience over-
         // or under-flow. This allows the normalization of the result, which checks for
         // finalState.t < 0, to work correctly.
 
@@ -334,4 +339,37 @@ private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupCont
     override fun hashCode(): Int = element.hashCode()
 
     override fun toString(): String = "ElementModQ($element)"
+}
+
+private data class TinyMontgomeryElementModP(val element: UInt, val groupContext: TinyGroupContext): MontgomeryElementModP {
+    private fun MontgomeryElementModP.getCompat(other: GroupContext): UInt {
+        context.assertCompatible(other)
+        if (this is TinyMontgomeryElementModP) {
+            return this.element
+        } else {
+            throw NotImplementedError("unexpected MontgomeryElementModP type")
+        }
+    }
+
+    private fun ULong.modI(): ULong = this and intTestMontgomeryIMinus1.toULong()
+
+    private fun ULong.divI(): UInt = (this shr intTestPBits).toUInt()
+
+    override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
+        val w: ULong = this.element.toULong() * other.getCompat(this.context).toULong()
+
+        // Z = ((((W mod I)⋅p^' )  mod I)⋅p+W)/I
+        val z = ((w.modI() * intTestMontgomeryPPrime).modI() * groupContext.p + w).divI()
+
+        return TinyMontgomeryElementModP(
+            if (z >= groupContext.p) z - groupContext.p else z,
+            groupContext)
+    }
+
+    override fun toElementModP(): ElementModP =
+        TinyElementModP((element.toULong() * intTestMontgomeryIPrime.toULong()).mod(groupContext.p), groupContext)
+
+    override val context: GroupContext
+        get() = groupContext
+
 }

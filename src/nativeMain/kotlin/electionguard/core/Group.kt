@@ -756,6 +756,23 @@ open class ProductionElementModP(val element: HaclBignum4096, val groupContext: 
 
     override fun acceleratePow() : ElementModP =
         AcceleratedElementModP(this)
+
+    override fun toMontgomeryElementModP(): MontgomeryElementModP {
+        TODO("Not implemented yet")
+//        val result = newZeroBignum4096()
+//        val scratch = ULongArray(HaclBignum4096_LongWords * 2)
+//        nativeElems(result, element, scratch) { r, a, s ->
+//            Hacl_Bignum4096_mul(a, b, s)
+//            Hacl_Bignum4096_mod_precomp(groupContext.montCtxP, s, r)
+//        }
+//
+//        return result.wrap()
+//
+//        ProductionMontgomeryElementModP(
+//            element.shiftLeft(groupContext.productionMode.numBitsInP).mod(groupContext.p),
+//            groupContext
+//        )
+    }
 }
 
 class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p.element, p.groupContext) {
@@ -768,4 +785,39 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
     override fun acceleratePow(): ElementModP = this
 
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)
+}
+
+data class ProductionMontgomeryElementModP(val element: HaclBignum4096, val groupContext: ProductionGroupContext): MontgomeryElementModP {
+    private fun MontgomeryElementModP.getCompat(other: GroupContext): HaclBignum4096 {
+        context.assertCompatible(other)
+        if (this is ProductionMontgomeryElementModP) {
+            return this.element
+        } else {
+            throw NotImplementedError("unexpected MontgomeryElementModP type")
+        }
+    }
+
+    private fun HaclBignum4096.modI(): HaclBignum4096 = TODO("not implemented yet") // this and groupContext.montgomeryIMinusOne
+
+    private fun HaclBignum4096.divI(): HaclBignum4096 = TODO("not implemented yet") // this shr groupContext.productionMode.numBitsInP
+
+    override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
+        TODO("not implemented yet")
+//        val w = this.element * other.getCompat(this.context)
+
+        // Z = ((((W mod I)⋅p^' )  mod I)⋅p+W)/I
+//        val z = ((w.modI() * groupContext.montgomeryPPrime).modI() * groupContext.p + w).divI()
+//
+//        return ProductionMontgomeryElementModP(
+//            if (z >= groupContext.p) z - groupContext.p else z,
+//            groupContext)
+    }
+
+    override fun toElementModP(): ElementModP =
+        TODO("not implemented yet")
+//        ProductionElementModP((element * groupContext.montgomeryIPrime).mod(groupContext.p), groupContext)
+
+    override val context: GroupContext
+        get() = groupContext
+
 }

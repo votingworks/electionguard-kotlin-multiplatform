@@ -16,6 +16,7 @@ fun main() {
 
     helper(
         "4096-bit P and 256-bit Q primes, plus generator G and cofactor R",
+        4096,
         BigInteger(pStrHex4096, 16),
         BigInteger(qStrHex4096, 16),
         BigInteger(rStrHex4096, 16),
@@ -29,6 +30,7 @@ fun main() {
 
     helper(
         "3072-bit P and 256-bit Q primes, plus generator G and cofactor R",
+        3072,
         BigInteger(pStrHex3072, 16),
         BigInteger(qStrHex3072, 16),
         BigInteger(rStrHex3072, 16),
@@ -37,6 +39,7 @@ fun main() {
 
     helper(
         "32-bit everything, suitable for accelerated testing",
+        31,
         BigInteger.valueOf(intTestP.toLong()),
         BigInteger.valueOf(intTestQ.toLong()),
         BigInteger.valueOf(intTestR.toLong()),
@@ -44,7 +47,7 @@ fun main() {
         "Test")
 }
 
-fun helper(header: String, p: BigInteger, q: BigInteger, r: BigInteger, g: BigInteger, desc: String) {
+fun helper(header: String, numBits: Int, p: BigInteger, q: BigInteger, r: BigInteger, g: BigInteger, desc: String) {
     println("// $header")
     val p256 = BigInteger.valueOf(1) shl 256
 
@@ -60,4 +63,29 @@ fun helper(header: String, p: BigInteger, q: BigInteger, r: BigInteger, g: BigIn
     println("internal val b64${desc}R = \"$rBase64\"")
     println("internal val b64${desc}G = \"$gBase64\"")
     println()
+
+    val montgomeryI = BigInteger.ONE.shiftLeft(numBits - 1) // 2^{4096} or 2^{3072}
+    val montgomeryIMinusOne = montgomeryI - BigInteger.ONE
+    val montgomeryIPrime = montgomeryI.modPow(p - BigInteger.TWO, p)
+    val montgomeryPPrime = (montgomeryI - p).modPow(p - BigInteger.TWO, montgomeryI)
+
+    println("internal val b64${desc}MontgomeryI = \"${montgomeryI.toByteArray().toBase64()}\"")
+    println("internal val b64${desc}MontgomeryIMinus1 = \"${montgomeryIMinusOne.toByteArray().toBase64()}\"")
+    println("internal val b64${desc}MontgomeryIPrime = \"${montgomeryIPrime.toByteArray().toBase64()}\"")
+    println("internal val b64${desc}MontgomeryPPrime = \"${montgomeryPPrime.toByteArray().toBase64()}\"")
+    println()
+
+    if (numBits == 31) {
+        println("internal val intTestP = $p")
+        println("internal val intTestQ = $q")
+        println("internal val intTestR = $r")
+        println("internal val intTestG = $g")
+        println()
+
+        println("internal val intTestMontgomeryI = ${montgomeryI}U")
+        println("internal val intTestMontgomeryIMinus1 = ${montgomeryIMinusOne}U")
+        println("internal val intTestMontgomeryIPrime = ${montgomeryIPrime}U")
+        println("internal val intTestMontgomeryPPrime = ${montgomeryPPrime}U")
+        println()
+    }
 }

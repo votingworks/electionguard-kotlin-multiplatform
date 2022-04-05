@@ -18,6 +18,11 @@ internal val b64Production4096R =
 internal val b64Production4096G =
     "HUHknEd+Feru8MXkrAjUpGwmjNNCT8AdE3ab20NnMhhYe8hsTBRI0AagNpnzq65f6xnilvXRQ8xeSj/IkIjJ9FI9Fm7jrp1fsDwL3Xet1cAX9sVeLsksIm/vXGwd8ufDbZDn6q3gmCQdNAmYO8zStTeek5H7xi+fjZOdEgixYDZ8E0JkEiGJWV7IXIzb5fnTB/RpEsBJMvjBaBWna0aCvWvcDtUrANjTD1nHMdWn/66BZdU8+WZJqsK3Q9pW8U8Z2sxSNvKbGrn5vvxpaXKT1d6ti1v13purbeZ8RXGeVjRKPL3zYJgksbV4406utt0xkKs1cdbWccUSKCwdp702tCUdJYT63qgLnhQUIwdN2bX7g6y96tTIelj/9Rf5d6gwgDcKOwz5ihvCl4xHqsKWEf1sQOL5h1w11QRDqao/SWEdzToNb/PLP6zzFHG9thhguSxZTU5GVpuzn+6t/x/WTINqbW24XGunJBdmt6tWv3OWM7BUFH9xcJIUEulI2eR0AtFbscJXMYYSwSHDa4DrhDPAjn0LcUnjqwqHNaku3Oj/lD4ootzqz8xp7DGJCcsEe+HFhYhEta1E8i7rKJ5MxVT3peLz3qAmh3/5KFGBYHHOAo64aNllzLLSKVqMVb0cBws5sJrgazfSk0O52Jl9wkTEaLmAlwcxc27gGLutuYc="
 
+internal val b64Production4096MontgomeryI = "AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+internal val b64Production4096MontgomeryIMinus1 = "f/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8="
+internal val b64Production4096MontgomeryIPrime = "STPQ/K3rZBoERhvTXQ6WDcUCa+3YcGd1Tv3DvolkUZ3hglMfnZrJ68o/5MCtbVSujyfzTiKHxWaJoROnoZGyOeY6qnfOfioxZsGgNSKcTTxKbfZIKpNoR6RHW8oYJoPUQRyU7dCHIP6RAfItOxhFQRtdFvHteSHAULhOaKbbh+d1sYbDONMJkWm0GOqyX0l/ayz2JBm1RlKKZFHYn2853K7eWXK0ONqr7n5eBZyx4f90PULfG+VNXUBdwoFfIbWcx2USrScWqTWLag8jBmrdAkJ9pXiXNyVvPMDOdwg/JgMTO8eGX0M8iYreyhcBJce9mgElmprWFlf2NoPjxJc6d8eqTQUdy1LEtEqdhhmA9+oymbpQWMzPEoA9JhqzXK48u6yyhAsUY5XW0li0rEixUiuK6BN8T91zh60+wwD8BrHHsTKCjCIAB+3iwGi1tLhPEsxcKTDahNuM1zuoE/gVBIKMK36fUJz52P7BGM210t9bU6BWEwWOTpQWkGm62N2lQb/U31wvg+BoiBT/tasFG6CsKQ7mxzYgFRb31L2YfqinlyXS/CQethzqsb8am1rB1dj6wVzDf4E3HKvwMljqiZNrk370AOed93hm54q+UvMFpBB749xkIF6xhJNSZNANhc3C9koACmTTk4NXRJt5do7Kx9pK4BtAE6FrKcgd8YM="
+internal val b64Production4096MontgomeryPPrime = "KCXB681F1zQ9E769wAn4CUCc7SUM9wwALoBVv2qcAxxVbcHOTK/iLy6GAHEe3UQsmJqWRIMYoJ59XgbBL3rHEkaK2/bARkiuWwdQbYPv8BQ03iSFUl+6PbtQj5FJDkeAOUWkb/C7dVDheqkB6ghE3yaMXHxbS3mf6ROqc6GFe5uPcSo69ggTb9OhJRDyF5SnsQnLPV/ZiKZdYozA8SHMKtETFEQ0zrfDpeaQVTFW4EzISyfkQcfV2JtEfqMhLER16sjcvFK2M/gITifS7VeUZqMaXDMiBfFr61XeZJNtjK31xFLuzIRqTT0zwk8W8UK7k4d8oCE4SrHo8zqYJEEfwRkmt5zLulNAAsbxarqczp6t+XAli7fcrlPUtmr3b+MED3fV1etgHy+DD9JtItNYK0OAjnxlz7FCFgFUpa/qDltgiQsDkkN7geL0odaZnxOyYfxBrz0S4w3NlnohShazv/iDLOnh+dRt1qrFzFRM+mcc6F5GSpIgxbw51mMjIpRxOESkMasFAJ6UXZC0C1LTNDk0sSrmVkY6oAU3ZoPHyg5cOVsyWtDnaFlT8+c7m0UyAvH1BTwYUFYVKmL8cyDfsp3/kMW+bPu/8of2FNdAt8t47V4IcJTNMGyZfPmu9wNBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE="
+
 // 3072-bit P and 256-bit Q primes, plus generator G and cofactor R
 internal val b64Production3072P =
     "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3tTlMKbslAxFMU0W09hktKiTT4uHxSr6CWGgpsXuSjU3d3P//////////////////////////////////////////w=="
@@ -28,6 +33,11 @@ internal val b64Production3072R =
 internal val b64Production3072G =
     "AK+NwgV5Y8bDZBGcAUonaGungFdnSLcvZwxKXUw/rB4ii4T7qIxOr5TfmHVcbHNhG7VKFKbiMtI4yRfadtimK3CDehXuwREMESVhqw6unhHdzsYfK71Uu3YvyQNJTvIfDzOP4mWCRTzj/wLFOncpYSblnhmAzUmlZyakDP3vk6GBQc+DRC0P3N+fE1Gy0M+BTOnHlkAtwiGBMtKDYFvdFUaOq6S2945N494HZvqZFe0o4A2QdX9JSYYJJHfJDF/DBaVoKQiNmW0ifS8BjBoWN3sAFKgYP1nPiHHEZZEyvdunnoaa6PZck2CNF5oH19mU4Fjl9RtHxyCaJYZNqfE3fBaxwJyFtmzD1Sf6s/ay321r6hUgYpi6w+KT8Q4um3gOzgM6R8/EUSIVIrtwnhuU2Op0hyQhhdj4+wE+nhBzldU+IsVVAvweSpFXZvPDtGOj7ky2gpJqDE+HzYYYGrxvuQK9gzHeGPWYIMXZZ9eEscBuWpTzHvhhG1RdLx4YTOrDEg=="
 
+internal val b64Production3072MontgomeryI = "AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+internal val b64Production3072MontgomeryIMinus1 = "f///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+internal val b64Production3072MontgomeryIPrime = "AJMhmcsLDTEPWXlpt/m//xukKr4tzVA4G9rnWwVRstEIwQ7YbjZZBXq8tIvUzJl8K6l9gJzts1NdWznlILoEvEV24ABTMuBsp8Un4DsvOjHNh+KZciA+/XhFHUl/gMeob1p3uRRfGDCzoqDxf/RcJYbNPY/tmrVcEhJDZ8zmROkar2c66t+0De0OZmrVcvzeaxVGMBoS2+aK+keN9jNjpWJGVIsDQZRWWsUERuh1lGNoVgLJuTljVeFCFA/xWezmaBCiCkjWM2Wq5KZSSaUS1GTYn/K6WXA4IBQEpB49CSNpqwvUUAspp3mc0QYFsAXMDW9/YQzQyHBnJ5MLn+eK70WfcT6tTJkp0VCv+rj09xHQFpJ/RXT51lr+zAhxnSy29hrJllAvZQLxt824tXhvhrpPZOFtHtXC7ZrEhS8g+f7B/uVL9JyVjAFBxiX6AA/ieGMsplyPF6rsl4ffuhECfsZZvJFStRE4pMp9ntK8PQKTZFnZvxOnatLPHOq6utXKuA=="
+internal val b64Production3072MontgomeryPPrime = "eoZRWCnQGHNiVBeYX1ZS7CGB+trx8LLRIxViElu6lLBlA8Ftg4V6YDBfI5pQtHyP5BU6189GY7wtlCNLsgCh9jgcXiRZdU42Q4OWn4818TJE0xaRKSTUzaYkDyZABHYtRjjiOA+AOqA+7lxWe6Jo1WMbCPlNkJLkfV2MHLyypS8Jx64cvrzXvwTOj6H7gthCm75tWBVBuazyoCz1NhIYnOJET+Su9GFdTgUaYzRv/9Tak0H7ggYYtFQVru7dLTM/r4wANA2q2V4q0dCTAFpvIAaF8GscRfA9f5TWjlyGl4GoNWJB+Ys+psgN44hYfgqgkd0KDn7pZ7dhMPURgPO6ulBXXlkYNP2IrwHFkiHORVrOlsw8FbGM/vg1kQabsazMAa6nNvrz0xXc10MchXLSZPNXCu+HeXkL/61DGh+FvX+R9MW8JM+T50R7iS4d+bnuopdPgO4cJOH0Ucren6ZmXAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
+
 // 32-bit everything, suitable for accelerated testing
 internal val b64TestP = "b//93w=="
 internal val b64TestQ = "B///2Q=="
@@ -35,11 +45,23 @@ internal val b64TestP256MinusQ = "AP/////////////////////////////////////4AAAn"
 internal val b64TestR = "Dg=="
 internal val b64TestG = "QAA="
 
+internal val b64TestMontgomeryI = "QAAAAA=="
+internal val b64TestMontgomeryIMinus1 = "P////w=="
+internal val b64TestMontgomeryIPrime = "RtkB8Q=="
+internal val b64TestMontgomeryPPrime = "CgdNoQ=="
+
+
 // useful for checking the decoders from base64
 internal const val intTestP = 1879047647
+internal const val intTestPBits = 31
 internal const val intTestQ = 134217689
 internal const val intTestR = 14
 internal const val intTestG = 16384
+
+internal val intTestMontgomeryI = 1073741824U
+internal val intTestMontgomeryIMinus1 = 1073741823U
+internal val intTestMontgomeryIPrime = 1188626929U
+internal val intTestMontgomeryPPrime = 168250785U
 
 /**
  * ElectionGuard defines two modes of operation, with P having either 4096 bits or 3072 bits. We'll
@@ -279,6 +301,9 @@ interface ElementModP : Element, Comparable<ElementModP> {
      * the `GroupContext`.
      */
     fun acceleratePow(): ElementModP
+
+    /** Converts to Montgomery form, allowing for faster modular multiplication. */
+    fun toMontgomeryElementModP(): MontgomeryElementModP
 }
 
 /**
@@ -449,4 +474,20 @@ fun ElectionConstants.toGroupContext(
             null
         }
     }
+}
+
+/**
+ * Montgomery form of an [ElementModP]. Note the very limited set of methods. Convert back
+ * a regular [ElementModP] for anything other than multiplication.
+ */
+interface MontgomeryElementModP {
+    /** Modular multiplication */
+    operator fun times(other: MontgomeryElementModP): MontgomeryElementModP
+
+    /** Convert back to the normal [ElementModP] representation. */
+    fun toElementModP(): ElementModP
+
+    /** Every [MontgomeryElementModP] knows the [GroupContext] that was used to create it. */
+    val context: GroupContext
+        get
 }

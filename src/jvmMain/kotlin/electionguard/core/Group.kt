@@ -14,6 +14,9 @@ private val productionGroups4096 =
             qBytes = b64Production4096Q.fromSafeBase64(),
             gBytes = b64Production4096G.fromSafeBase64(),
             rBytes = b64Production4096R.fromSafeBase64(),
+            montIMinus1Bytes = b64Production4096MontgomeryIMinus1.fromSafeBase64(),
+            montIPrimeBytes = b64Production4096MontgomeryIPrime.fromSafeBase64(),
+            montPPrimeBytes = b64Production4096MontgomeryPPrime.fromSafeBase64(),
             name = "production group, ${it.description}, 4096 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode4096
@@ -27,6 +30,9 @@ private val productionGroups3072 =
             qBytes = b64Production3072Q.fromSafeBase64(),
             gBytes = b64Production3072G.fromSafeBase64(),
             rBytes = b64Production3072R.fromSafeBase64(),
+            montIMinus1Bytes = b64Production3072MontgomeryIMinus1.fromSafeBase64(),
+            montIPrimeBytes = b64Production3072MontgomeryIPrime.fromSafeBase64(),
+            montPPrimeBytes = b64Production3072MontgomeryPPrime.fromSafeBase64(),
             name = "production group, ${it.description}, 3072 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode3072
@@ -49,6 +55,9 @@ class ProductionGroupContext(
     qBytes: ByteArray,
     gBytes: ByteArray,
     rBytes: ByteArray,
+    montIMinus1Bytes: ByteArray,
+    montIPrimeBytes: ByteArray,
+    montPPrimeBytes: ByteArray,
     val name: String,
     val powRadixOption: PowRadixOption,
     val productionMode: ProductionMode
@@ -69,6 +78,9 @@ class ProductionGroupContext(
     val twoModQ: ProductionElementModQ
     val dlogger: DLog
     val qMinus1Q: ProductionElementModQ
+    val montgomeryIMinusOne: BigInteger
+    val montgomeryIPrime: BigInteger
+    val montgomeryPPrime: BigInteger
 
     init {
         p = pBytes.toBigInteger()
@@ -86,6 +98,9 @@ class ProductionGroupContext(
         twoModQ = ProductionElementModQ(2U.toBigInteger(), this)
         dlogger = DLog(gModP)
         qMinus1Q = (zeroModQ - oneModQ) as ProductionElementModQ
+        montgomeryIMinusOne = montIMinus1Bytes.toBigInteger()
+        montgomeryIPrime = montIPrimeBytes.toBigInteger()
+        montgomeryPPrime = montPPrimeBytes.toBigInteger()
     }
 
     override fun isProductionStrength() = true
@@ -349,6 +364,11 @@ open class ProductionElementModP(val element: BigInteger, val groupContext: Prod
 
     override fun acceleratePow() : ElementModP =
         AcceleratedElementModP(this)
+
+    override fun toMontgomeryElementModP(): MontgomeryElementModP =
+        ProductionMontgomeryElementModP(
+            element.shiftLeft(groupContext.productionMode.numBitsInP).mod(groupContext.p),
+            groupContext)
 }
 
 class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p.element, p.groupContext) {
@@ -362,3 +382,35 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)
 }
 
+data class ProductionMontgomeryElementModP(val element: BigInteger, val groupContext: ProductionGroupContext): MontgomeryElementModP {
+    private fun MontgomeryElementModP.getCompat(other: GroupContext): BigInteger {
+        context.assertCompatible(other)
+        if (this is ProductionMontgomeryElementModP) {
+            return this.element
+        } else {
+            throw NotImplementedError("unexpected MontgomeryElementModP type")
+        }
+    }
+
+    private fun BigInteger.modI(): BigInteger = this and groupContext.montgomeryIMinusOne
+
+    private fun BigInteger.divI(): BigInteger = this shr groupContext.productionMode.numBitsInP
+
+    override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
+        val w = this.element * other.getCompat(this.context)
+
+        // Z = ((((W mod I)⋅p^' )  mod I)⋅p+W)/I
+        val z = ((w.modI() * groupContext.montgomeryPPrime).modI() * groupContext.p + w).divI()
+
+        return ProductionMontgomeryElementModP(
+            if (z >= groupContext.p) z - groupContext.p else z,
+            groupContext)
+    }
+
+    override fun toElementModP(): ElementModP =
+        ProductionElementModP((element * groupContext.montgomeryIPrime).mod(groupContext.p), groupContext)
+
+    override val context: GroupContext
+        get() = groupContext
+
+}
