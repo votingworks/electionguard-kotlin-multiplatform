@@ -471,4 +471,43 @@ class ChaumPedersenTest {
             }
         }
     }
+
+    @Test
+    fun testAccum() {
+        runTest {
+            val context = productionGroup()
+            val constant = 42
+            val key = context.ONE_MOD_P
+            val nonce = context.TWO_MOD_Q
+            val seed = context.TWO_MOD_Q
+            val hashHeader = context.ONE_MOD_Q
+            val publicKey = ElGamalPublicKey(key)
+
+            val vote0 = 0.encrypt(publicKey, nonce)
+            val vote1 = 1.encrypt(publicKey, nonce)
+            val vote41 = 41.encrypt(publicKey, nonce)
+
+            val texts: List<ElGamalCiphertext> = listOf(vote0, vote1, vote41)
+            val message: ElGamalCiphertext = texts.encryptedSum()
+
+            val proof =
+                message.constantChaumPedersenProofKnownNonce(
+                    plaintext = constant,
+                    nonce = nonce,
+                    publicKey = publicKey,
+                    seed = seed,
+                    hashHeader = hashHeader
+                )
+
+            assertTrue(
+                proof.isValid(
+                    message,
+                    publicKey = publicKey,
+                    hashHeader = hashHeader,
+                    expectedConstant = constant
+                ),
+                "proof not valid"
+            )
+        }
+    }
 }
