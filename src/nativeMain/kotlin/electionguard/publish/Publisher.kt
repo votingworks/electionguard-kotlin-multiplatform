@@ -121,8 +121,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     @Throws(IOException::class)
     actual fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
         if (!invalidBallots.isEmpty()) {
-            val pathInvalid = ElectionRecordPath(invalidDir)
-            val fileout = pathInvalid.invalidBallotProtoPath()
+            val fileout = path.invalidBallotProtoPath(invalidDir)
             val file: CPointer<FILE> = openFile(fileout)
             try {
                 invalidBallots.forEach {

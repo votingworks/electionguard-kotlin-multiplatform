@@ -104,8 +104,11 @@ fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String,
         null,
         null,
     )
+    println("wrote ${submitted.size} submitted ballots to $outputDir")
 
     if (!invalidBallots.isEmpty()) {
         publisher.writeInvalidBallots(invalidDir, invalidBallots)
+        println("wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
+    println("done")
 }

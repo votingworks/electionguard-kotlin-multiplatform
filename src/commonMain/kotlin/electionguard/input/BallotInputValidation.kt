@@ -67,6 +67,7 @@ class BallotInputValidation(val election: Manifest) {
 
         var total = 0
         val selectionIds: MutableSet<String> = HashSet()
+        val sequenceOrders: MutableSet<Int> = HashSet()
         for (selection in ballotContest.selections) {
             // No duplicate selections
             if (selectionIds.contains(selection.selectionId)) {
@@ -75,6 +76,13 @@ class BallotInputValidation(val election: Manifest) {
                 logger.warn { msg }
             } else {
                 selectionIds.add(selection.selectionId)
+            }
+            if (sequenceOrders.contains(selection.sequenceOrder)) {
+                val msg = "Ballot.B.3 Multiple Ballot selections have duplicate sequenceOrder '${selection.sequenceOrder}'"
+                contestMesses.add(msg)
+                logger.warn { msg }
+            } else {
+                sequenceOrders.add(selection.sequenceOrder)
             }
             val electionSelection: Manifest.SelectionDescription? = electionContest.selectionMap[selection.selectionId]
             // Referential integrity of ballotSelection id

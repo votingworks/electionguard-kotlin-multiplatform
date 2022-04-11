@@ -26,12 +26,14 @@ actual class Publisher {
     private val topDir: String
     private val createPublisherMode: PublisherMode
     private val electionRecordDir: Path
+    private var path: ElectionRecordPath
 
     actual constructor(topDir: String, publisherMode: PublisherMode) {
         this.topDir = topDir
         this.createPublisherMode = publisherMode
         this.electionRecordDir = Path.of(topDir).resolve(ELECTION_RECORD_DIR)
-        
+        this.path = ElectionRecordPath(topDir)
+
         if (createPublisherMode == PublisherMode.createNew) {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
@@ -47,11 +49,12 @@ actual class Publisher {
         }
     }
 
-    internal constructor(electionRecordDir: Path, createPublisherMode : PublisherMode) {
+    internal constructor(electionRecordDir: Path, createPublisherMode: PublisherMode) {
         this.createPublisherMode = createPublisherMode
         this.topDir = electionRecordDir.toAbsolutePath().toString()
         this.electionRecordDir = electionRecordDir
-        
+        this.path = ElectionRecordPath(topDir)
+
         if (createPublisherMode == PublisherMode.createNew) {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
@@ -126,10 +129,6 @@ actual class Publisher {
         return electionRecordDir.resolve(SPOILED_BALLOT_FILE).toAbsolutePath()
     }
 
-    fun invalidBallotProtoPath(): Path {
-        return electionRecordDir.resolve(INVALID_BALLOT_PROTO).toAbsolutePath()
-    }
-
     /** Publishes the entire election record as proto.  */
     @Throws(IOException::class)
     actual fun writeElectionRecordProto(
@@ -153,6 +152,7 @@ actual class Publisher {
                     val ballotProto = ballot.publishSubmittedBallot()
                     writeDelimitedTo(ballotProto, out)
                 }
+                out.close()
             }
         }
         if (spoiledBallots != null) {
@@ -161,6 +161,7 @@ actual class Publisher {
                     val ballotProto = ballot.publishPlaintextTally()
                     writeDelimitedTo(ballotProto, out)
                 }
+                out.close()
             }
         }
 
@@ -175,8 +176,10 @@ actual class Publisher {
             decryptedTally,
             availableGuardians
         )
-        FileOutputStream(electionRecordProtoPath().toFile()).use {
-                out -> electionRecordProto.encodeToStream(out) }
+        FileOutputStream(electionRecordProtoPath().toFile()).use { out ->
+            electionRecordProto.encodeToStream(out)
+            out.close()
+        }
     }
 
     /** Copy accepted ballots file from the inputDir to this election record.  */
@@ -197,12 +200,13 @@ actual class Publisher {
     @Throws(IOException::class)
     actual fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
         if (!invalidBallots.isEmpty()) {
-            val source: Path = Publisher(invalidDir, PublisherMode.writeonly).invalidBallotProtoPath()
-            FileOutputStream(source.toFile()).use { out ->
+            val fileout = path.invalidBallotProtoPath(invalidDir)
+            FileOutputStream(fileout).use { out ->
                 for (ballot in invalidBallots) {
                     val ballotProto = ballot.publishPlaintextBallot()
                     writeDelimitedTo(ballotProto, out)
                 }
+                out.close()
             }
         }
     }
