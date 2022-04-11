@@ -49,9 +49,12 @@ enum class PowRadixOption(val numBits: Int, val description: String) {
 class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
     internal val tableLength: Int
     internal val numColumns: Int
-    internal val table: Array<Array<ElementModP>>
+    internal val table: Array<Array<MontgomeryElementModP>>
+    internal val montgomeryOne: MontgomeryElementModP
     init {
         val k = acceleration.numBits
+        val mBasis = basis.toMontgomeryElementModP()
+        montgomeryOne = basis.context.ONE_MOD_P.toMontgomeryElementModP()
 
         if (k == 0) {
             tableLength = 0
@@ -59,7 +62,7 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
             table = emptyArray()
         } else {
             tableLength = ceil(256.0 / k.toDouble()).toInt()
-            var rowBasis = basis
+            var rowBasis = mBasis
             var runningBasis = rowBasis
             numColumns = 1 shl k
             // row-major table
@@ -68,7 +71,7 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
                     /* row -> */
                     val finalRow =
                         Array(numColumns) { column ->
-                            if (column == 0) basis.context.ONE_MOD_P else {
+                            if (column == 0) montgomeryOne else {
                                 val finalColumn = runningBasis
                                 runningBasis *= rowBasis
                                 finalColumn
@@ -85,13 +88,13 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
 
         if (acceleration.numBits == 0) return basis powP e else {
             val slices = e.byteArray().kBitsPerSlice(acceleration, tableLength)
-            var y = e.context.ONE_MOD_P
+            var y = montgomeryOne
             for (i in 0 until tableLength) {
                 val eSlice = slices[i].toInt() // from UShort to Int so we can do an array lookup
                 val nextProd = table[i][eSlice]
                 y *= nextProd
             }
-            return y
+            return y.toElementModP()
         }
     }
 }

@@ -60,7 +60,12 @@ fun helper(header: String, numBits: Int, p: BigInteger, q: BigInteger, r: BigInt
     val montgomeryI = BigInteger.ONE shl numBits // 2^{4096} or 2^{3072}
     val montgomeryIMinusOne = montgomeryI - BigInteger.ONE
     val montgomeryIPrime = montgomeryI.modPow(p - BigInteger.TWO, p)
-    val montgomeryPPrime = (montgomeryI - p).modPow(p - BigInteger.TWO, montgomeryI)
+
+    // The first equation here is seemingly equivalent to what's in the spec, but
+    // it yields a different value from the second equation, which makes everything work.
+
+//    val montgomeryPPrime = (montgomeryI - p).modPow(p - BigInteger.TWO, montgomeryI)
+    val montgomeryPPrime = (montgomeryI - p).modInverse(montgomeryI)
 
     if (numBits == 31) {
         println("internal val intTestP = $p")

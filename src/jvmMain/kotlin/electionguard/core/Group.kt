@@ -403,10 +403,13 @@ internal data class ProductionMontgomeryElementModP(val element: BigInteger, val
     internal fun BigInteger.divI(): BigInteger = this shr groupContext.productionMode.numBitsInP
 
     override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
-        val w = this.element * other.getCompat(this.context)
+        val w: BigInteger = this.element * other.getCompat(this.context)
+
+        // w = aI * bI = (ab)(I^2)
 
         // Z = ((((W mod I)⋅p^' )  mod I)⋅p+W)/I
-        val z = ((w.modI() * groupContext.montgomeryPPrime).modI() * groupContext.p + w).divI()
+        val z: BigInteger =
+            (((w.modI() * groupContext.montgomeryPPrime).modI() * groupContext.p) + w).divI()
 
         return ProductionMontgomeryElementModP(
             if (z >= groupContext.p) z - groupContext.p else z,

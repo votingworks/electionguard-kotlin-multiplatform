@@ -48,8 +48,38 @@ class MontgomeryJVMTests {
                     assertEquals(element, element.modI())
                     assertEquals(element, (element + (bVal.element * twoPowPBits)).modI())
                     assertEquals(element, (element * twoPowPBits).divI())
+                    assertEquals(element, (element * twoPowPBits + bVal.element).divI())
                 }
             }
+        }
+    }
+
+    @Test
+    fun relationshipsIAndPTiny() {
+        runTest {
+            val pPrime = intTestMontgomeryPPrime.toULong()
+            val p = intTestP.toULong()
+            val iPrime = intTestMontgomeryIPrime.toULong()
+            val i = intTestMontgomeryI.toULong()
+
+            assertEquals(1UL, (iPrime * i) % p)
+            assertEquals(1UL, ((i - pPrime) * p) % i)
+        }
+    }
+    @Test
+    fun relationshipsIAndPProduction() {
+        runTest {
+            listOf(productionGroup(mode = ProductionMode.Mode4096), productionGroup(mode = ProductionMode.Mode3072))
+                .forEach { context ->
+                    val pContext = context as ProductionGroupContext
+                    val pPrime = pContext.montgomeryPPrime
+                    val p = pContext.p
+                    val iPrime = pContext.montgomeryIPrime
+                    val i = pContext.montgomeryIMinusOne + BigInteger.ONE
+
+                    assertEquals(BigInteger.ONE, (iPrime * i) % p)
+                    assertEquals(BigInteger.ONE, ((i - pPrime) * p) % i)
+                }
         }
     }
 }

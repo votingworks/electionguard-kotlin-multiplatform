@@ -18,7 +18,7 @@ internal val b64Production4096G = "HUHknEd+Feru8MXkrAjUpGwmjNNCT8AdE3ab20NnMhhYe
 internal val b64Production4096MontgomeryI = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 internal val b64Production4096MontgomeryIMinus1 = "AP//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
 internal val b64Production4096MontgomeryIPrime = "AKSZ6H5W9bINAiMN6a6HSwbigTX27Dgzuqd+4d9EsijOuqNdgY2lyMhN/xIg12AQAph7X8SMckK/ytJ5bgkWWPu6QwI46RQNkBuTHoBCVlKGrWJSbK5TYShEQVEe97kZ30z9prNOhvwZNnTYsqgxvghS+fQkMwlmNy5hEZiuyaArpCm4cI+BgPrUPe2uGmxgUOTL3Ipri4bMkDzKPjbVkh0yFyBAjA/Vpb8gci9CW6TR+J2UdwGTmZrNbMt1SHhG32VlNftF53FffZpdd+gO+y4BgMvRtZK/RbfdwJ8mZygESHdRaCbLDlDZEFens4rmRRQ4uIt7i2rEIUIIGWxCmD4h/9AD9/dwKMq0R+Q0Ti9WfDX5kGaNQsYXstsxkcdT/rUnO5+9ftxyXf2rUy5ThjvG102CBzLocpOk3ce1bPwSTEOq4lIPYAW2fbzT1Xakv+U5Xwd5pGx+Zp/7uYlNn7YCC/9C/RFJYOFlfxgC2H17O4GSmOSzXOOK7Bp7/zrW7+o/k4DbLV5jXltaOPC8jV+RMM8mx4TWKctx0ywHYdd84WUF3eoTwGVb3XE06n1KjLdKDrXtwpspFErX8opDN0hkCwyLGb1Ibvl9hyHpP0gbbE7tP1oG/u2Wx6xzRluTPELm4XslAAUyacnBq6JNvLtHZWPtJXANoAnQtZTkDvjB"
-internal val b64Production4096MontgomeryPPrime = "AKglwevNRdc0PRO+vcAJ+AlAnO0lDPcMAC6AVb9qnAMcVW3Bzkyv4i8uhgBxHt1ELJialkSDGKCefV4GwS96xxJGitv2wEZIrlsHUG2D7/AUNN4khVJfuj27UI+RSQ5HgDlFpG/wu3VQ4XqpAeoIRN8mjFx8W0t5n+kTqnOhhXubj3EqOvYIE2/ToSUQ8heUp7EJyz1f2YimXWKMwPEhzCrRExRENM63w6XmkFUxVuBMyEsn5EHH1dibRH6jISxEderI3LxStjP4CE4n0u1XlGajGlwzIgXxa+tV3mSTbYyt9cRS7syEak09M8JPFvFCu5OHfKAhOEqx6PM6mCRBH8EZJrecy7pTQALG8Wq6nM6erflwJYu33K5T1LZq92/jBA931dXrYB8vgw/SbSLTWCtDgI58Zc+xQhYBVKWv6g5bYIkLA5JDe4Hi9KHWmZ8TsmH8Qa89EuMNzZZ6IUoWs7/4gyzp4fnUbdaqxcxUTPpnHOheRkqSIMW8OdZjIyKUcThEpDGrBQCelF2QtAtS0zQ5NLEq5lZGOqAFN2aDx8oOXDlbMlrQ52hZU/PnO5tFMgLx9QU8GFBWFSpi/HMg37Kd/5DFvmz7v/KH9hTXQLfLeO1eCHCUzTBsmXz5rvcDQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
+internal val b64Production4096MontgomeryPPrime = "AKSZ6H5W9bINAiMN6a6HSwbigTX27Dgzuqd+4d9EsijPADqc3SYdA8Rq8V2PtOq3U9hrEu6VjhKHgUtxYhBO97qIC3vdbWuC9NtgEKja7eU0Y8KT2E2/XZ+0Gf5gJHZ4//aVRkPkAnxe6iTMN2zjdKYtFW0QZ0PtAj33HOLcQx+sORfOnFLSdVhg8fws+8eOgZwd/ZRkEkSpyhdgVPJgfmy1M9NkZarlZ6QvdKgnsOoDHUnSoMs1OpowwAWP+eue3WwwnwXfKjqhi9TEa/Ld02+cq6iC4PHI2aGjfuzujZM6VBj2XjDZlUk3RHYvFGW2Gq2fqHkJo9smjdasVy3/G6fT+Cz5owxggcncVWPrc3VNnGd4H9hY777NQ8Y5MDdOtlMl0dAO+p61t9ikR/Mv3mYIqx/gdfKfVoKTk+VvU/BcCRb2MrMzggmPeSCPeIH8QAYWIIyciQKiFcg1hmtTjSa+v86FsYutke6dTpQeSnL5/5+yAEfUnLSaby2AU/6yxkXdFw/I49cmUpDTq6R+rCrF/uutEeOSH7VOQqfjLkq9nVMHzZvEu+npZBEMI0UlLQp7Pt7YUlkxmAWu+tfllMA0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWawAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
 
 internal val intProduction4096PBits = 4096
 
@@ -32,7 +32,7 @@ internal val b64Production3072G = "AK+NwgV5Y8bDZBGcAUonaGungFdnSLcvZwxKXUw/rB4ii
 internal val b64Production3072MontgomeryI = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
 internal val b64Production3072MontgomeryIMinus1 = "AP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w=="
 internal val b64Production3072MontgomeryIPrime = "SZDM5YWGmIesvLTb/N//jdIVXxbmqBwN7XOtgqjZaIRgh2w3GyyCvV5aRepmTL4V1L7ATnbZqa6tnPKQXQJeIrtwACmZcDZT4pPwHZedGObD8Uy5EB9+vCKOpL/AY9Q3rTvcii+MGFnRUHi/+i4Sw2aex/bNWq4JCSGz5nMidI1Xs511b9oG9oczNWq5fm81iqMYDQlt80V9I8b7GbHSsSMqRYGgyistYoIjdDrKMbQrAWTcnLGq8KEKB/is9nM0CFEFJGsZstVyUykk0olqMmxP+V0suBwQCgJSDx6EkbTVheooBZTTvM5ogwLYAuYGt7+whmhkODOTyYXP88V3os+4n1amTJToqFf9XHp7iOgLST+iunzrLX9mBDjOllt7DWTLKBeygXjb5txavDfDXSeycLaPauF2zWJCl5B8/2D/cqX6TkrGAKDjEv0AB/E8MZZTLkeL1XZLw+/dCIE/YyzeSKlaiJxSZT7PaV4egUmyLOzfidO1aWeOdV1dauVc"
-internal val b64Production3072MontgomeryPPrime = "APqGUVgp0BhzYlQXmF9WUuwhgfra8fCy0SMVYhJbupSwZQPBbYOFemAwXyOaULR8j+QVOtfPRmO8LZQjS7IAofY4HF4kWXVONkODlp+PNfEyRNMWkSkk1M2mJA8mQAR2LUY44jgPgDqgPu5cVnuiaNVjGwj5TZCS5H1djBy8sqUvCceuHL68178Ezo+h+4LYQpu+bVgVQbms8qAs9TYSGJziRE/krvRhXU4FGmM0b//U2pNB+4IGGLRUFa7u3S0zP6+MADQNqtleKtHQkwBabyAGhfBrHEXwPX+U1o5chpeBqDViQfmLPqbIDeOIWH4KoJHdCg5+6We3YTD1EYDzurpQV15ZGDT9iK8BxZIhzkVazpbMPBWxjP74NZEGm7GszAGupzb689MV3NdDHIVy0mTzVwrvh3l5C/+tQxofhb1/kfTFvCTPk+dEe4kuHfm57qKXT4DuHCTh9FHK3p+mZlwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=="
+internal val b64Production3072MontgomeryPPrime = "SZDM5YWGmIesvLTb/N//jdIVXxbmqBwN7XOtgqjZaIR/oaK9U1gNa/EAccwP5njLeTwbhJ7qWhQwArH9NWoCk6KT+VO7BK0aK1mMihvftnWfInDNVU1XlUwO83vF0nsQmQ7n4rJnrkJaNmroeGYlRmlHqWNufZM3eKlZoZ+PWA1OC4u0V7QgLcwottF2+lAEuLforeYMznJiMzh/44ePVonPniQDefCbfXGlNSPF8MDuLKiuz2UMYFbCCglu0QsVqLwWNgdO7pgAvSwTzcfgmuoGq9ZhpHuufKme3Fq9T7CC+GBeJQkQdwUOtpkEnrzzTneTHa/skarFatdKXWpyglyOoPEKFHLSzhR4XNFDuw1WhaHNjEGy4L+ocmzlbCLirJbWiSvBTFchbqYzLgmBvL5S41zvIRMv2WE/Vv1z4XUwpuyUDEUxTRbT2GS0qJNPi4fFKvoJYaCmxe5KNTd3dAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
 
 internal val intProduction3072PBits = 3072
 
@@ -45,7 +45,7 @@ internal val intTestG = 16384
 internal val intTestMontgomeryI = 2147483648U
 internal val intTestMontgomeryIMinus1 = 2147483647U
 internal val intTestMontgomeryIPrime = 1533837288U
-internal val intTestMontgomeryPPrime = 1241992609U
+internal val intTestMontgomeryPPrime = 1752957409U
 internal val b64TestP = "b//93w=="
 internal val b64TestQ = "B///2Q=="
 internal val b64TestP256MinusQ = "AP/////////////////////////////////////4AAAn"
@@ -55,13 +55,15 @@ internal val b64TestG = "QAA="
 internal val b64TestMontgomeryI = "AIAAAAA="
 internal val b64TestMontgomeryIMinus1 = "f////w=="
 internal val b64TestMontgomeryIPrime = "W2x/6A=="
-internal val b64TestMontgomeryPPrime = "SgdNoQ=="
+internal val b64TestMontgomeryPPrime = "aHwB4Q=="
 
 internal val intTestPBits = 31
 
 /**
  * ElectionGuard defines two modes of operation, with P having either 4096 bits or 3072 bits. We'll
- * track which mode we're using with this enum.
+ * track which mode we're using with this enum. For testing purposes, and only available to the
+ * `test` modules, see `TinyGroup`, which provides "equivalent" modular arithmetic for
+ * stress-testing code, while running significantly faster.
  */
 enum class ProductionMode(val numBitsInP: Int) {
     Mode4096(intProduction4096PBits),
@@ -77,7 +79,6 @@ interface Element : CryptoHashableString {
      * needing to pass in the context.
      */
     val context: GroupContext
-        get
 
     /**
      * Normal computations should ensure that every [Element] is in the modular bounds defined by
