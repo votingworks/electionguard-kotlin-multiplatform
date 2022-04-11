@@ -2,6 +2,7 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.protoconvert.publishElectionRecord
+import electionguard.protoconvert.publishPlaintextBallot
 import electionguard.protoconvert.publishPlaintextTally
 import electionguard.protoconvert.publishSubmittedBallot
 import io.ktor.utils.io.errors.*
@@ -116,6 +117,29 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
         return true
     }
+
+    @Throws(IOException::class)
+    actual fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
+        if (!invalidBallots.isEmpty()) {
+            val pathInvalid = ElectionRecordPath(invalidDir)
+            val fileout = pathInvalid.invalidBallotProtoPath()
+            val file: CPointer<FILE> = openFile(fileout)
+            try {
+                invalidBallots.forEach {
+                    val proto = it.publishPlaintextBallot()
+                    val buffer = proto.encodeToByteArray()
+                    val length = writeVlen(file, fileout, buffer.size)
+                    if (length <= 0) {
+                        fclose(file)
+                        throw IOException("write failed on $invalidDir")
+                    }
+                    writeToFile(file, fileout, buffer)
+                }
+            } finally {
+                fclose(file)
+            }
+        }
+    }
 }
 
 @Throws(IOException::class)
@@ -158,7 +182,6 @@ private fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArra
 
 @Throws(IOException::class)
 private fun writeVlen(file: CPointer<FILE>, filename: String, length: Int): Int {
-    println("   write vlen $length")
     var value = length
     var count = 0
 

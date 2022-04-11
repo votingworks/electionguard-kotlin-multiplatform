@@ -59,7 +59,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         return proto.importElectionRecord(groupContext)
     }
 
-    // all spoiled ballot tallies
+    // all plaintext ballots
     actual fun iteratePlaintextBallots(ballotDir: String): Iterable<PlaintextBallot> {
         if (!Files.exists(Path.of(path.plaintextBallotProtoPath(ballotDir)))) {
             return emptyList()
