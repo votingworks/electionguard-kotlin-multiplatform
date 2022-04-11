@@ -219,10 +219,13 @@ interface GroupContext {
     fun gPowP(e: ElementModQ): ElementModP
 
     /**
-     * Computes the discrete log, base g, of p. Only yields an answer for "small" exponents,
-     * otherwise returns null.
+     * Given an element x for which there exists an e, such that g^e = x, this will find e,
+     * so long as e is less than [maxResult], which if unspecified defaults to a platform-specific
+     * value designed not to consume too much memory (perhaps 10 million). This will consume O(e)
+     * time, the first time, after which the results are memoized for all values between 0 and e,
+     * for better future performance.
      */
-    fun dLogG(p: ElementModP): Int?
+    fun dLogG(p: ElementModP, maxResult: Int = - 1): Int?
 }
 
 interface ElementModQ : Element, Comparable<ElementModQ> {
@@ -421,10 +424,15 @@ fun compatibleContextOrFail(vararg elements: Element): GroupContext {
 }
 
 /**
- * Computes the discrete log, base g, of this element. Only yields an answer for "small" exponents,
- * otherwise returns `null`.
+ * Given an element x for which there exists an e, such that g^e = x, this will find e,
+ * so long as e is less than [maxResult], which if unspecified defaults to a platform-specific
+ * value designed not to consume too much memory (perhaps 10 million). This will consume O(e)
+ * time, the first time, after which the results are memoized for all values between 0 and e,
+ * for better future performance.
+ *
+ * If the result is not found, `null` is returned.
  */
-fun ElementModP.dLogG(): Int? = context.dLogG(this)
+fun ElementModP.dLogG(maxResult: Int = -1): Int? = context.dLogG(this, maxResult)
 
 /**
  * Converts from an external [ElectionConstants] to an internal [GroupContext]. Note the optional

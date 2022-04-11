@@ -16,9 +16,12 @@ expect class DLog {
 
     /**
      * Given an element x for which there exists an e, such that (base)^e = x, this will find e,
-     * so long as e is "small enough" (typically under 1 billion). This will consume O(e) time, the
-     * first time, after which the results are memoized for all values between 0 and e, for better
-     * future performance.
+     * so long as e is less than [maxResult], which if unspecified defaults to a platform-specific
+     * value designed not to consume too much memory (perhaps 10 million). This will consume O(e)
+     * time, the first time, after which the results are memoized for all values between 0 and e,
+     * for better future performance.
+     *
+     * If the result is not found, `null` is returned.
      */
-    fun dLog(input: ElementModP): Int?
+    fun dLog(input: ElementModP, maxResult: Int = -1): Int?
 }

@@ -229,7 +229,7 @@ class ProductionGroupContext(
 
     override fun gPowP(e: ElementModQ) = gModP powP e
 
-    override fun dLogG(p: ElementModP): Int? = dlogger.dLog(p)
+    override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
 }
 
 private fun Element.getCompat(other: ProductionGroupContext): BigInteger {

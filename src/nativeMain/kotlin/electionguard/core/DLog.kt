@@ -19,7 +19,7 @@ actual class DLog(val b: ElementModP) {
 
     private val mutex = Mutex()
 
-    actual fun dLog(input: ElementModP): Int? =
+    actual fun dLog(input: ElementModP, maxResult: Int): Int? =
         // Unlike the Java version, here we cannot assume that the map allows for
         // reentrant / concurrent reads, so we're using a global lock around it
         // before doing anything at all.
@@ -36,9 +36,10 @@ actual class DLog(val b: ElementModP) {
                     dLogMapping[input]
                 } else {
                     var error = false
+                    val dlogMax = if (maxResult < 0) MAX_DLOG else maxResult
 
                     while (input != dLogMaxElement) {
-                        if (dLogMaxExponent++ > MAX_DLOG) {
+                        if (dLogMaxExponent++ > dlogMax) {
                             error = true
                             break
                         } else {
