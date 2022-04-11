@@ -380,13 +380,13 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
     if (!success)
         logger.warn {
             "Invalid generic Chaum-Pedersen proof: " +
-                mapOf(
-                    "hashGood" to hashGood,
-                    "inBoundsG" to inBoundsG,
-                    "inBoundsGx" to inBoundsGx,
-                    "inBoundsH" to inBoundsH,
-                    "inBoundsHx" to inBoundsHx,
-                ).toString()
+                    mapOf(
+                        "hashGood" to hashGood,
+                        "inBoundsG" to inBoundsG,
+                        "inBoundsGx" to inBoundsGx,
+                        "inBoundsH" to inBoundsH,
+                        "inBoundsHx" to inBoundsHx,
+                    ).toString()
         }
 
     return success
@@ -410,10 +410,10 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
 fun genericChaumPedersenProofOf(
     g: ElementModP,  // G ?
     h: ElementModP,  // A = G^r
-    x: ElementModQ,  // secret key s
+    x: ElementModQ,  // sum of nonces
     seed: ElementModQ,
     hashHeader: ElementModQ,
-    alsoHash: Array<Element> = emptyArray()
+    alsoHash: Array<Element> = emptyArray(),
 ): GenericChaumPedersenProof {
     val context = compatibleContextOrFail(g, h, x, seed, hashHeader)
 

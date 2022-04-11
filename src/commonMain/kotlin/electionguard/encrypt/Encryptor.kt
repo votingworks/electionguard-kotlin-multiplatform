@@ -156,11 +156,13 @@ class Encryptor(
 
         // Handle undervotes. LOOK what about overvotes?
         // Add a placeholder selection for each possible seat in the contest
+        val limit = contestDescription.votesAllowed
         val selectionSequenceOrderMax = contestDescription.selections.maxOf { it.sequenceOrder }
-        for (placeholder in 1..contestDescription.votesAllowed) {
+        for (placeholder in 1..limit) {
             val sequenceNo = selectionSequenceOrderMax + placeholder
             val plaintextSelection = selectionFrom(
-                "${contestDescription.contestId}-$sequenceNo", sequenceNo, true, selectionCount > 0)
+                "${contestDescription.contestId}-$sequenceNo", sequenceNo, true,
+                selectionCount < limit)
             selectionCount--
 
             encryptedSelections.add(plaintextSelection.encryptPlaceholder(contestNonce))
@@ -174,7 +176,7 @@ class Encryptor(
         val aggNonce: ElementModQ = with (group) { nonces.addQ() }
 
         val proof : ConstantChaumPedersenProofKnownNonce = ciphertextAccumulation.constantChaumPedersenProofKnownNonce(
-            contestDescription.votesAllowed,
+            limit,
             aggNonce,
             elgamalPublicKey,
             chaumPedersenNonce,

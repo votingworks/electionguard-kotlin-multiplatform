@@ -11,7 +11,7 @@ class RunBatchEncryptionTest {
                 "-ballots",
                 "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots",
                 "-out",
-                "src/commonTest/data/native/runBatchEncryption",
+                "src/commonTest/data/workflow/runBatchEncryption",
                 "-device",
                 "CountyCook-precinct079-device24358"))
     }

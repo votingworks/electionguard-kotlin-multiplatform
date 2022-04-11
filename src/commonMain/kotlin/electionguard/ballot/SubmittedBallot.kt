@@ -30,7 +30,7 @@ data class SubmittedBallot(
         val selections: List<Selection>,
         val ciphertextAccumulation: ElGamalCiphertext,
         val cryptoHash: UInt256,
-        val proof: ConstantChaumPedersenProofKnownNonce?,
+        val proof: ConstantChaumPedersenProofKnownNonce,
     )  : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }

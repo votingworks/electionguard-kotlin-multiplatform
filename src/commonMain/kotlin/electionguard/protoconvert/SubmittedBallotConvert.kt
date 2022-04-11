@@ -205,7 +205,7 @@ private fun SubmittedBallot.Contest.publishContest():
                 this.selections.map { it.publishSelection() },
                 this.ciphertextAccumulation.publishCiphertext(),
                 this.cryptoHash.publishUInt256(),
-                this.proof?.let { this.proof.publishConstantChaumPedersenProof() },
+                this.proof.let { this.proof.publishConstantChaumPedersenProof() },
             )
     }
 
