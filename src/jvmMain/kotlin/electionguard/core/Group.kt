@@ -19,7 +19,8 @@ private val productionGroups4096 =
             montPPrimeBytes = b64Production4096MontgomeryPPrime.fromSafeBase64(),
             name = "production group, ${it.description}, 4096 bits",
             powRadixOption = it,
-            productionMode = ProductionMode.Mode4096
+            productionMode = ProductionMode.Mode4096,
+            numPBits = intProduction4096PBits
         )
     }
 
@@ -35,7 +36,8 @@ private val productionGroups3072 =
             montPPrimeBytes = b64Production3072MontgomeryPPrime.fromSafeBase64(),
             name = "production group, ${it.description}, 3072 bits",
             powRadixOption = it,
-            productionMode = ProductionMode.Mode3072
+            productionMode = ProductionMode.Mode3072,
+            numPBits = intProduction3072PBits
         )
     }
 
@@ -60,7 +62,8 @@ class ProductionGroupContext(
     montPPrimeBytes: ByteArray,
     val name: String,
     val powRadixOption: PowRadixOption,
-    val productionMode: ProductionMode
+    val productionMode: ProductionMode,
+    val numPBits: Int
 ) : GroupContext {
     val p: BigInteger
     val q: BigInteger
@@ -146,6 +149,9 @@ class ProductionGroupContext(
 
     override val MAX_BYTES_Q: Int
         get() = 32
+
+    override val NUM_P_BITS: Int
+        get() = numPBits
 
     override fun isCompatible(ctx: GroupContext): Boolean =
         ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
@@ -382,8 +388,8 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)
 }
 
-data class ProductionMontgomeryElementModP(val element: BigInteger, val groupContext: ProductionGroupContext): MontgomeryElementModP {
-    private fun MontgomeryElementModP.getCompat(other: GroupContext): BigInteger {
+internal data class ProductionMontgomeryElementModP(val element: BigInteger, val groupContext: ProductionGroupContext): MontgomeryElementModP {
+    internal fun MontgomeryElementModP.getCompat(other: GroupContext): BigInteger {
         context.assertCompatible(other)
         if (this is ProductionMontgomeryElementModP) {
             return this.element
@@ -392,9 +398,9 @@ data class ProductionMontgomeryElementModP(val element: BigInteger, val groupCon
         }
     }
 
-    private fun BigInteger.modI(): BigInteger = this and groupContext.montgomeryIMinusOne
+    internal fun BigInteger.modI(): BigInteger = this and groupContext.montgomeryIMinusOne
 
-    private fun BigInteger.divI(): BigInteger = this shr groupContext.productionMode.numBitsInP
+    internal fun BigInteger.divI(): BigInteger = this shr groupContext.productionMode.numBitsInP
 
     override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
         val w = this.element * other.getCompat(this.context)

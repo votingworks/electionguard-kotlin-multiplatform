@@ -2,7 +2,7 @@ package electionguard.core
 
 import electionguard.ballot.ElectionConstants
 
-private val tinyGroupContext =
+internal val tinyGroupContext =
     TinyGroupContext(
         p = intTestP.toUInt(),
         q = intTestQ.toUInt(),
@@ -22,7 +22,7 @@ private val tinyGroupContext =
  */
 fun tinyGroup(): GroupContext = tinyGroupContext
 
-private fun Element.getCompat(other: GroupContext): UInt {
+internal fun Element.getCompat(other: GroupContext): UInt {
     context.assertCompatible(other)
     return when (this) {
         is TinyElementModP -> this.element
@@ -31,7 +31,7 @@ private fun Element.getCompat(other: GroupContext): UInt {
     }
 }
 
-private class TinyGroupContext(
+internal class TinyGroupContext(
     val p: UInt,
     val q: UInt,
     val g: UInt,
@@ -104,6 +104,8 @@ private class TinyGroupContext(
         get() = 2
     override val MAX_BYTES_Q: Int
         get() = 2
+    override val NUM_P_BITS: Int
+        get() = 31
 
     override fun isCompatible(ctx: GroupContext): Boolean = !ctx.isProductionStrength()
 
@@ -116,7 +118,7 @@ private class TinyGroupContext(
      * If the modulus is zero, it's ignored, and the intermediate value is truncated to a UInt and
      * returned.
      */
-    private fun ByteArray.toUIntMod(modulus: UInt = 0U): UInt {
+    internal fun ByteArray.toUIntMod(modulus: UInt = 0U): UInt {
         val preModulus = this.fold(0UL) { prev, next -> ((prev shl 8) or next.toUByte().toULong()) }
         return if (modulus == 0U) {
             preModulus.toUInt()
@@ -183,7 +185,7 @@ private class TinyGroupContext(
     override fun dLogG(p: ElementModP): Int? = dlogger.dLog(p)
 }
 
-private class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {
+internal class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {
     fun UInt.modWrap(): ElementModP = (this % groupContext.p).wrap()
     fun ULong.modWrap(): ElementModP = (this % groupContext.p).wrap()
     fun UInt.wrap(): ElementModP = TinyElementModP(this, groupContext)
@@ -249,7 +251,7 @@ private class TinyElementModP(val element: UInt, val groupContext: TinyGroupCont
             groupContext)
 }
 
-private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : ElementModQ {
+internal class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : ElementModQ {
     fun ULong.modWrap(): ElementModQ = (this % groupContext.q).wrap()
     fun UInt.modWrap(): ElementModQ = (this % groupContext.q).wrap()
     fun ULong.wrap(): ElementModQ = toUInt().wrap()
@@ -341,7 +343,7 @@ private class TinyElementModQ(val element: UInt, val groupContext: TinyGroupCont
     override fun toString(): String = "ElementModQ($element)"
 }
 
-private data class TinyMontgomeryElementModP(val element: UInt, val groupContext: TinyGroupContext): MontgomeryElementModP {
+internal data class TinyMontgomeryElementModP(val element: UInt, val groupContext: TinyGroupContext): MontgomeryElementModP {
     private fun MontgomeryElementModP.getCompat(other: GroupContext): UInt {
         context.assertCompatible(other)
         if (this is TinyMontgomeryElementModP) {
@@ -351,9 +353,9 @@ private data class TinyMontgomeryElementModP(val element: UInt, val groupContext
         }
     }
 
-    private fun ULong.modI(): ULong = this and intTestMontgomeryIMinus1.toULong()
+    internal fun ULong.modI(): ULong = this and intTestMontgomeryIMinus1.toULong()
 
-    private fun ULong.divI(): UInt = (this shr intTestPBits).toUInt()
+    internal fun ULong.divI(): UInt = (this shr intTestPBits).toUInt()
 
     override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
         val w: ULong = this.element.toULong() * other.getCompat(this.context).toULong()

@@ -20,7 +20,8 @@ private val productionGroups4096 =
             rBytes = b64Production4096R.fromSafeBase64(),
             name = "production group, ${it.description}, 4096 bits",
             powRadixOption = it,
-            productionMode = ProductionMode.Mode4096
+            productionMode = ProductionMode.Mode4096,
+            numPBits = intProduction4096PBits,
         )
     }
 
@@ -34,7 +35,8 @@ private val productionGroups3072 =
             rBytes = b64Production3072R.fromSafeBase64(),
             name = "production group, ${it.description}, 3072 bits",
             powRadixOption = it,
-            productionMode = ProductionMode.Mode3072
+            productionMode = ProductionMode.Mode3072,
+            numPBits = intProduction3072PBits,
         )
     }
 
@@ -246,7 +248,8 @@ class ProductionGroupContext(
     val rBytes: ByteArray,
     val name: String,
     val powRadixOption: PowRadixOption,
-    val productionMode: ProductionMode
+    val productionMode: ProductionMode,
+    val numPBits: Int
 ) : GroupContext {
     val p: HaclBignum4096
     val q: HaclBignum256
@@ -349,11 +352,14 @@ class ProductionGroupContext(
     override val MAX_BYTES_Q: Int
         get() = 32
 
+    override val NUM_P_BITS: Int
+        get() = numPBits
+
     override fun isCompatible(ctx: GroupContext): Boolean =
         ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
-        // Implementation node: ByteArray.toHaclBignum4096() throws
+        // implementation node: bytearray.tohaclbignum4096() throws
         // an exception if there are more than MAX_BYTES_P bytes of input. We're
         // working around this with a special case that simply ignores the upper
         // bytes. HACL's 4096-bit types do support mod on numbers twice as large,
