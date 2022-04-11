@@ -18,6 +18,9 @@ private val productionGroups4096 =
             p256minusQBytes = b64Production4096P256MinusQ.fromSafeBase64(),
             gBytes = b64Production4096G.fromSafeBase64(),
             rBytes = b64Production4096R.fromSafeBase64(),
+            montIMinus1Bytes = b64Production4096MontgomeryIMinus1.fromSafeBase64(),
+            montIPrimeBytes = b64Production4096MontgomeryIPrime.fromSafeBase64(),
+            montPPrimeBytes = b64Production4096MontgomeryPPrime.fromSafeBase64(),
             name = "production group, ${it.description}, 4096 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode4096,
@@ -33,6 +36,9 @@ private val productionGroups3072 =
             p256minusQBytes = b64Production3072P256MinusQ.fromSafeBase64(),
             gBytes = b64Production3072G.fromSafeBase64(),
             rBytes = b64Production3072R.fromSafeBase64(),
+            montIMinus1Bytes = b64Production3072MontgomeryIMinus1.fromSafeBase64(),
+            montIPrimeBytes = b64Production3072MontgomeryIPrime.fromSafeBase64(),
+            montPPrimeBytes = b64Production3072MontgomeryPPrime.fromSafeBase64(),
             name = "production group, ${it.description}, 3072 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode3072,
@@ -246,6 +252,9 @@ class ProductionGroupContext(
     val gBytes: ByteArray,
     val p256minusQBytes: ByteArray,
     val rBytes: ByteArray,
+    montIMinus1Bytes: ByteArray,
+    montIPrimeBytes: ByteArray,
+    montPPrimeBytes: ByteArray,
     val name: String,
     val powRadixOption: PowRadixOption,
     val productionMode: ProductionMode,
@@ -270,6 +279,9 @@ class ProductionGroupContext(
     val montCtxP: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val montCtxQ: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val dlogger: DLog
+    val montgomeryIMinusOne: HaclBignum4096
+    val montgomeryIPrime: HaclBignum4096
+    val montgomeryPPrime: HaclBignum4096
 
     init {
         p = pBytes.toHaclBignum4096()
@@ -291,6 +303,10 @@ class ProductionGroupContext(
         oneModQ = ProductionElementModQ(1U.toHaclBignum256(), this)
         twoModQ = ProductionElementModQ(2U.toHaclBignum256(), this)
         qMinus1ModQ = (zeroModQ - oneModQ) as ProductionElementModQ
+
+        montgomeryIMinusOne = montIMinus1Bytes.toHaclBignum4096()
+        montgomeryIPrime = montIPrimeBytes.toHaclBignum4096()
+        montgomeryPPrime = montPPrimeBytes.toHaclBignum4096()
 
         // This context is something that normally needs to be freed, otherwise memory
         // leaks could occur, but we'll keep it live for the duration of the program
@@ -764,20 +780,8 @@ open class ProductionElementModP(val element: HaclBignum4096, val groupContext: 
         AcceleratedElementModP(this)
 
     override fun toMontgomeryElementModP(): MontgomeryElementModP {
-        TODO("Not implemented yet")
-//        val result = newZeroBignum4096()
-//        val scratch = ULongArray(HaclBignum4096_LongWords * 2)
-//        nativeElems(result, element, scratch) { r, a, s ->
-//            Hacl_Bignum4096_mul(a, b, s)
-//            Hacl_Bignum4096_mod_precomp(groupContext.montCtxP, s, r)
-//        }
-//
-//        return result.wrap()
-//
-//        ProductionMontgomeryElementModP(
-//            element.shiftLeft(groupContext.productionMode.numBitsInP).mod(groupContext.p),
-//            groupContext
-//        )
+        // TODO: implement the actual Montgomery math transformation
+        return ProductionMontgomeryElementModP(this)
     }
 }
 
@@ -793,37 +797,15 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)
 }
 
-data class ProductionMontgomeryElementModP(val element: HaclBignum4096, val groupContext: ProductionGroupContext): MontgomeryElementModP {
-    private fun MontgomeryElementModP.getCompat(other: GroupContext): HaclBignum4096 {
-        context.assertCompatible(other)
-        if (this is ProductionMontgomeryElementModP) {
-            return this.element
-        } else {
-            throw NotImplementedError("unexpected MontgomeryElementModP type")
-        }
-    }
-
-    private fun HaclBignum4096.modI(): HaclBignum4096 = TODO("not implemented yet") // this and groupContext.montgomeryIMinusOne
-
-    private fun HaclBignum4096.divI(): HaclBignum4096 = TODO("not implemented yet") // this shr groupContext.productionMode.numBitsInP
-
+data class ProductionMontgomeryElementModP(val kludge: ElementModP): MontgomeryElementModP {
     override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
-        TODO("not implemented yet")
-//        val w = this.element * other.getCompat(this.context)
-
-        // Z = ((((W mod I)⋅p^' )  mod I)⋅p+W)/I
-//        val z = ((w.modI() * groupContext.montgomeryPPrime).modI() * groupContext.p + w).divI()
-//
-//        return ProductionMontgomeryElementModP(
-//            if (z >= groupContext.p) z - groupContext.p else z,
-//            groupContext)
+        // TODO: implement the actual Montgomery math transformation
+        return ProductionMontgomeryElementModP(
+            kludge * (other as ProductionMontgomeryElementModP).kludge)
     }
 
-    override fun toElementModP(): ElementModP =
-        TODO("not implemented yet")
-//        ProductionElementModP((element * groupContext.montgomeryIPrime).mod(groupContext.p), groupContext)
+    override fun toElementModP(): ElementModP = kludge
 
     override val context: GroupContext
-        get() = groupContext
-
+        get() = kludge.context
 }
