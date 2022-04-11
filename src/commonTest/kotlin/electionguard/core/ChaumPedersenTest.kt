@@ -471,4 +471,87 @@ class ChaumPedersenTest {
             }
         }
     }
+
+    @Test
+    fun testAccum() {
+        runTest {
+            val context = productionGroup()
+            val constant = 42
+            val key = context.ONE_MOD_P
+            val nonce = context.TWO_MOD_Q
+            val seed = context.TWO_MOD_Q
+            val hashHeader = context.ONE_MOD_Q
+            val publicKey = ElGamalPublicKey(key)
+
+            val vote0 = 0.encrypt(publicKey, nonce)
+            val vote1 = 1.encrypt(publicKey, nonce)
+            val vote41 = 41.encrypt(publicKey, nonce)
+            val nonceAccum = nonce + nonce + nonce // we're using it three times
+
+            val texts: List<ElGamalCiphertext> = listOf(vote0, vote1, vote41)
+            val message: ElGamalCiphertext = texts.encryptedSum()
+
+            val proof =
+                message.constantChaumPedersenProofKnownNonce(
+                    plaintext = constant,
+                    nonce = nonceAccum,
+                    publicKey = publicKey,
+                    seed = seed,
+                    hashHeader = hashHeader
+                )
+
+            assertTrue(
+                proof.isValid(
+                    message,
+                    publicKey = publicKey,
+                    hashHeader = hashHeader,
+                    expectedConstant = constant
+                ),
+                "proof not valid"
+            )
+        }
+    }
+
+    @Test
+    fun testAccumDifferentNonces() {
+        runTest {
+            val context = productionGroup()
+            val constant = 42
+            val contestNonce = context.randomElementModQ(2)
+            val seed = context.randomElementModQ(2)
+            val hashHeader = context.randomElementModQ(2)
+            val keyPair = elGamalKeyPairFromSecret(context.randomElementModQ(2))
+            val publicKey = keyPair.publicKey
+
+            val randomQ = context.randomElementModQ(2)
+            val nonceSequence = Nonces(randomQ, contestNonce)
+
+            val vote0 = 0.encrypt(publicKey, nonceSequence.get(0))
+            val vote1 = 1.encrypt(publicKey, nonceSequence.get(1))
+            val vote41 = 41.encrypt(publicKey, nonceSequence.get(2))
+            val nonceAccum = nonceSequence.get(0) + nonceSequence.get(1) + nonceSequence.get(2)
+
+            val texts: List<ElGamalCiphertext> = listOf(vote0, vote1, vote41)
+            val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
+
+            val proof =
+                ciphertextAccumulation.constantChaumPedersenProofKnownNonce(
+                    plaintext = constant,
+                    nonce = nonceAccum,
+                    publicKey = publicKey,
+                    seed = seed,
+                    hashHeader = hashHeader
+                )
+
+            assertTrue(
+                proof.isValid(
+                    ciphertextAccumulation,
+                    publicKey = publicKey,
+                    hashHeader = hashHeader,
+                    expectedConstant = constant
+                ),
+                "proof not valid"
+            )
+        }
+    }
 }
