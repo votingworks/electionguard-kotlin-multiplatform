@@ -116,7 +116,7 @@ fun Int.encrypt(
 ): ElGamalCiphertext {
     val context = compatibleContextOrFail(publicKey.key, nonce)
 
-    if (nonce == context.ZERO_MOD_Q) {
+    if (nonce.isZero()) {
         throw ArithmeticException("Can't use a zero nonce for ElGamal encryption")
     }
 
