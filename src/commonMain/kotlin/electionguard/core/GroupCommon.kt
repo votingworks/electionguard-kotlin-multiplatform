@@ -70,6 +70,9 @@ enum class ProductionMode(val numBitsInP: Int) {
     Mode3072(intProduction3072PBits);
 
     override fun toString() = "ProductionMode($numBitsInP bits)"
+
+    val numBytesInP: Int = numBitsInP / 8
+    val numLongWordsInP: Int = numBitsInP / 64
 }
 
 interface Element : CryptoHashableString {
