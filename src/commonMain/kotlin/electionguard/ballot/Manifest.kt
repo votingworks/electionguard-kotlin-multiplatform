@@ -377,6 +377,8 @@ data class Manifest(
         val cryptoHash: UInt256 = hashElements(candidateId, name, partyId, imageUri),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
+        constructor(candidateId: String) :
+                this(candidateId, InternationalizedText(), null, null, false)
     }
 
     /**
@@ -425,6 +427,8 @@ data class Manifest(
         val cryptoHash: UInt256 = hashElements(text)
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
+
+        constructor() : this(emptyList())
     }
 
     /**
@@ -455,6 +459,9 @@ data class Manifest(
         val cryptoHash: UInt256 = hashElements(partyId, name, abbreviation, color, logoUri),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
+
+        constructor(partyId: String) :
+            this(partyId, InternationalizedText(), null, null, null)
     }
 
     /**

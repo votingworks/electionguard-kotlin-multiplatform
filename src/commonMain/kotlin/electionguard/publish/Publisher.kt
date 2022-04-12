@@ -17,6 +17,8 @@ expect class Publisher(topDir: String, publisherMode: PublisherMode) {
         spoiledBallots: Iterable<PlaintextTally>?,
         availableGuardians: List<AvailableGuardian>?
     )
+
+    fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>)
 }
 
 enum class PublisherMode {

@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 4/5/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 4/12/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 This covers only the election record, and not any serialized classes used in remote procedure calls 
 or private data.
@@ -235,80 +235,6 @@ Notes
 | candidate_id   | string   | matches Candidate.candidate_id |
 | crypto_hash    | UInt256  | optional                       |
 
-## plaintext_tally.proto
-
-### message PlaintextTally
-
-| Name     | Type                          | Notes                                                             |
-|----------|-------------------------------|-------------------------------------------------------------------|
-| tally_id | string                        | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
-| contests | List\<PlaintextTallyContest\> |                                                                   |
-
-### message PlaintextTallyContest
-
-| Name       | Type                            | Notes                                  |
-|------------|---------------------------------|----------------------------------------|
-| contest_id | string                          | matches ContestDescription.contest_id. |
-| selections | List\<PlaintextTallySelection\> |                                        |
-
-### message PlaintextTallySelection
-
-| Name         | Type                                  | Notes                                     |
-|--------------|---------------------------------------|-------------------------------------------|
-| selection_id | string                                | matches SelectionDescription.selection_id |
-| tally        | int                                   |                                           |
-| value        | ElementModP                           |                                           |
-| message      | ElGamalCiphertext                     |                                           |
-| shares       | List\<CiphertextDecryptionSelection\> |                                           |
-
-### message CiphertextDecryptionSelection
-
-| Name            | Type                                             | Notes |
-|-----------------|--------------------------------------------------|-------|
-| selection_id    | string                                           |       |
-| guardian_id     | string                                           |       |
-| share           | ElementModP                                      |       |
-| proof           | GenericChaumPedersenProof                        |       |
-| recovered_parts | List\<CiphertextCompensatedDecryptionSelection\> |       |
-
-### message CiphertextCompensatedDecryptionSelection(ElectionObjectBase)
-
-| Name                | Type                      | Notes |
-|---------------------|---------------------------|-------|
-| selection_id        | string                    |       |
-| guardian_id         | string                    |       |
-| missing_guardian_id | string                    |       |
-| share               | ElementModP               |       |
-| recovery_key        | ElementModP               |       |
-| proof               | GenericChaumPedersenProof |       |
-
-## ciphertext_tally.proto
-
-### message CiphertextTally
-
-| Name     | Type                           | Notes                                                             |
-|----------|--------------------------------|-------------------------------------------------------------------|
-| tally_id | string                         | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
-| contests | List\<CiphertextTallyContest\> |                                                                   | 
-
-### message CiphertextTallyContest
-
-| Name                     | Type                             | Notes                                     |
-|--------------------------|----------------------------------|-------------------------------------------|
-| contest_id               | string                           | matches ContestDescription.contest_id     |
-| sequence_order           | uint32                           | matches ContestDescription.sequence_order |
-| contest_description_hash | UInt256                          | matches ContestDescription.crypto_hash    |
-| selections               | List\<CiphertextTallySelection\> |                                           |
-
-### message CiphertextTallySelection|
-
-| Name                       | Type              | Notes                                       |
-|----------------------------|-------------------|---------------------------------------------|
-| selection_id               | string            | matches SelectionDescription.selection_id   |
-| sequence_order             | uint32            | matches SelectionDescription.sequence_order |
-| selection_description_hash | UInt256           | matches SelectionDescription.crypto_hash    |
-| ciphertext                 | ElGamalCiphertext |                                             |
-
 ## plaintext_ballot.proto
 
 ### message PlaintextBallot
@@ -318,6 +244,7 @@ Notes
 | ballot_id       | string                         | unique input ballot id              |
 | ballot_style_id | string                         | matches BallotStyle.ballot_style_id |
 | contests        | List\<PlaintextBallotContest\> |                                     |
+| errors          | string                         | optional eg an invalid ballot       |
 
 ### message PlaintextBallotContest
 
@@ -392,3 +319,77 @@ Notes
 | challenge | ElementModQ               |       |
 | proof0    | GenericChaumPedersenProof |       |
 | proof1    | GenericChaumPedersenProof |       |
+
+## ciphertext_tally.proto
+
+### message CiphertextTally
+
+| Name     | Type                           | Notes                                                             |
+|----------|--------------------------------|-------------------------------------------------------------------|
+| tally_id | string                         | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
+| contests | List\<CiphertextTallyContest\> |                                                                   | 
+
+### message CiphertextTallyContest
+
+| Name                     | Type                             | Notes                                     |
+|--------------------------|----------------------------------|-------------------------------------------|
+| contest_id               | string                           | matches ContestDescription.contest_id     |
+| sequence_order           | uint32                           | matches ContestDescription.sequence_order |
+| contest_description_hash | UInt256                          | matches ContestDescription.crypto_hash    |
+| selections               | List\<CiphertextTallySelection\> |                                           |
+
+### message CiphertextTallySelection|
+
+| Name                       | Type              | Notes                                       |
+|----------------------------|-------------------|---------------------------------------------|
+| selection_id               | string            | matches SelectionDescription.selection_id   |
+| sequence_order             | uint32            | matches SelectionDescription.sequence_order |
+| selection_description_hash | UInt256           | matches SelectionDescription.crypto_hash    |
+| ciphertext                 | ElGamalCiphertext |                                             |
+
+## plaintext_tally.proto
+
+### message PlaintextTally
+
+| Name     | Type                          | Notes                                                             |
+|----------|-------------------------------|-------------------------------------------------------------------|
+| tally_id | string                        | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
+| contests | List\<PlaintextTallyContest\> |                                                                   |
+
+### message PlaintextTallyContest
+
+| Name       | Type                            | Notes                                  |
+|------------|---------------------------------|----------------------------------------|
+| contest_id | string                          | matches ContestDescription.contest_id. |
+| selections | List\<PlaintextTallySelection\> |                                        |
+
+### message PlaintextTallySelection
+
+| Name         | Type                                  | Notes                                     |
+|--------------|---------------------------------------|-------------------------------------------|
+| selection_id | string                                | matches SelectionDescription.selection_id |
+| tally        | int                                   |                                           |
+| value        | ElementModP                           |                                           |
+| message      | ElGamalCiphertext                     |                                           |
+| shares       | List\<CiphertextDecryptionSelection\> |                                           |
+
+### message CiphertextDecryptionSelection
+
+| Name            | Type                                             | Notes |
+|-----------------|--------------------------------------------------|-------|
+| selection_id    | string                                           |       |
+| guardian_id     | string                                           |       |
+| share           | ElementModP                                      |       |
+| proof           | GenericChaumPedersenProof                        |       |
+| recovered_parts | List\<CiphertextCompensatedDecryptionSelection\> |       |
+
+### message CiphertextCompensatedDecryptionSelection
+
+| Name                | Type                      | Notes |
+|---------------------|---------------------------|-------|
+| selection_id        | string                    |       |
+| guardian_id         | string                    |       |
+| missing_guardian_id | string                    |       |
+| share               | ElementModP               |       |
+| recovery_key        | ElementModP               |       |
+| proof               | GenericChaumPedersenProof |       |

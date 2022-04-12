@@ -6,13 +6,19 @@ class RunBatchEncryptionTest {
 
     @Test
     fun testRunBatchEncryptionTest() {
-        main(arrayOf("-in",
+        main(
+            arrayOf(
+                "-in",
                 "src/commonTest/data/testJava/kickstart/encryptor",
                 "-ballots",
                 "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots",
                 "-out",
-                "src/commonTest/data/workflow/runBatchEncryption",
+                "/home/snake/tmp/electionguard/native/runBatchEncryption",
+                "-invalidBallots",
+                "/home/snake/tmp/electionguard/native/runBatchEncryption/election_private_data/invalid_ballots",
                 "-device",
-                "CountyCook-precinct079-device24358"))
+                "CountyCook-precinct079-device24358"
+            )
+        )
     }
 }

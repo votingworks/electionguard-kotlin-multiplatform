@@ -7,6 +7,7 @@ public data class PlaintextBallot(
     val ballotId: String = "",
     val ballotStyleId: String = "",
     val contests: List<electionguard.protogen.PlaintextBallotContest> = emptyList(),
+    val errors: String = "",
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextBallot = protoMergeImpl(other)
@@ -17,7 +18,7 @@ public data class PlaintextBallot(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.PlaintextBallot = electionguard.protogen.PlaintextBallot.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextBallot> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallot, *>>(3)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallot, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -47,6 +48,16 @@ public data class PlaintextBallot(
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.PlaintextBallotContest>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextBallotContest.Companion)),
                         jsonName = "contests",
                         value = electionguard.protogen.PlaintextBallot::contests
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "errors",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "errors",
+                        value = electionguard.protogen.PlaintextBallot::errors
                     )
                 )
             }
@@ -261,15 +272,17 @@ private fun PlaintextBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): 
     var ballotId = ""
     var ballotStyleId = ""
     var contests: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextBallotContest>? = null
+    var errors = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> ballotId = _fieldValue as String
             2 -> ballotStyleId = _fieldValue as String
             3 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextBallotContest> }
+            4 -> errors = _fieldValue as String
         }
     }
-    return PlaintextBallot(ballotId, ballotStyleId, pbandk.ListWithSize.Builder.fixed(contests), unknownFields)
+    return PlaintextBallot(ballotId, ballotStyleId, pbandk.ListWithSize.Builder.fixed(contests), errors, unknownFields)
 }
 
 @pbandk.Export

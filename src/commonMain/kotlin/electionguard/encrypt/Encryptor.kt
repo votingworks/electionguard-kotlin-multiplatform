@@ -26,6 +26,11 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("Encryptor")
 
+/**
+ * Encrypt Plaintext Ballots into Ciphertext Ballots.
+ * The input Ballots must be well-formed and consistent.
+ * See RunBatchEncryption and BallotInputValidation to validate ballots before passing them to this class.
+ */
 class Encryptor(
     val group: GroupContext,
     val manifest: Manifest,
