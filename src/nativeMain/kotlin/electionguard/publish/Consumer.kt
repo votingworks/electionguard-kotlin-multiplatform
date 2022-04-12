@@ -308,7 +308,6 @@ private fun readVlen(input: CPointer<FILE>, filename: String): Int {
         result = result.or(im)
         shift += 7
     }
-    println("   read vlen $result")
     return result
 }
 

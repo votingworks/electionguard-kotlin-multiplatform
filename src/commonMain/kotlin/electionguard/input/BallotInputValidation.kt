@@ -56,7 +56,6 @@ class BallotInputValidation(val election: Manifest) {
     ) {
         val contestMesses = ballotMesses.nested("Contest " + ballotContest.contestId)
 
-
         // Contest geopoliticalUnitId ok for this BallotStyle
         if (!ballotStyle.geopoliticalUnitIds.contains(electionContest.geopoliticalUnitId)) {
             val msg = "Ballot.A.3 Contest's geopoliticalUnitId '${electionContest.geopoliticalUnitId}'" +

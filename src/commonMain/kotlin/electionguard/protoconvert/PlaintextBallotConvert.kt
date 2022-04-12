@@ -6,7 +6,8 @@ fun electionguard.protogen.PlaintextBallot.importPlaintextBallot(): PlaintextBal
     return PlaintextBallot(
         this.ballotId,
         this.ballotStyleId,
-        this.contests.map { it.importContest() }
+        this.contests.map { it.importContest() },
+        if (this.errors.isEmpty()) null else this.errors,
     )
 }
 
@@ -40,8 +41,9 @@ fun PlaintextBallot.publishPlaintextBallot(): electionguard.protogen.PlaintextBa
         .PlaintextBallot(
             this.ballotId,
             this.ballotStyleId,
-            this.contests.map { it.publishContest() }
-        )
+            this.contests.map { it.publishContest() },
+            this.errors?: "",
+            )
 }
 
 private fun PlaintextBallot.Contest.publishContest():

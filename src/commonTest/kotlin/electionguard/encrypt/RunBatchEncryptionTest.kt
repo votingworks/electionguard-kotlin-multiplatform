@@ -13,9 +13,9 @@ class RunBatchEncryptionTest {
                 "-ballots",
                 "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots",
                 "-out",
-                "/home/snake/tmp/electionguard/kotlin/runBatchEncryption",
+                "/home/snake/tmp/electionguard/native/runBatchEncryption",
                 "-invalidBallots",
-                "/home/snake/tmp/electionguard/kotlin/runBatchEncryption/election_private_data/invalid_ballots",
+                "/home/snake/tmp/electionguard/native/runBatchEncryption/election_private_data/invalid_ballots",
                 "-device",
                 "CountyCook-precinct079-device24358"
             )

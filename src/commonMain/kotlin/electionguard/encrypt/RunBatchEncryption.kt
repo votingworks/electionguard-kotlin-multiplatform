@@ -79,7 +79,7 @@ fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String,
         if (mess.hasErrors()) {
             println("*** BallotInputValidation FAILED on ballot ${it.ballotId}")
             println("$mess\n")
-            invalidBallots.add(it)
+            invalidBallots.add(PlaintextBallot(it, mess.toString()))
             false
         } else {
             true

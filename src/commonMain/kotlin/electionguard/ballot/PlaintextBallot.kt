@@ -6,10 +6,14 @@ package electionguard.ballot
  * and for the roundtrip: input -> encrypt -> decrypt -> output.
  */
 data class PlaintextBallot(
-    val ballotId: String,
+    val ballotId: String,      // a unique ballot ID created by the external system
     val ballotStyleId: String, // matches BallotStyle.ballotStyleId
-    val contests: List<Contest>
+    val contests: List<Contest>,
+    val errors: String? = null,       // error messages from processing, eg when invalid
 ) {
+
+    constructor(org: PlaintextBallot, errors: String):
+        this(org.ballotId, org.ballotStyleId, org.contests, errors)
 
     /** The plaintext representation of a voter's selections for one contest. */
     data class Contest(
