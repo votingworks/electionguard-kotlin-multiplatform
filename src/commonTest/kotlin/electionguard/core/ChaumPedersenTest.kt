@@ -124,7 +124,7 @@ class ChaumPedersenTest {
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
-                        hashHeader = context.ONE_MOD_Q
+                        qbar = context.ONE_MOD_Q
                     )
                 assertTrue(
                     proof.isValid(
@@ -155,7 +155,7 @@ class ChaumPedersenTest {
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
-                        hashHeader = context.ONE_MOD_Q
+                        qbar = context.ONE_MOD_Q
                     )
                 assertFalse(
                     badProof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q),
@@ -168,7 +168,7 @@ class ChaumPedersenTest {
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
-                        hashHeader = context.ONE_MOD_Q
+                        qbar = context.ONE_MOD_Q
                     )
                 assertFalse(
                     badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q),
@@ -309,17 +309,17 @@ class ChaumPedersenTest {
 
         val hashHeaderX = hashHeader ?: context.ZERO_MOD_Q
 
-        val proof = genericChaumPedersenProofOf(g, h, x, seed, hashHeader = hashHeaderX)
-        assertTrue(proof.isValid(g, gx, h, hx, hashHeader = hashHeaderX))
+        val proof = genericChaumPedersenProofOf(g, h, x, seed, hashHeader = arrayOf(hashHeaderX))
+        assertTrue(proof.isValid(g, gx, h, hx, hashHeader = arrayOf(hashHeaderX)))
 
         if (gx != gnotx && hx != hnotx) {
             // In the degenerate case where q1 or q2 == 0, then we'd have a problem:
             // g = 1, gx = 1, and gnotx = 1. Same thing for h, hx, hnotx. This means
             // swapping in gnotx for gx doesn't actually do anything.
 
-            assertFalse(proof.isValid(g, gnotx, h, hx, hashHeader = hashHeaderX))
-            assertFalse(proof.isValid(g, gx, h, hnotx, hashHeader = hashHeaderX))
-            assertFalse(proof.isValid(g, gnotx, h, hnotx, hashHeader = hashHeaderX))
+            assertFalse(proof.isValid(g, gnotx, h, hx, hashHeader = arrayOf(hashHeaderX)))
+            assertFalse(proof.isValid(g, gx, h, hnotx, hashHeader = arrayOf(hashHeaderX)))
+            assertFalse(proof.isValid(g, gnotx, h, hnotx, hashHeader = arrayOf(hashHeaderX)))
         }
     }
 
@@ -461,11 +461,11 @@ class ChaumPedersenTest {
 
                 val badProof = fakeGenericChaumPedersenProofOf(c, seed)
                 assertTrue(
-                    badProof.isValid(g, gx, h, hNotX, hashHeader, checkC = false),
+                    badProof.isValid(g, gx, h, hNotX, arrayOf(hashHeader), checkC = false),
                     "if we don't check c, the proof will validate"
                 )
                 assertFalse(
-                    badProof.isValid(g, gx, h, hNotX, hashHeader, checkC = true),
+                    badProof.isValid(g, gx, h, hNotX, arrayOf(hashHeader), checkC = true),
                     "if we do check c, the proof will not validate"
                 )
             }
@@ -497,14 +497,14 @@ class ChaumPedersenTest {
                     nonce = nonceAccum,
                     publicKey = publicKey,
                     seed = seed,
-                    hashHeader = hashHeader
+                    qbar = hashHeader
                 )
 
             assertTrue(
                 proof.isValid(
                     message,
                     publicKey = publicKey,
-                    hashHeader = hashHeader,
+                    qbar = hashHeader,
                     expectedConstant = constant
                 ),
                 "proof not valid"
@@ -540,14 +540,14 @@ class ChaumPedersenTest {
                     nonce = nonceAccum,
                     publicKey = publicKey,
                     seed = seed,
-                    hashHeader = hashHeader
+                    qbar = hashHeader
                 )
 
             assertTrue(
                 proof.isValid(
                     ciphertextAccumulation,
                     publicKey = publicKey,
-                    hashHeader = hashHeader,
+                    qbar = hashHeader,
                     expectedConstant = constant
                 ),
                 "proof not valid"

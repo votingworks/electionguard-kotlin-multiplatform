@@ -9,9 +9,9 @@ class RunTallyAccumulationTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/native/runBatchEncryption",
+                "/home/snake/tmp/electionguard/kotlin/runBatchEncryption",
                 "-out",
-                "src/commonTest/data/native/runTallyAccumulation",
+                "/home/snake/tmp/electionguard/kotlin/runTallyAccumulation",
                 "-name",
                 "CountyCook-precinct079-device24358"
             )

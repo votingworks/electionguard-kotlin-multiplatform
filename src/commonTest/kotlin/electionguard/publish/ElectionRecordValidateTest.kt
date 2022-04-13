@@ -2,7 +2,6 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.core.*
-import electionguard.publish.ElectionRecordPath.Companion.PROTO_VERSION
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -13,13 +12,9 @@ class ElectionRecordValidateTest {
     fun readElectionRecordAndValidate() {
         runTest {
             val group = productionGroup()
-            val electionRecord =
-                readElectionRecord(group, "src/commonTest/data/testJava/decryptor/")
-            validateTally(
-                group,
-                assertNotNull(electionRecord.decryptedTally),
-                electionRecord.context.numberOfGuardians
-            )
+            val consumer = Consumer("/home/snake/tmp/electionguard/kotlin/runDecryptingMediator", group)
+            val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
+
         }
     }
 
