@@ -25,8 +25,9 @@ private val productionGroups4096 =
             name = "production group, ${it.description}, 4096 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode4096,
-            numPBits = intProduction4096PBits,
-            numPBytes = intProduction4096PBits / 8,
+            numPBits = intProduction4096PBits.toUInt(),
+            numPBytes = intProduction4096PBits.toUInt() / 8U,
+            numPLWords = intProduction4096PBits.toUInt() / 64U,
         )
     }
 
@@ -44,8 +45,9 @@ private val productionGroups3072 =
             name = "production group, ${it.description}, 3072 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode3072,
-            numPBits = intProduction3072PBits,
-            numPBytes = intProduction3072PBits / 8,
+            numPBits = intProduction3072PBits.toUInt(),
+            numPBytes = intProduction3072PBits.toUInt() / 8U,
+            numPLWords = intProduction3072PBits.toUInt() / 64U,
         )
     }
 
@@ -202,7 +204,7 @@ internal fun ByteArray.toHaclBignumP(
     }
     bytesToUse.useNative { bytes ->
         val tmp: CPointer<uint64_tVar> =
-            Hacl_Bignum4096_new_bn_from_bytes_be(numBytes.convert(), bytes) ?: throw OutOfMemoryError()
+            Hacl_Bignum64_new_bn_from_bytes_be(numBytes.convert(), bytes) ?: throw OutOfMemoryError()
 
         // make a copy to Kotlin-managed memory and free the Hacl-managed original
         val result = ULongArray((if (doubleMemory) 2 else 1) * numLongWords) {
@@ -235,7 +237,7 @@ internal infix fun HaclBignumQ.gtQ(other: HaclBignumQ): Boolean {
 /** Returns true if the given element is strictly less than the other */
 internal fun HaclBignumP.ltP(other: HaclBignumP, mode: ProductionMode): Boolean {
     nativeElems(this, other) { a, b ->
-        val aLtB = Hacl_Bignum4096_lt_mask(a, b) != 0UL
+        val aLtB = Hacl_Bignum64_lt_mask(mode.numLongWordsInP.toUInt(), a, b) != 0UL
         return aLtB
     }
 }
@@ -243,7 +245,7 @@ internal fun HaclBignumP.ltP(other: HaclBignumP, mode: ProductionMode): Boolean 
 /** Returns true if the given element is strictly greater than the other */
 internal fun HaclBignumP.gtP(other: HaclBignumP, mode: ProductionMode): Boolean {
     nativeElems(this, other) { a, b ->
-        val bLtA = Hacl_Bignum4096_lt_mask(b, a) != 0UL
+        val bLtA = Hacl_Bignum64_lt_mask(mode.numLongWordsInP.toUInt(), b, a) != 0UL
         return bLtA
     }
 }
@@ -269,8 +271,9 @@ class ProductionGroupContext(
     val name: String,
     val powRadixOption: PowRadixOption,
     val productionMode: ProductionMode,
-    val numPBits: Int,
-    val numPBytes: Int
+    val numPBits: UInt,
+    val numPBytes: UInt,
+    val numPLWords: UInt
 ) : GroupContext {
     val p: HaclBignumP
     val q: HaclBignumQ
@@ -324,7 +327,7 @@ class ProductionGroupContext(
         // leaks could occur, but we'll keep it live for the duration of the program
         // running, so we won't worry about it.
         montCtxP = p.useNative {
-            Hacl_Bignum4096_mont_ctx_init(it)
+            Hacl_Bignum64_mont_ctx_init(numPLWords, it)
                 ?: throw RuntimeException("failed to make montCtxP")
         }
 
@@ -375,40 +378,34 @@ class ProductionGroupContext(
         get() = twoModQ
 
     override val MAX_BYTES_P: Int
-        get() = 512
+        get() = productionMode.numBytesInP
 
     override val MAX_BYTES_Q: Int
         get() = 32
 
     override val NUM_P_BITS: Int
-        get() = numPBits
+        get() = productionMode.numBitsInP
 
     override fun isCompatible(ctx: GroupContext): Boolean =
         ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
-        // implementation node: bytearray.tohaclbignum4096() throws
-        // an exception if there are more than MAX_BYTES_P bytes of input. We're
-        // working around this with a special case that simply ignores the upper
-        // bytes. HACL's 4096-bit types do support mod on numbers twice as large,
-        // but we'd still need to deal with this problem in the general case.
-
         if (minimum < 0)
             throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
-            val bytesToUse = if (b.size > MAX_BYTES_P) {
+            val bytesToUse = if (b.size > numPBytes.toInt()) {
                 // Vague assumption: input is big-endian, so we're getting the
                 // lower bytes.
-                b.copyOfRange(b.size - MAX_BYTES_P, b.size)
+                b.copyOfRange(b.size - numPBytes.toInt(), b.size)
             } else b
 
             // we've got an optimized path, using our Montgomery context
-            val bignum4096 = bytesToUse.toHaclBignumP(doubleMemory = true, mode = productionMode)
+            val bignumP = bytesToUse.toHaclBignumP(doubleMemory = true, mode = productionMode)
             val result = newZeroBignumP(productionMode)
-            val minimum4096 = minimum.toUInt().toHaclBignumP(productionMode)
+            val minimumP = minimum.toUInt().toHaclBignumP(productionMode)
 
-            nativeElems(bignum4096, result, minimum4096) { s, r, m ->
-                Hacl_Bignum4096_mod_precomp(montCtxP, s, r)
+            nativeElems(bignumP, result, minimumP) { s, r, m ->
+                Hacl_Bignum64_mod_precomp(montCtxP, s, r)
 
                 // Hack to deal with the minimum part: if we're less than
                 // the minimum, we'll just add the minimum back in. Since minimums
@@ -417,8 +414,8 @@ class ProductionGroupContext(
                 // of the "safety" here is undefined, so long as the output is
                 // within the expected bounds.
 
-                if (Hacl_Bignum4096_lt_mask(r, m) != 0UL) {
-                    Hacl_Bignum4096_add(r, m, r)
+                if (minimum > 0 && Hacl_Bignum64_lt_mask(numPLWords, r, m) != 0UL) {
+                    Hacl_Bignum64_add(numPLWords, r, m, r)
                 }
             }
             return ProductionElementModP(result, this)
@@ -468,9 +465,9 @@ class ProductionGroupContext(
 
     override fun binaryToElementModP(b: ByteArray): ElementModP? {
         try {
-            val bignum4096 = ProductionElementModP(b.toHaclBignumP(mode = productionMode), this)
-            if (!bignum4096.inBounds()) return null
-            return bignum4096
+            val bignumP = ProductionElementModP(b.toHaclBignumP(mode = productionMode), this)
+            if (!bignumP.inBounds()) return null
+            return bignumP
         } catch (ex: IllegalArgumentException) {
             return null
         }
@@ -712,10 +709,10 @@ open class ProductionElementModP(val element: HaclBignumP, val groupContext: Pro
     }
 
     override fun byteArray(): ByteArray {
-        val result = ByteArray(512)
+        val result = ByteArray(groupContext.numPBytes.toInt())
         result.useNative { r ->
             element.useNative { e ->
-                Hacl_Bignum4096_bn_to_bytes_be(e, r)
+                Hacl_Bignum64_bn_to_bytes_be(groupContext.numPBytes, e, r)
             }
         }
         return result
@@ -724,7 +721,7 @@ open class ProductionElementModP(val element: HaclBignumP, val groupContext: Pro
     override fun isValidResidue(): Boolean {
         val result = newZeroBignumP(groupContext.productionMode)
         nativeElems(result, element, groupContext.q) { r, a, q ->
-            Hacl_Bignum4096_mod_exp_vartime_precomp(groupContext.montCtxP, a, 256, q, r)
+            Hacl_Bignum64_mod_exp_vartime_precomp(groupContext.montCtxP, a, 256, q, r)
         }
         val residue = result.wrap() == groupContext.ONE_MOD_P
         return inBounds() && residue
@@ -735,17 +732,17 @@ open class ProductionElementModP(val element: HaclBignumP, val groupContext: Pro
         nativeElems(result, element, e.getCompat(groupContext)) { r, a, b ->
             // We're using the faster "variable time" modular exponentiation; timing attacks
             // are not considered a significant threat against ElectionGuard.
-            Hacl_Bignum4096_mod_exp_vartime_precomp(groupContext.montCtxP, a, 256, b, r)
+            Hacl_Bignum64_mod_exp_vartime_precomp(groupContext.montCtxP, a, 256, b, r)
         }
         return result.wrap()
     }
 
     override operator fun times(other: ElementModP): ElementModP {
         val result = newZeroBignumP(groupContext.productionMode)
-        val scratch = ULongArray(HaclBignumP4096_LongWords * 2)
+        val scratch = ULongArray(groupContext.numPLWords.toInt() * 2)
         nativeElems(result, element, other.getCompat(groupContext), scratch) { r, a, b, s ->
-            Hacl_Bignum4096_mul(a, b, s)
-            Hacl_Bignum4096_mod_precomp(groupContext.montCtxP, s, r)
+            Hacl_Bignum64_mul(groupContext.numPLWords, a, b, s)
+            Hacl_Bignum64_mod_precomp(groupContext.montCtxP, s, r)
         }
 
         return result.wrap()
@@ -756,7 +753,7 @@ open class ProductionElementModP(val element: HaclBignumP, val groupContext: Pro
         // the speed of the equivalent code in java.math.BigInteger. The solution
         // is that we basically never call it. Instead, throughout the code for
         // things like Chaum-Pedersen proofs, we instead raise things to powers that
-        // have the side-effect of taking the inverse.
+        // are equivalent to taking the inverse.
 
 //        val result = newZeroBignum4096()
 //
