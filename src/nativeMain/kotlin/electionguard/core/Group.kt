@@ -19,9 +19,6 @@ private val productionGroups4096 =
             p256minusQBytes = b64Production4096P256MinusQ.fromSafeBase64(),
             gBytes = b64Production4096G.fromSafeBase64(),
             rBytes = b64Production4096R.fromSafeBase64(),
-            montIMinus1Bytes = b64Production4096MontgomeryIMinus1.fromSafeBase64(),
-            montIPrimeBytes = b64Production4096MontgomeryIPrime.fromSafeBase64(),
-            montPPrimeBytes = b64Production4096MontgomeryPPrime.fromSafeBase64(),
             name = "production group, ${it.description}, 4096 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode4096,
@@ -39,9 +36,6 @@ private val productionGroups3072 =
             p256minusQBytes = b64Production3072P256MinusQ.fromSafeBase64(),
             gBytes = b64Production3072G.fromSafeBase64(),
             rBytes = b64Production3072R.fromSafeBase64(),
-            montIMinus1Bytes = b64Production3072MontgomeryIMinus1.fromSafeBase64(),
-            montIPrimeBytes = b64Production3072MontgomeryIPrime.fromSafeBase64(),
-            montPPrimeBytes = b64Production3072MontgomeryPPrime.fromSafeBase64(),
             name = "production group, ${it.description}, 3072 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode3072,
@@ -61,15 +55,9 @@ typealias HaclBignumP = ULongArray
 typealias HaclBignumQ = ULongArray
 
 internal const val HaclBignumQ_LongWords = 4
-internal const val HaclBignumP4096_LongWords = 64
-internal const val HaclBignumP3072_LongWords = 48
 internal const val HaclBignumQ_Bytes = HaclBignumQ_LongWords * 8
 
-internal fun newZeroBignumP(mode: ProductionMode) =
-    when(mode) {
-        ProductionMode.Mode4096 -> HaclBignumP(HaclBignumP4096_LongWords)
-        ProductionMode.Mode3072 -> HaclBignumP(HaclBignumP3072_LongWords)
-    }
+internal fun newZeroBignumP(mode: ProductionMode) = HaclBignumP(mode.numLongWordsInP)
 
 internal fun newZeroBignumQ() = HaclBignumQ(HaclBignumQ_LongWords)
 
@@ -129,7 +117,7 @@ internal fun UInt.toHaclBignumP(mode: ProductionMode): HaclBignumP = toByteArray
 
 /** Convert an array of bytes, in big-endian format, to a HaclBignum256. */
 internal fun ByteArray.toHaclBignumQ(doubleMemory: Boolean = false): HaclBignumQ {
-    // See detailed comments in ByteArray.toHaclBignum4096() for details on
+    // See detailed comments in ByteArray.toHaclBignumP() for details on
     // what's going on here.
     val bytesToUse = when {
         size == HaclBignumQ_Bytes -> this
@@ -170,7 +158,7 @@ internal fun ByteArray.toHaclBignumP(
     doubleMemory: Boolean = false,
     mode: ProductionMode
 ): HaclBignumP {
-    // This code, as well as ByteArray.toHaclBignumP() is making a bunch
+    // This code, as well as ByteArray.toHaclBignumQ() is making a bunch
     // of copies. We do a first copy to get the input to exactly the right
     // length, padding or chopping zeros as necessary. Then HACL makes a
     // copy into memory that it allocated, rearranging the bytes as necessary
@@ -265,9 +253,6 @@ class ProductionGroupContext(
     val gBytes: ByteArray,
     val p256minusQBytes: ByteArray,
     val rBytes: ByteArray,
-    montIMinus1Bytes: ByteArray,
-    montIPrimeBytes: ByteArray,
-    montPPrimeBytes: ByteArray,
     val name: String,
     val powRadixOption: PowRadixOption,
     val productionMode: ProductionMode,
@@ -295,9 +280,6 @@ class ProductionGroupContext(
     val montCtxP: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val montCtxQ: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val dlogger: DLog
-    val montgomeryIMinusOne: HaclBignumP
-    val montgomeryIPrime: HaclBignumP
-    val montgomeryPPrime: HaclBignumP
 
     init {
         p = pBytes.toHaclBignumP(mode = productionMode)
@@ -310,7 +292,7 @@ class ProductionGroupContext(
         twoModP = ProductionElementModP(2U.toHaclBignumP(productionMode), this)
         gModP = ProductionElementModP(g, this).acceleratePow() as ProductionElementModP
         qModP = ProductionElementModP(
-            ULongArray(HaclBignumP4096_LongWords) {
+            ULongArray(numPLWords.toInt()) {
                 // Copy from 256-bit to 4096-bit, avoid problems later on. Hopefully.
                     i -> if (i >= HaclBignumQ_LongWords) 0U else q[i]
             },
@@ -319,10 +301,6 @@ class ProductionGroupContext(
         oneModQ = ProductionElementModQ(1U.toHaclBignumQ(), this)
         twoModQ = ProductionElementModQ(2U.toHaclBignumQ(), this)
         qMinus1ModQ = (zeroModQ - oneModQ) as ProductionElementModQ
-
-        montgomeryIMinusOne = montIMinus1Bytes.toHaclBignumP(mode = productionMode)
-        montgomeryIPrime = montIPrimeBytes.toHaclBignumP(mode = productionMode)
-        montgomeryPPrime = montPPrimeBytes.toHaclBignumP(mode = productionMode)
 
         // This context is something that normally needs to be freed, otherwise memory
         // leaks could occur, but we'll keep it live for the duration of the program
