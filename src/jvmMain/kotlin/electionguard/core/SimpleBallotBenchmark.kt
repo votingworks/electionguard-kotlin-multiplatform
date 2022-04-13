@@ -32,11 +32,9 @@ fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair
     return SimpleEncryptedBallot(selectionsAndProofs, sumProof)
 }
 
-val prng = Random(System.nanoTime()) // not secure, but we don't care
-
 fun randomSimplePlaintextBallot(size: Int): SimplePlaintextBallot {
-    val selection = prng.nextInt(size)
-    return SimplePlaintextBallot((0..size - 1).map { if (it == selection) 1 else 0 })
+    val selection = Random.nextInt(size)
+    return SimplePlaintextBallot((0 until size).map { if (it == selection) 1 else 0 })
 }
 
 fun main() {
@@ -68,7 +66,7 @@ fun main() {
                         val encryptionTimeMs = measureTimeMillis {
                             results = ProgressBar
                                 .wrap(
-                                    (0..numBallots - 1).asIterable().toList(),
+                                    (0 until numBallots).asIterable().toList(),
                                     ProgressBarBuilder()
                                         .setStyle(ProgressBarStyle.COLORFUL_UNICODE_BLOCK)
                                         .setInitialMax(numBallots.toLong())
