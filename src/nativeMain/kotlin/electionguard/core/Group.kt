@@ -291,6 +291,7 @@ class ProductionGroupContext(
     val oneModQ: ProductionElementModQ
     val twoModQ: ProductionElementModQ
     val qMinus1ModQ: ProductionElementModQ
+    val genericFieldP: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val montCtxP: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val montCtxQ: CPointer<Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64>
     val dlogger: DLog
@@ -310,7 +311,7 @@ class ProductionGroupContext(
         gModP = ProductionElementModP(g, this).acceleratePow() as ProductionElementModP
         qModP = ProductionElementModP(
             ULongArray(HaclBignumP4096_LongWords) {
-                    // Copy from 256-bit to 4096-bit, avoid problems later on. Hopefully.
+                // Copy from 256-bit to 4096-bit, avoid problems later on. Hopefully.
                     i -> if (i >= HaclBignumQ_LongWords) 0U else q[i]
             },
             this)
@@ -334,6 +335,15 @@ class ProductionGroupContext(
         montCtxQ = q.useNative {
             Hacl_Bignum256_mont_ctx_init(it)
                 ?: throw RuntimeException("failed to make montCtxQ")
+        }
+
+        genericFieldP = p.useNative {
+            // Is the object we get back from this equivalent to montCtxP?
+            // Maybe, but we're going to try to follow the API super closely,
+            // which doesn't provide us any guarantees.
+
+            Hacl_GenericField64_field_init(numPLWords, it)
+                ?: throw RuntimeException("failed to make genericFieldP")
         }
 
         dlogger = DLog(gModP)
@@ -424,7 +434,7 @@ class ProductionGroupContext(
 
     override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
         if (minimum < 0)
-           throw IllegalArgumentException("minimum $minimum may not be negative")
+            throw IllegalArgumentException("minimum $minimum may not be negative")
         else {
             // Performance note: this function runs as part of hashing, where we convert
             // the hash result back to an ElementModQ, which means that we really don't
@@ -541,7 +551,7 @@ class ProductionGroupContext(
 class ProductionElementModQ(val element: HaclBignumQ, val groupContext: ProductionGroupContext): ElementModQ,
     Element, Comparable<ElementModQ> {
     override val context: GroupContext
-    get() = groupContext
+        get() = groupContext
 
     private fun HaclBignumQ.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
 
@@ -789,8 +799,12 @@ open class ProductionElementModP(val element: HaclBignumP, val groupContext: Pro
         AcceleratedElementModP(this)
 
     override fun toMontgomeryElementModP(): MontgomeryElementModP {
-        // TODO: implement the actual Montgomery math transformation
-        return ProductionMontgomeryElementModP(this)
+        val result = newZeroBignumP(groupContext.productionMode)
+        nativeElems(result, element) { r, e ->
+            Hacl_GenericField64_to_field(groupContext.genericFieldP, e, r)
+        }
+
+        return ProductionMontgomeryElementModP(result, groupContext)
     }
 }
 
@@ -806,15 +820,38 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
     override infix fun powP(e: ElementModQ) = powRadix.pow(e)
 }
 
-data class ProductionMontgomeryElementModP(val kludge: ElementModP): MontgomeryElementModP {
+private fun MontgomeryElementModP.getCompat(other: ProductionGroupContext): HaclBignumP {
+    context.assertCompatible(other)
+    return (this as ProductionMontgomeryElementModP).element
+}
+
+data class ProductionMontgomeryElementModP(
+    val element: HaclBignumP,
+    val groupContext: ProductionGroupContext
+): MontgomeryElementModP {
     override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
-        // TODO: implement the actual Montgomery math transformation
-        return ProductionMontgomeryElementModP(
-            kludge * (other as ProductionMontgomeryElementModP).kludge)
+        val result = newZeroBignumP(groupContext.productionMode)
+
+        nativeElems(result, element, other.getCompat(groupContext)) { r, a, b ->
+            // Contrast this with what happens in ProductionElementModP.times(), where
+            // there's a modulo operation. That's not necessary when we're operating
+            // in Montgomery form, resulting (hopefully) in a significant speedup.
+            Hacl_GenericField64_mul(groupContext.genericFieldP, a, b, r)
+        }
+
+        return ProductionMontgomeryElementModP(result, groupContext)
     }
 
-    override fun toElementModP(): ElementModP = kludge
+    override fun toElementModP(): ElementModP {
+        val result = newZeroBignumP(groupContext.productionMode)
+
+        nativeElems(result, element) { r, a ->
+            Hacl_GenericField64_from_field(groupContext.genericFieldP, a, r)
+        }
+
+        return ProductionElementModP(result, groupContext)
+    }
 
     override val context: GroupContext
-        get() = kludge.context
+        get() = groupContext
 }
