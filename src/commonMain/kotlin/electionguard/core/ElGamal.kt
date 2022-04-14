@@ -130,7 +130,7 @@ fun Int.encrypt(
 ): ElGamalCiphertext {
     val context = compatibleContextOrFail(publicKey.key, nonce)
 
-    if (nonce == context.ZERO_MOD_Q) {
+    if (nonce.isZero()) {
         throw ArithmeticException("Can't use a zero nonce for ElGamal encryption")
     }
 
@@ -172,8 +172,9 @@ fun ElGamalCiphertext.computeShare(secretKey: ElGamalSecretKey): ElementModP {
 }
 
 fun ElGamalCiphertext.decryptWithShares(publicKey: ElGamalPublicKey, shares: Iterable<ElementModP>): Int? {
-    val context = compatibleContextOrFail(pad, data, ) // shares)
-    val allSharesProductM: ElementModP = with (context) { shares.multP() }
+    val sharesList = shares.toList()
+    val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray())) // shares)
+    val allSharesProductM: ElementModP = with (context) { sharesList.multP() }
     val decryptedValue: ElementModP = this.data / allSharesProductM
     return publicKey.dLog(decryptedValue)
 }

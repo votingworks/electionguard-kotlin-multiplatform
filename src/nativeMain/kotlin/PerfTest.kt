@@ -1,5 +1,5 @@
-import electionguard.core.elGamalPerfTest
+import electionguard.core.simpleBallotPerfTest
 
 fun main() {
-    elGamalPerfTest()
+    simpleBallotPerfTest()
 }

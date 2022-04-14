@@ -11,14 +11,15 @@ project(hacl)
 ADD_LIBRARY(hacl STATIC
     libhacl/src/Hacl_Bignum.c
     libhacl/src/Hacl_Bignum256.c
-    libhacl/src/Hacl_Bignum256_32.c
+    libhacl/src/Hacl_Bignum32.c
     libhacl/src/Hacl_Bignum4096.c
-    libhacl/src/Hacl_Bignum4096_32.c
+    libhacl/src/Hacl_Bignum64.c
     libhacl/src/Hacl_HMAC.c
     libhacl/src/Hacl_HMAC_DRBG.c
-    libhacl/src/Hacl_Hash.c
+    libhacl/src/Hacl_Hash_Base.c
+    libhacl/src/Hacl_Hash_SHA2.c
+    libhacl/src/Hacl_GenericField64.c
     libhacl/src/Hacl_Streaming_SHA2.c
-    libhacl/src/Lib_Memzero.c
     libhacl/src/Lib_Memzero0.c
     libhacl/src/Lib_RandomBuffer_System.c
 )

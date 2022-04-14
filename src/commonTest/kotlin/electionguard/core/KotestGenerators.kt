@@ -50,3 +50,13 @@ fun uint256s(): Arb<UInt256> = Arb.byteArray(Arb.constant(32), Arb.byte()).map {
  */
 val propTestFastConfig =
     PropTestConfig(maxFailure = 1, shrinkingMode = ShrinkingMode.Off, iterations = 10)
+
+/**
+ * If we know we can afford more effort to run a property test, this will spend extra time
+ * trying more inputs and will put more effort into shrinking any counterexamples. Typical usage:
+ * ```
+ * forAll(propTestSlowConfig, Arb.x(), Arb.y()) { x, y -> ... }
+ * ```
+ */
+val propTestSlowConfig =
+    PropTestConfig(iterations = 1000)
