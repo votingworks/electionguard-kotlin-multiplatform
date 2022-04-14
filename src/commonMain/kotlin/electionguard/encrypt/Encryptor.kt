@@ -27,6 +27,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("Encryptor")
 private val validate = true
+
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
  * The input Ballots must be well-formed and consistent.
@@ -46,7 +47,7 @@ class Encryptor(
     // spec says  "extended base hash" :  6.B H0 = H(Qbar)
     fun encrypt(ballots: Iterable<PlaintextBallot>, encryptionSeed: ElementModQ): List<CiphertextBallot> {
         var previousTrackingHash = encryptionSeed
-        val encryptedBallots = ArrayList<CiphertextBallot>()
+        val encryptedBallots = mutableListOf<CiphertextBallot>()
         for (ballot in ballots) {
             val encryptedBallot = ballot.encryptBallot(previousTrackingHash, group.randomElementModQ())
             encryptedBallots.add(encryptedBallot)
@@ -76,12 +77,10 @@ class Encryptor(
         encryptionSeed: ElementModQ,
         randomMasterNonce: ElementModQ,
     ): CiphertextBallot {
-
-        // python nonce_seed
         val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, randomMasterNonce)
         val pcontests = this.contests.associateBy { it.contestId }
 
-        val encryptedContests = ArrayList<CiphertextBallot.Contest>()
+        val encryptedContests = mutableListOf<CiphertextBallot.Contest>()
         for (mcontest in manifest.contests) {
             val pcontest : PlaintextBallot.Contest = pcontests[mcontest.contestId]  ?:
                 // No contest on the ballot, so create a placeholder
@@ -121,39 +120,37 @@ class Encryptor(
      * selections to represent the number of seats available for a given contest.  By adding `placeholder`
      * votes
      *
-     * @param contestDescription:   the corresponding Manifest.ContestDescription
+     * @param mcontest:   the corresponding Manifest.ContestDescription
      * @param ballotNonce:          the seed for this contest.
      */
     fun PlaintextBallot.Contest.encryptContest(
         ballotId: String,
-        contestDescription: Manifest.ContestDescription,
+        mcontest: Manifest.ContestDescription,
         ballotNonce: UInt256,
     ): CiphertextBallot.Contest {
 
-        val contestDescriptionHash = contestDescription.cryptoHash
+        val contestDescriptionHash = mcontest.cryptoHash
         val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
         val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
-        val contestNonce = nonceSequence[contestDescription.sequenceOrder]
+        val contestNonce = nonceSequence[mcontest.sequenceOrder]
         val chaumPedersenNonce = nonceSequence[0]
 
-        val encryptedSelections = ArrayList<CiphertextBallot.Selection>()
-        // LOOK this will fail if there are duplicate selection_id's
+        val encryptedSelections = mutableListOf<CiphertextBallot.Selection>()
         val plaintextSelections: Map<String, PlaintextBallot.Selection> =
             this.selections.associateBy { it.selectionId }
 
         // only use selections that match the manifest.
-        var selectionCount = 0
-        for (mselection: Manifest.SelectionDescription in contestDescription.selections) {
-            var encrypted_selection: CiphertextBallot.Selection?
+        var votes = 0
+        for (mselection: Manifest.SelectionDescription in mcontest.selections) {
 
             // Find the actual selection matching the contest description.
             val plaintextSelection = plaintextSelections[mselection.selectionId] ?:
                 // No selection was made for this possible value so we explicitly set it to false
                 selectionFrom(mselection.selectionId, mselection.sequenceOrder, false, false)
 
-            // track the selection count so we can append the appropriate number of true placeholder votes
-            selectionCount += plaintextSelection.vote
-            encrypted_selection = plaintextSelection.encryptSelection(
+            // track the votes so we can append the appropriate number of true placeholder votes
+            votes += plaintextSelection.vote
+            val encrypted_selection = plaintextSelection.encryptSelection(
                 mselection,
                 contestNonce,
                 false,
@@ -161,22 +158,20 @@ class Encryptor(
             encryptedSelections.add(encrypted_selection)
         }
 
-        // Handle undervotes. LOOK what about overvotes?
-        // Add a placeholder selection for each possible seat in the contest
-        val limit = contestDescription.votesAllowed
-        val selectionSequenceOrderMax = contestDescription.selections.maxOf { it.sequenceOrder }
+        // Add a placeholder selection for each possible vote in the contest
+        val limit = mcontest.votesAllowed
+        val selectionSequenceOrderMax = mcontest.selections.maxOf { it.sequenceOrder }
         for (placeholder in 1..limit) {
             val sequenceNo = selectionSequenceOrderMax + placeholder
             val plaintextSelection = selectionFrom(
-                "${contestDescription.contestId}-$sequenceNo", sequenceNo, true,
-                selectionCount < limit)
-            selectionCount++
+                "${mcontest.contestId}-$sequenceNo", sequenceNo, true,
+                votes < limit)
+            votes++
 
             encryptedSelections.add(plaintextSelection.encryptPlaceholder(contestNonce))
         }
 
-        val cryptoHash = hashElements(contestId, contestDescription.cryptoHash, encryptedSelections)
-
+        val cryptoHash = hashElements(contestId, mcontest.cryptoHash, encryptedSelections)
         val texts: List<ElGamalCiphertext> = encryptedSelections.map {it.ciphertext}
         val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
         val nonces: Iterable<ElementModQ> = encryptedSelections.map {it.selectionNonce}
@@ -202,7 +197,7 @@ class Encryptor(
         val encrypted_contest: CiphertextBallot.Contest = CiphertextBallot.Contest(
             this.contestId,
             this.sequenceOrder,
-            contestDescription.cryptoHash,
+            mcontest.cryptoHash,
             encryptedSelections,
             ciphertextAccumulation,
             cryptoHash,

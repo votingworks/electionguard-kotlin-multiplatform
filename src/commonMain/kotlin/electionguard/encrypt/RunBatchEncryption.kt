@@ -8,6 +8,7 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.SubmittedBallot
 import electionguard.ballot.submit
 import electionguard.core.GroupContext
+import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.toElementModQ
 import electionguard.input.BallotInputValidation
@@ -19,6 +20,7 @@ import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
+import kotlin.math.roundToInt
 
 /**
  * Run ballot encryption in batch mode.
@@ -86,9 +88,21 @@ fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String,
         }
     }
 
+    val starting = getSystemTimeInMillis()
     val encryptor = Encryptor(group, electionRecord.manifest, context)
     val encrypted: List<CiphertextBallot> =
         encryptor.encrypt(filteredBallots, context.cryptoExtendedBaseHash.toElementModQ(group))
+    val took = getSystemTimeInMillis() - starting
+    val perBallot = (took.toDouble() / encrypted.size).roundToInt()
+    val ncontests: Int = encrypted.map {it.contests}.flatten().count()
+    val nselections: Int = encrypted.map { it.contests}.flatten().map{ it.selections }.flatten().count()
+    val perContest = (took.toDouble() / ncontests).roundToInt()
+    val perSelection = (took.toDouble() / nselections).roundToInt()
+    println("Took $took millisecs for ${encrypted.size} ballots = $perBallot msecs/ballot")
+    println("   $ncontests contests $perContest msecs/contest")
+    println("   $nselections selections $perSelection msecs/selection")
+    println()
+
     val submitted: List<SubmittedBallot> = encrypted.map { it.submit(SubmittedBallot.BallotState.CAST) }
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
