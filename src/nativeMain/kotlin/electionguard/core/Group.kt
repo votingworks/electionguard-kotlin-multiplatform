@@ -504,7 +504,7 @@ class ProductionGroupContext(
 
     override fun gPowP(e: ElementModQ) = gModP powP e
 
-    override fun dLogG(p: ElementModP): Int? = dlogger.dLog(p)
+    override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
 }
 
 class ProductionElementModQ(val element: HaclBignum256, val groupContext: ProductionGroupContext): ElementModQ,

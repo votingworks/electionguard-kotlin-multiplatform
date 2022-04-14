@@ -180,7 +180,7 @@ private class TinyGroupContext(
 
     override fun gPowP(e: ElementModQ): ElementModP = gModP powP e
 
-    override fun dLogG(p: ElementModP): Int? = dlogger.dLog(p)
+    override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
 }
 
 private class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {
