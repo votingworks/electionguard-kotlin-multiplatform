@@ -7,12 +7,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class ElectionRecordValidateTest {
+    val topdir = "src/commonTest/data/workflow/runDecryptingMediator"
 
     @Test
     fun readElectionRecordAndValidate() {
         runTest {
             val group = productionGroup()
-            val consumer = Consumer("/home/snake/tmp/electionguard/kotlin/runDecryptingMediator", group)
+            val consumer = Consumer(topdir, group)
             val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
 
         }

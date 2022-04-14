@@ -7,11 +7,13 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class VerifierTest {
+    //val topdir = "/home/snake/tmp/electionguard/kotlin/runDecryptingMediator"
+    val topdir = "src/commonTest/data/workflow/runDecryptingMediator"
     @Test
     fun readElectionRecordAndValidate() {
         runTest {
             val group = productionGroup()
-            val consumer = Consumer("/home/snake/tmp/electionguard/kotlin/runDecryptingMediator", group)
+            val consumer = Consumer(topdir, group)
             val electionRecord = consumer.readElectionRecordAllData()
             val verifier = Verifier(group, electionRecord)
 
