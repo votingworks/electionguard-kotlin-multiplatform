@@ -7,6 +7,7 @@ import electionguard.ballot.ElectionRecord
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.SubmittedBallot
 import electionguard.ballot.submit
+import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
@@ -50,15 +51,16 @@ fun main(args: Array<String>) {
         shortName = "invalidBallots",
         description = "Directory to write invalid Plaintext ballots to"
     ).required()
-    // hmmm not used, wtf?
-    val device by parser.option(ArgType.String, shortName = "device", description = "Name of encryption device")
-        .required()
+    val fixedNonces by parser.option(
+        ArgType.Boolean,
+        shortName = "fixedNonces",
+        description = "Encrypt with fixed nonces and timestamp")
     parser.parse(args)
 
-    runBatchEncryption(productionGroup(), inputDir, outputDir, ballotDir, invalidDir)
+    runBatchEncryption(productionGroup(), inputDir, outputDir, ballotDir, invalidDir, fixedNonces?: false)
 }
 
-fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String, invalidDir: String) {
+fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String, invalidDir: String, fixedNonces: Boolean) {
     val consumer = Consumer(inputDir, group)
     val electionRecord: ElectionRecord = consumer.readElectionRecord()
 
@@ -89,9 +91,14 @@ fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String,
     }
 
     val starting = getSystemTimeInMillis()
-    val encryptor = Encryptor(group, electionRecord.manifest, context)
+    val encryptor = Encryptor(group, electionRecord.manifest, ElGamalPublicKey(context.jointPublicKey), context.cryptoExtendedBaseHash)
+
     val encrypted: List<CiphertextBallot> =
-        encryptor.encrypt(filteredBallots, context.cryptoExtendedBaseHash.toElementModQ(group))
+        if (fixedNonces)
+            encryptor.encryptWithFixedNonces(filteredBallots, context.cryptoExtendedBaseHash.toElementModQ(group), group.TWO_MOD_Q)
+        else
+            encryptor.encrypt(filteredBallots, context.cryptoExtendedBaseHash.toElementModQ(group))
+
     val took = getSystemTimeInMillis() - starting
     val perBallot = (took.toDouble() / encrypted.size).roundToInt()
     val ncontests: Int = encrypted.map {it.contests}.flatten().count()

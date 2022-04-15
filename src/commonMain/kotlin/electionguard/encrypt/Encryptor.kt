@@ -1,7 +1,6 @@
 package electionguard.encrypt
 
 import electionguard.ballot.CiphertextBallot
-import electionguard.ballot.ElectionContext
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.ConstantChaumPedersenProofKnownNonce
@@ -36,17 +35,14 @@ private val validate = true
 class Encryptor(
     val group: GroupContext,
     val manifest: Manifest,
-    val context : ElectionContext,
+    val elgamalPublicKey : ElGamalPublicKey,
+    val cryptoExtendedBaseHash : UInt256,
 ) {
-    val publicKey = context.jointPublicKey
-    val elgamalPublicKey : ElGamalPublicKey = ElGamalPublicKey(publicKey)
-    val cryptoExtendedBaseHash = context.cryptoExtendedBaseHash
     val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
 
-    // encryptionSeed; see issue 272 in python repo python uses device.crypto_hash,
-    // spec says  "extended base hash" :  6.B H0 = H(Qbar)
-    fun encrypt(ballots: Iterable<PlaintextBallot>, encryptionSeed: ElementModQ): List<CiphertextBallot> {
-        var previousTrackingHash = encryptionSeed
+    /** Encrypt ballots in a chain with starting codeSeed, and random masterNonce */
+    fun encrypt(ballots: Iterable<PlaintextBallot>, codeSeed: ElementModQ): List<CiphertextBallot> {
+        var previousTrackingHash = codeSeed
         val encryptedBallots = mutableListOf<CiphertextBallot>()
         for (ballot in ballots) {
             val encryptedBallot = ballot.encryptBallot(previousTrackingHash, group.randomElementModQ())
@@ -56,8 +52,20 @@ class Encryptor(
         return encryptedBallots
     }
 
-    fun encrypt(ballot: PlaintextBallot, encryptionSeed: ElementModQ, randomMasterNonce: ElementModQ): CiphertextBallot {
-        return ballot.encryptBallot(encryptionSeed, randomMasterNonce)
+    /** Encrypt ballots with fixed codeSeed, masterNonce, and timestamp, for testing. */
+    fun encryptWithFixedNonces(ballots: Iterable<PlaintextBallot>, codeSeed: ElementModQ, masterNonce: ElementModQ): List<CiphertextBallot> {
+        val encryptedBallots = mutableListOf<CiphertextBallot>()
+        for (ballot in ballots) {
+            encryptedBallots.add(ballot.encryptBallot(codeSeed, masterNonce, 0))
+        }
+        return encryptedBallots
+    }
+
+    /**
+     * Encrypt the ballot with the given nonces and an optional timestamp override.
+     */
+    fun encrypt(ballot: PlaintextBallot, codeSeed: ElementModQ, masterNonce: ElementModQ, timestampOverride: Long? = null): CiphertextBallot {
+        return ballot.encryptBallot(codeSeed, masterNonce, timestampOverride)
     }
 
     /**
@@ -70,14 +78,15 @@ class Encryptor(
      * This method also allows for ballots to exclude passing contests for which the voter made no selections.
      * It will fill missing contests with `False` selections and generate `placeholder` selections that are marked `True`.
      *
-     * @param encryptionSeed:  Hash from previous ballot or starting hash from device. python: seed_hash
-     * @param randomMasterNonce: the nonce used to encrypt this contest
+     * @param codeSeed:  seed for chaining ballot or fixed for testing. CiphertextBallot codeSeed.
+     * @param masterNonce: the nonce used to encrypt this contest
      */
     fun PlaintextBallot.encryptBallot(
-        encryptionSeed: ElementModQ,
-        randomMasterNonce: ElementModQ,
+        codeSeed: ElementModQ,
+        masterNonce: ElementModQ,
+        timestampOverride: Long? = null,
     ): CiphertextBallot {
-        val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, randomMasterNonce)
+        val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, masterNonce)
         val pcontests = this.contests.associateBy { it.contestId }
 
         val encryptedContests = mutableListOf<CiphertextBallot.Contest>()
@@ -90,20 +99,20 @@ class Encryptor(
         }
 
         // Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1 January 1970)
-        val timestamp: Long = getSystemTimeInMillis() / 1000
+        val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), encryptedContests)
-        val ballotCode = hashElements(encryptionSeed, timestamp, cryptoHash)
+        val ballotCode = hashElements(codeSeed, timestamp, cryptoHash)
 
         val encryptedBallot = CiphertextBallot(
             this.ballotId,
             this.ballotStyleId,
             manifest.cryptoHashUInt256(),
-            encryptionSeed.toUInt256(),
+            codeSeed.toUInt256(),
             ballotCode,
             encryptedContests,
             timestamp,
             cryptoHash,
-            randomMasterNonce,
+            masterNonce,
         )
         return encryptedBallot
     }
@@ -282,7 +291,7 @@ class Encryptor(
         contestNonce: ElementModQ,
     ): CiphertextBallot.Selection {
 
-        val cryptoHash = group.randomElementModQ() // random
+        val cryptoHash = hashElements(this.selectionId).toElementModQ(group) // must be deterministic
         val nonceSequence = Nonces(cryptoHash, contestNonce)
         val disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence.get(0)
         val selectionNonce: ElementModQ = nonceSequence.get(this.sequenceOrder)
