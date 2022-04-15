@@ -9,13 +9,13 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "/home/snake/tmp/electionguard/remoteWorkflow/encryptor",
+                "src/commonTest/data/testJava/encryptor",
                 "-ballots",
-                "/home/snake/tmp/electionguard/remoteWorkflow/encryptor/election_private_data/plaintext_ballots/",
+                "src/commonTest/data/testJava/encryptor/election_private_data/plaintext_ballots/",
                 "-out",
-                "/home/snake/tmp/electionguard/kotlin/runBatchEncryption",
+                "src/commonTest/data/testing/runBatchEncryption",
                 "-invalidBallots",
-                "/home/snake/tmp/electionguard/kotlin/runBatchEncryption/election_private_data/invalid_ballots",
+                "src/commonTest/data/testing/runBatchEncryption/election_private_data/invalid_ballots",
                 "-device",
                 "CountyCook-precinct079-device24358"
             )

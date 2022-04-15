@@ -80,6 +80,6 @@ class ElectionRecordIterablesTest {
             logger.debug { "  $count readSpoiledBallotTallies ${tally.tallyId}" }
             count++
         }
-        assertEquals(count, 6)
+        assertEquals(count, 0)
     }
 }
