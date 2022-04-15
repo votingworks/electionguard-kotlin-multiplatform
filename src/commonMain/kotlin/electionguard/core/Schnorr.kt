@@ -24,7 +24,8 @@ fun ElGamalKeypair.schnorrProof(
 ): SchnorrProof {
     val context = compatibleContextOrFail(publicKey.key, secretKey.key, nonce, cryptoBaseHash)
     val h = context.gPowP(nonce)
-    val c = hashElements(cryptoBaseHash, publicKey, h).toElementModQ(context)
+    // val c = hashElements(cryptoBaseHash, publicKey, h).toElementModQ(context)
+    val c = hashElements(publicKey, h).toElementModQ(context)
     val u = nonce + secretKey.key * c
 
     return SchnorrProof(c, u)
@@ -42,7 +43,9 @@ fun ElGamalPublicKey.hasValidSchnorrProof(cryptoBaseHash: ElementModQ, proof: Sc
 
     val gPowU = context.gPowP(u)
     val h = gPowU / this.powP(challenge)
-    val c = hashElements(cryptoBaseHash, this, h).toElementModQ(context)
+    // LOOK see issue #253 in main electionguard repo
+    // val c = hashElements(cryptoBaseHash, this, h).toElementModQ(context)
+    val c = hashElements(this, h).toElementModQ(context)
 
     val validChallenge = c == challenge
 

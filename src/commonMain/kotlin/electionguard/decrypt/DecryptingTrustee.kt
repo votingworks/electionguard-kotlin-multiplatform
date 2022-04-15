@@ -6,9 +6,14 @@ import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
-import electionguard.core.genericChaumPedersenProofOf
 import electionguard.core.computeShare
+import electionguard.core.genericChaumPedersenProofOf
+import electionguard.core.isValid
 import electionguard.core.randomElementModQ
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger("DecryptingTrustee")
+private val validate = false
 
 class DecryptingTrustee(val id : String, val xCoordinate: Int, val electionKeypair: ElGamalKeypair)
     : DecryptingTrusteeIF {
@@ -25,7 +30,7 @@ class DecryptingTrustee(val id : String, val xCoordinate: Int, val electionKeypa
      * Compute a partial decryption of an elgamal encryption.
      *
      * @param texts:            list of `ElGamalCiphertext` that will be partially decrypted
-     * @param cryptoExtendedBaseHash: the extended base hash of the election that
+     * @param qbar: the extended base hash of the election
      * @param nonceSeed:         an optional value used to generate the `ChaumPedersenProof`
      *                            if no value is provided, a random number will be used.
      * @return a PartialDecryptionProof of the partial decryption and its proof
@@ -33,28 +38,42 @@ class DecryptingTrustee(val id : String, val xCoordinate: Int, val electionKeypa
     override fun partialDecrypt(
         group : GroupContext,
         texts : List<ElGamalCiphertext>,
-        cryptoExtendedBaseHash : ElementModQ,
+        qbar : ElementModQ,
         nonceSeed: ElementModQ?
     ): List<PartialDecryptionProof> {
         val results: MutableList<PartialDecryptionProof> = ArrayList()
         for (ciphertext: ElGamalCiphertext in texts) {
             // 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 (spec section 3.5 eq 9)
-            val partialDecryption = ciphertext.computeShare(this.electionKeypair.secretKey)
+            val partialDecryption: ElementModP = ciphertext.computeShare(this.electionKeypair.secretKey)
+            val publicKey = this.electionKeypair.publicKey.key
 
-            // 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
-            //    g: ElementModP,  // G ?
-            //    h: ElementModP,  // A = G^r
-            //    x: ElementModQ,  // secret key s
-            //    seed: ElementModQ,
-            //    hashHeader: ElementModQ,
-            //    alsoHash: Array<Element> = emptyArray()
             val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
                 group.G_MOD_P,
-                ciphertext.pad, // ??
-                this.electionKeypair.secretKey.key, // ??
-                nonceSeed?: group.randomElementModQ(), // ok
-                cryptoExtendedBaseHash, // ok
+                ciphertext.pad,
+                this.electionKeypair.secretKey.key,
+                nonceSeed?: group.randomElementModQ(),
+                arrayOf(qbar, publicKey, ciphertext.pad, ciphertext.data), // section 7
+                arrayOf(partialDecryption),
             )
+
+            if (validate && !proof.isValid(
+                    group.G_MOD_P,
+                    publicKey,
+                    ciphertext.pad,
+                    partialDecryption,
+                    arrayOf(qbar, publicKey, ciphertext.pad, ciphertext.data), // section 7
+                    arrayOf(partialDecryption)
+                )) {
+                logger.warn {
+                    " partialDecrypt invalid proof for $id = $proof\n" +
+                            "   message = $ciphertext\n" +
+                            "   public_key = $publicKey\n" +
+                            "   partial_decryption = $partialDecryption\n" +
+                            "   qbar = $qbar\n" }
+
+                throw IllegalArgumentException("PartialDecrypt invalid proof for $id")
+            }
+
             results.add(PartialDecryptionProof(partialDecryption, proof))
         }
         return results

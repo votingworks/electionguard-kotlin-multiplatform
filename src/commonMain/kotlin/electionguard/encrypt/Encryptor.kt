@@ -19,13 +19,14 @@ import electionguard.core.get
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
 import electionguard.core.hashedElGamalEncrypt
+import electionguard.core.isValid
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("Encryptor")
-
+private val validate = true
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
  * The input Ballots must be well-formed and consistent.
@@ -86,7 +87,7 @@ class Encryptor(
                 // No contest on the ballot, so create a placeholder
                 contestFrom(mcontest)
 
-            encryptedContests.add(pcontest.encryptContest(mcontest, ballotNonce))
+            encryptedContests.add(pcontest.encryptContest(this.ballotId, mcontest, ballotNonce))
         }
 
         // Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1 January 1970)
@@ -124,6 +125,7 @@ class Encryptor(
      * @param ballotNonce:          the seed for this contest.
      */
     fun PlaintextBallot.Contest.encryptContest(
+        ballotId: String,
         contestDescription: Manifest.ContestDescription,
         ballotNonce: UInt256,
     ): CiphertextBallot.Contest {
@@ -168,7 +170,7 @@ class Encryptor(
             val plaintextSelection = selectionFrom(
                 "${contestDescription.contestId}-$sequenceNo", sequenceNo, true,
                 selectionCount < limit)
-            selectionCount--
+            selectionCount++
 
             encryptedSelections.add(plaintextSelection.encryptPlaceholder(contestNonce))
         }
@@ -187,6 +189,15 @@ class Encryptor(
             chaumPedersenNonce,
             cryptoExtendedBaseHashQ,
         )
+
+        if (validate && !proof.isValid(
+                ciphertextAccumulation,
+                elgamalPublicKey,
+                cryptoExtendedBaseHashQ,
+                limit
+        )) {
+            logger.warn {"Ballot $ballotId contest $contestId proof does not validate"}
+        }
 
         val encrypted_contest: CiphertextBallot.Contest = CiphertextBallot.Contest(
             this.contestId,
@@ -239,6 +250,14 @@ class Encryptor(
             disjunctiveChaumPedersenNonce,
             cryptoExtendedBaseHashQ
         )
+
+        if (validate && !proof.isValid(
+                elgamalEncryption,
+                elgamalPublicKey,
+                cryptoExtendedBaseHashQ,
+            )) {
+            logger.warn {"Selection $selectionId proof does not validate"}
+        }
 
         val elgamalCrypto = elgamalEncryption.cryptoHashUInt256()
         val cryptoHash = hashElements(selectionId, selectionDescription.cryptoHash, elgamalCrypto)

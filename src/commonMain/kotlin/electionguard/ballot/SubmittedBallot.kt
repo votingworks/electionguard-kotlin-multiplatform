@@ -42,7 +42,7 @@ data class SubmittedBallot(
         val ciphertext: ElGamalCiphertext,
         val cryptoHash: UInt256,
         val isPlaceholderSelection: Boolean,
-        val proof: DisjunctiveChaumPedersenProofKnownNonce?,
+        val proof: DisjunctiveChaumPedersenProofKnownNonce,
         val extendedData: HashedElGamalCiphertext?,
     )  : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash

@@ -87,7 +87,7 @@ private fun electionguard.protogen.CiphertextBallotContest.importContest(
 
 private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
     groupContext: GroupContext
-): SubmittedBallot.Selection? {
+): SubmittedBallot.Selection {
 
     val selectionHash = importUInt256(this.selectionHash)
     val ciphertext = groupContext.importCiphertext(this.ciphertext)
@@ -97,7 +97,7 @@ private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
 
     if (selectionHash == null || ciphertext == null || cryptoHash == null || proof == null) {
         logger.error { "Failed to convert selection, missing fields" }
-        return null
+        throw IllegalStateException("Failed to convert selection, missing fields")
     }
 
     return SubmittedBallot.Selection(

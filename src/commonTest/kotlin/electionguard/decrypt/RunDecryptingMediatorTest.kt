@@ -20,9 +20,9 @@ class RunDecryptingMediatorTest {
     @Test
     fun testDecryptingMediator() {
         val group = productionGroup()
-        val inputDir =  "src/commonTest/data/native/runTallyAccumulation"
-        val guardianDir =  "src/commonTest/data/testJava/kickstart/keyCeremony/election_private_data"
-        val outputDir =  "src/commonTest/data/native/runDecryptingMediator"
+        val inputDir =  "/home/snake/tmp/electionguard/kotlin/runTallyAccumulation"
+        val guardianDir =  "/home/snake/tmp/electionguard/remoteWorkflow/keyCeremony/election_private_data"
+        val outputDir =  "/home/snake/tmp/electionguard/kotlin/runDecryptingMediator"
         runDecryptingMediator(group, inputDir, outputDir, makeDecryptingTrustees(group, guardianDir))
     }
 
