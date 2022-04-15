@@ -19,7 +19,7 @@ interface DecryptingTrusteeIF {
      * Compute a partial decryption of an elgamal encryption.
      *
      * @param texts:            list of `ElGamalCiphertext` that will be partially decrypted
-     * @param extendedBaseHash: the extended base hash of the election that
+     * @param qbar:             the extended base hash of the election that
      * @param nonceSeed:         an optional value used to generate the `ChaumPedersenProof`
      *                            if no value is provided, a random number will be used.
      * @return a PartialDecryptionProof of the partial decryption and its proof
@@ -27,7 +27,7 @@ interface DecryptingTrusteeIF {
     fun partialDecrypt(
         group: GroupContext,
         texts : List<ElGamalCiphertext>,
-        extendedBaseHash : ElementModQ,
+        qbar : ElementModQ,
         nonceSeed: ElementModQ?
     ): List<PartialDecryptionProof>
 

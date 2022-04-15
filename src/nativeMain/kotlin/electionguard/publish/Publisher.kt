@@ -19,10 +19,30 @@ import platform.posix.fflush
 import platform.posix.fopen
 import platform.posix.fwrite
 
-/** Read/write the Election Record as protobuf files.  */
-actual class Publisher actual constructor(topDir: String, publisherMode: PublisherMode) {
-    val createPublisherMode = publisherMode
-    val path = ElectionRecordPath(topDir)
+/** Write the Election Record as protobuf files.  */
+actual class Publisher {
+    private val topDir: String
+    private val createPublisherMode: PublisherMode
+    private var path: ElectionRecordPath
+
+    actual constructor(topDir: String, publisherMode: PublisherMode) {
+        this.topDir = topDir
+        this.createPublisherMode = publisherMode
+        this.path = ElectionRecordPath(topDir)
+
+        if (createPublisherMode == PublisherMode.createNew) {
+            if (!exists(topDir)) {
+                createDirectories(topDir)
+            }
+        } else if (createPublisherMode == PublisherMode.createIfMissing) {
+            if (!exists(topDir)) {
+                createDirectories(topDir)
+            }
+        } else {
+            check(exists(topDir)) { "Non existing election directory $topDir" }
+        }
+    }
+
 
     /** Publishes the entire election record as proto.  */
     actual fun writeElectionRecordProto(
