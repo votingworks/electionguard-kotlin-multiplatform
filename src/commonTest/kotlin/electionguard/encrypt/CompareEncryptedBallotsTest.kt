@@ -10,12 +10,13 @@ import kotlin.test.assertEquals
 
 class CompareEncryptedBallotsTest {
 
-    @Test
+    // remove tests until data is added to github
+    // @Test
     fun compareJvmAndNative() {
         runTest {
             val context = productionGroup()
-            val ballotsJvm = readBallots(context, "/home/snake/tmp/electionguard/kotlin/runBatchEncryption")
-            val ballotsNative = readBallots(context, "/home/snake/tmp/electionguard/native/runBatchEncryption")
+            val ballotsJvm = readBallots(context, "testOut/jvm/runBatchEncryption")
+            val ballotsNative = readBallots(context, "testOut/native/runBatchEncryption")
             ballotsJvm.forEachIndexed { index, ballot1 ->
                 val ballot2 = ballotsNative[index]
                 assertEquals(ballot1, ballot2)
