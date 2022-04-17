@@ -19,6 +19,6 @@ expect class Consumer(topDir: String, groupContext: GroupContext) {
     fun iterateSpoiledBallots(): Iterable<SubmittedBallot>
     fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally>
 
-    // not part of the election record
+    // not part of the election record, private data
     fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF>
 }

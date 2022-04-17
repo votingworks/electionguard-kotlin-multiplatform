@@ -1,5 +1,8 @@
 package electionguard.publish
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.getErrorOr
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionRecord
 import electionguard.ballot.ElectionRecordAllData
 import electionguard.ballot.PlaintextBallot
@@ -23,17 +26,19 @@ import kotlinx.cinterop.get
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readBytes
-import kotlinx.cinterop.toKString
 import kotlinx.cinterop.value
+import mu.KotlinLogging
 import pbandk.decodeFromByteArray
 import platform.posix.FILE
 import platform.posix.fclose
 import platform.posix.fopen
 import platform.posix.fread
 import platform.posix.lstat
-import platform.posix.opendir
-import platform.posix.readdir
 import platform.posix.stat
+
+internal val logger = KotlinLogging.logger("Consumer")
+
+private val debug : Boolean = true
 
 actual class Consumer actual constructor(topDir: String, val groupContext: GroupContext) {
     val path = ElectionRecordPath(topDir)
@@ -59,7 +64,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
 
     @Throws(IOException::class)
     actual fun readElectionRecord(): ElectionRecord {
-        val buffer = gulp(absPath(path.electionRecordProtoPath()))
+        val buffer = gulp(path.electionRecordProtoPath())
         val proto = electionguard.protogen.ElectionRecord.decodeFromByteArray(buffer)
         return proto.importElectionRecord(groupContext)
     }
@@ -72,7 +77,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         val filename: String,
     ) : AbstractIterator<PlaintextBallot>() {
 
-        private val file = openFile(absPath(filename))
+        private val file = openFile(filename)
 
         override fun computeNext() {
             val length = readVlen(file, filename)
@@ -108,7 +113,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         val filter: (electionguard.protogen.SubmittedBallot) -> Boolean,
     ) : AbstractIterator<SubmittedBallot>() {
 
-        private val file = openFile(absPath(filename))
+        private val file = openFile(filename)
 
         override fun computeNext() {
             while (true) {
@@ -122,10 +127,14 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
                 if (!filter(ballotProto)) {
                     continue // skip it
                 }
-                val ballot =
-                    ballotProto.importSubmittedBallot(groupContext) ?: throw RuntimeException("Ballot didnt parse")
-                setNext(ballot)
-                break
+                val ballotResult = groupContext.importSubmittedBallot(ballotProto)
+                if (ballotResult is Ok) {
+                    setNext(ballotResult.unwrap())
+                    break
+                } else {
+                    logger.warn { ballotResult.getErrorOr("Unknown error on ${ballotProto.ballotId}")}
+                    continue
+                }
             }
         }
     }
@@ -139,7 +148,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         val filename: String,
     ) : AbstractIterator<PlaintextTally>() {
 
-        private val file = openFile(absPath(filename))
+        private val file = openFile(filename)
 
         override fun computeNext() {
             val length = readVlen(file, filename)
@@ -159,43 +168,11 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
 
         val result = ArrayList<DecryptingTrusteeIF>()
         trustees.forEach {
+            // TODO can we screen out bad files?
             val filename = "$trusteeDir/$it"
             val buffer = gulpVlen(filename)
             val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
             result.add(trusteeProto.importDecryptingTrustee(groupContext))
-        }
-        return result
-    }
-}
-
-@Throws(IOException::class)
-private fun openDir(dirpath: String): List<String> {
-    memScoped {
-        // opendir(
-        //    @kotlinx.cinterop.internal.CCall.CString __name: kotlin.String?)
-        // : kotlinx.cinterop.CPointer<platform.posix.DIR /* = cnames.structs.__dirstream */>? { /* compiled code */ }
-        val dir: CPointer<platform.posix.DIR>? = opendir(dirpath)
-        if (dir == null) {
-            checkErrno {mess -> throw IOException("Fail opendir $mess on $dirpath")}
-        }
-        println(" opendir $dir from $dirpath")
-
-        // readdir(
-        //    __dirp: kotlinx.cinterop.CValuesRef<platform.posix.DIR /* = cnames.structs.__dirstream */>?)
-        // : kotlinx.cinterop.CPointer<platform.posix.dirent>? { /* compiled code */ }
-        val result = ArrayList<String>()
-        while (true) {
-            val ddir: CPointer<platform.posix.dirent>? = readdir(dir)
-            if (ddir == null) {
-                // checkErrno { mess -> throw IOException("Fail readdir $mess on $dirpath") }
-                break
-            }
-            val dirent: platform.posix.dirent = ddir.get(0)
-            val filenamep: CArrayPointer<ByteVar> = dirent.d_name
-            val filename = filenamep.toKString()
-            if (filename.startsWith("remoteTrustee")) {
-                result.add(filenamep.toKString())
-            }
         }
         return result
     }
@@ -243,7 +220,7 @@ private fun gulp(filename: String): ByteArray {
             checkErrno {mess -> throw IOException("Fail lstat $mess on $filename")}
         }
         val size = stat.st_size.toULong()
-        val file = openFile(absPath(filename))
+        val file = openFile(filename)
         val ba = readFromFile(file, size, filename)
         fclose(file)
 

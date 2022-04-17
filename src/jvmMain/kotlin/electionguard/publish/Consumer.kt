@@ -1,5 +1,8 @@
 package electionguard.publish
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.getErrorOr
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionRecord
 import electionguard.ballot.ElectionRecordAllData
 import electionguard.ballot.PlaintextBallot
@@ -12,6 +15,7 @@ import electionguard.protoconvert.importElectionRecord
 import electionguard.protoconvert.importPlaintextBallot
 import electionguard.protoconvert.importPlaintextTally
 import electionguard.protoconvert.importSubmittedBallot
+import mu.KotlinLogging
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
 import java.io.FileInputStream
@@ -22,6 +26,8 @@ import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Predicate
+
+internal val logger = KotlinLogging.logger("Consumer")
 
 actual class Consumer actual constructor(topDir: String, val groupContext: GroupContext) {
     val path = ElectionRecordPath(topDir)
@@ -133,10 +139,14 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
                 if (!filter.test(ballotProto)) {
                     continue // skip it
                 }
-                val ballot =
-                    ballotProto.importSubmittedBallot(groupContext) ?: throw RuntimeException("Ballot didnt parse")
-                setNext(ballot)
-                break
+                val ballotResult = groupContext.importSubmittedBallot(ballotProto)
+                if (ballotResult is Ok) {
+                    setNext(ballotResult.unwrap())
+                    break
+                } else {
+                    logger.warn { ballotResult.getErrorOr("Unknown error on ${ballotProto.ballotId}")}
+                    continue
+                }
             }
         }
     }
@@ -176,6 +186,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         }
         val result = ArrayList<DecryptingTrusteeIF>()
         for (filename in trusteeDirPath.toFile().listFiles()!!) {
+            // TODO can we screen out bad files?
             val trusteeProto = readTrusteeProto(filename.absolutePath)
             if (trusteeProto != null) {
                 result.add(trusteeProto.importDecryptingTrustee(groupContext))

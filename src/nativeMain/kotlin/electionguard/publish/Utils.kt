@@ -3,21 +3,27 @@ package electionguard.publish
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CArrayPointer
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.get
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
+import platform.posix.DIR
 import platform.posix.PATH_MAX
+import platform.posix.dirent
 import platform.posix.getcwd
 import platform.posix.lstat
 import platform.posix.mkdir
+import platform.posix.opendir
 import platform.posix.posix_errno
+import platform.posix.readdir
 import platform.posix.realpath
 import platform.posix.stat
 import platform.posix.strerror_r
 
-private val debug = false
+private val debug = true
 
 fun absPath(filename: String): String {
     memScoped {
@@ -110,4 +116,38 @@ fun createDirectory(dirName: String): Boolean {
         return false
     }
     return true
+}
+
+@Throws(IOException::class)
+fun openDir(dirpath: String): List<String> {
+    memScoped {
+        // opendir(
+        //    @kotlinx.cinterop.internal.CCall.CString __name: kotlin.String?)
+        // : kotlinx.cinterop.CPointer<platform.posix.DIR /* = cnames.structs.__dirstream */>? { /* compiled code */ }
+        val dir: CPointer<DIR>? = opendir(dirpath)
+        if (dir == null) {
+            checkErrno {mess -> throw IOException("Fail opendir $mess on $dirpath")}
+        }
+        if (debug) println(" success opendir $dir from $dirpath")
+
+        // readdir(
+        //    __dirp: kotlinx.cinterop.CValuesRef<platform.posix.DIR /* = cnames.structs.__dirstream */>?)
+        // : kotlinx.cinterop.CPointer<platform.posix.dirent>? { /* compiled code */ }
+        val result = ArrayList<String>()
+        while (true) {
+            val ddir: CPointer<dirent>? = readdir(dir)
+            if (ddir == null) {
+                // this happens when no more files to be read
+                break
+            }
+            val dirent: platform.posix.dirent = ddir.get(0)
+            val filenamep: CArrayPointer<ByteVar> = dirent.d_name
+            val filename = filenamep.toKString()
+            if (filename.endsWith(".protobuf")) {
+                result.add(filename)
+                if (debug) println(" success readdir filename= ${filenamep.toKString()}")
+            }
+        }
+        return result
+    }
 }

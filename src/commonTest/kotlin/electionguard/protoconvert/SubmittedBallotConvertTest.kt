@@ -1,10 +1,12 @@
 package electionguard.protoconvert
 
+import com.github.michaelbull.result.*
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.*
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class SubmittedBallotConvertTest {
 
@@ -13,8 +15,9 @@ class SubmittedBallotConvertTest {
         val context = tinyGroup()
         val ballot = generateSubmittedBallot(42, context)
         val proto = ballot.publishSubmittedBallot()
-        val roundtrip = proto.importSubmittedBallot(context)
-        assertEquals(roundtrip, ballot)
+        val roundtrip = context.importSubmittedBallot(proto)
+        assertTrue(roundtrip is Ok)
+        assertEquals(roundtrip.unwrap(), ballot)
     }
 
     companion object {
