@@ -175,7 +175,7 @@ fun ElGamalCiphertext.decryptWithShares(
 ): Int? {
     val sharesList = shares.toList()
     val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray()))
-        // shares)
+
     val allSharesProductM: ElementModP = with (context) { sharesList.multP() }
     val decryptedValue: ElementModP = this.data / allSharesProductM
     return publicKey.dLog(decryptedValue)

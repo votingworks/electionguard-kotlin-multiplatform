@@ -1,12 +1,12 @@
 package electionguard.input
 
-import electionguard.ballot.Manifest
-import electionguard.ballot.simpleInternationalText
-import electionguard.core.assert
+import electionguard.ballot.*
+import electionguard.core.*
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.*
 import io.kotest.property.arbs.cars
 import io.kotest.property.kotlinx.datetime.date
+import kotlin.random.Random
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
 
@@ -156,7 +156,10 @@ private val colors =
         "purple",
     )
 
-/** Kotest generators for common ElectionGuard ballot-related data types. */
+/**
+ * Kotest generators for common ElectionGuard ballot-related data types. All are scoped inside the
+ * [KotestBallotGenerators] object, purely to make them easier to import and manage.
+ */
 object KotestBallotGenerators {
     fun electionType(): Arb<Manifest.ElectionType> = Arb.enum()
     fun reportingUnitType(): Arb<Manifest.ReportingUnitType> = Arb.enum()
@@ -213,7 +216,7 @@ object KotestBallotGenerators {
 
     private fun twoLetterCodes(): Arb<String> = Arb.string(size = 2, codepoints = alphaChars())
 
-    fun uuid(): Arb<String> =
+    fun uuid(prefix: String = ""): Arb<String> =
         // 8-4-4-4-12 hexidecimal pattern, but without any of the "version" bits
         Arb.bind(
             Arb.string(size = 8, codepoints = Codepoint.hex()),
@@ -221,12 +224,11 @@ object KotestBallotGenerators {
             Arb.string(size = 4, codepoints = Codepoint.hex()),
             Arb.string(size = 4, codepoints = Codepoint.hex()),
             Arb.string(size = 12, codepoints = Codepoint.hex()),
-        ) { a, b, c, d, e -> "$a-$b-$c-$d-$e" }
+        ) { a, b, c, d, e -> "$prefix$a-$b-$c-$d-$e" }
 
     fun geopoliticalUnit(): Arb<Manifest.GeopoliticalUnit> =
-        Arb.bind(uuid(), humanName(), reportingUnitType(), contactInformation()) { u, n, r, c ->
-            Manifest.GeopoliticalUnit(u, n, r, c)
-        }
+        Arb.bind(uuid("gpunit:"), humanName(), reportingUnitType(), contactInformation())
+            { u, n, r, c -> Manifest.GeopoliticalUnit(u, n, r, c) }
 
     fun language(prefix: String = ""): Arb<Manifest.Language> =
         // we're just dumping alpha text here for lack of anything interesting
@@ -245,7 +247,7 @@ object KotestBallotGenerators {
         val partyNames = (1..numParties).map { "Party$it" }
         val partyAbbrvs = (1..numParties).map { "P$it" }
 
-        return Arb.list(Arb.triple(uuid(), url(), color()), numParties..numParties)
+        return Arb.list(Arb.triple(uuid("party:"), url(), color()), numParties..numParties)
             .map {
                 it.mapIndexed { i, (uuid, url, color) ->
                     Manifest.Party(
@@ -260,8 +262,8 @@ object KotestBallotGenerators {
     }
 
     /**
-     * Generates a [BallotStyle] object, which rolls up a list of parties and geopolitical units
-     * (passed as arguments), with some additional information added on as well.
+     * Generates a [Manifest.BallotStyle] object, which rolls up a list of parties and geopolitical
+     * units (passed as arguments), with some additional information added on as well.
      */
     fun ballotStyle(
         parties: List<Manifest.Party>,
@@ -276,7 +278,7 @@ object KotestBallotGenerators {
 
             val imageUri = Arb.choice(url(), Arb.constant(null)).bind()
 
-            Manifest.BallotStyle("bs-" + uuid().bind(), gpUnitIds, partyIds, imageUri)
+            Manifest.BallotStyle(uuid("bs:").bind(), gpUnitIds, partyIds, imageUri)
         }
 
     /**
@@ -292,7 +294,7 @@ object KotestBallotGenerators {
                 else
                     Arb.constant(null)).bind()
 
-            val u = uuid().bind()
+            val u = uuid("candidate:").bind()
             val name = internationalHumanName().bind()
             val uri = Arb.choice(url(), Arb.constant(null)).bind()
 
@@ -300,9 +302,10 @@ object KotestBallotGenerators {
         }
 
     /**
-     * Given a `Candidate` and its position in a list of candidates, returns an equivalent
-     * `SelectionDescription`. The selection's `object_id` will contain the candidate's `object_id`
-     * within, but will have a "c-" prefix attached, so you'll be able to tell that they're related.
+     * Given a [Manifest.Candidate] and its position in a list of candidates, returns an equivalent
+     * [Manifest.SelectionDescription]. The selection's `object_id` will contain the candidate's
+     * `object_id` within, but will have a "c-" prefix attached, so you'll be able to tell that
+     * they're related.
      */
     private fun Manifest.Candidate.toSelectionDescription(
         contestSequence: Int,
@@ -315,8 +318,8 @@ object KotestBallotGenerators {
         )
 
     /**
-     * Generates a tuple: a `List<Candidate>` and a corresponding `CandidateContestDescription` for
-     * an n-of-m contest.
+     * Generates a tuple: a list of [Manifest.Candidate] and a corresponding
+     * [Manifest.ContestDescription] for an n-of-m contest.
      *
      * @param sequenceOrder integer describing the order of this contest; make these sequential when
      *     generating many contests.
@@ -368,24 +371,6 @@ object KotestBallotGenerators {
             }
         }
 
-    /**
-     * Similar to [candidateContest] but guarantees that, for the n-of-m contest that n < m,
-     * therefore it's possible to construct an "ovotervoted" plaintext, suitable for subsequent
-     * testing of overvote-handling.
-     */
-    fun candidateContestRoomForOvervoting(
-        sequenceOrder: Int,
-        partyList: List<Manifest.Party>,
-        geoUnits: List<Manifest.GeopoliticalUnit>
-    ): Arb<Pair<List<Manifest.Candidate>, Manifest.ContestDescription>> =
-        Arb.int(1..3)
-            .flatMap { nFinal ->
-                Arb.int((nFinal + 1)..(nFinal + 3))
-                    .flatMap { mFinal ->
-                        candidateContestHelper(sequenceOrder, partyList, geoUnits, nFinal, mFinal)
-                    }
-            }
-
     private fun candidateContestHelper(
         sequenceOrder: Int,
         partyList: List<Manifest.Party>,
@@ -399,7 +384,7 @@ object KotestBallotGenerators {
 
             val partyIds = partyList.map { it.partyId }
             val candidates = Arb.list(candidate(partyList), m..m).bind()
-            val u = uuid().bind()
+            val u = uuid("candidate:").bind()
             val geoUnit = Arb.of(geoUnits).bind()
 
             val selectionDescriptions =
@@ -449,7 +434,7 @@ object KotestBallotGenerators {
             val endDate = startDate + DatePeriod(days = 1)
 
             Manifest(
-                electionScopeId = "scopeId: " + uuid().bind(),
+                electionScopeId = uuid("scopeId:").bind(),
                 specVersion = "1.0", // does this mean anything?
                 electionType = Manifest.ElectionType.general, // good enough for now
                 startDate = startDate.toString(),
@@ -462,6 +447,109 @@ object KotestBallotGenerators {
                 name = internationalizedText("Manifest: ").bind(),
                 contactInformation = contactInformation().bind()
             )
+        }
+
+    /**
+     * Given a manifest, generates a randomly filled plaintext ballot. If overvotes are desired, the
+     * [overVotesAllowed] flag may be set to `true`.
+     */
+    fun plaintextVotedBallot(
+        manifest: Manifest,
+        overVotesAllowed: Boolean = false
+    ): Arb<PlaintextBallot> =
+        arbitrary {
+            val numBallotStyles = manifest.ballotStyles.size
+            assert (numBallotStyles > 0)
+
+            val ballotStyle = manifest.ballotStyles[Arb.int(0 until numBallotStyles).bind()]
+
+            val contests = manifest.getContests(ballotStyle.ballotStyleId)
+            val random = Random(Arb.int().bind())
+            assert (!contests.isEmpty())
+
+            val votedContests =
+                contests.map { contest ->
+                    assert (contest.isValid())
+                    val maxNumVoterPicks =
+                        if (overVotesAllowed) contest.selections.size else contest.numberElected
+                    val numVoterPicks = Arb.int(0..maxNumVoterPicks).bind()
+                    val voterPicks =
+                        (0..contest.numberElected).map { if (it < numVoterPicks) 1 else 0 }
+                            .shuffled(random)
+                    val pickedSelections =
+                        contest.selections
+                            .mapIndexed { index, selection ->
+                                PlaintextBallot.Selection(
+                                    selectionId = selection.selectionId,
+                                    sequenceOrder = selection.sequenceOrder,
+                                    vote = voterPicks[index],
+                                    isPlaceholderSelection = false,
+                                    extendedData = null
+                                )
+                            }
+
+                    // TODO: do we need to include placeholders?
+                    PlaintextBallot.Contest(
+                        contest.contestId,
+                        contest.sequenceOrder,
+                        pickedSelections
+                    )
+                }
+
+            PlaintextBallot(uuid("bid:").bind(), ballotStyle.ballotStyleId, votedContests, null)
+        }
+
+    /**
+     * Produces a list of voted ballots from [plaintextVotedBallot] of the requested [numBallots].
+     */
+    fun plaintextVotedBallots(
+        manifest: Manifest,
+        overVotesAllowed: Boolean = false,
+        numBallots: Int = 5
+    ): Arb<List<PlaintextBallot>> =
+        arbitrary {
+            (1..numBallots).map { plaintextVotedBallot(manifest, overVotesAllowed).bind() }
+        }
+
+    /**
+     * Everything necessary to exercise encryption and decryption of an election (at least, for an
+     * election without guardians).
+     */
+    data class ElectionContextAndBallots(
+        val electionContext: ElectionContext,
+        val manifest: Manifest,
+        val keypair: ElGamalKeypair,
+        val ballots: List<PlaintextBallot>
+    )
+
+    /**
+     * Top-level function useful for property-based unit tests of ElectionGuard: this function
+     * takes only a handful of inputs, such as a [GroupContext], and produces a data structure
+     * having all the data necessary to exercise things like encryption, tallying, and decryption.
+     */
+    fun electionContextAndBallots(
+        groupContext: GroupContext,
+        overVotesAllowed: Boolean = false,
+        numBallots: Int = 5
+    ): Arb<ElectionContextAndBallots> =
+        arbitrary {
+            val manifest = manifest().bind()
+            val keypair = elGamalKeypairs(groupContext).bind()
+            val elecCtx =
+                ElectionContext(
+                    numberOfGuardians = 1,
+                    quorum = 1,
+                    jointPublicKey = keypair.publicKey.key,
+                    manifestHash = manifest.cryptoHash,
+                    cryptoBaseHash = uint256s().bind(),
+                    cryptoExtendedBaseHash = uint256s().bind(),
+                    commitmentHash = uint256s().bind(),
+                    extendedData = null
+                )
+
+            val ballots = plaintextVotedBallots(manifest, overVotesAllowed, numBallots).bind()
+
+            ElectionContextAndBallots(elecCtx, manifest, keypair, ballots)
         }
 }
 

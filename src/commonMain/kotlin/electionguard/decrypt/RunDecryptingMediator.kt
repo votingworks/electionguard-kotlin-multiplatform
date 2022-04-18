@@ -13,9 +13,7 @@ import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
 
-/**
- * Run tally accumulation. Read election record from inputDir, write to outputDir.
- */
+/** Run tally accumulation. Read election record from inputDir, write to outputDir. */
 fun main(args: Array<String>) {
     val parser = ArgParser("runDecryptingMediator")
     val inputDir by

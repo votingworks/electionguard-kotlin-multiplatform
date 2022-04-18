@@ -29,7 +29,7 @@ class Decryptor(val group: GroupContext, val publicKey: ElGamalPublicKey) {
         for (tallySelection in contest.selections.values) {
             val id = "${contest.contestId}#@${tallySelection.selectionId}"
             val sshares = shares.get(id) ?: throw RuntimeException("*** $id share not found")
-                // TODO
+            // TODO
             val plaintextTallySelection =
                 decryptSelectionWithDecryptionShares(tallySelection, sshares)
             selections[tallySelection.selectionId] = plaintextTallySelection
@@ -49,7 +49,7 @@ class Decryptor(val group: GroupContext, val publicKey: ElGamalPublicKey) {
         // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝.
         val decryptedValue: ElementModP = selection.ciphertext.data / allSharesProductM
         val dlogM: Int = publicKey.dLog(decryptedValue) ?: throw RuntimeException("dlog failed")
-            // TODO on fail
+        // TODO on fail
 
         return PlaintextTally.Selection(
             selection.selectionId,

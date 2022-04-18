@@ -36,3 +36,10 @@ data class PlaintextBallot(
     /** Used to indicate a write-in candidate. */
     data class ExtendedData(val value: String, val length: Int)
 }
+
+// TODO: right now, we have isPlaceholderSelection as part of the public definition of
+//   PlaintextBallot. We're not especially clear on when a voter's plaintext selection,
+//   which doesn't have placeholders, gets those placeholders added. This seems to be
+//   happening as part of the encryption process, but the data structures above allow
+//   for the possibility that it could be done elsewhere. We might want to use the type-
+//   system to ensure that we don't ever accidentally get too many placeholders.

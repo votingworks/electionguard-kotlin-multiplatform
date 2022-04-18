@@ -2,6 +2,8 @@ package electionguard.ballot
 
 import electionguard.ballot.Manifest.InternationalizedText
 import electionguard.core.*
+import mu.KotlinLogging
+private val logger = KotlinLogging.logger("Manifest")
 
 fun manifestCryptoHash(
     electionScopeId: String,
@@ -491,6 +493,8 @@ data class Manifest(
         override fun cryptoHashUInt256() = cryptoHash
     }
 
+    // TODO: add support for referendum contests, in addition to the current candidate contests
+
     /**
      * A ballot selection for a specific candidate in a contest.
      *
@@ -534,4 +538,59 @@ fun Manifest.Companion.simpleCandidate(candidateId: String) =
 /** Constructs an empty [Manifest.InternationalizedText] object. */
 fun Manifest.Companion.emptyInternationalizedText() = InternationalizedText(emptyList())
 
-// TODO: add support for referendum contests, in addition to the current candidate contests
+/**
+ * Returns the [Manifest.ContestDescription] in the manifest having the given [contestId] string, or
+ * `null` if absent.
+ */
+fun Manifest.getContest(contestId: String): Manifest.ContestDescription? =
+    this.contests.find { it.contestId == contestId }
+
+/**
+ * Returns the [Manifest.BallotStyle] in the manifest having the given [ballotStyleId] string, or
+ * `null` if absent.
+ */
+fun Manifest.getBallotStyle(ballotStyleId: String): Manifest.BallotStyle? =
+    this.ballotStyles.find { it.ballotStyleId == ballotStyleId }
+
+/**
+ * Returns all [Manifest.ContestDescription] instances having the given [ballotStyleId] style.
+ * Returns [emptyList] if nothing matches.
+ */
+fun Manifest.getContests(ballotStyleId: String): List<Manifest.ContestDescription> =
+    getBallotStyle(ballotStyleId)
+        .let { bs ->
+            val gpIds = bs?.geopoliticalUnitIds ?: emptyList()
+            contests.filter { c -> gpIds.contains(c.geopoliticalUnitId) }
+        }
+
+/** Internal check that the contest description is self-consistent. */
+fun Manifest.ContestDescription.isValid(): Boolean {
+    val validNumberElected = numberElected <= selections.size
+    val validVotesAllowed = numberElected <= votesAllowed
+    val candidateIds = selections.map { it.candidateId }.toSet()
+    val selectionIds = selections.map { it.selectionId }.toSet()
+    val sequenceIds = selections.map { it.sequenceOrder }.toSet()
+    val expectedSelectionCount = selections.size
+
+    val noRepeatCandidateIds = candidateIds.size == expectedSelectionCount
+    val noRepeatSelectionIds = selectionIds.size == expectedSelectionCount
+    val noRepeatSequenceIds = sequenceIds.size == expectedSelectionCount
+
+    val success =
+        validNumberElected && validVotesAllowed && noRepeatCandidateIds && noRepeatSelectionIds &&
+            noRepeatSelectionIds
+
+    if (!success) {
+        logger.warn {
+            "Contest ${this.contestId} failed validation check: " +
+                mapOf(
+                    "validNumberElected" to validNumberElected,
+                    "validVotesAllowed" to validVotesAllowed,
+                    "noRepeatCandidateIds" to noRepeatCandidateIds,
+                    "noRepeatSelectionIds" to noRepeatSelectionIds,
+                    "noRepeatSequenceIds" to noRepeatSequenceIds,
+                )
+        }
+    }
+    return success
+}

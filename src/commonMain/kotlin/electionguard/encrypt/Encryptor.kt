@@ -162,7 +162,7 @@ class Encryptor(val group: GroupContext, val manifest: Manifest, val context : E
             val plaintextSelection =
                 plaintextSelections[mselection.selectionId]
                     ?: // No selection was made for this possible value so we explicitly set it to
-                    // false
+                        // false
                         selectionFrom(
                             mselection.selectionId,
                             mselection.sequenceOrder,

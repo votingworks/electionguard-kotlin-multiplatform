@@ -172,8 +172,8 @@ class ManifestInputValidation(val manifest: Manifest) {
         for (selection in contest.selections) {
             // No duplicate selection ids
             if (selectionIds.contains(selection.selectionId)) {
-                val msg = "Manifest.B.3 Multiple Selections have same id '" +
-                    "${selection.selectionId}'"
+                val msg =
+                    "Manifest.B.3 Multiple Selections have same id '" + "${selection.selectionId}'"
                 contestMesses.add(msg)
                 logger.warn { msg }
             } else {

@@ -120,7 +120,7 @@ class WorkflowTest {
             val allSharesProductM: ElementModP = with (group) { shares.multP() }
             val decryptedValue: ElementModP = eAccum.data / allSharesProductM
             val dlogM: Int = publicKey.dLog(decryptedValue) ?: throw RuntimeException("dlog failed")
-                // TODO on fail
+            // TODO on fail
             assertEquals(3, dlogM)
 
             //decrypt2
