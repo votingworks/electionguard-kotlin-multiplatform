@@ -2,8 +2,8 @@ package electionguard.core
 
 /**
  * A wrapper around an ElementModP that allows us to ensure that we're accelerating exponentiation
- * when using the key. Also contains the [inverseKey] (i.e., the multiplicative inverse mod `p`)
- * and supports computing discrete logs ([dLog]) with the key as the base.
+ * when using the key. Also contains the [inverseKey] (i.e., the multiplicative inverse mod `p`) and
+ * supports computing discrete logs ([dLog]) with the key as the base.
  */
 class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
     val key = inputKey.acceleratePow()
@@ -27,31 +27,29 @@ class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
     infix fun powP(exponent: ElementModQ): ElementModP = key powP exponent
 
     /**
-     * Given an element x for which there exists an e, such that (key)^e = x, this will find e,
-     * so long as e is less than [maxResult], which if unspecified defaults to a platform-specific
+     * Given an element x for which there exists an e, such that (key)^e = x, this will find e, so
+     * long as e is less than [maxResult], which if unspecified defaults to a platform-specific
      * value designed not to consume too much memory (perhaps 10 million). This will consume O(e)
      * time, the first time, after which the results are memoized for all values between 0 and e,
      * for better future performance.
      *
      * If the result is not found, `null` is returned.
      *
-     * Note: when using this to decrypt an election tally, where each ballot can contribute
-     * at most one to each counter, a suitable argument for [maxResult] would be the total
-     * number of ballots. This will terminate the computation early, if there's something
-     * erroneous with the input data, while still ensuring that any legitimate total can
-     * and will be computed.
+     * Note: when using this to decrypt an election tally, where each ballot can contribute at most
+     * one to each counter, a suitable argument for [maxResult] would be the total number of
+     * ballots. This will terminate the computation early, if there's something erroneous with the
+     * input data, while still ensuring that any legitimate total can and will be computed.
      */
     fun dLog(input: ElementModP, maxResult: Int = -1): Int? = dlogger.dLog(input, maxResult)
 }
 
 /**
- * A wrapper around an ElementModQ that allows us to hang onto a pre-computed [negativeKey]
- * (i.e., the additive inverse mod `q`). The secret key must be in [2, Q).
+ * A wrapper around an ElementModQ that allows us to hang onto a pre-computed [negativeKey] (i.e.,
+ * the additive inverse mod `q`). The secret key must be in [2, Q).
  */
 class ElGamalSecretKey(val key: ElementModQ) : CryptoHashableString {
     init {
-        if (key < key.context.TWO_MOD_Q)
-            throw ArithmeticException("secret key must be in [2, Q)")
+        if (key < key.context.TWO_MOD_Q) throw ArithmeticException("secret key must be in [2, Q)")
     }
 
     val negativeKey: ElementModQ = -key
@@ -91,18 +89,18 @@ val ElGamalKeypair.context: GroupContext
  * homomorphic addition). (See
  * [ElGamal 1982](https://ieeexplore.ieee.org/abstract/document/1057074))
  *
- * In a "normal" ElGamal encryption where the message goes into the exponent, a secret key `a`
- * with corresponding public key `g^a`, message `M` and nonce `R` would be encoded as the tuple
- * `<g^R, (g^a)^r * g^M>`.
+ * In a "normal" ElGamal encryption where the message goes into the exponent, a secret key `a` with
+ * corresponding public key `g^a`, message `M` and nonce `R` would be encoded as the tuple `<g^R,
+ * (g^a)^r * g^M>`.
  *
- * In this particular ElGamal implementation, we're instead encoding the ciphertext as
- * `<g^R, (g^a)^{R+M}>`. This accelerates both the encryption process and the process of generating
- * the corresponding Chaum-Pedersen proofs.
+ * In this particular ElGamal implementation, we're instead encoding the ciphertext as `<g^R,
+ * (g^a)^{R+M}>`. This accelerates both the encryption process and the process of generating the
+ * corresponding Chaum-Pedersen proofs.
  *
- * This also means that this ElGamal ciphertext is *not compatible with ElectionGuard 1.0*, but
- * is anticipated to be the standard for ElectionGuard 2.0 and later.
+ * This also means that this ElGamal ciphertext is *not compatible with ElectionGuard 1.0*, but is
+ * anticipated to be the standard for ElectionGuard 2.0 and later.
  */
-data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)  : CryptoHashableUInt256 {
+data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP) : CryptoHashableUInt256 {
     override fun cryptoHashUInt256() = hashElements(pad, data)
 }
 
@@ -171,9 +169,13 @@ fun ElGamalCiphertext.computeShare(secretKey: ElGamalSecretKey): ElementModP {
     return pad powP secretKey.key
 }
 
-fun ElGamalCiphertext.decryptWithShares(publicKey: ElGamalPublicKey, shares: Iterable<ElementModP>): Int? {
+fun ElGamalCiphertext.decryptWithShares(
+    publicKey: ElGamalPublicKey,
+    shares: Iterable<ElementModP>
+): Int? {
     val sharesList = shares.toList()
-    val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray())) // shares)
+    val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray()))
+        // shares)
     val allSharesProductM: ElementModP = with (context) { sharesList.multP() }
     val decryptedValue: ElementModP = this.data / allSharesProductM
     return publicKey.dLog(decryptedValue)

@@ -21,14 +21,14 @@ class ValidationMessages(val id: String, val level: Int) {
         }
         val builder = StringBuilder(2000)
         builder.append("$id hasProblems\n")
-            for (mess in messages) {
-                builder.append("$indent$mess\n")
+        for (mess in messages) {
+            builder.append("$indent$mess\n")
+        }
+        for (nest in nested) {
+            if (nest.hasErrors()) {
+                builder.append("$indent$nest\n")
             }
-            for (nest in nested) {
-                if (nest.hasErrors()) {
-                    builder.append("$indent$nest\n")
-                }
-            }
+        }
         return builder.toString()
     }
 
@@ -39,7 +39,7 @@ class ValidationMessages(val id: String, val level: Int) {
         if (nested.isEmpty()) {
             return false;
         }
-        return nested.map { it.hasErrors()}.reduce {a, b -> a or b}
+        return nested.map { it.hasErrors() }.reduce { a, b -> a or b }
     }
 }
 

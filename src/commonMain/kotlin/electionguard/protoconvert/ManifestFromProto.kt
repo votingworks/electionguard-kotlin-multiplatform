@@ -40,7 +40,10 @@ private fun electionguard.protogen.BallotStyle.importBallotStyle(): Manifest.Bal
 private fun electionguard.protogen.Candidate.importCandidate(): Manifest.Candidate {
     return Manifest.Candidate(
         this.candidateId,
-        if (this.name != null) this.name.importInternationalizedText() else internationalizedTextUnknown(),
+        if (this.name != null)
+            this.name.importInternationalizedText()
+        else
+            internationalizedTextUnknown(),
         if (this.partyId.isEmpty()) null else this.partyId,
         if (this.imageUrl.isEmpty()) null else this.imageUrl,
         this.isWriteIn
@@ -76,13 +79,13 @@ private fun electionguard.protogen.ContestDescription.importContestDescription()
     }
 
 private fun electionguard.protogen.ContestDescription.VoteVariationType.importVoteVariationType():
-        Manifest.VoteVariationType? {
-    val result = safeEnumValueOf<Manifest.VoteVariationType>(this.name)
-    if (result == null) {
-        logger.error { "Vote variation type $this has missing or incorrect name" }
+    Manifest.VoteVariationType? {
+        val result = safeEnumValueOf<Manifest.VoteVariationType>(this.name)
+        if (result == null) {
+            logger.error { "Vote variation type $this has missing or incorrect name" }
+        }
+        return result
     }
-    return result
-}
 
 private fun electionguard.protogen.Manifest.ElectionType.importElectionType():
     Manifest.ElectionType? {
@@ -102,14 +105,15 @@ private fun electionguard.protogen.GeopoliticalUnit.ReportingUnitType.importRepo
         return result
     }
 
-private fun electionguard.protogen.GeopoliticalUnit.importGeopoliticalUnit(): Manifest.GeopoliticalUnit {
-    return Manifest.GeopoliticalUnit(
-        this.geopoliticalUnitId,
-        this.name,
-        this.type.importReportingUnitType() ?: Manifest.ReportingUnitType.unknown, // TODO ok?
-        this.contactInformation?.let { this.contactInformation.importContactInformation() },
-    )
-}
+private fun electionguard.protogen.GeopoliticalUnit.importGeopoliticalUnit():
+    Manifest.GeopoliticalUnit {
+        return Manifest.GeopoliticalUnit(
+            this.geopoliticalUnitId,
+            this.name,
+            this.type.importReportingUnitType() ?: Manifest.ReportingUnitType.unknown, // TODO ok?
+            this.contactInformation?.let { this.contactInformation.importContactInformation() },
+        )
+    }
 
 private fun electionguard.protogen.InternationalizedText.importInternationalizedText():
     Manifest.InternationalizedText {
@@ -123,7 +127,10 @@ private fun electionguard.protogen.Language.importLanguage(): Manifest.Language 
 private fun electionguard.protogen.Party.importParty(): Manifest.Party {
     return Manifest.Party(
         this.partyId,
-        if (this.name != null) this.name.importInternationalizedText() else internationalizedTextUnknown(),
+        if (this.name != null)
+            this.name.importInternationalizedText()
+        else
+            internationalizedTextUnknown(),
         if (this.abbreviation.isEmpty()) null else this.abbreviation,
         if (this.color.isEmpty()) null else this.color,
         if (this.logoUri.isEmpty()) null else this.logoUri,

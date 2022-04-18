@@ -21,7 +21,7 @@ data class ElectionRecordPath(val topDir : String) {
         return "$electionRecordDir/$ELECTION_RECORD_FILE_NAME"
     }
 
-    fun plaintextBallotProtoPath(ballotDir : String): String {
+    fun plaintextBallotProtoPath(ballotDir: String): String {
         return "$ballotDir/$PLAINTEXT_BALLOT_PROTO"
     }
 
@@ -33,7 +33,7 @@ data class ElectionRecordPath(val topDir : String) {
         return "$electionRecordDir/$SPOILED_BALLOT_FILE"
     }
 
-    fun invalidBallotProtoPath(invalidDir : String): String {
+    fun invalidBallotProtoPath(invalidDir: String): String {
         return "$invalidDir/$INVALID_BALLOT_PROTO"
     }
 }

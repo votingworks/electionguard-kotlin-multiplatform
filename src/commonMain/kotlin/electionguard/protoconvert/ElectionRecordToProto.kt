@@ -59,12 +59,7 @@ fun publishElectionRecord(
 
 private fun AvailableGuardian.publishAvailableGuardian(): electionguard.protogen.AvailableGuardian {
     return electionguard.protogen
-        .AvailableGuardian(
-            this.guardianId,
-            this.xCoordinate,
-            null,
-            this.lagrangeCoordinate,
-        )
+        .AvailableGuardian(this.guardianId, this.xCoordinate, null, this.lagrangeCoordinate,)
 }
 
 private fun ElectionConstants.publishConstants(): electionguard.protogen.ElectionConstants {

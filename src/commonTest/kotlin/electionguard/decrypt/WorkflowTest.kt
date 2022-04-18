@@ -5,11 +5,11 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
 import electionguard.core.PowRadixOption
+import electionguard.core.computeShare
+import electionguard.core.decryptWithShares
 import electionguard.core.elGamalKeyPairFromRandom
 import electionguard.core.encrypt
 import electionguard.core.encryptedSum
-import electionguard.core.computeShare
-import electionguard.core.decryptWithShares
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.runTest
@@ -97,13 +97,14 @@ class WorkflowTest {
     fun multipleTrustees() {
         runTest {
             val group = productionGroup(PowRadixOption.LOW_MEMORY_USE)
-            val trustees = listOf(
-                elGamalKeyPairFromRandom(group),
-                elGamalKeyPairFromRandom(group),
-                elGamalKeyPairFromRandom(group),
-            )
-            val pkeys: Iterable<ElementModP> = trustees.map { it.publicKey.key}
-            val publicKey = ElGamalPublicKey(with (group) { pkeys.multP()} )
+            val trustees =
+                listOf(
+                    elGamalKeyPairFromRandom(group),
+                    elGamalKeyPairFromRandom(group),
+                    elGamalKeyPairFromRandom(group),
+                )
+            val pkeys: Iterable<ElementModP> = trustees.map { it.publicKey.key }
+            val publicKey = ElGamalPublicKey(with (group) { pkeys.multP() })
 
             val vote = 1
             val evote1 = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))
@@ -118,7 +119,8 @@ class WorkflowTest {
             val shares = trustees.map { eAccum.pad powP it.secretKey.key }
             val allSharesProductM: ElementModP = with (group) { shares.multP() }
             val decryptedValue: ElementModP = eAccum.data / allSharesProductM
-            val dlogM: Int = publicKey.dLog(decryptedValue)?: throw RuntimeException("dlog failed") // TODO on fail
+            val dlogM: Int = publicKey.dLog(decryptedValue) ?: throw RuntimeException("dlog failed")
+                // TODO on fail
             assertEquals(3, dlogM)
 
             //decrypt2

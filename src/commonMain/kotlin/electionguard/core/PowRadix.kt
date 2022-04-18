@@ -39,10 +39,10 @@ enum class PowRadixOption(val numBits: Int, val description: String) {
 }
 
 /**
- * The basis is to be used with future calls to the `pow` method, such that
- * `PowRadix(basis, ...).pow(e) == basis powP e`, except the computation will run much faster. By
- * specifying which `PowRadixOption` to use, the table will either use more or less memory,
- * corresponding to greater acceleration.
+ * The basis is to be used with future calls to the `pow` method, such that `PowRadix(basis,
+ * ...).pow(e) == basis powP e`, except the computation will run much faster. By specifying which
+ * `PowRadixOption` to use, the table will either use more or less memory, corresponding to greater
+ * acceleration.
  *
  * @see PowRadixOption
  */

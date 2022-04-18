@@ -52,11 +52,10 @@ val propTestFastConfig =
     PropTestConfig(maxFailure = 1, shrinkingMode = ShrinkingMode.Off, iterations = 10)
 
 /**
- * If we know we can afford more effort to run a property test, this will spend extra time
- * trying more inputs and will put more effort into shrinking any counterexamples. Typical usage:
+ * If we know we can afford more effort to run a property test, this will spend extra time trying
+ * more inputs and will put more effort into shrinking any counterexamples. Typical usage:
  * ```
  * forAll(propTestSlowConfig, Arb.x(), Arb.y()) { x, y -> ... }
  * ```
  */
-val propTestSlowConfig =
-    PropTestConfig(iterations = 1000)
+val propTestSlowConfig = PropTestConfig(iterations = 1000)

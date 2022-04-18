@@ -2,20 +2,22 @@ package electionguard.input
 
 import electionguard.ballot.Manifest
 import electionguard.ballot.Manifest.VoteVariationType.approval
-import electionguard.ballot.Manifest.VoteVariationType.one_of_m
 import electionguard.ballot.Manifest.VoteVariationType.n_of_m
+import electionguard.ballot.Manifest.VoteVariationType.one_of_m
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestInputValidation")
 
 /** Validate an election manifest, give human readable error information. */
 class ManifestInputValidation(val manifest: Manifest) {
-    private val gpUnits: Set<String> = manifest.geopoliticalUnits.map { it.geopoliticalUnitId }.toSet()
-    private val gpUnitInStyles: Set<String> = manifest.ballotStyles.map { it.geopoliticalUnitIds }.flatten().toSet()
+    private val gpUnits: Set<String> =
+        manifest.geopoliticalUnits.map { it.geopoliticalUnitId }.toSet()
+    private val gpUnitInStyles: Set<String> =
+        manifest.ballotStyles.map { it.geopoliticalUnitIds }.flatten().toSet()
     private val candidates: Set<String> = manifest.candidates.map { it.candidateId }.toSet()
     private val parties: Set<String> = manifest.parties.map { it.partyId }.toSet()
 
-    /** Determine if a manifest is valid.  */
+    /** Determine if a manifest is valid. */
     fun validate(): ValidationMessages {
         val manifestMessages = ValidationMessages("Manifest" + manifest.electionScopeId, 0)
 
@@ -23,7 +25,9 @@ class ManifestInputValidation(val manifest: Manifest) {
         for (ballotStyle in manifest.ballotStyles) {
             for (gpunit in ballotStyle.geopoliticalUnitIds) {
                 if (!gpUnits.contains(gpunit)) {
-                    val msg = "Manifest.A.1 BallotStyle '${ballotStyle.ballotStyleId}' has geopolitical_unit_id " +
+                    val msg =
+                        "Manifest.A.1 BallotStyle '${ballotStyle.ballotStyleId}' has " +
+                            "geopolitical_unit_id " +
                             "'$gpunit' that does not exist in manifest's geopolitical_units"
                     manifestMessages.add(msg)
                     logger.warn { msg }
@@ -35,8 +39,9 @@ class ManifestInputValidation(val manifest: Manifest) {
         for (candidate in manifest.candidates) {
             if (candidate.partyId != null) {
                 if (!parties.contains(candidate.partyId)) {
-                    val msg = "Manifest.A.2 Candidate '${candidate.candidateId}' party_id '${candidate.partyId}' " +
-                            "does not exist in manifest's Parties"
+                    val msg =
+                        "Manifest.A.2 Candidate '${candidate.candidateId}' party_id '" +
+                            "${candidate.partyId}' " + "does not exist in manifest's Parties"
                     manifestMessages.add(msg)
                     logger.warn { msg }
                 }
@@ -49,7 +54,8 @@ class ManifestInputValidation(val manifest: Manifest) {
         for (electionContest in manifest.contests) {
             // No duplicate contest object_id
             if (contestIds.contains(electionContest.contestId)) {
-                val msg = "Manifest.B.1 Multiple Contests have same id '${electionContest.contestId}'"
+                val msg =
+                    "Manifest.B.1 Multiple Contests have same id '${electionContest.contestId}'"
                 manifestMessages.add(msg)
                 logger.warn { msg }
             } else {
@@ -58,7 +64,9 @@ class ManifestInputValidation(val manifest: Manifest) {
 
             // No duplicate contest sequence
             if (contestSeqs.contains(electionContest.sequenceOrder)) {
-                val msg = "Manifest.B.2 Multiple Contests have same sequence order ${electionContest.sequenceOrder}"
+                val msg =
+                    "Manifest.B.2 Multiple Contests have same sequence order " +
+                        "${electionContest.sequenceOrder}"
                 manifestMessages.add(msg)
                 logger.warn { msg }
             } else {
@@ -68,8 +76,9 @@ class ManifestInputValidation(val manifest: Manifest) {
             // No duplicate sequenceIds across contests
             for (electionSelection in electionContest.selections) {
                 if (selectionIds.contains(electionSelection.selectionId)) {
-                    val msg = "Manifest.B.6 Multiple Selections have same id '${electionSelection.selectionId}'" +
-                            " within the manifest"
+                    val msg =
+                        "Manifest.B.6 Multiple Selections have same id '" +
+                            "${electionSelection.selectionId}'" + " within the manifest"
                     manifestMessages.add(msg)
                     logger.warn { msg }
                 }
@@ -80,13 +89,14 @@ class ManifestInputValidation(val manifest: Manifest) {
         return manifestMessages
     }
 
-    /** Determine if the manifest contest is valid.  */
+    /** Determine if the manifest contest is valid. */
     fun validateContest(contest: Manifest.ContestDescription, ballotMesses: ValidationMessages) {
         val contestMesses = ballotMesses.nested("Contest" + contest.contestId)
 
         // Referential integrity of Contest electoral_district_id
         if (!gpUnits.contains(contest.geopoliticalUnitId)) {
-            val msg = "Manifest.A.3 Contest's electoral_district_id '${contest.geopoliticalUnitId}'" +
+            val msg =
+                "Manifest.A.3 Contest's electoral_district_id '${contest.geopoliticalUnitId}'" +
                     " does not exist in manifest's GeopoliticalUnits"
             contestMesses.add(msg)
             logger.warn { msg }
@@ -94,7 +104,8 @@ class ManifestInputValidation(val manifest: Manifest) {
 
         // Contest electoral_district_id exists in some BallotStyle
         if (!gpUnitInStyles.contains(contest.geopoliticalUnitId)) {
-            val msg = "Manifest.A.5 Contest's electoral_district_id '${contest.geopoliticalUnitId}'" +
+            val msg =
+                "Manifest.A.5 Contest's electoral_district_id '${contest.geopoliticalUnitId}'" +
                     " does not exist in any BallotStyle"
             contestMesses.add(msg)
             logger.warn { msg }
@@ -103,36 +114,44 @@ class ManifestInputValidation(val manifest: Manifest) {
         when (contest.voteVariation) {
             one_of_m, n_of_m, approval -> {}
             else -> {
-                val msg = "Manifest.C.1 Contest's voteVariation '${contest.voteVariation}' not supported"
+                val msg =
+                    "Manifest.C.1 Contest's voteVariation '${contest.voteVariation}' not supported"
                 contestMesses.add(msg)
                 logger.warn { msg }
             }
         }
 
         if (contest.numberElected != contest.votesAllowed) {
-            val msg = "Manifest.C.2 Contest's numberElected $contest.numberElected != $contest.votesAllowed votesAllowed"
+            val msg =
+                "Manifest.C.2 Contest's numberElected $contest.numberElected != $contest" +
+                    ".votesAllowed votesAllowed"
             contestMesses.add(msg)
             logger.warn { msg }
         }
 
         when (contest.voteVariation) {
-            one_of_m -> if (contest.votesAllowed != 1) {
-                val msg = "Manifest.C.3 one_of_m Contest votesAllowed (${contest.votesAllowed}) must be 1"
-                contestMesses.add(msg)
-                logger.warn { msg }
-            }
+            one_of_m ->
+                if (contest.votesAllowed != 1) {
+                    val msg =
+                        "Manifest.C.3 one_of_m Contest votesAllowed (${contest.votesAllowed}) " +
+                            "must be 1"
+                    contestMesses.add(msg)
+                    logger.warn { msg }
+                }
             n_of_m -> {
                 if (contest.votesAllowed > contest.selections.size) {
-                    val msg = "Manifest.C.4 n_of_m Contest votesAllowed (${contest.votesAllowed}) must be <= selections" +
-                            " (${contest.selections.size})"
+                    val msg =
+                        "Manifest.C.4 n_of_m Contest votesAllowed (${contest.votesAllowed}) must " +
+                            "be <= selections" + " (${contest.selections.size})"
                     contestMesses.add(msg)
                     logger.warn { msg }
                 }
             }
             approval -> {
                 if (contest.votesAllowed != contest.selections.size) {
-                    val msg = "Manifest.C.5 approval Contest votesAllowed (${contest.votesAllowed}) must equal " +
-                            "number of selections (${contest.selections.size})"
+                    val msg =
+                        "Manifest.C.5 approval Contest votesAllowed (${contest.votesAllowed}) " +
+                            "must equal " + "number of selections (${contest.selections.size})"
                     contestMesses.add(msg)
                     logger.warn { msg }
                 }
@@ -142,15 +161,19 @@ class ManifestInputValidation(val manifest: Manifest) {
         validateContestSelections(contest, contestMesses)
     }
 
-    /** Determine if the manifest selection is valid.  */
-    fun validateContestSelections(contest: Manifest.ContestDescription, contestMesses: ValidationMessages) {
+    /** Determine if the manifest selection is valid. */
+    fun validateContestSelections(
+        contest: Manifest.ContestDescription,
+        contestMesses: ValidationMessages
+    ) {
         val selectionIds: MutableSet<String> = HashSet()
         val selectionSeqs: MutableSet<Int> = HashSet()
         val candidateIds: MutableSet<String> = HashSet()
         for (selection in contest.selections) {
             // No duplicate selection ids
             if (selectionIds.contains(selection.selectionId)) {
-                val msg = "Manifest.B.3 Multiple Selections have same id '${selection.selectionId}'"
+                val msg = "Manifest.B.3 Multiple Selections have same id '" +
+                    "${selection.selectionId}'"
                 contestMesses.add(msg)
                 logger.warn { msg }
             } else {
@@ -159,7 +182,8 @@ class ManifestInputValidation(val manifest: Manifest) {
 
             // No duplicate selection sequence_order
             if (selectionSeqs.contains(selection.sequenceOrder)) {
-                val msg = "Manifest.B.4 Multiple Selections have same sequence ${selection.sequenceOrder}"
+                val msg =
+                    "Manifest.B.4 Multiple Selections have same sequence ${selection.sequenceOrder}"
                 contestMesses.add(msg)
                 logger.warn { msg }
             } else {
@@ -168,7 +192,9 @@ class ManifestInputValidation(val manifest: Manifest) {
 
             // No duplicate selection candidates
             if (candidateIds.contains(selection.candidateId)) {
-                val msg = "Manifest.B.5 Multiple Selections have same candidate id '${selection.candidateId}'"
+                val msg =
+                    "Manifest.B.5 Multiple Selections have same candidate id '" +
+                        "${selection.candidateId}'"
                 contestMesses.add(msg)
                 logger.warn { msg }
             } else {
@@ -177,12 +203,12 @@ class ManifestInputValidation(val manifest: Manifest) {
 
             // Referential integrity of Selection candidate ids
             if (!candidates.contains(selection.candidateId)) {
-                val msg = "Manifest.A.4 Ballot Selection '${selection.selectionId}' candidate_id '${selection.candidateId}'" +
-                        " does not exist in manifest's Candidates"
+                val msg =
+                    "Manifest.A.4 Ballot Selection '${selection.selectionId}' candidate_id '" +
+                        "${selection.candidateId}'" + " does not exist in manifest's Candidates"
                 contestMesses.add(msg)
                 logger.warn { msg }
             }
         }
     }
-
 }

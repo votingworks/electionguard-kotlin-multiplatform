@@ -7,7 +7,8 @@ import electionguard.core.GenericChaumPedersenProof
 class DecryptionShare(
     val guardianId: String,
     val publicKey: ElementModP,
-    val contests: List<DecryptionShareContest>) {
+    val contests: List<DecryptionShareContest>
+) {
 
     data class DecryptionShareContest(
         val contestId : String,

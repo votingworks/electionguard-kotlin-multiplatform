@@ -58,11 +58,8 @@ fun contestDescriptionCryptoHash(
         // primaryPartyIds,
     )
 
-fun selectionDescriptionCryptoHash(
-    selectionId: String,
-    sequenceOrder: Int,
-    candidateId: String,
-) = hashElements(selectionId, sequenceOrder, candidateId)
+fun selectionDescriptionCryptoHash(selectionId: String, sequenceOrder: Int, candidateId: String,) =
+    hashElements(selectionId, sequenceOrder, candidateId)
 
 fun internationalizedTextUnknown(): Manifest.InternationalizedText {
     val text = listOf(Manifest.Language("unknown", "en"))
@@ -515,19 +512,26 @@ data class Manifest(
 }
 
 /** Constructs an [Manifest.InternationalizedText] object for a single value and single language. */
-fun Manifest.Companion.simpleInternationalText(value: String, language: String): InternationalizedText =
-    InternationalizedText(listOf(Manifest.Language(value, language)))
+fun Manifest.Companion.simpleInternationalText(
+    value: String,
+    language: String
+): InternationalizedText = InternationalizedText(listOf(Manifest.Language(value, language)))
 
-/** Constructs a [Manifest.Party] object for a single party identifier string and leaves the rest empty. */
+/**
+ * Constructs a [Manifest.Party] object for a single party identifier string and leaves the rest
+ * empty.
+ */
 fun Manifest.Companion.simpleParty(partyId: String) =
     Manifest.Party(partyId, emptyInternationalizedText(), null, null, null)
 
-/** Constructs a [Manifest.Candidate] object for a simple candidate with a string ID and leaves the rest empty. */
+/**
+ * Constructs a [Manifest.Candidate] object for a simple candidate with a string ID and leaves the
+ * rest empty.
+ */
 fun Manifest.Companion.simpleCandidate(candidateId: String) =
     Manifest.Candidate(candidateId, emptyInternationalizedText(), null, null, false)
 
 /** Constructs an empty [Manifest.InternationalizedText] object. */
 fun Manifest.Companion.emptyInternationalizedText() = InternationalizedText(emptyList())
-
 
 // TODO: add support for referendum contests, in addition to the current candidate contests

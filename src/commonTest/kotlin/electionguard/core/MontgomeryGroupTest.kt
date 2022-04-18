@@ -14,8 +14,7 @@ class MontgomeryGroupTest {
         montgomeryFormMultiplication { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
-    fun montgomeryFormMultiplicationTiny() =
-        montgomeryFormMultiplication { tinyGroup() }
+    fun montgomeryFormMultiplicationTiny() = montgomeryFormMultiplication { tinyGroup() }
 
     fun montgomeryFormMultiplication(contextF: () -> GroupContext) {
         runTest {
@@ -23,10 +22,12 @@ class MontgomeryGroupTest {
 
             checkAll(
                 if (context.isProductionStrength()) propTestFastConfig else propTestSlowConfig,
-                validElementsModP(context), validElementsModP(context))
-            { a, b ->
+                validElementsModP(context),
+                validElementsModP(context)
+            ) { a, b ->
                 val expected = a * b
-                val actual = (a.toMontgomeryElementModP() * b.toMontgomeryElementModP()).toElementModP()
+                val actual =
+                    (a.toMontgomeryElementModP() * b.toMontgomeryElementModP()).toElementModP()
                 assertEquals(expected, actual)
             }
         }
@@ -41,9 +42,7 @@ class MontgomeryGroupTest {
         montgomeryFormOutAndBack { productionGroup(mode = ProductionMode.Mode3072) }
 
     @Test
-    fun montgomeryFormOutAndBackTiny() =
-        montgomeryFormOutAndBack { tinyGroup() }
-
+    fun montgomeryFormOutAndBackTiny() = montgomeryFormOutAndBack { tinyGroup() }
 
     fun montgomeryFormOutAndBack(contextF: () -> GroupContext) {
         runTest {
@@ -51,7 +50,8 @@ class MontgomeryGroupTest {
 
             checkAll(
                 if (context.isProductionStrength()) propTestFastConfig else propTestSlowConfig,
-                validElementsModP(context)) {
+                validElementsModP(context)
+            ) {
                 val outAndBack = it.toMontgomeryElementModP().toElementModP()
                 assertEquals(it, outAndBack)
             }

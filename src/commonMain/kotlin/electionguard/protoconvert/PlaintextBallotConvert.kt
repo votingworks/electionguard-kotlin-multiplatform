@@ -42,8 +42,8 @@ fun PlaintextBallot.publishPlaintextBallot(): electionguard.protogen.PlaintextBa
             this.ballotId,
             this.ballotStyleId,
             this.contests.map { it.publishContest() },
-            this.errors?: "",
-            )
+            this.errors ?: "",
+        )
 }
 
 private fun PlaintextBallot.Contest.publishContest():

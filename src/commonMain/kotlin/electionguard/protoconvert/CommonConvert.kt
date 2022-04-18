@@ -140,13 +140,14 @@ fun GenericChaumPedersenProof.publishChaumPedersenProof():
 
 fun HashedElGamalCiphertext.publishHashedCiphertext() :
     electionguard.protogen.HashedElGamalCiphertext {
-    return electionguard.protogen.HashedElGamalCiphertext(
-        this.c0.publishElementModP(),
-        ByteArr(this.c1),
-        this.c2.publishUInt256(),
-        this.numBytes,
-    )
-}
+        return electionguard.protogen
+            .HashedElGamalCiphertext(
+                this.c0.publishElementModP(),
+                ByteArr(this.c1),
+                this.c2.publishUInt256(),
+                this.numBytes,
+            )
+    }
 
 fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen

@@ -185,7 +185,9 @@ internal class TinyGroupContext(
     override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
 }
 
-internal class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {
+internal class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) :
+    ElementModP {
+
     fun UInt.modWrap(): ElementModP = (this % groupContext.p).wrap()
     fun ULong.modWrap(): ElementModP = (this % groupContext.p).wrap()
     fun UInt.wrap(): ElementModP = TinyElementModP(this, groupContext)
@@ -248,10 +250,13 @@ internal class TinyElementModP(val element: UInt, val groupContext: TinyGroupCon
     override fun toMontgomeryElementModP(): MontgomeryElementModP =
         TinyMontgomeryElementModP(
             ((element.toULong() shl intTestPBits) % groupContext.p).toUInt(),
-            groupContext)
+            groupContext
+        )
 }
 
-internal class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) : ElementModQ {
+internal class TinyElementModQ(val element: UInt, val groupContext: TinyGroupContext) :
+    ElementModQ {
+
     fun ULong.modWrap(): ElementModQ = (this % groupContext.q).wrap()
     fun UInt.modWrap(): ElementModQ = (this % groupContext.q).wrap()
     fun ULong.wrap(): ElementModQ = toUInt().wrap()
@@ -343,7 +348,10 @@ internal class TinyElementModQ(val element: UInt, val groupContext: TinyGroupCon
     override fun toString(): String = "ElementModQ($element)"
 }
 
-internal data class TinyMontgomeryElementModP(val element: UInt, val groupContext: TinyGroupContext): MontgomeryElementModP {
+internal data class TinyMontgomeryElementModP(
+    val element: UInt,
+    val groupContext: TinyGroupContext
+) : MontgomeryElementModP {
     private fun MontgomeryElementModP.getCompat(other: GroupContext): UInt {
         context.assertCompatible(other)
         if (this is TinyMontgomeryElementModP) {
@@ -365,13 +373,16 @@ internal data class TinyMontgomeryElementModP(val element: UInt, val groupContex
 
         return TinyMontgomeryElementModP(
             if (z >= groupContext.p) z - groupContext.p else z,
-            groupContext)
+            groupContext
+        )
     }
 
     override fun toElementModP(): ElementModP =
-        TinyElementModP((element.toULong() * intTestMontgomeryIPrime.toULong()).mod(groupContext.p), groupContext)
+        TinyElementModP(
+            (element.toULong() * intTestMontgomeryIPrime.toULong()).mod(groupContext.p),
+            groupContext
+        )
 
     override val context: GroupContext
         get() = groupContext
-
 }

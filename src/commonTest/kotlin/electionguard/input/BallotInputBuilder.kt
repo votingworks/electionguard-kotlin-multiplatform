@@ -18,11 +18,7 @@ class BallotInputBuilder internal constructor(val id: String) {
     }
 
     fun build(): PlaintextBallot {
-        return PlaintextBallot(
-            id,
-            style,
-            contests.map {it.build() }
-        )
+        return PlaintextBallot(id, style, contests.map { it.build() })
     }
 
     inner class ContestBuilder internal constructor(val id: String) {
@@ -40,14 +36,13 @@ class BallotInputBuilder internal constructor(val id: String) {
         }
 
         fun build(): PlaintextBallot.Contest {
-            return PlaintextBallot.Contest(
-                id,
-                seq++,
-                selections.map { it.build() }
-            )
+            return PlaintextBallot.Contest(id, seq++, selections.map { it.build() })
         }
 
-        inner class SelectionBuilder internal constructor(private val id: String, private val vote: Int) {
+        inner class SelectionBuilder internal constructor(
+            private val id: String,
+            private val vote: Int
+        ) {
             fun build(): PlaintextBallot.Selection {
                 return PlaintextBallot.Selection(id, seq++, vote, false, null)
             }

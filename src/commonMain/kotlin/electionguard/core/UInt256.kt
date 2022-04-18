@@ -47,8 +47,10 @@ fun ByteArray.toUInt256(): UInt256 {
     return UInt256(this.normalize(32))
 }
 
-/** Make ByteArray have exactly [want] bytes by zero padding or removeing leading zeros.
- * Throws an [IllegalArgumentException] if not possible. */
+/**
+ * Make ByteArray have exactly [want] bytes by zero padding or removeing leading zeros. Throws an
+ * [IllegalArgumentException] if not possible.
+ */
 fun ByteArray.normalize(want: Int): ByteArray {
     return if (size == want) {
         this
@@ -66,7 +68,6 @@ fun ByteArray.normalize(want: Int): ByteArray {
         leftPad + this
     }
 }
-
 
 /**
  * Safely converts a [UInt256] to an [ElementModQ], wrapping values outside the range back to the

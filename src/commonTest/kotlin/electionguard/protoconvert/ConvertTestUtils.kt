@@ -29,10 +29,7 @@ fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPeders
 }
 
 fun generateSchnorrProof(context: GroupContext): SchnorrProof {
-    return SchnorrProof(
-        generateElementModQ(context),
-        generateElementModQ(context),
-    )
+    return SchnorrProof(generateElementModQ(context), generateElementModQ(context),)
 }
 
 fun generateCiphertext(context: GroupContext): ElGamalCiphertext {
@@ -40,7 +37,12 @@ fun generateCiphertext(context: GroupContext): ElGamalCiphertext {
 }
 
 fun generateHashedCiphertext(context: GroupContext): HashedElGamalCiphertext {
-    return HashedElGamalCiphertext(generateElementModP(context), "what".toByteArray(), generateUInt256(context), 42)
+    return HashedElGamalCiphertext(
+        generateElementModP(context),
+        "what".toByteArray(),
+        generateUInt256(context),
+        42
+    )
 }
 
 fun generateElementModQ(context: GroupContext): ElementModQ {

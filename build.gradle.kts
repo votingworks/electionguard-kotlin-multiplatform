@@ -111,7 +111,8 @@ kotlin {
                     // A multiplatform Kotlin library for working with protobuf.
                     implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
 
-                    // A multiplatform Kotlin library for command-line parsing (could use enableEndorsedLibs instead)
+                    // A multiplatform Kotlin library for command-line parsing (could use
+                    // enableEndorsedLibs instead)
                     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
                 }
             }
@@ -157,8 +158,7 @@ kotlin {
     }
 }
 
-val protoGenSource by
-    extra("build/generated/source/proto")
+val protoGenSource by extra("build/generated/source/proto")
 
 val compileProtobuf =
     tasks.register("compileProtobuf") {
@@ -170,11 +170,10 @@ val compileProtobuf =
              * } */
             // TODO lame
             val commandLineStr =
-                "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
-                    "ciphertext_ballot.proto ciphertext_tally.proto common.proto " +
+                "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto" +
+                    " " + "ciphertext_ballot.proto ciphertext_tally.proto common.proto " +
                     "election_record.proto manifest.proto " +
-                    "plaintext_ballot.proto plaintext_tally.proto " +
-                    "trustees.proto"
+                    "plaintext_ballot.proto plaintext_tally.proto " + "trustees.proto"
             project.exec { commandLine = commandLineStr.split(" ") }
         }
     }

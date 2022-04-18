@@ -7,16 +7,13 @@ private val logger = KotlinLogging.logger("Schnorr")
  * Representation of a proof that the prover know the private key corresponding to the given public
  * key. (The public key is not included, to keep the proof small.)
  */
-data class SchnorrProof(
-    val challenge: ElementModQ,
-    val response: ElementModQ
-)
+data class SchnorrProof(val challenge: ElementModQ, val response: ElementModQ)
 
 /**
- * Given an ElGamal keypair (public and private key), and the crypto base hash (Q), this generates a proof
- * that the author of the proof knew the public and corresponding private keys. This proof is deterministically
- * generated based on the randomness provided by `nonce`, so don't use the same nonce twice, or if the argument
- * is not specified, its default value is chosen at random.
+ * Given an ElGamal keypair (public and private key), and the crypto base hash (Q), this generates a
+ * proof that the author of the proof knew the public and corresponding private keys. This proof is
+ * deterministically generated based on the randomness provided by `nonce`, so don't use the same
+ * nonce twice, or if the argument is not specified, its default value is chosen at random.
  */
 fun ElGamalKeypair.schnorrProof(
     cryptoBaseHash: ElementModQ,
@@ -32,10 +29,13 @@ fun ElGamalKeypair.schnorrProof(
 }
 
 /**
- * Check validity of the proof for proving possession of the private key corresponding to the
- * given public key (i.e., `this` public key).
+ * Check validity of the proof for proving possession of the private key corresponding to the given
+ * public key (i.e., `this` public key).
  */
-fun ElGamalPublicKey.hasValidSchnorrProof(cryptoBaseHash: ElementModQ, proof: SchnorrProof): Boolean {
+fun ElGamalPublicKey.hasValidSchnorrProof(
+    cryptoBaseHash: ElementModQ,
+    proof: SchnorrProof
+): Boolean {
     val (challenge, u) = proof
     val context = compatibleContextOrFail(this.key, challenge, u)
 
@@ -53,11 +53,7 @@ fun ElGamalPublicKey.hasValidSchnorrProof(cryptoBaseHash: ElementModQ, proof: Sc
 
     if (!success) {
         val resultMap =
-            mapOf(
-                "inBoundsU" to inBoundsU,
-                "validChallenge" to validChallenge,
-                "proof" to this
-            )
+            mapOf("inBoundsU" to inBoundsU, "validChallenge" to validChallenge, "proof" to this)
         logger.warn { "found an invalid Schnorr proof: $resultMap" }
     }
 

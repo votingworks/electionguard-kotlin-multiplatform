@@ -15,8 +15,8 @@ expect class DLog {
     val base: ElementModP
 
     /**
-     * Given an element x for which there exists an e, such that (base)^e = x, this will find e,
-     * so long as e is less than [maxResult], which if unspecified defaults to a platform-specific
+     * Given an element x for which there exists an e, such that (base)^e = x, this will find e, so
+     * long as e is less than [maxResult], which if unspecified defaults to a platform-specific
      * value designed not to consume too much memory (perhaps 10 million). This will consume O(e)
      * time, the first time, after which the results are memoized for all values between 0 and e,
      * for better future performance.

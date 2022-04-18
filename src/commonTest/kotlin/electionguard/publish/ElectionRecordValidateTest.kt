@@ -15,7 +15,6 @@ class ElectionRecordValidateTest {
             val group = productionGroup()
             val consumer = Consumer(topdir, group)
             val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
-
         }
     }
 

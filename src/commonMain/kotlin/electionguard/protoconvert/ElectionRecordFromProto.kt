@@ -15,9 +15,7 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
     val manifest = this.manifest?.let { this.manifest.importManifest() }
 
     val availableGuardians: List<AvailableGuardian>? =
-        this.availableGuardians
-            .map { it.importAvailableGuardian() }
-            .noNullValuesOrNull()
+        this.availableGuardians.map { it.importAvailableGuardian() }.noNullValuesOrNull()
 
     val electionContext = this.context?.let { this.context.importContext(groupContext) }
 

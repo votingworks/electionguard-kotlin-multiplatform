@@ -9,30 +9,44 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("GroupCommon")
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
-internal val b64Production4096P = "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3fFy0NYjQhf8wAN/GLk+9TiRMLemYeXCblQhQGi7yv6jKmeBi9MHWtH1x+nMPRc3+ygXG6+E27ZhK3iBwaSOQ5zQOpK/UiJaKzjmVC6fcivOFaOBtXU+qEJ2M4HMroNRKzBRGzLl6NgDYhSa0DCqul86V5i7Iqp+wbbQ8XkD9OIthAc0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWav//////////////////////////////////////////"
+internal val b64Production4096P =
+    "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3fFy0NYjQhf8wAN/GLk+9TiRMLemYeXCblQhQGi7yv6jKmeBi9MHWtH1x+nMPRc3+ygXG6+E27ZhK3iBwaSOQ5zQOpK/UiJaKzjmVC6fcivOFaOBtXU+qEJ2M4HMroNRKzBRGzLl6NgDYhSa0DCqul86V5i7Iqp+wbbQ8XkD9OIthAc0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWav//////////////////////////////////////////"
 internal val b64Production4096Q = "AP////////////////////////////////////////9D"
 internal val b64Production4096P256MinusQ = "AL0="
-internal val b64Production4096R = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCbivamTAztzy1VnanZfwlcMHbGhgN2GRSNLIbDFxAq+iFIAx8ERArA/wyaQXqJISUS52B7JQHapNOKLBQQxINhSeK9uMgmDmJ8RkaWPv/p4W5JXUi9IVxtjsnRZnZXoqHIUG8hE/+tGaayvHxFdgRWcZGDMJ+HS8ms5XD/2od6orI6LW8pHBVUyi6xLxLNAJuLhzSmStUeuJO9iRdQuFFiJB2QjwyXCYeXWOfoIz6rO/LWq1OvoyqhU61mguWgZIiXyb4YoNUL7OAww0MjNq2RY+M/jn2vSY8UuyhSr/qBSEHrGN1fDolRbVV3dihcFgcdIRGU7hw/NGQgNquIbj7CiILOQAPeozW02TW65LWCNbn7K6txPI9wWhx95CIgIJ1rvKzEZzGGAVZScuSmPjjiSZdUrkk6wajoNGnu81yifCcbx5Lu4hFW5he5IuqPcTwizygtxdY4W7EoaOt4Enj6CrKolY/Mtf/i5cNh/BdEIBIrAWPKSkYwjIxGyR6nRXwTan2f1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kg=="
-internal val b64Production4096G = "HUHknEd+Feru8MXkrAjUpGwmjNNCT8AdE3ab20NnMhhYe8hsTBRI0AagNpnzq65f6xnilvXRQ8xeSj/IkIjJ9FI9Fm7jrp1fsDwL3Xet1cAX9sVeLsksIm/vXGwd8ufDbZDn6q3gmCQdNAmYO8zStTeek5H7xi+fjZOdEgixYDZ8E0JkEiGJWV7IXIzb5fnTB/RpEsBJMvjBaBWna0aCvWvcDtUrANjTD1nHMdWn/66BZdU8+WZJqsK3Q9pW8U8Z2sxSNvKbGrn5vvxpaXKT1d6ti1v13purbeZ8RXGeVjRKPL3zYJgksbV4406utt0xkKs1cdbWccUSKCwdp702tCUdJYT63qgLnhQUIwdN2bX7g6y96tTIelj/9Rf5d6gwgDcKOwz5ihvCl4xHqsKWEf1sQOL5h1w11QRDqao/SWEdzToNb/PLP6zzFHG9thhguSxZTU5GVpuzn+6t/x/WTINqbW24XGunJBdmt6tWv3OWM7BUFH9xcJIUEulI2eR0AtFbscJXMYYSwSHDa4DrhDPAjn0LcUnjqwqHNaku3Oj/lD4ootzqz8xp7DGJCcsEe+HFhYhEta1E8i7rKJ5MxVT3peLz3qAmh3/5KFGBYHHOAo64aNllzLLSKVqMVb0cBws5sJrgazfSk0O52Jl9wkTEaLmAlwcxc27gGLutuYc="
+internal val b64Production4096R =
+    "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCbivamTAztzy1VnanZfwlcMHbGhgN2GRSNLIbDFxAq+iFIAx8ERArA/wyaQXqJISUS52B7JQHapNOKLBQQxINhSeK9uMgmDmJ8RkaWPv/p4W5JXUi9IVxtjsnRZnZXoqHIUG8hE/+tGaayvHxFdgRWcZGDMJ+HS8ms5XD/2od6orI6LW8pHBVUyi6xLxLNAJuLhzSmStUeuJO9iRdQuFFiJB2QjwyXCYeXWOfoIz6rO/LWq1OvoyqhU61mguWgZIiXyb4YoNUL7OAww0MjNq2RY+M/jn2vSY8UuyhSr/qBSEHrGN1fDolRbVV3dihcFgcdIRGU7hw/NGQgNquIbj7CiILOQAPeozW02TW65LWCNbn7K6txPI9wWhx95CIgIJ1rvKzEZzGGAVZScuSmPjjiSZdUrkk6wajoNGnu81yifCcbx5Lu4hFW5he5IuqPcTwizygtxdY4W7EoaOt4Enj6CrKolY/Mtf/i5cNh/BdEIBIrAWPKSkYwjIxGyR6nRXwTan2f1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kg=="
+internal val b64Production4096G =
+    "HUHknEd+Feru8MXkrAjUpGwmjNNCT8AdE3ab20NnMhhYe8hsTBRI0AagNpnzq65f6xnilvXRQ8xeSj/IkIjJ9FI9Fm7jrp1fsDwL3Xet1cAX9sVeLsksIm/vXGwd8ufDbZDn6q3gmCQdNAmYO8zStTeek5H7xi+fjZOdEgixYDZ8E0JkEiGJWV7IXIzb5fnTB/RpEsBJMvjBaBWna0aCvWvcDtUrANjTD1nHMdWn/66BZdU8+WZJqsK3Q9pW8U8Z2sxSNvKbGrn5vvxpaXKT1d6ti1v13purbeZ8RXGeVjRKPL3zYJgksbV4406utt0xkKs1cdbWccUSKCwdp702tCUdJYT63qgLnhQUIwdN2bX7g6y96tTIelj/9Rf5d6gwgDcKOwz5ihvCl4xHqsKWEf1sQOL5h1w11QRDqao/SWEdzToNb/PLP6zzFHG9thhguSxZTU5GVpuzn+6t/x/WTINqbW24XGunJBdmt6tWv3OWM7BUFH9xcJIUEulI2eR0AtFbscJXMYYSwSHDa4DrhDPAjn0LcUnjqwqHNaku3Oj/lD4ootzqz8xp7DGJCcsEe+HFhYhEta1E8i7rKJ5MxVT3peLz3qAmh3/5KFGBYHHOAo64aNllzLLSKVqMVb0cBws5sJrgazfSk0O52Jl9wkTEaLmAlwcxc27gGLutuYc="
 
-internal val b64Production4096MontgomeryI = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-internal val b64Production4096MontgomeryIMinus1 = "AP//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
-internal val b64Production4096MontgomeryIPrime = "AKSZ6H5W9bINAiMN6a6HSwbigTX27Dgzuqd+4d9EsijOuqNdgY2lyMhN/xIg12AQAph7X8SMckK/ytJ5bgkWWPu6QwI46RQNkBuTHoBCVlKGrWJSbK5TYShEQVEe97kZ30z9prNOhvwZNnTYsqgxvghS+fQkMwlmNy5hEZiuyaArpCm4cI+BgPrUPe2uGmxgUOTL3Ipri4bMkDzKPjbVkh0yFyBAjA/Vpb8gci9CW6TR+J2UdwGTmZrNbMt1SHhG32VlNftF53FffZpdd+gO+y4BgMvRtZK/RbfdwJ8mZygESHdRaCbLDlDZEFens4rmRRQ4uIt7i2rEIUIIGWxCmD4h/9AD9/dwKMq0R+Q0Ti9WfDX5kGaNQsYXstsxkcdT/rUnO5+9ftxyXf2rUy5ThjvG102CBzLocpOk3ce1bPwSTEOq4lIPYAW2fbzT1Xakv+U5Xwd5pGx+Zp/7uYlNn7YCC/9C/RFJYOFlfxgC2H17O4GSmOSzXOOK7Bp7/zrW7+o/k4DbLV5jXltaOPC8jV+RMM8mx4TWKctx0ywHYdd84WUF3eoTwGVb3XE06n1KjLdKDrXtwpspFErX8opDN0hkCwyLGb1Ibvl9hyHpP0gbbE7tP1oG/u2Wx6xzRluTPELm4XslAAUyacnBq6JNvLtHZWPtJXANoAnQtZTkDvjB"
-internal val b64Production4096MontgomeryPPrime = "AKSZ6H5W9bINAiMN6a6HSwbigTX27Dgzuqd+4d9EsijPADqc3SYdA8Rq8V2PtOq3U9hrEu6VjhKHgUtxYhBO97qIC3vdbWuC9NtgEKja7eU0Y8KT2E2/XZ+0Gf5gJHZ4//aVRkPkAnxe6iTMN2zjdKYtFW0QZ0PtAj33HOLcQx+sORfOnFLSdVhg8fws+8eOgZwd/ZRkEkSpyhdgVPJgfmy1M9NkZarlZ6QvdKgnsOoDHUnSoMs1OpowwAWP+eue3WwwnwXfKjqhi9TEa/Ld02+cq6iC4PHI2aGjfuzujZM6VBj2XjDZlUk3RHYvFGW2Gq2fqHkJo9smjdasVy3/G6fT+Cz5owxggcncVWPrc3VNnGd4H9hY777NQ8Y5MDdOtlMl0dAO+p61t9ikR/Mv3mYIqx/gdfKfVoKTk+VvU/BcCRb2MrMzggmPeSCPeIH8QAYWIIyciQKiFcg1hmtTjSa+v86FsYutke6dTpQeSnL5/5+yAEfUnLSaby2AU/6yxkXdFw/I49cmUpDTq6R+rCrF/uutEeOSH7VOQqfjLkq9nVMHzZvEu+npZBEMI0UlLQp7Pt7YUlkxmAWu+tfllMA0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWawAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
+internal val b64Production4096MontgomeryI =
+    "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+internal val b64Production4096MontgomeryIMinus1 =
+    "AP//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+internal val b64Production4096MontgomeryIPrime =
+    "AKSZ6H5W9bINAiMN6a6HSwbigTX27Dgzuqd+4d9EsijOuqNdgY2lyMhN/xIg12AQAph7X8SMckK/ytJ5bgkWWPu6QwI46RQNkBuTHoBCVlKGrWJSbK5TYShEQVEe97kZ30z9prNOhvwZNnTYsqgxvghS+fQkMwlmNy5hEZiuyaArpCm4cI+BgPrUPe2uGmxgUOTL3Ipri4bMkDzKPjbVkh0yFyBAjA/Vpb8gci9CW6TR+J2UdwGTmZrNbMt1SHhG32VlNftF53FffZpdd+gO+y4BgMvRtZK/RbfdwJ8mZygESHdRaCbLDlDZEFens4rmRRQ4uIt7i2rEIUIIGWxCmD4h/9AD9/dwKMq0R+Q0Ti9WfDX5kGaNQsYXstsxkcdT/rUnO5+9ftxyXf2rUy5ThjvG102CBzLocpOk3ce1bPwSTEOq4lIPYAW2fbzT1Xakv+U5Xwd5pGx+Zp/7uYlNn7YCC/9C/RFJYOFlfxgC2H17O4GSmOSzXOOK7Bp7/zrW7+o/k4DbLV5jXltaOPC8jV+RMM8mx4TWKctx0ywHYdd84WUF3eoTwGVb3XE06n1KjLdKDrXtwpspFErX8opDN0hkCwyLGb1Ibvl9hyHpP0gbbE7tP1oG/u2Wx6xzRluTPELm4XslAAUyacnBq6JNvLtHZWPtJXANoAnQtZTkDvjB"
+internal val b64Production4096MontgomeryPPrime =
+    "AKSZ6H5W9bINAiMN6a6HSwbigTX27Dgzuqd+4d9EsijPADqc3SYdA8Rq8V2PtOq3U9hrEu6VjhKHgUtxYhBO97qIC3vdbWuC9NtgEKja7eU0Y8KT2E2/XZ+0Gf5gJHZ4//aVRkPkAnxe6iTMN2zjdKYtFW0QZ0PtAj33HOLcQx+sORfOnFLSdVhg8fws+8eOgZwd/ZRkEkSpyhdgVPJgfmy1M9NkZarlZ6QvdKgnsOoDHUnSoMs1OpowwAWP+eue3WwwnwXfKjqhi9TEa/Ld02+cq6iC4PHI2aGjfuzujZM6VBj2XjDZlUk3RHYvFGW2Gq2fqHkJo9smjdasVy3/G6fT+Cz5owxggcncVWPrc3VNnGd4H9hY777NQ8Y5MDdOtlMl0dAO+p61t9ikR/Mv3mYIqx/gdfKfVoKTk+VvU/BcCRb2MrMzggmPeSCPeIH8QAYWIIyciQKiFcg1hmtTjSa+v86FsYutke6dTpQeSnL5/5+yAEfUnLSaby2AU/6yxkXdFw/I49cmUpDTq6R+rCrF/uutEeOSH7VOQqfjLkq9nVMHzZvEu+npZBEMI0UlLQp7Pt7YUlkxmAWu+tfllMA0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWawAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
 
 internal val intProduction4096PBits = 4096
 
 // 3072-bit P and 256-bit Q primes, plus generator G and cofactor R
-internal val b64Production3072P = "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3tTlMKbslAxFMU0W09hktKiTT4uHxSr6CWGgpsXuSjU3d3P//////////////////////////////////////////w=="
+internal val b64Production3072P =
+    "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3tTlMKbslAxFMU0W09hktKiTT4uHxSr6CWGgpsXuSjU3d3P//////////////////////////////////////////w=="
 internal val b64Production3072Q = "AP////////////////////////////////////////9D"
 internal val b64Production3072P256MinusQ = "AL0="
-internal val b64Production3072R = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCbivamTAztzy1VnanZfwlcMHbGhgN2GRSNLIbDFxAq+iFIAx8ERArA/wyaQXqJISUS52B7JQHapNOKLBQQxINhSeK9uMgmDmJ8RkaWPv/p4W5JXUi9IVxtjsnRZnZXoqHIUG8hE/+tGaayvHxFdgRWcZGDMJ+HS8ms5XD/2od6orI6LW8pHBVUyi6xLxLNAJuLhzSmStUeuJO9iRdQuFFiJB2QjwyXCYeXWOfoIz6rO/LWq1OvoyqhU61mguWgZIiXyb4YoNUL7OAww0MjNq2RY+M/jn2vSY8UuyhSr/qBSEHrGN1fDolRbVV3dihcFgcdIRGU7hw/NGQgNquIbj7CiWZAn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9So="
-internal val b64Production3072G = "AK+NwgV5Y8bDZBGcAUonaGungFdnSLcvZwxKXUw/rB4ii4T7qIxOr5TfmHVcbHNhG7VKFKbiMtI4yRfadtimK3CDehXuwREMESVhqw6unhHdzsYfK71Uu3YvyQNJTvIfDzOP4mWCRTzj/wLFOncpYSblnhmAzUmlZyakDP3vk6GBQc+DRC0P3N+fE1Gy0M+BTOnHlkAtwiGBMtKDYFvdFUaOq6S2945N494HZvqZFe0o4A2QdX9JSYYJJHfJDF/DBaVoKQiNmW0ifS8BjBoWN3sAFKgYP1nPiHHEZZEyvdunnoaa6PZck2CNF5oH19mU4Fjl9RtHxyCaJYZNqfE3fBaxwJyFtmzD1Sf6s/ay321r6hUgYpi6w+KT8Q4um3gOzgM6R8/EUSIVIrtwnhuU2Op0hyQhhdj4+wE+nhBzldU+IsVVAvweSpFXZvPDtGOj7ky2gpJqDE+HzYYYGrxvuQK9gzHeGPWYIMXZZ9eEscBuWpTzHvhhG1RdLx4YTOrDEg=="
+internal val b64Production3072R =
+    "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCbivamTAztzy1VnanZfwlcMHbGhgN2GRSNLIbDFxAq+iFIAx8ERArA/wyaQXqJISUS52B7JQHapNOKLBQQxINhSeK9uMgmDmJ8RkaWPv/p4W5JXUi9IVxtjsnRZnZXoqHIUG8hE/+tGaayvHxFdgRWcZGDMJ+HS8ms5XD/2od6orI6LW8pHBVUyi6xLxLNAJuLhzSmStUeuJO9iRdQuFFiJB2QjwyXCYeXWOfoIz6rO/LWq1OvoyqhU61mguWgZIiXyb4YoNUL7OAww0MjNq2RY+M/jn2vSY8UuyhSr/qBSEHrGN1fDolRbVV3dihcFgcdIRGU7hw/NGQgNquIbj7CiWZAn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9Sn9So="
+internal val b64Production3072G =
+    "AK+NwgV5Y8bDZBGcAUonaGungFdnSLcvZwxKXUw/rB4ii4T7qIxOr5TfmHVcbHNhG7VKFKbiMtI4yRfadtimK3CDehXuwREMESVhqw6unhHdzsYfK71Uu3YvyQNJTvIfDzOP4mWCRTzj/wLFOncpYSblnhmAzUmlZyakDP3vk6GBQc+DRC0P3N+fE1Gy0M+BTOnHlkAtwiGBMtKDYFvdFUaOq6S2945N494HZvqZFe0o4A2QdX9JSYYJJHfJDF/DBaVoKQiNmW0ifS8BjBoWN3sAFKgYP1nPiHHEZZEyvdunnoaa6PZck2CNF5oH19mU4Fjl9RtHxyCaJYZNqfE3fBaxwJyFtmzD1Sf6s/ay321r6hUgYpi6w+KT8Q4um3gOzgM6R8/EUSIVIrtwnhuU2Op0hyQhhdj4+wE+nhBzldU+IsVVAvweSpFXZvPDtGOj7ky2gpJqDE+HzYYYGrxvuQK9gzHeGPWYIMXZZ9eEscBuWpTzHvhhG1RdLx4YTOrDEg=="
 
-internal val b64Production3072MontgomeryI = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-internal val b64Production3072MontgomeryIMinus1 = "AP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w=="
-internal val b64Production3072MontgomeryIPrime = "SZDM5YWGmIesvLTb/N//jdIVXxbmqBwN7XOtgqjZaIRgh2w3GyyCvV5aRepmTL4V1L7ATnbZqa6tnPKQXQJeIrtwACmZcDZT4pPwHZedGObD8Uy5EB9+vCKOpL/AY9Q3rTvcii+MGFnRUHi/+i4Sw2aex/bNWq4JCSGz5nMidI1Xs511b9oG9oczNWq5fm81iqMYDQlt80V9I8b7GbHSsSMqRYGgyistYoIjdDrKMbQrAWTcnLGq8KEKB/is9nM0CFEFJGsZstVyUykk0olqMmxP+V0suBwQCgJSDx6EkbTVheooBZTTvM5ogwLYAuYGt7+whmhkODOTyYXP88V3os+4n1amTJToqFf9XHp7iOgLST+iunzrLX9mBDjOllt7DWTLKBeygXjb5txavDfDXSeycLaPauF2zWJCl5B8/2D/cqX6TkrGAKDjEv0AB/E8MZZTLkeL1XZLw+/dCIE/YyzeSKlaiJxSZT7PaV4egUmyLOzfidO1aWeOdV1dauVc"
-internal val b64Production3072MontgomeryPPrime = "SZDM5YWGmIesvLTb/N//jdIVXxbmqBwN7XOtgqjZaIR/oaK9U1gNa/EAccwP5njLeTwbhJ7qWhQwArH9NWoCk6KT+VO7BK0aK1mMihvftnWfInDNVU1XlUwO83vF0nsQmQ7n4rJnrkJaNmroeGYlRmlHqWNufZM3eKlZoZ+PWA1OC4u0V7QgLcwottF2+lAEuLforeYMznJiMzh/44ePVonPniQDefCbfXGlNSPF8MDuLKiuz2UMYFbCCglu0QsVqLwWNgdO7pgAvSwTzcfgmuoGq9ZhpHuufKme3Fq9T7CC+GBeJQkQdwUOtpkEnrzzTneTHa/skarFatdKXWpyglyOoPEKFHLSzhR4XNFDuw1WhaHNjEGy4L+ocmzlbCLirJbWiSvBTFchbqYzLgmBvL5S41zvIRMv2WE/Vv1z4XUwpuyUDEUxTRbT2GS0qJNPi4fFKvoJYaCmxe5KNTd3dAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
+internal val b64Production3072MontgomeryI =
+    "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+internal val b64Production3072MontgomeryIMinus1 =
+    "AP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w=="
+internal val b64Production3072MontgomeryIPrime =
+    "SZDM5YWGmIesvLTb/N//jdIVXxbmqBwN7XOtgqjZaIRgh2w3GyyCvV5aRepmTL4V1L7ATnbZqa6tnPKQXQJeIrtwACmZcDZT4pPwHZedGObD8Uy5EB9+vCKOpL/AY9Q3rTvcii+MGFnRUHi/+i4Sw2aex/bNWq4JCSGz5nMidI1Xs511b9oG9oczNWq5fm81iqMYDQlt80V9I8b7GbHSsSMqRYGgyistYoIjdDrKMbQrAWTcnLGq8KEKB/is9nM0CFEFJGsZstVyUykk0olqMmxP+V0suBwQCgJSDx6EkbTVheooBZTTvM5ogwLYAuYGt7+whmhkODOTyYXP88V3os+4n1amTJToqFf9XHp7iOgLST+iunzrLX9mBDjOllt7DWTLKBeygXjb5txavDfDXSeycLaPauF2zWJCl5B8/2D/cqX6TkrGAKDjEv0AB/E8MZZTLkeL1XZLw+/dCIE/YyzeSKlaiJxSZT7PaV4egUmyLOzfidO1aWeOdV1dauVc"
+internal val b64Production3072MontgomeryPPrime =
+    "SZDM5YWGmIesvLTb/N//jdIVXxbmqBwN7XOtgqjZaIR/oaK9U1gNa/EAccwP5njLeTwbhJ7qWhQwArH9NWoCk6KT+VO7BK0aK1mMihvftnWfInDNVU1XlUwO83vF0nsQmQ7n4rJnrkJaNmroeGYlRmlHqWNufZM3eKlZoZ+PWA1OC4u0V7QgLcwottF2+lAEuLforeYMznJiMzh/44ePVonPniQDefCbfXGlNSPF8MDuLKiuz2UMYFbCCglu0QsVqLwWNgdO7pgAvSwTzcfgmuoGq9ZhpHuufKme3Fq9T7CC+GBeJQkQdwUOtpkEnrzzTneTHa/skarFatdKXWpyglyOoPEKFHLSzhR4XNFDuw1WhaHNjEGy4L+ocmzlbCLirJbWiSvBTFchbqYzLgmBvL5S41zvIRMv2WE/Vv1z4XUwpuyUDEUxTRbT2GS0qJNPi4fFKvoJYaCmxe5KNTd3dAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
 
 internal val intProduction3072PBits = 3072
 
@@ -172,9 +186,7 @@ interface GroupContext {
      */
     val MAX_BYTES_Q: Int
 
-    /**
-     * Useful constant: the number of bits it takes to represent any element mod p.
-     */
+    /** Useful constant: the number of bits it takes to represent any element mod p. */
     val NUM_P_BITS: Int
 
     /**
@@ -246,11 +258,11 @@ interface GroupContext {
     fun gPowP(e: ElementModQ): ElementModP
 
     /**
-     * Given an element x for which there exists an e, such that g^e = x, this will find e,
-     * so long as e is less than [maxResult], which if unspecified defaults to a platform-specific
-     * value designed not to consume too much memory (perhaps 10 million). This will consume O(e)
-     * time, the first time, after which the results are memoized for all values between 0 and e,
-     * for better future performance.
+     * Given an element x for which there exists an e, such that g^e = x, this will find e, so long
+     * as e is less than [maxResult], which if unspecified defaults to a platform-specific value
+     * designed not to consume too much memory (perhaps 10 million). This will consume O(e) time,
+     * the first time, after which the results are memoized for all values between 0 and e, for
+     * better future performance.
      */
     fun dLogG(p: ElementModP, maxResult: Int = - 1): Int?
 }
@@ -454,11 +466,11 @@ fun compatibleContextOrFail(vararg elements: Element): GroupContext {
 }
 
 /**
- * Given an element x for which there exists an e, such that g^e = x, this will find e,
- * so long as e is less than [maxResult], which if unspecified defaults to a platform-specific
- * value designed not to consume too much memory (perhaps 10 million). This will consume O(e)
- * time, the first time, after which the results are memoized for all values between 0 and e,
- * for better future performance.
+ * Given an element x for which there exists an e, such that g^e = x, this will find e, so long as e
+ * is less than [maxResult], which if unspecified defaults to a platform-specific value designed not
+ * to consume too much memory (perhaps 10 million). This will consume O(e) time, the first time,
+ * after which the results are memoized for all values between 0 and e, for better future
+ * performance.
  *
  * If the result is not found, `null` is returned.
  */
@@ -490,8 +502,8 @@ fun ElectionConstants.toGroupContext(
 }
 
 /**
- * Montgomery form of an [ElementModP]. Note the very limited set of methods. Convert back
- * a regular [ElementModP] for anything other than multiplication.
+ * Montgomery form of an [ElementModP]. Note the very limited set of methods. Convert back a regular
+ * [ElementModP] for anything other than multiplication.
  */
 interface MontgomeryElementModP {
     /** Modular multiplication */

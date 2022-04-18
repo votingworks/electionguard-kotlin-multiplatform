@@ -13,7 +13,7 @@ expect class Consumer(topDir: String, groupContext: GroupContext) {
     fun readElectionRecord(): ElectionRecord
 
     // Use iterators, so that we never have to read in all objects at once.
-    fun iteratePlaintextBallots(ballotDir : String): Iterable<PlaintextBallot>
+    fun iteratePlaintextBallots(ballotDir: String): Iterable<PlaintextBallot>
     fun iterateSubmittedBallots(): Iterable<SubmittedBallot>
     fun iterateCastBallots(): Iterable<SubmittedBallot>
     fun iterateSpoiledBallots(): Iterable<SubmittedBallot>

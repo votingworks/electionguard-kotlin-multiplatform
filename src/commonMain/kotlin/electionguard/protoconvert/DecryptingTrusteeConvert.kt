@@ -6,7 +6,9 @@ import electionguard.core.ElGamalSecretKey
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrustee
 
-fun electionguard.protogen.DecryptingTrustee.importDecryptingTrustee(group: GroupContext): DecryptingTrustee {
+fun electionguard.protogen.DecryptingTrustee.importDecryptingTrustee(
+    group: GroupContext
+): DecryptingTrustee {
     return DecryptingTrustee(
         this.guardianId,
         this.guardianXCoordinate,
@@ -14,7 +16,9 @@ fun electionguard.protogen.DecryptingTrustee.importDecryptingTrustee(group: Grou
     )
 }
 
-private fun electionguard.protogen.ElGamalKeyPair.importElGamalKeypair(group: GroupContext): ElGamalKeypair {
+private fun electionguard.protogen.ElGamalKeyPair.importElGamalKeypair(
+    group: GroupContext
+): ElGamalKeypair {
     return ElGamalKeypair(
         ElGamalSecretKey(group.importElementModQ(this.secretKey)!!),
         ElGamalPublicKey(group.importElementModP(this.publicKey)!!),

@@ -34,15 +34,15 @@ class SchnorrTest {
 
                 assertTrue(
                     goodProof.challenge == fakeElementModQ ||
-                            !kp.publicKey.hasValidSchnorrProof(baseHash, badProof1)
+                        !kp.publicKey.hasValidSchnorrProof(baseHash, badProof1)
                 )
                 assertTrue(
                     goodProof.response == fakeElementModQ ||
-                            !kp.publicKey.hasValidSchnorrProof(baseHash, badProof2)
+                        !kp.publicKey.hasValidSchnorrProof(baseHash, badProof2)
                 )
                 assertTrue(
                     kp.publicKey.key == fakeElementModP ||
-                            !fakePublicKey.hasValidSchnorrProof(baseHash, goodProof)
+                        !fakePublicKey.hasValidSchnorrProof(baseHash, goodProof)
                 )
             }
         }
