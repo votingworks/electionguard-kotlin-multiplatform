@@ -126,6 +126,8 @@ kotlin {
 
                     // Fancy property-based testing
                     implementation("io.kotest:kotest-property:5.0.1")
+                    implementation("io.kotest.extensions:kotest-property-arbs:2.1.2")
+                    implementation("io.kotest.extensions:kotest-property-datetime:1.1.0")
                 }
             }
         val jvmMain by

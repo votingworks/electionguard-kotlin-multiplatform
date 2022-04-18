@@ -1,5 +1,6 @@
 package electionguard.ballot
 
+import electionguard.ballot.Manifest.InternationalizedText
 import electionguard.core.*
 
 fun manifestCryptoHash(
@@ -377,8 +378,6 @@ data class Manifest(
         val cryptoHash: UInt256 = hashElements(candidateId, name, partyId, imageUri),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
-        constructor(candidateId: String) :
-                this(candidateId, InternationalizedText(), null, null, false)
     }
 
     /**
@@ -427,8 +426,6 @@ data class Manifest(
         val cryptoHash: UInt256 = hashElements(text)
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
-
-        constructor() : this(emptyList())
     }
 
     /**
@@ -459,9 +456,6 @@ data class Manifest(
         val cryptoHash: UInt256 = hashElements(partyId, name, abbreviation, color, logoUri),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
-
-        constructor(partyId: String) :
-            this(partyId, InternationalizedText(), null, null, null)
     }
 
     /**
@@ -515,4 +509,25 @@ data class Manifest(
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
+
+    // Just so we can attach helper methods to the Manifest scope
+    companion object
 }
+
+/** Constructs an [Manifest.InternationalizedText] object for a single value and single language. */
+fun Manifest.Companion.simpleInternationalText(value: String, language: String): InternationalizedText =
+    InternationalizedText(listOf(Manifest.Language(value, language)))
+
+/** Constructs a [Manifest.Party] object for a single party identifier string and leaves the rest empty. */
+fun Manifest.Companion.simpleParty(partyId: String) =
+    Manifest.Party(partyId, emptyInternationalizedText(), null, null, null)
+
+/** Constructs a [Manifest.Candidate] object for a simple candidate with a string ID and leaves the rest empty. */
+fun Manifest.Companion.simpleCandidate(candidateId: String) =
+    Manifest.Candidate(candidateId, emptyInternationalizedText(), null, null, false)
+
+/** Constructs an empty [Manifest.InternationalizedText] object. */
+fun Manifest.Companion.emptyInternationalizedText() = InternationalizedText(emptyList())
+
+
+// TODO: add support for referendum contests, in addition to the current candidate contests

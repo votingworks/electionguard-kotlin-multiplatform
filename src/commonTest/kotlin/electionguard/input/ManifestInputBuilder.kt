@@ -1,6 +1,9 @@
 package electionguard.input
 
 import electionguard.ballot.Manifest
+import electionguard.ballot.emptyInternationalizedText
+import electionguard.ballot.simpleCandidate
+import electionguard.ballot.simpleParty
 
 class ManifestInputBuilder(val manifestName: String) {
     val districtDefault = "district"
@@ -31,7 +34,7 @@ class ManifestInputBuilder(val manifestName: String) {
     }
 
     fun addCandidateAndParty(candidate_id: String, party: String?): ManifestInputBuilder {
-        val c = Manifest.Candidate(candidate_id, Manifest.InternationalizedText(), party, null, false)
+        val c = Manifest.Candidate(candidate_id, Manifest.emptyInternationalizedText(), party, null, false)
         candidates[candidate_id] = c
         return this
     }
@@ -55,7 +58,7 @@ class ManifestInputBuilder(val manifestName: String) {
 
 
     fun addCandidate(candidate_id: String) {
-        val c = Manifest.Candidate(candidate_id)
+        val c = Manifest.simpleCandidate(candidate_id)
         candidates[candidate_id] = c
     }
 
@@ -78,7 +81,7 @@ class ManifestInputBuilder(val manifestName: String) {
         if (ballotStyles.isEmpty()) {
             ballotStyles.add(Manifest.BallotStyle(style, listOf(districtDefault), emptyList(), null))
         }
-        val parties: List<Manifest.Party> = listOf(Manifest.Party("dog"), Manifest.Party("cat"))
+        val parties: List<Manifest.Party> = listOf(Manifest.simpleParty("dog"), Manifest.simpleParty("cat"))
         return Manifest(
             manifestName, "2.0.0", Manifest.ElectionType.general,
             "start", "end",
