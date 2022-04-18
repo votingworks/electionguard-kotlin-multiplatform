@@ -105,6 +105,24 @@ data class Manifest(
 ) : CryptoHashableUInt256 {
     override fun cryptoHashUInt256() = cryptoHash
 
+    /** Map of ballotStyleId to all Contests that use it. */
+    val styleToContestsMap : Map<String, List<ContestDescription>> by
+    lazy {
+        val result = mutableMapOf<String, List<ContestDescription>>() // key = ballotStyleId
+        val gpuToContests: Map<String, List<ContestDescription>> = contests.groupBy { it.geopoliticalUnitId } // key = geopoliticalUnitId
+        ballotStyles.forEach { style ->
+            val contestSet = mutableSetOf<ContestDescription>()
+            style.geopoliticalUnitIds.forEach {
+                val contestList = gpuToContests[it]
+                if (contestList != null) {
+                    contestSet.addAll(contestList)
+                }
+            }
+            result[style.ballotStyleId] = contestSet.toList().sortedBy {it.sequenceOrder}
+        }
+        result
+    }
+
     /**
      * The type of election.
      *

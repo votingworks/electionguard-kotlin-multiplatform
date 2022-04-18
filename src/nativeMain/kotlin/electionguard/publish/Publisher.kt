@@ -20,16 +20,11 @@ import platform.posix.fopen
 import platform.posix.fwrite
 
 /** Write the Election Record as protobuf files.  */
-actual class Publisher {
-    private val topDir: String
-    private val createPublisherMode: PublisherMode
-    private var path: ElectionRecordPath
+actual class Publisher actual constructor(private val topDir: String, publisherMode: PublisherMode) {
+    private val createPublisherMode: PublisherMode = publisherMode
+    private var path = ElectionRecordPath(topDir)
 
-    actual constructor(topDir: String, publisherMode: PublisherMode) {
-        this.topDir = topDir
-        this.createPublisherMode = publisherMode
-        this.path = ElectionRecordPath(topDir)
-
+    init {
         if (createPublisherMode == PublisherMode.createNew) {
             if (!exists(topDir)) {
                 createDirectories(topDir)
@@ -140,7 +135,7 @@ actual class Publisher {
 
     @Throws(IOException::class)
     actual fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
-        if (!invalidBallots.isEmpty()) {
+        if (invalidBallots.isNotEmpty()) {
             val fileout = path.invalidBallotProtoPath(invalidDir)
             val file: CPointer<FILE> = openFile(fileout)
             try {
@@ -157,6 +152,29 @@ actual class Publisher {
             } finally {
                 fclose(file)
             }
+        }
+    }
+
+    actual fun submittedBallotSink(): SubmittedBallotSinkIF =
+        SubmittedBallotSink(path.submittedBallotProtoPath())
+
+    inner class SubmittedBallotSink(val fileout: String) : SubmittedBallotSinkIF {
+        val file: CPointer<FILE> = openFile(fileout)
+
+        override fun writeSubmittedBallot(ballot: SubmittedBallot) {
+            val ballotProto: pbandk.Message = ballot.publishSubmittedBallot()
+            val buffer = ballotProto.encodeToByteArray()
+
+            val length = writeVlen(file, fileout, buffer.size)
+            if (length <= 0) {
+                fclose(file)
+                throw IOException("write failed on $fileout")
+            }
+            writeToFile(file, fileout, buffer)
+        }
+
+        override fun close() {
+            fclose(file)
         }
     }
 }

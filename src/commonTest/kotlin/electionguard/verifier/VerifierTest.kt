@@ -14,13 +14,13 @@ class VerifierTest {
         runTest {
             val group = productionGroup()
             val consumer = Consumer(topdir, group)
-            val electionRecord = consumer.readElectionRecordAllData()
-            val verifier = Verifier(group, electionRecord)
+            val electionRecordAll = consumer.readElectionRecordAllData()
+            val verifier = Verifier(group, electionRecordAll.toElectionRecord())
 
             val guardiansOk = verifier.verifyGuardianPublicKey()
             println("verifyGuardianPublicKey $guardiansOk")
 
-            val ballotsOk = verifier.verifySubmittedBallots()
+            val ballotsOk = verifier.verifySubmittedBallots(electionRecordAll.submittedBallots)
             println("verifySubmittedBallots $ballotsOk")
 
             val tallyOk = verifier.verifyDecryptedTally()

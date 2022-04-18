@@ -18,7 +18,14 @@ expect class Publisher(topDir: String, publisherMode: PublisherMode) {
         availableGuardians: List<AvailableGuardian>?
     )
 
+    fun submittedBallotSink(): SubmittedBallotSinkIF
+
     fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>)
+}
+
+interface SubmittedBallotSinkIF {
+    fun writeSubmittedBallot(ballot: SubmittedBallot)
+    fun close()
 }
 
 enum class PublisherMode {
