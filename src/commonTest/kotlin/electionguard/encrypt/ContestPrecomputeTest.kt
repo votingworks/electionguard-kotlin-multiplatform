@@ -22,13 +22,13 @@ import kotlin.test.Test
 
 private val revotes = 0
 
-class BallotPrecomputeTest {
+class ContestPrecomputeTest {
     val electionRecordDir = "src/commonTest/data/testJava/kickstart/encryptor"
     val ballotDir = "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots/"
-    val outputDir = "testOut/precompute/ballotPrecomputeTest"
+    val outputDir = "testOut/precompute/contestPrecomputeTest"
 
     @Test
-    fun testBallotPrecompute() {
+    fun testContestPrecompute() {
         runTest {
             val group = productionGroup()
             val reader = Consumer(electionRecordDir, group)
@@ -39,11 +39,11 @@ class BallotPrecomputeTest {
             var count = 0
             val pballots = ballots.map {
                 count++
-                precomputeBallot(group, electionRecord, it)
+                precomputeContest(group, electionRecord, it)
             }
             var took = getSystemTimeInMillis() - starting
             var perBallot = (took.toDouble() / count).roundToInt()
-            println("BallotPrecompute with $revotes revotes per ballot")
+            println("ContestPrecompute with $revotes revotes per ballot")
             println("   Precompute took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
 
             starting = getSystemTimeInMillis()
@@ -63,13 +63,13 @@ class BallotPrecomputeTest {
     }
 }
 
-fun precomputeBallot(group: GroupContext, electionRecord: ElectionRecord, ballot: PlaintextBallot): BallotPrecompute {
+fun precomputeContest(group: GroupContext, electionRecord: ElectionRecord, ballot: PlaintextBallot): ContestPrecompute {
     val manifest: Manifest = electionRecord.manifest
     val context: ElectionContext = electionRecord.context ?: throw Exception()
     val codeSeed: ElementModQ = context.cryptoExtendedBaseHash.toElementModQ(group)
     val masterNonce = group.TWO_MOD_Q
 
-    val pballot = BallotPrecompute(
+    val pballot = ContestPrecompute(
         group,
         manifest,
         ElGamalPublicKey(context.jointPublicKey),
@@ -91,12 +91,11 @@ fun precomputeBallot(group: GroupContext, electionRecord: ElectionRecord, ballot
     for (i in 0 until revotes) {
         val pcontest = pballot.contests[i]
         for (selection in pcontest.selections) {
-            if (selection.vote() == 0) {
+            if (selection.vote == 0) {
                 pcontest.vote(selection.mselection.selectionId, 1)
                 break
             }
         }
     }
-
     return pballot
 }

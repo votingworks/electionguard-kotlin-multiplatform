@@ -115,11 +115,6 @@ class Encryptor(
 
     /**
      * Encrypt a PlaintextBallotContest into CiphertextBallot.Contest.
-     *
-     * It will fill missing selections for a contest with `False` values, and generate `placeholder`
-     * selections to represent the number of seats available for a given contest.  By adding `placeholder`
-     * votes
-     *
      * @param mcontest:   the corresponding Manifest.ContestDescription
      * @param ballotNonce:          the seed for this contest.
      */
