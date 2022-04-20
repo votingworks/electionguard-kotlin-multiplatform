@@ -22,7 +22,6 @@ data class CiphertextBallot(
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
         val contestHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: List<Selection>,
-        val ciphertextAccumulation: ElGamalCiphertext,
         val cryptoHash: UInt256,
         val proof: ConstantChaumPedersenProofKnownNonce,
         val contestNonce: ElementModQ,
@@ -65,7 +64,6 @@ fun CiphertextBallot.Contest.submit(): SubmittedBallot.Contest {
         this.sequenceOrder,
         this.contestHash,
         this.selections.map { it.submit() },
-        this.ciphertextAccumulation,
         this.cryptoHash,
         this.proof,
     )

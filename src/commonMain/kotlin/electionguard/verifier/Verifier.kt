@@ -4,10 +4,12 @@ import electionguard.ballot.ElectionRecord
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.ConstantChaumPedersenProofKnownNonce
 import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
+import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
+import electionguard.core.encryptedSum
 import electionguard.core.hasValidSchnorrProof
 import electionguard.core.isValid
 import electionguard.core.toElementModQ
@@ -59,9 +61,13 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
             println("Ballot '${ballot.ballotId}'")
             for (contest in ballot.contests) {
                 ncontests++
+                // recalculate ciphertextAccumulation
+                val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
+                val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
+                // test that the proof is correct
                 val proof: ConstantChaumPedersenProofKnownNonce = contest.proof
                 var cvalid = proof.isValid(
-                    contest.ciphertextAccumulation,
+                    ciphertextAccumulation,
                     ElGamalPublicKey(electionRecord.context.jointPublicKey),
                     electionRecord.context.cryptoExtendedBaseHash.toElementModQ(group),
                 )

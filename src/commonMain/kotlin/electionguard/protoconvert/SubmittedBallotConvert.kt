@@ -63,7 +63,6 @@ private fun GroupContext.importContest(
     val here = "$where ${contest.contestId}"
 
     val contestHash = importUInt256(contest.contestHash)
-    val ciphertextAccumulation = this.importCiphertext(contest.ciphertextAccumulation)
     val cryptoHash = importUInt256(contest.cryptoHash)
     val proof = this.importConstantChaumPedersenProof(contest.proof, here)
 
@@ -73,7 +72,7 @@ private fun GroupContext.importContest(
     }
     if (proof is Err) return proof
 
-    if (contestHash == null || ciphertextAccumulation == null || cryptoHash == null) {
+    if (contestHash == null || cryptoHash == null) {
         return Err("Missing fields in contest $here")
     }
 
@@ -83,7 +82,6 @@ private fun GroupContext.importContest(
             contest.sequenceOrder,
             contestHash,
             selections,
-            ciphertextAccumulation,
             cryptoHash,
             proof.unwrap(),
         )
@@ -213,7 +211,6 @@ private fun SubmittedBallot.Contest.publishContest():
             this.sequenceOrder,
             this.contestHash.publishUInt256(),
             this.selections.map { it.publishSelection() },
-            this.ciphertextAccumulation.publishCiphertext(),
             this.cryptoHash.publishUInt256(),
             this.proof.let { this.proof.publishConstantChaumPedersenProof() },
         )

@@ -289,7 +289,6 @@ fun Manifest.ContestDescription.encryptContest(
         this.sequenceOrder,
         this.cryptoHash,
         encryptedSelections,
-        ciphertextAccumulation,
         cryptoHash,
         proof,
         contestNonce,

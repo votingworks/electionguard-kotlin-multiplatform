@@ -149,7 +149,6 @@ public data class CiphertextBallotContest(
     val sequenceOrder: Int = 0,
     val contestHash: electionguard.protogen.UInt256? = null,
     val selections: List<electionguard.protogen.CiphertextBallotSelection> = emptyList(),
-    val ciphertextAccumulation: electionguard.protogen.ElGamalCiphertext? = null,
     val cryptoHash: electionguard.protogen.UInt256? = null,
     val proof: electionguard.protogen.ConstantChaumPedersenProof? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -162,7 +161,7 @@ public data class CiphertextBallotContest(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.CiphertextBallotContest = electionguard.protogen.CiphertextBallotContest.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CiphertextBallotContest> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextBallotContest, *>>(7)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CiphertextBallotContest, *>>(6)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -202,16 +201,6 @@ public data class CiphertextBallotContest(
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.CiphertextBallotSelection>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.CiphertextBallotSelection.Companion)),
                         jsonName = "selections",
                         value = electionguard.protogen.CiphertextBallotContest::selections
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "ciphertext_accumulation",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElGamalCiphertext.Companion),
-                        jsonName = "ciphertextAccumulation",
-                        value = electionguard.protogen.CiphertextBallotContest::ciphertextAccumulation
                     )
                 )
                 add(
@@ -648,7 +637,6 @@ private fun CiphertextBallotContest.protoMergeImpl(plus: pbandk.Message?): Ciphe
     it.copy(
         contestHash = contestHash?.plus(plus.contestHash) ?: plus.contestHash,
         selections = selections + plus.selections,
-        ciphertextAccumulation = ciphertextAccumulation?.plus(plus.ciphertextAccumulation) ?: plus.ciphertextAccumulation,
         cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         proof = proof?.plus(plus.proof) ?: plus.proof,
         unknownFields = unknownFields + plus.unknownFields
@@ -661,7 +649,6 @@ private fun CiphertextBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDe
     var sequenceOrder = 0
     var contestHash: electionguard.protogen.UInt256? = null
     var selections: pbandk.ListWithSize.Builder<electionguard.protogen.CiphertextBallotSelection>? = null
-    var ciphertextAccumulation: electionguard.protogen.ElGamalCiphertext? = null
     var cryptoHash: electionguard.protogen.UInt256? = null
     var proof: electionguard.protogen.ConstantChaumPedersenProof? = null
 
@@ -671,13 +658,12 @@ private fun CiphertextBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDe
             2 -> sequenceOrder = _fieldValue as Int
             3 -> contestHash = _fieldValue as electionguard.protogen.UInt256
             4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CiphertextBallotSelection> }
-            5 -> ciphertextAccumulation = _fieldValue as electionguard.protogen.ElGamalCiphertext
             6 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
             7 -> proof = _fieldValue as electionguard.protogen.ConstantChaumPedersenProof
         }
     }
     return CiphertextBallotContest(contestId, sequenceOrder, contestHash, pbandk.ListWithSize.Builder.fixed(selections),
-        ciphertextAccumulation, cryptoHash, proof, unknownFields)
+        cryptoHash, proof, unknownFields)
 }
 
 @pbandk.Export
