@@ -134,7 +134,6 @@ public data class PlaintextBallotSelection(
     val selectionId: String = "",
     val sequenceOrder: Int = 0,
     val vote: Int = 0,
-    val isPlaceholderSelection: Boolean = false,
     val extendedData: electionguard.protogen.ExtendedData? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -146,7 +145,7 @@ public data class PlaintextBallotSelection(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.PlaintextBallotSelection = electionguard.protogen.PlaintextBallotSelection.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextBallotSelection> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallotSelection, *>>(5)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallotSelection, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -176,16 +175,6 @@ public data class PlaintextBallotSelection(
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "vote",
                         value = electionguard.protogen.PlaintextBallotSelection::vote
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "is_placeholder_selection",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(),
-                        jsonName = "isPlaceholderSelection",
-                        value = electionguard.protogen.PlaintextBallotSelection::isPlaceholderSelection
                     )
                 )
                 add(
@@ -328,7 +317,6 @@ private fun PlaintextBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageD
     var selectionId = ""
     var sequenceOrder = 0
     var vote = 0
-    var isPlaceholderSelection = false
     var extendedData: electionguard.protogen.ExtendedData? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
@@ -336,12 +324,10 @@ private fun PlaintextBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageD
             1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
             3 -> vote = _fieldValue as Int
-            4 -> isPlaceholderSelection = _fieldValue as Boolean
             5 -> extendedData = _fieldValue as electionguard.protogen.ExtendedData
         }
     }
-    return PlaintextBallotSelection(selectionId, sequenceOrder, vote, isPlaceholderSelection,
-        extendedData, unknownFields)
+    return PlaintextBallotSelection(selectionId, sequenceOrder, vote, extendedData, unknownFields)
 }
 
 @pbandk.Export

@@ -8,6 +8,7 @@ import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.Nonces
 import electionguard.core.UInt256
 import electionguard.core.constantChaumPedersenProofKnownNonce
@@ -24,7 +25,6 @@ import electionguard.core.toUInt256
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("Encryptor")
-private val validate = false
 
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
@@ -109,7 +109,7 @@ class Encryptor(
     }
 
     fun contestFrom(mcontest: Manifest.ContestDescription): PlaintextBallot.Contest {
-        val selections = mcontest.selections.map { selectionFrom(it.selectionId, it.sequenceOrder, false, false) }
+        val selections = mcontest.selections.map { selectionFrom(it.selectionId, it.sequenceOrder, false) }
         return PlaintextBallot.Contest(mcontest.contestId, mcontest.sequenceOrder, selections)
     }
 
@@ -139,7 +139,7 @@ class Encryptor(
             // Find the actual selection matching the contest description.
             val plaintextSelection = plaintextSelections[mselection.selectionId] ?:
             // No selection was made for this possible value so we explicitly set it to false
-            selectionFrom(mselection.selectionId, mselection.sequenceOrder, false, false)
+            selectionFrom(mselection.selectionId, mselection.sequenceOrder, false)
 
             // track the votes so we can append the appropriate number of true placeholder votes
             votes += plaintextSelection.vote
@@ -157,8 +157,7 @@ class Encryptor(
         for (placeholder in 1..limit) {
             val sequenceNo = selectionSequenceOrderMax + placeholder
             val plaintextSelection = selectionFrom(
-                "${mcontest.contestId}-$sequenceNo", sequenceNo, true,
-                votes < limit
+                "${mcontest.contestId}-$sequenceNo", sequenceNo, votes < limit
             )
             val mselection = Manifest.SelectionDescription(plaintextSelection.selectionId, plaintextSelection.sequenceOrder, "placeholder")
             val encryptedPlaceholder= plaintextSelection.encryptSelection(
@@ -181,14 +180,13 @@ class Encryptor(
     }
 
     private fun selectionFrom(
-        selectionId: String, sequenceOrder: Int, is_placeholder: Boolean, is_affirmative: Boolean
+        selectionId: String, sequenceOrder: Int, is_affirmative: Boolean
     ): PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
             selectionId,
             sequenceOrder,
             if (is_affirmative) 1 else 0,
-            is_placeholder,
-            null
+            null,
         )
     }
 
@@ -223,6 +221,7 @@ class Encryptor(
             disjunctiveChaumPedersenNonce,
             selectionNonce,
             isPlaceholder,
+            extendedDataCiphertext,
         )
     }
 }
@@ -235,6 +234,7 @@ fun Manifest.SelectionDescription.encryptSelection(
     disjunctiveChaumPedersenNonce: ElementModQ,
     selectionNonce: ElementModQ,
     isPlaceholder: Boolean = false,
+    extendedDataCiphertext: HashedElGamalCiphertext?,
 ): CiphertextBallot.Selection {
     val elgamalEncryption: ElGamalCiphertext = vote.encrypt(elgamalPublicKey, selectionNonce)
 
@@ -256,7 +256,7 @@ fun Manifest.SelectionDescription.encryptSelection(
         cryptoHash,
         isPlaceholder,
         proof,
-        null, // LOOK not handling this
+        extendedDataCiphertext,
         selectionNonce,
     )
 }

@@ -35,7 +35,7 @@ fun ElGamalKeypair.schnorrProof(
  * Check validity of the proof for proving possession of the private key corresponding to the
  * given public key (i.e., `this` public key).
  */
-fun ElGamalPublicKey.hasValidSchnorrProof(cryptoBaseHash: ElementModQ, proof: SchnorrProof): Boolean {
+fun ElGamalPublicKey.hasValidSchnorrProof(proof: SchnorrProof): Boolean {
     val (challenge, u) = proof
     val context = compatibleContextOrFail(this.key, challenge, u)
 

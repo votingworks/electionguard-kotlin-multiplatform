@@ -27,7 +27,6 @@ data class PlaintextBallot(
         val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int,
         val vote: Int,
-        val isPlaceholderSelection: Boolean,
         val extendedData: ExtendedData?,
     )
 
