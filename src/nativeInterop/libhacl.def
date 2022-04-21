@@ -17,4 +17,4 @@ linkerOpts.osx = -lhacl -Lbuild
 linkerOpts.linux = -lhacl -Lbuild
 
 compilerOpts.osx = -Ilibhacl/include
-compilerOpts.linux = -Ilibhacl/include
+compilerOpts.linux = -Ilibhacl/include -O2

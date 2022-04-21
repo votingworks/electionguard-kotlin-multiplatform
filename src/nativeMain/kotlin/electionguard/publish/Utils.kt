@@ -3,18 +3,22 @@ package electionguard.publish
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CArrayPointer
+import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
 import platform.posix.PATH_MAX
 import platform.posix.getcwd
+import platform.posix.lstat
+import platform.posix.mkdir
 import platform.posix.posix_errno
 import platform.posix.realpath
+import platform.posix.stat
 import platform.posix.strerror_r
 
 private val debug = false
 
-@Throws(IOException::class)
 fun absPath(filename: String): String {
     memScoped {
         if (debug) {
@@ -68,4 +72,42 @@ fun checkErrno(dothis: (mess : String) -> Unit)  {
         }
         dothis("errno = $perrno '${mess.toKString()}'")
     }
+}
+
+fun exists(filename: String): Boolean {
+    memScoped {
+        val stat = alloc<stat>()
+        // lstat(@kotlinx.cinterop.internal.CCall.CString __file: kotlin.String?,
+        //   __buf: kotlinx.cinterop.CValuesRef<platform.posix.stat>?)
+        // : kotlin.Int { /* compiled code */ }
+        return (lstat(filename, stat.ptr) == 0)
+    }
+}
+
+// create new directoriess if not exist, starting at the topDir
+fun createDirectories(dir: String): Boolean {
+    val subdirs = dir.split("/")
+    var have = ""
+    subdirs.forEach {
+        have += it
+        if (!exists(have)) {
+            println("try to createDirectory = '$have'")
+            if (!createDirectory(have)) {
+                return false;
+            }
+        }
+        have += "/"
+    }
+    return true
+}
+
+fun createDirectory(dirName: String): Boolean {
+    // mkdir(@kotlinx.cinterop.internal.CCall.CString __path: kotlin.String?,
+    // __mode: platform.posix.__mode_t /* = kotlin.UInt */)
+    // : kotlin.Int { /* compiled code */ }
+    if (mkdir(dirName, 774U) == -1) {
+        checkErrno { mess -> throw IOException("Fail mkdir $mess on $dirName") }
+        return false
+    }
+    return true
 }

@@ -9,15 +9,14 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/testJava/encryptor",
+                "src/commonTest/data/testJava/kickstart/encryptor",
                 "-ballots",
-                "src/commonTest/data/testJava/encryptor/election_private_data/plaintext_ballots/",
+                "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots/",
                 "-out",
-                "src/commonTest/data/testing/runBatchEncryption",
+                "testOut/native/runBatchEncryption",
                 "-invalidBallots",
-                "src/commonTest/data/testing/runBatchEncryption/election_private_data/invalid_ballots",
-                "-device",
-                "CountyCook-precinct079-device24358"
+                "testOut/native/runBatchEncryption/election_private_data/invalid_ballots",
+                "-fixedNonces",
             )
         )
     }

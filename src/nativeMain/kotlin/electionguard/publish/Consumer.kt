@@ -162,9 +162,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
             val filename = "$trusteeDir/$it"
             val buffer = gulpVlen(filename)
             val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
-            if (trusteeProto != null) {
-                result.add(trusteeProto.importDecryptingTrustee(groupContext))
-            }
+            result.add(trusteeProto.importDecryptingTrustee(groupContext))
         }
         return result
     }
@@ -192,7 +190,7 @@ private fun openDir(dirpath: String): List<String> {
                 // checkErrno { mess -> throw IOException("Fail readdir $mess on $dirpath") }
                 break
             }
-            val dirent: platform.posix.dirent = ddir!!.get(0)
+            val dirent: platform.posix.dirent = ddir.get(0)
             val filenamep: CArrayPointer<ByteVar> = dirent.d_name
             val filename = filenamep.toKString()
             if (filename.startsWith("remoteTrustee")) {

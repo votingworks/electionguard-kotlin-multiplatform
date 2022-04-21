@@ -219,7 +219,7 @@ private fun SubmittedBallot.Selection.publishSelection():
                 this.ciphertext.publishCiphertext(),
                 this.cryptoHash.publishUInt256(),
                 this.isPlaceholderSelection,
-                this.proof?.let { this.proof.publishDisjunctiveChaumPedersenProof() },
+                this.proof.let { this.proof.publishDisjunctiveChaumPedersenProof() },
                 this.extendedData?.let { this.extendedData.publishHashedCiphertext() },
             )
     }

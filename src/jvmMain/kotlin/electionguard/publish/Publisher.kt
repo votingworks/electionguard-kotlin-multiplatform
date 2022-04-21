@@ -7,7 +7,6 @@ import electionguard.protoconvert.publishPlaintextTally
 import electionguard.protoconvert.publishSubmittedBallot
 import electionguard.publish.ElectionRecordPath.Companion.ELECTION_RECORD_DIR
 import electionguard.publish.ElectionRecordPath.Companion.ELECTION_RECORD_FILE_NAME
-import electionguard.publish.ElectionRecordPath.Companion.INVALID_BALLOT_PROTO
 import electionguard.publish.ElectionRecordPath.Companion.PROTO_VERSION
 import electionguard.publish.ElectionRecordPath.Companion.SPOILED_BALLOT_FILE
 import electionguard.publish.ElectionRecordPath.Companion.SUBMITTED_BALLOT_PROTO
