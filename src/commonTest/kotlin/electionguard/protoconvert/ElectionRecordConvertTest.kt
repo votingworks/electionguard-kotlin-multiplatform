@@ -64,7 +64,7 @@ class ElectionRecordConvertTest {
             List(1) { generateEncryptionDevice(it) },
             CiphertextTallyConvertTest.generateFakeTally(context),
             PlaintextTallyConvertTest.generateFakeTally(0, context),
-            List(3) { generateAvailableGuardian(it, context) },
+            List(3) { generateAvailableGuardian(it) },
         )
     }
 
@@ -122,7 +122,7 @@ class ElectionRecordConvertTest {
         return EncryptionDevice(Long.MAX_VALUE, seq + 1L, seq + 42L, "location $seq",)
     }
 
-    private fun generateAvailableGuardian(seq: Int, context: GroupContext): AvailableGuardian {
+    private fun generateAvailableGuardian(seq: Int): AvailableGuardian {
         return AvailableGuardian("aguardian $seq", seq + 1, seq - 1,)
     }
 }

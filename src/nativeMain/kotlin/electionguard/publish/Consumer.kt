@@ -113,12 +113,18 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
     }
 
     actual fun iterateCastBallots(): Iterable<SubmittedBallot> {
+        if (!exists(path.submittedBallotProtoPath())) {
+            return emptyList()
+        }
         return Iterable { SubmittedBallotIterator(path.submittedBallotProtoPath())
             { it.state === electionguard.protogen.SubmittedBallot.BallotState.CAST }
         }
     }
 
     actual fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
+        if (!exists(path.submittedBallotProtoPath())) {
+            return emptyList()
+        }
         return Iterable { SubmittedBallotIterator(path.submittedBallotProtoPath())
             { it.state === electionguard.protogen.SubmittedBallot.BallotState.SPOILED }
         }
@@ -157,6 +163,9 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
 
     // all spoiled ballot tallies
     actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
+        if (!exists(path.spoiledBallotProtoPath())) {
+            return emptyList()
+        }
         return Iterable { SpoiledBallotTallyIterator(path.spoiledBallotProtoPath())}
     }
 

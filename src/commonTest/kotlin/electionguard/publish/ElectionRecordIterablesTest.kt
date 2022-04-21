@@ -10,12 +10,14 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
+    val encryptorDir = "src/commonTest/data/testJava/decryptor/"
+    val decryptorDir = "src/commonTest/data/testJava/decryptor/"
 
     @Test
     fun readBallotTalliesWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-            readSpoiledBallotTallies(context, "src/commonTest/data/testJava/decryptor/")
+            readSpoiledBallotTallies(context, decryptorDir)
         }
     }
 
@@ -23,9 +25,9 @@ class ElectionRecordIterablesTest {
     fun readBallotsWrittenByDecryptorJava() {
         runTest {
             val context = productionGroup()
-            readBallots(context, "src/commonTest/data/testJava/decryptor/")
-            readCastBallots(context, "src/commonTest/data/testJava/decryptor/")
-            readSpoiledBallots(context, "src/commonTest/data/testJava/decryptor/")
+            readBallots(context, decryptorDir)
+            readCastBallots(context, decryptorDir)
+            readSpoiledBallots(context, decryptorDir)
         }
     }
 
@@ -33,9 +35,9 @@ class ElectionRecordIterablesTest {
     fun readBallotsWrittenByEncryptorJava() {
         runTest {
             val context = productionGroup()
-            readBallots(context, "src/commonTest/data/testJava/encryptor/")
-            readCastBallots(context, "src/commonTest/data/testJava/encryptor/")
-            readSpoiledBallots(context, "src/commonTest/data/testJava/encryptor/")
+            readBallots(context, encryptorDir)
+            readCastBallots(context, encryptorDir)
+            readSpoiledBallots(context, encryptorDir)
         }
     }
 

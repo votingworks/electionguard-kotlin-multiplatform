@@ -185,5 +185,4 @@ fun CoroutineScope.launchVerifier(
         allOk = allOk && verify(ballot) // LOOK
         yield()
     }
-    println("verify #$id done")
 }
