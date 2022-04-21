@@ -18,6 +18,7 @@ import electionguard.protoconvert.importSubmittedBallot
 import mu.KotlinLogging
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
+import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -31,6 +32,12 @@ internal val logger = KotlinLogging.logger("Consumer")
 
 actual class Consumer actual constructor(topDir: String, val groupContext: GroupContext) {
     val path = ElectionRecordPath(topDir)
+
+    init {
+        if (!Files.exists(Path.of(topDir))) {
+            throw RuntimeException("Not existent directory $topDir")
+        }
+    }
 
     @Throws(IOException::class)
     actual fun readElectionRecordAllData(): ElectionRecordAllData {

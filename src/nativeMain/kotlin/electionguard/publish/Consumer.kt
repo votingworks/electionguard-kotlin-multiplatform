@@ -43,6 +43,12 @@ private val debug : Boolean = true
 actual class Consumer actual constructor(topDir: String, val groupContext: GroupContext) {
     val path = ElectionRecordPath(topDir)
 
+    init {
+        if (!exists(topDir)) {
+            throw RuntimeException("Not existent directory $topDir")
+        }
+    }
+
     @Throws(IOException::class)
     actual fun readElectionRecordAllData(): ElectionRecordAllData {
         val electionRecord = readElectionRecord()
@@ -100,6 +106,9 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
     }
 
     actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
+        if (!exists(path.submittedBallotProtoPath())) {
+            return emptyList()
+        }
         return Iterable { SubmittedBallotIterator(path.submittedBallotProtoPath()) { true } }
     }
 

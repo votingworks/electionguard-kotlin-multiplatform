@@ -13,7 +13,7 @@ class VerifyEncryptedBallotsTest {
     val topdir = "src/commonTest/data/testJava/kickstart/encryptor"
     val ballotsJvmDir = "src/commonTest/data/testOut/jvm/runBatchEncryption"
     val ballotsNativeDir = "src/commonTest/data/testOut/native/runBatchEncryption"
-    val ballotsPrecomputeDir = "src/commonTest/data/jvm/ballotPrecomputeTest/"
+    val ballotsPrecomputeDir = "src/commonTest/data/testOut/jvm/ballotPrecomputeTest/"
 
     @Test
     fun verifyPrecomputeEncryptedBallots() {
