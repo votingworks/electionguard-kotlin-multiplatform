@@ -34,7 +34,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
     val path = ElectionRecordPath(topDir)
 
     init {
-        if (Files.exists(Path.of(topDir))) {
+        if (!Files.exists(Path.of(topDir))) {
             throw RuntimeException("Not existent directory $topDir")
         }
     }
