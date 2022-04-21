@@ -17,6 +17,8 @@ class RunBatchEncryptionTest {
                 "-invalidBallots",
                 "testOut/native/runBatchEncryption/election_private_data/invalid_ballots",
                 "-fixedNonces",
+                "-nthreads",
+                "6"
             )
         )
     }

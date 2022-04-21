@@ -8,19 +8,33 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.SubmittedBallot
 import electionguard.ballot.submit
 import electionguard.core.ElGamalPublicKey
+import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
+import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
+import electionguard.publish.SubmittedBallotSinkIF
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
 
 /**
@@ -55,12 +69,22 @@ fun main(args: Array<String>) {
         ArgType.Boolean,
         shortName = "fixedNonces",
         description = "Encrypt with fixed nonces and timestamp")
+    val nthreads by parser.option(
+        ArgType.Int,
+        shortName = "nthreads",
+        description = "Number of parellel threads to use")
     parser.parse(args)
 
-    runBatchEncryption(productionGroup(), inputDir, outputDir, ballotDir, invalidDir, fixedNonces?: false)
+    if (nthreads == 1) {
+        batchEncryption(productionGroup(), inputDir, outputDir, ballotDir, invalidDir, fixedNonces?: false)
+    } else {
+        channelEncryption(productionGroup(), inputDir, outputDir, ballotDir, invalidDir,
+            fixedNonces ?: false, nthreads?: 6)
+    }
 }
 
-fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String, invalidDir: String, fixedNonces: Boolean) {
+// single threaded
+fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String, invalidDir: String, fixedNonces: Boolean) {
     val consumer = Consumer(inputDir, group)
     val electionRecord: ElectionRecord = consumer.readElectionRecord()
 
@@ -77,8 +101,7 @@ fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String,
 
     val invalidBallots = ArrayList<PlaintextBallot>()
     val ballotValidator = BallotInputValidation(electionRecord.manifest)
-    val ballots: Iterable<PlaintextBallot> = consumer.iteratePlaintextBallots(ballotDir)
-    val filteredBallots = ballots.filter {
+    val filteredBallots: Iterable<PlaintextBallot> = consumer.iteratePlaintextBallots(ballotDir) {
         val mess = ballotValidator.validate(it)
         if (mess.hasErrors()) {
             println("*** BallotInputValidation FAILED on ballot ${it.ballotId}")
@@ -133,3 +156,139 @@ fun runBatchEncryption(group: GroupContext, inputDir: String, outputDir: String,
     }
     println("done")
 }
+
+// multi threaded
+fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
+                      invalidDir: String, fixedNonces: Boolean, nthreads: Int) {
+    val reader = Consumer(inputDir, group)
+    val electionRecord: ElectionRecord = reader.readElectionRecord()
+
+    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    val sink: SubmittedBallotSinkIF = publisher.submittedBallotSink()
+
+    // ManifestInputValidation
+    val manifestValidator = ManifestInputValidation(electionRecord.manifest)
+    val errors = manifestValidator.validate()
+    if (errors.hasErrors()) {
+        println("*** ManifestInputValidation FAILED on election record in $inputDir")
+        println("$errors")
+        // kotlin.system.exitProcess(1) // kotlin 1.6.20
+        return
+    }
+
+    // BallotInputValidation
+    val invalidBallots = ArrayList<PlaintextBallot>()
+    val ballotValidator = BallotInputValidation(electionRecord.manifest)
+    val filter: ((PlaintextBallot) -> Boolean) = {
+        val mess = ballotValidator.validate(it)
+        if (mess.hasErrors()) {
+            println("*** BallotInputValidation FAILED on ballot ${it.ballotId}")
+            println("$mess\n")
+            invalidBallots.add(PlaintextBallot(it, mess.toString()))
+            false
+        } else {
+            true
+        }
+    }
+
+    val context =
+        electionRecord.context ?: throw IllegalStateException("election record.context is missing in $inputDir")
+
+    val codeSeed: ElementModQ = context.cryptoExtendedBaseHash.toElementModQ(group)
+    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null
+    val starting = getSystemTimeInMillis()
+    val encryptor = Encryptor(group, electionRecord.manifest, ElGamalPublicKey(context.jointPublicKey), context.cryptoExtendedBaseHash)
+
+    runBlocking {
+        val outputChannel = Channel<CiphertextBallot>()
+        val encryptorJobs = mutableListOf<Job>()
+        val ballotProducer = produceBallots(reader.iteratePlaintextBallots(ballotDir, filter))
+        repeat(nthreads) {
+            encryptorJobs.add(launchEncryptor(it, group, ballotProducer, encryptor, codeSeed, masterNonce, outputChannel))
+        }
+        launchSink(outputChannel, sink)
+
+        // wait for all encryptions to be done, then close everything
+        joinAll(*encryptorJobs.toTypedArray())
+        outputChannel.close()
+    }
+    sink.close()
+
+    val took = getSystemTimeInMillis() - starting
+    val perBallot = (took.toDouble() / count).roundToInt()
+    println("Took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
+
+    publisher.writeElectionRecordProto(
+        electionRecord.manifest,
+        electionRecord.constants,
+        electionRecord.context,
+        electionRecord.guardianRecords,
+        electionRecord.devices,
+        null,
+        null,
+        null,
+        null,
+        null,
+    )
+    if (!invalidBallots.isEmpty()) {
+        publisher.writeInvalidBallots(invalidDir, invalidBallots)
+        println("wrote ${invalidBallots.size} invalid ballots to $invalidDir")
+    }
+    println("done")
+}
+
+// place the ballot reading into its own coroutine
+fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveChannel<PlaintextBallot> = produce {
+    for (ballot in producer) {
+        println("Producer sending plaintext ballot ${ballot.ballotId}")
+        send(ballot)
+        yield()
+    }
+    channel.close()
+}
+
+// multiple encryptors allow parallelism at the ballot level
+// LOOK not possible to do ballot chaining
+fun CoroutineScope.launchEncryptor(id: Int,
+                                   group: GroupContext,
+                                   input: ReceiveChannel<PlaintextBallot>,
+                                   encryptor: Encryptor,
+                                   codeSeed: ElementModQ,
+                                   masterNonce: ElementModQ?,
+                                   output: SendChannel<CiphertextBallot>,
+) = launch(Dispatchers.Default) {
+    for (ballot in input) {
+        val encrypted = if (masterNonce != null) // make deterministic
+            encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+        else
+            encryptor.encrypt(ballot, codeSeed, group.randomElementModQ())
+
+        println(" Encryptor #$id sending ciphertext ballot ${encrypted.ballotId}")
+        output.send(encrypted)
+        yield()
+    }
+    println("Encryptor #$id done")
+}
+
+// place the ballot writing into its own coroutine
+// LOOK we assume that this is thread confined
+private var count = 0
+fun CoroutineScope.launchSink(input: Channel<CiphertextBallot>, sink: SubmittedBallotSinkIF,
+) = launch {
+    for (ballot in input) {
+        sink.writeSubmittedBallot(ballot.submit(SubmittedBallot.BallotState.CAST))
+        println(" Sink wrote $count submitted ballot ${ballot.ballotId}")
+        count++
+    }
+}
+
+/* actor only available in the jvm
+private var count = 0
+fun CoroutineScope.counterActor(sink: SubmittedBallotSinkIF) = actor<CiphertextBallot> {
+    var counter = 0 // actor state
+    for (msg in channel) { // iterate over incoming messages
+        sink.writeSubmittedBallot(it.submit(SubmittedBallot.BallotState.CAST))
+        println(" Sink wrote $count submitted ballot ${it.ballotId}")
+        count++
+    }
+} */

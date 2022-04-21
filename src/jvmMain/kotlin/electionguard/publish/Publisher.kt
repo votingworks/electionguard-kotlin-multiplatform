@@ -21,18 +21,12 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 
 /** Publishes the Manifest Record to Json or protobuf files.  */
-actual class Publisher {
-    private val topDir: String
-    private val createPublisherMode: PublisherMode
-    private val electionRecordDir: Path
-    private var path: ElectionRecordPath
+actual class Publisher actual constructor(topDir: String, publisherMode: PublisherMode) {
+    private val createPublisherMode: PublisherMode = publisherMode
+    private val electionRecordDir = Path.of(topDir).resolve(ELECTION_RECORD_DIR)
+    private var path: ElectionRecordPath = ElectionRecordPath(topDir)
 
-    actual constructor(topDir: String, publisherMode: PublisherMode) {
-        this.topDir = topDir
-        this.createPublisherMode = publisherMode
-        this.electionRecordDir = Path.of(topDir).resolve(ELECTION_RECORD_DIR)
-        this.path = ElectionRecordPath(topDir)
-
+    init {
         if (createPublisherMode == PublisherMode.createNew) {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
@@ -43,29 +37,6 @@ actual class Publisher {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
             }
-        } else {
-            check(Files.exists(electionRecordDir)) { "Non existing election directory $electionRecordDir" }
-        }
-    }
-
-    internal constructor(electionRecordDir: Path, createPublisherMode: PublisherMode) {
-        this.createPublisherMode = createPublisherMode
-        this.topDir = electionRecordDir.toAbsolutePath().toString()
-        this.electionRecordDir = electionRecordDir
-        this.path = ElectionRecordPath(topDir)
-
-        if (createPublisherMode == PublisherMode.createNew) {
-            if (!Files.exists(electionRecordDir)) {
-                Files.createDirectories(electionRecordDir)
-            } else {
-                removeAllFiles()
-            }
-
-        } else if (createPublisherMode == PublisherMode.createIfMissing) {
-            if (!Files.exists(electionRecordDir)) {
-                Files.createDirectories(electionRecordDir)
-            }
-
         } else {
             check(Files.exists(electionRecordDir)) { "Non existing election directory $electionRecordDir" }
         }
@@ -210,16 +181,30 @@ actual class Publisher {
         }
     }
 
+    actual fun submittedBallotSink(): SubmittedBallotSinkIF =
+        SubmittedBallotSink(submittedBallotProtoPath().toString())
 
-    ////////////////////////////////////////////////////
-    private fun writeDelimitedTo(proto: pbandk.Message, output: OutputStream) {
+    inner class SubmittedBallotSink(path: String) : SubmittedBallotSinkIF {
+        val out: FileOutputStream = FileOutputStream(path)
+
+        override fun writeSubmittedBallot(ballot: SubmittedBallot) {
+            val ballotProto: pbandk.Message = ballot.publishSubmittedBallot()
+            writeDelimitedTo(ballotProto, out)
+        }
+
+        override fun close() {
+            out.close()
+        }
+    }
+
+    fun writeDelimitedTo(proto: pbandk.Message, output: OutputStream) {
         val bb = ByteArrayOutputStream()
         proto.encodeToStream(bb)
         writeVlen(bb.size(), output)
         output.write(bb.toByteArray())
     }
 
-    private fun writeVlen(input: Int, output: OutputStream) {
+    fun writeVlen(input: Int, output: OutputStream) {
         var value = input
         while (true) {
             if (value and 0x7F.inv() == 0) {

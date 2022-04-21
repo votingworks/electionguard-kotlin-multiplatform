@@ -66,29 +66,38 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
     }
 
     // all plaintext ballots
-    actual fun iteratePlaintextBallots(ballotDir: String): Iterable<PlaintextBallot> {
+    actual fun iteratePlaintextBallots(
+        ballotDir: String,
+        filter: (PlaintextBallot) -> Boolean
+    ): Iterable<PlaintextBallot> {
         if (!Files.exists(Path.of(path.plaintextBallotProtoPath(ballotDir)))) {
             return emptyList()
         }
-        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir)) }
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir), filter) }
     }
 
     private inner class PlaintextBallotIterator(
         filename: String,
+        val filter: Predicate<PlaintextBallot>
     ) : AbstractIterator<PlaintextBallot>() {
-
         private val input: FileInputStream = FileInputStream(filename)
 
         override fun computeNext() {
-            val length = readVlen(input)
-            if (length < 0) {
-                input.close()
-                return done()
+            while (true) {
+                val length = readVlen(input)
+                if (length < 0) {
+                    input.close()
+                    return done()
+                }
+                val message = input.readNBytes(length)
+                val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
+                val ballot = ballotProto.importPlaintextBallot()
+                if (!filter.test(ballot)) {
+                    continue // skip it
+                }
+                setNext(ballot)
+                break
             }
-            val message = input.readNBytes(length)
-            val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
-            val ballot = ballotProto.importPlaintextBallot()
-            setNext(ballot)
         }
     }
 
@@ -144,7 +153,7 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
                     setNext(ballotResult.unwrap())
                     break
                 } else {
-                    logger.warn { ballotResult.getErrorOr("Unknown error on ${ballotProto.ballotId}")}
+                    logger.warn { ballotResult.getErrorOr("Unknown error on ${ballotProto.ballotId}") }
                     continue
                 }
             }

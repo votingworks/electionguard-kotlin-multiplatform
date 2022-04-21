@@ -1,6 +1,7 @@
 package electionguard.verifier
 
-import electionguard.ballot.ElectionRecordAllData
+import electionguard.ballot.ElectionRecord
+import electionguard.ballot.SubmittedBallot
 import electionguard.core.ConstantChaumPedersenProofKnownNonce
 import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
 import electionguard.core.ElGamalPublicKey
@@ -12,11 +13,22 @@ import electionguard.core.isValid
 import electionguard.core.toElementModQ
 
 // quick proof verification - not necessarily the verification spec
-class Verifier(val group: GroupContext, val electionRecord: ElectionRecordAllData) {
-    val publicKey: ElGamalPublicKey = ElGamalPublicKey(electionRecord.context.jointPublicKey)
-    val cryptoBaseHash: ElementModQ = electionRecord.context.cryptoExtendedBaseHash.toElementModQ(group)
+class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
+    val publicKey: ElGamalPublicKey
+    val cryptoBaseHash: ElementModQ
+
+    init {
+        if (electionRecord.context == null) {
+            throw IllegalStateException("electionRecord.context is null")
+        }
+        publicKey = ElGamalPublicKey(electionRecord.context.jointPublicKey)
+        cryptoBaseHash = electionRecord.context.cryptoExtendedBaseHash.toElementModQ(group)
+    }
 
     fun verifyGuardianPublicKey(): Boolean {
+        if (electionRecord.guardianRecords == null) {
+            return false
+        }
         var allValid = true
         for (guardian in electionRecord.guardianRecords) {
             var guardianOk = true
@@ -31,18 +43,24 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecordAllDat
         return allValid
     }
 
-    fun verifySubmittedBallots(): Boolean {
+    fun verifySubmittedBallots(ballots: Iterable<SubmittedBallot>): Boolean {
+        if (electionRecord.context == null) {
+            return false
+        }
+
+        // LOOK add multithreading
         var allValid = true
         var nballots = 0
-
-        for (ballot in electionRecord.submittedBallots) {
+        for (ballot in ballots) {
             nballots++
+            var bvalid = true
             var ncontests = 0
             var nselections = 0
+            println("Ballot '${ballot.ballotId}'")
             for (contest in ballot.contests) {
                 ncontests++
                 val proof: ConstantChaumPedersenProofKnownNonce = contest.proof
-                val valid = proof.isValid(
+                var cvalid = proof.isValid(
                     contest.ciphertextAccumulation,
                     ElGamalPublicKey(electionRecord.context.jointPublicKey),
                     electionRecord.context.cryptoExtendedBaseHash.toElementModQ(group),
@@ -56,17 +74,25 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecordAllDat
                         ElGamalPublicKey(electionRecord.context.jointPublicKey),
                         electionRecord.context.cryptoExtendedBaseHash.toElementModQ(group),
                     )
-                    allValid = allValid && svalid
+                    cvalid = cvalid && svalid
                 }
-
-                println("Ballot '${ballot.ballotId}' valid $valid; ncontests = $ncontests nselections = $nselections")
-                allValid = allValid && valid
+                println("     Contest '${contest.contestId}' valid $cvalid")
+                bvalid = bvalid && cvalid
             }
+            allValid = allValid && bvalid
+            println("   valid $bvalid; ncontests = $ncontests nselections = $nselections")
         }
         return allValid
     }
 
     fun verifyDecryptedTally(): Boolean {
+        if (electionRecord.guardianRecords == null) {
+            return false
+        }
+        if (electionRecord.decryptedTally == null) {
+            return false
+        }
+
         var allValid = true
         var ncontests = 0
         var nselections = 0

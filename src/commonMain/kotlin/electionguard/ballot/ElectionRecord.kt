@@ -22,7 +22,21 @@ data class ElectionRecordAllData(
     val availableGuardians: List<AvailableGuardian>,
     val submittedBallots: Iterable<SubmittedBallot>,
     val spoiledBallots: Iterable<PlaintextTally>,
-)
+) {
+
+    fun toElectionRecord(): ElectionRecord =
+        ElectionRecord(
+            protoVersion,
+            constants,
+            manifest,
+            context,
+            guardianRecords,
+            devices,
+            encryptedTally,
+            decryptedTally,
+            availableGuardians
+        )
+}
 
 /** The published election record, many fields are optional. */
 data class ElectionRecord(
@@ -59,7 +73,7 @@ data class AvailableGuardian(
  * The byte arrays are defined to be big-endian.
  */
 data class ElectionConstants(
-    val name : String,
+    val name: String,
     /** large prime or P. */
     val largePrime: ByteArray,
     /** small prime or Q. */

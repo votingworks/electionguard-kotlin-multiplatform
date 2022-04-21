@@ -69,26 +69,33 @@ actual class Consumer actual constructor(topDir: String, val groupContext: Group
         return proto.importElectionRecord(groupContext)
     }
 
-    actual fun iteratePlaintextBallots(ballotDir : String): Iterable<PlaintextBallot> {
-        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir)) }
+    actual fun iteratePlaintextBallots(ballotDir : String, filter : (PlaintextBallot) -> Boolean): Iterable<PlaintextBallot> {
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir), filter) }
     }
 
     private inner class PlaintextBallotIterator(
         val filename: String,
+        val filter : (PlaintextBallot) -> Boolean,
     ) : AbstractIterator<PlaintextBallot>() {
 
         private val file = openFile(filename)
 
         override fun computeNext() {
-            val length = readVlen(file, filename)
-            if (length <= 0) {
-                fclose(file)
-                return done()
+            while (true) {
+                val length = readVlen(file, filename)
+                if (length <= 0) {
+                    fclose(file)
+                    return done()
+                }
+                val message = readFromFile(file, length.toULong(), filename)
+                val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteArray(message)
+                val ballot = ballotProto.importPlaintextBallot()
+                if (!filter(ballot)) {
+                    continue
+                }
+                setNext(ballot)
+                break
             }
-            val message = readFromFile(file, length.toULong(), filename)
-            val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteArray(message)
-            val ballot = ballotProto.importPlaintextBallot()
-            setNext(ballot)
         }
     }
 
