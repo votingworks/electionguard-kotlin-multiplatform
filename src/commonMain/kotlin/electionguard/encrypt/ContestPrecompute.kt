@@ -16,11 +16,10 @@ import electionguard.core.toUInt256
 
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
- * The zero encryptions of all Selections are precomputed.
- * A vote triggers the computation of the one encryption.
+ * A vote triggers the computation of that contest.
  * So most of the work is already done when encrypt() is called, for low latency.
  */
-class BallotPrecompute(
+class ContestPrecompute(
     val group: GroupContext,
     val manifest: Manifest,
     val elgamalPublicKey: ElGamalPublicKey,
@@ -81,6 +80,7 @@ class BallotPrecompute(
         val placeholders = mutableListOf<Selection>()
         val contestNonce: ElementModQ
         val chaumPedersenNonce: ElementModQ
+        var encryptedContest: CiphertextBallot.Contest? = null
 
         init {
             val contestDescriptionHash = mcontest.cryptoHash
@@ -105,14 +105,25 @@ class BallotPrecompute(
                 return false
             }
             if (mcontest.voteVariation == Manifest.VoteVariationType.one_of_m) {
-                selections.forEach { it.vote(0)}
+                selections.forEach { it.vote = 0}
             }
-            selection.vote(vote)
+            selection.vote = vote
+
+            // precompute the contest
+            this.encryptedContest = encryptContest()
+            // println(" vote for ${mcontest.contestId} ${selectionId}")
             return true
         }
 
         fun encryptedContest(): CiphertextBallot.Contest {
-            val votes = selections.sumOf { it.vote() }
+            if (encryptedContest == null) {
+                encryptedContest = encryptContest();
+            }
+            return encryptedContest!!
+        }
+
+        fun encryptContest(): CiphertextBallot.Contest {
+            val votes = selections.sumOf { it.vote }
             // check for overvotes
             if (votes > mcontest.votesAllowed) {
                 // could use Result
@@ -120,7 +131,7 @@ class BallotPrecompute(
             }
             // modify the placeholders for undervotes
             for (count in 0 until mcontest.votesAllowed - votes) {
-                placeholders[count].vote(1)
+                placeholders[count].vote = 1
             }
             val allSelections = selections + placeholders
             val encryptedSelections = allSelections.map { it.encryptedSelection() }.sortedBy { it.sequenceOrder }
@@ -149,46 +160,25 @@ class BallotPrecompute(
         contestNonce: ElementModQ,
         val isPlaceholder: Boolean = false
     ) {
-        private var vote = 0
+        var vote = 0
         val disjunctiveChaumPedersenNonce: ElementModQ
         val selectionNonce: ElementModQ
-        val zero: CiphertextBallot.Selection
 
         init {
             val nonceSequence = Nonces(mselection.cryptoHash.toElementModQ(group), contestNonce)
             disjunctiveChaumPedersenNonce = nonceSequence.get(0)
             selectionNonce = nonceSequence.get(mselection.sequenceOrder)
-            zero = mselection.encryptSelection(
-                0,
-                elgamalPublicKey,
-                cryptoExtendedBaseHashQ,
-                disjunctiveChaumPedersenNonce,
-                selectionNonce,
-                isPlaceholder
-            )
         }
-
-        val one: CiphertextBallot.Selection by
-        lazy {
-            mselection.encryptSelection(
-                1,
-                elgamalPublicKey,
-                cryptoExtendedBaseHashQ,
-                disjunctiveChaumPedersenNonce,
-                selectionNonce,
-                isPlaceholder
-            )
-        }
-
-        fun vote(vote: Int): CiphertextBallot.Selection {
-            this.vote = vote
-            return encryptedSelection()
-        }
-
-        fun vote(): Int = vote
 
         fun encryptedSelection(): CiphertextBallot.Selection {
-            return if (vote == 0) zero else one
+            return mselection.encryptSelection(
+                vote,
+                elgamalPublicKey,
+                cryptoExtendedBaseHashQ,
+                disjunctiveChaumPedersenNonce,
+                selectionNonce,
+                isPlaceholder
+            )
         }
     }
 }
