@@ -15,7 +15,7 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("DecryptingTrustee")
 private val validate = false
 
-class DecryptingTrustee(val id : String, val xCoordinate: Int, val electionKeypair: ElGamalKeypair)
+data class DecryptingTrustee(val id : String, val xCoordinate: Int, val electionKeypair: ElGamalKeypair)
     : DecryptingTrusteeIF {
     /** Guardian id.  */
     override fun id(): String = id
@@ -98,4 +98,6 @@ class DecryptingTrustee(val id : String, val xCoordinate: Int, val electionKeypa
     ):  List<DecryptionProofRecovery> {
         return emptyList()
     }
+
+
 }

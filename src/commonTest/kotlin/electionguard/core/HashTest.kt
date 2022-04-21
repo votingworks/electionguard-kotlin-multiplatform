@@ -126,7 +126,6 @@ class HashTest {
     @Test
     fun testIterable() {
         runTest {
-            val group = productionGroup()
             val h1 = hashElements("hay1", listOf("hey2", "hey3"))
             val h2 = hashElements("hay1", "hey2", "hey3")
             println(" h1 = ${h1}")

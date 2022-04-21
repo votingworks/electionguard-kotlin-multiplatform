@@ -113,6 +113,9 @@ kotlin {
 
                     // A multiplatform Kotlin library for command-line parsing (could use enableEndorsedLibs instead)
                     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
+
+                    // A multiplatform Kotlin library for Result monads
+                    implementation("com.michael-bull.kotlin-result:kotlin-result:1.1.15")
                 }
             }
         val commonTest by

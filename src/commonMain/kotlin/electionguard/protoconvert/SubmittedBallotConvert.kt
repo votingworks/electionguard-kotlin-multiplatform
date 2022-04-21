@@ -1,164 +1,175 @@
 package electionguard.protoconvert
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.partition
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.*
-import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger("SubmittedBallotConvert")
+fun GroupContext.importSubmittedBallot(
+    ballot: electionguard.protogen.SubmittedBallot
+): Result<SubmittedBallot, String> {
 
-fun electionguard.protogen.SubmittedBallot.importSubmittedBallot(
-    groupContext: GroupContext
-): SubmittedBallot? {
+    val manifestHash = importUInt256(ballot.manifestHash)
+    val trackingHash = importUInt256(ballot.code)
+    val previousTrackingHash = importUInt256(ballot.codeSeed)
+    val cryptoHash = importUInt256(ballot.cryptoHash)
+    val ballotState = ballot.state.importBallotState(ballot.ballotId)
+    if (ballotState is Err) return ballotState
 
-    val manifestHash = importUInt256(this.manifestHash)
-    val trackingHash = importUInt256(this.code)
-    val previousTrackingHash = importUInt256(this.codeSeed)
-    val cryptoHash = importUInt256(this.cryptoHash)
-    val ballotState = this.state.importBallotState()
-    val contests = this.contests.map { it.importContest(groupContext) }.noNullValuesOrNull()
-
-    // TODO: should we also check that the contests lists is non-empty?
-
-    if (manifestHash == null || trackingHash == null || previousTrackingHash == null ||
-        cryptoHash == null || ballotState == null || contests == null
-    ) {
-        logger.error { "Failed to convert submitted ballot, missing fields" }
-        return null
+    val (contests, errors) = ballot.contests.map { this.importContest(it, ballot.ballotId) }.partition()
+    if (!errors.isEmpty()) {
+        return Err(errors.joinToString("\n"))
+    }
+    if (manifestHash == null || trackingHash == null || previousTrackingHash == null || cryptoHash == null) {
+        return Err("Missing fields in ballot ${ballot.ballotId}")
     }
 
-    return SubmittedBallot(
-        this.ballotId,
-        this.ballotStyleId,
-        manifestHash,
-        trackingHash,
-        previousTrackingHash,
-        contests,
-        this.timestamp,
-        cryptoHash,
-        ballotState,
+    return Ok(
+        SubmittedBallot(
+            ballot.ballotId,
+            ballot.ballotStyleId,
+            manifestHash,
+            trackingHash,
+            previousTrackingHash,
+            contests,
+            ballot.timestamp,
+            cryptoHash,
+            ballotState.unwrap(),
+        )
     )
 }
 
-private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState():
-    SubmittedBallot.BallotState? {
+private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState(where: String):
+        Result<SubmittedBallot.BallotState, String> {
 
-        val name = this.name
-        if (name == null) {
-            logger.error { "Failed to convert ballot state, missing name" }
-            return null
-        }
-
-        try {
-            return SubmittedBallot.BallotState.valueOf(name)
-        } catch (e: IllegalArgumentException) {
-            logger.error { "Failed to convert ballot state, unknown name: $name" }
-            return null
-        }
+    val name = this.name
+    if (name == null) {
+        return Err("Failed to convert ballot state, missing name in $where\"")
     }
 
-private fun electionguard.protogen.CiphertextBallotContest.importContest(
-    groupContext: GroupContext
-): SubmittedBallot.Contest? {
-    val contestHash = importUInt256(this.contestHash)
-    val ciphertextAccumulation = groupContext.importCiphertext(this.ciphertextAccumulation)
-    val cryptoHash = importUInt256(this.cryptoHash)
-    val proof = this.proof?.let { this.proof.importConstantChaumPedersenProof(groupContext) }
-    val selections = this.selections.map { it.importSelection(groupContext) }.noNullValuesOrNull()
+    try {
+        return Ok(SubmittedBallot.BallotState.valueOf(name))
+    } catch (e: IllegalArgumentException) {
+        return Err("Failed to convert ballot state, unknown name $name in $where\"")
+    }
+}
 
-    // TODO: should we also check if the selections is empty or the wrong length?
+private fun GroupContext.importContest(
+    contest: electionguard.protogen.CiphertextBallotContest, where: String,
+): Result<SubmittedBallot.Contest, String> {
+    val here = "$where ${contest.contestId}"
 
-    if (contestHash == null || ciphertextAccumulation == null || cryptoHash == null ||
-        proof == null || selections == null
-    ) {
-        logger.error { "Failed to convert contest, missing fields" }
-        return null
+    val contestHash = importUInt256(contest.contestHash)
+    val ciphertextAccumulation = this.importCiphertext(contest.ciphertextAccumulation)
+    val cryptoHash = importUInt256(contest.cryptoHash)
+    val proof = this.importConstantChaumPedersenProof(contest.proof, here)
+
+    val (selections, errors) = contest.selections.map { this.importSelection(it, here) }.partition()
+    if (!errors.isEmpty()) {
+        return Err(errors.joinToString("\n"))
+    }
+    if (proof is Err) return proof
+
+    if (contestHash == null || ciphertextAccumulation == null || cryptoHash == null) {
+        return Err("Missing fields in contest $here")
     }
 
-    return SubmittedBallot.Contest(
-        this.contestId,
-        this.sequenceOrder,
-        contestHash,
-        selections,
-        ciphertextAccumulation,
-        cryptoHash,
-        proof
+    return Ok(
+        SubmittedBallot.Contest(
+            contest.contestId,
+            contest.sequenceOrder,
+            contestHash,
+            selections,
+            ciphertextAccumulation,
+            cryptoHash,
+            proof.unwrap(),
+        )
     )
 }
 
-private fun electionguard.protogen.CiphertextBallotSelection.importSelection(
-    groupContext: GroupContext
-): SubmittedBallot.Selection {
-
-    val selectionHash = importUInt256(this.selectionHash)
-    val ciphertext = groupContext.importCiphertext(this.ciphertext)
-    val cryptoHash = importUInt256(this.cryptoHash)
-    val proof = this.proof?.importDisjunctiveChaumPedersenProof(groupContext)
-    val extendedData = groupContext.importHashedCiphertext(this.extendedData)
-
-    if (selectionHash == null || ciphertext == null || cryptoHash == null || proof == null) {
-        logger.error { "Failed to convert selection, missing fields" }
-        throw IllegalStateException("Failed to convert selection, missing fields")
+private fun GroupContext.importConstantChaumPedersenProof(
+    constant: electionguard.protogen.ConstantChaumPedersenProof?, where: String
+): Result<ConstantChaumPedersenProofKnownNonce, String> {
+    if (constant == null) {
+        return Err("Null ConstantChaumPedersenProof in $where")
     }
-
-    return SubmittedBallot.Selection(
-        this.selectionId,
-        this.sequenceOrder,
-        selectionHash,
-        ciphertext,
-        cryptoHash,
-        this.isPlaceholderSelection,
-        proof,
-        extendedData
-    )
-}
-
-fun electionguard.protogen.ConstantChaumPedersenProof.importConstantChaumPedersenProof(
-    groupContext: GroupContext
-): ConstantChaumPedersenProofKnownNonce? {
-    var proof = groupContext.importChaumPedersenProof(this.proof)
+    var proof = this.importChaumPedersenProof(constant.proof)
 
     if (proof == null) {
         // 1.0
-        val challenge = groupContext.importElementModQ(this.challenge)
-        val response = groupContext.importElementModQ(this.response)
+        val challenge = this.importElementModQ(constant.challenge)
+        val response = this.importElementModQ(constant.response)
 
         if (challenge == null || response == null) {
-            logger.error { "Failed to convert constant Chaum-Pedersen 1.0 proof, missing fields" }
-            return null
+            return Err("Missing fields ConstantChaumPedersenProof in $where")
         }
         proof = GenericChaumPedersenProof(challenge, response)
     }
 
-    return ConstantChaumPedersenProofKnownNonce(proof, this.constant)
+    return Ok(ConstantChaumPedersenProofKnownNonce(proof, constant.constant))
 }
 
-fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumPedersenProof(
-    groupContext: GroupContext
-): DisjunctiveChaumPedersenProofKnownNonce? {
-    var proof0 = groupContext.importChaumPedersenProof(this.proof0)
-    var proof1 = groupContext.importChaumPedersenProof(this.proof1)
-    val proofChallenge = groupContext.importElementModQ(this.challenge)
+private fun GroupContext.importSelection(
+    selection: electionguard.protogen.CiphertextBallotSelection,
+    where: String
+): Result<SubmittedBallot.Selection, String> {
+    val here = "$where ${selection.selectionId}"
+
+    val selectionHash = importUInt256(selection.selectionHash)
+    val ciphertext = this.importCiphertext(selection.ciphertext)
+    val cryptoHash = importUInt256(selection.cryptoHash)
+    val proof = this.importDisjunctiveChaumPedersenProof(selection.proof, here)
+    val extendedData = this.importHashedCiphertext(selection.extendedData)
+
+    if (proof is Err) return proof
+    if (selectionHash == null || ciphertext == null || cryptoHash == null) {
+        return Err("Missing fields in selection $here")
+    }
+
+    return Ok(
+        SubmittedBallot.Selection(
+            selection.selectionId,
+            selection.sequenceOrder,
+            selectionHash,
+            ciphertext,
+            cryptoHash,
+            selection.isPlaceholderSelection,
+            proof.unwrap(),
+            extendedData
+        )
+    )
+}
+
+private fun GroupContext.importDisjunctiveChaumPedersenProof(
+    disjunct: electionguard.protogen.DisjunctiveChaumPedersenProof?, where: String
+): Result<DisjunctiveChaumPedersenProofKnownNonce, String> {
+    if (disjunct == null) {
+        return Err("Missing DisjunctiveChaumPedersenProof in $where")
+    }
+    var proof0 = this.importChaumPedersenProof(disjunct.proof0)
+    var proof1 = this.importChaumPedersenProof(disjunct.proof1)
+    val proofChallenge = this.importElementModQ(disjunct.challenge)
 
     if (proof0 == null && proof1 == null) {
         // 1.0 election record
-        val proofZeroPad = groupContext.importElementModP(this.proofZeroPad)
-        val proofZeroData = groupContext.importElementModP(this.proofZeroData)
-        val proofZeroChallenge = groupContext.importElementModQ(this.proofZeroChallenge)
-        val proofZeroResponse = groupContext.importElementModQ(this.proofZeroResponse)
+        val proofZeroPad = this.importElementModP(disjunct.proofZeroPad)
+        val proofZeroData = this.importElementModP(disjunct.proofZeroData)
+        val proofZeroChallenge = this.importElementModQ(disjunct.proofZeroChallenge)
+        val proofZeroResponse = this.importElementModQ(disjunct.proofZeroResponse)
 
-        val proofOnePad = groupContext.importElementModP(this.proofOnePad)
-        val proofOneData = groupContext.importElementModP(this.proofOneData)
-        val proofOneChallenge = groupContext.importElementModQ(this.proofOneChallenge)
-        val proofOneResponse = groupContext.importElementModQ(this.proofOneResponse)
+        val proofOnePad = this.importElementModP(disjunct.proofOnePad)
+        val proofOneData = this.importElementModP(disjunct.proofOneData)
+        val proofOneChallenge = this.importElementModQ(disjunct.proofOneChallenge)
+        val proofOneResponse = this.importElementModQ(disjunct.proofOneResponse)
 
         if (proofZeroPad == null || proofZeroData == null || proofZeroChallenge == null ||
             proofZeroResponse == null || proofOnePad == null || proofOneData == null ||
             proofOneChallenge == null || proofOneResponse == null || proofChallenge == null
         ) {
-            logger.error {
-                "Failed to convert disjunctive Chaum-Pedersen proof, missing 1.0 fields"
-            }
-            return null
+            return Err("Failed to convert DisjunctiveChaumPedersenProofKnownNonce $where from proto (1)")
         }
 
         proof0 = GenericChaumPedersenProof(proofZeroChallenge, proofZeroResponse)
@@ -166,11 +177,10 @@ fun electionguard.protogen.DisjunctiveChaumPedersenProof.importDisjunctiveChaumP
     }
 
     if (proof0 == null || proof1 == null || proofChallenge == null) {
-        logger.error { "Failed to convert disjunctive Chaum-Pedersen proof, missing fields" }
-        return null
+        return Err("Failed to convert DisjunctiveChaumPedersenProofKnownNonce $where from proto (2)")
     }
 
-    return DisjunctiveChaumPedersenProofKnownNonce(proof0, proof1, proofChallenge,)
+    return Ok(DisjunctiveChaumPedersenProofKnownNonce(proof0, proof1, proofChallenge))
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,66 +201,66 @@ fun SubmittedBallot.publishSubmittedBallot(): electionguard.protogen.SubmittedBa
 }
 
 private fun SubmittedBallot.BallotState.publishBallotState():
-    electionguard.protogen.SubmittedBallot.BallotState {
-        return electionguard.protogen.SubmittedBallot.BallotState.fromName(this.name)
-    }
+        electionguard.protogen.SubmittedBallot.BallotState {
+    return electionguard.protogen.SubmittedBallot.BallotState.fromName(this.name)
+}
 
 private fun SubmittedBallot.Contest.publishContest():
-    electionguard.protogen.CiphertextBallotContest {
-        return electionguard.protogen
-            .CiphertextBallotContest(
-                this.contestId,
-                this.sequenceOrder,
-                this.contestHash.publishUInt256(),
-                this.selections.map { it.publishSelection() },
-                this.ciphertextAccumulation.publishCiphertext(),
-                this.cryptoHash.publishUInt256(),
-                this.proof.let { this.proof.publishConstantChaumPedersenProof() },
-            )
-    }
+        electionguard.protogen.CiphertextBallotContest {
+    return electionguard.protogen
+        .CiphertextBallotContest(
+            this.contestId,
+            this.sequenceOrder,
+            this.contestHash.publishUInt256(),
+            this.selections.map { it.publishSelection() },
+            this.ciphertextAccumulation.publishCiphertext(),
+            this.cryptoHash.publishUInt256(),
+            this.proof.let { this.proof.publishConstantChaumPedersenProof() },
+        )
+}
 
 private fun SubmittedBallot.Selection.publishSelection():
-    electionguard.protogen.CiphertextBallotSelection {
-        return electionguard.protogen
-            .CiphertextBallotSelection(
-                this.selectionId,
-                this.sequenceOrder,
-                this.selectionHash.publishUInt256(),
-                this.ciphertext.publishCiphertext(),
-                this.cryptoHash.publishUInt256(),
-                this.isPlaceholderSelection,
-                this.proof.let { this.proof.publishDisjunctiveChaumPedersenProof() },
-                this.extendedData?.let { this.extendedData.publishHashedCiphertext() },
-            )
-    }
+        electionguard.protogen.CiphertextBallotSelection {
+    return electionguard.protogen
+        .CiphertextBallotSelection(
+            this.selectionId,
+            this.sequenceOrder,
+            this.selectionHash.publishUInt256(),
+            this.ciphertext.publishCiphertext(),
+            this.cryptoHash.publishUInt256(),
+            this.isPlaceholderSelection,
+            this.proof.let { this.proof.publishDisjunctiveChaumPedersenProof() },
+            this.extendedData?.let { this.extendedData.publishHashedCiphertext() },
+        )
+}
 
 fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof():
-    electionguard.protogen.ConstantChaumPedersenProof {
-        return electionguard.protogen
-            .ConstantChaumPedersenProof(
-                null,
-                null,
-                null,
-                null, // 1.0 0nly
-                this.constant,
-                this.proof.publishChaumPedersenProof(),
-            )
-    }
+        electionguard.protogen.ConstantChaumPedersenProof {
+    return electionguard.protogen
+        .ConstantChaumPedersenProof(
+            null,
+            null,
+            null,
+            null, // 1.0 0nly
+            this.constant,
+            this.proof.publishChaumPedersenProof(),
+        )
+}
 
 fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof():
-    electionguard.protogen.DisjunctiveChaumPedersenProof {
-        return electionguard.protogen
-            .DisjunctiveChaumPedersenProof(
-                null,
-                null,
-                null,
-                null, // 1.0 0nly
-                null,
-                null,
-                null,
-                null, // 1.0 0nly
-                this.c.publishElementModQ(),
-                this.proof0.publishChaumPedersenProof(),
-                this.proof1.publishChaumPedersenProof(),
-            )
-    }
+        electionguard.protogen.DisjunctiveChaumPedersenProof {
+    return electionguard.protogen
+        .DisjunctiveChaumPedersenProof(
+            null,
+            null,
+            null,
+            null, // 1.0 0nly
+            null,
+            null,
+            null,
+            null, // 1.0 0nly
+            this.c.publishElementModQ(),
+            this.proof0.publishChaumPedersenProof(),
+            this.proof1.publishChaumPedersenProof(),
+        )
+}
