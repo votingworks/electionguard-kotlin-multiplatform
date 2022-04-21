@@ -9,6 +9,7 @@ import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.newSingleThreadContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
@@ -134,14 +135,12 @@ class ConsumerTest {
     fun readMissingTrustees() {
         runTest {
             val context = productionGroup()
-            val trusteeDir = "src/commonTest/data/testBad/empty"
-            val consumer = Consumer( trusteeDir, context)
+            val trusteeDir = "src/commonTest/data/testBad/nonexistant"
             val result: Result<List<DecryptingTrusteeIF>, Throwable> = runCatching {
+                val consumer = Consumer( trusteeDir, context)
                 consumer.readTrustees(trusteeDir)
             }
-            assertTrue(result is Ok)
-            val resultOk: List<DecryptingTrusteeIF> = result.value
-            assertTrue(resultOk.isEmpty())
+            assertFalse(result is Ok)
         }
     }
 
