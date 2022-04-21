@@ -34,7 +34,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
             var guardianOk = true
             guardian.coefficientProofs.forEachIndexed { index, proof ->
                 val publicKey = ElGamalPublicKey(guardian.coefficientCommitments[index])
-                val validProof = publicKey.hasValidSchnorrProof(cryptoBaseHash, proof)
+                val validProof = publicKey.hasValidSchnorrProof(proof)
                 guardianOk = guardianOk && validProof
             }
             println("Guardian ${guardian.guardianId} ok = ${guardianOk}")

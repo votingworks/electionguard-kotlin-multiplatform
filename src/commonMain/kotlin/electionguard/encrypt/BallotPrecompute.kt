@@ -164,7 +164,8 @@ class BallotPrecompute(
                 cryptoExtendedBaseHashQ,
                 disjunctiveChaumPedersenNonce,
                 selectionNonce,
-                isPlaceholder
+                isPlaceholder,
+                null // LOOK not handling write-ins
             )
         }
 
@@ -176,7 +177,8 @@ class BallotPrecompute(
                 cryptoExtendedBaseHashQ,
                 disjunctiveChaumPedersenNonce,
                 selectionNonce,
-                isPlaceholder
+                isPlaceholder,
+                null // LOOK not handling write-ins
             )
         }
 

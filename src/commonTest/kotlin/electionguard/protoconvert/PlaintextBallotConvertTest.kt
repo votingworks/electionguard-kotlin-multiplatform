@@ -31,7 +31,6 @@ class PlaintextBallotConvertTest {
             "selection$sseq",
             sseq,
             vote,
-            false,
             generateExtendedData(sseq)
         )
     }

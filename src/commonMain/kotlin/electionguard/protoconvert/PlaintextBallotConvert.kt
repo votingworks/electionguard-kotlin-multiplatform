@@ -25,7 +25,6 @@ private fun electionguard.protogen.PlaintextBallotSelection.importSelection():
             this.selectionId,
             this.sequenceOrder,
             this.vote,
-            this.isPlaceholderSelection,
             this.extendedData?.let { this.extendedData.importExtendedData() }
         )
     }
@@ -63,7 +62,6 @@ private fun PlaintextBallot.Selection.publishSelection():
                 this.selectionId,
                 this.sequenceOrder,
                 this.vote,
-                this.isPlaceholderSelection,
                 this.extendedData?.let { this.extendedData.publishExtendedData() }
             )
     }

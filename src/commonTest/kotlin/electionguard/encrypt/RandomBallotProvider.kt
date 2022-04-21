@@ -55,7 +55,7 @@ class RandomBallotProvider(election: Manifest, nballots: Int?) {
                 val choice: Boolean = Random.nextBoolean()
                 return PlaintextBallot.Selection(
                     description.selectionId, description.sequenceOrder,
-                    if (choice) 1 else 0, false, null
+                    if (choice) 1 else 0, null
                 )
             }
         }

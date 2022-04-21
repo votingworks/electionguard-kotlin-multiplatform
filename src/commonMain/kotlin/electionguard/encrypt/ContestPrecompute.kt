@@ -117,7 +117,7 @@ class ContestPrecompute(
 
         fun encryptedContest(): CiphertextBallot.Contest {
             if (encryptedContest == null) {
-                encryptedContest = encryptContest();
+                encryptedContest = encryptContest()
             }
             return encryptedContest!!
         }
@@ -177,7 +177,8 @@ class ContestPrecompute(
                 cryptoExtendedBaseHashQ,
                 disjunctiveChaumPedersenNonce,
                 selectionNonce,
-                isPlaceholder
+                isPlaceholder,
+                null, // LOOK not handling write-ins
             )
         }
     }

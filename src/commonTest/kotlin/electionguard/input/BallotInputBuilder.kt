@@ -49,7 +49,7 @@ class BallotInputBuilder internal constructor(val id: String) {
 
         inner class SelectionBuilder internal constructor(private val id: String, private val vote: Int) {
             fun build(): PlaintextBallot.Selection {
-                return PlaintextBallot.Selection(id, seq++, vote, false, null)
+                return PlaintextBallot.Selection(id, seq++, vote, null)
             }
         }
     }
