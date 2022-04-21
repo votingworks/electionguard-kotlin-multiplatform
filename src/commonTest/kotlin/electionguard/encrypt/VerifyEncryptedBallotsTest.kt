@@ -22,7 +22,7 @@ class VerifyEncryptedBallotsTest {
             val consumer = Consumer(topdir, group)
             val electionRecord = consumer.readElectionRecord()
             val verifier = Verifier(group, electionRecord)
-            val ballots = readBallots(group, ballotsPrecomputeDir)
+            val ballots = readBallotsOne(group, ballotsPrecomputeDir)
             val ok = verifier.verifySubmittedBallots(ballots)
             assertTrue(ok)
         }
@@ -35,7 +35,7 @@ class VerifyEncryptedBallotsTest {
             val consumer = Consumer(topdir, group)
             val electionRecord = consumer.readElectionRecord()
             val verifier = Verifier(group, electionRecord)
-            val ballots = readBallots(group, ballotsJvmDir)
+            val ballots = readBallotsOne(group, ballotsJvmDir)
             val ok = verifier.verifySubmittedBallots(ballots)
             assertTrue(ok)
         }
@@ -48,10 +48,17 @@ class VerifyEncryptedBallotsTest {
             val consumer = Consumer(topdir, group)
             val electionRecord = consumer.readElectionRecord()
             val verifier = Verifier(group, electionRecord)
-            val ballots = readBallots(group, ballotsNativeDir)
+            val ballots = readBallotsOne(group, ballotsNativeDir)
             val ok = verifier.verifySubmittedBallots(ballots)
             assertTrue(ok)
         }
+    }
+
+    // this is slow - just do first one
+    fun readBallotsOne(context: GroupContext, topdir: String): List<SubmittedBallot> {
+        val consumer = Consumer(topdir, context)
+        val firstBallot =  consumer.iterateSubmittedBallots().iterator().next()
+        return listOf(firstBallot)
     }
 
     fun readBallots(context: GroupContext, topdir: String): List<SubmittedBallot> {

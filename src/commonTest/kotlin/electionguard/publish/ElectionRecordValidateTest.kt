@@ -15,14 +15,15 @@ class ElectionRecordValidateTest {
             val group = productionGroup()
             val consumer = Consumer(topdir, group)
             val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
-
+            assertNotNull(allData)
+            // validateTally(group, allData.decryptedTally, allData.availableGuardians.size)
         }
     }
 
     fun validateTally(group: GroupContext, tally: PlaintextTally, nguardians: Int?) {
         for (contest in tally.contests.values) {
             for (selection in contest.selections.values) {
-                val actual : Int? = group.dLogG(selection.value)
+                val actual : Int? = group.dLogG(selection.value) // LOOK should be K?
                 assertEquals(selection.tally, actual)
                 assertEquals(nguardians, selection.shares.size)
             }
