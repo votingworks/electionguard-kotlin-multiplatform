@@ -62,7 +62,6 @@ class SubmittedBallotConvertTest {
                 cseq,
                 generateUInt256(context),
                 selections,
-                generateCiphertext(context),
                 generateUInt256(context),
                 generateConstantChaumPedersenProofKnownNonce(context),
             )

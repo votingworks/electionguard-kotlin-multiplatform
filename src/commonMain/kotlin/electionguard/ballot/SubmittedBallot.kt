@@ -28,7 +28,6 @@ data class SubmittedBallot(
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrderv
         val contestHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: List<Selection>,
-        val ciphertextAccumulation: ElGamalCiphertext,
         val cryptoHash: UInt256,
         val proof: ConstantChaumPedersenProofKnownNonce,
     )  : CryptoHashableUInt256 {
