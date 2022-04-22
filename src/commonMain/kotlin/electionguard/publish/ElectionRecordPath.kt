@@ -9,16 +9,34 @@ data class ElectionRecordPath(val topDir : String) {
 
         const val PROTO_SUFFIX = ".protobuf"
         const val ELECTION_RECORD_FILE_NAME = "electionRecord" + PROTO_SUFFIX
-        const val GUARDIANS_FILE = "guardians" + PROTO_SUFFIX
+        const val ELECTION_CONFIG_FILE_NAME = "electionConfig" + PROTO_SUFFIX
+        const val ELECTION_INITIALIZED_FILE_NAME = "electionInitialized" + PROTO_SUFFIX
+        const val ELECTION_TALLY_RESULT_NAME = "tallyResult" + PROTO_SUFFIX
+        const val ELECTION_DECRYPTION_RESULT_NAME = "decryptionResult" + PROTO_SUFFIX
         const val INVALID_BALLOT_PROTO = "invalidBallots" + PROTO_SUFFIX
         const val PLAINTEXT_BALLOT_PROTO = "plaintextBallots" + PROTO_SUFFIX
         const val SUBMITTED_BALLOT_PROTO = "submittedBallots" + PROTO_SUFFIX
         const val SPOILED_BALLOT_FILE = "spoiledBallotsTally" + PROTO_SUFFIX
-        const val TRUSTEES_FILE = "trustees" + PROTO_SUFFIX
     }
 
     fun electionRecordProtoPath(): String {
         return "$electionRecordDir/$ELECTION_RECORD_FILE_NAME"
+    }
+
+    fun electionConfigPath(): String {
+        return "$electionRecordDir/$ELECTION_CONFIG_FILE_NAME"
+    }
+
+    fun electionInitializedPath(): String {
+        return "$electionRecordDir/$ELECTION_INITIALIZED_FILE_NAME"
+    }
+
+    fun tallyResultPath(): String {
+        return "$electionRecordDir/$ELECTION_TALLY_RESULT_NAME"
+    }
+
+    fun decryptionResultPath(): String {
+        return "$electionRecordDir/$ELECTION_DECRYPTION_RESULT_NAME"
     }
 
     fun plaintextBallotProtoPath(ballotDir : String): String {

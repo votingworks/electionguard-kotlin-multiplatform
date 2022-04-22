@@ -5,10 +5,9 @@ import electionguard.ballot.CiphertextTally
 import electionguard.ballot.DecryptionShare
 import electionguard.ballot.DecryptionShare.DecryptionShareContest
 import electionguard.ballot.DecryptionShare.DecryptionShareSelection
-import electionguard.ballot.ElectionContext
 import electionguard.ballot.PlaintextTally
+import electionguard.ballot.TallyResult
 import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.toElementModQ
 
@@ -17,8 +16,9 @@ import electionguard.core.toElementModQ
  */
 class DecryptingMediator(
     val group: GroupContext,
-    val context: ElectionContext,
-    val decryptingTrustees : List<DecryptingTrusteeIF>) {
+    val context: TallyResult,
+    val decryptingTrustees : List<DecryptingTrusteeIF>,
+) {
 
     fun CiphertextTally.decrypt() : PlaintextTally {
         val tallyShares : MutableList<DecryptionShare> = ArrayList()
@@ -44,7 +44,7 @@ class DecryptingMediator(
             }
         }
 
-        val decryptor = Decryptor(group, ElGamalPublicKey(context.jointPublicKey))
+        val decryptor = Decryptor(group, context.jointPublicKey())
         return decryptor.decryptTally(this, tallySharesBySelectionId)
     }
 
@@ -69,7 +69,7 @@ class DecryptingMediator(
      }
      // returned in order
      val results: List<PartialDecryptionProof> =
-         guardian.partialDecrypt(group, texts, context.cryptoExtendedBaseHash.toElementModQ(group), null)
+         guardian.partialDecrypt(group, texts, context.cryptoExtendedBaseHash(), null)
 
      // Create the guardian's DecryptionShare for the tally
      var count = 0;

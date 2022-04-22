@@ -1,5 +1,8 @@
 package electionguard.protoconvert
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.ballot.DecryptionShare
 import electionguard.ballot.PlaintextTally
 import electionguard.core.GroupContext
@@ -7,42 +10,40 @@ import electionguard.core.noNullValuesOrNull
 import mu.KotlinLogging
 private val logger = KotlinLogging.logger("PlaintextTallyConvert")
 
-fun electionguard.protogen.PlaintextTally.importPlaintextTally(
-    groupContext: GroupContext
-): PlaintextTally? {
+fun GroupContext.importPlaintextTally(tally: electionguard.protogen.PlaintextTally?):
+        Result<PlaintextTally, String> {
+    if (tally == null) {
+        return Err("Null PlaintextTally")
+    }
 
     // TODO: can it ever occur that we have zero contests?
-    if (this.contests.isEmpty()) {
-        logger.error { "No contests in PlaintextTally" }
-        return null
+    if (tally.contests.isEmpty()) {
+        return Err( "No contests in PlaintextTally")
     }
 
     val contestMap =
-        this.contests
-            .associate { it.contestId to it.importContest(groupContext) }
+        tally.contests
+            .associate { it.contestId to this.importContest(it) }
             .noNullValuesOrNull()
 
     if (contestMap == null) {
-        logger.error { "Failed to convert PlaintextTally" }
-        return null
+        return Err( "Failed to convert PlaintextTally")
     }
 
-    return PlaintextTally(this.tallyId, contestMap)
+    return Ok(PlaintextTally(tally.tallyId, contestMap))
 }
 
-private fun electionguard.protogen.PlaintextTallyContest.importContest(
-    groupContext: GroupContext
-): PlaintextTally.Contest? {
+private fun GroupContext.importContest(contest: electionguard.protogen.PlaintextTallyContest): PlaintextTally.Contest? {
 
     // TODO: can it ever occur that we have zero selections?
-    if (this.selections.isEmpty()) {
+    if (contest.selections.isEmpty()) {
         logger.error { "No selections in PlaintextTallyContest" }
         return null
     }
 
     val selectionMap =
-        this.selections
-            .associate { it.selectionId to it.importSelection(groupContext) }
+        contest.selections
+            .associate { it.selectionId to this.importSelection(it) }
             .noNullValuesOrNull()
 
     if (selectionMap == null) {
@@ -50,15 +51,13 @@ private fun electionguard.protogen.PlaintextTallyContest.importContest(
         return null
     }
 
-    return PlaintextTally.Contest(this.contestId, selectionMap)
+    return PlaintextTally.Contest(contest.contestId, selectionMap)
 }
 
-private fun electionguard.protogen.PlaintextTallySelection.importSelection(
-    groupContext: GroupContext
-): PlaintextTally.Selection? {
-    val value = groupContext.importElementModP(this.value)
-    val message = groupContext.importCiphertext(this.message)
-    val shares = this.shares.map { it.importShare(groupContext) }.noNullValuesOrNull()
+private fun GroupContext.importSelection(selection: electionguard.protogen.PlaintextTallySelection): PlaintextTally.Selection? {
+    val value = this.importElementModP(selection.value)
+    val message = this.importCiphertext(selection.message)
+    val shares = selection.shares.map { this.importShare(it) }.noNullValuesOrNull()
 
     if (value == null || message == null || shares == null) {
         logger.error { "Failed to convert PlaintextTallySelection" }
@@ -71,20 +70,18 @@ private fun electionguard.protogen.PlaintextTallySelection.importSelection(
         return null
     }
 
-    return PlaintextTally.Selection(this.selectionId, this.tally, value, message, shares)
+    return PlaintextTally.Selection(selection.selectionId, selection.tally, value, message, shares)
 }
 
-private fun electionguard.protogen.CiphertextDecryptionSelection.importShare(
-    groupContext: GroupContext
-) : DecryptionShare.DecryptionShareSelection? {
+private fun GroupContext.importShare(sselection: electionguard.protogen.CiphertextDecryptionSelection): DecryptionShare.DecryptionShareSelection? {
 
-    val share = groupContext.importElementModP(this.share)
-    val proof = groupContext.importChaumPedersenProof(this.proof)
-    val recoveredParts = this.recoveredParts
+    val share = this.importElementModP(sselection.share)
+    val proof = this.importChaumPedersenProof(sselection.proof)
+    val recoveredParts = sselection.recoveredParts
     val parts =
         if (recoveredParts != null) {
             recoveredParts.fragments
-                .map { it.importRecoveredParts(groupContext) }
+                .map { this.importRecoveredParts(it) }
                 .noNullValuesOrNull()
         } else {
             null
@@ -113,20 +110,18 @@ private fun electionguard.protogen.CiphertextDecryptionSelection.importShare(
 
     // If we get here, one of proof or parts is non-null
     return DecryptionShare.DecryptionShareSelection(
-        this.selectionId,
-        this.guardianId,
+        sselection.selectionId,
+        sselection.guardianId,
         share,
         proof,
         parts,
     )
 }
 
-private fun electionguard.protogen.CiphertextCompensatedDecryptionSelection.importRecoveredParts(
-    groupContext: GroupContext
-): DecryptionShare.DecryptionShareCompensatedSelection? {
-    val share = groupContext.importElementModP(this.share)
-    val recoveryKey = groupContext.importElementModP(this.recoveryKey)
-    val proof = groupContext.importChaumPedersenProof(this.proof)
+private fun GroupContext.importRecoveredParts(parts: electionguard.protogen.CiphertextCompensatedDecryptionSelection): DecryptionShare.DecryptionShareCompensatedSelection? {
+    val share = this.importElementModP(parts.share)
+    val recoveryKey = this.importElementModP(parts.recoveryKey)
+    val proof = this.importChaumPedersenProof(parts.proof)
 
     if (share == null || recoveryKey == null || proof == null) {
         logger.error { "Failed to convert CiphertextCompensatedDecryptionSelection" }
@@ -134,8 +129,8 @@ private fun electionguard.protogen.CiphertextCompensatedDecryptionSelection.impo
     }
 
     return DecryptionShare.DecryptionShareCompensatedSelection(
-        this.guardianId,
-        this.missingGuardianId,
+        parts.guardianId,
+        parts.missingGuardianId,
         share,
         recoveryKey,
         proof,

@@ -4,7 +4,7 @@ import electionguard.ballot.SubmittedBallot
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
-import electionguard.publish.Consumer
+import electionguard.publish.ElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -53,8 +53,8 @@ class CompareEncryptedBallotsTest {
     }
 
     fun readBallots(context: GroupContext, topdir: String): List<SubmittedBallot> {
-        val consumer = Consumer(topdir, context)
-        return consumer.iterateSubmittedBallots().toList()
+        val electionRecordIn = ElectionRecord(topdir, context)
+        return electionRecordIn.iterateSubmittedBallots().toList()
     }
 
 }

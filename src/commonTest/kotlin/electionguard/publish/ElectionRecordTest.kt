@@ -1,66 +1,66 @@
 package electionguard.publish
 
+import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
-import electionguard.core.GroupContext
-import electionguard.core.productionGroup
-import electionguard.core.runTest
-import electionguard.protoconvert.importElectionRecord
-import electionguard.protoconvert.publishElectionRecord
+import electionguard.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class ElectionRecordTest {
-
     @Test
     fun readElectionRecordWrittenByDecryptorJava() {
         runTest {
-            val context = productionGroup()
-            readElectionRecordAll(context, "src/commonTest/data/testJava/decryptor/")
+            readElectionRecordAndValidate("src/commonTest/data/testJava/decryptor/")
         }
     }
 
     @Test
-    fun readElectionRecordWrittenByEncryptorJava() {
+    fun readElectionRecordWrittenByDecryptorKotlin() {
         runTest {
-            val context = productionGroup()
-            readElectionRecord(context, "src/commonTest/data/testJava/encryptor/")
+            readElectionRecordAndValidate("src/commonTest/data/workflow/runDecryptingMediator")
         }
     }
 
-    fun readElectionRecordAll(context: GroupContext, topdir: String) {
-        val consumer = Consumer(topdir, context)
-        val allData: ElectionRecordAllData = consumer.readElectionRecordAllData()
-
-        val proto = allData.publishElectionRecord()
-        val roundtrip = proto.importElectionRecord(context)
-        assertNotNull(roundtrip)
-        assertEquals(roundtrip.protoVersion, allData.protoVersion)
-        assertEquals(roundtrip.constants, allData.constants)
-        assertEquals(roundtrip.manifest, allData.manifest)
-        assertEquals(roundtrip.context, allData.context)
-        assertEquals(roundtrip.guardianRecords, allData.guardianRecords)
-        assertEquals(roundtrip.devices, allData.devices)
-        assertEquals(roundtrip.encryptedTally, allData.encryptedTally)
-        assertEquals(roundtrip.decryptedTally, allData.decryptedTally)
-        assertEquals(roundtrip.availableGuardians, allData.availableGuardians)
+    fun readElectionRecordAndValidate(topdir : String) {
+        runTest {
+            val group = productionGroup()
+            val electionRecordIn = ElectionRecord(topdir, group)
+            assertNotNull(electionRecordIn)
+            val decryption = electionRecordIn.readDecryptionResult().getOrThrow { IllegalStateException(topdir) }
+            readElectionRecord(decryption)
+            validateTally(group, decryption.decryptedTally, decryption.availableGuardians.size)
+        }
     }
 
-    fun readElectionRecord(context: GroupContext, topdir: String) {
-        val consumer = Consumer(topdir, context)
-        val allData: ElectionRecord = consumer.readElectionRecord()
+    fun readElectionRecord(decryption: DecryptionResult) {
+        val tallyResult = decryption.tallyResult
+        val init = tallyResult.electionIntialized
+        val config = init.config
 
-        val proto = allData.publishElectionRecord()
-        val roundtrip = proto.importElectionRecord(context)
-        assertNotNull(roundtrip)
-        assertEquals(roundtrip.protoVersion, allData.protoVersion)
-        assertEquals(roundtrip.constants, allData.constants)
-        assertEquals(roundtrip.manifest, allData.manifest)
-        assertEquals(roundtrip.context, allData.context)
-        assertEquals(roundtrip.guardianRecords, allData.guardianRecords)
-        assertEquals(roundtrip.devices, allData.devices)
-        assertEquals(roundtrip.encryptedTally, allData.encryptedTally)
-        assertEquals(roundtrip.decryptedTally, allData.decryptedTally)
-        assertEquals(roundtrip.availableGuardians, allData.availableGuardians)
+        assertEquals("1.0.0", config.protoVersion)
+        assertEquals("", config.constants.name)
+        assertEquals("v0.95", config.manifest.specVersion)
+        assertEquals(3, config.numberOfGuardians)
+        assertEquals(2, config.quorum)
+        assertEquals(3, init.guardians.size)
+        assertEquals("accumulateTally", tallyResult.ciphertextTally.tallyId)
+        assertEquals("accumulateTally", decryption.decryptedTally.tallyId)
+        assertNotNull(decryption.decryptedTally)
+        val contests = decryption.decryptedTally.contests
+        assertNotNull(contests)
+        val contest = contests["justice-supreme-court"]
+        assertNotNull(contest)
+        assertEquals(2, decryption.availableGuardians.size)
+    }
+
+    fun validateTally(group: GroupContext, tally: PlaintextTally, nguardians: Int?) {
+        for (contest in tally.contests.values) {
+            for (selection in contest.selections.values) {
+                val actual : Int? = group.dLogG(selection.value) // LOOK should be K?
+                assertEquals(selection.tally, actual)
+                assertEquals(nguardians, selection.shares.size)
+            }
+        }
     }
 }

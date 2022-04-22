@@ -1,5 +1,8 @@
 package electionguard.protoconvert
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.ballot.CiphertextTally
 import electionguard.core.GroupContext
 import electionguard.core.noNullValuesOrNull
@@ -7,27 +10,26 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("CommonConvert")
 
-fun electionguard.protogen.CiphertextTally.importCiphertextTally(
-    groupContext: GroupContext
-): CiphertextTally? {
+fun GroupContext.importCiphertextTally(tally: electionguard.protogen.CiphertextTally?):
+        Result<CiphertextTally, String> {
+    if (tally == null) {
+        return Err("Null CiphertextTally")
+    }
     val contestMap =
-        this.contests
-            .associate { it.contestId to it.importContest(groupContext) }
+        tally.contests
+            .associate { it.contestId to this.importContest(it) }
             .noNullValuesOrNull()
 
     if (contestMap == null) {
-        logger.error { "Failed to convert CiphertextTally's contest map" }
-        return null
+        return Err("Failed to convert CiphertextTally's contest map" )
     }
 
-    return CiphertextTally(this.tallyId, contestMap)
+    return Ok(CiphertextTally(tally.tallyId, contestMap))
 }
 
-private fun electionguard.protogen.CiphertextTallyContest.importContest(
-    groupContext: GroupContext
-): CiphertextTally.Contest? {
+private fun GroupContext.importContest(contest: electionguard.protogen.CiphertextTallyContest): CiphertextTally.Contest? {
 
-    val contestHash = importUInt256(this.contestDescriptionHash)
+    val contestHash = importUInt256(contest.contestDescriptionHash)
 
     if (contestHash == null) {
         logger.error { "Contest description hash was malformed or out of bounds" }
@@ -35,8 +37,8 @@ private fun electionguard.protogen.CiphertextTallyContest.importContest(
     }
 
     val selectionMap =
-        this.selections
-            .associate { it.selectionId to it.importSelection(groupContext) }
+        contest.selections
+            .associate { it.selectionId to this.importSelection(it) }
             .noNullValuesOrNull()
 
     if (selectionMap == null) {
@@ -44,15 +46,13 @@ private fun electionguard.protogen.CiphertextTallyContest.importContest(
         return null
     }
 
-    return CiphertextTally.Contest(this.contestId, this.sequenceOrder, contestHash, selectionMap)
+    return CiphertextTally.Contest(contest.contestId, contest.sequenceOrder, contestHash, selectionMap)
 }
 
-private fun electionguard.protogen.CiphertextTallySelection.importSelection(
-    groupContext: GroupContext
-): CiphertextTally.Selection? {
+private fun GroupContext.importSelection(selection: electionguard.protogen.CiphertextTallySelection): CiphertextTally.Selection? {
 
-    val selectionDescriptionHash = importUInt256(this.selectionDescriptionHash)
-    val ciphertext = groupContext.importCiphertext(this.ciphertext)
+    val selectionDescriptionHash = importUInt256(selection.selectionDescriptionHash)
+    val ciphertext = this.importCiphertext(selection.ciphertext)
 
     if (selectionDescriptionHash == null || ciphertext == null) {
         logger.error { "Selection description hash or ciphertext was malformed or out of bounds" }
@@ -60,8 +60,8 @@ private fun electionguard.protogen.CiphertextTallySelection.importSelection(
     }
 
     return CiphertextTally.Selection(
-        this.selectionId,
-        this.sequenceOrder,
+        selection.selectionId,
+        selection.sequenceOrder,
         selectionDescriptionHash,
         ciphertext
     )

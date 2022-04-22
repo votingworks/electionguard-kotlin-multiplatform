@@ -42,8 +42,8 @@ class ElectionRecordIterablesTest {
     }
 
     fun readBallots(context: GroupContext, topdir: String) {
-        val consumer = Consumer(topdir, context)
-        val iterator = consumer.iterateSubmittedBallots().iterator()
+        val electionRecordIn = ElectionRecord(topdir, context)
+        val iterator = electionRecordIn.iterateSubmittedBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
             logger.debug { "  $count readBallots ${ballot.ballotId} ${ballot.state}" }
@@ -53,8 +53,8 @@ class ElectionRecordIterablesTest {
     }
 
     fun readCastBallots(context: GroupContext, topdir: String) {
-        val consumer = Consumer(topdir, context)
-        val iterator = consumer.iterateCastBallots().iterator()
+        val electionRecordIn = ElectionRecord(topdir, context)
+        val iterator = electionRecordIn.iterateCastBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
             logger.debug { "  $count readCastBallots ${ballot.ballotId} ${ballot.state}" }
@@ -64,8 +64,8 @@ class ElectionRecordIterablesTest {
     }
 
     fun readSpoiledBallots(context: GroupContext, topdir: String) {
-        val consumer = Consumer(topdir, context)
-        val iterator = consumer.iterateSpoiledBallots().iterator()
+        val electionRecordIn = ElectionRecord(topdir, context)
+        val iterator = electionRecordIn.iterateSpoiledBallots().iterator()
         var count = 0;
         for (ballot in iterator) {
             logger.debug { "  $count readSpoiledBallots ${ballot.ballotId} ${ballot.state}" }
@@ -75,8 +75,8 @@ class ElectionRecordIterablesTest {
     }
 
     fun readSpoiledBallotTallies(context: GroupContext, topdir: String) {
-        val consumer = Consumer(topdir, context)
-        val iterator = consumer.iterateSpoiledBallotTallies().iterator()
+        val electionRecordIn = ElectionRecord(topdir, context)
+        val iterator = electionRecordIn.iterateSpoiledBallotTallies().iterator()
         var count = 0;
         for (tally in iterator) {
             logger.debug { "  $count readSpoiledBallotTallies ${tally.tallyId}" }

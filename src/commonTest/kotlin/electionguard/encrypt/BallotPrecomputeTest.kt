@@ -1,7 +1,7 @@
 package electionguard.encrypt
 
-import electionguard.ballot.ElectionContext
-import electionguard.ballot.ElectionRecord
+import com.github.michaelbull.result.getOrThrow
+import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.SubmittedBallot
@@ -13,7 +13,7 @@ import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.core.toElementModQ
-import electionguard.publish.Consumer
+import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import electionguard.publish.SubmittedBallotSinkIF
@@ -31,15 +31,15 @@ class BallotPrecomputeTest {
     fun testBallotPrecompute() {
         runTest {
             val group = productionGroup()
-            val reader = Consumer(electionRecordDir, group)
-            val electionRecord: ElectionRecord = reader.readElectionRecord()
-            val ballots = reader.iteratePlaintextBallots(ballotDir) { true }
+            val electionRecordIn = ElectionRecord(electionRecordDir, group)
+            val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+            val ballots = electionRecordIn.iteratePlaintextBallots(ballotDir) { true }
 
             var starting = getSystemTimeInMillis()
             var count = 0
             val pballots = ballots.map {
                 count++
-                precomputeBallot(group, electionRecord, it)
+                precomputeBallot(group, electionInit, it)
             }
             var took = getSystemTimeInMillis() - starting
             var perBallot = (took.toDouble() / count).roundToInt()
@@ -63,17 +63,16 @@ class BallotPrecomputeTest {
     }
 }
 
-fun precomputeBallot(group: GroupContext, electionRecord: ElectionRecord, ballot: PlaintextBallot): BallotPrecompute {
-    val manifest: Manifest = electionRecord.manifest
-    val context: ElectionContext = electionRecord.context ?: throw Exception()
-    val codeSeed: ElementModQ = context.cryptoExtendedBaseHash.toElementModQ(group)
+fun precomputeBallot(group: GroupContext, electionInit: ElectionInitialized, ballot: PlaintextBallot): BallotPrecompute {
+    val manifest: Manifest = electionInit.manifest()
+    val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
     val masterNonce = group.TWO_MOD_Q
 
     val pballot = BallotPrecompute(
         group,
         manifest,
-        ElGamalPublicKey(context.jointPublicKey),
-        context.cryptoExtendedBaseHash,
+        ElGamalPublicKey(electionInit.jointPublicKey),
+        electionInit.cryptoExtendedBaseHash,
         ballot.ballotId,
         ballot.ballotStyleId,
         codeSeed,

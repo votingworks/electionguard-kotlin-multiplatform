@@ -1,228 +1,169 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.getErrorOr
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.ElectionRecord
-import electionguard.ballot.ElectionRecordAllData
+import com.github.michaelbull.result.unwrapError
+import electionguard.ballot.DecryptionResult
+import electionguard.ballot.ElectionConfig
+import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.protoconvert.importDecryptingTrustee
-import electionguard.protoconvert.importElectionRecord
+import electionguard.protoconvert.importDecryptionResult
+import electionguard.protoconvert.importElectionConfig
+import electionguard.protoconvert.importElectionInitialized
 import electionguard.protoconvert.importPlaintextBallot
 import electionguard.protoconvert.importPlaintextTally
 import electionguard.protoconvert.importSubmittedBallot
-import mu.KotlinLogging
+import electionguard.protoconvert.importTallyResult
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
-import java.io.File
 import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Predicate
 
-internal val logger = KotlinLogging.logger("Consumer")
+fun GroupContext.readElectionConfig(filename: String): Result<ElectionConfig, String> {
+    var proto: electionguard.protogen.ElectionConfig
+    FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionConfig.decodeFromStream(inp) }
+    return importElectionConfig(proto)
+}
 
-actual class Consumer actual constructor(topDir: String, val groupContext: GroupContext) {
-    val path = ElectionRecordPath(topDir)
+fun GroupContext.readElectionInitialized(filename: String): Result<ElectionInitialized, String> {
+    var proto: electionguard.protogen.ElectionInitialized
+    FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionInitialized.decodeFromStream(inp) }
+    return this.importElectionInitialized(proto)
+}
 
-    init {
-        if (!Files.exists(Path.of(topDir))) {
-            throw RuntimeException("Not existent directory $topDir")
-        }
-    }
+fun GroupContext.readTallyResult(filename: String): Result<TallyResult, String> {
+    var proto: electionguard.protogen.TallyResult
+    FileInputStream(filename).use { inp -> proto = electionguard.protogen.TallyResult.decodeFromStream(inp) }
+    return this.importTallyResult(proto)
+}
 
-    @Throws(IOException::class)
-    actual fun readElectionRecordAllData(): ElectionRecordAllData {
-        val where = path.electionRecordProtoPath()
-        val electionRecord: ElectionRecord?
-        if (Files.exists(Path.of(where))) {
-            electionRecord = readElectionRecord()
-        } else {
-            throw FileNotFoundException("No election record found in $where")
-        }
+fun GroupContext.readDecryptionResult(filename: String): Result<DecryptionResult, String> {
+    var proto: electionguard.protogen.DecryptionResult
+    FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptionResult.decodeFromStream(inp) }
+    return this.importDecryptionResult(proto)
+}
 
-        return ElectionRecordAllData(
-            electionRecord.protoVersion,
-            electionRecord.constants,
-            electionRecord.manifest,
-            electionRecord.context ?: throw RuntimeException("missing context"),
-            electionRecord.guardianRecords ?: emptyList(),
-            electionRecord.devices ?: emptyList(),
-            electionRecord.encryptedTally ?: throw RuntimeException("missing encryptedTally"),
-            electionRecord.decryptedTally ?: throw RuntimeException("missing decryptedTally"),
-            electionRecord.availableGuardians ?: emptyList(),
-            iterateSubmittedBallots(),
-            iterateSpoiledBallotTallies(),
-        )
-    }
+class PlaintextBallotIterator(
+    filename: String,
+    val filter: Predicate<PlaintextBallot>
+) : AbstractIterator<PlaintextBallot>() {
+    private val input: FileInputStream = FileInputStream(filename)
 
-    @Throws(IOException::class)
-    actual fun readElectionRecord(): ElectionRecord {
-        var proto: electionguard.protogen.ElectionRecord
-        val filename = path.electionRecordProtoPath()
-        FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionRecord.decodeFromStream(inp) }
-        return proto.importElectionRecord(groupContext)
-    }
-
-    // all plaintext ballots
-    actual fun iteratePlaintextBallots(
-        ballotDir: String,
-        filter: (PlaintextBallot) -> Boolean
-    ): Iterable<PlaintextBallot> {
-        if (!Files.exists(Path.of(path.plaintextBallotProtoPath(ballotDir)))) {
-            return emptyList()
-        }
-        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir), filter) }
-    }
-
-    private inner class PlaintextBallotIterator(
-        filename: String,
-        val filter: Predicate<PlaintextBallot>
-    ) : AbstractIterator<PlaintextBallot>() {
-        private val input: FileInputStream = FileInputStream(filename)
-
-        override fun computeNext() {
-            while (true) {
-                val length = readVlen(input)
-                if (length < 0) {
-                    input.close()
-                    return done()
-                }
-                val message = input.readNBytes(length)
-                val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
-                val ballot = ballotProto.importPlaintextBallot()
-                if (!filter.test(ballot)) {
-                    continue // skip it
-                }
-                setNext(ballot)
-                break
-            }
-        }
-    }
-
-    // all submitted ballots, cast or spoiled
-    actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
-        if (!Files.exists(Path.of(path.submittedBallotProtoPath()))) {
-            return emptyList()
-        }
-        return Iterable { SubmittedBallotIterator({ true }) }
-    }
-
-    // only cast SubmittedBallots
-    actual fun iterateCastBallots(): Iterable<SubmittedBallot> {
-        if (!Files.exists(Path.of(path.submittedBallotProtoPath()))) {
-            return emptyList()
-        }
-        val filter =
-            Predicate<electionguard.protogen.SubmittedBallot> { it.state == electionguard.protogen.SubmittedBallot.BallotState.CAST }
-        return Iterable { SubmittedBallotIterator(filter) }
-    }
-
-    // only spoiled SubmittedBallots
-    actual fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
-        if (!Files.exists(Path.of(path.submittedBallotProtoPath()))) {
-            return emptyList()
-        }
-        val filter =
-            Predicate<electionguard.protogen.SubmittedBallot> { it.state == electionguard.protogen.SubmittedBallot.BallotState.SPOILED }
-        return Iterable { SubmittedBallotIterator(filter) }
-    }
-
-    // Create iterators, so that we never have to read in all ballots at once.
-    private inner class SubmittedBallotIterator(
-        val filter: Predicate<electionguard.protogen.SubmittedBallot>,
-    ) : AbstractIterator<SubmittedBallot>() {
-
-        private val input: FileInputStream = FileInputStream(path.submittedBallotProtoPath())
-
-        override fun computeNext() {
-            while (true) {
-                val length = readVlen(input)
-                if (length < 0) {
-                    input.close()
-                    return done()
-                }
-                val message = input.readNBytes(length)
-                val ballotProto = electionguard.protogen.SubmittedBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
-                if (!filter.test(ballotProto)) {
-                    continue // skip it
-                }
-                val ballotResult = groupContext.importSubmittedBallot(ballotProto)
-                if (ballotResult is Ok) {
-                    setNext(ballotResult.unwrap())
-                    break
-                } else {
-                    logger.warn { ballotResult.getErrorOr("Unknown error on ${ballotProto.ballotId}") }
-                    continue
-                }
-            }
-        }
-    }
-
-    // all spoiled ballot tallies
-    actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
-        if (!Files.exists(Path.of(path.spoiledBallotProtoPath()))) {
-            return emptyList()
-        }
-        return Iterable { SpoiledBallotTallyIterator(path.spoiledBallotProtoPath()) }
-    }
-
-    private inner class SpoiledBallotTallyIterator(
-        filename: String,
-    ) : AbstractIterator<PlaintextTally>() {
-
-        private val input: FileInputStream = FileInputStream(filename)
-
-        override fun computeNext() {
+    override fun computeNext() {
+        while (true) {
             val length = readVlen(input)
             if (length < 0) {
                 input.close()
                 return done()
             }
             val message = input.readNBytes(length)
-            val tallyProto = electionguard.protogen.PlaintextTally.decodeFromByteBuffer(ByteBuffer.wrap(message))
-            val tally = tallyProto.importPlaintextTally(groupContext) ?: throw RuntimeException("Tally didnt parse")
-            setNext(tally)
-        }
-    }
-
-    actual fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF> {
-        val trusteeDirPath = Path.of(trusteeDir)
-
-        if (!Files.exists(trusteeDirPath) || !Files.isDirectory(trusteeDirPath)) {
-            return emptyList()
-        }
-        val result = ArrayList<DecryptingTrusteeIF>()
-        for (filename in trusteeDirPath.toFile().listFiles()!!) {
-            // TODO can we screen out bad files?
-            val trusteeProto = readTrusteeProto(filename.absolutePath)
-            if (trusteeProto != null) {
-                result.add(trusteeProto.importDecryptingTrustee(groupContext))
+            val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
+            val ballot = ballotProto.importPlaintextBallot()
+            if (!filter.test(ballot)) {
+                continue // skip it
             }
+            setNext(ballot)
+            break
         }
-        return result
     }
+}
 
-    fun readTrusteeProto(filename: String): electionguard.protogen.DecryptingTrustee? {
-        var trusteeProto: electionguard.protogen.DecryptingTrustee? = null
-        FileInputStream(filename).use { input ->
+// Create iterators, so that we never have to read in all ballots at once.
+class SubmittedBallotIterator(
+    filename: String,
+    val groupContext: GroupContext,
+    val filter: Predicate<electionguard.protogen.SubmittedBallot>,
+) : AbstractIterator<SubmittedBallot>() {
+
+    private val input: FileInputStream = FileInputStream(filename)
+
+    override fun computeNext() {
+        while (true) {
             val length = readVlen(input)
-            if (length > 0) {
-                val message = input.readNBytes(length)
-                trusteeProto =
-                    electionguard.protogen.DecryptingTrustee.decodeFromByteBuffer(ByteBuffer.wrap(message))
+            if (length < 0) {
+                input.close()
+                return done()
+            }
+            val message = input.readNBytes(length)
+            val ballotProto = electionguard.protogen.SubmittedBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
+            if (!filter.test(ballotProto)) {
+                continue // skip it
+            }
+            val ballotResult = groupContext.importSubmittedBallot(ballotProto)
+            if (ballotResult is Ok) {
+                setNext(ballotResult.unwrap())
+                break
+            } else {
+                logger.warn { "Error on ${ballotProto.ballotId} = ${ballotResult.unwrapError()}" }
+                continue
             }
         }
-        return trusteeProto
     }
+}
+
+class SpoiledBallotTallyIterator(
+    filename: String,
+    val groupContext: GroupContext,
+) : AbstractIterator<PlaintextTally>() {
+
+    private val input: FileInputStream = FileInputStream(filename)
+
+    override fun computeNext() {
+        val length = readVlen(input)
+        if (length < 0) {
+            input.close()
+            return done()
+        }
+        val message = input.readNBytes(length)
+        val tallyProto = electionguard.protogen.PlaintextTally.decodeFromByteBuffer(ByteBuffer.wrap(message))
+        val tally = groupContext.importPlaintextTally(tallyProto)
+        setNext(tally.getOrElse { throw RuntimeException("Tally didnt parse") })
+    }
+}
+
+fun readTrustees(
+    groupContext: GroupContext,
+    trusteeDir: String,
+): List<DecryptingTrusteeIF> {
+    val trusteeDirPath = Path.of(trusteeDir)
+
+    if (!Files.exists(trusteeDirPath) || !Files.isDirectory(trusteeDirPath)) {
+        return emptyList()
+    }
+    val result = ArrayList<DecryptingTrusteeIF>()
+    for (filename in trusteeDirPath.toFile().listFiles()!!) {
+        // TODO can we screen out bad files?
+        // TODO these should be gulp
+        val trusteeProto = readTrusteeProto(filename.absolutePath)
+        if (trusteeProto != null) {
+            result.add(trusteeProto.importDecryptingTrustee(groupContext))
+        }
+    }
+    return result
+}
+
+fun readTrusteeProto(filename: String): electionguard.protogen.DecryptingTrustee? {
+    var trusteeProto: electionguard.protogen.DecryptingTrustee? = null
+    FileInputStream(filename).use { input ->
+        val length = readVlen(input)
+        if (length > 0) {
+            val message = input.readNBytes(length)
+            trusteeProto =
+                electionguard.protogen.DecryptingTrustee.decodeFromByteBuffer(ByteBuffer.wrap(message))
+        }
+    }
+    return trusteeProto
 }
 
 // variable length (base 128) int32

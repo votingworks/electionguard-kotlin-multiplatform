@@ -1,7 +1,8 @@
 package electionguard.verifier
 
-import electionguard.ballot.ElectionContext
-import electionguard.ballot.ElectionRecord
+import com.github.michaelbull.result.getOrThrow
+import electionguard.ballot.DecryptionResult
+import electionguard.ballot.Guardian
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.ConstantChaumPedersenProofKnownNonce
 import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
@@ -14,7 +15,7 @@ import electionguard.core.encryptedSum
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hasValidSchnorrProof
 import electionguard.core.isValid
-import electionguard.core.toElementModQ
+import electionguard.publish.ElectionRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,25 +29,21 @@ import kotlin.math.roundToInt
 
 // quick proof verification - not necessarily the verification spec
 class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
-    val publicKey: ElGamalPublicKey
-    val cryptoBaseHash: ElementModQ
-    val context: ElectionContext
+    val jointPublicKey: ElGamalPublicKey
+    val cryptoExtendedBaseHash: ElementModQ
+    val decryption: DecryptionResult
+    val guardians: List<Guardian>
 
     init {
-        if (electionRecord.context == null) {
-            throw IllegalStateException("electionRecord.context is null")
-        }
-        publicKey = ElGamalPublicKey(electionRecord.context.jointPublicKey)
-        cryptoBaseHash = electionRecord.context.cryptoExtendedBaseHash.toElementModQ(group)
-        context = electionRecord.context
+        decryption = electionRecord.readDecryptionResult().getOrThrow { throw IllegalStateException("electionRecord.context is null")}
+        jointPublicKey = decryption.tallyResult.jointPublicKey()
+        cryptoExtendedBaseHash = decryption.tallyResult.cryptoExtendedBaseHash()
+        guardians = decryption.tallyResult.electionIntialized.guardians
     }
 
     fun verifyGuardianPublicKey(): Boolean {
-        if (electionRecord.guardianRecords == null) {
-            return false
-        }
         var allValid = true
-        for (guardian in electionRecord.guardianRecords) {
+        for (guardian in this.guardians) {
             var guardianOk = true
             guardian.coefficientProofs.forEachIndexed { index, proof ->
                 val publicKey = ElGamalPublicKey(guardian.coefficientCommitments[index])
@@ -60,18 +57,11 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
     }
 
     fun verifyDecryptedTally(): Boolean {
-        if (electionRecord.guardianRecords == null) {
-            return false
-        }
-        if (electionRecord.decryptedTally == null) {
-            return false
-        }
-
         var allValid = true
         var ncontests = 0
         var nselections = 0
         var nshares = 0
-        val tally = electionRecord.decryptedTally
+        val tally = decryption.decryptedTally
         for (contest in tally.contests.values) {
             ncontests++
 
@@ -83,14 +73,14 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                     nshares++
                     val sproof: GenericChaumPedersenProof? = share.proof
                     if (sproof != null) {
-                        val guardian = electionRecord.guardianRecords.find { it.guardianId.equals(share.guardianId) }
-                        val guardianKey = guardian?.guardianPublicKey ?: group.G_MOD_P
+                        val guardian = this.guardians.find { it.guardianId.equals(share.guardianId) }
+                        val guardianKey = guardian?.publicKey() ?: throw IllegalStateException("Cant find guardian ${share.guardianId}")
                         val svalid = sproof.isValid(
                             group.G_MOD_P,
                             guardianKey,
                             message.pad,
                             share.share,
-                            arrayOf(cryptoBaseHash, guardianKey, message.pad, message.data), // section 7
+                            arrayOf(cryptoExtendedBaseHash, guardianKey, message.pad, message.data), // section 7
                             arrayOf(share.share)
                         )
                         if (!svalid) {
@@ -140,8 +130,8 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
             val proof: ConstantChaumPedersenProofKnownNonce = contest.proof
             var cvalid = proof.isValid(
                 ciphertextAccumulation,
-                ElGamalPublicKey(context.jointPublicKey),
-                context.cryptoExtendedBaseHash.toElementModQ(group),
+                this.jointPublicKey,
+                this.cryptoExtendedBaseHash,
             )
 
             for (selection in contest.selections) {
@@ -149,8 +139,8 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                 val sproof: DisjunctiveChaumPedersenProofKnownNonce = selection.proof
                 val svalid = sproof.isValid(
                     selection.ciphertext,
-                    ElGamalPublicKey(context.jointPublicKey),
-                    context.cryptoExtendedBaseHash.toElementModQ(group),
+                    this.jointPublicKey,
+                    this.cryptoExtendedBaseHash,
                 )
                 cvalid = cvalid && svalid
             }
