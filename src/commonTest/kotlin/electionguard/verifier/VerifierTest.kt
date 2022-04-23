@@ -7,8 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class VerifierTest {
-    //val topdir = "/home/snake/tmp/electionguard/kotlin/runDecryptingMediator"
-    val topdir = "/home/snake/tmp/electionguard/kotlin2"
+    val topdir = "src/commonTest/data/workflow"
     @Test
     fun readElectionRecordAndValidate() {
         runTest {
