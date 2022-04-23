@@ -1,7 +1,6 @@
 package electionguard.publish
 
 import electionguard.ballot.*
-import electionguard.protoconvert.publishElectionRecord
 import electionguard.protoconvert.publishPlaintextBallot
 import electionguard.protoconvert.publishPlaintextTally
 import electionguard.protoconvert.publishSubmittedBallot
@@ -20,7 +19,7 @@ import platform.posix.fopen
 import platform.posix.fwrite
 
 /** Write the Election Record as protobuf files.  */
-actual class Publisher actual constructor(private val topDir: String, publisherMode: PublisherMode) {
+class Publisher(private val topDir: String, publisherMode: PublisherMode) {
     private val createPublisherMode: PublisherMode = publisherMode
     private var path = ElectionRecordPath(topDir)
 
@@ -40,54 +39,6 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
 
 
     /** Publishes the entire election record as proto.  */
-    actual fun writeElectionRecordProto(
-        manifest: Manifest,
-        constants: ElectionConstants,
-        context: ElectionContext?,
-        guardianRecords: List<GuardianRecord>?,
-        devices: Iterable<EncryptionDevice>?,
-        submittedBallots: Iterable<SubmittedBallot>?,
-        ciphertextTally: CiphertextTally?,
-        decryptedTally: PlaintextTally?,
-        spoiledBallots: Iterable<PlaintextTally>?,
-        availableGuardians: List<AvailableGuardian>?
-    ) {
-        if (createPublisherMode == PublisherMode.readonly) {
-            throw UnsupportedOperationException("Trying to write to readonly election record")
-        }
-        if (submittedBallots != null) {
-            writeSubmittedBallots(submittedBallots)
-        }
-        if (spoiledBallots != null) {
-            writeSpoiledBallots(spoiledBallots)
-        }
-
-        val electionRecordProto = publishElectionRecord(
-            ElectionRecordPath.PROTO_VERSION,
-            manifest,
-            constants,
-            context,
-            guardianRecords,
-            devices,
-            ciphertextTally,
-            decryptedTally,
-            availableGuardians
-        )
-        writeElectionRecord(electionRecordProto)
-    }
-
-    @Throws(IOException::class)
-    fun writeElectionRecord(proto: electionguard.protogen.ElectionRecord) {
-        val fileout = path.electionRecordProtoPath()
-        val file: CPointer<FILE> = openFile(fileout)
-        val buffer = proto.encodeToByteArray()
-        try {
-            writeToFile(file, fileout, buffer)
-        } finally {
-            fflush(file)
-            fclose(file)
-        }
-    }
 
     @Throws(IOException::class)
     fun writeSubmittedBallots(submittedBallots: Iterable<SubmittedBallot>): Boolean {
@@ -134,7 +85,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     @Throws(IOException::class)
-    actual fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
+    fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
         if (invalidBallots.isNotEmpty()) {
             val fileout = path.invalidBallotProtoPath(invalidDir)
             val file: CPointer<FILE> = openFile(fileout)
@@ -155,7 +106,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun submittedBallotSink(): SubmittedBallotSinkIF =
+    fun submittedBallotSink(): SubmittedBallotSinkIF =
         SubmittedBallotSink(path.submittedBallotProtoPath())
 
     inner class SubmittedBallotSink(val fileout: String) : SubmittedBallotSinkIF {

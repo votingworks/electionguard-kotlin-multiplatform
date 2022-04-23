@@ -1,5 +1,6 @@
 package electionguard.protoconvert
 
+import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.DecryptionShare
 import electionguard.ballot.PlaintextTally
 import electionguard.core.GroupContext
@@ -16,7 +17,7 @@ class PlaintextTallyConvertTest {
         val context = tinyGroup()
         val tally = generateFakeTally(1, context)
         val proto = tally.publishPlaintextTally()
-        val roundtrip = proto.importPlaintextTally(context)
+        val roundtrip = context.importPlaintextTally(proto).getOrThrow { IllegalStateException("PlaintextTallyConvertTest") }
         assertNotNull(roundtrip)
         for (entry in roundtrip.contests) {
             val contest =

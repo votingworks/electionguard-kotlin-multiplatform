@@ -162,6 +162,5 @@ class ConsumerTest {
     }
 
     */
-     */
 
 }

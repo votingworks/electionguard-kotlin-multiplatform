@@ -19,11 +19,12 @@ fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
     val electionInitialized = this.importElectionInitialized(tally.electionInit)
     val ciphertextTally = this.importCiphertextTally(tally.ciphertextTally)
 
-    if (electionInitialized is Err || ciphertextTally == null) {
+    if (electionInitialized is Err || ciphertextTally is Err) {
         return Err("Failed to translate election record from proto, missing fields")
     }
 
     return Ok(TallyResult(
+        this,
         electionInitialized.unwrap(),
         ciphertextTally.unwrap(),
         tally.metadata.associate {it.key to it.value}
@@ -52,8 +53,8 @@ fun GroupContext.importDecryptionResult(decrypt : electionguard.protogen.Decrypt
     ))
 }
 
-private fun importDecryptingGuardian(guardian: electionguard.protogen.DecryptingGuardian): DecryptingGuardian {
-    return DecryptingGuardian(
+private fun importDecryptingGuardian(guardian: electionguard.protogen.AvailableGuardian): AvailableGuardian {
+    return AvailableGuardian(
         guardian.guardianId,
         guardian.xCoordinate,
         guardian.lagrangeCoordinate,
@@ -74,13 +75,13 @@ fun DecryptionResult.publishDecryptionResult(): electionguard.protogen.Decryptio
     return electionguard.protogen.DecryptionResult(
         this.tallyResult.publishTallyResult(),
         this.decryptedTally.publishPlaintextTally(),
-        this.decryptingGuardians.map { it.publishDecryptingGuardian() },
+        this.availableGuardians.map { it.publishDecryptingGuardian() },
         this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value)}
     )
 }
 
-private fun DecryptingGuardian.publishDecryptingGuardian(): electionguard.protogen.DecryptingGuardian {
-    return electionguard.protogen.DecryptingGuardian(
+private fun AvailableGuardian.publishDecryptingGuardian(): electionguard.protogen.AvailableGuardian {
+    return electionguard.protogen.AvailableGuardian(
         this.guardianId,
         this.xCoordinate,
         this.lagrangeCoordinate,

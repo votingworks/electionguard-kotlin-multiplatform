@@ -3,21 +3,21 @@ package electionguard.ballot
 /** Configuration for KeyCeremony. */
 data class ElectionConfig(
     val protoVersion: String,
-    val constants: Constants,
+    val constants: ElectionConstants,
     val manifest: Manifest,
     /** The number of guardians necessary to generate the public key. */
     val numberOfGuardians: Int,
     /** The quorum of guardians necessary to decrypt an election. Must be <= number_of_guardians. */
     val quorum: Int,
     /** arbitrary key/value metadata. */
-    val metadata: Map<String, String>,
+    val metadata: Map<String, String> = emptyMap(),
 )
 
 /**
  * A public description of the mathematical group used for the encryption and processing of ballots.
  * The byte arrays are defined to be big-endian.
  */
-data class Constants(
+data class ElectionConstants(
     val name: String,
     /** large prime or P. */
     val largePrime: ByteArray,

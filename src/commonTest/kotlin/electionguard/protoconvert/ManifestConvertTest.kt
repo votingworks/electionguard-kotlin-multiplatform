@@ -1,5 +1,6 @@
 package electionguard.protoconvert
 
+import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,7 +12,7 @@ class ManifestConvertTest {
     fun roundtripManifest() {
         val manifest = generateFakeManifest()
         val proto = manifest.publishManifest()
-        val roundtrip = proto.importManifest()
+        val roundtrip = importManifest(proto).getOrThrow { IllegalStateException("ManifestConvertTest") }
         assertNotNull(roundtrip)
         assertEquals(roundtrip.electionScopeId, manifest.electionScopeId)
         assertEquals(roundtrip.specVersion, manifest.specVersion)

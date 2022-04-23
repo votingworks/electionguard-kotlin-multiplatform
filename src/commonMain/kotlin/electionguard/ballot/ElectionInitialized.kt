@@ -10,7 +10,7 @@ data class ElectionInitialized(
     val manifestHash: UInt256, // matches Manifest.cryptoHash
     val cryptoExtendedBaseHash: UInt256, // qbar
     val guardians: List<Guardian>,
-    val metadata: Map<String, String>
+    val metadata: Map<String, String> = emptyMap(),
 ) {
 
     fun manifest(): Manifest {

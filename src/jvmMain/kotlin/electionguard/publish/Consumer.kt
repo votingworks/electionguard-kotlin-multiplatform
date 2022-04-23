@@ -14,6 +14,7 @@ import electionguard.ballot.SubmittedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.protoconvert.importDecryptingTrustee
 import electionguard.protoconvert.importDecryptionResult
 import electionguard.protoconvert.importElectionConfig
 import electionguard.protoconvert.importElectionInitialized

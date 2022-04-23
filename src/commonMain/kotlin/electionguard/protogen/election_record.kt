@@ -5,7 +5,7 @@ package electionguard.protogen
 @pbandk.Export
 public data class ElectionConfig(
     val protoVersion: String = "",
-    val constants: electionguard.protogen.Constants? = null,
+    val constants: electionguard.protogen.ElectionConstants? = null,
     val manifest: electionguard.protogen.Manifest? = null,
     val numberOfGuardians: Int = 0,
     val quorum: Int = 0,
@@ -37,7 +37,7 @@ public data class ElectionConfig(
                         messageDescriptor = this@Companion::descriptor,
                         name = "constants",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.Constants.Companion),
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionConstants.Companion),
                         jsonName = "constants",
                         value = electionguard.protogen.ElectionConfig::constants
                     )
@@ -140,7 +140,7 @@ public data class ElectionConfig(
 }
 
 @pbandk.Export
-public data class Constants(
+public data class ElectionConstants(
     val name: String = "",
     val largePrime: pbandk.ByteArr = pbandk.ByteArr.empty,
     val smallPrime: pbandk.ByteArr = pbandk.ByteArr.empty,
@@ -148,70 +148,70 @@ public data class Constants(
     val generator: pbandk.ByteArr = pbandk.ByteArr.empty,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.Constants = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.Constants> get() = Companion.descriptor
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionConstants = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConstants> get() = Companion.descriptor
     override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.Constants> {
-        public val defaultInstance: electionguard.protogen.Constants by lazy { electionguard.protogen.Constants() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.Constants = electionguard.protogen.Constants.decodeWithImpl(u)
+    public companion object : pbandk.Message.Companion<electionguard.protogen.ElectionConstants> {
+        public val defaultInstance: electionguard.protogen.ElectionConstants by lazy { electionguard.protogen.ElectionConstants() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConstants = electionguard.protogen.ElectionConstants.decodeWithImpl(u)
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.Constants> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.Constants, *>>(5)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConstants> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConstants, *>>(5)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "name",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "name",
-                        value = electionguard.protogen.Constants::name
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "large_prime",
-                        number = 2,
+                        number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
                         jsonName = "largePrime",
-                        value = electionguard.protogen.Constants::largePrime
+                        value = electionguard.protogen.ElectionConstants::largePrime
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "small_prime",
-                        number = 3,
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
                         jsonName = "smallPrime",
-                        value = electionguard.protogen.Constants::smallPrime
+                        value = electionguard.protogen.ElectionConstants::smallPrime
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "cofactor",
-                        number = 4,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
                         jsonName = "cofactor",
-                        value = electionguard.protogen.Constants::cofactor
+                        value = electionguard.protogen.ElectionConstants::cofactor
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "generator",
-                        number = 5,
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
                         jsonName = "generator",
-                        value = electionguard.protogen.Constants::generator
+                        value = electionguard.protogen.ElectionConstants::generator
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "name",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "name",
+                        value = electionguard.protogen.ElectionConstants::name
                     )
                 )
             }
             pbandk.MessageDescriptor(
-                fullName = "Constants",
-                messageClass = electionguard.protogen.Constants::class,
+                fullName = "ElectionConstants",
+                messageClass = electionguard.protogen.ElectionConstants::class,
                 messageCompanion = this,
                 fields = fieldsList
             )
@@ -718,7 +718,7 @@ private fun ElectionConfig.protoMergeImpl(plus: pbandk.Message?): ElectionConfig
 @Suppress("UNCHECKED_CAST")
 private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionConfig {
     var protoVersion = ""
-    var constants: electionguard.protogen.Constants? = null
+    var constants: electionguard.protogen.ElectionConstants? = null
     var manifest: electionguard.protogen.Manifest? = null
     var numberOfGuardians = 0
     var quorum = 0
@@ -727,7 +727,7 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> protoVersion = _fieldValue as String
-            2 -> constants = _fieldValue as electionguard.protogen.Constants
+            2 -> constants = _fieldValue as electionguard.protogen.ElectionConstants
             3 -> manifest = _fieldValue as electionguard.protogen.Manifest
             4 -> numberOfGuardians = _fieldValue as Int
             5 -> quorum = _fieldValue as Int
@@ -763,17 +763,17 @@ private fun ElectionConfig.MetadataEntry.Companion.decodeWithImpl(u: pbandk.Mess
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForConstants")
-public fun Constants?.orDefault(): electionguard.protogen.Constants = this ?: Constants.defaultInstance
+@pbandk.JsName("orDefaultForElectionConstants")
+public fun ElectionConstants?.orDefault(): electionguard.protogen.ElectionConstants = this ?: ElectionConstants.defaultInstance
 
-private fun Constants.protoMergeImpl(plus: pbandk.Message?): Constants = (plus as? Constants)?.let {
+private fun ElectionConstants.protoMergeImpl(plus: pbandk.Message?): ElectionConstants = (plus as? ElectionConstants)?.let {
     it.copy(
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun Constants.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Constants {
+private fun ElectionConstants.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionConstants {
     var name = ""
     var largePrime: pbandk.ByteArr = pbandk.ByteArr.empty
     var smallPrime: pbandk.ByteArr = pbandk.ByteArr.empty
@@ -782,14 +782,14 @@ private fun Constants.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Consta
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> name = _fieldValue as String
-            2 -> largePrime = _fieldValue as pbandk.ByteArr
-            3 -> smallPrime = _fieldValue as pbandk.ByteArr
-            4 -> cofactor = _fieldValue as pbandk.ByteArr
-            5 -> generator = _fieldValue as pbandk.ByteArr
+            1 -> largePrime = _fieldValue as pbandk.ByteArr
+            2 -> smallPrime = _fieldValue as pbandk.ByteArr
+            3 -> cofactor = _fieldValue as pbandk.ByteArr
+            4 -> generator = _fieldValue as pbandk.ByteArr
+            5 -> name = _fieldValue as String
         }
     }
-    return Constants(name, largePrime, smallPrime, cofactor,
+    return ElectionConstants(name, largePrime, smallPrime, cofactor,
         generator, unknownFields)
 }
 

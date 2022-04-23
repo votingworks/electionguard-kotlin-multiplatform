@@ -14,7 +14,6 @@ import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.core.toElementModQ
 import electionguard.publish.ElectionRecord
-import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import electionguard.publish.SubmittedBallotSinkIF
 import kotlin.math.roundToInt
@@ -54,7 +53,7 @@ class ContestPrecomputeTest {
             perBallot = (took.toDouble() / count).roundToInt()
             println("   Encrypt $took millisecs for ${count} ballots = $perBallot msecs/ballot")
 
-            val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+            val publisher = ElectionRecord(outputDir, group, PublisherMode.createIfMissing)
             val sink: SubmittedBallotSinkIF = publisher.submittedBallotSink()
             eballots.forEach { sink.writeSubmittedBallot(it.submit(SubmittedBallot.BallotState.CAST)) }
             sink.close()

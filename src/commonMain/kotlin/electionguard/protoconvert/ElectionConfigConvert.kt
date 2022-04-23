@@ -29,12 +29,12 @@ fun importElectionConfig(config: electionguard.protogen.ElectionConfig?): Result
 }
 
 private fun convertConstants(
-    constants: electionguard.protogen.Constants?
-): Result<Constants, String> {
+    constants: electionguard.protogen.ElectionConstants?
+): Result<ElectionConstants, String> {
     if (constants == null) {
         return Err("Null Constants")
     }
-    return Ok(Constants(
+    return Ok(ElectionConstants(
         constants.name,
         constants.largePrime.array,
         constants.smallPrime.array,
@@ -56,9 +56,9 @@ fun ElectionConfig.publishElectionConfig(): electionguard.protogen.ElectionConfi
     )
 }
 
-private fun Constants.publishConstants(): electionguard.protogen.Constants {
+private fun ElectionConstants.publishConstants(): electionguard.protogen.ElectionConstants {
     return electionguard.protogen
-        .Constants(
+        .ElectionConstants(
             this.name,
             ByteArr(this.largePrime),
             ByteArr(this.smallPrime),
