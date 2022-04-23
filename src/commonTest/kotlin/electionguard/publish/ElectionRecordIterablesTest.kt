@@ -10,38 +10,30 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
-    val encryptorDir = "src/commonTest/data/testJava/decryptor/"
+    val kotlinDir = "src/commonTest/data/workflow"
     val decryptorDir = "src/commonTest/data/testJava/decryptor/"
 
     @Test
-    fun readBallotTalliesWrittenByDecryptorJava() {
+    fun readBallotsWrittenByKotlin() {
         runTest {
             val context = productionGroup()
-            readSpoiledBallotTallies(context, decryptorDir)
+            readBallots(context, kotlinDir, 11)
+            readCastBallots(context, kotlinDir, 11)
+            readSpoiledBallots(context, kotlinDir, 0)
         }
     }
 
-    @Test
-    fun readBallotsWrittenByDecryptorJava() {
+    // @Test
+    fun readBallotsWrittenByJava() {
         runTest {
             val context = productionGroup()
-            readBallots(context, decryptorDir)
-            readCastBallots(context, decryptorDir)
-            readSpoiledBallots(context, decryptorDir)
+            readBallots(context, kotlinDir, 11)
+            readCastBallots(context, kotlinDir, 6)
+            readSpoiledBallots(context, kotlinDir, 5)
         }
     }
 
-    @Test
-    fun readBallotsWrittenByEncryptorJava() {
-        runTest {
-            val context = productionGroup()
-            readBallots(context, encryptorDir)
-            readCastBallots(context, encryptorDir)
-            readSpoiledBallots(context, encryptorDir)
-        }
-    }
-
-    fun readBallots(context: GroupContext, topdir: String) {
+    fun readBallots(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
         val iterator = electionRecordIn.iterateSubmittedBallots().iterator()
         var count = 0;
@@ -49,10 +41,10 @@ class ElectionRecordIterablesTest {
             logger.debug { "  $count readBallots ${ballot.ballotId} ${ballot.state}" }
             count++
         }
-        assertEquals(count, 11)
+        assertEquals(expected, count)
     }
 
-    fun readCastBallots(context: GroupContext, topdir: String) {
+    fun readCastBallots(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
         val iterator = electionRecordIn.iterateCastBallots().iterator()
         var count = 0;
@@ -60,10 +52,10 @@ class ElectionRecordIterablesTest {
             logger.debug { "  $count readCastBallots ${ballot.ballotId} ${ballot.state}" }
             count++
         }
-        assertEquals(count, 5)
+        assertEquals(expected, count)
     }
 
-    fun readSpoiledBallots(context: GroupContext, topdir: String) {
+    fun readSpoiledBallots(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
         val iterator = electionRecordIn.iterateSpoiledBallots().iterator()
         var count = 0;
@@ -71,10 +63,10 @@ class ElectionRecordIterablesTest {
             logger.debug { "  $count readSpoiledBallots ${ballot.ballotId} ${ballot.state}" }
             count++
         }
-        assertEquals(count, 6)
+        assertEquals(expected, count)
     }
 
-    fun readSpoiledBallotTallies(context: GroupContext, topdir: String) {
+    fun readSpoiledBallotTallies(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
         val iterator = electionRecordIn.iterateSpoiledBallotTallies().iterator()
         var count = 0;
@@ -82,6 +74,6 @@ class ElectionRecordIterablesTest {
             logger.debug { "  $count readSpoiledBallotTallies ${tally.tallyId}" }
             count++
         }
-        assertEquals(count, 0)
+        assertEquals(expected, count)
     }
 }

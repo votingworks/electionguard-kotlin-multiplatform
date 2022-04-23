@@ -27,7 +27,8 @@ fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
         this,
         electionInitialized.unwrap(),
         ciphertextTally.unwrap(),
-        tally.metadata.associate {it.key to it.value}
+        tally.ballotIds,
+        tally.tallyIds,
     ))
 }
 
@@ -67,7 +68,8 @@ fun TallyResult.publishTallyResult(): electionguard.protogen.TallyResult {
     return electionguard.protogen.TallyResult(
         this.electionIntialized.publishElectionInitialized(),
         this.ciphertextTally.publishCiphertextTally(),
-        this.metadata.entries.map { electionguard.protogen.TallyResult.MetadataEntry(it.key, it.value)}
+        this.ballotIds,
+        this.tallyIds,
     )
 }
 

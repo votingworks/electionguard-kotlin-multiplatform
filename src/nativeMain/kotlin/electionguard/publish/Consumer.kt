@@ -2,8 +2,9 @@ package electionguard.publish
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getErrorOr
+import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
@@ -13,6 +14,7 @@ import electionguard.ballot.SubmittedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.protoconvert.importDecryptingTrustee
 import electionguard.protoconvert.importDecryptionResult
 import electionguard.protoconvert.importElectionConfig
 import electionguard.protoconvert.importElectionInitialized
@@ -27,7 +29,6 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.IntVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.get
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readBytes
@@ -43,21 +44,123 @@ import platform.posix.stat
 
 internal val logger = KotlinLogging.logger("Consumer")
 
-private val debug : Boolean = true
+fun GroupContext.readElectionConfig(filename: String): Result<ElectionConfig, String> {
+    val buffer = gulp(filename)
+    val proto = electionguard.protogen.ElectionConfig.decodeFromByteArray(buffer)
+    return importElectionConfig(proto)
+}
 
-private val max : Int = 100
-private fun CArrayPointer<ByteVar>.readZ(): String {
-   val result = ByteArray(max)
-   var idx = 0
-   while (idx < max) {
-       val b: Byte = this[idx]
-       if (b.compareTo(0) == 0) {
-           break;
-       }
-       result[idx] = b
-       idx++
-   }
-    return result.toString()
+fun GroupContext.readElectionInitialized(filename: String): Result<ElectionInitialized, String> {
+    val buffer = gulp(filename)
+    val proto = electionguard.protogen.ElectionInitialized.decodeFromByteArray(buffer)
+    return importElectionInitialized(proto)
+}
+
+fun GroupContext.readTallyResult(filename: String): Result<TallyResult, String> {
+    val buffer = gulp(filename)
+    val proto = electionguard.protogen.TallyResult.decodeFromByteArray(buffer)
+    return importTallyResult(proto)
+}
+
+fun GroupContext.readDecryptionResult(filename: String): Result<DecryptionResult, String> {
+    val buffer = gulp(filename)
+    val proto = electionguard.protogen.DecryptionResult.decodeFromByteArray(buffer)
+    return importDecryptionResult(proto)
+}
+
+class PlaintextBallotIterator(
+    val filename: String,
+    val filter : (PlaintextBallot) -> Boolean,
+) : AbstractIterator<PlaintextBallot>() {
+
+    private val file = openFile(filename)
+
+    override fun computeNext() {
+        while (true) {
+            val length = readVlen(file, filename)
+            if (length <= 0) {
+                fclose(file)
+                return done()
+            }
+            val message = readFromFile(file, length.toULong(), filename)
+            val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteArray(message)
+            val ballot = ballotProto.importPlaintextBallot()
+            if (!filter(ballot)) {
+                continue
+            }
+            setNext(ballot)
+            break
+        }
+    }
+}
+
+class SubmittedBallotIterator(
+    val groupContext: GroupContext,
+    val filename: String,
+    val filter: (electionguard.protogen.SubmittedBallot) -> Boolean,
+) : AbstractIterator<SubmittedBallot>() {
+
+    private val file = openFile(filename)
+
+    override fun computeNext() {
+        while (true) {
+            val length = readVlen(file, filename)
+            if (length <= 0) {
+                fclose(file)
+                return done()
+            }
+            val message = readFromFile(file, length.toULong(), filename)
+            val ballotProto = electionguard.protogen.SubmittedBallot.decodeFromByteArray(message)
+            if (!filter(ballotProto)) {
+                continue // skip it
+            }
+            val ballotResult = groupContext.importSubmittedBallot(ballotProto)
+            if (ballotResult is Ok) {
+                setNext(ballotResult.unwrap())
+                break
+            } else {
+                logger.warn { "Error on ${ballotProto.ballotId} = ${ballotResult.unwrapError()}" }
+                continue
+            }
+        }
+    }
+}
+
+class SpoiledBallotTallyIterator(
+    val groupContext: GroupContext,
+    val filename: String,
+) : AbstractIterator<PlaintextTally>() {
+
+    private val file = openFile(filename)
+
+    override fun computeNext() {
+        val length = readVlen(file, filename)
+        if (length <= 0) {
+            fclose(file)
+            return done()
+        }
+        val message = readFromFile(file, length.toULong(), filename)
+        val tallyProto = electionguard.protogen.PlaintextTally.decodeFromByteArray(message)
+        val tally = groupContext.importPlaintextTally(tallyProto)
+        setNext(tally.getOrElse { throw RuntimeException("PlaintextTally didnt parse") })
+    }
+}
+
+fun readTrustees(
+    groupContext: GroupContext,
+    trusteeDir: String)
+: List<DecryptingTrusteeIF> {
+    val trustees = openDir(trusteeDir)
+
+    val result = ArrayList<DecryptingTrusteeIF>()
+    trustees.forEach {
+        // TODO can we screen out bad files?
+        val filename = "$trusteeDir/$it"
+        val buffer = gulpVlen(filename)
+        val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
+        result.add(trusteeProto.importDecryptingTrustee(groupContext))
+    }
+    return result
 }
 
 @Throws(IOException::class)

@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 
 class VerifierTest {
     //val topdir = "/home/snake/tmp/electionguard/kotlin/runDecryptingMediator"
-    val topdir = "src/commonTest/data/workflow/runDecryptingMediator"
+    val topdir = "/home/snake/tmp/electionguard/kotlin2"
     @Test
     fun readElectionRecordAndValidate() {
         runTest {
@@ -17,13 +17,13 @@ class VerifierTest {
             val verifier = Verifier(group, electionRecordIn)
 
             val guardiansOk = verifier.verifyGuardianPublicKey()
-            println("verifyGuardianPublicKey $guardiansOk")
+            println("verifyGuardianPublicKey $guardiansOk\n")
 
             val ballotsOk = verifier.verifySubmittedBallots(electionRecordIn.iterateSubmittedBallots())
-            println("verifySubmittedBallots $ballotsOk")
+            println("verifySubmittedBallots $ballotsOk\n")
 
             val tallyOk = verifier.verifyDecryptedTally()
-            println("verifyDecryptedTally $tallyOk")
+            println("verifyDecryptedTally $tallyOk\n")
 
             val allOk = guardiansOk && ballotsOk && tallyOk
             assertTrue(allOk)

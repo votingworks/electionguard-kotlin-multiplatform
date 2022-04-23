@@ -9,13 +9,13 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/testJava/kickstart/encryptor",
+                "testOut/kotlin2",
                 "-ballots",
                 "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots/",
                 "-out",
-                "testOut/native/runBatchEncryption",
+                "testOut/kotlin2",
                 "-invalidBallots",
-                "testOut/native/runBatchEncryption/election_private_data/invalid_ballots",
+                "testOut/election_private_data/invalid_ballots",
                 "-fixedNonces",
                 "-nthreads",
                 "6"

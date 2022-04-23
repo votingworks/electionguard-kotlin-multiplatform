@@ -26,7 +26,7 @@ class TallyResultConvertTest {
         assertEquals(roundtrip.group, electionRecord.group)
         assertEquals(roundtrip.electionIntialized, electionRecord.electionIntialized)
         assertEquals(roundtrip.ciphertextTally, electionRecord.ciphertextTally)
-        assertEquals(roundtrip.metadata, electionRecord.metadata)
+        assertEquals(roundtrip.tallyIds, electionRecord.tallyIds)
 
         assertTrue(roundtrip.equals(electionRecord))
         assertEquals(roundtrip, electionRecord)
@@ -42,5 +42,7 @@ fun generateTallyResult(context: GroupContext): TallyResult {
         context,
         generateElectionInitialized(context),
         CiphertextTallyConvertTest.generateFakeTally(context),
+        listOf("ballotID1", "ballotsId42"),
+        listOf("precinct342342", "precinct3423333"),
     )
 }

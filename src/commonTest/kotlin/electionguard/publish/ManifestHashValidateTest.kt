@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 
 /** Test Manifest hash values against the ones that python and java generate. */
 class ManifestHashValidateTest {
-    val input = "src/commonTest/data/testPython/"
+    val input = "src/commonTest/data/workflow/"
 
     @Test
     fun readElectionRecordWrittenByEncryptorJava() {

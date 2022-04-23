@@ -24,7 +24,7 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
 ): ElectionInitialized {
     val electionConstants = this.constants?.let { convertConstants(this.constants) }
     val manifest = importManifest(this.manifest).getOrThrow { IllegalStateException( "importManifest") }
-    val electionContext = this.context?.importContext(groupContext) ?: throw IllegalStateException("context missing");
+    val electionContext = this.context?.importContext(groupContext) ?: throw IllegalStateException("context missing")
     val guardianRecords = this.guardianRecords.map { it.importGuardianRecord(groupContext) }
 
     if (electionConstants == null) {
@@ -44,7 +44,7 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
     //    /** arbitrary key/value metadata. */
     //    val metadata: Map<String, String> = emptyMap(),
     val config = ElectionConfig(
-        this.protoVersion,
+        ElectionRecordPath.PROTO_VERSION,
         electionConstants,
         manifest,
         electionContext.numberOfGuardians,
@@ -73,9 +73,6 @@ private fun convertConstants(
     if (constants == null) {
         return null
     }
-
-    // TODO: do we have to worry about any of the fields of the deserialized protobuf being
-    //  missing / null?
 
     return ElectionConstants(
         constants.name,
@@ -110,9 +107,6 @@ private fun electionguard.protogen.ElectionContext.importContext(
         throw IllegalStateException("Failed to importContext")
     }
 
-    // TODO: do we have to worry about any of the fields of the deserialized protobuf being
-    //  missing / null?
-
     return ElectionContext(
         this.numberOfGuardians,
         this.quorum,
@@ -131,10 +125,6 @@ private fun electionguard.protogen.GuardianRecord.importGuardianRecord(
         this.coefficientCommitments.map { groupContext.importElementModP(it) }.noNullValuesOrNull()
     val coefficientProofs =
         this.coefficientProofs.map { groupContext.importSchnorrProof(it) }.noNullValuesOrNull()
-
-    // TODO: do we have to worry about any of the fields of the deserialized protobuf being
-    //  missing / null?
-    //   Or the coefficient lists being empty?
 
     if (electionPublicKey == null || coefficientCommitments == null || coefficientProofs == null) {
         throw IllegalStateException("Failed to importGuardianRecord")

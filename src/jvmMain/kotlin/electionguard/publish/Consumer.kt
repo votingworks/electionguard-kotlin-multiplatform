@@ -117,7 +117,6 @@ class SpoiledBallotTallyIterator(
     filename: String,
     val groupContext: GroupContext,
 ) : AbstractIterator<PlaintextTally>() {
-
     private val input: FileInputStream = FileInputStream(filename)
 
     override fun computeNext() {

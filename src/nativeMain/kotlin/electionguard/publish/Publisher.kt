@@ -1,9 +1,13 @@
 package electionguard.publish
 
 import electionguard.ballot.*
+import electionguard.protoconvert.publishDecryptionResult
+import electionguard.protoconvert.publishElectionConfig
+import electionguard.protoconvert.publishElectionInitialized
 import electionguard.protoconvert.publishPlaintextBallot
 import electionguard.protoconvert.publishPlaintextTally
 import electionguard.protoconvert.publishSubmittedBallot
+import electionguard.protoconvert.publishTallyResult
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CArrayPointer
@@ -19,7 +23,7 @@ import platform.posix.fopen
 import platform.posix.fwrite
 
 /** Write the Election Record as protobuf files.  */
-class Publisher(private val topDir: String, publisherMode: PublisherMode) {
+actual class Publisher actual constructor(private val topDir: String, publisherMode: PublisherMode) {
     private val createPublisherMode: PublisherMode = publisherMode
     private var path = ElectionRecordPath(topDir)
 
@@ -37,8 +41,70 @@ class Publisher(private val topDir: String, publisherMode: PublisherMode) {
         }
     }
 
+    actual fun writeElectionConfig(config: ElectionConfig) {
+        val proto = config.publishElectionConfig()
+        val buffer = proto.encodeToByteArray()
 
-    /** Publishes the entire election record as proto.  */
+        val fileout = path.electionConfigPath()
+        val file: CPointer<FILE> = openFile(fileout)
+        try {
+            writeToFile(file, fileout, buffer)
+        } finally {
+            fflush(file)
+            fclose(file)
+        }
+    }
+
+    actual fun writeElectionInitialized(init: ElectionInitialized) {
+        val proto = init.publishElectionInitialized()
+        val buffer = proto.encodeToByteArray()
+
+        val fileout = path.electionInitializedPath()
+        val file: CPointer<FILE> = openFile(fileout)
+        try {
+            writeToFile(file, fileout, buffer)
+        } finally {
+            fflush(file)
+            fclose(file)
+        }
+    }
+
+    actual fun writeEncryptions(
+        init: ElectionInitialized,
+        ballots: Iterable<SubmittedBallot>
+    ) {
+        writeElectionInitialized(init)
+        val sink = submittedBallotSink()
+        ballots.forEach {sink.writeSubmittedBallot(it) }
+        sink.close()    }
+
+    actual fun writeTallyResult(tally: TallyResult) {
+        val proto = tally.publishTallyResult()
+        val buffer = proto.encodeToByteArray()
+
+        val fileout = path.tallyResultPath()
+        val file: CPointer<FILE> = openFile(fileout)
+        try {
+            writeToFile(file, fileout, buffer)
+        } finally {
+            fflush(file)
+            fclose(file)
+        }
+    }
+
+    actual fun writeDecryptionResult(decryption: DecryptionResult) {
+        val proto = decryption.publishDecryptionResult()
+        val buffer = proto.encodeToByteArray()
+
+        val fileout = path.decryptionResultPath()
+        val file: CPointer<FILE> = openFile(fileout)
+        try {
+            writeToFile(file, fileout, buffer)
+        } finally {
+            fflush(file)
+            fclose(file)
+        }
+    }
 
     @Throws(IOException::class)
     fun writeSubmittedBallots(submittedBallots: Iterable<SubmittedBallot>): Boolean {
@@ -85,7 +151,7 @@ class Publisher(private val topDir: String, publisherMode: PublisherMode) {
     }
 
     @Throws(IOException::class)
-    fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
+    actual fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
         if (invalidBallots.isNotEmpty()) {
             val fileout = path.invalidBallotProtoPath(invalidDir)
             val file: CPointer<FILE> = openFile(fileout)
@@ -106,7 +172,7 @@ class Publisher(private val topDir: String, publisherMode: PublisherMode) {
         }
     }
 
-    fun submittedBallotSink(): SubmittedBallotSinkIF =
+    actual fun submittedBallotSink(): SubmittedBallotSinkIF =
         SubmittedBallotSink(path.submittedBallotProtoPath())
 
     inner class SubmittedBallotSink(val fileout: String) : SubmittedBallotSinkIF {

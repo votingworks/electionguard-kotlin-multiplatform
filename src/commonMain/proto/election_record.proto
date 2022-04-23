@@ -53,7 +53,8 @@ message Guardian {
 message TallyResult {
   ElectionInitialized election_init = 1;
   CiphertextTally ciphertext_tally = 2;
-  map<string, string> metadata = 3;
+  repeated string ballot_ids = 3;
+  repeated string tally_ids = 4;
 }
 
 message DecryptionResult {

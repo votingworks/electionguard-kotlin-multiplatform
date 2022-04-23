@@ -9,6 +9,7 @@ import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.publish.ElectionRecord
+import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -39,10 +40,10 @@ fun main(args: Array<String>) {
     parser.parse(args)
 
     val group = productionGroup()
-    runAccumulateTally(group, inputDir, outputDir, name?: "RunAccumulateTally")
+    runAccumulateBallots(group, inputDir, outputDir, name?: "RunAccumulateTally")
 }
 
-fun runAccumulateTally(group: GroupContext, inputDir: String, outputDir: String, name: String) {
+fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: String, name: String) {
     val electionRecordIn = ElectionRecord(inputDir, group)
     val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
@@ -52,8 +53,8 @@ fun runAccumulateTally(group: GroupContext, inputDir: String, outputDir: String,
     }
     val tally: CiphertextTally = accumulator.build()
 
-    val electionRecordOut = ElectionRecord(outputDir, group, PublisherMode.createIfMissing)
-    electionRecordOut.writeTallyResult(
-        TallyResult( group, electionInit, tally)
+    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    publisher.writeTallyResult(
+        TallyResult( group, electionInit, tally, accumulator.ballotIds(), emptyList())
     )
 }

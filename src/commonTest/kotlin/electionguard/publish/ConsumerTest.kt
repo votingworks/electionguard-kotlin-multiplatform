@@ -10,7 +10,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
-    private val topdir = "src/commonTest/data/testJava/decryptor"
+    private val topdir = "src/commonTest/data/workflow"
 
     @Test
     fun readElectionRecord() {
@@ -19,10 +19,10 @@ class ConsumerTest {
             val electionRecordIn = ElectionRecord(topdir, context)
             val config = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(topdir) }
             println("electionRecord.protoVersion = ${config.protoVersion}")
-            assertEquals(config.protoVersion, "1.0.0")
+            assertEquals("2.0.0", config.protoVersion)
             println("electionRecord.manifest.specVersion = ${config.manifest.specVersion}")
-            assertEquals(config.manifest.electionScopeId, "jefferson-county-primary")
-            assertEquals(config.manifest.specVersion, "v0.95")
+            assertEquals("election_scope_id", config.manifest.electionScopeId)
+            assertEquals("v0.95", config.manifest.specVersion)
         }
     }
 

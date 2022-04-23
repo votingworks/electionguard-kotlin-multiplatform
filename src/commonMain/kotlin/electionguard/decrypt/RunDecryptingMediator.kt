@@ -8,6 +8,7 @@ import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.publish.ElectionRecord
+import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -43,7 +44,7 @@ fun runDecryptingMediator(group: GroupContext, inputDir: String, outputDir: Stri
     val decryptor = DecryptingMediator(group, tallyResult, guardians)
     val decryptedTally = with (decryptor) { tallyResult.ciphertextTally.decrypt() }
 
-    val publisher = ElectionRecord(outputDir, group, PublisherMode.createIfMissing)
+    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeDecryptionResult(
         DecryptionResult(
             tallyResult,

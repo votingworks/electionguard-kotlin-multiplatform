@@ -9,7 +9,8 @@ data class TallyResult(
     val group: GroupContext,
     val electionIntialized: ElectionInitialized,
     val ciphertextTally: CiphertextTally,
-    val metadata: Map<String, String> = emptyMap()
+    val ballotIds: List<String>,
+    val tallyIds: List<String>,
 ) {
     fun jointPublicKey(): ElGamalPublicKey {
         return ElGamalPublicKey(electionIntialized.jointPublicKey)

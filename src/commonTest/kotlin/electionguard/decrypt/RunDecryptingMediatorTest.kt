@@ -10,6 +10,7 @@ import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.publish.ElectionRecord
+import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 
 import kotlinx.cli.ExperimentalCli
@@ -22,9 +23,9 @@ class RunDecryptingMediatorTest {
     @Test
     fun testDecryptingMediator() {
         val group = productionGroup()
-        val inputDir =  "src/commonTest/data/workflow/runTallyAccumulation"
-        val guardianDir =  "src/commonTest/data/testJava/keyCeremony/election_private_data"
-        val outputDir =  "src/commonTest/data/testing/runDecryptingMediator"
+        val inputDir = "src/commonTest/data/workflow"
+        val guardianDir =  "src/commonTest/data/testJava/kickstart/keyCeremony/election_private_data"
+        val outputDir =  "testOut/kotlin2"
         runDecryptingMediator(group, inputDir, outputDir, makeDecryptingTrustees(group, guardianDir))
     }
 
@@ -43,7 +44,7 @@ class RunDecryptingMediatorTest {
         val pkey: ElementModP = with (group) { pkeys.multP() }
         assertEquals(tallyResult.jointPublicKey(), ElGamalPublicKey(pkey))
 
-        val publisher = ElectionRecord(outputDir, group, PublisherMode.createIfMissing)
+        val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
         publisher.writeDecryptionResult(
             DecryptionResult(
                 tallyResult,

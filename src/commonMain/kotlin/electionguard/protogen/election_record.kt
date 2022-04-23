@@ -429,7 +429,8 @@ public data class Guardian(
 public data class TallyResult(
     val electionInit: electionguard.protogen.ElectionInitialized? = null,
     val ciphertextTally: electionguard.protogen.CiphertextTally? = null,
-    val metadata: List<electionguard.protogen.TallyResult.MetadataEntry> = emptyList(),
+    val ballotIds: List<String> = emptyList(),
+    val tallyIds: List<String> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.TallyResult = protoMergeImpl(other)
@@ -440,7 +441,7 @@ public data class TallyResult(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.TallyResult = electionguard.protogen.TallyResult.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.TallyResult> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.TallyResult, *>>(3)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.TallyResult, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -465,11 +466,21 @@ public data class TallyResult(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "metadata",
+                        name = "ballot_ids",
                         number = 3,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.TallyResult.MetadataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.TallyResult.MetadataEntry.Companion)),
-                        jsonName = "metadata",
-                        value = electionguard.protogen.TallyResult::metadata
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "ballotIds",
+                        value = electionguard.protogen.TallyResult::ballotIds
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "tally_ids",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "tallyIds",
+                        value = electionguard.protogen.TallyResult::tallyIds
                     )
                 )
             }
@@ -479,52 +490,6 @@ public data class TallyResult(
                 messageCompanion = this,
                 fields = fieldsList
             )
-        }
-    }
-
-    public data class MetadataEntry(
-        override val key: String = "",
-        override val value: String = "",
-        override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-    ) : pbandk.Message, Map.Entry<String, String> {
-        override operator fun plus(other: pbandk.Message?): electionguard.protogen.TallyResult.MetadataEntry = protoMergeImpl(other)
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.TallyResult.MetadataEntry> get() = Companion.descriptor
-        override val protoSize: Int by lazy { super.protoSize }
-        public companion object : pbandk.Message.Companion<electionguard.protogen.TallyResult.MetadataEntry> {
-            public val defaultInstance: electionguard.protogen.TallyResult.MetadataEntry by lazy { electionguard.protogen.TallyResult.MetadataEntry() }
-            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.TallyResult.MetadataEntry = electionguard.protogen.TallyResult.MetadataEntry.decodeWithImpl(u)
-
-            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.TallyResult.MetadataEntry> by lazy {
-                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.TallyResult.MetadataEntry, *>>(2)
-                fieldsList.apply {
-                    add(
-                        pbandk.FieldDescriptor(
-                            messageDescriptor = this@Companion::descriptor,
-                            name = "key",
-                            number = 1,
-                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                            jsonName = "key",
-                            value = electionguard.protogen.TallyResult.MetadataEntry::key
-                        )
-                    )
-                    add(
-                        pbandk.FieldDescriptor(
-                            messageDescriptor = this@Companion::descriptor,
-                            name = "value",
-                            number = 2,
-                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                            jsonName = "value",
-                            value = electionguard.protogen.TallyResult.MetadataEntry::value
-                        )
-                    )
-                }
-                pbandk.MessageDescriptor(
-                    fullName = "TallyResult.MetadataEntry",
-                    messageClass = electionguard.protogen.TallyResult.MetadataEntry::class,
-                    messageCompanion = this,
-                    fields = fieldsList
-                )
-            }
         }
     }
 }
@@ -894,7 +859,8 @@ private fun TallyResult.protoMergeImpl(plus: pbandk.Message?): TallyResult = (pl
     it.copy(
         electionInit = electionInit?.plus(plus.electionInit) ?: plus.electionInit,
         ciphertextTally = ciphertextTally?.plus(plus.ciphertextTally) ?: plus.ciphertextTally,
-        metadata = metadata + plus.metadata,
+        ballotIds = ballotIds + plus.ballotIds,
+        tallyIds = tallyIds + plus.tallyIds,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -903,40 +869,18 @@ private fun TallyResult.protoMergeImpl(plus: pbandk.Message?): TallyResult = (pl
 private fun TallyResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): TallyResult {
     var electionInit: electionguard.protogen.ElectionInitialized? = null
     var ciphertextTally: electionguard.protogen.CiphertextTally? = null
-    var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.TallyResult.MetadataEntry>? = null
+    var ballotIds: pbandk.ListWithSize.Builder<String>? = null
+    var tallyIds: pbandk.ListWithSize.Builder<String>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> electionInit = _fieldValue as electionguard.protogen.ElectionInitialized
             2 -> ciphertextTally = _fieldValue as electionguard.protogen.CiphertextTally
-            3 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.TallyResult.MetadataEntry> }
+            3 -> ballotIds = (ballotIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
+            4 -> tallyIds = (tallyIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
         }
     }
-    return TallyResult(electionInit, ciphertextTally, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForTallyResultMetadataEntry")
-public fun TallyResult.MetadataEntry?.orDefault(): electionguard.protogen.TallyResult.MetadataEntry = this ?: TallyResult.MetadataEntry.defaultInstance
-
-private fun TallyResult.MetadataEntry.protoMergeImpl(plus: pbandk.Message?): TallyResult.MetadataEntry = (plus as? TallyResult.MetadataEntry)?.let {
-    it.copy(
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun TallyResult.MetadataEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): TallyResult.MetadataEntry {
-    var key = ""
-    var value = ""
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> key = _fieldValue as String
-            2 -> value = _fieldValue as String
-        }
-    }
-    return TallyResult.MetadataEntry(key, value, unknownFields)
+    return TallyResult(electionInit, ciphertextTally, pbandk.ListWithSize.Builder.fixed(ballotIds), pbandk.ListWithSize.Builder.fixed(tallyIds), unknownFields)
 }
 
 @pbandk.Export

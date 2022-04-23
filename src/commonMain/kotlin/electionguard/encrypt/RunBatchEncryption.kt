@@ -18,6 +18,7 @@ import electionguard.core.toElementModQ
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
 import electionguard.publish.ElectionRecord
+import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import electionguard.publish.SubmittedBallotSinkIF
 import kotlinx.cli.ArgParser
@@ -133,15 +134,15 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
 
     val submitted: List<SubmittedBallot> = encrypted.map { it.submit(SubmittedBallot.BallotState.CAST) }
 
-    val electionRecordOut = ElectionRecord(outputDir, group, PublisherMode.createIfMissing)
-    electionRecordOut.writeEncryptions(
+    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    publisher.writeEncryptions(
         electionInit,
         submitted,
     )
     println("wrote ${submitted.size} submitted ballots to $outputDir")
 
     if (!invalidBallots.isEmpty()) {
-        electionRecordOut.writeInvalidBallots(invalidDir, invalidBallots)
+        publisher.writeInvalidBallots(invalidDir, invalidBallots)
         println("wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
     println("done")
@@ -153,7 +154,7 @@ fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, 
     val electionRecordIn = ElectionRecord(inputDir, group)
     val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
-    val publisher = ElectionRecord(outputDir, group, PublisherMode.createIfMissing)
+    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     val sink: SubmittedBallotSinkIF = publisher.submittedBallotSink()
 
     // ManifestInputValidation

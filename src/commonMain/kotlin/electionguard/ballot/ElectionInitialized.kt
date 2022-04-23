@@ -8,11 +8,10 @@ data class ElectionInitialized(
     /** The joint public key (K) in the ElectionGuard Spec. */
     val jointPublicKey: ElementModP,
     val manifestHash: UInt256, // matches Manifest.cryptoHash
-    val cryptoExtendedBaseHash: UInt256, // qbar
+    val cryptoExtendedBaseHash: UInt256, // aka qbar
     val guardians: List<Guardian>,
     val metadata: Map<String, String> = emptyMap(),
 ) {
-
     fun manifest(): Manifest {
         return config.manifest
     }

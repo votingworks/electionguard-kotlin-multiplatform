@@ -91,7 +91,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                 }
             }
         }
-        println("\nTally '${tally.tallyId}' valid $allValid; ncontests = $ncontests; nselections = $nselections; nshares = $nshares\n")
+        println("Tally '${tally.tallyId}' valid $allValid; ncontests = $ncontests; nselections = $nselections; nshares = $nshares")
         return allValid
     }
 

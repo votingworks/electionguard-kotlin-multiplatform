@@ -14,7 +14,7 @@ import electionguard.decrypt.DecryptingTrusteeIF
 expect class ElectionRecord(
     topDir: String,
     groupContext: GroupContext,
-    publisherMode: PublisherMode = PublisherMode.readonly) {
+) {
 
     fun readElectionConfig(): Result<ElectionConfig, String>
     fun readElectionInitialized(): Result<ElectionInitialized, String>
@@ -30,26 +30,4 @@ expect class ElectionRecord(
     // not part of the election record, private data
     fun iteratePlaintextBallots(ballotDir : String, filter : (PlaintextBallot) -> Boolean): Iterable<PlaintextBallot>
     fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF>
-
-    fun writeElectionConfig(config: ElectionConfig)
-    fun writeElectionInitialized(init: ElectionInitialized)
-    fun writeEncryptions(init: ElectionInitialized, encrypted: Iterable<SubmittedBallot>)
-    fun writeTallyResult(tally: TallyResult)
-    fun writeDecryptionResult(decryption: DecryptionResult)
-
-    fun submittedBallotSink(): SubmittedBallotSinkIF
-
-    fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>)
-}
-
-interface SubmittedBallotSinkIF {
-    fun writeSubmittedBallot(ballot: SubmittedBallot)
-    fun close()
-}
-
-enum class PublisherMode {
-    readonly, // read files only
-    writeonly, // write new files, but do not create directories
-    createIfMissing, // create directories if not already exist
-    createNew // create clean directories
 }

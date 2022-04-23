@@ -13,78 +13,70 @@ import electionguard.decrypt.DecryptingTrusteeIF
 
 actual class ElectionRecord actual constructor(
     topDir: String,
-    groupContext: GroupContext,
-    publisherMode: PublisherMode
+    val groupContext: GroupContext,
 ) {
+    val path = ElectionRecordPath(topDir)
+
+    init {
+        if (!exists(topDir)) {
+            throw RuntimeException("Non existent directory $topDir")
+        }
+    }
+
     actual fun readElectionConfig(): Result<ElectionConfig, String> {
-        TODO("Not yet implemented")
+        return groupContext.readElectionConfig(path.electionConfigPath())
     }
 
     actual fun readElectionInitialized(): Result<ElectionInitialized, String> {
-        TODO("Not yet implemented")
+        return groupContext.readElectionInitialized(path.electionInitializedPath())
     }
 
     actual fun readTallyResult(): Result<TallyResult, String> {
-        TODO("Not yet implemented")
+        return groupContext.readTallyResult(path.tallyResultPath())
     }
 
     actual fun readDecryptionResult(): Result<DecryptionResult, String> {
-        TODO("Not yet implemented")
+        return groupContext.readDecryptionResult(path.decryptionResultPath())
     }
 
     actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
-        TODO("Not yet implemented")
+        if (!exists(path.submittedBallotProtoPath())) {
+            return emptyList()
+        }
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotProtoPath()) { true } }
     }
 
     actual fun iterateCastBallots(): Iterable<SubmittedBallot> {
-        TODO("Not yet implemented")
+        if (!exists(path.submittedBallotProtoPath())) {
+            return emptyList()
+        }
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotProtoPath())
+            { it.state === electionguard.protogen.SubmittedBallot.BallotState.CAST }
+        }
     }
 
     actual fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
-        TODO("Not yet implemented")
+        if (!exists(path.submittedBallotProtoPath())) {
+            return emptyList()
+        }
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotProtoPath())
+            { it.state === electionguard.protogen.SubmittedBallot.BallotState.SPOILED }
+        }
     }
 
     actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
-        TODO("Not yet implemented")
+        if (!exists(path.spoiledBallotProtoPath())) {
+            return emptyList()
+        }
+        return Iterable { SpoiledBallotTallyIterator(groupContext, path.spoiledBallotProtoPath())}
     }
 
-    actual fun iteratePlaintextBallots(
-        ballotDir: String,
-        filter: (PlaintextBallot) -> Boolean
-    ): Iterable<PlaintextBallot> {
-        TODO("Not yet implemented")
+    actual fun iteratePlaintextBallots(ballotDir : String, filter : (PlaintextBallot) -> Boolean): Iterable<PlaintextBallot> {
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir), filter) }
     }
 
     actual fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF> {
-        TODO("Not yet implemented")
-    }
-
-    actual fun writeElectionConfig(config: ElectionConfig) {
-    }
-
-    actual fun writeElectionInitialized(init: ElectionInitialized) {
-    }
-
-    actual fun writeEncryptions(
-        init: ElectionInitialized,
-        encrypted: Iterable<SubmittedBallot>
-    ) {
-    }
-
-    actual fun writeTallyResult(tally: TallyResult) {
-    }
-
-    actual fun writeDecryptionResult(decryption: DecryptionResult) {
-    }
-
-    actual fun submittedBallotSink(): SubmittedBallotSinkIF {
-        TODO("Not yet implemented")
-    }
-
-    actual fun writeInvalidBallots(
-        invalidDir: String,
-        invalidBallots: List<PlaintextBallot>
-    ) {
+        return readTrustees(groupContext, trusteeDir)
     }
 
 }
