@@ -66,5 +66,5 @@ message DecryptionResult {
 message AvailableGuardian {
   string guardian_id = 1;
   uint32 x_coordinate = 2; // x coordinate in the secret polynomial. must be > 0
-  sint32 lagrange_coordinate = 3;
+  sint32 lagrange_coordinate = 4;
 }

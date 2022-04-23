@@ -2,6 +2,7 @@ syntax = "proto3";
 
 import "ciphertext_tally.proto";
 import "common.proto";
+import "election_record.proto";
 import "manifest.proto";
 import "plaintext_tally.proto";
 
@@ -22,22 +23,6 @@ message ElectionRecord {
 
   // The guardians present for decryption
   repeated AvailableGuardian available_guardians = 9;
-}
-
-message AvailableGuardian {
-  string guardian_id = 1;
-  uint32 x_coordinate = 2;
-  ElementModQ lagrange_coordinate = 3; // deprecated
-  sint32 lagrange_coordinate_int = 4;
-}
-
-// The constants for mathematical functions during the election.
-message ElectionConstants {
-  string name = 5;
-  bytes large_prime = 1; // large prime or p
-  bytes small_prime = 2; // small prime or q
-  bytes cofactor = 3;    // cofactor or r
-  bytes generator = 4;   // generator or g
 }
 
 // ElectionGuard representation of a specific election.
