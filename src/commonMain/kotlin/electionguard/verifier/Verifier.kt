@@ -28,6 +28,8 @@ import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
 
 private val debugChannels = false
+private val debugBallots = false
+
 // quick proof verification - not necessarily the verification spec
 class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
     val jointPublicKey: ElGamalPublicKey
@@ -167,7 +169,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
             // println("     Contest '${contest.contestId}' valid $cvalid")
             bvalid = bvalid && cvalid
         }
-        println(" Ballot '${ballot.ballotId}' valid $bvalid; ncontests = $ncontests nselections = $nselections")
+        if (debugBallots) println(" Ballot '${ballot.ballotId}' valid $bvalid; ncontests = $ncontests nselections = $nselections")
         return bvalid
     }
 }

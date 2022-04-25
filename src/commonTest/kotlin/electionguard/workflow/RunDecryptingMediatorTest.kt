@@ -25,10 +25,10 @@ import kotlin.test.assertEquals
 @Test
 fun testDecryptingMediator() {
     val group = productionGroup()
-    val inputDir = "testOut/kotlin2"
+    val inputDir = "src/commonTest/data/runWorkflow"
 
-    val trusteeDir = "testOut/runFakeKeyCeremonyTest/private_data"
-    val outputDir = "testOut/kotlin2"
+    val trusteeDir = "testOut/runWorkflow/private_data/trustees"
+    val outputDir = "testOut/testDecryptingMediator"
     runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir))
 }
 

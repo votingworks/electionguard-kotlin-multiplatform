@@ -21,7 +21,7 @@ class RunWorkflow {
     val trusteeDir =  "${privateDir}/trustees"
     val ballotsDir =  "${privateDir}/input"
     val invalidDir =  "${privateDir}/invalid"
-    val nballots = 33
+    val nballots = 100
 
     @Test
     fun runWorkflow() {
