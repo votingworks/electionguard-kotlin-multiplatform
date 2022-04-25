@@ -10,15 +10,15 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
-    val kotlinDir = "src/commonTest/data/workflow"
+    val kotlinDir = "src/commonTest/data/runWorkflow"
     val decryptorDir = "src/commonTest/data/testJava/decryptor/"
 
     @Test
     fun readBallotsWrittenByKotlin() {
         runTest {
             val context = productionGroup()
-            readBallots(context, kotlinDir, 11)
-            readCastBallots(context, kotlinDir, 11)
+            readBallots(context, kotlinDir, 33)
+            readCastBallots(context, kotlinDir, 33)
             readSpoiledBallots(context, kotlinDir, 0)
         }
     }

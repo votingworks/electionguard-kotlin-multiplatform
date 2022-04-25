@@ -18,7 +18,7 @@ class ElectionRecordTest {
     @Test
     fun readElectionRecordWrittenByDecryptorKotlin() {
         runTest {
-            readElectionRecordAndValidate("src/commonTest/data/workflow")
+            readElectionRecordAndValidate("src/commonTest/data/runWorkflow")
         }
     }
 
@@ -38,14 +38,14 @@ class ElectionRecordTest {
         val init = tallyResult.electionIntialized
         val config = init.config
 
-        assertEquals("1.0.0", config.protoVersion)
+        assertEquals("2.0.0", config.protoVersion)
         assertEquals("Standard", config.constants.name)
         assertEquals("v0.95", config.manifest.specVersion)
         assertEquals(3, config.numberOfGuardians)
         assertEquals(3, config.quorum)
         assertEquals(3, init.guardians.size)
-        assertEquals("CountyCook-precinct079-device24358", tallyResult.ciphertextTally.tallyId)
-        assertEquals("CountyCook-precinct079-device24358", decryption.decryptedTally.tallyId)
+        assertEquals("RunWorkflow", tallyResult.ciphertextTally.tallyId)
+        assertEquals("RunWorkflow", decryption.decryptedTally.tallyId)
         assertNotNull(decryption.decryptedTally)
         val contests = decryption.decryptedTally.contests
         assertNotNull(contests)

@@ -5,6 +5,7 @@ import electionguard.ballot.*
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.core.getSystemDate
 import electionguard.core.noNullValuesOrNull
 import electionguard.protoconvert.importElementModP
 import electionguard.protoconvert.importManifest
@@ -16,11 +17,12 @@ import java.io.FileInputStream
 fun GroupContext.readElectionRecordVer1(filename: String): ElectionInitialized {
     var proto: electionguard.protogen.ElectionRecord
     FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionRecord.decodeFromStream(inp) }
-    return proto.importElectionRecord(this)
+    return proto.importElectionRecord(this, filename)
 }
 
 fun electionguard.protogen.ElectionRecord.importElectionRecord(
-    groupContext: GroupContext
+    groupContext: GroupContext,
+    filename: String
 ): ElectionInitialized {
     val electionConstants = this.constants?.let { convertConstants(this.constants) }
     val manifest = importManifest(this.manifest).getOrThrow { IllegalStateException( "importManifest") }
@@ -43,12 +45,18 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
     //    val quorum: Int,
     //    /** arbitrary key/value metadata. */
     //    val metadata: Map<String, String> = emptyMap(),
+    val metadata: MutableMap<String, String> = mutableMapOf()
+    metadata.put("CreatedBy", "ElectionRecordVer1FromProto")
+    metadata.put("CreatedOn", getSystemDate().toString())
+    metadata.put("CreatedFrom", filename)
+
     val config = ElectionConfig(
         ElectionRecordPath.PROTO_VERSION,
         electionConstants,
         manifest,
         electionContext.numberOfGuardians,
         electionContext.quorum,
+        metadata
     )
 
     //     val config: ElectionConfig,
@@ -64,6 +72,7 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
         electionContext.manifestHash,
         electionContext.cryptoExtendedBaseHash,
         guardianRecords,
+        metadata
     )
 }
 

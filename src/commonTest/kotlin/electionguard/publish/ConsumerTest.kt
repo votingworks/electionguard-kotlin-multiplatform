@@ -10,7 +10,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
-    private val topdir = "src/commonTest/data/workflow"
+    private val topdir = "src/commonTest/data/runWorkflow"
 
     @Test
     fun readElectionRecord() {
@@ -84,33 +84,33 @@ class ConsumerTest {
     }
 
     @Test
-    fun readTrustees() {
+    fun readTrustee() {
         runTest {
             val context = productionGroup()
-            val trusteeDir = "src/commonTest/data/testJava/keyCeremony/election_private_data"
-            val electionRecordIn = ElectionRecord(trusteeDir, context)
-            var count = 0
-            for (trustee: DecryptingTrusteeIF in electionRecordIn.readTrustees(trusteeDir)) {
-                println("$count trustee = ${trustee}")
-                assertTrue(trustee.id().startsWith("remoteTrustee"))
-                count++
+            val initDir = "src/commonTest/data/runWorkflow"
+            val electionRecordIn = ElectionRecord(initDir, context)
+            val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+            val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
+            init.guardians.forEach {
+                val trustee = electionRecordIn.readTrustee(trusteeDir, it.guardianId)
+                println("trustee = ${trustee}")
+                assertTrue(trustee.id().equals(it.guardianId))
             }
         }
     }
 
     @Test
-    fun readBadTrustees() {
+    fun readBadTrustee() {
         runTest {
             val context = productionGroup()
-            val trusteeDir = "src/commonTest/data/testJava/encryptor/election_record"
+            val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
             val electionRecordIn = ElectionRecord(trusteeDir, context)
-            val result: Result<List<DecryptingTrusteeIF>, Throwable> = runCatching {
-                electionRecordIn.readTrustees(trusteeDir)
+            val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
+                electionRecordIn.readTrustee(trusteeDir, "badId")
             }
             assertTrue(result is Err)
-            assertTrue(result.getError() is pbandk.InvalidProtocolBufferException)
             val message: String = result.getError()?.message ?: "not"
-            assertTrue(message.contains("Protocol message contained an invalid tag"))
+            assertTrue(message.contains("No such file"))
         }
     }
 
@@ -119,9 +119,9 @@ class ConsumerTest {
         runTest {
             val context = productionGroup()
             val trusteeDir = "src/commonTest/data/testBad/nonexistant"
-            val result: Result<List<DecryptingTrusteeIF>, Throwable> = runCatching {
+            val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
                 val electionRecordIn = ElectionRecord(trusteeDir, context)
-                electionRecordIn.readTrustees(trusteeDir)
+                electionRecordIn.readTrustee(trusteeDir, "randomName")
             }
             assertFalse(result is Ok)
         }

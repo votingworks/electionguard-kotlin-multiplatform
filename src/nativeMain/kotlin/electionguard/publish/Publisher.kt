@@ -1,6 +1,8 @@
 package electionguard.publish
 
 import electionguard.ballot.*
+import electionguard.decrypt.DecryptingTrustee
+import electionguard.protoconvert.publishDecryptingTrustee
 import electionguard.protoconvert.publishDecryptionResult
 import electionguard.protoconvert.publishElectionConfig
 import electionguard.protoconvert.publishElectionInitialized
@@ -108,7 +110,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
 
     @Throws(IOException::class)
     fun writeSubmittedBallots(submittedBallots: Iterable<SubmittedBallot>): Boolean {
-        val fileout = path.submittedBallotProtoPath()
+        val fileout = path.submittedBallotPath()
         val file: CPointer<FILE> = openFile(fileout)
         try {
             submittedBallots.forEach {
@@ -130,7 +132,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
 
     @Throws(IOException::class)
     fun writeSpoiledBallots(spoiledBallots: Iterable<PlaintextTally>): Boolean {
-        val fileout = path.spoiledBallotProtoPath()
+        val fileout = path.spoiledBallotPath()
         val file: CPointer<FILE> = openFile(fileout)
         try {
             spoiledBallots.forEach {
@@ -151,18 +153,18 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     @Throws(IOException::class)
-    actual fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
-        if (invalidBallots.isNotEmpty()) {
-            val fileout = path.invalidBallotProtoPath(invalidDir)
+    actual fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
+        if (plaintextBallots.isNotEmpty()) {
+            val fileout = path.plaintextBallotPath(outputDir)
             val file: CPointer<FILE> = openFile(fileout)
             try {
-                invalidBallots.forEach {
+                plaintextBallots.forEach {
                     val proto = it.publishPlaintextBallot()
                     val buffer = proto.encodeToByteArray()
                     val length = writeVlen(file, fileout, buffer.size)
                     if (length <= 0) {
                         fclose(file)
-                        throw IOException("write failed on $invalidDir")
+                        throw IOException("write failed on $outputDir")
                     }
                     writeToFile(file, fileout, buffer)
                 }
@@ -172,8 +174,22 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
+    actual fun writeTrustee(trusteeDir: String, trustee: DecryptingTrustee) {
+        val proto = trustee.publishDecryptingTrustee()
+        val buffer = proto.encodeToByteArray()
+
+        val fileout = path.decryptingTrusteePath(trusteeDir, trustee.id)
+        val file: CPointer<FILE> = openFile(fileout)
+        try {
+            writeToFile(file, fileout, buffer)
+        } finally {
+            fflush(file)
+            fclose(file)
+        }
+    }
+
     actual fun submittedBallotSink(): SubmittedBallotSinkIF =
-        SubmittedBallotSink(path.submittedBallotProtoPath())
+        SubmittedBallotSink(path.submittedBallotPath())
 
     inner class SubmittedBallotSink(val fileout: String) : SubmittedBallotSinkIF {
         val file: CPointer<FILE> = openFile(fileout)

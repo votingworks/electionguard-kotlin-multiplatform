@@ -7,6 +7,7 @@ import electionguard.ballot.CiphertextTally
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
+import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
@@ -25,7 +26,7 @@ fun main(args: Array<String>) {
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
-        description = "Directory containing input election record"
+        description = "Directory containing input election record and encrypted ballots"
     ).required()
     val outputDir by parser.option(
         ArgType.String,
@@ -44,12 +45,16 @@ fun main(args: Array<String>) {
 }
 
 fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: String, name: String) {
+    val starting = getSystemTimeInMillis()
+
     val electionRecordIn = ElectionRecord(inputDir, group)
     val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
+    var count = 0
     val accumulator = AccumulateTally(group, electionInit.manifest(), name)
     for (submittedBallot in electionRecordIn.iterateSubmittedBallots()) {
         accumulator.addCastBallot(submittedBallot)
+        count++
     }
     val tally: CiphertextTally = accumulator.build()
 
@@ -57,4 +62,6 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
     publisher.writeTallyResult(
         TallyResult( group, electionInit, tally, accumulator.ballotIds(), emptyList())
     )
+    val took = getSystemTimeInMillis() - starting
+    println("AccumulateTally processed $count ballots, took $took millisecs")
 }

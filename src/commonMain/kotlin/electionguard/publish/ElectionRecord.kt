@@ -15,7 +15,6 @@ expect class ElectionRecord(
     topDir: String,
     groupContext: GroupContext,
 ) {
-
     fun readElectionConfig(): Result<ElectionConfig, String>
     fun readElectionInitialized(): Result<ElectionInitialized, String>
     fun readTallyResult(): Result<TallyResult, String>
@@ -28,6 +27,7 @@ expect class ElectionRecord(
     fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally>
 
     // not part of the election record, private data
-    fun iteratePlaintextBallots(ballotDir : String, filter : (PlaintextBallot) -> Boolean): Iterable<PlaintextBallot>
-    fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF>
+    fun iteratePlaintextBallots(ballotDir: String, filter : (PlaintextBallot) -> Boolean): Iterable<PlaintextBallot>
+    fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF
+
 }

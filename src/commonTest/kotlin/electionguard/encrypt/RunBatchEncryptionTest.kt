@@ -9,16 +9,16 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/kotlin2",
+                "src/commonTest/data/runWorkflow",
                 "-ballots",
-                "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots/",
+                "src/commonTest/data/runWorkflow/private_data/input",
                 "-out",
-                "testOut/kotlin2",
+                "testOut/testRunBatchEncryptionTest",
                 "-invalidBallots",
-                "testOut/election_private_data/invalid_ballots",
+                "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-fixedNonces",
                 "-nthreads",
-                "6"
+                "11"
             )
         )
     }

@@ -40,43 +40,44 @@ actual class ElectionRecord actual constructor(
     }
 
     actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
-        if (!exists(path.submittedBallotProtoPath())) {
+        if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotProtoPath()) { true } }
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath()) { true } }
     }
 
     actual fun iterateCastBallots(): Iterable<SubmittedBallot> {
-        if (!exists(path.submittedBallotProtoPath())) {
+        if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotProtoPath())
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath())
             { it.state === electionguard.protogen.SubmittedBallot.BallotState.CAST }
         }
     }
 
     actual fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
-        if (!exists(path.submittedBallotProtoPath())) {
+        if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotProtoPath())
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath())
             { it.state === electionguard.protogen.SubmittedBallot.BallotState.SPOILED }
         }
     }
 
     actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
-        if (!exists(path.spoiledBallotProtoPath())) {
+        if (!exists(path.spoiledBallotPath())) {
             return emptyList()
         }
-        return Iterable { SpoiledBallotTallyIterator(groupContext, path.spoiledBallotProtoPath())}
+        return Iterable { SpoiledBallotTallyIterator(groupContext, path.spoiledBallotPath())}
     }
 
     actual fun iteratePlaintextBallots(ballotDir : String, filter : (PlaintextBallot) -> Boolean): Iterable<PlaintextBallot> {
-        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir), filter) }
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotPath(ballotDir), filter) }
     }
 
-    actual fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF> {
-        return readTrustees(groupContext, trusteeDir)
+    actual fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {
+        val filename = path.decryptingTrusteePath(trusteeDir, guardianId)
+        return groupContext.readTrustee(filename)
     }
 
 }

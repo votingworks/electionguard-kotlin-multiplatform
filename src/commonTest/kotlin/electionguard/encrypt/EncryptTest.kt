@@ -11,7 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EncryptTest {
-    val input = "src/commonTest/data/workflow"
+    val input = "src/commonTest/data/runWorkflow"
 
     @Test
     fun testEncryption() {

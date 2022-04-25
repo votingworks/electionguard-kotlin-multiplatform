@@ -7,14 +7,14 @@ import electionguard.core.productionGroup
 import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
 
-/** Test DecryptingMediator with in-process DecryptingTrustee's. Cannot use this in production */
+/** Convert ver 1 electionRecord.protobuf to ver 2 ElectionConfig, writeElectionInitialized */
 class RunConvertVer1Test {
 
     @Test
     fun testConvertVer1() {
         val group = productionGroup()
         val inputDir =  "src/commonTest/data/testJava/kickstart/encryptor/election_record/electionRecord.protobuf"
-        val outputDir =  "testOut/kotlin2"
+        val outputDir =  "testOut/testConvertVer1"
         val electionInit = group.readElectionRecordVer1(inputDir)
 
         val publisher = Publisher(outputDir, PublisherMode.createIfMissing)

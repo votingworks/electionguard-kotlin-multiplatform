@@ -13,7 +13,7 @@ import electionguard.ballot.PlaintextTally
 import electionguard.ballot.SubmittedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
-import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.decrypt.DecryptingTrustee
 import electionguard.protoconvert.importDecryptingTrustee
 import electionguard.protoconvert.importDecryptionResult
 import electionguard.protoconvert.importElectionConfig
@@ -27,8 +27,6 @@ import pbandk.decodeFromStream
 import java.io.FileInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.function.Predicate
 
 fun GroupContext.readElectionConfig(filename: String): Result<ElectionConfig, String> {
@@ -132,38 +130,10 @@ class SpoiledBallotTallyIterator(
     }
 }
 
-fun readTrustees(
-    groupContext: GroupContext,
-    trusteeDir: String,
-): List<DecryptingTrusteeIF> {
-    val trusteeDirPath = Path.of(trusteeDir)
-
-    if (!Files.exists(trusteeDirPath) || !Files.isDirectory(trusteeDirPath)) {
-        return emptyList()
-    }
-    val result = ArrayList<DecryptingTrusteeIF>()
-    for (filename in trusteeDirPath.toFile().listFiles()!!) {
-        // TODO can we screen out bad files?
-        // TODO these should be gulp
-        val trusteeProto = readTrusteeProto(filename.absolutePath)
-        if (trusteeProto != null) {
-            result.add(trusteeProto.importDecryptingTrustee(groupContext))
-        }
-    }
-    return result
-}
-
-fun readTrusteeProto(filename: String): electionguard.protogen.DecryptingTrustee? {
-    var trusteeProto: electionguard.protogen.DecryptingTrustee? = null
-    FileInputStream(filename).use { input ->
-        val length = readVlen(input)
-        if (length > 0) {
-            val message = input.readNBytes(length)
-            trusteeProto =
-                electionguard.protogen.DecryptingTrustee.decodeFromByteBuffer(ByteBuffer.wrap(message))
-        }
-    }
-    return trusteeProto
+fun GroupContext.readTrustee(filename: String): DecryptingTrustee {
+    var proto: electionguard.protogen.DecryptingTrustee
+    FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptingTrustee.decodeFromStream(inp) }
+    return proto.importDecryptingTrustee(this)
 }
 
 // variable length (base 128) int32

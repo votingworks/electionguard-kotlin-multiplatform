@@ -38,6 +38,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
 
+private val debug = false
+
 /**
  * Run ballot encryption in batch mode.
  * Read election record from inputDir, write to outputDir.
@@ -127,10 +129,9 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
     val nselections: Int = encrypted.map { it.contests}.flatten().map{ it.selections }.flatten().count()
     val perContest = (took.toDouble() / ncontests).roundToInt()
     val perSelection = (took.toDouble() / nselections).roundToInt()
-    println("Took $took millisecs for ${encrypted.size} ballots = $perBallot msecs/ballot")
+    println("BatchEncryption took $took millisecs for ${encrypted.size} ballots = $perBallot msecs/ballot")
     println("   $ncontests contests $perContest msecs/contest")
     println("   $nselections selections $perSelection msecs/selection")
-    println()
 
     val submitted: List<SubmittedBallot> = encrypted.map { it.submit(SubmittedBallot.BallotState.CAST) }
 
@@ -139,13 +140,13 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
         electionInit,
         submitted,
     )
-    println("wrote ${submitted.size} submitted ballots to $outputDir")
+    println(" wrote ${submitted.size} submitted ballots to $outputDir")
 
     if (!invalidBallots.isEmpty()) {
-        publisher.writeInvalidBallots(invalidDir, invalidBallots)
+        val ballotPublisher = Publisher(outputDir, PublisherMode.createIfMissing)
+        ballotPublisher.writePlaintextBallot(invalidDir, invalidBallots)
         println("wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
-    println("done")
 }
 
 // multi threaded
@@ -204,20 +205,19 @@ fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, 
 
     val took = getSystemTimeInMillis() - starting
     val perBallot = (took.toDouble() / count).roundToInt()
-    println("Took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
+    println("ChannelEncryption took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
 
     publisher.writeElectionInitialized(electionInit)
     if (!invalidBallots.isEmpty()) {
-        publisher.writeInvalidBallots(invalidDir, invalidBallots)
-        println("wrote ${invalidBallots.size} invalid ballots to $invalidDir")
+        publisher.writePlaintextBallot(invalidDir, invalidBallots)
+        println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
-    println("done")
 }
 
 // place the ballot reading into its own coroutine
 fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveChannel<PlaintextBallot> = produce {
     for (ballot in producer) {
-        println("Producer sending plaintext ballot ${ballot.ballotId}")
+        if (debug) println("Producer sending plaintext ballot ${ballot.ballotId}")
         send(ballot)
         yield()
     }
@@ -240,11 +240,11 @@ fun CoroutineScope.launchEncryptor(id: Int,
         else
             encryptor.encrypt(ballot, codeSeed, group.randomElementModQ())
 
-        println(" Encryptor #$id sending ciphertext ballot ${encrypted.ballotId}")
+        if (debug) println(" Encryptor #$id sending ciphertext ballot ${encrypted.ballotId}")
         output.send(encrypted)
         yield()
     }
-    println("Encryptor #$id done")
+    if (debug) println("Encryptor #$id done")
 }
 
 // place the ballot writing into its own coroutine
@@ -254,7 +254,7 @@ fun CoroutineScope.launchSink(input: Channel<CiphertextBallot>, sink: SubmittedB
 ) = launch {
     for (ballot in input) {
         sink.writeSubmittedBallot(ballot.submit(SubmittedBallot.BallotState.CAST))
-        println(" Sink wrote $count submitted ballot ${ballot.ballotId}")
+        if (debug) println(" Sink wrote $count submitted ballot ${ballot.ballotId}")
         count++
     }
 }

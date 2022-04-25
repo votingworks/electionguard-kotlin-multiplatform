@@ -10,7 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class VerifyEncryptedBallotsTest {
-    val topdir = "src/commonTest/data/workflow"
+    val topdir = "src/commonTest/data/runWorkflow"
     val ballotsJvmDir = "src/commonTest/data/testOut/jvm/runBatchEncryption"
     val ballotsNativeDir = "src/commonTest/data/testOut/native/runBatchEncryption"
     val ballotsPrecomputeDir = "src/commonTest/data/testOut/jvm/ballotPrecomputeTest/"

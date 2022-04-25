@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
 
+private val debugChannels = false
 // quick proof verification - not necessarily the verification spec
 class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
     val jointPublicKey: ElGamalPublicKey
@@ -35,10 +36,25 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
     val guardians: List<Guardian>
 
     init {
-        decryption = electionRecord.readDecryptionResult().getOrThrow { throw IllegalStateException("electionRecord.context is null")}
+        decryption = electionRecord.readDecryptionResult()
+            .getOrThrow { throw IllegalStateException("electionRecord.context is null") }
         jointPublicKey = decryption.tallyResult.jointPublicKey()
         cryptoExtendedBaseHash = decryption.tallyResult.cryptoExtendedBaseHash()
         guardians = decryption.tallyResult.electionIntialized.guardians
+    }
+
+    fun verify(): Boolean {
+        val guardiansOk = verifyGuardianPublicKey()
+        println(" verifyGuardianPublicKey= $guardiansOk\n")
+
+        val ballotsOk = verifySubmittedBallots(electionRecord.iterateSubmittedBallots())
+        println(" verifySubmittedBallots= $ballotsOk\n")
+
+        val tallyOk = verifyDecryptedTally()
+        println(" verifyDecryptedTally= $tallyOk\n")
+
+        val allOk = guardiansOk && ballotsOk && tallyOk
+        return allOk
     }
 
     fun verifyGuardianPublicKey(): Boolean {
@@ -50,9 +66,12 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                 val validProof = publicKey.hasValidSchnorrProof(proof)
                 guardianOk = guardianOk && validProof
             }
-            println("Guardian ${guardian.guardianId} ok = ${guardianOk}")
+            println(" Guardian ${guardian.guardianId} ok = ${guardianOk}")
             allValid = allValid && guardianOk
         }
+
+        val jointPublicKeyComputed = this.guardians.map { it.publicKey() }.reduce { a, b -> a * b }
+        allValid = allValid && jointPublicKey.equals(jointPublicKeyComputed)
         return allValid
     }
 
@@ -74,7 +93,8 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                     val sproof: GenericChaumPedersenProof? = share.proof
                     if (sproof != null) {
                         val guardian = this.guardians.find { it.guardianId.equals(share.guardianId) }
-                        val guardianKey = guardian?.publicKey() ?: throw IllegalStateException("Cant find guardian ${share.guardianId}")
+                        val guardianKey = guardian?.publicKey()
+                            ?: throw IllegalStateException("Cant find guardian ${share.guardianId}")
                         val svalid = sproof.isValid(
                             group.G_MOD_P,
                             guardianKey,
@@ -113,7 +133,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
 
         val took = getSystemTimeInMillis() - starting
         val perBallot = (took.toDouble() / count).roundToInt()
-        println("Took $took millisecs for $count ballots = $perBallot msecs/ballot")
+        println(" VerifySubmittedBallots took $took millisecs for $count ballots = $perBallot msecs/ballot")
         return allOk
     }
 
@@ -147,7 +167,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
             // println("     Contest '${contest.contestId}' valid $cvalid")
             bvalid = bvalid && cvalid
         }
-        println("Ballot '${ballot.ballotId}' valid $bvalid; ncontests = $ncontests nselections = $nselections")
+        println(" Ballot '${ballot.ballotId}' valid $bvalid; ncontests = $ncontests nselections = $nselections")
         return bvalid
     }
 }
@@ -168,10 +188,10 @@ fun CoroutineScope.produceBallots(producer: Iterable<SubmittedBallot>): ReceiveC
 fun CoroutineScope.launchVerifier(
     id: Int,
     input: ReceiveChannel<SubmittedBallot>,
-    verify: (SubmittedBallot)-> Boolean,
+    verify: (SubmittedBallot) -> Boolean,
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
-        println("$id channel working on ${ballot.ballotId}")
+        if (debugChannels) println("$id channel working on ${ballot.ballotId}")
         allOk = allOk && verify(ballot) // LOOK
         yield()
     }

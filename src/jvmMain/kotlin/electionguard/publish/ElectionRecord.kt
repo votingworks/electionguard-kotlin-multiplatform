@@ -21,7 +21,6 @@ actual class ElectionRecord actual constructor(
     topDir: String,
     val groupContext: GroupContext,
 ) {
-    private val electionRecordDir = Path.of(topDir).resolve(ElectionRecordPath.ELECTION_RECORD_DIR)
     val path = ElectionRecordPath(topDir)
 
     init {
@@ -51,15 +50,15 @@ actual class ElectionRecord actual constructor(
         ballotDir: String,
         filter: (PlaintextBallot) -> Boolean
     ): Iterable<PlaintextBallot> {
-        if (!Files.exists(Path.of(path.plaintextBallotProtoPath(ballotDir)))) {
+        if (!Files.exists(Path.of(path.plaintextBallotPath(ballotDir)))) {
             return emptyList()
         }
-        return Iterable { PlaintextBallotIterator(path.plaintextBallotProtoPath(ballotDir), filter) }
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotPath(ballotDir), filter) }
     }
 
     // all submitted ballots, cast or spoiled
     actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
-        val filename = path.submittedBallotProtoPath()
+        val filename = path.submittedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
@@ -68,7 +67,7 @@ actual class ElectionRecord actual constructor(
 
     // only cast SubmittedBallots
     actual fun iterateCastBallots(): Iterable<SubmittedBallot> {
-        val filename = path.submittedBallotProtoPath()
+        val filename = path.submittedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
@@ -79,7 +78,7 @@ actual class ElectionRecord actual constructor(
 
     // only spoiled SubmittedBallots
     actual fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
-        val filename = path.submittedBallotProtoPath()
+        val filename = path.submittedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
@@ -90,15 +89,16 @@ actual class ElectionRecord actual constructor(
 
     // all spoiled ballot tallies
     actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
-        val filename = path.spoiledBallotProtoPath()
+        val filename = path.spoiledBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
         return Iterable { SpoiledBallotTallyIterator(filename, groupContext) }
     }
 
-    actual fun readTrustees(trusteeDir: String): List<DecryptingTrusteeIF> {
-        return readTrustees(groupContext, trusteeDir)
+    actual fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {
+        val filename = path.decryptingTrusteePath(trusteeDir, guardianId)
+        return groupContext.readTrustee(filename)
     }
 
 }

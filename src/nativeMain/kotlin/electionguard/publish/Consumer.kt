@@ -146,21 +146,10 @@ class SpoiledBallotTallyIterator(
     }
 }
 
-fun readTrustees(
-    groupContext: GroupContext,
-    trusteeDir: String)
-: List<DecryptingTrusteeIF> {
-    val trustees = openDir(trusteeDir)
-
-    val result = ArrayList<DecryptingTrusteeIF>()
-    trustees.forEach {
-        // TODO can we screen out bad files?
-        val filename = "$trusteeDir/$it"
-        val buffer = gulpVlen(filename)
-        val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
-        result.add(trusteeProto.importDecryptingTrustee(groupContext))
-    }
-    return result
+fun GroupContext.readTrustee(filename: String): DecryptingTrusteeIF {
+    val buffer = gulp(filename)
+    val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
+    return trusteeProto.importDecryptingTrustee(this)
 }
 
 @Throws(IOException::class)

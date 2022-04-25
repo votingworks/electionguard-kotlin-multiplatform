@@ -90,7 +90,7 @@ fun exists(filename: String): Boolean {
     }
 }
 
-// create new directoriess if not exist, starting at the topDir
+// create new directories if not exist, starting at the topDir
 fun createDirectories(dir: String): Boolean {
     val subdirs = dir.split("/")
     var have = ""

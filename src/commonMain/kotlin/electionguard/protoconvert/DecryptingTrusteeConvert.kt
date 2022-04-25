@@ -20,3 +20,21 @@ private fun electionguard.protogen.ElGamalKeyPair.importElGamalKeypair(group: Gr
         ElGamalPublicKey(group.importElementModP(this.publicKey)!!),
     )
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+fun DecryptingTrustee.publishDecryptingTrustee(): electionguard.protogen.DecryptingTrustee {
+    return electionguard.protogen.DecryptingTrustee(
+        this.id,
+        this.xCoordinate,
+        this.electionKeypair.publishElGamalKeyPair(),
+    )
+}
+
+private fun ElGamalKeypair.publishElGamalKeyPair(): electionguard.protogen.ElGamalKeyPair {
+    return electionguard.protogen.ElGamalKeyPair(
+        this.secretKey.key.publishElementModQ(),
+        this.publicKey.key.publishElementModP(),
+    )
+}

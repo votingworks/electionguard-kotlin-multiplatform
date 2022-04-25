@@ -23,8 +23,8 @@ import kotlin.test.Test
 private val revotes = 0
 
 class BallotPrecomputeTest {
-    val electionRecordDir = "src/commonTest/data/workflow"
-    val ballotDir = "src/commonTest/data/testJava/kickstart/encryptor/election_private_data/plaintext_ballots/"
+    val electionRecordDir = "src/commonTest/data/runWorkflow"
+    val ballotDir = "src/commonTest/data/runWorkflow/private_data/input/"
     val outputDir = "testOut/precompute/ballotPrecomputeTest"
 
     @Test
