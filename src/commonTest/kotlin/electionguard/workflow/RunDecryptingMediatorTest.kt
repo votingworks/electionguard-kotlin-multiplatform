@@ -27,7 +27,7 @@ fun testDecryptingMediator() {
     val group = productionGroup()
     val inputDir = "src/commonTest/data/runWorkflow"
 
-    val trusteeDir = "testOut/runWorkflow/private_data/trustees"
+    val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
     val outputDir = "testOut/testDecryptingMediator"
     runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir))
 }

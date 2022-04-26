@@ -73,7 +73,6 @@ fun runFakeKeyCeremony(
         config.manifest.cryptoHash,
     )
 
-    // LOOK does it matter what the cryptoExtendedBaseHash is?
     val cryptoExtendedBaseHash: UInt256 = hashElements(crypto_base_hash, commitmentsHash)
     val jointPublicKey: ElementModP = guardians.map { it.publicKey() }.reduce { a, b -> a * b }
 

@@ -194,7 +194,7 @@ fun CoroutineScope.launchVerifier(
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
         if (debugChannels) println("$id channel working on ${ballot.ballotId}")
-        allOk = allOk && verify(ballot) // LOOK
+        allOk = allOk && verify(ballot)
         yield()
     }
 }

@@ -111,11 +111,25 @@ fun createDirectory(dirName: String): Boolean {
     // mkdir(@kotlinx.cinterop.internal.CCall.CString __path: kotlin.String?,
     // __mode: platform.posix.__mode_t /* = kotlin.UInt */)
     // : kotlin.Int { /* compiled code */ }
-    if (mkdir(dirName, 774U) == -1) {
+    if (mkdir(dirName, convertOctalToDecimal(775)) == -1) {
         checkErrno { mess -> throw IOException("Fail mkdir $mess on $dirName") }
         return false
     }
     return true
+}
+
+fun convertOctalToDecimal(octal: Int): UInt {
+    var work = octal
+    var decimalNumber = 0
+    var pow = 1
+
+    while (work != 0) {
+        decimalNumber += (work % 10 * pow)
+        work /= 10
+        pow *= 8
+    }
+
+    return decimalNumber.toUInt()
 }
 
 @Throws(IOException::class)
