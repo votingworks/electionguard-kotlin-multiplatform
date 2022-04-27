@@ -58,10 +58,9 @@ class CommonConvertTest {
     fun convertSchnorrProof() {
         runTest {
             checkAll(
-                validElementsModP(productionGroup()),
                 elementsModQ(productionGroup()),
                 elementsModQ(productionGroup()),
-            ) { p, c, r ->
+            ) { c, r ->
                 val context = productionGroup()
                 val proof = SchnorrProof(c, r)
                 val proto = proof.publishSchnorrProof()

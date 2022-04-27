@@ -3,12 +3,14 @@ package electionguard.protoconvert
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getAllErrors
+import com.github.michaelbull.result.partition
+import com.github.michaelbull.result.toResultOr
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.DecryptionShare
 import electionguard.ballot.PlaintextTally
+import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
-import electionguard.core.noNullValuesOrNull
-import mu.KotlinLogging
-private val logger = KotlinLogging.logger("PlaintextTallyConvert")
 
 fun GroupContext.importPlaintextTally(tally: electionguard.protogen.PlaintextTally?):
         Result<PlaintextTally, String> {
@@ -16,125 +18,115 @@ fun GroupContext.importPlaintextTally(tally: electionguard.protogen.PlaintextTal
         return Err("Null PlaintextTally")
     }
 
-    // TODO: can it ever occur that we have zero contests?
     if (tally.contests.isEmpty()) {
         return Err( "No contests in PlaintextTally")
     }
 
-    val contestMap =
-        tally.contests
-            .associate { it.contestId to this.importContest(it) }
-            .noNullValuesOrNull()
-
-    if (contestMap == null) {
-        return Err( "Failed to convert PlaintextTally")
+    val (contests, errors) = tally.contests.map { this.importContest(it) }.partition()
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
-    return Ok(PlaintextTally(tally.tallyId, contestMap))
+    return Ok(PlaintextTally(tally.tallyId, contests.associateBy { it.contestId }))
 }
 
-private fun GroupContext.importContest(contest: electionguard.protogen.PlaintextTallyContest): PlaintextTally.Contest? {
+private fun GroupContext.importContest(contest: electionguard.protogen.PlaintextTallyContest):
+        Result<PlaintextTally.Contest, String> {
 
-    // TODO: can it ever occur that we have zero selections?
     if (contest.selections.isEmpty()) {
-        logger.error { "No selections in PlaintextTallyContest" }
-        return null
+        return Err( "No selections in PlaintextTallyContest")
     }
 
-    val selectionMap =
-        contest.selections
-            .associate { it.selectionId to this.importSelection(it) }
-            .noNullValuesOrNull()
-
-    if (selectionMap == null) {
-        logger.error { "Failed to convert PlaintextTallyContest" }
-        return null
+    val (selections, errors) = contest.selections.map { this.importSelection(it) }.partition()
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
-    return PlaintextTally.Contest(contest.contestId, selectionMap)
+    return Ok(PlaintextTally.Contest(contest.contestId, selections.associateBy{ it.selectionId }))
 }
 
-private fun GroupContext.importSelection(selection: electionguard.protogen.PlaintextTallySelection): PlaintextTally.Selection? {
+private fun GroupContext.importSelection(selection: electionguard.protogen.PlaintextTallySelection):
+        Result<PlaintextTally.Selection, String> {
     val value = this.importElementModP(selection.value)
+        .toResultOr {"PlaintextTallySelection ${selection.selectionId} value was malformed or missing"}
     val message = this.importCiphertext(selection.message)
-    val shares = selection.shares.map { this.importShare(it) }.noNullValuesOrNull()
+        .toResultOr {"PlaintextTallySelection ${selection.selectionId} message was malformed or missing"}
+    val (shares, serrors) = selection.partialDecryptions.map { this.importPartialDecryption(it) }.partition()
 
-    if (value == null || message == null || shares == null) {
-        logger.error { "Failed to convert PlaintextTallySelection" }
-        return null
+    val errors = getAllErrors(value, message) + serrors
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
     // TODO: can it ever occur that we have zero shares?
     if (shares.isEmpty()) {
-        logger.error { "No shares in PlaintextTallySelection" }
-        return null
+        return Err("No shares in PlaintextTallySelection")
     }
 
-    return PlaintextTally.Selection(selection.selectionId, selection.tally, value, message, shares)
+    return Ok(PlaintextTally.Selection(
+        selection.selectionId,
+        selection.tally,
+        value.unwrap(),
+        message.unwrap(),
+        shares))
 }
 
-private fun GroupContext.importShare(sselection: electionguard.protogen.CiphertextDecryptionSelection): DecryptionShare.DecryptionShareSelection? {
+private fun GroupContext.importPartialDecryption(partial: electionguard.protogen.PartialDecryption):
+        Result<DecryptionShare.PartialDecryption, String> {
 
-    val share = this.importElementModP(sselection.share)
-    val proof = this.importChaumPedersenProof(sselection.proof)
-    val recoveredParts = sselection.recoveredParts
-    val parts =
+    if (partial.proof == null && partial.recoveredParts == null) {
+        return Err("PartialDecryption ${partial.selectionId} missing both proof and recoveredParts")
+    }
+
+    val share = this.importElementModP(partial.share)
+        .toResultOr {"PartialDecryption ${partial.selectionId} share was malformed or missing"}
+
+    val proof: GenericChaumPedersenProof? =
+        if (partial.proof != null) this.importChaumPedersenProof(partial.proof) else null
+
+    val recoveredParts = partial.recoveredParts
+    val (parts, perrors) =
         if (recoveredParts != null) {
-            recoveredParts.fragments
-                .map { this.importRecoveredParts(it) }
-                .noNullValuesOrNull()
+            recoveredParts.fragments.map { this.importRecoveredPartialDecryption(it) }.partition()
         } else {
-            null
+            Pair(null, emptyList())
         }
 
-    if (share == null) {
-        logger.error { "Missing CiphertextDecryptionSelection share" }
-        return null
+    val errors = getAllErrors(share) + perrors
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
-    when {
-        proof == null && parts == null -> {
-            logger.error {
-                "Failed to convert CiphertextDecryptionSelection: no proof or parts present"
-            }
-            return null
-        }
-        proof != null && parts != null -> {
-            logger.error {
-                "Failed to convert CiphertextDecryptionSelection: both proof *and* parts " +
-                    "present"
-            }
-            return null
-        }
-    }
-
-    // If we get here, one of proof or parts is non-null
-    return DecryptionShare.DecryptionShareSelection(
-        sselection.selectionId,
-        sselection.guardianId,
-        share,
+    return Ok(DecryptionShare.PartialDecryption(
+        partial.selectionId,
+        partial.guardianId,
+        share.unwrap(),
         proof,
         parts,
-    )
+    ))
 }
 
-private fun GroupContext.importRecoveredParts(parts: electionguard.protogen.CiphertextCompensatedDecryptionSelection): DecryptionShare.DecryptionShareCompensatedSelection? {
+private fun GroupContext.importRecoveredPartialDecryption(parts: electionguard.protogen.RecoveredPartialDecryption):
+        Result<DecryptionShare.RecoveredPartialDecryption, String> {
     val share = this.importElementModP(parts.share)
+        .toResultOr {"RecoveredPartialDecryption ${parts.selectionId} share was malformed or missing"}
     val recoveryKey = this.importElementModP(parts.recoveryKey)
+        .toResultOr {"RecoveredPartialDecryption ${parts.selectionId} recoveryKey was malformed or missing"}
     val proof = this.importChaumPedersenProof(parts.proof)
+        .toResultOr {"RecoveredPartialDecryption ${parts.selectionId} proof was malformed or missing"}
 
-    if (share == null || recoveryKey == null || proof == null) {
-        logger.error { "Failed to convert CiphertextCompensatedDecryptionSelection" }
-        return null
+    val errors = getAllErrors(share, recoveryKey, proof)
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
-    return DecryptionShare.DecryptionShareCompensatedSelection(
+    return Ok(DecryptionShare.RecoveredPartialDecryption(
         parts.guardianId,
         parts.missingGuardianId,
-        share,
-        recoveryKey,
-        proof,
-    )
+        share.unwrap(),
+        recoveryKey.unwrap(),
+        proof.unwrap(),
+    ))
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,25 +149,25 @@ private fun PlaintextTally.Selection.publishSelection():
                 this.tally,
                 this.value.publishElementModP(),
                 this.message.publishCiphertext(),
-                this.shares.map { it.publishShare(this.selectionId) }
+                this.partialDecryptions.map { it.publishPartialDecryption(this.selectionId) }
             )
     }
 
-private fun DecryptionShare.DecryptionShareSelection.publishShare(selectionId : String):
-    electionguard.protogen.CiphertextDecryptionSelection {
+private fun DecryptionShare.PartialDecryption.publishPartialDecryption(selectionId : String):
+    electionguard.protogen.PartialDecryption {
         // either proof or recovered_parts is non null
-        val proofOrParts: electionguard.protogen.CiphertextDecryptionSelection.ProofOrParts<*>?
+        val proofOrParts: electionguard.protogen.PartialDecryption.ProofOrParts<*>?
         if (this.proof != null) {
             proofOrParts =
                 electionguard.protogen
-                    .CiphertextDecryptionSelection
+                    .PartialDecryption
                     .ProofOrParts
                     .Proof(this.proof.publishChaumPedersenProof())
         } else if (this.recoveredParts != null) {
-            val pparts = this.recoveredParts.map { it.publishRecoveredParts(selectionId) }
+            val pparts = this.recoveredParts.map { it.publishRecoveredPartialDecryption(selectionId) }
             proofOrParts =
                 electionguard.protogen
-                    .CiphertextDecryptionSelection
+                    .PartialDecryption
                     .ProofOrParts
                     .RecoveredParts(electionguard.protogen.RecoveredParts(pparts))
         } else {
@@ -184,7 +176,7 @@ private fun DecryptionShare.DecryptionShareSelection.publishShare(selectionId : 
             )
         }
         return electionguard.protogen
-            .CiphertextDecryptionSelection(
+            .PartialDecryption(
                 this.selectionId,
                 this.guardianId,
                 this.share.publishElementModP(),
@@ -192,10 +184,10 @@ private fun DecryptionShare.DecryptionShareSelection.publishShare(selectionId : 
             )
     }
 
-private fun DecryptionShare.DecryptionShareCompensatedSelection.publishRecoveredParts(selectionId : String):
-    electionguard.protogen.CiphertextCompensatedDecryptionSelection {
+private fun DecryptionShare.RecoveredPartialDecryption.publishRecoveredPartialDecryption(selectionId : String):
+    electionguard.protogen.RecoveredPartialDecryption {
         return electionguard.protogen
-            .CiphertextCompensatedDecryptionSelection(
+            .RecoveredPartialDecryption(
                 selectionId,
                 this.guardianId,
                 this.missingGuardianId,

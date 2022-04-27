@@ -4,10 +4,11 @@ import electionguard.ballot.AvailableGuardian
 import electionguard.ballot.CiphertextTally
 import electionguard.ballot.DecryptionShare
 import electionguard.ballot.DecryptionShare.DecryptionShareContest
-import electionguard.ballot.DecryptionShare.DecryptionShareSelection
+import electionguard.ballot.DecryptionShare.PartialDecryption
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.TallyResult
 import electionguard.core.ElGamalCiphertext
+import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.toElementModQ
 
@@ -29,12 +30,12 @@ class DecryptingMediator(
         }
 
         // now rearrange for use by Decryptor
-        val tallySharesBySelectionId : MutableMap<String, MutableList<DecryptionShareSelection>> = HashMap()
+        val tallySharesBySelectionId : MutableMap<String, MutableList<PartialDecryption>> = HashMap()
         for (tallyShare in tallyShares) {
             for (tallyContest in tallyShare.contests) {
                 for (selection in tallyContest.selections) {
                     val hashId = "${tallyContest.contestId}#@${selection.selectionId}"
-                    var slist : MutableList<DecryptionShareSelection>? = tallySharesBySelectionId.get(hashId)
+                    var slist : MutableList<PartialDecryption>? = tallySharesBySelectionId.get(hashId)
                     if (slist == null) {
                         slist = ArrayList()
                         tallySharesBySelectionId.put(hashId, slist)
@@ -75,11 +76,11 @@ class DecryptingMediator(
      var count = 0;
      val contests : MutableList<DecryptionShareContest> = ArrayList()
      for (tallyContest in this.contests.values) {
-         val selections : MutableList<DecryptionShareSelection> = ArrayList()
+         val selections : MutableList<PartialDecryption> = ArrayList()
          for (selection in tallyContest.selections.values) {
              val proof: PartialDecryptionProof = results.get(count);
              selections.add(
-                 DecryptionShareSelection(
+                 PartialDecryption(
                      selection.selectionId,
                      guardian.id(),
                      proof.partialDecryption,
@@ -113,18 +114,20 @@ class DecryptingMediator(
             val seq_orders: List<Int> = decryptingTrustees
                 .filter { !it.id().equals(decryptingTrustee.id()) }
                 .map { it.xCoordinate() }
-            val coeff: Int = computeLagrangeCoefficient(decryptingTrustee.xCoordinate(), seq_orders)
+            val coeff: ElementModQ = computeLagrangeCoefficient(decryptingTrustee.xCoordinate(), seq_orders)
             result.add(AvailableGuardian(decryptingTrustee.id(), decryptingTrustee.xCoordinate(), coeff))
         }
         return result
     }
 
-    fun computeLagrangeCoefficient(coordinate: Int, degrees: List<Int>): Int {
+    fun computeLagrangeCoefficient(coordinate: Int, degrees: List<Int>): ElementModQ {
         val numerator: Int = degrees.reduce { a, b -> a * b }
 
         val diff: List<Int> = degrees.map { degree: Int -> degree - coordinate }
         val denominator = diff.reduce { a, b -> a * b }
 
-        return numerator / denominator
+        val denomQ = if (denominator > 0) denominator.toElementModQ(group) else (-denominator).toElementModQ(group).unaryMinus()
+
+        return numerator.toElementModQ(group) / denomQ
     }
 }

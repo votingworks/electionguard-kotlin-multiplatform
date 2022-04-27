@@ -3,6 +3,7 @@ package electionguard.protoconvert
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import pbandk.ByteArr
@@ -14,8 +15,9 @@ fun importElectionConfig(config: electionguard.protogen.ElectionConfig?): Result
     val electionConstants = convertConstants(config.constants)
     val manifest = importManifest(config.manifest)
 
-    if (electionConstants is Err || manifest is Err) {
-        return Err("Missing fields in ElectionConfig")
+    val errors = getAllErrors(electionConstants, manifest)
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
     return Ok(ElectionConfig(

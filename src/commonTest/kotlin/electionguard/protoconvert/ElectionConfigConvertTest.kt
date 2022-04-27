@@ -13,7 +13,6 @@ class ElectionConfigConvertTest {
 
     @Test
     fun roundtripElectionConfig() {
-        val context = tinyGroup()
         val electionRecord = generateElectionConfig()
         val proto = electionRecord.publishElectionConfig()
         val roundtrip = importElectionConfig(proto).getOrThrow { IllegalStateException(it) }

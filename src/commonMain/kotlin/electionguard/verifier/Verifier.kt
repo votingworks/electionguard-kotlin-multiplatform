@@ -38,8 +38,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
     val guardians: List<Guardian>
 
     init {
-        decryption = electionRecord.readDecryptionResult()
-            .getOrThrow { throw IllegalStateException("electionRecord.context is null") }
+        decryption = electionRecord.readDecryptionResult().getOrThrow { throw IllegalStateException(it) }
         jointPublicKey = decryption.tallyResult.jointPublicKey()
         cryptoExtendedBaseHash = decryption.tallyResult.cryptoExtendedBaseHash()
         guardians = decryption.tallyResult.electionIntialized.guardians
@@ -90,20 +89,20 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                 nselections++
                 val message = selection.message
 
-                for (share in selection.shares) {
+                for (partialDecryption in selection.partialDecryptions) {
                     nshares++
-                    val sproof: GenericChaumPedersenProof? = share.proof
+                    val sproof: GenericChaumPedersenProof? = partialDecryption.proof
                     if (sproof != null) {
-                        val guardian = this.guardians.find { it.guardianId.equals(share.guardianId) }
+                        val guardian = this.guardians.find { it.guardianId.equals(partialDecryption.guardianId) }
                         val guardianKey = guardian?.publicKey()
-                            ?: throw IllegalStateException("Cant find guardian ${share.guardianId}")
+                            ?: throw IllegalStateException("Cant find guardian ${partialDecryption.guardianId}")
                         val svalid = sproof.isValid(
                             group.G_MOD_P,
                             guardianKey,
                             message.pad,
-                            share.share,
+                            partialDecryption.share,
                             arrayOf(cryptoExtendedBaseHash, guardianKey, message.pad, message.data), // section 7
-                            arrayOf(share.share)
+                            arrayOf(partialDecryption.share)
                         )
                         if (!svalid) {
                             println("Fail guardian $guardian share proof $sproof")

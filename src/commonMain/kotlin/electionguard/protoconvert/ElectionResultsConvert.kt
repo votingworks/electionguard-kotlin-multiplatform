@@ -3,12 +3,11 @@ package electionguard.protoconvert
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getAllErrors
+import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.GroupContext
-import mu.KotlinLogging
-
-private val logger = KotlinLogging.logger("ElectionConfigConvert")
 
 fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
         Result<TallyResult, String> {
@@ -16,11 +15,12 @@ fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
     if (tally == null) {
         return Err("Null TallyResult")
     }
-    val electionInitialized = this.importElectionInitialized(tally.electionInit)
-    val ciphertextTally = this.importCiphertextTally(tally.ciphertextTally)
+    val electionInitialized: Result<ElectionInitialized, String> = this.importElectionInitialized(tally.electionInit)
+    val ciphertextTally: Result<CiphertextTally, String> = this.importCiphertextTally(tally.ciphertextTally)
 
-    if (electionInitialized is Err || ciphertextTally is Err) {
-        return Err("Failed to translate election record from proto, missing fields")
+    val errors = getAllErrors(electionInitialized, ciphertextTally)
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
     return Ok(TallyResult(
@@ -34,32 +34,37 @@ fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
 
 fun GroupContext.importDecryptionResult(decrypt : electionguard.protogen.DecryptionResult):
         Result<DecryptionResult, String>  {
-    val electionInitialized = this.importTallyResult(decrypt.tallyResult)
-    val plaintextTally = this.importPlaintextTally(decrypt.decryptedTally)
-    val guardians =
-        decrypt.decryptingGuardians.map { importDecryptingGuardian(it) }
+    val tallyResult = this.importTallyResult(decrypt.tallyResult)
+    val decryptedTally = this.importPlaintextTally(decrypt.decryptedTally)
 
-    if (electionInitialized is Err || plaintextTally is Err) {
-        logger.error { "Failed to translate election record from proto, missing fields" }
-        throw IllegalStateException(
-            "Failed to translate election record from proto, missing fields"
-        )
+    val (guardians, gerrors) =
+        decrypt.decryptingGuardians.map { importAvailableGuardian(it) }.partition()
+
+    val errors = getAllErrors(tallyResult, decryptedTally) + gerrors
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
     return Ok(DecryptionResult(
-        electionInitialized.unwrap(),
-        plaintextTally.unwrap(),
+        tallyResult.unwrap(),
+        decryptedTally.unwrap(),
         guardians,
         decrypt.metadata.associate {it.key to it.value}
     ))
 }
 
-private fun importDecryptingGuardian(guardian: electionguard.protogen.AvailableGuardian): AvailableGuardian {
-    return AvailableGuardian(
+private fun GroupContext.importAvailableGuardian(guardian: electionguard.protogen.AvailableGuardian):
+        Result<AvailableGuardian, String> {
+    val lagrangeCoefficient = this.importElementModQ(guardian.lagrangeCoefficient)
+
+    if (lagrangeCoefficient == null) {
+        return Err("Failed to translate AvailableGuardian from proto, missing lagrangeCoefficient")
+    }
+    return Ok(AvailableGuardian(
         guardian.guardianId,
         guardian.xCoordinate,
-        guardian.lagrangeCoordinate,
-    )
+        lagrangeCoefficient,
+    ))
 }
 
 ////////////////////////////////////////////////////////
@@ -77,15 +82,15 @@ fun DecryptionResult.publishDecryptionResult(): electionguard.protogen.Decryptio
     return electionguard.protogen.DecryptionResult(
         this.tallyResult.publishTallyResult(),
         this.decryptedTally.publishPlaintextTally(),
-        this.availableGuardians.map { it.publishDecryptingGuardian() },
+        this.availableGuardians.map { it.publishAvailableGuardian() },
         this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value)}
     )
 }
 
-private fun AvailableGuardian.publishDecryptingGuardian(): electionguard.protogen.AvailableGuardian {
+private fun AvailableGuardian.publishAvailableGuardian(): electionguard.protogen.AvailableGuardian {
     return electionguard.protogen.AvailableGuardian(
         this.guardianId,
         this.xCoordinate,
-        this.lagrangeCoordinate,
+        this.lagrangeCoordinate.publishElementModQ(),
     )
 }

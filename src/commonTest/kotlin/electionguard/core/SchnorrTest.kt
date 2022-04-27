@@ -17,10 +17,9 @@ class SchnorrTest {
             checkAll(
                 elGamalKeypairs(tinyGroup()),
                 elementsModQ(tinyGroup()),
-                elementsModQ(tinyGroup()),
                 validElementsModP(tinyGroup()),
                 elementsModQ(tinyGroup())
-            ) { kp, n, baseHash, fakeElementModP, fakeElementModQ ->
+            ) { kp, n, fakeElementModP, fakeElementModQ ->
                 val goodProof = kp.schnorrProof(n)
                 assertTrue(kp.publicKey.hasValidSchnorrProof(goodProof))
 

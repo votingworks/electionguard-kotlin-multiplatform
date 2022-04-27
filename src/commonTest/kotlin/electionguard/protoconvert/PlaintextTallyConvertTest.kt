@@ -17,7 +17,7 @@ class PlaintextTallyConvertTest {
         val context = tinyGroup()
         val tally = generateFakeTally(1, context)
         val proto = tally.publishPlaintextTally()
-        val roundtrip = context.importPlaintextTally(proto).getOrThrow { IllegalStateException("PlaintextTallyConvertTest") }
+        val roundtrip = context.importPlaintextTally(proto).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
         for (entry in roundtrip.contests) {
             val contest =
@@ -29,9 +29,9 @@ class PlaintextTallyConvertTest {
                     contest.selections.get(entry2.key)
                         ?: throw RuntimeException("Cant find selection $entry2.key")
                 val rselection = entry2.value
-                for (shareIdx in 0 until rselection.shares.size) {
-                    val share = selection.shares[shareIdx]
-                    val rshare = rselection.shares[shareIdx]
+                for (shareIdx in 0 until rselection.partialDecryptions.size) {
+                    val share = selection.partialDecryptions[shareIdx]
+                    val rshare = rselection.partialDecryptions[shareIdx]
                     assertEquals(rshare, share)
                 }
             }
@@ -76,7 +76,7 @@ class PlaintextTallyConvertTest {
         private fun generateCiphertextDecryptionSelection(
             sseq: Int,
             context: GroupContext
-        ): DecryptionShare.DecryptionShareSelection {
+        ): DecryptionShare.PartialDecryption {
             val cdselections =
                 List(11) { generateCiphertextCompensatedDecryptionSelection(it, context) }
             val proofOrParts = Random.nextBoolean()
@@ -84,7 +84,7 @@ class PlaintextTallyConvertTest {
             //        val share: ElementModP,
             //        val proof : GenericChaumPedersenProof?,
             //        val recoveredParts: Map<String, CiphertextCompensatedDecryptionSelection>?)
-            return DecryptionShare.DecryptionShareSelection(
+            return DecryptionShare.PartialDecryption(
                 "selection$sseq",
                 "guardian$sseq",
                 generateElementModP(context),
@@ -98,13 +98,13 @@ class PlaintextTallyConvertTest {
         private fun generateCiphertextCompensatedDecryptionSelection(
             sseq: Int,
             context: GroupContext
-        ): DecryptionShare.DecryptionShareCompensatedSelection {
+        ): DecryptionShare.RecoveredPartialDecryption {
             //          val guardianId : String,
             //        val missingGuardianId : String,
             //        val share : ElementModP,
             //        val recoveryKey : ElementModP,
             //        val proof : GenericChaumPedersenProof
-            return DecryptionShare.DecryptionShareCompensatedSelection(
+            return DecryptionShare.RecoveredPartialDecryption(
                 "guardian$sseq",
                 "guardian" + (sseq + 7),
                 generateElementModP(context),

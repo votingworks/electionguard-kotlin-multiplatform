@@ -17,8 +17,8 @@ class ElectionRecordIterablesTest {
     fun readBallotsWrittenByKotlin() {
         runTest {
             val context = productionGroup()
-            readBallots(context, kotlinDir, 33)
-            readCastBallots(context, kotlinDir, 33)
+            readBallots(context, kotlinDir, 100)
+            readCastBallots(context, kotlinDir, 100)
             readSpoiledBallots(context, kotlinDir, 0)
         }
     }

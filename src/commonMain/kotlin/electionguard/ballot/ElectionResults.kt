@@ -24,11 +24,11 @@ data class DecryptionResult(
     val tallyResult: TallyResult,
     val decryptedTally: PlaintextTally,
     val availableGuardians: List<AvailableGuardian>,
-    val metadata: Map<String, String> = emptyMap()
+    val metadata: Map<String, String> = emptyMap(),
 )
 
 data class AvailableGuardian(
     var guardianId: String,
     var xCoordinate: Int,
-    var lagrangeCoordinate: Int
+    var lagrangeCoordinate: ElementModQ,
 )

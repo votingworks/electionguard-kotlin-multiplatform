@@ -13,7 +13,7 @@ class DecryptionShare(
         val contestId : String,
         val guardianId: String,
         val contestHash: ElementModQ,
-        val selections: List<DecryptionShareSelection>,
+        val selections: List<PartialDecryption>,
     )
 
     /**
@@ -32,12 +32,12 @@ class DecryptionShare(
      * @param proof For available guardians, proof that the share was decrypted correctly.
      * @param recoveredParts For missing guardians, keyed by available guardian_id.
      */
-    data class DecryptionShareSelection(
+    data class PartialDecryption(
         val selectionId: String,
         val guardianId : String,
         val share: ElementModP,
         val proof : GenericChaumPedersenProof?,
-        val recoveredParts: List<DecryptionShareCompensatedSelection>?
+        val recoveredParts: List<RecoveredPartialDecryption>?
     )
 
     /**
@@ -50,7 +50,7 @@ class DecryptionShare(
      * @param recoveryKey The available guardian's share of the missing_guardian's public key.
      * @param proof The proof that the share was decrypted correctly.
      */
-    data class DecryptionShareCompensatedSelection(
+    data class RecoveredPartialDecryption(
         val guardianId : String,
         val missingGuardianId : String,
         val share : ElementModP,

@@ -20,7 +20,7 @@ data class ElectionInitialized(
 /** Public info for Guardian. */
 data class Guardian(
     val guardianId: String,
-    val xCoordinate: Int,
+    val xCoordinate: Int, // > 0 for lagrange interpolation to work correctly
     val coefficientCommitments: List<ElementModP>,
     val coefficientProofs: List<SchnorrProof>
 ) {

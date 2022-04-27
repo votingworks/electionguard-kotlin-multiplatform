@@ -613,7 +613,7 @@ public data class DecryptionResult(
 public data class AvailableGuardian(
     val guardianId: String = "",
     val xCoordinate: Int = 0,
-    val lagrangeCoordinate: Int = 0,
+    val lagrangeCoefficient: electionguard.protogen.ElementModQ? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.AvailableGuardian = protoMergeImpl(other)
@@ -649,11 +649,11 @@ public data class AvailableGuardian(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "lagrange_coordinate",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Primitive.SInt32(),
-                        jsonName = "lagrangeCoordinate",
-                        value = electionguard.protogen.AvailableGuardian::lagrangeCoordinate
+                        name = "lagrange_coefficient",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "lagrangeCoefficient",
+                        value = electionguard.protogen.AvailableGuardian::lagrangeCoefficient
                     )
                 )
             }
@@ -945,6 +945,7 @@ public fun AvailableGuardian?.orDefault(): electionguard.protogen.AvailableGuard
 
 private fun AvailableGuardian.protoMergeImpl(plus: pbandk.Message?): AvailableGuardian = (plus as? AvailableGuardian)?.let {
     it.copy(
+        lagrangeCoefficient = lagrangeCoefficient?.plus(plus.lagrangeCoefficient) ?: plus.lagrangeCoefficient,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -953,14 +954,14 @@ private fun AvailableGuardian.protoMergeImpl(plus: pbandk.Message?): AvailableGu
 private fun AvailableGuardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): AvailableGuardian {
     var guardianId = ""
     var xCoordinate = 0
-    var lagrangeCoordinate = 0
+    var lagrangeCoefficient: electionguard.protogen.ElementModQ? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> xCoordinate = _fieldValue as Int
-            4 -> lagrangeCoordinate = _fieldValue as Int
+            3 -> lagrangeCoefficient = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
-    return AvailableGuardian(guardianId, xCoordinate, lagrangeCoordinate, unknownFields)
+    return AvailableGuardian(guardianId, xCoordinate, lagrangeCoefficient, unknownFields)
 }

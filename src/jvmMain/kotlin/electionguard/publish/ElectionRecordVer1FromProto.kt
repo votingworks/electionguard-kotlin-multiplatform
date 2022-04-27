@@ -25,8 +25,8 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
     filename: String
 ): ElectionInitialized {
     val electionConstants = this.constants?.let { convertConstants(this.constants) }
-    val manifest = importManifest(this.manifest).getOrThrow { IllegalStateException( "importManifest") }
-    val electionContext = this.context?.importContext(groupContext) ?: throw IllegalStateException("context missing")
+    val manifest = importManifest(this.manifest).getOrThrow { IllegalStateException(it) }
+    val electionContext = groupContext.importContext(this.context)
     val guardianRecords = this.guardianRecords.map { it.importGuardianRecord(groupContext) }
 
     if (electionConstants == null) {
@@ -100,15 +100,17 @@ data class ElectionContext(
     val cryptoExtendedBaseHash: UInt256
 )
 
-private fun electionguard.protogen.ElectionContext.importContext(
-    groupContext: GroupContext
-): ElectionContext {
+private fun GroupContext.importContext(context: electionguard.protogen.ElectionContext?): ElectionContext {
 
-    val jointPublicKey = groupContext.importElementModP(this.jointPublicKey)
-    val manifestHash = importUInt256(this.manifestHash)
-    val cryptoBaseHash = importUInt256(this.cryptoBaseHash)
-    val cryptoExtendedBaseHash = importUInt256(this.cryptoExtendedBaseHash)
-    val commitmentHash = importUInt256(this.commitmentHash)
+    if (context == null) {
+        throw IllegalStateException("Missing context")
+    }
+
+    val jointPublicKey = this.importElementModP(context.jointPublicKey)
+    val manifestHash = importUInt256(context.manifestHash)
+    val cryptoBaseHash = importUInt256(context.cryptoBaseHash)
+    val cryptoExtendedBaseHash = importUInt256(context.cryptoExtendedBaseHash)
+    val commitmentHash = importUInt256(context.commitmentHash)
 
     if (jointPublicKey == null || manifestHash == null || cryptoBaseHash == null ||
         cryptoExtendedBaseHash == null || commitmentHash == null
@@ -117,8 +119,8 @@ private fun electionguard.protogen.ElectionContext.importContext(
     }
 
     return ElectionContext(
-        this.numberOfGuardians,
-        this.quorum,
+        context.numberOfGuardians,
+        context.quorum,
         jointPublicKey,
         manifestHash,
         cryptoExtendedBaseHash,

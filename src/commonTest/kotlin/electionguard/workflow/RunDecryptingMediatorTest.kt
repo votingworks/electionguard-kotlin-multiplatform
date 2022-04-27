@@ -22,14 +22,16 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /** Test DecryptingMediator with in-process DecryptingTrustee's. Cannot use this in production */
-@Test
-fun testDecryptingMediator() {
-    val group = productionGroup()
-    val inputDir = "src/commonTest/data/runWorkflow"
+class RunDecryptingMediatorTest {
+    @Test
+    fun testDecryptingMediator() {
+        val group = productionGroup()
+        val inputDir = "src/commonTest/data/runWorkflow"
 
-    val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
-    val outputDir = "testOut/testDecryptingMediator"
-    runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir))
+        val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
+        val outputDir = "testOut/testDecryptingMediator"
+        runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir))
+    }
 }
 
 fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String): List<DecryptingTrusteeIF> {

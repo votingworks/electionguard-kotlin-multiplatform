@@ -27,9 +27,9 @@ class ElectionRecordTest {
             val group = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, group)
             assertNotNull(electionRecordIn)
-            val decryption = electionRecordIn.readDecryptionResult().getOrThrow { IllegalStateException(topdir) }
+            val decryption = electionRecordIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
             readElectionRecord(decryption)
-            validateTally(group, decryption.tallyResult.jointPublicKey(), decryption.decryptedTally, decryption.availableGuardians.size)
+            validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally, decryption.availableGuardians.size)
         }
     }
 
@@ -54,12 +54,12 @@ class ElectionRecordTest {
         assertEquals(3, decryption.availableGuardians.size)
     }
 
-    fun validateTally(group: GroupContext, jointKey: ElGamalPublicKey, tally: PlaintextTally, nguardians: Int?) {
+    fun validateTally(jointKey: ElGamalPublicKey, tally: PlaintextTally, nguardians: Int?) {
         for (contest in tally.contests.values) {
             for (selection in contest.selections.values) {
                 val actual : Int? = jointKey.dLog(selection.value, 100)
                 assertEquals(selection.tally, actual)
-                assertEquals(nguardians, selection.shares.size)
+                assertEquals(nguardians, selection.partialDecryptions.size)
             }
         }
     }

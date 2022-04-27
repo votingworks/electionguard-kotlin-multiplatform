@@ -127,7 +127,7 @@ private data class ElectionPolynomial(
     /** The secret coefficients `a_ij`.  */
     val coefficients: List<ElementModQ>,
 
-    /** The public keys `K_ij` generated from secret coefficients. (not secret)  */
+    /** The public keys `K_ij`. */
     val coefficientCommitments: List<ElementModP>,
 
     /** A proof of possession of the private key for each secret coefficient. (not secret)  */

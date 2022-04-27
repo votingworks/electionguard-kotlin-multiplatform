@@ -41,10 +41,10 @@ fun generateDecryptionResult(context: GroupContext): DecryptionResult {
     return DecryptionResult(
         generateTallyResult(context),
         PlaintextTallyConvertTest.generateFakeTally(0, context),
-        List(3) { generateAvailableGuardian(it) },
+        List(3) { generateAvailableGuardian(context, it) },
     )
 }
 
-fun generateAvailableGuardian(seq: Int): AvailableGuardian {
-    return AvailableGuardian("aguardian $seq", seq + 1, seq - 1)
+fun generateAvailableGuardian(context: GroupContext, seq: Int): AvailableGuardian {
+    return AvailableGuardian("aguardian $seq", seq + 1, generateElementModQ(context))
 }
