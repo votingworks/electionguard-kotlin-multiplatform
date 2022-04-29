@@ -6,9 +6,10 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 
-class Decryptor(val group: GroupContext, val publicKey: ElGamalPublicKey) {
+class TallyDecryptor(val group: GroupContext, val publicKey: ElGamalPublicKey) {
 
-    fun decryptTally(tally: CiphertextTally, shares: Map<String, List<DecryptionShare.PartialDecryption>>): PlaintextTally {
+    //         val sharesBySelectionId: MutableMap<String, MutableList<Decryption>> = HashMap()
+    fun decryptTally(tally: CiphertextTally, shares: Map<String, List<PartialDecryption>>): PlaintextTally {
         val contests: MutableMap<String, PlaintextTally.Contest> = HashMap()
         for (tallyContest in tally.contests.values) {
             val plaintextTallyContest = decryptContestWithDecryptionShares(tallyContest, shares)
@@ -19,7 +20,7 @@ class Decryptor(val group: GroupContext, val publicKey: ElGamalPublicKey) {
 
     fun decryptContestWithDecryptionShares(
         contest: CiphertextTally.Contest,
-        shares: Map<String, List<DecryptionShare.PartialDecryption>>,
+        shares: Map<String, List<PartialDecryption>>,
     ): PlaintextTally.Contest {
         val selections: MutableMap<String, PlaintextTally.Selection> = HashMap()
         for (tallySelection in contest.selections.values) {
@@ -33,11 +34,11 @@ class Decryptor(val group: GroupContext, val publicKey: ElGamalPublicKey) {
 
     fun decryptSelectionWithDecryptionShares(
         selection: CiphertextTally.Selection,
-        shares: List<DecryptionShare.PartialDecryption>,
+        shares: List<PartialDecryption>,
     ): PlaintextTally.Selection {
 
         // accumulate all of the shares calculated for the selection
-        val decryptionShares: Iterable<ElementModP> = shares.map { it.share }
+        val decryptionShares: Iterable<ElementModP> = shares.map { it.computeShare() }
         val allSharesProductM: ElementModP = with (group) { decryptionShares.multP() }
 
         // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝. (spec section 3.5.1 eq 10)

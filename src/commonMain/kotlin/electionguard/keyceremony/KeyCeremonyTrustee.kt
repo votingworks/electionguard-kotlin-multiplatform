@@ -22,7 +22,7 @@ class KeyCeremonyTrustee(
     val guardianSecretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
 
     init {
-        polynomial = generatePolynomial(id, group, quorum)
+        polynomial = group.generatePolynomial(id, quorum)
 
         // allGuardianPublicKeys include itself.
         guardianPublicKeys[id] = this.sharePublicKeys()
@@ -42,11 +42,20 @@ class KeyCeremonyTrustee(
     /** Receive publicKeys from another guardian. Return error message or empty string on success.  */
     // LOOK how do we know it came from the real guardian?
     fun receivePublicKeys(publicKeys: PublicKeys): String {
+        if (publicKeys.guardianXCoordinate < 1U) {
+            return "${publicKeys.guardianId}: guardianXCoordinate must be >= 1"
+        }
+        if (publicKeys.coefficientCommitments.size != quorum) {
+            return "${publicKeys.guardianId}: must have quorum ($quorum) coefficientCommitments"
+        }
+        if (publicKeys.coefficientProofs.size != quorum) {
+            return "${publicKeys.guardianId}: must have quorum ($quorum) coefficientProofs"
+        }
         guardianPublicKeys[publicKeys.guardianId] = publicKeys
         return ""
     }
 
-    // could just pass the PublicKeys into here??
+    // LOOK this needs to be encrypted, see p10 spec 1.0
     fun sendSecretKeyShare(otherGuardian: String): SecretKeyShare {
         if (mySecretKeyShares.containsKey(otherGuardian)) {
             return mySecretKeyShares[otherGuardian]!!

@@ -33,7 +33,7 @@ class FakeKeyCeremonyTrusteeTest {
     @Test
     fun runFakeKeyCeremonyTrusteeTest() {
         val group = productionGroup()
-        val configDir = "src/commonTest/data/runWorkflow"
+        val configDir = "src/commonTest/data/start"
         val outputDir = "testOut/FakeKeyCeremonyTrusteeTest"
         val trusteeDir = "testOut/FakeKeyCeremonyTrusteeTest/private_data"
 
@@ -108,7 +108,6 @@ class FakeKeyCeremonyTrusteeTest {
         testEncryptDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees)
     }
 
-    // public
     private fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
         val publicKeys = trustee.sharePublicKeys()
         return Guardian(

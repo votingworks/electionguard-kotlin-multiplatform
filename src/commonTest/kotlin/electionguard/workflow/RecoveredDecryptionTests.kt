@@ -15,21 +15,21 @@ import kotlin.test.Test
 class RecoveredDecryptionTests {
     @Test
     fun testLagrangeCoefficientAreIntegral() {
-        runLagrangeTest(listOf(1, 2, 3))
-        runLagrangeTest(listOf(1, 2, 3, 4))
-        runLagrangeTest(listOf(2, 3, 4))
-        runLagrangeTest(listOf(2, 4, 5))
-        runLagrangeTest(listOf(2, 3, 4, 5))
-        runLagrangeTest(listOf(5, 6, 7, 8, 9))
-        runLagrangeTest(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9))
-        runLagrangeTest(listOf(2, 3, 4, 5, 6, 7, 9))
-        runLagrangeTest(listOf(2, 3, 4, 5, 6, 9))
-        runLagrangeTest(listOf(2, 3, 4, 5, 6, 7, 11))
-        runLagrangeTest(listOf(2, 3, 4, 7, 11))
+        testEncryptRecoveredDecrypt(listOf(1, 2, 3))
+        testEncryptRecoveredDecrypt(listOf(1, 2, 3, 4))
+        testEncryptRecoveredDecrypt(listOf(2, 3, 4))
+        testEncryptRecoveredDecrypt(listOf(2, 4, 5))
+        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 5))
+        testEncryptRecoveredDecrypt(listOf(5, 6, 7, 8, 9))
+        testEncryptRecoveredDecrypt(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9))
+        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 5, 6, 7, 9))
+        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 5, 6, 9))
+        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 5, 6, 7, 11))
+        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 7, 11))
     }
 }
 
-fun runLagrangeTest(present: List<Int>) {
+fun testEncryptRecoveredDecrypt(present: List<Int>) {
     val group = productionGroup()
     val nguardians = present.maxOf { it }
     val quorum = present.count()

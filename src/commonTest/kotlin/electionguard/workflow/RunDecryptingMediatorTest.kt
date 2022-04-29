@@ -20,6 +20,7 @@ import electionguard.publish.PublisherMode
 import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 /** Test DecryptingMediator with in-process DecryptingTrustee's. Cannot use this in production */
 class RunDecryptingMediatorTest {
@@ -27,7 +28,6 @@ class RunDecryptingMediatorTest {
     fun testDecryptingMediator() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflow"
-
         val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
         val outputDir = "testOut/testDecryptingMediator"
         runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir))
@@ -51,12 +51,9 @@ fun runDecryptingMediator(
 
     val electionRecordIn = ElectionRecord(inputDir, group)
     val tallyResult: TallyResult = electionRecordIn.readTallyResult().getOrThrow { IllegalStateException(it) }
-    val decryptor = DecryptingMediator(group, tallyResult, decryptingTrustees)
+    val decryptor = DecryptingMediator(group, tallyResult, decryptingTrustees, emptyList())
     val decryptedTally = with(decryptor) { tallyResult.ciphertextTally.decrypt() }
-
-    val pkeys: Iterable<ElementModP> = decryptingTrustees.map { it.electionPublicKey() }
-    val pkey: ElementModP = with(group) { pkeys.multP() }
-    assertEquals(tallyResult.jointPublicKey(), ElGamalPublicKey(pkey))
+    assertNotNull(decryptedTally)
 
     val took = getSystemTimeInMillis() - starting
     println("RunDecryptingMediator took $took millisecs")

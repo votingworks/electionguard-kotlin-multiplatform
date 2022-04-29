@@ -35,7 +35,7 @@ class RecoveredDecryptionTest {
     @Test
     fun runFakeKeyCeremonyTrusteeTest() {
         val group = productionGroup()
-        val configDir = "src/commonTest/data/runWorkflow"
+        val configDir = "src/commonTest/data/start"
         val outputDir = "testOut/RecoveredDecryptionTest"
         val trusteeDir = "testOut/RecoveredDecryptionTest/private_data"
 
@@ -120,21 +120,10 @@ fun runRecoveredDecryptionTest(
     }
 }
 
-// public
-fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
-    val publicKeys = trustee.sharePublicKeys()
-    return Guardian(
-        "guardian${trustee.xCoordinate}",
-        trustee.xCoordinate,
-        publicKeys.coefficientCommitments,
-        publicKeys.coefficientProofs,
-    )
-}
-
 // private
 fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
     return DecryptingTrustee(
-        "guardian${ktrustee.xCoordinate}",
+        ktrustee.id,
         ktrustee.xCoordinate,
         ElGamalKeypair(
             ElGamalSecretKey(ktrustee.polynomial.coefficients[0]),

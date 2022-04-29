@@ -1,10 +1,11 @@
 package electionguard.protoconvert
 
 import com.github.michaelbull.result.getOrThrow
-import electionguard.decrypt.DecryptionShare
 import electionguard.ballot.PlaintextTally
 import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
+import electionguard.decrypt.PartialDecryption
+import electionguard.decrypt.RecoveredPartialDecryption
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -76,7 +77,7 @@ class PlaintextTallyConvertTest {
         private fun generateCiphertextDecryptionSelection(
             sseq: Int,
             context: GroupContext
-        ): DecryptionShare.PartialDecryption {
+        ): PartialDecryption {
             val cdselections =
                 List(11) { generateCiphertextCompensatedDecryptionSelection(it, context) }
             val proofOrParts = Random.nextBoolean()
@@ -84,7 +85,7 @@ class PlaintextTallyConvertTest {
             //        val share: ElementModP,
             //        val proof : GenericChaumPedersenProof?,
             //        val recoveredParts: Map<String, CiphertextCompensatedDecryptionSelection>?)
-            return DecryptionShare.PartialDecryption(
+            return PartialDecryption(
                 "selection$sseq",
                 "guardian$sseq",
                 generateElementModP(context),
@@ -98,13 +99,13 @@ class PlaintextTallyConvertTest {
         private fun generateCiphertextCompensatedDecryptionSelection(
             sseq: Int,
             context: GroupContext
-        ): DecryptionShare.RecoveredPartialDecryption {
+        ): RecoveredPartialDecryption {
             //          val guardianId : String,
             //        val missingGuardianId : String,
             //        val share : ElementModP,
             //        val recoveryKey : ElementModP,
             //        val proof : GenericChaumPedersenProof
-            return DecryptionShare.RecoveredPartialDecryption(
+            return RecoveredPartialDecryption(
                 "guardian$sseq",
                 "guardian" + (sseq + 7),
                 generateElementModP(context),

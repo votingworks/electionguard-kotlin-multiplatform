@@ -17,10 +17,12 @@ data class PublicKeys(
     }
 
     fun isValid(): Boolean {
+        var idx = 0
         for (proof in this.coefficientProofs) {
-            if (!publicKey().hasValidSchnorrProof(proof)) {
+            if (!ElGamalPublicKey(coefficientCommitments[idx]).hasValidSchnorrProof(proof)) {
                 return false
             }
+            idx++
         }
         return true
     }

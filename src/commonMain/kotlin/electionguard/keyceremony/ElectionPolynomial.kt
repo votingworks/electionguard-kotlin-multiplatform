@@ -35,9 +35,8 @@ data class ElectionPolynomial(
     }
 }
 
-fun generatePolynomial(
+fun GroupContext.generatePolynomial(
     id: String,
-    context: GroupContext,
     quorum: Int,
 ): ElectionPolynomial {
     val coefficients = mutableListOf<ElementModQ>()
@@ -45,7 +44,7 @@ fun generatePolynomial(
     val proofs = mutableListOf<SchnorrProof>()
 
     for (coeff in 1..quorum) {
-        val keypair: ElGamalKeypair = elGamalKeyPairFromRandom(context)
+        val keypair: ElGamalKeypair = elGamalKeyPairFromRandom(this)
         coefficients.add(keypair.secretKey.key)
         commitments.add(keypair.publicKey.key)
         proofs.add(keypair.schnorrProof())

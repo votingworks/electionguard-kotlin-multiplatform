@@ -1,9 +1,6 @@
 package electionguard.workflow
 
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
 import electionguard.core.productionGroup
-import electionguard.core.toElementModQ
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -31,7 +28,7 @@ class LagrangeCoefficientsTest {
             val coeff: Int = computeLagrangeCoefficientInt(coord, others)
             val numer: Int = computeLagrangeNumerator(coord, others)
             val denom: Int = computeLagrangeDenominator(coord, others)
-            val coeffQ = computeLagrangeCoefficientQ(group, coord, others)
+            val coeffQ = group.computeLagrangeCoefficient(coord.toUInt(), others.map { it.toUInt() })
             println("($coord) $coeff == ${numer} / ${denom} rem ${numer % denom} == $coeffQ")
             if (exact) {
                 assertEquals(0, numer % denom)
@@ -57,16 +54,4 @@ fun computeLagrangeNumerator(coordinate: Int, others: List<Int>): Int {
 fun computeLagrangeDenominator(coordinate: Int, others: List<Int>): Int {
     val diff: List<Int> = others.map { degree: Int -> degree - coordinate }
     return diff.reduce { a, b -> a * b }
-}
-
-fun computeLagrangeCoefficientQ(group: GroupContext, coordinate: Int, degrees: List<Int>): ElementModQ {
-    val numerator: Int = degrees.reduce { a, b -> a * b }
-
-    val diff: List<Int> = degrees.map { degree -> degree.toInt() - coordinate.toInt() }
-    val denominator = diff.reduce { a, b -> a * b }
-
-    val denomQ =
-        if (denominator > 0) denominator.toElementModQ(group) else (-denominator).toElementModQ(group).unaryMinus()
-
-    return numerator.toElementModQ(group) / denomQ
 }
