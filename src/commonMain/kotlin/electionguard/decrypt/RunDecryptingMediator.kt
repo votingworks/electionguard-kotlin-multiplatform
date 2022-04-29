@@ -16,7 +16,7 @@ import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
 
 /**
- * Run DecryptingMediator.
+ * Run DecryptingMediator CLI.
  * Read election record from inputDir, write to outputDir.
  */
 fun main(args: Array<String>) {

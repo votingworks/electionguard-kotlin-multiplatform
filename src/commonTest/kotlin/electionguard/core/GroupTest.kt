@@ -1,7 +1,6 @@
 package electionguard.core
 
 import io.kotest.property.Arb
-import io.kotest.property.PropertyContext
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 import io.kotest.property.forAll

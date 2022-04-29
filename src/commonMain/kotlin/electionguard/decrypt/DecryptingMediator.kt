@@ -2,9 +2,8 @@ package electionguard.decrypt
 
 import electionguard.ballot.AvailableGuardian
 import electionguard.ballot.CiphertextTally
-import electionguard.ballot.DecryptionShare
-import electionguard.ballot.DecryptionShare.DecryptionShareContest
-import electionguard.ballot.DecryptionShare.PartialDecryption
+import electionguard.decrypt.DecryptionShare.DecryptionShareContest
+import electionguard.decrypt.DecryptionShare.PartialDecryption
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.TallyResult
 import electionguard.core.ElGamalCiphertext
@@ -13,29 +12,29 @@ import electionguard.core.GroupContext
 import electionguard.core.toElementModQ
 
 /**
- * Orchestrates the decryption of encrypted Tallies and Ballots with remote Guardians.
+ * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustee's.
  */
 class DecryptingMediator(
     val group: GroupContext,
-    val context: TallyResult,
-    val decryptingTrustees : List<DecryptingTrusteeIF>,
+    val tallyResult: TallyResult,
+    val decryptingTrustees: List<DecryptingTrusteeIF>,
 ) {
 
-    fun CiphertextTally.decrypt() : PlaintextTally {
-        val tallyShares : MutableList<DecryptionShare> = ArrayList()
+    fun CiphertextTally.decrypt(): PlaintextTally {
+        val tallyShares: MutableList<DecryptionShare> = ArrayList()
 
         for (decryptingTrustee in decryptingTrustees) {
-            val share : DecryptionShare = this.computeDecryptionShareForTally(decryptingTrustee)
+            val share: DecryptionShare = this.computeDecryptionShareForTally(decryptingTrustee)
             tallyShares.add(share)
         }
 
         // now rearrange for use by Decryptor
-        val tallySharesBySelectionId : MutableMap<String, MutableList<PartialDecryption>> = HashMap()
+        val tallySharesBySelectionId: MutableMap<String, MutableList<PartialDecryption>> = HashMap()
         for (tallyShare in tallyShares) {
             for (tallyContest in tallyShare.contests) {
                 for (selection in tallyContest.selections) {
                     val hashId = "${tallyContest.contestId}#@${selection.selectionId}"
-                    var slist : MutableList<PartialDecryption>? = tallySharesBySelectionId.get(hashId)
+                    var slist: MutableList<PartialDecryption>? = tallySharesBySelectionId.get(hashId)
                     if (slist == null) {
                         slist = ArrayList()
                         tallySharesBySelectionId.put(hashId, slist)
@@ -45,89 +44,88 @@ class DecryptingMediator(
             }
         }
 
-        val decryptor = Decryptor(group, context.jointPublicKey())
+        val decryptor = Decryptor(group, tallyResult.jointPublicKey())
         return decryptor.decryptTally(this, tallySharesBySelectionId)
     }
 
- /**
-   * Compute a guardian's share of a decryption for the tally, aka a 'partial decyrption'.
-   * <p>
-   * @param guardian: The guardian who will partially decrypt the tally
-   * @param tally: The election tally to decrypt
-   * @param context: The public election encryption context
-   * @return a DecryptionShare
-   */
- fun CiphertextTally.computeDecryptionShareForTally(
-     guardian: DecryptingTrusteeIF,
- ): DecryptionShare {
+    /**
+     * Compute a guardian's share of a decryption for the tally, aka a 'partial decyrption'.
+     * <p>
+     * @param trustee: The guardian who will partially decrypt the tally
+     * @return a DecryptionShare
+     */
+    fun CiphertextTally.computeDecryptionShareForTally(
+        trustee: DecryptingTrusteeIF,
+    ): DecryptionShare {
 
-     // Get all the Ciphertext that need to be decrypted, and do so in one call
-     val texts: MutableList<ElGamalCiphertext> = ArrayList()
-     for (tallyContest in this.contests.values) {
-         for (selection in tallyContest.selections.values) {
-             texts.add(selection.ciphertext);
-         }
-     }
-     // returned in order
-     val results: List<PartialDecryptionProof> =
-         guardian.partialDecrypt(group, texts, context.cryptoExtendedBaseHash(), null)
+        // Get all the Ciphertext that need to be decrypted in one call
+        val texts: MutableList<ElGamalCiphertext> = ArrayList()
+        for (tallyContest in this.contests.values) {
+            for (selection in tallyContest.selections.values) {
+                texts.add(selection.ciphertext);
+            }
+        }
+        // returned in order
+        val results: List<PartialDecryptionAndProof> =
+            trustee.partialDecrypt(group, texts, tallyResult.cryptoExtendedBaseHash(), null)
 
-     // Create the guardian's DecryptionShare for the tally
-     var count = 0;
-     val contests : MutableList<DecryptionShareContest> = ArrayList()
-     for (tallyContest in this.contests.values) {
-         val selections : MutableList<PartialDecryption> = ArrayList()
-         for (selection in tallyContest.selections.values) {
-             val proof: PartialDecryptionProof = results.get(count);
-             selections.add(
-                 PartialDecryption(
-                     selection.selectionId,
-                     guardian.id(),
-                     proof.partialDecryption,
-                     proof.proof,
-                     null
-                 )
-             )
-             count++
-         }
-         contests.add(
-             DecryptionShareContest(
-                 tallyContest.contestId,
-                 guardian.id(),
-                 tallyContest.contestDescriptionHash.toElementModQ(group),
-                 selections
-             )
-         )
-     }
+        // Create the guardian's DecryptionShare for the tally
+        var count = 0;
+        val contests: MutableList<DecryptionShareContest> = ArrayList()
+        for (tallyContest in this.contests.values) {
+            val selections: MutableList<PartialDecryption> = ArrayList()
+            for (selection in tallyContest.selections.values) {
+                val proof: PartialDecryptionAndProof = results.get(count);
+                selections.add(
+                    PartialDecryption(
+                        selection.selectionId,
+                        trustee.id(),
+                        proof.partialDecryption,
+                        proof.proof,
+                        null
+                    )
+                )
+                count++
+            }
+            contests.add(
+                DecryptionShareContest(
+                    tallyContest.contestId,
+                    trustee.id(),
+                    tallyContest.contestDescriptionHash.toElementModQ(group),
+                    selections
+                )
+            )
+        }
 
-     return DecryptionShare(
-         guardian.id(),
-         guardian.electionPublicKey(),
-         contests
-     )
- }
+        return DecryptionShare(
+            trustee.id(),
+            trustee.electionPublicKey(),
+            contests
+        )
+    }
 
+    // LOOK who's missing ??
     // Compute lagrange coefficients for each of the available guardians
-    fun computeAvailableGuardians() : List<AvailableGuardian> {
+    fun computeAvailableGuardians(): List<AvailableGuardian> {
         val result = ArrayList<AvailableGuardian>()
-        for (decryptingTrustee in decryptingTrustees) {
-            val seq_orders: List<Int> = decryptingTrustees
-                .filter { !it.id().equals(decryptingTrustee.id()) }
-                .map { it.xCoordinate() }
-            val coeff: ElementModQ = computeLagrangeCoefficient(decryptingTrustee.xCoordinate(), seq_orders)
-            result.add(AvailableGuardian(decryptingTrustee.id(), decryptingTrustee.xCoordinate(), coeff))
+        for (otherTrustee in decryptingTrustees) {
+            val seq_orders: List<UInt> = decryptingTrustees.filter { !it.id().equals(otherTrustee.id()) }.map { it.xCoordinate() }
+            val coeff: ElementModQ = group.computeLagrangeCoefficient(otherTrustee.xCoordinate(), seq_orders)
+            result.add(AvailableGuardian(otherTrustee.id(), otherTrustee.xCoordinate().toInt(), coeff))
         }
         return result
     }
+}
 
-    fun computeLagrangeCoefficient(coordinate: Int, degrees: List<Int>): ElementModQ {
-        val numerator: Int = degrees.reduce { a, b -> a * b }
+fun GroupContext.computeLagrangeCoefficient(coordinate: UInt, present: List<UInt>): ElementModQ {
+    val others: List<UInt> = present.filter { !it.equals(coordinate) }
+    val numerator: Int = others.reduce { a, b -> a * b }.toInt()
 
-        val diff: List<Int> = degrees.map { degree: Int -> degree - coordinate }
-        val denominator = diff.reduce { a, b -> a * b }
+    val diff: List<Int> = others.map { degree -> degree.toInt() - coordinate.toInt() }
+    val denominator = diff.reduce { a, b -> a * b }
 
-        val denomQ = if (denominator > 0) denominator.toElementModQ(group) else (-denominator).toElementModQ(group).unaryMinus()
+    val denomQ =
+        if (denominator > 0) denominator.toElementModQ(this) else (-denominator).toElementModQ(this).unaryMinus()
 
-        return numerator.toElementModQ(group) / denomQ
-    }
+    return numerator.toElementModQ(this) / denomQ
 }

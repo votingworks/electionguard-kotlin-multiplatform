@@ -2,6 +2,7 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.decrypt.DecryptingTrustee
+import electionguard.keyceremony.KeyCeremonyTrustee
 
 /** Read/write the Election Record as protobuf files. */
 expect class Publisher(topDir: String, publisherMode: PublisherMode) {
@@ -14,7 +15,7 @@ expect class Publisher(topDir: String, publisherMode: PublisherMode) {
     fun submittedBallotSink(): SubmittedBallotSinkIF
 
     fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)
-    fun writeTrustee(trusteeDir: String, trustee: DecryptingTrustee)
+    fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee)
 }
 
 interface SubmittedBallotSinkIF {

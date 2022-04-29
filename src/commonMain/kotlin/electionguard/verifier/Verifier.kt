@@ -92,7 +92,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                 for (partialDecryption in selection.partialDecryptions) {
                     nshares++
                     val sproof: GenericChaumPedersenProof? = partialDecryption.proof
-                    if (sproof != null) {
+                    if (sproof != null) { // LOOK null id recovered
                         val guardian = this.guardians.find { it.guardianId.equals(partialDecryption.guardianId) }
                         val guardianKey = guardian?.publicKey()
                             ?: throw IllegalStateException("Cant find guardian ${partialDecryption.guardianId}")

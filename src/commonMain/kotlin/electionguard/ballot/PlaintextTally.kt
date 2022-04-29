@@ -2,6 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModP
+import electionguard.decrypt.DecryptionShare
 
 data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest>) {
     /**

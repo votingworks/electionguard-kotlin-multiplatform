@@ -27,7 +27,6 @@ import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
 
 /** Run a fake KeyCeremony to generate an ElectionInitialized for workflow testing. */
-
 @Test
 fun runFakeKeyCeremonyTest() {
     val group = productionGroup()
@@ -87,9 +86,8 @@ fun runFakeKeyCeremony(
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeElectionInitialized(init)
 
-    val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
-    trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
-
+    //val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
+    //trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
     return init
 }
 
@@ -110,7 +108,9 @@ private fun makeTrustee(poly: ElectionPolynomial): DecryptingTrustee {
         ElGamalKeypair(
             ElGamalSecretKey(poly.coefficients[0]),
             ElGamalPublicKey(poly.coefficientCommitments[0])
-        )
+        ),
+        emptyMap(),
+        emptyMap()
     )
 }
 
@@ -122,12 +122,12 @@ private fun makeTrustee(poly: ElectionPolynomial): DecryptingTrustee {
  * The 0-index coefficient is used for a secret key which can be discovered by a quorum of guardians.
  */
 private data class ElectionPolynomial(
-    val guardianXCoordinate: Int,
+    val guardianXCoordinate: UInt,
 
-    /** The secret coefficients `a_ij`.  */
+    /** The secret coefficients `a_j`.  */
     val coefficients: List<ElementModQ>,
 
-    /** The public keys `K_ij`. */
+    /** The coefficient commitments `h^a_j`. */
     val coefficientCommitments: List<ElementModP>,
 
     /** A proof of possession of the private key for each secret coefficient. (not secret)  */
@@ -149,6 +149,6 @@ private fun generatePolynomial(
         commitments.add(keypair.publicKey.key)
         proofs.add(keypair.schnorrProof())
     }
-    return ElectionPolynomial(seq + 1, coefficients, commitments, proofs)
+    return ElectionPolynomial((seq + 1).toUInt(), coefficients, commitments, proofs)
 }
 

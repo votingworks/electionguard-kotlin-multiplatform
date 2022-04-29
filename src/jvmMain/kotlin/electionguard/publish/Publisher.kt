@@ -1,7 +1,7 @@
 package electionguard.publish
 
 import electionguard.ballot.*
-import electionguard.decrypt.DecryptingTrustee
+import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.protoconvert.publishDecryptingTrustee
 import electionguard.protoconvert.publishDecryptionResult
 import electionguard.protoconvert.publishElectionConfig
@@ -52,7 +52,6 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         if (!path.toFile().exists()) {
             return
         }
-        val filename: String = path.getFileName().toString()
         Files.walk(path)
             .filter { p: Path -> p != path }
             .map { obj: Path -> obj.toFile() }
@@ -165,7 +164,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun writeTrustee(trusteeDir: String, trustee: DecryptingTrustee) {
+    actual fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
         val proto = trustee.publishDecryptingTrustee()
         val fileout = path.decryptingTrusteePath(trusteeDir, trustee.id)
         FileOutputStream(fileout).use { out ->

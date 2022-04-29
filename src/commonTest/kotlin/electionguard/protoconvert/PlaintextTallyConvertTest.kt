@@ -1,7 +1,7 @@
 package electionguard.protoconvert
 
 import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.DecryptionShare
+import electionguard.decrypt.DecryptionShare
 import electionguard.ballot.PlaintextTally
 import electionguard.core.GroupContext
 import electionguard.core.tinyGroup

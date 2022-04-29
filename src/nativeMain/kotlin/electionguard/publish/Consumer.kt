@@ -149,7 +149,7 @@ class SpoiledBallotTallyIterator(
 fun GroupContext.readTrustee(filename: String): DecryptingTrusteeIF {
     val buffer = gulp(filename)
     val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
-    return trusteeProto.importDecryptingTrustee(this)
+    return this.importDecryptingTrustee(trusteeProto).getOrElse { throw RuntimeException("DecryptingTrustee $filename didnt parse") }
 }
 
 @Throws(IOException::class)

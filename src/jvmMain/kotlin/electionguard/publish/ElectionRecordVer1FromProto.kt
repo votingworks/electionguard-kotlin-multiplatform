@@ -143,7 +143,7 @@ private fun electionguard.protogen.GuardianRecord.importGuardianRecord(
 
     return Guardian(
         this.guardianId,
-        this.xCoordinate,
+        this.xCoordinate.toUInt(),
         coefficientCommitments,
         coefficientProofs,
     )

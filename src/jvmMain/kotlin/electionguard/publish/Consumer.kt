@@ -133,7 +133,7 @@ class SpoiledBallotTallyIterator(
 fun GroupContext.readTrustee(filename: String): DecryptingTrustee {
     var proto: electionguard.protogen.DecryptingTrustee
     FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptingTrustee.decodeFromStream(inp) }
-    return proto.importDecryptingTrustee(this)
+    return this.importDecryptingTrustee(proto).getOrElse { throw RuntimeException("DecryptingTrustee $filename didnt parse") }
 }
 
 // variable length (base 128) int32

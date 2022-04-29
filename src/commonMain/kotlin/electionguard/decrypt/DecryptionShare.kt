@@ -1,4 +1,4 @@
-package electionguard.ballot
+package electionguard.decrypt
 
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ

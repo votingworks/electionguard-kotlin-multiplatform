@@ -32,22 +32,18 @@ fun ElGamalKeypair.schnorrProof(
 
 /**
  * Check validity of the proof for proving possession of the private key corresponding to the
- * given public key (i.e., `this` public key).
+ * given ElGamalPublicKey.
  */
 fun ElGamalPublicKey.hasValidSchnorrProof(proof: SchnorrProof): Boolean {
     val (challenge, u) = proof
     val context = compatibleContextOrFail(this.key, challenge, u)
 
-    val inBoundsU = u.inBounds()
-
     val gPowU = context.gPowP(u)
     val h = gPowU / this.powP(challenge)
-    // LOOK see issue #253 in main electionguard repo
-    // val c = hashElements(cryptoBaseHash, this, h).toElementModQ(context)
     val c = hashElements(this, h).toElementModQ(context)
 
+    val inBoundsU = u.inBounds()
     val validChallenge = c == challenge
-
     val success = inBoundsU && validChallenge
 
     if (!success) {

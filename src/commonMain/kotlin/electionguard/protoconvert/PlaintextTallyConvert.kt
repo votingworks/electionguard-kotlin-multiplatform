@@ -7,7 +7,7 @@ import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.DecryptionShare
+import electionguard.decrypt.DecryptionShare
 import electionguard.ballot.PlaintextTally
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
@@ -97,7 +97,8 @@ private fun GroupContext.importPartialDecryption(partial: electionguard.protogen
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(DecryptionShare.PartialDecryption(
+    return Ok(
+        DecryptionShare.PartialDecryption(
         partial.selectionId,
         partial.guardianId,
         share.unwrap(),
@@ -120,7 +121,8 @@ private fun GroupContext.importRecoveredPartialDecryption(parts: electionguard.p
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(DecryptionShare.RecoveredPartialDecryption(
+    return Ok(
+        DecryptionShare.RecoveredPartialDecryption(
         parts.guardianId,
         parts.missingGuardianId,
         share.unwrap(),

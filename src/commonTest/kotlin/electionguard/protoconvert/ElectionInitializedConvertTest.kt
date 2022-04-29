@@ -62,7 +62,7 @@ fun generateElectionInitialized(context: GroupContext): ElectionInitialized {
 private fun generateGuardian(seq: Int, context: GroupContext): Guardian {
     return Guardian(
         "guardian $seq",
-        seq + 1,
+        (seq + 1).toUInt(),
         List(3) { generateElementModP(context) },
         List(3) { generateSchnorrProof(context) },
     )

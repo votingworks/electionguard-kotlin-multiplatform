@@ -2,6 +2,7 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.decrypt.DecryptingTrustee
+import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.protoconvert.publishDecryptingTrustee
 import electionguard.protoconvert.publishDecryptionResult
 import electionguard.protoconvert.publishElectionConfig
@@ -174,7 +175,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun writeTrustee(trusteeDir: String, trustee: DecryptingTrustee) {
+    actual fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
         val proto = trustee.publishDecryptingTrustee()
         val buffer = proto.encodeToByteArray()
 
