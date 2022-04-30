@@ -18,6 +18,12 @@ data class TallyResult(
     fun cryptoExtendedBaseHash(): ElementModQ {
         return electionIntialized.cryptoExtendedBaseHash.toElementModQ(group)
     }
+    fun quorum(): Int {
+        return electionIntialized.config.quorum
+    }
+    fun numberOfGuardians(): Int {
+        return electionIntialized.config.numberOfGuardians
+    }
 }
 
 data class DecryptionResult(

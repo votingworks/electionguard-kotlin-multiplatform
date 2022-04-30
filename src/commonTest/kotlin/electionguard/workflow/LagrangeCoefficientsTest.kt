@@ -1,6 +1,7 @@
 package electionguard.workflow
 
 import electionguard.core.productionGroup
+import electionguard.decrypt.computeLagrangeCoefficient
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

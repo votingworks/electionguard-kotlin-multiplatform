@@ -5,7 +5,7 @@ import electionguard.ballot.PlaintextTally
 import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
 import electionguard.decrypt.PartialDecryption
-import electionguard.decrypt.RecoveredPartialDecryption
+import electionguard.decrypt.MissingPartialDecryption
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -99,13 +99,13 @@ class PlaintextTallyConvertTest {
         private fun generateCiphertextCompensatedDecryptionSelection(
             sseq: Int,
             context: GroupContext
-        ): RecoveredPartialDecryption {
+        ): MissingPartialDecryption {
             //          val guardianId : String,
             //        val missingGuardianId : String,
             //        val share : ElementModP,
             //        val recoveryKey : ElementModP,
             //        val proof : GenericChaumPedersenProof
-            return RecoveredPartialDecryption(
+            return MissingPartialDecryption(
                 "guardian$sseq",
                 "guardian" + (sseq + 7),
                 generateElementModP(context),

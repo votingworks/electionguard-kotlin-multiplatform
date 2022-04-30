@@ -100,9 +100,9 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                             group.G_MOD_P,
                             guardianKey,
                             message.pad,
-                            partialDecryption.computeShare(),
+                            partialDecryption.share(),
                             arrayOf(cryptoExtendedBaseHash, guardianKey, message.pad, message.data), // section 7
-                            arrayOf(partialDecryption.computeShare())
+                            arrayOf(partialDecryption.share())
                         )
                         if (!svalid) {
                             println("Fail guardian $guardian share proof $sproof")

@@ -11,7 +11,7 @@ import electionguard.ballot.PlaintextTally
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
 import electionguard.decrypt.PartialDecryption
-import electionguard.decrypt.RecoveredPartialDecryption
+import electionguard.decrypt.MissingPartialDecryption
 
 fun GroupContext.importPlaintextTally(tally: electionguard.protogen.PlaintextTally?):
         Result<PlaintextTally, String> {
@@ -113,7 +113,7 @@ private fun GroupContext.importPartialDecryption(partial: electionguard.protogen
 }
 
 private fun GroupContext.importRecoveredPartialDecryption(parts: electionguard.protogen.RecoveredPartialDecryption):
-        Result<RecoveredPartialDecryption, String> {
+        Result<MissingPartialDecryption, String> {
     val share = this.importElementModP(parts.share)
         .toResultOr { "RecoveredPartialDecryption ${parts.selectionId} share was malformed or missing" }
     val recoveryKey = this.importElementModP(parts.recoveryKey)
@@ -127,7 +127,7 @@ private fun GroupContext.importRecoveredPartialDecryption(parts: electionguard.p
     }
 
     return Ok(
-        RecoveredPartialDecryption(
+        MissingPartialDecryption(
             parts.guardianId,
             parts.missingGuardianId,
             share.unwrap(),
@@ -171,8 +171,8 @@ private fun PartialDecryption.publishPartialDecryption(selectionId: String):
                 .PartialDecryption
                 .ProofOrParts
                 .Proof(this.proof.publishChaumPedersenProof())
-    } else if (this.recoveredDecryption != null) {
-        val pparts = this.recoveredDecryption.map { it.publishRecoveredPartialDecryption(selectionId) }
+    } else if (this.missingDecryptions.isNotEmpty()) {
+        val pparts = this.missingDecryptions.map { it.publishRecoveredPartialDecryption(selectionId) }
         proofOrParts =
             electionguard.protogen
                 .PartialDecryption
@@ -187,12 +187,12 @@ private fun PartialDecryption.publishPartialDecryption(selectionId: String):
         .PartialDecryption(
             this.selectionId,
             this.guardianId,
-            this.computeShare().publishElementModP(),
+            this.share().publishElementModP(),
             proofOrParts,
         )
 }
 
-private fun RecoveredPartialDecryption.publishRecoveredPartialDecryption(selectionId: String):
+private fun MissingPartialDecryption.publishRecoveredPartialDecryption(selectionId: String):
         electionguard.protogen.RecoveredPartialDecryption {
     return electionguard.protogen
         .RecoveredPartialDecryption(

@@ -21,6 +21,7 @@ import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.decrypt.DecryptingTrustee
+import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
@@ -175,7 +176,7 @@ fun ElGamalCiphertext.recoverPartialShare(
     val shares = available.map {
         // M_il
        val partial = it.compensatedDecrypt(group, missing, listOf(this), extendedBaseHash, null)[0]
-       val coeff = lagrange[it.id]?: group.ZERO_MOD_Q // LOOK??
+       val coeff = lagrange[it.id]?: group.ONE_MOD_Q // LOOK??
        // M_il ^ w_l
        partial.partialDecryption powP coeff
     }
@@ -183,7 +184,7 @@ fun ElGamalCiphertext.recoverPartialShare(
     return with(group) { shares.multP() }
 }
 
-fun GroupContext.computeLagrangeCoefficient(coordinate: UInt, present: List<UInt>): ElementModQ {
+fun GroupContext.computeLagrangeCoefficientOld(coordinate: UInt, present: List<UInt>): ElementModQ {
     val others: List<UInt> = present.filter { !it.equals(coordinate) }
     val numerator: Int = others.reduce { a, b -> a * b }.toInt()
 

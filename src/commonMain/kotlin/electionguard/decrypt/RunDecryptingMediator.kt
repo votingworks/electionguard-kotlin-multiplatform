@@ -54,7 +54,7 @@ fun runDecryptingMediator(group: GroupContext, inputDir: String, trusteeDir: Str
         DecryptionResult(
             tallyResult,
             decryptedTally,
-            decryptor.computeAvailableGuardians(),
+            decryptor.availableGuardians,
         )
     )
 }

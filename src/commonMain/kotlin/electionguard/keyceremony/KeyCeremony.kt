@@ -30,8 +30,8 @@ data class PublicKeys(
 
 /**
  * A point on a secret polynomial, and commitments to verify this point for a designated guardian.
- * @param generatingGuardianId The Id of the guardian that generated this
- * @param designatedGuardianId The Id of the guardian to receive this backup, who might be missing at decryption
+ * @param generatingGuardianId The Id of the guardian that generated this, who might be missing at decryption
+ * @param designatedGuardianId The Id of the guardian to receive this backup, matches the DecryptingTrustee.id
  * @param designatedGuardianXCoordinate The x coordinate of the designated guardian
  * @param generatingGuardianValue The generatingGuardian's polynomial value at designatedGuardianXCoordinate, P𝑖_{l}
  */

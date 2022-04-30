@@ -69,7 +69,7 @@ fun runFakeKeyCeremony(
     // exchange SecretKeyShares
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id))
+            t1.receiveSecretKeyShare(t2.sendSecretKeyShare(t1.id))
         }
     }
 

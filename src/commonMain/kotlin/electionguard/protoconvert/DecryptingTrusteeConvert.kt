@@ -17,26 +17,28 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.PublicKeys
 import electionguard.keyceremony.SecretKeyShare
 
-fun GroupContext.importDecryptingTrustee(trustee: electionguard.protogen.DecryptingTrustee):
+fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.DecryptingTrustee):
         Result<DecryptingTrustee, String> {
 
-    val id = trustee.guardianId
-    val electionKeyPair = this.importElGamalKeypair(id, trustee.electionKeypair)
-    val (shares, serrors) = trustee.secretKeyShares.map { this.importSecretKeyShare(id, it) }.partition()
-    val (commitments, cerrors) = trustee.coefficientCommitments.map { this.importCommitmentSet(id, it) }.partition()
+    val id = proto.guardianId
+    val electionKeyPair = this.importElGamalKeypair(id, proto.electionKeypair)
+    val (shares, serrors) = proto.secretKeyShares.map { this.importSecretKeyShare(id, it) }.partition()
+    val (commitments, cerrors) = proto.coefficientCommitments.map { this.importCommitmentSet(id, it) }.partition()
 
     val errors = getAllErrors(electionKeyPair) + serrors + cerrors
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(DecryptingTrustee(
-        trustee.guardianId,
-        trustee.guardianXCoordinate.toUInt(),
+    val result = DecryptingTrustee(
+        proto.guardianId,
+        proto.guardianXCoordinate.toUInt(),
         electionKeyPair.unwrap(),
-        shares.associateBy { it.designatedGuardianId },
+        shares.associateBy { it.generatingGuardianId },
         commitments.associate { it.guardianId to it.commitments },
-    ))
+    )
+
+    return Ok(result)
 }
 
 private fun GroupContext.importElGamalKeypair(id:String, keypair: electionguard.protogen.ElGamalKeypair?):

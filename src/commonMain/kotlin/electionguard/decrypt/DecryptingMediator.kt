@@ -18,6 +18,17 @@ class DecryptingMediator(
     val decryptingTrustees: List<DecryptingTrusteeIF>,
     val missingTrustees: List<String>,
 ) {
+    val availableGuardians: List<AvailableGuardian> by lazy {
+        val result = ArrayList<AvailableGuardian>()
+        for (otherTrustee in decryptingTrustees) {
+            val present: List<UInt> =
+                decryptingTrustees.filter { !it.id().equals(otherTrustee.id()) }.map { it.xCoordinate() }
+            val coeff: ElementModQ = group.computeLagrangeCoefficient(otherTrustee.xCoordinate(), present)
+            result.add(AvailableGuardian(otherTrustee.id(), otherTrustee.xCoordinate().toInt(), coeff))
+        }
+        // sorted by guardianId, to match PartialDecryption.lagrangeInterpolation()
+        result.sortedBy { it.guardianId}
+    }
 
     fun CiphertextTally.decrypt(): PlaintextTally {
         val shares: MutableList<DecryptionShare> = ArrayList()
@@ -47,7 +58,7 @@ class DecryptingMediator(
                     sharesBySelectionId.put(selectionId, cmap)
                 }
                 // distribute the recoveredDecryptions for this trustee across the missing guardians
-                haveDecrypt.recoveredDecryption.values.map { recovered ->
+                haveDecrypt.missingDecryptions.values.map { recovered ->
                     var wantDecrypt = cmap.find { it.guardianId == recovered.missingGuardian}
                     if (wantDecrypt == null) {
                         wantDecrypt = PartialDecryption(recovered.missingGuardian, haveDecrypt)
@@ -58,19 +69,24 @@ class DecryptingMediator(
             }
         }
 
-        val decryptor = TallyDecryptor(group, tallyResult.jointPublicKey())
+        if (missingTrustees.isNotEmpty()) {
+            // compute Missing Shares with lagrange interpolation
+            sharesBySelectionId.values.flatten().forEach { it.lagrangeInterpolation(availableGuardians) }
+        }
+
+        val decryptor = TallyDecryptor(group, tallyResult.jointPublicKey(), tallyResult.numberOfGuardians())
         return decryptor.decryptTally(this, sharesBySelectionId)
     }
 
     /**
      * Compute a guardian's share of a decryption, aka a 'partial decryption'.
-     * <p>
      * @param trustee: The guardian who will partially decrypt the tally
      * @return a DecryptionShare for this trustee
      */
     fun CiphertextTally.computePartialDecryptionForTally(
         trustee: DecryptingTrusteeIF,
     ): DecryptionShare {
+
         // Get all the Ciphertext that need to be decrypted in one call
         val texts: MutableList<ElGamalCiphertext> = mutableListOf()
         for (tallyContest in this.contests.values) {
@@ -78,6 +94,9 @@ class DecryptingMediator(
                 texts.add(selection.ciphertext);
             }
         }
+
+        // LOOK could ask for all direct and compensated in one call,  so only one call to each trustee,
+        //  instead of 1 + nmissing
 
         // direct decryptions
         val partialDecryptions: List<PartialDecryptionAndProof> =
@@ -114,14 +133,14 @@ class DecryptingMediator(
             for (tallyContest in this.contests.values) {
                 for (tallySelection in tallyContest.selections.values) {
                     val proof: CompensatedPartialDecryptionAndProof = compensatedDecryptions.get(count2);
-                    val recoveredDecryption = RecoveredPartialDecryption(
+                    val recoveredDecryption = MissingPartialDecryption(
                         trustee.id(),
                         missing,
                         proof.partialDecryption,
                         proof.recoveredPublicKeyShare,
                         proof.proof
                     )
-                    decryptionShare.addRecoveredDecryption(
+                    decryptionShare.addMissingDecryption(
                         tallyContest.contestId,
                         tallySelection.selectionId,
                         missing,
@@ -133,18 +152,6 @@ class DecryptingMediator(
         }
 
         return decryptionShare
-    }
-
-    // Compute lagrange coefficients for each of the present trustees
-    fun computeAvailableGuardians(): List<AvailableGuardian> {
-        val result = ArrayList<AvailableGuardian>()
-        for (otherTrustee in decryptingTrustees) {
-            val present: List<UInt> =
-                decryptingTrustees.filter { !it.id().equals(otherTrustee.id()) }.map { it.xCoordinate() }
-            val coeff: ElementModQ = group.computeLagrangeCoefficient(otherTrustee.xCoordinate(), present)
-            result.add(AvailableGuardian(otherTrustee.id(), otherTrustee.xCoordinate().toInt(), coeff))
-        }
-        return result
     }
 }
 

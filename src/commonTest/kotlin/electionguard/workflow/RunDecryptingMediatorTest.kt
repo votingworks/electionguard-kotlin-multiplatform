@@ -51,7 +51,11 @@ fun runDecryptingMediator(
 
     val electionRecordIn = ElectionRecord(inputDir, group)
     val tallyResult: TallyResult = electionRecordIn.readTallyResult().getOrThrow { IllegalStateException(it) }
-    val decryptor = DecryptingMediator(group, tallyResult, decryptingTrustees, emptyList())
+    val trusteeNames = decryptingTrustees.map { it.id()}.toSet()
+    val missingGuardians =
+        tallyResult.electionIntialized.guardians.filter { !trusteeNames.contains(it.guardianId)}.map { it.guardianId}
+
+    val decryptor = DecryptingMediator(group, tallyResult, decryptingTrustees, missingGuardians)
     val decryptedTally = with(decryptor) { tallyResult.ciphertextTally.decrypt() }
     assertNotNull(decryptedTally)
 
@@ -59,7 +63,7 @@ fun runDecryptingMediator(
     println("RunDecryptingMediator took $took millisecs")
 
     val metadata: MutableMap<String, String> = mutableMapOf()
-    metadata.put("CreatedBy", "runDecryptingMediatorTest")
+    metadata.put("CreatedBy", "runDecryptingMediator")
     metadata.put("CreatedOn", getSystemDate().toString())
     metadata.put("CreatedFrom", inputDir)
 
@@ -68,7 +72,7 @@ fun runDecryptingMediator(
         DecryptionResult(
             tallyResult,
             decryptedTally,
-            decryptor.computeAvailableGuardians(),
+            decryptor.availableGuardians,
             metadata,
         )
     )
