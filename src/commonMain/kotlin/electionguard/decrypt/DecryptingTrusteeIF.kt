@@ -28,7 +28,7 @@ interface DecryptingTrusteeIF {
         texts: List<ElGamalCiphertext>,
         extendedBaseHash: ElementModQ,
         nonce: ElementModQ?,
-    ): List<PartialDecryptionAndProof>
+    ): List<DirectDecryptionAndProof>
 
     /**
      * Compute a compensated partial decryption of an elgamal encryption on behalf of the missing guardian.
@@ -45,5 +45,5 @@ interface DecryptingTrusteeIF {
         texts: List<ElGamalCiphertext>,
         extendedBaseHash: ElementModQ,
         nonce: ElementModQ?,
-    ): List<CompensatedPartialDecryptionAndProof>
+    ): List<CompensatedDecryptionAndProof>
 }

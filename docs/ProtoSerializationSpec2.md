@@ -1,9 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 4/12/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
-
-This covers only the election record, and not any serialized classes used in remote procedure calls 
-or private data.
+draft 5/1/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 Notes
 
@@ -45,7 +42,6 @@ Notes
 
 | Name       | Type        | Notes   |
 |------------|-------------|---------|
-| public_key | ElementModP |         |
 | challenge  | ElementModQ |         |
 | response   | ElementModQ |         |
 
@@ -58,27 +54,16 @@ Notes
 
 ## election_record.proto
 
-### message ElectionRecord
+### message ElectionConfig
 
-| Name                | Type                      | Notes                |
-|---------------------|---------------------------|----------------------|
-| proto_version       | string                    | proto schema version |
-| constants           | ElectionConstants         | key ceremony         |
-| manifest            | Manifest                  | key ceremony         |
-| context             | ElectionContext           | key ceremony         |
-| guardian_records    | List\<GuardianRecord\>    | key ceremony         |
-| devices             | List\<EncryptionDevice\>  | key ceremony ??      |
-| ciphertext_tally    | CiphertextTally           | accumulate tally     |
-| plaintext_tally     | PlaintextTally            | decrypt tally        |
-| available_guardians | List\<AvailableGuardian\> | decrypt tally        |
-
-### message AvailableGuardian
-
-| Name                    | Type   | Notes                          |
-|-------------------------|--------|--------------------------------|
-| guardian_id             | string |                                |
-| x_coordinate            | string | x_coordinate in the polynomial |
-| lagrange_coordinate_int | sint32 |                                |
+| Name                | Type                | Notes                |
+|---------------------|---------------------|----------------------|
+| proto_version       | string              | proto schema version |
+| constants           | ElectionConstants   | key ceremony         |
+| manifest            | Manifest            | key ceremony         |
+| number_of_guardians | uint32              |                      |
+| quorum              | uint32              |                      |
+| metadata            | map<string, string> |                      |
 
 ### message ElectionConstants
 
@@ -90,27 +75,16 @@ Notes
 | cofactor    | bytes   | bigint is unsigned and big-endian |
 | generator   | bytes   | bigint is unsigned and big-endian |
 
-### message ElectionContext
+### message ElectionInitialized
 
-| Name                      | Type                  | Notes    |
-|---------------------------|-----------------------|----------|
-| number_of_guardians       | uint32                |          |
-| quorum                    | uint32                |          |
-| elgamal_public_key        | ElementModP           |          |
-| commitment_hash           | UInt256               |          |
-| manifest_hash             | UInt256               |          |
-| crypto_base_hash          | UInt256               |          |
-| crypto_extended_base_hash | UInt256               |          |
-| extended_data             | map\<string, string\> | optional |
-
-### message EncryptionDevice
-
-| Name        | Type   | Notes                                  |
-|-------------|--------|----------------------------------------|
-| device_id   | int64  | was uuid LOOK maybe just use a string? |
-| session_id  | int64  |                                        |
-| launch_code | int64  |                                        |
-| location    | string |                                        |
+| Name                      | Type                | Notes |
+|---------------------------|---------------------|-------|
+| config                    | ElectionConfig      |       |
+| elgamal_public_key        | ElementModP         |       |
+| manifest_hash             | UInt256             |       |
+| crypto_extended_base_hash | UInt256             |       |
+| guardians                 | List\<Guardian\>    |       |
+| metadata                  | map<string, string> |       |
 
 ### message GuardianRecord
 
@@ -118,9 +92,35 @@ Notes
 |-------------------------|----------------------|--------------------------------|
 | guardian_id             | string               |                                |
 | x_coordinate            | uint32               | x_coordinate in the polynomial |
-| guardian_public_key     | ElementModP          |                                |
 | coefficient_commitments | List\<ElementModP\>  |                                |
 | coefficient_proofs      | List\<SchnorrProof\> |                                |
+
+### message TallyResult
+
+| Name             | Type                | Notes |
+|------------------|---------------------|-------|
+| election_init    | ElectionInitialized |       |
+| ciphertext_tally | CiphertextTally     |       |
+| ballot_ids       | List<string>        |       |
+| tally_ids        | List<string>        |       |
+
+### message DecryptionResult
+
+| Name                 | Type                      | Notes |
+|----------------------|---------------------------|-------|
+| tally_result         | TallyResult               |       |
+| decrypted_tally      | PlaintextTally            |       |
+| decrypting_guardians | List\<AvailableGuardian\> |       |
+| metadata             | map<string, string>       |       |
+
+### message AvailableGuardian
+
+| Name                 | Type        | Notes                          |
+|----------------------|-------------|--------------------------------|
+| guardian_id          | string      |                                |
+| x_coordinate         | string      | x_coordinate in the polynomial |
+| lagrange_coefficient | ElementModQ |                                |
+
 
 ## manifest.proto
 
@@ -214,7 +214,7 @@ Notes
 | Name                 | Type                         | Notes                                         |
 |----------------------|------------------------------|-----------------------------------------------|
 | contest_id           | string                       |                                               |
-| sequence_order       | uint32                       | deterministic sorting                         |
+| sequence_order       | uint32                       | unique within manifest                        |
 | geopolitical_unit_id | string                       | matches GeoPoliticalUnit.geopolitical_unit_id |
 | vote_variation       | enum VoteVariationType       |                                               |
 | number_elected       | uint32                       |                                               |
@@ -231,9 +231,10 @@ Notes
 | Name           | Type     | Notes                          |
 |----------------|----------|--------------------------------|
 | selection_id   | string   |                                |
-| sequence_order | uint32   | deterministic sorting          |
+| sequence_order | uint32   | unique within contest          |
 | candidate_id   | string   | matches Candidate.candidate_id |
 | crypto_hash    | UInt256  | optional                       |
+
 
 ## plaintext_ballot.proto
 
@@ -256,13 +257,13 @@ Notes
 
 ### message PlaintextBallotSelection
 
-| Name                     | Type    | Notes                                       |
-|--------------------------|---------|---------------------------------------------|
-| selection_id             | string  | matches SelectionDescription.selection_id   |
-| sequence_order           | uint32  | matches SelectionDescription.sequence_order |
-| vote                     | uint32  |                                             |
-| is_placeholder_selection | bool    |                                             |
-| extended_data            | string? | optional                                    |
+| Name                     | Type   | Notes                                       |
+|--------------------------|--------|---------------------------------------------|
+| selection_id             | string | matches SelectionDescription.selection_id   |
+| sequence_order           | uint32 | matches SelectionDescription.sequence_order |
+| vote                     | uint32 |                                             |
+| extended_data            | string | optional, not implemented yet               |
+
 
 ## ciphertext_ballot.proto
 
@@ -288,7 +289,6 @@ Notes
 | sequence_order          | uint32                            | matches ContestDescription.sequence_order |
 | contest_hash            | UInt256                           | matches ContestDescription.crypto_hash    |                                                                     |
 | selections              | List\<CiphertextBallotSelection\> |                                           |
-| ciphertext_accumulation | ElGamalCiphertext                 |                                           |
 | crypto_hash             | UInt256                           |                                           |
 | proof                   | ConstantChaumPedersenProof        |                                           |
 
@@ -305,7 +305,7 @@ Notes
 | proof                    | DisjunctiveChaumPedersenProof |                                             |
 | extended_data            | HashedElGamalCiphertext       | optional                                    |
 
-### message ConstantChaumPedersenProofElGamalCiphertext
+### message ConstantChaumPedersenProof
 
 | Name      | Type                      | Notes |
 |-----------|---------------------------|-------|
@@ -319,6 +319,7 @@ Notes
 | challenge | ElementModQ               |       |
 | proof0    | GenericChaumPedersenProof |       |
 | proof1    | GenericChaumPedersenProof |       |
+
 
 ## ciphertext_tally.proto
 
@@ -338,7 +339,7 @@ Notes
 | contest_description_hash | UInt256                          | matches ContestDescription.crypto_hash    |
 | selections               | List\<CiphertextTallySelection\> |                                           |
 
-### message CiphertextTallySelection|
+### message CiphertextTallySelection
 
 | Name                       | Type              | Notes                                       |
 |----------------------------|-------------------|---------------------------------------------|
@@ -346,6 +347,7 @@ Notes
 | sequence_order             | uint32            | matches SelectionDescription.sequence_order |
 | selection_description_hash | UInt256           | matches SelectionDescription.crypto_hash    |
 | ciphertext                 | ElGamalCiphertext |                                             |
+
 
 ## plaintext_tally.proto
 
@@ -365,31 +367,30 @@ Notes
 
 ### message PlaintextTallySelection
 
-| Name         | Type                                  | Notes                                     |
-|--------------|---------------------------------------|-------------------------------------------|
-| selection_id | string                                | matches SelectionDescription.selection_id |
-| tally        | int                                   |                                           |
-| value        | ElementModP                           |                                           |
-| message      | ElGamalCiphertext                     |                                           |
-| shares       | List\<CiphertextDecryptionSelection\> |                                           |
+| Name                | Type                        | Notes                                     |
+|---------------------|-----------------------------|-------------------------------------------|
+| selection_id        | string                      | matches SelectionDescription.selection_id |
+| tally               | int                         | decrypted vote count                      |
+| value               | ElementModP                 | g^tally or M in the spec                  |
+| message             | ElGamalCiphertext           | encrypted vote count                      |
+| partial_decryptions | List\<PartialDecryption\>   | direct or recovered, nguardians of them   |
 
-### message CiphertextDecryptionSelection
+### message PartialDecryption
 
-| Name            | Type                                             | Notes |
-|-----------------|--------------------------------------------------|-------|
-| selection_id    | string                                           |       |
-| guardian_id     | string                                           |       |
-| share           | ElementModP                                      |       |
-| proof           | GenericChaumPedersenProof                        |       |
-| recovered_parts | List\<CiphertextCompensatedDecryptionSelection\> |       |
+| Name            | Type                               | Notes          |
+|-----------------|------------------------------------|----------------|
+| selection_id    | string                             |                |
+| guardian_id     | string                             |                |
+| share           | ElementModP                        | M_i            |
+| proof           | GenericChaumPedersenProof          | only direct    |
+| recovered_parts | List\<MissingPartialDecryption\>   | only recovered |
 
-### message CiphertextCompensatedDecryptionSelection
+### message MissingPartialDecryption
 
-| Name                | Type                      | Notes |
-|---------------------|---------------------------|-------|
-| selection_id        | string                    |       |
-| guardian_id         | string                    |       |
-| missing_guardian_id | string                    |       |
-| share               | ElementModP               |       |
-| recovery_key        | ElementModP               |       |
-| proof               | GenericChaumPedersenProof |       |
+| Name                   | Type                      | Notes |
+|------------------------|---------------------------|-------|
+| decrypting_guardian_id | string                    |       |
+| missing_guardian_id    | string                    |       |
+| share                  | ElementModP               | M_il  |
+| recovery_key           | ElementModP               |       |
+| proof                  | GenericChaumPedersenProof |       |

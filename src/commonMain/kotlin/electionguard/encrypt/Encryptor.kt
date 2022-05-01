@@ -80,12 +80,12 @@ class Encryptor(
         timestampOverride: Long? = null,
     ): CiphertextBallot {
         val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, masterNonce)
-        val pcontests = this.contests.associateBy { it.contestId }
+        val plaintextContests = this.contests.associateBy { it.contestId }
 
         val encryptedContests = mutableListOf<CiphertextBallot.Contest>()
         for (mcontest in manifest.contests) {
             // If no contest on the ballot, create a placeholder
-            val pcontest: PlaintextBallot.Contest = pcontests[mcontest.contestId] ?: contestFrom(mcontest)
+            val pcontest: PlaintextBallot.Contest = plaintextContests[mcontest.contestId] ?: contestFrom(mcontest)
             encryptedContests.add(pcontest.encryptContest(mcontest, ballotNonce))
         }
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder}
@@ -115,8 +115,8 @@ class Encryptor(
 
     /**
      * Encrypt a PlaintextBallotContest into CiphertextBallot.Contest.
-     * @param mcontest:   the corresponding Manifest.ContestDescription
-     * @param ballotNonce:          the seed for this contest.
+     * @param mcontest:    the corresponding Manifest.ContestDescription
+     * @param ballotNonce: the seed for this contest.
      */
     fun PlaintextBallot.Contest.encryptContest(
         mcontest: Manifest.ContestDescription,
@@ -129,8 +129,7 @@ class Encryptor(
         val chaumPedersenNonce = nonceSequence[0]
 
         val encryptedSelections = mutableListOf<CiphertextBallot.Selection>()
-        val plaintextSelections: Map<String, PlaintextBallot.Selection> =
-            this.selections.associateBy { it.selectionId }
+        val plaintextSelections = this.selections.associateBy { it.selectionId }
 
         // only use selections that match the manifest.
         var votes = 0
@@ -209,7 +208,7 @@ class Encryptor(
         // TODO
         val extendedDataCiphertext =
             if (extendedData != null) {
-                val extendedDataBytes = extendedData.value.encodeToByteArray()
+                val extendedDataBytes = extendedData.encodeToByteArray()
                 val extendedDataNonce = Nonces(selectionNonce, "extended-data")[0]
                 extendedDataBytes.hashedElGamalEncrypt(elgamalPublicKey, extendedDataNonce)
             } else null

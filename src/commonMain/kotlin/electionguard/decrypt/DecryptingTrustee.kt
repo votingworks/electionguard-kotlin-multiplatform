@@ -38,8 +38,8 @@ data class DecryptingTrustee(
         texts: List<ElGamalCiphertext>,
         extendedBaseHash: ElementModQ,
         nonce: ElementModQ?
-    ): List<PartialDecryptionAndProof> {
-        val results: MutableList<PartialDecryptionAndProof> = mutableListOf()
+    ): List<DirectDecryptionAndProof> {
+        val results: MutableList<DirectDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
             // 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 (spec section 3.5 eq 9)
             val partialDecryption: ElementModP = ciphertext.computeShare(this.electionKeypair.secretKey)
@@ -57,7 +57,7 @@ data class DecryptingTrustee(
             if (validate) {
                 validate(group, ciphertext, extendedBaseHash, publicKey, partialDecryption, proof)
             }
-            results.add(PartialDecryptionAndProof(partialDecryption, proof))
+            results.add(DirectDecryptionAndProof(partialDecryption, proof))
         }
         return results
     }
@@ -68,7 +68,7 @@ data class DecryptingTrustee(
         texts: List<ElGamalCiphertext>,
         extendedBaseHash: ElementModQ,
         nonce: ElementModQ?,
-    ): List<CompensatedPartialDecryptionAndProof> {
+    ): List<CompensatedDecryptionAndProof> {
         val backup: SecretKeyShare? = this.secretKeyShares[missingGuardianId]
         if (backup == null) {
             throw IllegalStateException("compensate_decrypt guardian $id missing backup for $missingGuardianId")
@@ -76,7 +76,7 @@ data class DecryptingTrustee(
 
         // used in the proof, not the calculation
         val recoveredPublicKeyShare: ElementModP = recoveredPublicKeyShare(group, missingGuardianId)
-        val results: MutableList<CompensatedPartialDecryptionAndProof> = mutableListOf()
+        val results: MutableList<CompensatedDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
             // used in the calculation, needs to be encrypted
             // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
@@ -96,7 +96,7 @@ data class DecryptingTrustee(
             if (validate) {
                 validate(group, ciphertext, extendedBaseHash, publicKey, partialDecryption, proof)
             }
-            results.add(CompensatedPartialDecryptionAndProof(partialDecryption, proof, recoveredPublicKeyShare))
+            results.add(CompensatedDecryptionAndProof(partialDecryption, proof, recoveredPublicKeyShare))
         }
         return results
     }

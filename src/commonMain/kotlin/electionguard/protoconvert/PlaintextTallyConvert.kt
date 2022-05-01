@@ -112,7 +112,7 @@ private fun GroupContext.importPartialDecryption(partial: electionguard.protogen
     )
 }
 
-private fun GroupContext.importRecoveredPartialDecryption(parts: electionguard.protogen.RecoveredPartialDecryption):
+private fun GroupContext.importRecoveredPartialDecryption(parts: electionguard.protogen.MissingPartialDecryption):
         Result<MissingPartialDecryption, String> {
     val share = this.importElementModP(parts.share)
         .toResultOr { "RecoveredPartialDecryption ${parts.selectionId} share was malformed or missing" }
@@ -172,7 +172,7 @@ private fun PartialDecryption.publishPartialDecryption(selectionId: String):
                 .ProofOrParts
                 .Proof(this.proof.publishChaumPedersenProof())
     } else if (this.missingDecryptions.isNotEmpty()) {
-        val pparts = this.missingDecryptions.map { it.publishRecoveredPartialDecryption(selectionId) }
+        val pparts = this.missingDecryptions.map { it.publishMissingPartialDecryption(selectionId) }
         proofOrParts =
             electionguard.protogen
                 .PartialDecryption
@@ -192,13 +192,13 @@ private fun PartialDecryption.publishPartialDecryption(selectionId: String):
         )
 }
 
-private fun MissingPartialDecryption.publishRecoveredPartialDecryption(selectionId: String):
-        electionguard.protogen.RecoveredPartialDecryption {
+private fun MissingPartialDecryption.publishMissingPartialDecryption(selectionId: String):
+        electionguard.protogen.MissingPartialDecryption {
     return electionguard.protogen
-        .RecoveredPartialDecryption(
+        .MissingPartialDecryption(
             selectionId,
-            this.decryptingGuardian,
-            this.missingGuardian,
+            this.decryptingGuardianId,
+            this.missingGuardianId,
             this.share.publishElementModP(),
             this.recoveryKey.publishElementModP(),
             this.proof.publishChaumPedersenProof(),
