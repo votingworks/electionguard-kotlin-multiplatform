@@ -72,7 +72,7 @@ actual class ElectionRecord actual constructor(
     }
 
     actual fun iteratePlaintextBallots(ballotDir : String, filter : (PlaintextBallot) -> Boolean): Iterable<PlaintextBallot> {
-        return Iterable { PlaintextBallotIterator(path.plaintextBallotPath(ballotDir), filter) }
+        return Iterable { PlaintextBallotIterator(groupContext, path.plaintextBallotPath(ballotDir), filter) }
     }
 
     actual fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {

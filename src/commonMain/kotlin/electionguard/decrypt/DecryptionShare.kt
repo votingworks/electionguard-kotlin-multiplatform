@@ -6,7 +6,7 @@ import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.compatibleContextOrFail
 import electionguard.core.multP
 
-/** partial decryptions from one DecryptingTrustee, includes both direct and compensated decryptions */
+/** Partial decryptions from one DecryptingTrustee, includes both direct and compensated decryptions */
 class DecryptionShare(
     val decryptingTrustee: String, // who did these Decryptions?
 ) {
@@ -51,8 +51,8 @@ class CompensatedDecryption(
 }
 
 data class MissingPartialDecryption(
-    val decryptingGuardian: String,
-    val missingGuardian: String,
+    val decryptingGuardianId: String,
+    val missingGuardianId: String,
     val share: ElementModP,  // M_𝑖,ℓ
     val recoveryKey: ElementModP,
     val proof: GenericChaumPedersenProof
@@ -96,7 +96,7 @@ class PartialDecryption(
         // the quardians and missingDecryptions are sorted by guardianId, so can use index to match with
         // 𝑀_𝑖 = ∏ ℓ∈𝑈 (𝑀_𝑖,ℓ) mod 𝑝, where 𝑀_𝑖,ℓ = 𝐴^𝑃_𝑖(ℓ) mod 𝑝.
         if (missingDecryptions.isNotEmpty()) {
-            val shares = missingDecryptions.sortedBy { it.decryptingGuardian }.mapIndexed { idx, value ->
+            val shares = missingDecryptions.sortedBy { it.decryptingGuardianId }.mapIndexed { idx, value ->
                 value.share powP guardians[idx].lagrangeCoordinate
             }
             val context = compatibleContextOrFail(*shares.toTypedArray())
@@ -135,12 +135,12 @@ class PartialDecryption(
 }
 
 /** Direct decryption from the Decrypting Trustee */
-data class PartialDecryptionAndProof(
+data class DirectDecryptionAndProof(
     val partialDecryption: ElementModP,
     val proof: GenericChaumPedersenProof)
 
 /** Compensated decryption from the Decrypting Trustee */
-data class CompensatedPartialDecryptionAndProof(
+data class CompensatedDecryptionAndProof(
     val partialDecryption: ElementModP, // used in the calculation. LOOK encrypt ??
     val proof: GenericChaumPedersenProof,
     val recoveredPublicKeyShare: ElementModP) // g^Pi(ℓ), used in the verification

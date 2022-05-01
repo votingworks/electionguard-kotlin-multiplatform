@@ -134,7 +134,7 @@ public data class PlaintextBallotSelection(
     val selectionId: String = "",
     val sequenceOrder: Int = 0,
     val vote: Int = 0,
-    val extendedData: electionguard.protogen.ExtendedData? = null,
+    val extendedData: String = "",
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextBallotSelection = protoMergeImpl(other)
@@ -182,7 +182,7 @@ public data class PlaintextBallotSelection(
                         messageDescriptor = this@Companion::descriptor,
                         name = "extended_data",
                         number = 5,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ExtendedData.Companion),
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "extendedData",
                         value = electionguard.protogen.PlaintextBallotSelection::extendedData
                     )
@@ -191,53 +191,6 @@ public data class PlaintextBallotSelection(
             pbandk.MessageDescriptor(
                 fullName = "PlaintextBallotSelection",
                 messageClass = electionguard.protogen.PlaintextBallotSelection::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
-        }
-    }
-}
-
-@pbandk.Export
-public data class ExtendedData(
-    val value: String = "",
-    val length: Int = 0,
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ExtendedData = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ExtendedData> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.ExtendedData> {
-        public val defaultInstance: electionguard.protogen.ExtendedData by lazy { electionguard.protogen.ExtendedData() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ExtendedData = electionguard.protogen.ExtendedData.decodeWithImpl(u)
-
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ExtendedData> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ExtendedData, *>>(2)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "value",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "value",
-                        value = electionguard.protogen.ExtendedData::value
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "length",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
-                        jsonName = "length",
-                        value = electionguard.protogen.ExtendedData::length
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "ExtendedData",
-                messageClass = electionguard.protogen.ExtendedData::class,
                 messageCompanion = this,
                 fields = fieldsList
             )
@@ -307,7 +260,6 @@ public fun PlaintextBallotSelection?.orDefault(): electionguard.protogen.Plainte
 
 private fun PlaintextBallotSelection.protoMergeImpl(plus: pbandk.Message?): PlaintextBallotSelection = (plus as? PlaintextBallotSelection)?.let {
     it.copy(
-        extendedData = extendedData?.plus(plus.extendedData) ?: plus.extendedData,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -317,39 +269,15 @@ private fun PlaintextBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageD
     var selectionId = ""
     var sequenceOrder = 0
     var vote = 0
-    var extendedData: electionguard.protogen.ExtendedData? = null
+    var extendedData = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
             3 -> vote = _fieldValue as Int
-            5 -> extendedData = _fieldValue as electionguard.protogen.ExtendedData
+            5 -> extendedData = _fieldValue as String
         }
     }
     return PlaintextBallotSelection(selectionId, sequenceOrder, vote, extendedData, unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForExtendedData")
-public fun ExtendedData?.orDefault(): electionguard.protogen.ExtendedData = this ?: ExtendedData.defaultInstance
-
-private fun ExtendedData.protoMergeImpl(plus: pbandk.Message?): ExtendedData = (plus as? ExtendedData)?.let {
-    it.copy(
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun ExtendedData.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ExtendedData {
-    var value = ""
-    var length = 0
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> value = _fieldValue as String
-            2 -> length = _fieldValue as Int
-        }
-    }
-    return ExtendedData(value, length, unknownFields)
 }

@@ -23,8 +23,7 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
      * @param tally the actual count.
      * @param value g^tally or M in the spec.
      * @param message The encrypted vote count.
-     * @param shares The Guardians' shares of the decryption of a selection. `M_i` in the spec. Must
-     *     be nguardians of them.
+     * @param partialDecryptions The Guardians' shares of the decryption of a selection, nguardians of them.
      */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId

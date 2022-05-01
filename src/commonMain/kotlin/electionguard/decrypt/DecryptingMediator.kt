@@ -59,9 +59,9 @@ class DecryptingMediator(
                 }
                 // distribute the recoveredDecryptions for this trustee across the missing guardians
                 haveDecrypt.missingDecryptions.values.map { recovered ->
-                    var wantDecrypt = cmap.find { it.guardianId == recovered.missingGuardian}
+                    var wantDecrypt = cmap.find { it.guardianId == recovered.missingGuardianId}
                     if (wantDecrypt == null) {
-                        wantDecrypt = PartialDecryption(recovered.missingGuardian, haveDecrypt)
+                        wantDecrypt = PartialDecryption(recovered.missingGuardianId, haveDecrypt)
                         cmap.add(wantDecrypt)
                     }
                     wantDecrypt.add(recovered)
@@ -99,7 +99,7 @@ class DecryptingMediator(
         //  instead of 1 + nmissing
 
         // direct decryptions
-        val partialDecryptions: List<PartialDecryptionAndProof> =
+        val partialDecryptions: List<DirectDecryptionAndProof> =
             trustee.partialDecrypt(group, texts, tallyResult.cryptoExtendedBaseHash(), null)
 
         // Place the results into the DecryptionShare
@@ -107,7 +107,7 @@ class DecryptingMediator(
         var count = 0;
         for (tallyContest in this.contests.values) {
             for (tallySelection in tallyContest.selections.values) {
-                val proof: PartialDecryptionAndProof = partialDecryptions.get(count);
+                val proof: DirectDecryptionAndProof = partialDecryptions.get(count);
                 val partialDecryption = DirectDecryption(
                     tallySelection.selectionId,
                     trustee.id(),
@@ -125,14 +125,14 @@ class DecryptingMediator(
 
         // compensated decryptions
         for (missing in missingTrustees) {
-            val compensatedDecryptions: List<CompensatedPartialDecryptionAndProof> =
+            val compensatedDecryptions: List<CompensatedDecryptionAndProof> =
                 trustee.compensatedDecrypt(group, missing, texts, tallyResult.cryptoExtendedBaseHash(), null)
 
             // Place the results into the DecryptionShare
             var count2 = 0;
             for (tallyContest in this.contests.values) {
                 for (tallySelection in tallyContest.selections.values) {
-                    val proof: CompensatedPartialDecryptionAndProof = compensatedDecryptions.get(count2);
+                    val proof: CompensatedDecryptionAndProof = compensatedDecryptions.get(count2);
                     val recoveredDecryption = MissingPartialDecryption(
                         trustee.id(),
                         missing,

@@ -7,7 +7,7 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("BallotInputValidation")
 
 class BallotInputValidation(val election: Manifest) {
-    
+    // TODO use memoized maps on Manifest to reduce cost of validation
     val contestMap = election.contests.associate { it.contestId  to ElectionContest(it) }
     val styles = election.ballotStyles.associateBy { it.ballotStyleId }
 

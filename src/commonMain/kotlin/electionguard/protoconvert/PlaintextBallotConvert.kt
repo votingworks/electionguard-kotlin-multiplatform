@@ -1,37 +1,34 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.PlaintextBallot
+import electionguard.core.GroupContext
 
-fun electionguard.protogen.PlaintextBallot.importPlaintextBallot(): PlaintextBallot {
+fun GroupContext.importPlaintextBallot(ballot: electionguard.protogen.PlaintextBallot): PlaintextBallot {
     return PlaintextBallot(
-        this.ballotId,
-        this.ballotStyleId,
-        this.contests.map { it.importContest() },
-        if (this.errors.isEmpty()) null else this.errors,
+        ballot.ballotId,
+        ballot.ballotStyleId,
+        ballot.contests.map { this.importContest(it) },
+        if (ballot.errors.isEmpty()) null else ballot.errors,
     )
 }
 
-private fun electionguard.protogen.PlaintextBallotContest.importContest(): PlaintextBallot.Contest {
+private fun GroupContext.importContest(contest: electionguard.protogen.PlaintextBallotContest): PlaintextBallot.Contest {
     return PlaintextBallot.Contest(
-        this.contestId,
-        this.sequenceOrder,
-        this.selections.map { it.importSelection() }
+        contest.contestId,
+        contest.sequenceOrder,
+        contest.selections.map { this.importSelection(it) }
     )
 }
 
-private fun electionguard.protogen.PlaintextBallotSelection.importSelection():
+private fun GroupContext.importSelection(selection: electionguard.protogen.PlaintextBallotSelection):
     PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
-            this.selectionId,
-            this.sequenceOrder,
-            this.vote,
-            this.extendedData?.let { this.extendedData.importExtendedData() }
+            selection.selectionId,
+            selection.sequenceOrder,
+            selection.vote,
+            selection.extendedData,
         )
     }
-
-private fun electionguard.protogen.ExtendedData.importExtendedData(): PlaintextBallot.ExtendedData {
-    return PlaintextBallot.ExtendedData(this.value, this.length)
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -62,11 +59,6 @@ private fun PlaintextBallot.Selection.publishSelection():
                 this.selectionId,
                 this.sequenceOrder,
                 this.vote,
-                this.extendedData?.let { this.extendedData.publishExtendedData() }
+                this.extendedData?: ""
             )
-    }
-
-private fun PlaintextBallot.ExtendedData.publishExtendedData():
-    electionguard.protogen.ExtendedData {
-        return electionguard.protogen.ExtendedData(this.value, this.length)
     }
