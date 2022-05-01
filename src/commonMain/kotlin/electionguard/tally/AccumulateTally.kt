@@ -39,6 +39,10 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         return CiphertextTally(this.name, tallyContests)
     }
 
+    fun ballotIds(): List<String> {
+        return castIds.toList()
+    }
+
     private inner class Contest(val manifestContest : Manifest.ContestDescription) {
         private val selections = manifestContest.selections.associate { it.selectionId to Selection(it)}
 

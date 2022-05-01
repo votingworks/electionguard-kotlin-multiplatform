@@ -3,27 +3,24 @@
 package electionguard.protogen
 
 @pbandk.Export
-public data class ElectionRecord(
+public data class ElectionConfig(
     val protoVersion: String = "",
     val constants: electionguard.protogen.ElectionConstants? = null,
     val manifest: electionguard.protogen.Manifest? = null,
-    val context: electionguard.protogen.ElectionContext? = null,
-    val guardianRecords: List<electionguard.protogen.GuardianRecord> = emptyList(),
-    val devices: List<electionguard.protogen.EncryptionDevice> = emptyList(),
-    val ciphertextTally: electionguard.protogen.CiphertextTally? = null,
-    val decryptedTally: electionguard.protogen.PlaintextTally? = null,
-    val availableGuardians: List<electionguard.protogen.AvailableGuardian> = emptyList(),
+    val numberOfGuardians: Int = 0,
+    val quorum: Int = 0,
+    val metadata: List<electionguard.protogen.ElectionConfig.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionRecord = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionRecord> get() = Companion.descriptor
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionConfig = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig> get() = Companion.descriptor
     override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.ElectionRecord> {
-        public val defaultInstance: electionguard.protogen.ElectionRecord by lazy { electionguard.protogen.ElectionRecord() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionRecord = electionguard.protogen.ElectionRecord.decodeWithImpl(u)
+    public companion object : pbandk.Message.Companion<electionguard.protogen.ElectionConfig> {
+        public val defaultInstance: electionguard.protogen.ElectionConfig by lazy { electionguard.protogen.ElectionConfig() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConfig = electionguard.protogen.ElectionConfig.decodeWithImpl(u)
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionRecord> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionRecord, *>>(9)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(6)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -32,7 +29,7 @@ public data class ElectionRecord(
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "protoVersion",
-                        value = electionguard.protogen.ElectionRecord::protoVersion
+                        value = electionguard.protogen.ElectionConfig::protoVersion
                     )
                 )
                 add(
@@ -42,7 +39,7 @@ public data class ElectionRecord(
                         number = 2,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionConstants.Companion),
                         jsonName = "constants",
-                        value = electionguard.protogen.ElectionRecord::constants
+                        value = electionguard.protogen.ElectionConfig::constants
                     )
                 )
                 add(
@@ -52,145 +49,92 @@ public data class ElectionRecord(
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.Manifest.Companion),
                         jsonName = "manifest",
-                        value = electionguard.protogen.ElectionRecord::manifest
+                        value = electionguard.protogen.ElectionConfig::manifest
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "context",
+                        name = "number_of_guardians",
                         number = 4,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionContext.Companion),
-                        jsonName = "context",
-                        value = electionguard.protogen.ElectionRecord::context
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
+                        jsonName = "numberOfGuardians",
+                        value = electionguard.protogen.ElectionConfig::numberOfGuardians
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "guardian_records",
+                        name = "quorum",
                         number = 5,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.GuardianRecord>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.GuardianRecord.Companion)),
-                        jsonName = "guardianRecords",
-                        value = electionguard.protogen.ElectionRecord::guardianRecords
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
+                        jsonName = "quorum",
+                        value = electionguard.protogen.ElectionConfig::quorum
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "devices",
+                        name = "metadata",
                         number = 6,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptionDevice>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptionDevice.Companion)),
-                        jsonName = "devices",
-                        value = electionguard.protogen.ElectionRecord::devices
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "ciphertext_tally",
-                        number = 7,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.CiphertextTally.Companion),
-                        jsonName = "ciphertextTally",
-                        value = electionguard.protogen.ElectionRecord::ciphertextTally
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "decrypted_tally",
-                        number = 8,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTally.Companion),
-                        jsonName = "decryptedTally",
-                        value = electionguard.protogen.ElectionRecord::decryptedTally
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "available_guardians",
-                        number = 9,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.AvailableGuardian>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.AvailableGuardian.Companion)),
-                        jsonName = "availableGuardians",
-                        value = electionguard.protogen.ElectionRecord::availableGuardians
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElectionConfig.MetadataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionConfig.MetadataEntry.Companion)),
+                        jsonName = "metadata",
+                        value = electionguard.protogen.ElectionConfig::metadata
                     )
                 )
             }
             pbandk.MessageDescriptor(
-                fullName = "ElectionRecord",
-                messageClass = electionguard.protogen.ElectionRecord::class,
+                fullName = "ElectionConfig",
+                messageClass = electionguard.protogen.ElectionConfig::class,
                 messageCompanion = this,
                 fields = fieldsList
             )
         }
     }
-}
 
-@pbandk.Export
-public data class AvailableGuardian(
-    val guardianId: String = "",
-    val xCoordinate: Int = 0,
-    val lagrangeCoordinate: electionguard.protogen.ElementModQ? = null,
-    val lagrangeCoordinateInt: Int = 0,
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.AvailableGuardian = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.AvailableGuardian> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.AvailableGuardian> {
-        public val defaultInstance: electionguard.protogen.AvailableGuardian by lazy { electionguard.protogen.AvailableGuardian() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.AvailableGuardian = electionguard.protogen.AvailableGuardian.decodeWithImpl(u)
+    public data class MetadataEntry(
+        override val key: String = "",
+        override val value: String = "",
+        override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+    ) : pbandk.Message, Map.Entry<String, String> {
+        override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionConfig.MetadataEntry = protoMergeImpl(other)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig.MetadataEntry> get() = Companion.descriptor
+        override val protoSize: Int by lazy { super.protoSize }
+        public companion object : pbandk.Message.Companion<electionguard.protogen.ElectionConfig.MetadataEntry> {
+            public val defaultInstance: electionguard.protogen.ElectionConfig.MetadataEntry by lazy { electionguard.protogen.ElectionConfig.MetadataEntry() }
+            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConfig.MetadataEntry = electionguard.protogen.ElectionConfig.MetadataEntry.decodeWithImpl(u)
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.AvailableGuardian> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.AvailableGuardian, *>>(4)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "guardian_id",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "guardianId",
-                        value = electionguard.protogen.AvailableGuardian::guardianId
+            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig.MetadataEntry> by lazy {
+                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig.MetadataEntry, *>>(2)
+                fieldsList.apply {
+                    add(
+                        pbandk.FieldDescriptor(
+                            messageDescriptor = this@Companion::descriptor,
+                            name = "key",
+                            number = 1,
+                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                            jsonName = "key",
+                            value = electionguard.protogen.ElectionConfig.MetadataEntry::key
+                        )
                     )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "x_coordinate",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
-                        jsonName = "xCoordinate",
-                        value = electionguard.protogen.AvailableGuardian::xCoordinate
+                    add(
+                        pbandk.FieldDescriptor(
+                            messageDescriptor = this@Companion::descriptor,
+                            name = "value",
+                            number = 2,
+                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                            jsonName = "value",
+                            value = electionguard.protogen.ElectionConfig.MetadataEntry::value
+                        )
                     )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "lagrange_coordinate",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "lagrangeCoordinate",
-                        value = electionguard.protogen.AvailableGuardian::lagrangeCoordinate
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "lagrange_coordinate_int",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Primitive.SInt32(),
-                        jsonName = "lagrangeCoordinateInt",
-                        value = electionguard.protogen.AvailableGuardian::lagrangeCoordinateInt
-                    )
+                }
+                pbandk.MessageDescriptor(
+                    fullName = "ElectionConfig.MetadataEntry",
+                    messageClass = electionguard.protogen.ElectionConfig.MetadataEntry::class,
+                    messageCompanion = this,
+                    fields = fieldsList
                 )
             }
-            pbandk.MessageDescriptor(
-                fullName = "AvailableGuardian",
-                messageClass = electionguard.protogen.AvailableGuardian::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
         }
     }
 }
@@ -276,131 +220,109 @@ public data class ElectionConstants(
 }
 
 @pbandk.Export
-public data class ElectionContext(
-    val numberOfGuardians: Int = 0,
-    val quorum: Int = 0,
+public data class ElectionInitialized(
+    val config: electionguard.protogen.ElectionConfig? = null,
     val jointPublicKey: electionguard.protogen.ElementModP? = null,
     val manifestHash: electionguard.protogen.UInt256? = null,
-    val cryptoBaseHash: electionguard.protogen.UInt256? = null,
     val cryptoExtendedBaseHash: electionguard.protogen.UInt256? = null,
-    val commitmentHash: electionguard.protogen.UInt256? = null,
-    val extendedData: List<electionguard.protogen.ElectionContext.ExtendedDataEntry> = emptyList(),
+    val guardians: List<electionguard.protogen.Guardian> = emptyList(),
+    val metadata: List<electionguard.protogen.ElectionInitialized.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionContext = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionContext> get() = Companion.descriptor
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionInitialized = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionInitialized> get() = Companion.descriptor
     override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.ElectionContext> {
-        public val defaultInstance: electionguard.protogen.ElectionContext by lazy { electionguard.protogen.ElectionContext() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionContext = electionguard.protogen.ElectionContext.decodeWithImpl(u)
+    public companion object : pbandk.Message.Companion<electionguard.protogen.ElectionInitialized> {
+        public val defaultInstance: electionguard.protogen.ElectionInitialized by lazy { electionguard.protogen.ElectionInitialized() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionInitialized = electionguard.protogen.ElectionInitialized.decodeWithImpl(u)
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionContext> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionContext, *>>(8)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionInitialized> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionInitialized, *>>(6)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "number_of_guardians",
+                        name = "config",
                         number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
-                        jsonName = "numberOfGuardians",
-                        value = electionguard.protogen.ElectionContext::numberOfGuardians
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "quorum",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
-                        jsonName = "quorum",
-                        value = electionguard.protogen.ElectionContext::quorum
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionConfig.Companion),
+                        jsonName = "config",
+                        value = electionguard.protogen.ElectionInitialized::config
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "joint_public_key",
-                        number = 3,
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "jointPublicKey",
-                        value = electionguard.protogen.ElectionContext::jointPublicKey
+                        value = electionguard.protogen.ElectionInitialized::jointPublicKey
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "manifest_hash",
-                        number = 4,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
                         jsonName = "manifestHash",
-                        value = electionguard.protogen.ElectionContext::manifestHash
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "crypto_base_hash",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "cryptoBaseHash",
-                        value = electionguard.protogen.ElectionContext::cryptoBaseHash
+                        value = electionguard.protogen.ElectionInitialized::manifestHash
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "crypto_extended_base_hash",
-                        number = 6,
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
                         jsonName = "cryptoExtendedBaseHash",
-                        value = electionguard.protogen.ElectionContext::cryptoExtendedBaseHash
+                        value = electionguard.protogen.ElectionInitialized::cryptoExtendedBaseHash
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "commitment_hash",
-                        number = 7,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "commitmentHash",
-                        value = electionguard.protogen.ElectionContext::commitmentHash
+                        name = "guardians",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.Guardian>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.Guardian.Companion)),
+                        jsonName = "guardians",
+                        value = electionguard.protogen.ElectionInitialized::guardians
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "extended_data",
-                        number = 8,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElectionContext.ExtendedDataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionContext.ExtendedDataEntry.Companion)),
-                        jsonName = "extendedData",
-                        value = electionguard.protogen.ElectionContext::extendedData
+                        name = "metadata",
+                        number = 6,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElectionInitialized.MetadataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionInitialized.MetadataEntry.Companion)),
+                        jsonName = "metadata",
+                        value = electionguard.protogen.ElectionInitialized::metadata
                     )
                 )
             }
             pbandk.MessageDescriptor(
-                fullName = "ElectionContext",
-                messageClass = electionguard.protogen.ElectionContext::class,
+                fullName = "ElectionInitialized",
+                messageClass = electionguard.protogen.ElectionInitialized::class,
                 messageCompanion = this,
                 fields = fieldsList
             )
         }
     }
 
-    public data class ExtendedDataEntry(
+    public data class MetadataEntry(
         override val key: String = "",
         override val value: String = "",
         override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
     ) : pbandk.Message, Map.Entry<String, String> {
-        override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionContext.ExtendedDataEntry = protoMergeImpl(other)
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionContext.ExtendedDataEntry> get() = Companion.descriptor
+        override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionInitialized.MetadataEntry = protoMergeImpl(other)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionInitialized.MetadataEntry> get() = Companion.descriptor
         override val protoSize: Int by lazy { super.protoSize }
-        public companion object : pbandk.Message.Companion<electionguard.protogen.ElectionContext.ExtendedDataEntry> {
-            public val defaultInstance: electionguard.protogen.ElectionContext.ExtendedDataEntry by lazy { electionguard.protogen.ElectionContext.ExtendedDataEntry() }
-            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionContext.ExtendedDataEntry = electionguard.protogen.ElectionContext.ExtendedDataEntry.decodeWithImpl(u)
+        public companion object : pbandk.Message.Companion<electionguard.protogen.ElectionInitialized.MetadataEntry> {
+            public val defaultInstance: electionguard.protogen.ElectionInitialized.MetadataEntry by lazy { electionguard.protogen.ElectionInitialized.MetadataEntry() }
+            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionInitialized.MetadataEntry = electionguard.protogen.ElectionInitialized.MetadataEntry.decodeWithImpl(u)
 
-            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionContext.ExtendedDataEntry> by lazy {
-                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionContext.ExtendedDataEntry, *>>(2)
+            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionInitialized.MetadataEntry> by lazy {
+                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionInitialized.MetadataEntry, *>>(2)
                 fieldsList.apply {
                     add(
                         pbandk.FieldDescriptor(
@@ -409,7 +331,7 @@ public data class ElectionContext(
                             number = 1,
                             type = pbandk.FieldDescriptor.Type.Primitive.String(),
                             jsonName = "key",
-                            value = electionguard.protogen.ElectionContext.ExtendedDataEntry::key
+                            value = electionguard.protogen.ElectionInitialized.MetadataEntry::key
                         )
                     )
                     add(
@@ -419,13 +341,13 @@ public data class ElectionContext(
                             number = 2,
                             type = pbandk.FieldDescriptor.Type.Primitive.String(),
                             jsonName = "value",
-                            value = electionguard.protogen.ElectionContext.ExtendedDataEntry::value
+                            value = electionguard.protogen.ElectionInitialized.MetadataEntry::value
                         )
                     )
                 }
                 pbandk.MessageDescriptor(
-                    fullName = "ElectionContext.ExtendedDataEntry",
-                    messageClass = electionguard.protogen.ElectionContext.ExtendedDataEntry::class,
+                    fullName = "ElectionInitialized.MetadataEntry",
+                    messageClass = electionguard.protogen.ElectionInitialized.MetadataEntry::class,
                     messageCompanion = this,
                     fields = fieldsList
                 )
@@ -435,92 +357,22 @@ public data class ElectionContext(
 }
 
 @pbandk.Export
-public data class EncryptionDevice(
-    val deviceId: Long = 0L,
-    val sessionId: Long = 0L,
-    val launchCode: Long = 0L,
-    val location: String = "",
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.EncryptionDevice = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptionDevice> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.EncryptionDevice> {
-        public val defaultInstance: electionguard.protogen.EncryptionDevice by lazy { electionguard.protogen.EncryptionDevice() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptionDevice = electionguard.protogen.EncryptionDevice.decodeWithImpl(u)
-
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptionDevice> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptionDevice, *>>(4)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "device_id",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Int64(),
-                        jsonName = "deviceId",
-                        value = electionguard.protogen.EncryptionDevice::deviceId
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "session_id",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Int64(),
-                        jsonName = "sessionId",
-                        value = electionguard.protogen.EncryptionDevice::sessionId
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "launch_code",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Int64(),
-                        jsonName = "launchCode",
-                        value = electionguard.protogen.EncryptionDevice::launchCode
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "location",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "location",
-                        value = electionguard.protogen.EncryptionDevice::location
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "EncryptionDevice",
-                messageClass = electionguard.protogen.EncryptionDevice::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
-        }
-    }
-}
-
-@pbandk.Export
-public data class GuardianRecord(
+public data class Guardian(
     val guardianId: String = "",
     val xCoordinate: Int = 0,
-    val guardianPublicKey: electionguard.protogen.ElementModP? = null,
     val coefficientCommitments: List<electionguard.protogen.ElementModP> = emptyList(),
     val coefficientProofs: List<electionguard.protogen.SchnorrProof> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.GuardianRecord = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.GuardianRecord> get() = Companion.descriptor
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.Guardian = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.Guardian> get() = Companion.descriptor
     override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.GuardianRecord> {
-        public val defaultInstance: electionguard.protogen.GuardianRecord by lazy { electionguard.protogen.GuardianRecord() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.GuardianRecord = electionguard.protogen.GuardianRecord.decodeWithImpl(u)
+    public companion object : pbandk.Message.Companion<electionguard.protogen.Guardian> {
+        public val defaultInstance: electionguard.protogen.Guardian by lazy { electionguard.protogen.Guardian() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.Guardian = electionguard.protogen.Guardian.decodeWithImpl(u)
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.GuardianRecord> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.GuardianRecord, *>>(5)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.Guardian> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.Guardian, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -529,7 +381,7 @@ public data class GuardianRecord(
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "guardianId",
-                        value = electionguard.protogen.GuardianRecord::guardianId
+                        value = electionguard.protogen.Guardian::guardianId
                     )
                 )
                 add(
@@ -539,43 +391,33 @@ public data class GuardianRecord(
                         number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "xCoordinate",
-                        value = electionguard.protogen.GuardianRecord::xCoordinate
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "guardian_public_key",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
-                        jsonName = "guardianPublicKey",
-                        value = electionguard.protogen.GuardianRecord::guardianPublicKey
+                        value = electionguard.protogen.Guardian::xCoordinate
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "coefficient_commitments",
-                        number = 4,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElementModP>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion)),
                         jsonName = "coefficientCommitments",
-                        value = electionguard.protogen.GuardianRecord::coefficientCommitments
+                        value = electionguard.protogen.Guardian::coefficientCommitments
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "coefficient_proofs",
-                        number = 5,
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.SchnorrProof>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.SchnorrProof.Companion)),
                         jsonName = "coefficientProofs",
-                        value = electionguard.protogen.GuardianRecord::coefficientProofs
+                        value = electionguard.protogen.Guardian::coefficientProofs
                     )
                 )
             }
             pbandk.MessageDescriptor(
-                fullName = "GuardianRecord",
-                messageClass = electionguard.protogen.GuardianRecord::class,
+                fullName = "Guardian",
+                messageClass = electionguard.protogen.Guardian::class,
                 messageCompanion = this,
                 fields = fieldsList
             )
@@ -584,80 +426,305 @@ public data class GuardianRecord(
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForElectionRecord")
-public fun ElectionRecord?.orDefault(): electionguard.protogen.ElectionRecord = this ?: ElectionRecord.defaultInstance
+public data class TallyResult(
+    val electionInit: electionguard.protogen.ElectionInitialized? = null,
+    val ciphertextTally: electionguard.protogen.CiphertextTally? = null,
+    val ballotIds: List<String> = emptyList(),
+    val tallyIds: List<String> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.TallyResult = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.TallyResult> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<electionguard.protogen.TallyResult> {
+        public val defaultInstance: electionguard.protogen.TallyResult by lazy { electionguard.protogen.TallyResult() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.TallyResult = electionguard.protogen.TallyResult.decodeWithImpl(u)
 
-private fun ElectionRecord.protoMergeImpl(plus: pbandk.Message?): ElectionRecord = (plus as? ElectionRecord)?.let {
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.TallyResult> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.TallyResult, *>>(4)
+            fieldsList.apply {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "election_init",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionInitialized.Companion),
+                        jsonName = "electionInit",
+                        value = electionguard.protogen.TallyResult::electionInit
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "ciphertext_tally",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.CiphertextTally.Companion),
+                        jsonName = "ciphertextTally",
+                        value = electionguard.protogen.TallyResult::ciphertextTally
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "ballot_ids",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "ballotIds",
+                        value = electionguard.protogen.TallyResult::ballotIds
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "tally_ids",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "tallyIds",
+                        value = electionguard.protogen.TallyResult::tallyIds
+                    )
+                )
+            }
+            pbandk.MessageDescriptor(
+                fullName = "TallyResult",
+                messageClass = electionguard.protogen.TallyResult::class,
+                messageCompanion = this,
+                fields = fieldsList
+            )
+        }
+    }
+}
+
+@pbandk.Export
+public data class DecryptionResult(
+    val tallyResult: electionguard.protogen.TallyResult? = null,
+    val decryptedTally: electionguard.protogen.PlaintextTally? = null,
+    val decryptingGuardians: List<electionguard.protogen.AvailableGuardian> = emptyList(),
+    val metadata: List<electionguard.protogen.DecryptionResult.MetadataEntry> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.DecryptionResult = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptionResult> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<electionguard.protogen.DecryptionResult> {
+        public val defaultInstance: electionguard.protogen.DecryptionResult by lazy { electionguard.protogen.DecryptionResult() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.DecryptionResult = electionguard.protogen.DecryptionResult.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptionResult> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptionResult, *>>(4)
+            fieldsList.apply {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "tally_result",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.TallyResult.Companion),
+                        jsonName = "tallyResult",
+                        value = electionguard.protogen.DecryptionResult::tallyResult
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "decrypted_tally",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTally.Companion),
+                        jsonName = "decryptedTally",
+                        value = electionguard.protogen.DecryptionResult::decryptedTally
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "decrypting_guardians",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.AvailableGuardian>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.AvailableGuardian.Companion)),
+                        jsonName = "decryptingGuardians",
+                        value = electionguard.protogen.DecryptionResult::decryptingGuardians
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "metadata",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.DecryptionResult.MetadataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.DecryptionResult.MetadataEntry.Companion)),
+                        jsonName = "metadata",
+                        value = electionguard.protogen.DecryptionResult::metadata
+                    )
+                )
+            }
+            pbandk.MessageDescriptor(
+                fullName = "DecryptionResult",
+                messageClass = electionguard.protogen.DecryptionResult::class,
+                messageCompanion = this,
+                fields = fieldsList
+            )
+        }
+    }
+
+    public data class MetadataEntry(
+        override val key: String = "",
+        override val value: String = "",
+        override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+    ) : pbandk.Message, Map.Entry<String, String> {
+        override operator fun plus(other: pbandk.Message?): electionguard.protogen.DecryptionResult.MetadataEntry = protoMergeImpl(other)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptionResult.MetadataEntry> get() = Companion.descriptor
+        override val protoSize: Int by lazy { super.protoSize }
+        public companion object : pbandk.Message.Companion<electionguard.protogen.DecryptionResult.MetadataEntry> {
+            public val defaultInstance: electionguard.protogen.DecryptionResult.MetadataEntry by lazy { electionguard.protogen.DecryptionResult.MetadataEntry() }
+            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.DecryptionResult.MetadataEntry = electionguard.protogen.DecryptionResult.MetadataEntry.decodeWithImpl(u)
+
+            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptionResult.MetadataEntry> by lazy {
+                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptionResult.MetadataEntry, *>>(2)
+                fieldsList.apply {
+                    add(
+                        pbandk.FieldDescriptor(
+                            messageDescriptor = this@Companion::descriptor,
+                            name = "key",
+                            number = 1,
+                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                            jsonName = "key",
+                            value = electionguard.protogen.DecryptionResult.MetadataEntry::key
+                        )
+                    )
+                    add(
+                        pbandk.FieldDescriptor(
+                            messageDescriptor = this@Companion::descriptor,
+                            name = "value",
+                            number = 2,
+                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                            jsonName = "value",
+                            value = electionguard.protogen.DecryptionResult.MetadataEntry::value
+                        )
+                    )
+                }
+                pbandk.MessageDescriptor(
+                    fullName = "DecryptionResult.MetadataEntry",
+                    messageClass = electionguard.protogen.DecryptionResult.MetadataEntry::class,
+                    messageCompanion = this,
+                    fields = fieldsList
+                )
+            }
+        }
+    }
+}
+
+@pbandk.Export
+public data class AvailableGuardian(
+    val guardianId: String = "",
+    val xCoordinate: Int = 0,
+    val lagrangeCoefficient: electionguard.protogen.ElementModQ? = null,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.AvailableGuardian = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.AvailableGuardian> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<electionguard.protogen.AvailableGuardian> {
+        public val defaultInstance: electionguard.protogen.AvailableGuardian by lazy { electionguard.protogen.AvailableGuardian() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.AvailableGuardian = electionguard.protogen.AvailableGuardian.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.AvailableGuardian> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.AvailableGuardian, *>>(3)
+            fieldsList.apply {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "guardian_id",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "guardianId",
+                        value = electionguard.protogen.AvailableGuardian::guardianId
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "x_coordinate",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
+                        jsonName = "xCoordinate",
+                        value = electionguard.protogen.AvailableGuardian::xCoordinate
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "lagrange_coefficient",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "lagrangeCoefficient",
+                        value = electionguard.protogen.AvailableGuardian::lagrangeCoefficient
+                    )
+                )
+            }
+            pbandk.MessageDescriptor(
+                fullName = "AvailableGuardian",
+                messageClass = electionguard.protogen.AvailableGuardian::class,
+                messageCompanion = this,
+                fields = fieldsList
+            )
+        }
+    }
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForElectionConfig")
+public fun ElectionConfig?.orDefault(): electionguard.protogen.ElectionConfig = this ?: ElectionConfig.defaultInstance
+
+private fun ElectionConfig.protoMergeImpl(plus: pbandk.Message?): ElectionConfig = (plus as? ElectionConfig)?.let {
     it.copy(
         constants = constants?.plus(plus.constants) ?: plus.constants,
         manifest = manifest?.plus(plus.manifest) ?: plus.manifest,
-        context = context?.plus(plus.context) ?: plus.context,
-        guardianRecords = guardianRecords + plus.guardianRecords,
-        devices = devices + plus.devices,
-        ciphertextTally = ciphertextTally?.plus(plus.ciphertextTally) ?: plus.ciphertextTally,
-        decryptedTally = decryptedTally?.plus(plus.decryptedTally) ?: plus.decryptedTally,
-        availableGuardians = availableGuardians + plus.availableGuardians,
+        metadata = metadata + plus.metadata,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun ElectionRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionRecord {
+private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionConfig {
     var protoVersion = ""
     var constants: electionguard.protogen.ElectionConstants? = null
     var manifest: electionguard.protogen.Manifest? = null
-    var context: electionguard.protogen.ElectionContext? = null
-    var guardianRecords: pbandk.ListWithSize.Builder<electionguard.protogen.GuardianRecord>? = null
-    var devices: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptionDevice>? = null
-    var ciphertextTally: electionguard.protogen.CiphertextTally? = null
-    var decryptedTally: electionguard.protogen.PlaintextTally? = null
-    var availableGuardians: pbandk.ListWithSize.Builder<electionguard.protogen.AvailableGuardian>? = null
+    var numberOfGuardians = 0
+    var quorum = 0
+    var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.ElectionConfig.MetadataEntry>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> protoVersion = _fieldValue as String
             2 -> constants = _fieldValue as electionguard.protogen.ElectionConstants
             3 -> manifest = _fieldValue as electionguard.protogen.Manifest
-            4 -> context = _fieldValue as electionguard.protogen.ElectionContext
-            5 -> guardianRecords = (guardianRecords ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.GuardianRecord> }
-            6 -> devices = (devices ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.EncryptionDevice> }
-            7 -> ciphertextTally = _fieldValue as electionguard.protogen.CiphertextTally
-            8 -> decryptedTally = _fieldValue as electionguard.protogen.PlaintextTally
-            9 -> availableGuardians = (availableGuardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.AvailableGuardian> }
+            4 -> numberOfGuardians = _fieldValue as Int
+            5 -> quorum = _fieldValue as Int
+            6 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElectionConfig.MetadataEntry> }
         }
     }
-    return ElectionRecord(protoVersion, constants, manifest, context,
-        pbandk.ListWithSize.Builder.fixed(guardianRecords), pbandk.ListWithSize.Builder.fixed(devices), ciphertextTally, decryptedTally,
-        pbandk.ListWithSize.Builder.fixed(availableGuardians), unknownFields)
+    return ElectionConfig(protoVersion, constants, manifest, numberOfGuardians,
+        quorum, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForAvailableGuardian")
-public fun AvailableGuardian?.orDefault(): electionguard.protogen.AvailableGuardian = this ?: AvailableGuardian.defaultInstance
+@pbandk.JsName("orDefaultForElectionConfigMetadataEntry")
+public fun ElectionConfig.MetadataEntry?.orDefault(): electionguard.protogen.ElectionConfig.MetadataEntry = this ?: ElectionConfig.MetadataEntry.defaultInstance
 
-private fun AvailableGuardian.protoMergeImpl(plus: pbandk.Message?): AvailableGuardian = (plus as? AvailableGuardian)?.let {
+private fun ElectionConfig.MetadataEntry.protoMergeImpl(plus: pbandk.Message?): ElectionConfig.MetadataEntry = (plus as? ElectionConfig.MetadataEntry)?.let {
     it.copy(
-        lagrangeCoordinate = lagrangeCoordinate?.plus(plus.lagrangeCoordinate) ?: plus.lagrangeCoordinate,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun AvailableGuardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): AvailableGuardian {
-    var guardianId = ""
-    var xCoordinate = 0
-    var lagrangeCoordinate: electionguard.protogen.ElementModQ? = null
-    var lagrangeCoordinateInt = 0
+private fun ElectionConfig.MetadataEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionConfig.MetadataEntry {
+    var key = ""
+    var value = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> guardianId = _fieldValue as String
-            2 -> xCoordinate = _fieldValue as Int
-            3 -> lagrangeCoordinate = _fieldValue as electionguard.protogen.ElementModQ
-            4 -> lagrangeCoordinateInt = _fieldValue as Int
+            1 -> key = _fieldValue as String
+            2 -> value = _fieldValue as String
         }
     }
-    return AvailableGuardian(guardianId, xCoordinate, lagrangeCoordinate, lagrangeCoordinateInt, unknownFields)
+    return ElectionConfig.MetadataEntry(key, value, unknownFields)
 }
 
 @pbandk.Export
@@ -692,60 +759,56 @@ private fun ElectionConstants.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForElectionContext")
-public fun ElectionContext?.orDefault(): electionguard.protogen.ElectionContext = this ?: ElectionContext.defaultInstance
+@pbandk.JsName("orDefaultForElectionInitialized")
+public fun ElectionInitialized?.orDefault(): electionguard.protogen.ElectionInitialized = this ?: ElectionInitialized.defaultInstance
 
-private fun ElectionContext.protoMergeImpl(plus: pbandk.Message?): ElectionContext = (plus as? ElectionContext)?.let {
+private fun ElectionInitialized.protoMergeImpl(plus: pbandk.Message?): ElectionInitialized = (plus as? ElectionInitialized)?.let {
     it.copy(
+        config = config?.plus(plus.config) ?: plus.config,
         jointPublicKey = jointPublicKey?.plus(plus.jointPublicKey) ?: plus.jointPublicKey,
         manifestHash = manifestHash?.plus(plus.manifestHash) ?: plus.manifestHash,
-        cryptoBaseHash = cryptoBaseHash?.plus(plus.cryptoBaseHash) ?: plus.cryptoBaseHash,
         cryptoExtendedBaseHash = cryptoExtendedBaseHash?.plus(plus.cryptoExtendedBaseHash) ?: plus.cryptoExtendedBaseHash,
-        commitmentHash = commitmentHash?.plus(plus.commitmentHash) ?: plus.commitmentHash,
-        extendedData = extendedData + plus.extendedData,
+        guardians = guardians + plus.guardians,
+        metadata = metadata + plus.metadata,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun ElectionContext.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionContext {
-    var numberOfGuardians = 0
-    var quorum = 0
+private fun ElectionInitialized.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionInitialized {
+    var config: electionguard.protogen.ElectionConfig? = null
     var jointPublicKey: electionguard.protogen.ElementModP? = null
     var manifestHash: electionguard.protogen.UInt256? = null
-    var cryptoBaseHash: electionguard.protogen.UInt256? = null
     var cryptoExtendedBaseHash: electionguard.protogen.UInt256? = null
-    var commitmentHash: electionguard.protogen.UInt256? = null
-    var extendedData: pbandk.ListWithSize.Builder<electionguard.protogen.ElectionContext.ExtendedDataEntry>? = null
+    var guardians: pbandk.ListWithSize.Builder<electionguard.protogen.Guardian>? = null
+    var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.ElectionInitialized.MetadataEntry>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> numberOfGuardians = _fieldValue as Int
-            2 -> quorum = _fieldValue as Int
-            3 -> jointPublicKey = _fieldValue as electionguard.protogen.ElementModP
-            4 -> manifestHash = _fieldValue as electionguard.protogen.UInt256
-            5 -> cryptoBaseHash = _fieldValue as electionguard.protogen.UInt256
-            6 -> cryptoExtendedBaseHash = _fieldValue as electionguard.protogen.UInt256
-            7 -> commitmentHash = _fieldValue as electionguard.protogen.UInt256
-            8 -> extendedData = (extendedData ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElectionContext.ExtendedDataEntry> }
+            1 -> config = _fieldValue as electionguard.protogen.ElectionConfig
+            2 -> jointPublicKey = _fieldValue as electionguard.protogen.ElementModP
+            3 -> manifestHash = _fieldValue as electionguard.protogen.UInt256
+            4 -> cryptoExtendedBaseHash = _fieldValue as electionguard.protogen.UInt256
+            5 -> guardians = (guardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.Guardian> }
+            6 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElectionInitialized.MetadataEntry> }
         }
     }
-    return ElectionContext(numberOfGuardians, quorum, jointPublicKey, manifestHash,
-        cryptoBaseHash, cryptoExtendedBaseHash, commitmentHash, pbandk.ListWithSize.Builder.fixed(extendedData), unknownFields)
+    return ElectionInitialized(config, jointPublicKey, manifestHash, cryptoExtendedBaseHash,
+        pbandk.ListWithSize.Builder.fixed(guardians), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForElectionContextExtendedDataEntry")
-public fun ElectionContext.ExtendedDataEntry?.orDefault(): electionguard.protogen.ElectionContext.ExtendedDataEntry = this ?: ElectionContext.ExtendedDataEntry.defaultInstance
+@pbandk.JsName("orDefaultForElectionInitializedMetadataEntry")
+public fun ElectionInitialized.MetadataEntry?.orDefault(): electionguard.protogen.ElectionInitialized.MetadataEntry = this ?: ElectionInitialized.MetadataEntry.defaultInstance
 
-private fun ElectionContext.ExtendedDataEntry.protoMergeImpl(plus: pbandk.Message?): ElectionContext.ExtendedDataEntry = (plus as? ElectionContext.ExtendedDataEntry)?.let {
+private fun ElectionInitialized.MetadataEntry.protoMergeImpl(plus: pbandk.Message?): ElectionInitialized.MetadataEntry = (plus as? ElectionInitialized.MetadataEntry)?.let {
     it.copy(
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun ElectionContext.ExtendedDataEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionContext.ExtendedDataEntry {
+private fun ElectionInitialized.MetadataEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionInitialized.MetadataEntry {
     var key = ""
     var value = ""
 
@@ -755,44 +818,15 @@ private fun ElectionContext.ExtendedDataEntry.Companion.decodeWithImpl(u: pbandk
             2 -> value = _fieldValue as String
         }
     }
-    return ElectionContext.ExtendedDataEntry(key, value, unknownFields)
+    return ElectionInitialized.MetadataEntry(key, value, unknownFields)
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForEncryptionDevice")
-public fun EncryptionDevice?.orDefault(): electionguard.protogen.EncryptionDevice = this ?: EncryptionDevice.defaultInstance
+@pbandk.JsName("orDefaultForGuardian")
+public fun Guardian?.orDefault(): electionguard.protogen.Guardian = this ?: Guardian.defaultInstance
 
-private fun EncryptionDevice.protoMergeImpl(plus: pbandk.Message?): EncryptionDevice = (plus as? EncryptionDevice)?.let {
+private fun Guardian.protoMergeImpl(plus: pbandk.Message?): Guardian = (plus as? Guardian)?.let {
     it.copy(
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun EncryptionDevice.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptionDevice {
-    var deviceId = 0L
-    var sessionId = 0L
-    var launchCode = 0L
-    var location = ""
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> deviceId = _fieldValue as Long
-            2 -> sessionId = _fieldValue as Long
-            3 -> launchCode = _fieldValue as Long
-            4 -> location = _fieldValue as String
-        }
-    }
-    return EncryptionDevice(deviceId, sessionId, launchCode, location, unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForGuardianRecord")
-public fun GuardianRecord?.orDefault(): electionguard.protogen.GuardianRecord = this ?: GuardianRecord.defaultInstance
-
-private fun GuardianRecord.protoMergeImpl(plus: pbandk.Message?): GuardianRecord = (plus as? GuardianRecord)?.let {
-    it.copy(
-        guardianPublicKey = guardianPublicKey?.plus(plus.guardianPublicKey) ?: plus.guardianPublicKey,
         coefficientCommitments = coefficientCommitments + plus.coefficientCommitments,
         coefficientProofs = coefficientProofs + plus.coefficientProofs,
         unknownFields = unknownFields + plus.unknownFields
@@ -800,10 +834,9 @@ private fun GuardianRecord.protoMergeImpl(plus: pbandk.Message?): GuardianRecord
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun GuardianRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): GuardianRecord {
+private fun Guardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Guardian {
     var guardianId = ""
     var xCoordinate = 0
-    var guardianPublicKey: electionguard.protogen.ElementModP? = null
     var coefficientCommitments: pbandk.ListWithSize.Builder<electionguard.protogen.ElementModP>? = null
     var coefficientProofs: pbandk.ListWithSize.Builder<electionguard.protogen.SchnorrProof>? = null
 
@@ -811,11 +844,124 @@ private fun GuardianRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): G
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> xCoordinate = _fieldValue as Int
-            3 -> guardianPublicKey = _fieldValue as electionguard.protogen.ElementModP
-            4 -> coefficientCommitments = (coefficientCommitments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElementModP> }
-            5 -> coefficientProofs = (coefficientProofs ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.SchnorrProof> }
+            3 -> coefficientCommitments = (coefficientCommitments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElementModP> }
+            4 -> coefficientProofs = (coefficientProofs ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.SchnorrProof> }
         }
     }
-    return GuardianRecord(guardianId, xCoordinate, guardianPublicKey, pbandk.ListWithSize.Builder.fixed(coefficientCommitments),
-        pbandk.ListWithSize.Builder.fixed(coefficientProofs), unknownFields)
+    return Guardian(guardianId, xCoordinate, pbandk.ListWithSize.Builder.fixed(coefficientCommitments), pbandk.ListWithSize.Builder.fixed(coefficientProofs), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForTallyResult")
+public fun TallyResult?.orDefault(): electionguard.protogen.TallyResult = this ?: TallyResult.defaultInstance
+
+private fun TallyResult.protoMergeImpl(plus: pbandk.Message?): TallyResult = (plus as? TallyResult)?.let {
+    it.copy(
+        electionInit = electionInit?.plus(plus.electionInit) ?: plus.electionInit,
+        ciphertextTally = ciphertextTally?.plus(plus.ciphertextTally) ?: plus.ciphertextTally,
+        ballotIds = ballotIds + plus.ballotIds,
+        tallyIds = tallyIds + plus.tallyIds,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun TallyResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): TallyResult {
+    var electionInit: electionguard.protogen.ElectionInitialized? = null
+    var ciphertextTally: electionguard.protogen.CiphertextTally? = null
+    var ballotIds: pbandk.ListWithSize.Builder<String>? = null
+    var tallyIds: pbandk.ListWithSize.Builder<String>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> electionInit = _fieldValue as electionguard.protogen.ElectionInitialized
+            2 -> ciphertextTally = _fieldValue as electionguard.protogen.CiphertextTally
+            3 -> ballotIds = (ballotIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
+            4 -> tallyIds = (tallyIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
+        }
+    }
+    return TallyResult(electionInit, ciphertextTally, pbandk.ListWithSize.Builder.fixed(ballotIds), pbandk.ListWithSize.Builder.fixed(tallyIds), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForDecryptionResult")
+public fun DecryptionResult?.orDefault(): electionguard.protogen.DecryptionResult = this ?: DecryptionResult.defaultInstance
+
+private fun DecryptionResult.protoMergeImpl(plus: pbandk.Message?): DecryptionResult = (plus as? DecryptionResult)?.let {
+    it.copy(
+        tallyResult = tallyResult?.plus(plus.tallyResult) ?: plus.tallyResult,
+        decryptedTally = decryptedTally?.plus(plus.decryptedTally) ?: plus.decryptedTally,
+        decryptingGuardians = decryptingGuardians + plus.decryptingGuardians,
+        metadata = metadata + plus.metadata,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun DecryptionResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptionResult {
+    var tallyResult: electionguard.protogen.TallyResult? = null
+    var decryptedTally: electionguard.protogen.PlaintextTally? = null
+    var decryptingGuardians: pbandk.ListWithSize.Builder<electionguard.protogen.AvailableGuardian>? = null
+    var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.DecryptionResult.MetadataEntry>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> tallyResult = _fieldValue as electionguard.protogen.TallyResult
+            2 -> decryptedTally = _fieldValue as electionguard.protogen.PlaintextTally
+            3 -> decryptingGuardians = (decryptingGuardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.AvailableGuardian> }
+            4 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptionResult.MetadataEntry> }
+        }
+    }
+    return DecryptionResult(tallyResult, decryptedTally, pbandk.ListWithSize.Builder.fixed(decryptingGuardians), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForDecryptionResultMetadataEntry")
+public fun DecryptionResult.MetadataEntry?.orDefault(): electionguard.protogen.DecryptionResult.MetadataEntry = this ?: DecryptionResult.MetadataEntry.defaultInstance
+
+private fun DecryptionResult.MetadataEntry.protoMergeImpl(plus: pbandk.Message?): DecryptionResult.MetadataEntry = (plus as? DecryptionResult.MetadataEntry)?.let {
+    it.copy(
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun DecryptionResult.MetadataEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptionResult.MetadataEntry {
+    var key = ""
+    var value = ""
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> key = _fieldValue as String
+            2 -> value = _fieldValue as String
+        }
+    }
+    return DecryptionResult.MetadataEntry(key, value, unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForAvailableGuardian")
+public fun AvailableGuardian?.orDefault(): electionguard.protogen.AvailableGuardian = this ?: AvailableGuardian.defaultInstance
+
+private fun AvailableGuardian.protoMergeImpl(plus: pbandk.Message?): AvailableGuardian = (plus as? AvailableGuardian)?.let {
+    it.copy(
+        lagrangeCoefficient = lagrangeCoefficient?.plus(plus.lagrangeCoefficient) ?: plus.lagrangeCoefficient,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun AvailableGuardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): AvailableGuardian {
+    var guardianId = ""
+    var xCoordinate = 0
+    var lagrangeCoefficient: electionguard.protogen.ElementModQ? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> guardianId = _fieldValue as String
+            2 -> xCoordinate = _fieldValue as Int
+            3 -> lagrangeCoefficient = _fieldValue as electionguard.protogen.ElementModQ
+        }
+    }
+    return AvailableGuardian(guardianId, xCoordinate, lagrangeCoefficient, unknownFields)
 }

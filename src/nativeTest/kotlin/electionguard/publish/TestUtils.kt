@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 
 class TestUtils {
 
-    // failing
+    @Test
     fun testMakeDirectories() {
         runTest {
             val dir = "testOut/native/runBatchEncryption"

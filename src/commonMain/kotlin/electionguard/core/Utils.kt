@@ -1,5 +1,11 @@
 package electionguard.core
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
 /**
  * Our own assert function, which isn't available in the Kotlin standard library on JavaScript, even
  * though it's available on JVM and Native. If `condition` is `false`, then an `AssertionError` is
@@ -128,4 +134,9 @@ inline fun <reified T : Enum<T>> safeEnumValueOf(name: String?): T? {
     } catch (e: IllegalArgumentException) {
         null
     }
+}
+
+fun getSystemDate(): LocalDateTime {
+    val currentMoment: Instant = Clock.System.now()
+    return currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
 }

@@ -9,43 +9,41 @@ interface DecryptingTrusteeIF {
     /** Guardian id.  */
     fun id(): String
 
-    /** Guardian x coordinate.  */
-    fun xCoordinate(): Int
+    /** Guardian x coordinate, for compensated partial decryption  */
+    fun xCoordinate(): UInt
 
-    /** Elgamal election public key = K_i.  */
+    /** The guardian's public key = K_i.  */
     fun electionPublicKey(): ElementModP
 
     /**
      * Compute a partial decryption of an elgamal encryption.
      *
      * @param texts:            list of `ElGamalCiphertext` that will be partially decrypted
-     * @param qbar:             the extended base hash of the election that
-     * @param nonceSeed:         an optional value used to generate the `ChaumPedersenProof`
-     *                            if no value is provided, a random number will be used.
-     * @return a PartialDecryptionProof of the partial decryption and its proof
+     * @param extendedBaseHash: the extended base hash of the election
+     * @param nonce:            an optional nonce to generate the `ChaumPedersenProof`
+     * @return a list of PartialDecryptions, in the same order as the texts
      */
     fun partialDecrypt(
         group: GroupContext,
-        texts : List<ElGamalCiphertext>,
-        qbar : ElementModQ,
-        nonceSeed: ElementModQ?
-    ): List<PartialDecryptionProof>
-
+        texts: List<ElGamalCiphertext>,
+        extendedBaseHash: ElementModQ,
+        nonce: ElementModQ?,
+    ): List<PartialDecryptionAndProof>
 
     /**
      * Compute a compensated partial decryption of an elgamal encryption on behalf of the missing guardian.
      *
      * @param missingGuardianId: the guardian
-     * @param texts:               the ciphertext(s) that will be decrypted
-     * @param extendedBaseHash:  the extended base hash of the election used to generate the ElGamal Ciphertext
-     * @param nonceSeed:          an optional value used to generate the `ChaumPedersenProof`
-     *                             if no value is provided, a random number will be used.
-     * @return a DecryptionProofRecovery with the decryption and its proof and a recovery key
+     * @param texts:             the ciphertext(s) that will be decrypted
+     * @param extendedBaseHash:  the extended base hash of the election
+     * @param nonce:             an optional nonce to generate the `ChaumPedersenProof`
+     * @return a list of PartialDecryptions, in the same order as the texts
      */
     fun compensatedDecrypt(
-        missingGuardianId : String,
-        texts : List<ElGamalCiphertext>,
-        extendedBaseHash : ElementModQ,
-        nonceSeed: ElementModQ?
-    ):  List<DecryptionProofRecovery>
+        group: GroupContext,
+        missingGuardianId: String,
+        texts: List<ElGamalCiphertext>,
+        extendedBaseHash: ElementModQ,
+        nonce: ElementModQ?,
+    ): List<CompensatedPartialDecryptionAndProof>
 }

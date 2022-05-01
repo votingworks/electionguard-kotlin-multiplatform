@@ -9,9 +9,9 @@ class RunTallyAccumulationTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/workflow/runBatchEncryption",
+                "src/commonTest/data/runWorkflow",
                 "-out",
-                "src/commonTest/data/testing/runTallyAccumulation",
+                "testOut/runTallyAccumulationTest",
                 "-name",
                 "CountyCook-precinct079-device24358"
             )

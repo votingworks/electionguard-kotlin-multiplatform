@@ -1,5 +1,6 @@
 package electionguard.publish
 
+import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.Base16.fromSafeHex
 import electionguard.core.UInt256
@@ -12,15 +13,15 @@ import kotlin.test.assertEquals
 
 /** Test Manifest hash values against the ones that python and java generate. */
 class ManifestHashValidateTest {
-    val input = "src/commonTest/data/testPython/"
+    val input = "src/commonTest/data/runWorkflow/"
 
     @Test
     fun readElectionRecordWrittenByEncryptorJava() {
         runTest {
             val context = productionGroup()
-            val consumer = Consumer(input, context)
-            val electionRecord: ElectionRecord = consumer.readElectionRecord()
-            validateManifestHash(electionRecord.manifest)
+            val electionRecordIn = ElectionRecord(input, context)
+            val electionConfig = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(input) }
+            validateManifestHash(electionConfig.manifest)
         }
     }
 

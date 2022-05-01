@@ -1,15 +1,20 @@
 package electionguard.publish
 
 import electionguard.ballot.*
-import electionguard.protoconvert.publishElectionRecord
+import electionguard.keyceremony.KeyCeremonyTrustee
+import electionguard.protoconvert.publishDecryptingTrustee
+import electionguard.protoconvert.publishDecryptionResult
+import electionguard.protoconvert.publishElectionConfig
+import electionguard.protoconvert.publishElectionInitialized
 import electionguard.protoconvert.publishPlaintextBallot
-import electionguard.protoconvert.publishPlaintextTally
 import electionguard.protoconvert.publishSubmittedBallot
-import electionguard.publish.ElectionRecordPath.Companion.ELECTION_RECORD_DIR
-import electionguard.publish.ElectionRecordPath.Companion.ELECTION_RECORD_FILE_NAME
-import electionguard.publish.ElectionRecordPath.Companion.PROTO_VERSION
+import electionguard.protoconvert.publishTallyResult
+import electionguard.publish.ElectionRecordPath.Companion.DECRYPTION_RESULT_NAME
+import electionguard.publish.ElectionRecordPath.Companion.ELECTION_CONFIG_FILE_NAME
+import electionguard.publish.ElectionRecordPath.Companion.ELECTION_INITIALIZED_FILE_NAME
 import electionguard.publish.ElectionRecordPath.Companion.SPOILED_BALLOT_FILE
 import electionguard.publish.ElectionRecordPath.Companion.SUBMITTED_BALLOT_PROTO
+import electionguard.publish.ElectionRecordPath.Companion.TALLY_RESULT_NAME
 import io.ktor.utils.io.errors.*
 import pbandk.encodeToStream
 import java.io.ByteArrayOutputStream
@@ -18,12 +23,11 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 
 /** Publishes the Manifest Record to Json or protobuf files.  */
 actual class Publisher actual constructor(topDir: String, publisherMode: PublisherMode) {
     private val createPublisherMode: PublisherMode = publisherMode
-    private val electionRecordDir = Path.of(topDir).resolve(ELECTION_RECORD_DIR)
+    private val electionRecordDir = Path.of(topDir)
     private var path: ElectionRecordPath = ElectionRecordPath(topDir)
 
     init {
@@ -31,7 +35,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
             } else {
-                removeAllFiles()
+                removeAllFiles(electionRecordDir)
             }
         } else if (createPublisherMode == PublisherMode.createIfMissing) {
             if (!Files.exists(electionRecordDir)) {
@@ -42,27 +46,19 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    /** Delete everything in the output directory, but leave that directory.  */
+    /** Delete everything in the given directory, but leave that directory.  */
     @Throws(IOException::class)
-    private fun removeAllFiles() {
-        if (!electionRecordDir.toFile().exists()) {
+    private fun removeAllFiles(path: Path) {
+        if (!path.toFile().exists()) {
             return
         }
-        val filename: String = electionRecordDir.getFileName().toString()
-        if (!filename.startsWith("election_record")) {
-            throw RuntimeException(
-                String.format(
-                    "Publish directory '%s' should start with 'election_record'",
-                    filename
-                )
-            )
-        }
-        Files.walk(electionRecordDir)
-            .filter { p: Path -> p != electionRecordDir }
+        Files.walk(path)
+            .filter { p: Path -> p != path }
             .map { obj: Path -> obj.toFile() }
             .sorted { o1: File, o2: File? -> -o1.compareTo(o2) }
             .forEach { f: File -> f.delete() }
     }
+
 
     /** Make sure output dir exists and is writeable.  */
     fun validateOutputDir(error: java.util.Formatter): Boolean {
@@ -87,92 +83,79 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
 
     ////////////////////
     // duplicated from ElectionRecordPath so that we can use java.nio.file.Path
-    fun electionRecordProtoPath(): Path {
-        return electionRecordDir.resolve(ELECTION_RECORD_FILE_NAME).toAbsolutePath()
+
+    fun electionConfigPath(): Path {
+        return electionRecordDir.resolve(ELECTION_CONFIG_FILE_NAME).toAbsolutePath()
     }
 
-    fun submittedBallotProtoPath(): Path {
-        return electionRecordDir.resolve(SUBMITTED_BALLOT_PROTO).toAbsolutePath()
+    fun electionInitializedPath(): Path {
+        return electionRecordDir.resolve(ELECTION_INITIALIZED_FILE_NAME).toAbsolutePath()
     }
 
-    fun spoiledBallotProtoPath(): Path {
+    fun decryptionResultPath(): Path {
+        return electionRecordDir.resolve(DECRYPTION_RESULT_NAME).toAbsolutePath()
+    }
+
+    fun spoiledBallotPath(): Path {
         return electionRecordDir.resolve(SPOILED_BALLOT_FILE).toAbsolutePath()
     }
 
-    /** Publishes the entire election record as proto.  */
-    @Throws(IOException::class)
-    actual fun writeElectionRecordProto(
-        manifest: Manifest,
-        constants: ElectionConstants,
-        context: ElectionContext?,
-        guardianRecords: List<GuardianRecord>?,
-        devices: Iterable<EncryptionDevice>?,
-        submittedBallots: Iterable<SubmittedBallot>?,
-        ciphertextTally: CiphertextTally?,
-        decryptedTally: PlaintextTally?,
-        spoiledBallots: Iterable<PlaintextTally>?,
-        availableGuardians: List<AvailableGuardian>?
-    ) {
-        if (createPublisherMode == PublisherMode.readonly) {
-            throw UnsupportedOperationException("Trying to write to readonly election record")
-        }
-        if (submittedBallots != null) {
-            FileOutputStream(submittedBallotProtoPath().toFile()).use { out ->
-                for (ballot in submittedBallots) {
-                    val ballotProto = ballot.publishSubmittedBallot()
-                    writeDelimitedTo(ballotProto, out)
-                }
-                out.close()
-            }
-        }
-        if (spoiledBallots != null) {
-            FileOutputStream(spoiledBallotProtoPath().toFile()).use { out ->
-                for (ballot in spoiledBallots) {
-                    val ballotProto = ballot.publishPlaintextTally()
-                    writeDelimitedTo(ballotProto, out)
-                }
-                out.close()
-            }
-        }
+    fun submittedBallotPath(): Path {
+        return electionRecordDir.resolve(SUBMITTED_BALLOT_PROTO).toAbsolutePath()
+    }
 
-        val electionRecordProto = publishElectionRecord(
-            PROTO_VERSION,
-            manifest,
-            constants,
-            context,
-            guardianRecords,
-            devices,
-            ciphertextTally,
-            decryptedTally,
-            availableGuardians
-        )
-        FileOutputStream(electionRecordProtoPath().toFile()).use { out ->
-            electionRecordProto.encodeToStream(out)
+    fun tallyResultPath(): Path {
+        return electionRecordDir.resolve(TALLY_RESULT_NAME).toAbsolutePath()
+    }
+
+    actual fun writeElectionConfig(config: ElectionConfig) {
+        val proto = config.publishElectionConfig()
+        FileOutputStream(electionConfigPath().toFile()).use { out ->
+            proto.encodeToStream(out)
             out.close()
         }
     }
 
-    /** Copy accepted ballots file from the inputDir to this election record.  */
-    @Throws(IOException::class)
-    fun copyAcceptedBallots(inputDir: String) {
-        if (createPublisherMode == PublisherMode.readonly) {
-            throw UnsupportedOperationException("Trying to write to readonly election record")
+    actual fun writeElectionInitialized(init: ElectionInitialized) {
+        val proto = init.publishElectionInitialized()
+        FileOutputStream(electionInitializedPath().toFile()).use { out ->
+            proto.encodeToStream(out)
+            out.close()
         }
-        val source: Path = Publisher(inputDir, PublisherMode.writeonly).submittedBallotProtoPath()
-        val dest: Path = submittedBallotProtoPath()
-        if (source == dest) {
-            return
+    }
+
+    actual fun writeEncryptions(
+        init: ElectionInitialized,
+        ballots: Iterable<SubmittedBallot>
+    ) {
+        writeElectionInitialized(init)
+        val sink = submittedBallotSink()
+        ballots.forEach {sink.writeSubmittedBallot(it) }
+        sink.close()
+    }
+
+    actual fun writeTallyResult(tally: TallyResult) {
+        val proto = tally.publishTallyResult()
+        FileOutputStream(tallyResultPath().toFile()).use { out ->
+            proto.encodeToStream(out)
+            out.close()
         }
-        System.out.printf("Copy AcceptedBallots from %s to %s%n", source, dest)
-        Files.copy(source, dest, StandardCopyOption.COPY_ATTRIBUTES)
+    }
+
+    actual fun writeDecryptionResult(decryption: DecryptionResult) {
+        val proto = decryption.publishDecryptionResult()
+        FileOutputStream(decryptionResultPath().toFile()).use { out ->
+            proto.encodeToStream(out)
+            out.close()
+        }
     }
 
     @Throws(IOException::class)
-    actual fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>) {
-        if (!invalidBallots.isEmpty()) {
-            val fileout = path.invalidBallotProtoPath(invalidDir)
+    actual fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
+        if (!plaintextBallots.isEmpty()) {
+            val fileout = path.plaintextBallotPath(outputDir)
             FileOutputStream(fileout).use { out ->
-                for (ballot in invalidBallots) {
+                for (ballot in plaintextBallots) {
                     val ballotProto = ballot.publishPlaintextBallot()
                     writeDelimitedTo(ballotProto, out)
                 }
@@ -181,8 +164,17 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
+    actual fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
+        val proto = trustee.publishDecryptingTrustee()
+        val fileout = path.decryptingTrusteePath(trusteeDir, trustee.id)
+        FileOutputStream(fileout).use { out ->
+            proto.encodeToStream(out)
+            out.close()
+        }
+    }
+
     actual fun submittedBallotSink(): SubmittedBallotSinkIF =
-        SubmittedBallotSink(submittedBallotProtoPath().toString())
+        SubmittedBallotSink(submittedBallotPath().toString())
 
     inner class SubmittedBallotSink(path: String) : SubmittedBallotSinkIF {
         val out: FileOutputStream = FileOutputStream(path)

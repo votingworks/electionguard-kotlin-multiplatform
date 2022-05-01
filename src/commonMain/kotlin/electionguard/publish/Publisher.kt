@@ -1,26 +1,21 @@
 package electionguard.publish
 
 import electionguard.ballot.*
+import electionguard.decrypt.DecryptingTrustee
+import electionguard.keyceremony.KeyCeremonyTrustee
 
 /** Read/write the Election Record as protobuf files. */
 expect class Publisher(topDir: String, publisherMode: PublisherMode) {
-    /** Publishes the election record. */
-    fun writeElectionRecordProto(
-        manifest: Manifest,
-        constants: ElectionConstants,
-        context: ElectionContext?,
-        guardianRecords: List<GuardianRecord>?,
-        devices: Iterable<EncryptionDevice>?,
-        submittedBallots: Iterable<SubmittedBallot>?,
-        ciphertextTally: CiphertextTally?,
-        decryptedTally: PlaintextTally?,
-        spoiledBallots: Iterable<PlaintextTally>?,
-        availableGuardians: List<AvailableGuardian>?
-    )
+    fun writeElectionConfig(config: ElectionConfig)
+    fun writeElectionInitialized(init: ElectionInitialized)
+    fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<SubmittedBallot>)
+    fun writeTallyResult(tally: TallyResult)
+    fun writeDecryptionResult(decryption: DecryptionResult)
 
     fun submittedBallotSink(): SubmittedBallotSinkIF
 
-    fun writeInvalidBallots(invalidDir: String, invalidBallots: List<PlaintextBallot>)
+    fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)
+    fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee)
 }
 
 interface SubmittedBallotSinkIF {

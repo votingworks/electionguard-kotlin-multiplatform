@@ -3,7 +3,9 @@ package electionguard.protoconvert
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.partition
+import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.SubmittedBallot
 import electionguard.core.*
@@ -11,32 +13,35 @@ import electionguard.core.*
 fun GroupContext.importSubmittedBallot(
     ballot: electionguard.protogen.SubmittedBallot
 ): Result<SubmittedBallot, String> {
+    val here = ballot.ballotId
 
     val manifestHash = importUInt256(ballot.manifestHash)
+        .toResultOr {"SubmittedBallot $here manifestHash was malformed or missing"}
     val trackingHash = importUInt256(ballot.code)
+        .toResultOr {"SubmittedBallot $here trackingHash was malformed or missing"}
     val previousTrackingHash = importUInt256(ballot.codeSeed)
+        .toResultOr {"SubmittedBallot $here previousTrackingHash was malformed or missing"}
     val cryptoHash = importUInt256(ballot.cryptoHash)
+        .toResultOr {"SubmittedBallot $here cryptoHash was malformed or missing"}
     val ballotState = ballot.state.importBallotState(ballot.ballotId)
-    if (ballotState is Err) return ballotState
 
-    val (contests, errors) = ballot.contests.map { this.importContest(it, ballot.ballotId) }.partition()
-    if (!errors.isEmpty()) {
+    val (contests, cerrors) = ballot.contests.map { this.importContest(it, ballot.ballotId) }.partition()
+
+    val errors = getAllErrors(manifestHash, trackingHash, previousTrackingHash, cryptoHash, ballotState) + cerrors
+    if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
-    }
-    if (manifestHash == null || trackingHash == null || previousTrackingHash == null || cryptoHash == null) {
-        return Err("Missing fields in ballot ${ballot.ballotId}")
     }
 
     return Ok(
         SubmittedBallot(
             ballot.ballotId,
             ballot.ballotStyleId,
-            manifestHash,
-            trackingHash,
-            previousTrackingHash,
+            manifestHash.unwrap(),
+            trackingHash.unwrap(),
+            previousTrackingHash.unwrap(),
             contests,
             ballot.timestamp,
-            cryptoHash,
+            cryptoHash.unwrap(),
             ballotState.unwrap(),
         )
     )
@@ -63,26 +68,25 @@ private fun GroupContext.importContest(
     val here = "$where ${contest.contestId}"
 
     val contestHash = importUInt256(contest.contestHash)
+        .toResultOr {"CiphertextBallotContest $here contestHash was malformed or missing"}
     val cryptoHash = importUInt256(contest.cryptoHash)
+        .toResultOr {"CiphertextBallotContest $here cryptoHash was malformed or missing"}
     val proof = this.importConstantChaumPedersenProof(contest.proof, here)
 
-    val (selections, errors) = contest.selections.map { this.importSelection(it, here) }.partition()
-    if (!errors.isEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-    if (proof is Err) return proof
+    val (selections, serrors) = contest.selections.map { this.importSelection(it, here) }.partition()
 
-    if (contestHash == null || cryptoHash == null) {
-        return Err("Missing fields in contest $here")
+    val errors = getAllErrors(contestHash, cryptoHash, proof) + serrors
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
     return Ok(
         SubmittedBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
-            contestHash,
+            contestHash.unwrap(),
             selections,
-            cryptoHash,
+            cryptoHash.unwrap(),
             proof.unwrap(),
         )
     )
@@ -117,23 +121,26 @@ private fun GroupContext.importSelection(
     val here = "$where ${selection.selectionId}"
 
     val selectionHash = importUInt256(selection.selectionHash)
+        .toResultOr {"CiphertextBallotSelection $here selectionHash was malformed or missing"}
     val ciphertext = this.importCiphertext(selection.ciphertext)
+        .toResultOr {"CiphertextBallotSelection $here ciphertext was malformed or missing"}
     val cryptoHash = importUInt256(selection.cryptoHash)
+        .toResultOr {"CiphertextBallotSelection $here cryptoHash was malformed or missing"}
     val proof = this.importDisjunctiveChaumPedersenProof(selection.proof, here)
     val extendedData = this.importHashedCiphertext(selection.extendedData)
 
-    if (proof is Err) return proof
-    if (selectionHash == null || ciphertext == null || cryptoHash == null) {
-        return Err("Missing fields in selection $here")
+    val errors = getAllErrors(proof, selectionHash, ciphertext, cryptoHash)
+    if (errors.isNotEmpty()) {
+        return Err(errors.joinToString("\n"))
     }
 
     return Ok(
         SubmittedBallot.Selection(
             selection.selectionId,
             selection.sequenceOrder,
-            selectionHash,
-            ciphertext,
-            cryptoHash,
+            selectionHash.unwrap(),
+            ciphertext.unwrap(),
+            cryptoHash.unwrap(),
             selection.isPlaceholderSelection,
             proof.unwrap(),
             extendedData

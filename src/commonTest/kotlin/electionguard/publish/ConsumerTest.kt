@@ -1,45 +1,28 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.*
-import electionguard.ballot.ElectionRecord
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.decrypt.DecryptingTrusteeIF
-import kotlinx.coroutines.newFixedThreadPoolContext
-import kotlinx.coroutines.newSingleThreadContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
-    private val topdir = "src/commonTest/data/testJava/decryptor"
+    private val topdir = "src/commonTest/data/runWorkflow"
 
     @Test
     fun readElectionRecord() {
         runTest {
             val context = productionGroup()
-            val consumer = Consumer( topdir, context)
-            val electionRecord = consumer.readElectionRecord()
-            println("electionRecord.protoVersion = ${electionRecord.protoVersion}")
-            assertEquals(electionRecord.protoVersion, "1.0.0")
-            println("electionRecord.manifest.specVersion = ${electionRecord.manifest.specVersion}")
-            assertEquals(electionRecord.manifest.electionScopeId, "jefferson-county-primary")
-            assertEquals(electionRecord.manifest.specVersion, "v0.95")
-        }
-    }
-
-    @Test
-    fun readElectionRecordAll() {
-        runTest {
-            val context = productionGroup()
-            val consumer = Consumer( topdir, context)
-            val electionRecord = consumer.readElectionRecordAllData()
-            println("electionRecord.protoVersion = ${electionRecord.protoVersion}")
-            assertEquals(electionRecord.protoVersion, "1.0.0")
-            println("electionRecord.manifest.specVersion = ${electionRecord.manifest.specVersion}")
-            assertEquals(electionRecord.manifest.electionScopeId, "jefferson-county-primary")
-            assertEquals(electionRecord.manifest.specVersion, "v0.95")
+            val electionRecordIn = ElectionRecord(topdir, context)
+            val config = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
+            println("electionRecord.protoVersion = ${config.protoVersion}")
+            assertEquals("2.0.0", config.protoVersion)
+            println("electionRecord.manifest.specVersion = ${config.manifest.specVersion}")
+            assertEquals("election_scope_id", config.manifest.electionScopeId)
+            assertEquals("v0.95", config.manifest.specVersion)
         }
     }
 
@@ -48,9 +31,9 @@ class ConsumerTest {
     fun readSpoiledBallotTallys() {
         runTest {
             val context = productionGroup()
-            val consumer = Consumer( topdir, context)
+            val electionRecordIn = ElectionRecord(topdir, context)
             var count = 0
-            for (tally in consumer.iterateSpoiledBallotTallies()) {
+            for (tally in electionRecordIn.iterateSpoiledBallotTallies()) {
                 println("$count tally = ${tally.tallyId}")
                 assertTrue(tally.tallyId.startsWith("ballot-id"))
                 count++
@@ -62,9 +45,9 @@ class ConsumerTest {
     fun readSubmittedBallots() {
         runTest {
             val context = productionGroup()
-            val consumer = Consumer( topdir, context)
+            val electionRecordIn = ElectionRecord(topdir, context)
             var count = 0
-            for (ballot in consumer.iterateSubmittedBallots()) {
+            for (ballot in electionRecordIn.iterateSubmittedBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
                 assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
@@ -76,9 +59,9 @@ class ConsumerTest {
     fun readSubmittedBallotsCast() {
         runTest {
             val context = productionGroup()
-            val consumer = Consumer( topdir, context)
+            val electionRecordIn = ElectionRecord(topdir, context)
             var count = 0
-            for (ballot in consumer.iterateCastBallots()) {
+            for (ballot in electionRecordIn.iterateCastBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
                 assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
@@ -90,9 +73,9 @@ class ConsumerTest {
     fun readSubmittedBallotsSpoiled() {
         runTest {
             val context = productionGroup()
-            val consumer = Consumer( topdir, context)
+            val electionRecordIn = ElectionRecord(topdir, context)
             var count = 0
-            for (ballot in consumer.iterateSpoiledBallots()) {
+            for (ballot in electionRecordIn.iterateSpoiledBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
                 assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
@@ -101,33 +84,33 @@ class ConsumerTest {
     }
 
     @Test
-    fun readTrustees() {
+    fun readTrustee() {
         runTest {
             val context = productionGroup()
-            val trusteeDir = "src/commonTest/data/testJava/keyCeremony/election_private_data"
-            val consumer = Consumer( trusteeDir, context)
-            var count = 0
-            for (trustee: DecryptingTrusteeIF in consumer.readTrustees(trusteeDir)) {
-                println("$count trustee = ${trustee}")
-                assertTrue(trustee.id().startsWith("remoteTrustee"))
-                count++
+            val initDir = "src/commonTest/data/runWorkflow"
+            val electionRecordIn = ElectionRecord(initDir, context)
+            val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+            val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
+            init.guardians.forEach {
+                val trustee = electionRecordIn.readTrustee(trusteeDir, it.guardianId)
+                println("trustee = ${trustee}")
+                assertTrue(trustee.id().equals(it.guardianId))
             }
         }
     }
 
     @Test
-    fun readBadTrustees() {
+    fun readBadTrustee() {
         runTest {
             val context = productionGroup()
-            val trusteeDir = "src/commonTest/data/testJava/encryptor/election_record"
-            val consumer = Consumer( trusteeDir, context)
-            val result: Result<List<DecryptingTrusteeIF>, Throwable> = runCatching {
-                consumer.readTrustees(trusteeDir)
+            val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
+            val electionRecordIn = ElectionRecord(trusteeDir, context)
+            val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
+                electionRecordIn.readTrustee(trusteeDir, "badId")
             }
             assertTrue(result is Err)
-            assertTrue(result.getError() is pbandk.InvalidProtocolBufferException)
             val message: String = result.getError()?.message ?: "not"
-            assertTrue(message.contains("Protocol message contained an invalid tag"))
+            assertTrue(message.contains("No such file"))
         }
     }
 
@@ -136,22 +119,22 @@ class ConsumerTest {
         runTest {
             val context = productionGroup()
             val trusteeDir = "src/commonTest/data/testBad/nonexistant"
-            val result: Result<List<DecryptingTrusteeIF>, Throwable> = runCatching {
-                val consumer = Consumer( trusteeDir, context)
-                consumer.readTrustees(trusteeDir)
+            val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
+                val electionRecordIn = ElectionRecord(trusteeDir, context)
+                electionRecordIn.readTrustee(trusteeDir, "randomName")
             }
             assertFalse(result is Ok)
         }
     }
 
+    /*
     @Test
     fun readMissingElectionRecord() {
         runTest {
             val context = productionGroup()
             val electionDir = "src/commonTest/data/testJava/encryptor/election_record"
-            val consumer = Consumer( electionDir, context)
             val result: Result<ElectionRecord, Throwable> = runCatching {
-                consumer.readElectionRecord()
+                val electionRecordIn = ElectionRecord(electionDir, context)
             }
             assertTrue(result is Err)
             println("readMissingElectionRecord ${result.getError()}")
@@ -166,9 +149,9 @@ class ConsumerTest {
             val context = productionGroup()
             // the submittedBallots.protobuf was renamed to electionRecord.protobuf
             val electionDir = "src/commonTest/data/testBad"
-            val consumer = Consumer( electionDir, context)
+            val electionRecordIn = ElectionRecord(electionDir, context)
             val result: Result<ElectionRecord, Throwable> = runCatching {
-                consumer.readElectionRecord()
+                val electionRecordIn = ElectionRecord(electionDir, context)
             }
             assertTrue(result is Err)
             assertTrue(result.getError() is pbandk.InvalidProtocolBufferException)
@@ -177,5 +160,7 @@ class ConsumerTest {
             assertTrue(message.contains("Unrecognized wire type: WireType(value=4)"))
         }
     }
+
+    */
 
 }

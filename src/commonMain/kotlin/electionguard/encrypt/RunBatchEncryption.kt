@@ -2,8 +2,9 @@
 
 package electionguard.encrypt
 
+import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.CiphertextBallot
-import electionguard.ballot.ElectionRecord
+import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.SubmittedBallot
 import electionguard.ballot.submit
@@ -16,7 +17,7 @@ import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
-import electionguard.publish.Consumer
+import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import electionguard.publish.SubmittedBallotSinkIF
@@ -36,6 +37,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
+
+private val debug = false
 
 /**
  * Run ballot encryption in batch mode.
@@ -85,10 +88,10 @@ fun main(args: Array<String>) {
 
 // single threaded
 fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String, invalidDir: String, fixedNonces: Boolean) {
-    val consumer = Consumer(inputDir, group)
-    val electionRecord: ElectionRecord = consumer.readElectionRecord()
+    val electionRecordIn = ElectionRecord(inputDir, group)
+    val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
-    val manifestValidator = ManifestInputValidation(electionRecord.manifest)
+    val manifestValidator = ManifestInputValidation(electionInit.manifest())
     val errors = manifestValidator.validate()
     if (errors.hasErrors()) {
         println("*** ManifestInputValidation FAILED on election record in $inputDir")
@@ -96,12 +99,10 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
         // kotlin.system.exitProcess(1) // kotlin 1.6.20
         return
     }
-    val context =
-        electionRecord.context ?: throw IllegalStateException("election record.context is missing in $inputDir")
 
     val invalidBallots = ArrayList<PlaintextBallot>()
-    val ballotValidator = BallotInputValidation(electionRecord.manifest)
-    val filteredBallots: Iterable<PlaintextBallot> = consumer.iteratePlaintextBallots(ballotDir) {
+    val ballotValidator = BallotInputValidation(electionInit.manifest())
+    val filteredBallots: Iterable<PlaintextBallot> = electionRecordIn.iteratePlaintextBallots(ballotDir) {
         val mess = ballotValidator.validate(it)
         if (mess.hasErrors()) {
             println("*** BallotInputValidation FAILED on ballot ${it.ballotId}")
@@ -114,13 +115,13 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
     }
 
     val starting = getSystemTimeInMillis()
-    val encryptor = Encryptor(group, electionRecord.manifest, ElGamalPublicKey(context.jointPublicKey), context.cryptoExtendedBaseHash)
+    val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)
 
     val encrypted: List<CiphertextBallot> =
         if (fixedNonces)
-            encryptor.encryptWithFixedNonces(filteredBallots, context.cryptoExtendedBaseHash.toElementModQ(group), group.TWO_MOD_Q)
+            encryptor.encryptWithFixedNonces(filteredBallots, electionInit.cryptoExtendedBaseHash.toElementModQ(group), group.TWO_MOD_Q)
         else
-            encryptor.encrypt(filteredBallots, context.cryptoExtendedBaseHash.toElementModQ(group))
+            encryptor.encrypt(filteredBallots, electionInit.cryptoExtendedBaseHash.toElementModQ(group))
 
     val took = getSystemTimeInMillis() - starting
     val perBallot = (took.toDouble() / encrypted.size).roundToInt()
@@ -128,46 +129,37 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
     val nselections: Int = encrypted.map { it.contests}.flatten().map{ it.selections }.flatten().count()
     val perContest = (took.toDouble() / ncontests).roundToInt()
     val perSelection = (took.toDouble() / nselections).roundToInt()
-    println("Took $took millisecs for ${encrypted.size} ballots = $perBallot msecs/ballot")
+    println("BatchEncryption took $took millisecs for ${encrypted.size} ballots = $perBallot msecs/ballot")
     println("   $ncontests contests $perContest msecs/contest")
     println("   $nselections selections $perSelection msecs/selection")
-    println()
 
     val submitted: List<SubmittedBallot> = encrypted.map { it.submit(SubmittedBallot.BallotState.CAST) }
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
-    publisher.writeElectionRecordProto(
-        electionRecord.manifest,
-        electionRecord.constants,
-        electionRecord.context,
-        electionRecord.guardianRecords,
-        electionRecord.devices,
+    publisher.writeEncryptions(
+        electionInit,
         submitted,
-        null,
-        null,
-        null,
-        null,
     )
-    println("wrote ${submitted.size} submitted ballots to $outputDir")
+    println(" wrote ${submitted.size} submitted ballots to $outputDir")
 
     if (!invalidBallots.isEmpty()) {
-        publisher.writeInvalidBallots(invalidDir, invalidBallots)
+        val ballotPublisher = Publisher(outputDir, PublisherMode.createIfMissing)
+        ballotPublisher.writePlaintextBallot(invalidDir, invalidBallots)
         println("wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
-    println("done")
 }
 
 // multi threaded
 fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
                       invalidDir: String, fixedNonces: Boolean, nthreads: Int) {
-    val reader = Consumer(inputDir, group)
-    val electionRecord: ElectionRecord = reader.readElectionRecord()
+    val electionRecordIn = ElectionRecord(inputDir, group)
+    val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     val sink: SubmittedBallotSinkIF = publisher.submittedBallotSink()
 
     // ManifestInputValidation
-    val manifestValidator = ManifestInputValidation(electionRecord.manifest)
+    val manifestValidator = ManifestInputValidation(electionInit.manifest())
     val errors = manifestValidator.validate()
     if (errors.hasErrors()) {
         println("*** ManifestInputValidation FAILED on election record in $inputDir")
@@ -178,7 +170,7 @@ fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, 
 
     // BallotInputValidation
     val invalidBallots = ArrayList<PlaintextBallot>()
-    val ballotValidator = BallotInputValidation(electionRecord.manifest)
+    val ballotValidator = BallotInputValidation(electionInit.manifest())
     val filter: ((PlaintextBallot) -> Boolean) = {
         val mess = ballotValidator.validate(it)
         if (mess.hasErrors()) {
@@ -191,18 +183,15 @@ fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, 
         }
     }
 
-    val context =
-        electionRecord.context ?: throw IllegalStateException("election record.context is missing in $inputDir")
-
-    val codeSeed: ElementModQ = context.cryptoExtendedBaseHash.toElementModQ(group)
+    val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
     val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null
     val starting = getSystemTimeInMillis()
-    val encryptor = Encryptor(group, electionRecord.manifest, ElGamalPublicKey(context.jointPublicKey), context.cryptoExtendedBaseHash)
+    val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)
 
     runBlocking {
         val outputChannel = Channel<CiphertextBallot>()
         val encryptorJobs = mutableListOf<Job>()
-        val ballotProducer = produceBallots(reader.iteratePlaintextBallots(ballotDir, filter))
+        val ballotProducer = produceBallots(electionRecordIn.iteratePlaintextBallots(ballotDir, filter))
         repeat(nthreads) {
             encryptorJobs.add(launchEncryptor(it, group, ballotProducer, encryptor, codeSeed, masterNonce, outputChannel))
         }
@@ -216,31 +205,19 @@ fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, 
 
     val took = getSystemTimeInMillis() - starting
     val perBallot = (took.toDouble() / count).roundToInt()
-    println("Took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
+    println("ChannelEncryption took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
 
-    publisher.writeElectionRecordProto(
-        electionRecord.manifest,
-        electionRecord.constants,
-        electionRecord.context,
-        electionRecord.guardianRecords,
-        electionRecord.devices,
-        null,
-        null,
-        null,
-        null,
-        null,
-    )
+    publisher.writeElectionInitialized(electionInit)
     if (!invalidBallots.isEmpty()) {
-        publisher.writeInvalidBallots(invalidDir, invalidBallots)
-        println("wrote ${invalidBallots.size} invalid ballots to $invalidDir")
+        publisher.writePlaintextBallot(invalidDir, invalidBallots)
+        println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
-    println("done")
 }
 
 // place the ballot reading into its own coroutine
 fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveChannel<PlaintextBallot> = produce {
     for (ballot in producer) {
-        println("Producer sending plaintext ballot ${ballot.ballotId}")
+        if (debug) println("Producer sending plaintext ballot ${ballot.ballotId}")
         send(ballot)
         yield()
     }
@@ -263,11 +240,11 @@ fun CoroutineScope.launchEncryptor(id: Int,
         else
             encryptor.encrypt(ballot, codeSeed, group.randomElementModQ())
 
-        println(" Encryptor #$id sending ciphertext ballot ${encrypted.ballotId}")
+        if (debug) println(" Encryptor #$id sending ciphertext ballot ${encrypted.ballotId}")
         output.send(encrypted)
         yield()
     }
-    println("Encryptor #$id done")
+    if (debug) println("Encryptor #$id done")
 }
 
 // place the ballot writing into its own coroutine
@@ -277,7 +254,7 @@ fun CoroutineScope.launchSink(input: Channel<CiphertextBallot>, sink: SubmittedB
 ) = launch {
     for (ballot in input) {
         sink.writeSubmittedBallot(ballot.submit(SubmittedBallot.BallotState.CAST))
-        println(" Sink wrote $count submitted ballot ${ballot.ballotId}")
+        if (debug) println(" Sink wrote $count submitted ballot ${ballot.ballotId}")
         count++
     }
 }

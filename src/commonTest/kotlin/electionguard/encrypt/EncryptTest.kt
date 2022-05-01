@@ -1,37 +1,31 @@
 package electionguard.encrypt
 
-import electionguard.ballot.ElectionContext
-import electionguard.ballot.ElectionRecord
-import electionguard.core.ElGamalKeypair
+import com.github.michaelbull.result.getOrThrow
+import electionguard.ballot.ElectionInitialized
 import electionguard.core.ElGamalPublicKey
-import electionguard.core.elGamalKeyPairFromSecret
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.runTest
-import electionguard.core.toUInt256
-import electionguard.publish.Consumer
+import electionguard.publish.ElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EncryptTest {
-    val input = "src/commonTest/data/testPython"
+    val input = "src/commonTest/data/runWorkflow"
 
     @Test
     fun testEncryption() {
         runTest {
             val group = productionGroup()
-            val consumer = Consumer(input, group)
-            val electionRecord: ElectionRecord = consumer.readElectionRecord()
-            val ballot = makeBallot(electionRecord.manifest, "congress-district-7-arlington", 3, 0)
-            val keypair: ElGamalKeypair = elGamalKeyPairFromSecret(group.TWO_MOD_Q)
+            val electionRecordIn = ElectionRecord(input, group)
+            val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+            val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
-            val context = ElectionContext(1,1, keypair.publicKey.key, electionRecord.manifest.cryptoHash,
-                group.TWO_MOD_Q.toUInt256(), group.TWO_MOD_Q.toUInt256(), group.TWO_MOD_Q.toUInt256(), null)
-            val encryptor = Encryptor(group, electionRecord.manifest, ElGamalPublicKey(context.jointPublicKey), context.cryptoExtendedBaseHash)
+            val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)
             val result = encryptor.encrypt(ballot, group.TWO_MOD_Q, group.TWO_MOD_Q)
 
             var first = true
-            println("electionRecord.manifest.cryptoHash = ${electionRecord.manifest.cryptoHash}")
+            println("electionRecord.manifest.cryptoHash = ${electionInit.manifestHash}")
             println("result = ${result.cryptoHash} nonce ${result.ballotNonce()}")
             for (contest in result.contests) {
                 // println(" contest ${contest.contestId} = ${contest.cryptoHash} nonce ${contest.contestNonce}")
@@ -48,14 +42,11 @@ class EncryptTest {
     fun testEncryptionWithMasterNonce() {
         runTest {
             val group = productionGroup()
-            val consumer = Consumer(input, group)
-            val electionRecord: ElectionRecord = consumer.readElectionRecord()
-            val ballot = makeBallot(electionRecord.manifest, "congress-district-7-arlington", 3, 0)
-            val keypair: ElGamalKeypair = elGamalKeyPairFromSecret(group.TWO_MOD_Q)
+            val electionRecordIn = ElectionRecord(input, group)
+            val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+            val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
-            val context = ElectionContext(1,1, keypair.publicKey.key, electionRecord.manifest.cryptoHash,
-                group.TWO_MOD_Q.toUInt256(), group.TWO_MOD_Q.toUInt256(), group.TWO_MOD_Q.toUInt256(), null)
-            val encryptor = Encryptor(group, electionRecord.manifest, ElGamalPublicKey(context.jointPublicKey), context.cryptoExtendedBaseHash)
+            val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)
             val nonce1 = group.randomElementModQ()
             val nonce2 = group.randomElementModQ()
             val result1 = encryptor.encrypt(ballot, nonce1, nonce2, 0)

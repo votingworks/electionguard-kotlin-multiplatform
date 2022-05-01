@@ -2,29 +2,27 @@ package electionguard.verifier
 
 import electionguard.core.productionGroup
 import electionguard.core.runTest
-import electionguard.publish.Consumer
+import electionguard.publish.ElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class VerifierTest {
-    //val topdir = "/home/snake/tmp/electionguard/kotlin/runDecryptingMediator"
-    val topdir = "src/commonTest/data/workflow/runDecryptingMediator"
+    val topdir = "src/commonTest/data/runWorkflow"
     @Test
     fun readElectionRecordAndValidate() {
         runTest {
             val group = productionGroup()
-            val consumer = Consumer(topdir, group)
-            val electionRecordAll = consumer.readElectionRecordAllData()
-            val verifier = Verifier(group, electionRecordAll.toElectionRecord())
+            val electionRecordIn = ElectionRecord(topdir, group)
+            val verifier = Verifier(group, electionRecordIn)
 
             val guardiansOk = verifier.verifyGuardianPublicKey()
-            println("verifyGuardianPublicKey $guardiansOk")
+            println("verifyGuardianPublicKey $guardiansOk\n")
 
-            val ballotsOk = verifier.verifySubmittedBallots(electionRecordAll.submittedBallots)
-            println("verifySubmittedBallots $ballotsOk")
+            val ballotsOk = verifier.verifySubmittedBallots(electionRecordIn.iterateSubmittedBallots())
+            println("verifySubmittedBallots $ballotsOk\n")
 
             val tallyOk = verifier.verifyDecryptedTally()
-            println("verifyDecryptedTally $tallyOk")
+            println("verifyDecryptedTally $tallyOk\n")
 
             val allOk = guardiansOk && ballotsOk && tallyOk
             assertTrue(allOk)

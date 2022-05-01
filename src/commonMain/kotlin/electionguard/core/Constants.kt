@@ -1,12 +1,11 @@
 package electionguard.core
 
 import electionguard.ballot.ElectionConstants
-import io.ktor.util.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger("Constants")
+private val logger = KotlinLogging.logger("ElectionConstants")
 
 /**
  * Validates whether external data, possibly encrypted using obsolete group context parameters, is
