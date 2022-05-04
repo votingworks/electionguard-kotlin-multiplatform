@@ -4,8 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * Shows that ElementModQ's can be non-equal, even when cryptoHashString() and UInt256 are.
- * So where should Elements be normalized? on construction, or on equals?
+ * Shows that native ElementModQ's dont have problem with equals() that Jvm/BigInteger has.
+ * They are likely normalized on construction in Hacl.
  */
 class ElementEqualityNativeTest {
 
