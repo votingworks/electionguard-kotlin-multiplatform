@@ -1,7 +1,7 @@
 package electionguard.core
 
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
@@ -30,5 +30,25 @@ class ElementEqualityJvmTest {
         // ElementModQ not equal because it just compares the underlying BigInteger
         assertNotEquals(biq2, biq)
         assertNotEquals(bi2, bi)
+    }
+
+    @Test
+    fun testNormalizedBigIntegers() {
+        val group = productionGroup() as ProductionGroupContext
+        val q2 = group.TWO_MOD_Q
+        val q2b: BigInteger = q2.element
+        assertNotEquals(q2b.toByteArray().size, 32)
+
+        val ba : ByteArray = q2.element.toByteArray()
+        val ban = ba.normalize(32)
+        assertEquals(ban.size, 32)
+        val q2n = ProductionElementModQ(BigInteger(ban), group)
+
+        assertEquals(q2, q2n)
+        val q2nb: BigInteger = q2n.element
+        assertNotEquals(q2nb.toByteArray().size, 32)
+
+        assertEquals(q2.element.toString(), q2n.element.toString())
+        assertEquals(q2.element, q2n.element)
     }
 }
