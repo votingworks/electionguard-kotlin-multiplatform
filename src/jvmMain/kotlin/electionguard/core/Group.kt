@@ -262,8 +262,11 @@ private fun Element.getCompat(other: ProductionGroupContext): BigInteger {
     }
 }
 
-class ProductionElementModQ(val element: BigInteger, val groupContext: ProductionGroupContext): ElementModQ,
+class ProductionElementModQ(internal val element: BigInteger, val groupContext: ProductionGroupContext): ElementModQ,
     Element, Comparable<ElementModQ> {
+
+    override fun byteArray(): ByteArray = element.toByteArray().normalize(32)
+
     private fun BigInteger.modWrap(): ElementModQ = this.mod(groupContext.q).wrap()
     private fun BigInteger.wrap(): ElementModQ = ProductionElementModQ(this, groupContext)
 
@@ -275,11 +278,6 @@ class ProductionElementModQ(val element: BigInteger, val groupContext: Productio
     override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.q
 
     override fun inBoundsNoZero() = inBounds() && !isZero()
-
-    override fun byteArray(): ByteArray {
-        val ba : ByteArray = element.toByteArray()
-        return ba.normalize(32)
-    }
 
     override operator fun compareTo(other: ElementModQ): Int = element.compareTo(other.getCompat(groupContext))
 
@@ -307,17 +305,20 @@ class ProductionElementModQ(val element: BigInteger, val groupContext: Productio
         this.element.modPow(e.getCompat(groupContext), groupContext.q).wrap()
 
     override fun equals(other: Any?) = when (other) {
-        is ElementModQ -> other.getCompat(this.groupContext) == this.element
+        is ElementModQ -> byteArray().contentEquals(other.byteArray())
         else -> false
     }
 
-    override fun hashCode() = element.hashCode()
+    override fun hashCode() = byteArray().contentHashCode()
 
-    override fun toString() = element.toString(16)
+    override fun toString() = base16()
 }
 
-open class ProductionElementModP(val element: BigInteger, val groupContext: ProductionGroupContext): ElementModP,
+open class ProductionElementModP(internal val element: BigInteger, val groupContext: ProductionGroupContext): ElementModP,
     Element, Comparable<ElementModP> {
+
+    override fun byteArray(): ByteArray = element.toByteArray().normalize(512)
+
     private fun BigInteger.modWrap(): ElementModP = this.mod(groupContext.p).wrap()
     private fun BigInteger.wrap(): ElementModP = ProductionElementModP(this, groupContext)
 
@@ -329,11 +330,6 @@ open class ProductionElementModP(val element: BigInteger, val groupContext: Prod
     override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.p
 
     override fun inBoundsNoZero() = inBounds() && !isZero()
-
-    override fun byteArray(): ByteArray {
-        val ba : ByteArray = element.toByteArray()
-        return ba.normalize(512)
-    }
 
     override operator fun compareTo(other: ElementModP): Int = element.compareTo(other.getCompat(groupContext))
 
@@ -359,15 +355,6 @@ open class ProductionElementModP(val element: BigInteger, val groupContext: Prod
     override infix operator fun div(denominator: ElementModP) =
         (element * denominator.getCompat(groupContext).modInverse(groupContext.p)).modWrap()
 
-    override fun equals(other: Any?) = when (other) {
-        is ElementModP -> other.getCompat(this.groupContext) == this.element
-        else -> false
-    }
-
-    override fun hashCode() = element.hashCode()
-
-    override fun toString() = element.toString(16)
-
     override fun acceleratePow() : ElementModP =
         AcceleratedElementModP(this)
 
@@ -375,6 +362,15 @@ open class ProductionElementModP(val element: BigInteger, val groupContext: Prod
         ProductionMontgomeryElementModP(
             element.shiftLeft(groupContext.productionMode.numBitsInP).mod(groupContext.p),
             groupContext)
+
+    override fun equals(other: Any?) = when (other) {
+        is ElementModP -> byteArray().contentEquals(other.byteArray())
+        else -> false
+    }
+
+    override fun hashCode() = byteArray().contentHashCode()
+
+    override fun toString() = base16()
 }
 
 class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p.element, p.groupContext) {
