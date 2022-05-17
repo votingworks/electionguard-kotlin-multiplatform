@@ -95,7 +95,7 @@ class DecryptingMediator(
             }
         }
 
-        // LOOK could ask for all direct and compensated in one call,  so only one call to each trustee,
+        // LOOK could ask for all direct and compensated in one call, so only one call to each trustee,
         //  instead of 1 + nmissing
 
         // direct decryptions
@@ -133,14 +133,14 @@ class DecryptingMediator(
             for (tallyContest in this.contests.values) {
                 for (tallySelection in tallyContest.selections.values) {
                     val proof: CompensatedDecryptionAndProof = compensatedDecryptions.get(count2);
-                    val recoveredDecryption = MissingPartialDecryption(
+                    val recoveredDecryption = RecoveredPartialDecryption(
                         trustee.id(),
                         missing,
                         proof.partialDecryption,
                         proof.recoveredPublicKeyShare,
                         proof.proof
                     )
-                    decryptionShare.addMissingDecryption(
+                    decryptionShare.addRecoveredDecryption(
                         tallyContest.contestId,
                         tallySelection.selectionId,
                         missing,

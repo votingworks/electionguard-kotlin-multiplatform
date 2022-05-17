@@ -15,7 +15,7 @@ import electionguard.keyceremony.SecretKeyShare
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DecryptingTrustee")
-private val validate = false // debugging only
+private val validate = true // expensive, debugging only
 
 /** A Trustee that knows its secret key, for the purpose of decryption. */
 data class DecryptingTrustee(
@@ -41,20 +41,25 @@ data class DecryptingTrustee(
     ): List<DirectDecryptionAndProof> {
         val results: MutableList<DirectDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
+            val publicKey = this.electionKeypair.publicKey.key
+            val privateKey = this.electionKeypair.secretKey.key
+
             // 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 (spec section 3.5 eq 9)
             val partialDecryption: ElementModP = ciphertext.computeShare(this.electionKeypair.secretKey)
-            val publicKey = this.electionKeypair.publicKey.key
-
+            // prove that we know x
             val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
-                group.G_MOD_P,
-                ciphertext.pad,
-                this.electionKeypair.secretKey.key,
+                g = group.G_MOD_P,
+                h = ciphertext.pad,
+                x = privateKey,
                 nonce ?: group.randomElementModQ(),
+                // header and footer doesnt matter as long as it matches isValid
                 arrayOf(extendedBaseHash, publicKey, ciphertext.pad, ciphertext.data), // section 7
                 arrayOf(partialDecryption),
             )
 
             if (validate) {
+                require(publicKey.equals(group.G_MOD_P powP privateKey))
+                require(partialDecryption.equals(ciphertext.pad powP privateKey))
                 validate(group, ciphertext, extendedBaseHash, publicKey, partialDecryption, proof)
             }
             results.add(DirectDecryptionAndProof(partialDecryption, proof))
@@ -74,29 +79,36 @@ data class DecryptingTrustee(
             throw IllegalStateException("compensate_decrypt guardian $id missing backup for $missingGuardianId")
         }
 
-        // used in the proof, not the calculation
-        val recoveredPublicKeyShare: ElementModP = recoveredPublicKeyShare(group, missingGuardianId)
         val results: MutableList<CompensatedDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
             // used in the calculation, needs to be encrypted
             // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
-            val partialDecryption: ElementModP =
+            val partialDecryptionShare: ElementModP =
                 ciphertext.computeShare(ElGamalSecretKey(backup.generatingGuardianValue))
-            val publicKey = this.electionKeypair.publicKey.key
+            val recoveredPublicKeyShare: ElementModP = recoveredPublicKeyShare(group, missingGuardianId)
 
+            // prove that we know x
             val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
-                group.G_MOD_P,
-                ciphertext.pad,
-                this.electionKeypair.secretKey.key,
-                nonce ?: group.randomElementModQ(),
-                arrayOf(extendedBaseHash, publicKey, ciphertext.pad, ciphertext.data), // section 7
-                arrayOf(partialDecryption),
+                g = group.G_MOD_P,
+                h = ciphertext.pad,
+                x = backup.generatingGuardianValue,
+                seed = nonce ?: group.randomElementModQ(),
+                hashHeader = arrayOf(
+                    extendedBaseHash,
+                    recoveredPublicKeyShare,
+                    ciphertext.pad,
+                    ciphertext.data
+                ), // section 7
+                hashFooter = arrayOf(partialDecryptionShare),
             )
 
             if (validate) {
-                validate(group, ciphertext, extendedBaseHash, publicKey, partialDecryption, proof)
+                require(recoveredPublicKeyShare.equals(group.G_MOD_P powP backup.generatingGuardianValue))
+                require(partialDecryptionShare.equals(ciphertext.pad powP backup.generatingGuardianValue))
+                validate(group, ciphertext, extendedBaseHash, recoveredPublicKeyShare, partialDecryptionShare, proof)
             }
-            results.add(CompensatedDecryptionAndProof(partialDecryption, proof, recoveredPublicKeyShare))
+
+            results.add(CompensatedDecryptionAndProof(partialDecryptionShare, proof, recoveredPublicKeyShare))
         }
         return results
     }
@@ -105,24 +117,24 @@ data class DecryptingTrustee(
         group: GroupContext,
         ciphertext: ElGamalCiphertext,
         extendedBaseHash: ElementModQ,
-        publicKey: ElementModP,
-        partialDecryption: ElementModP,
+        gx: ElementModP,
+        hx: ElementModP,
         proof: GenericChaumPedersenProof
     ) {
         if (!proof.isValid(
                 group.G_MOD_P,
-                publicKey,
+                gx,
                 ciphertext.pad,
-                partialDecryption,
-                arrayOf(extendedBaseHash, publicKey, ciphertext.pad, ciphertext.data), // section 7
-                arrayOf(partialDecryption)
+                hx,
+                arrayOf(extendedBaseHash, gx, ciphertext.pad, ciphertext.data), // section 7
+                arrayOf(hx)
             )
         ) {
             logger.warn {
                 " partialDecrypt invalid proof for $id = $proof\n" +
                         "   message = $ciphertext\n" +
-                        "   public_key = $publicKey\n" +
-                        "   partial_decryption = $partialDecryption\n" +
+                        "   gx = $gx\n" +
+                        "   hx = $hx\n" +
                         "   extendedBaseHash = $extendedBaseHash\n"
             }
             throw IllegalArgumentException("PartialDecrypt invalid proof for $id")
@@ -132,7 +144,7 @@ data class DecryptingTrustee(
     // compute the recovered public key share, g^P_i(l) = Prod(K_ij^(l^j)) for j in 0..k-1.
     // see section 3.5.2, eq 12
     private fun recoveredPublicKeyShare(group: GroupContext, missingGuardianId: String): ElementModP {
-        val otherCommitments: List<ElementModP>? = this.coefficientCommitments[missingGuardianId]
+        val otherCommitments: List<ElementModP>? = this.coefficientCommitments[missingGuardianId] // K_ij
         if (otherCommitments == null) {
             throw IllegalStateException("guardian $id missing coefficientCommitments for $missingGuardianId")
         }

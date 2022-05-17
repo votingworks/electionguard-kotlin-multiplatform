@@ -7,26 +7,17 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
 import electionguard.core.Base16.toHex
-import electionguard.core.ElGamalKeypair
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
-import electionguard.core.encrypt
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
-import electionguard.decrypt.DecryptingTrustee
-import electionguard.keyceremony.ElectionPolynomial
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.keyceremony.generatePolynomial
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 /** Run a fake KeyCeremony to generate an ElectionInitialized for workflow testing. */
 class RunFakeKeyCeremonyTest {
@@ -78,7 +69,7 @@ fun runFakeKeyCeremony(
     val commitmentsHash = hashElements(commitments)
 
     val primes = config.constants
-    val crypto_base_hash: UInt256 = hashElements(
+    val cryptoBaseHash: UInt256 = hashElements(
         primes.largePrime.toHex(), // LOOK is this the same as converting to ElementMod ??
         primes.smallPrime.toHex(),
         primes.generator.toHex(),
@@ -87,7 +78,7 @@ fun runFakeKeyCeremony(
         config.manifest.cryptoHash,
     )
 
-    val cryptoExtendedBaseHash: UInt256 = hashElements(crypto_base_hash, commitmentsHash)
+    val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
     val jointPublicKey: ElementModP =
         trustees.map { it.polynomial.coefficientCommitments[0] }.reduce { a, b -> a * b }
 
@@ -105,6 +96,7 @@ fun runFakeKeyCeremony(
         newConfig,
         jointPublicKey,
         config.manifest.cryptoHash,
+        cryptoBaseHash,
         cryptoExtendedBaseHash,
         guardians,
     )

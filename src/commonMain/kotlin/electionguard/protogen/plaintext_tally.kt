@@ -269,7 +269,7 @@ public data class PartialDecryption(
 
 @pbandk.Export
 public data class RecoveredParts(
-    val fragments: List<electionguard.protogen.MissingPartialDecryption> = emptyList(),
+    val fragments: List<electionguard.protogen.RecoveredPartialDecryption> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.RecoveredParts = protoMergeImpl(other)
@@ -287,7 +287,7 @@ public data class RecoveredParts(
                         messageDescriptor = this@Companion::descriptor,
                         name = "fragments",
                         number = 1,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.MissingPartialDecryption>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.MissingPartialDecryption.Companion)),
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.RecoveredPartialDecryption>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.RecoveredPartialDecryption.Companion)),
                         jsonName = "fragments",
                         value = electionguard.protogen.RecoveredParts::fragments
                     )
@@ -304,7 +304,7 @@ public data class RecoveredParts(
 }
 
 @pbandk.Export
-public data class MissingPartialDecryption(
+public data class RecoveredPartialDecryption(
     val selectionId: String = "",
     val guardianId: String = "",
     val missingGuardianId: String = "",
@@ -313,15 +313,15 @@ public data class MissingPartialDecryption(
     val proof: electionguard.protogen.GenericChaumPedersenProof? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.MissingPartialDecryption = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.MissingPartialDecryption> get() = Companion.descriptor
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.RecoveredPartialDecryption = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RecoveredPartialDecryption> get() = Companion.descriptor
     override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.MissingPartialDecryption> {
-        public val defaultInstance: electionguard.protogen.MissingPartialDecryption by lazy { electionguard.protogen.MissingPartialDecryption() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.MissingPartialDecryption = electionguard.protogen.MissingPartialDecryption.decodeWithImpl(u)
+    public companion object : pbandk.Message.Companion<electionguard.protogen.RecoveredPartialDecryption> {
+        public val defaultInstance: electionguard.protogen.RecoveredPartialDecryption by lazy { electionguard.protogen.RecoveredPartialDecryption() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.RecoveredPartialDecryption = electionguard.protogen.RecoveredPartialDecryption.decodeWithImpl(u)
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.MissingPartialDecryption> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.MissingPartialDecryption, *>>(6)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RecoveredPartialDecryption> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.RecoveredPartialDecryption, *>>(6)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -330,7 +330,7 @@ public data class MissingPartialDecryption(
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "selectionId",
-                        value = electionguard.protogen.MissingPartialDecryption::selectionId
+                        value = electionguard.protogen.RecoveredPartialDecryption::selectionId
                     )
                 )
                 add(
@@ -340,7 +340,7 @@ public data class MissingPartialDecryption(
                         number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "guardianId",
-                        value = electionguard.protogen.MissingPartialDecryption::guardianId
+                        value = electionguard.protogen.RecoveredPartialDecryption::guardianId
                     )
                 )
                 add(
@@ -350,7 +350,7 @@ public data class MissingPartialDecryption(
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "missingGuardianId",
-                        value = electionguard.protogen.MissingPartialDecryption::missingGuardianId
+                        value = electionguard.protogen.RecoveredPartialDecryption::missingGuardianId
                     )
                 )
                 add(
@@ -360,7 +360,7 @@ public data class MissingPartialDecryption(
                         number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "share",
-                        value = electionguard.protogen.MissingPartialDecryption::share
+                        value = electionguard.protogen.RecoveredPartialDecryption::share
                     )
                 )
                 add(
@@ -370,7 +370,7 @@ public data class MissingPartialDecryption(
                         number = 5,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "recoveryKey",
-                        value = electionguard.protogen.MissingPartialDecryption::recoveryKey
+                        value = electionguard.protogen.RecoveredPartialDecryption::recoveryKey
                     )
                 )
                 add(
@@ -380,13 +380,13 @@ public data class MissingPartialDecryption(
                         number = 6,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.GenericChaumPedersenProof.Companion),
                         jsonName = "proof",
-                        value = electionguard.protogen.MissingPartialDecryption::proof
+                        value = electionguard.protogen.RecoveredPartialDecryption::proof
                     )
                 )
             }
             pbandk.MessageDescriptor(
-                fullName = "MissingPartialDecryption",
-                messageClass = electionguard.protogen.MissingPartialDecryption::class,
+                fullName = "RecoveredPartialDecryption",
+                messageClass = electionguard.protogen.RecoveredPartialDecryption::class,
                 messageCompanion = this,
                 fields = fieldsList
             )
@@ -529,21 +529,21 @@ private fun RecoveredParts.protoMergeImpl(plus: pbandk.Message?): RecoveredParts
 
 @Suppress("UNCHECKED_CAST")
 private fun RecoveredParts.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RecoveredParts {
-    var fragments: pbandk.ListWithSize.Builder<electionguard.protogen.MissingPartialDecryption>? = null
+    var fragments: pbandk.ListWithSize.Builder<electionguard.protogen.RecoveredPartialDecryption>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> fragments = (fragments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.MissingPartialDecryption> }
+            1 -> fragments = (fragments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.RecoveredPartialDecryption> }
         }
     }
     return RecoveredParts(pbandk.ListWithSize.Builder.fixed(fragments), unknownFields)
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForMissingPartialDecryption")
-public fun MissingPartialDecryption?.orDefault(): electionguard.protogen.MissingPartialDecryption = this ?: MissingPartialDecryption.defaultInstance
+@pbandk.JsName("orDefaultForRecoveredPartialDecryption")
+public fun RecoveredPartialDecryption?.orDefault(): electionguard.protogen.RecoveredPartialDecryption = this ?: RecoveredPartialDecryption.defaultInstance
 
-private fun MissingPartialDecryption.protoMergeImpl(plus: pbandk.Message?): MissingPartialDecryption = (plus as? MissingPartialDecryption)?.let {
+private fun RecoveredPartialDecryption.protoMergeImpl(plus: pbandk.Message?): RecoveredPartialDecryption = (plus as? RecoveredPartialDecryption)?.let {
     it.copy(
         share = share?.plus(plus.share) ?: plus.share,
         recoveryKey = recoveryKey?.plus(plus.recoveryKey) ?: plus.recoveryKey,
@@ -553,7 +553,7 @@ private fun MissingPartialDecryption.protoMergeImpl(plus: pbandk.Message?): Miss
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun MissingPartialDecryption.Companion.decodeWithImpl(u: pbandk.MessageDecoder): MissingPartialDecryption {
+private fun RecoveredPartialDecryption.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RecoveredPartialDecryption {
     var selectionId = ""
     var guardianId = ""
     var missingGuardianId = ""
@@ -571,6 +571,6 @@ private fun MissingPartialDecryption.Companion.decodeWithImpl(u: pbandk.MessageD
             6 -> proof = _fieldValue as electionguard.protogen.GenericChaumPedersenProof
         }
     }
-    return MissingPartialDecryption(selectionId, guardianId, missingGuardianId, share,
+    return RecoveredPartialDecryption(selectionId, guardianId, missingGuardianId, share,
         recoveryKey, proof, unknownFields)
 }

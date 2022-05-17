@@ -15,14 +15,15 @@ data class TallyResult(
     fun jointPublicKey(): ElGamalPublicKey {
         return ElGamalPublicKey(electionIntialized.jointPublicKey)
     }
+
     fun cryptoExtendedBaseHash(): ElementModQ {
         return electionIntialized.cryptoExtendedBaseHash.toElementModQ(group)
     }
-    fun quorum(): Int {
-        return electionIntialized.config.quorum
-    }
     fun numberOfGuardians(): Int {
         return electionIntialized.config.numberOfGuardians
+    }
+    fun quorum(): Int {
+        return electionIntialized.config.quorum
     }
 }
 
@@ -31,7 +32,14 @@ data class DecryptionResult(
     val decryptedTally: PlaintextTally,
     val availableGuardians: List<AvailableGuardian>,
     val metadata: Map<String, String> = emptyMap(),
-)
+) {
+    fun numberOfGuardians(): Int {
+        return tallyResult.numberOfGuardians()
+    }
+    fun quorum(): Int {
+        return tallyResult.quorum()
+    }
+}
 
 data class AvailableGuardian(
     var guardianId: String,

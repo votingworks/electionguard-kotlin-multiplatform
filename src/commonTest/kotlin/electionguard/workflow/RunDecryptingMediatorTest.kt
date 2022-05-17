@@ -5,8 +5,6 @@ package electionguard.workflow
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.TallyResult
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
@@ -19,16 +17,24 @@ import electionguard.publish.PublisherMode
 
 import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 /** Test DecryptingMediator with in-process DecryptingTrustee's. Cannot use this in production */
 class RunDecryptingMediatorTest {
     @Test
-    fun testDecryptingMediator() {
+    fun testDecryptingMediatorAll() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/runWorkflow"
-        val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
+        val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
+        val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
+        val outputDir = "testOut/testDecryptingMediator"
+        runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir))
+    }
+
+    @Test
+    fun testDecryptingMediatorSome() {
+        val group = productionGroup()
+        val inputDir = "src/commonTest/data/runWorkflowSomeAvailable"
+        val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"
         val outputDir = "testOut/testDecryptingMediator"
         runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir))
     }

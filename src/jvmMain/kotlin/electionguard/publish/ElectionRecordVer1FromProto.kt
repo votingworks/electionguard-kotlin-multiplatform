@@ -70,6 +70,7 @@ fun electionguard.protogen.ElectionRecord.importElectionRecord(
         config,
         electionContext.jointPublicKey,
         electionContext.manifestHash,
+        electionContext.cryptoBaseHash,
         electionContext.cryptoExtendedBaseHash,
         guardianRecords,
         metadata
@@ -97,6 +98,7 @@ data class ElectionContext(
     val quorum : Int,
     val jointPublicKey: ElementModP,
     val manifestHash: UInt256,
+    val cryptoBaseHash: UInt256,
     val cryptoExtendedBaseHash: UInt256
 )
 
@@ -123,6 +125,7 @@ private fun GroupContext.importContext(context: electionguard.protogen.ElectionC
         context.quorum,
         jointPublicKey,
         manifestHash,
+        cryptoBaseHash,
         cryptoExtendedBaseHash,
     )
 }

@@ -50,6 +50,7 @@ fun generateElectionInitialized(context: GroupContext): ElectionInitialized {
         generateElementModP(context),
         generateUInt256(context),
         generateUInt256(context),
+        generateUInt256(context),
         List(3) { generateGuardian(it, context) },
     )
 }

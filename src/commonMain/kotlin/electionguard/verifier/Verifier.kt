@@ -9,7 +9,6 @@ import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
-import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
 import electionguard.core.encryptedSum
 import electionguard.core.getSystemTimeInMillis
@@ -48,11 +47,11 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
         val guardiansOk = verifyGuardianPublicKey()
         println(" verifyGuardianPublicKey= $guardiansOk\n")
 
-        val ballotsOk = verifySubmittedBallots(electionRecord.iterateSubmittedBallots())
-        println(" verifySubmittedBallots= $ballotsOk\n")
-
         val tallyOk = verifyDecryptedTally()
         println(" verifyDecryptedTally= $tallyOk\n")
+
+        val ballotsOk = verifySubmittedBallots(electionRecord.iterateSubmittedBallots())
+        println(" verifySubmittedBallots= $ballotsOk\n")
 
         val allOk = guardiansOk && ballotsOk && tallyOk
         return allOk
@@ -91,12 +90,11 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
 
                 for (partialDecryption in selection.partialDecryptions) {
                     nshares++
-                    val sproof: GenericChaumPedersenProof? = partialDecryption.proof
-                    if (sproof != null) { // LOOK null id recovered
+                    if (partialDecryption.proof != null) {
                         val guardian = this.guardians.find { it.guardianId.equals(partialDecryption.guardianId) }
                         val guardianKey = guardian?.publicKey()
                             ?: throw IllegalStateException("Cant find guardian ${partialDecryption.guardianId}")
-                        val svalid = sproof.isValid(
+                        val svalid = partialDecryption.proof.isValid(
                             group.G_MOD_P,
                             guardianKey,
                             message.pad,
@@ -105,9 +103,32 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                             arrayOf(partialDecryption.share())
                         )
                         if (!svalid) {
-                            println("Fail guardian $guardian share proof $sproof")
+                            println("Fail guardian $guardian share proof ${partialDecryption.proof}")
                         }
                         allValid = allValid && svalid
+
+                    } else if (partialDecryption.recoveredDecryptions.isNotEmpty()) {
+
+                        for (recoveredDecryption in partialDecryption.recoveredDecryptions) {
+                            val gx = recoveredDecryption.recoveryKey
+                            val hx = recoveredDecryption.share
+                            if (!recoveredDecryption.proof.isValid(
+                                    group.G_MOD_P,
+                                    gx,
+                                    message.pad,
+                                    hx,
+                                    arrayOf(cryptoExtendedBaseHash, gx, message.pad, message.data), // section 7
+                                    arrayOf(hx)
+                                )
+                            ) {
+                                println("CompensatedDecryption proof failure ${contest.contestId}/${selection.selectionId}")
+                                allValid = false
+                            }
+                        }
+
+                    } else {
+                        println("Must have partialDecryption.proof or missingDecryptions ${contest.contestId}/${selection.selectionId}")
+                        allValid = false
                     }
                 }
             }

@@ -21,6 +21,8 @@ fun GroupContext.importElectionInitialized(init : electionguard.protogen.Electio
         .toResultOr {"ElectionInitialized jointPublicKey was malformed or missing"}
     val manifestHash = importUInt256(init.manifestHash)
         .toResultOr {"ElectionInitialized manifestHash was malformed or missing"}
+    val cryptoBaseHash = importUInt256(init.cryptoBaseHash)
+        .toResultOr {"ElectionInitialized cryptoBaseHash was malformed or missing"}
     val cryptoExtendedBaseHash = importUInt256(init.cryptoExtendedBaseHash)
         .toResultOr {"ElectionInitialized cryptoExtendedBaseHash was malformed or missing"}
 
@@ -35,6 +37,7 @@ fun GroupContext.importElectionInitialized(init : electionguard.protogen.Electio
         electionConfig.unwrap(),
         jointPublicKey.unwrap(),
         manifestHash.unwrap(),
+        cryptoBaseHash.unwrap(),
         cryptoExtendedBaseHash.unwrap(),
         guardians,
         init.metadata.associate {it.key to it.value}
@@ -77,6 +80,7 @@ fun ElectionInitialized.publishElectionInitialized(): electionguard.protogen.Ele
         this.config.publishElectionConfig(),
         this.jointPublicKey.publishElementModP(),
         this.manifestHash.publishUInt256(),
+        this.cryptoBaseHash.publishUInt256(),
         this.cryptoExtendedBaseHash.publishUInt256(),
         this.guardians.map { it.publishGuardian() },
         this.metadata.entries.map { electionguard.protogen.ElectionInitialized.MetadataEntry(it.key, it.value)}

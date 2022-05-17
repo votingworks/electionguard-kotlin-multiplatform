@@ -15,7 +15,7 @@ class RunFakeBallotTest {
     @Test
     fun runFakeBallotTest() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/runWorkflow"
+        val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
         val outputDir =  "testOut/runFakeBallotTest/private_data"
         val nballots = 33
 

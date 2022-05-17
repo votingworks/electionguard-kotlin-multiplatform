@@ -95,7 +95,7 @@ fun runRecoveredDecryptionTest(
         val config: ElectionConfig = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
         val primes = config.constants
-        val crypto_base_hash: UInt256 = hashElements(
+        val cryptoBaseHash: UInt256 = hashElements(
             primes.largePrime.toHex(), // LOOK is this the same as converting to ElementMod ??
             primes.smallPrime.toHex(),
             primes.generator.toHex(),
@@ -104,12 +104,13 @@ fun runRecoveredDecryptionTest(
             config.manifest.cryptoHash,
         )
 
-        val cryptoExtendedBaseHash: UInt256 = hashElements(crypto_base_hash, commitmentsHash)
+        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
         val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
         val init = ElectionInitialized(
             config,
             jointPublicKey,
             config.manifest.cryptoHash,
+            cryptoBaseHash,
             cryptoExtendedBaseHash,
             guardians,
         )
@@ -143,7 +144,7 @@ fun testEncryptRecoveredDecrypt(group: GroupContext, publicKey: ElGamalPublicKey
 
     val available = trustees.filter {present.contains(it.xCoordinate())}
     val coordsPresent = available.map {it.xCoordinate}
-    // once the set of available guardians is deterrmined, the lagrangeCoefficients can be calculated for all decryptions
+    // once the set of available guardians is determined, the lagrangeCoefficients can be calculated for all decryptions
     val lagrangeCoefficients = available.associate { it.id to group.computeLagrangeCoefficient(it.xCoordinate, coordsPresent) }
 
     var countDirect = 0

@@ -309,8 +309,8 @@ class ChaumPedersenTest {
 
         val hashHeaderX = hashHeader ?: context.ZERO_MOD_Q
 
-        val proof = genericChaumPedersenProofOf(g, h, x, seed, hashHeader = arrayOf(hashHeaderX))
-        assertTrue(proof.isValid(g, gx, h, hx, hashHeader = arrayOf(hashHeaderX)))
+        val proof = genericChaumPedersenProofOf(g, h, x, seed, arrayOf(hashHeaderX), arrayOf(hashHeaderX))
+        assertTrue(proof.isValid(g, gx, h, hx, arrayOf(hashHeaderX), arrayOf(hashHeaderX)))
 
         if (gx != gnotx && hx != hnotx) {
             // In the degenerate case where q1 or q2 == 0, then we'd have a problem:
@@ -552,6 +552,123 @@ class ChaumPedersenTest {
                 ),
                 "proof not valid"
             )
+        }
+    }
+
+    @Test
+    fun testGenericProof() {
+        runTest {
+            val context = productionGroup()
+            val keypair = elGamalKeyPairFromSecret(context.randomElementModQ())
+            val ciphertext: ElGamalCiphertext = 42.encrypt(keypair.publicKey, context.randomElementModQ())
+            val extendedBaseHash = context.randomElementModQ()
+
+            val partialDecryption: ElementModP = ciphertext.computeShare(keypair.secretKey)
+            val publicKey = keypair.publicKey.key
+
+            val g = context.G_MOD_P
+            val h = ciphertext.pad
+            val x = context.randomElementModQ()
+            val seed = context.randomElementModQ()
+            val header = context.randomElementModQ()
+
+            val gx1 = g powP x
+            val hx1 = h powP x
+
+            val proof1 = genericChaumPedersenProofOf(g, h, x, seed, arrayOf(header))
+            assertTrue(proof1.isValid(g, gx1, h, hx1, arrayOf(header)))
+
+            // proof that we know the secret, x
+            val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
+                context.G_MOD_P,
+                ciphertext.pad,
+                x,
+                context.randomElementModQ(),
+                arrayOf(extendedBaseHash, publicKey, ciphertext.pad, ciphertext.data), // section 7
+                arrayOf(partialDecryption),
+            )
+
+            // so we need
+            val gx = context.G_MOD_P powP x
+            val hx = ciphertext.pad powP x
+
+            assertTrue(proof.isValid(
+                context.G_MOD_P,
+                gx,
+                ciphertext.pad,
+                hx,
+                arrayOf(extendedBaseHash, publicKey, ciphertext.pad, ciphertext.data), // section 7
+                arrayOf(partialDecryption)
+            ))
+        }
+    }
+
+    @Test
+    fun testPartialDecryptAndProof() {
+        runTest {
+            val context = productionGroup()
+            val keypair = elGamalKeyPairFromSecret(context.randomElementModQ())
+            val ciphertext: ElGamalCiphertext = 42.encrypt(keypair.publicKey, context.randomElementModQ())
+            val extendedBaseHash = context.randomElementModQ()
+
+            val partialDecryption: ElementModP = ciphertext.computeShare(keypair.secretKey)
+            val publicKey = keypair.publicKey.key
+
+            // proof that we know the secret, x
+            val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
+                context.G_MOD_P,
+                ciphertext.pad,
+                x = keypair.secretKey.key,
+                context.randomElementModQ(),
+                arrayOf(extendedBaseHash, publicKey, ciphertext.pad, ciphertext.data), // section 7
+                arrayOf(partialDecryption),
+            )
+
+            assertTrue(proof.isValid(
+                context.G_MOD_P,
+                publicKey,
+                ciphertext.pad,
+                partialDecryption,
+                arrayOf(extendedBaseHash, publicKey, ciphertext.pad, ciphertext.data), // section 7
+                arrayOf(partialDecryption)
+            ))
+        }
+    }
+
+    @Test
+    fun testCompensatedDecryptAndProof() {
+        runTest {
+            val context = productionGroup()
+            val jointKey = elGamalKeyPairFromSecret(context.randomElementModQ())
+            val ciphertext: ElGamalCiphertext = 42.encrypt(jointKey.publicKey, context.randomElementModQ())
+            val extendedBaseHash = context.randomElementModQ()
+
+            // val backup: SecretKeyShare = this.secretKeyShares[missingGuardianId]
+            // val generatingGuardianValue: ElementModQ = backup.generatingGuardianValue
+            val generatingGuardianValue: ElementModQ = context.randomElementModQ()
+            val partialDecryption: ElementModP = ciphertext.computeShare(ElGamalSecretKey(generatingGuardianValue))
+
+            // proof that we know the secret, x
+            val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
+                g = context.G_MOD_P,
+                h = ciphertext.pad,
+                x = generatingGuardianValue,
+                seed = context.randomElementModQ(),
+                hashHeader = arrayOf(extendedBaseHash, jointKey.publicKey.key, ciphertext.pad, ciphertext.data), // section 7
+                hashFooter = arrayOf(partialDecryption),
+            )
+
+            // so we need
+            val gx = context.G_MOD_P powP generatingGuardianValue
+            val hx = ciphertext.pad powP generatingGuardianValue // Mij
+            assertTrue(proof.isValid(
+                g = context.G_MOD_P,
+                gx,
+                h = ciphertext.pad,
+                hx,
+                arrayOf(extendedBaseHash, jointKey.publicKey.key, ciphertext.pad, ciphertext.data), // section 7
+                arrayOf(partialDecryption)
+            ))
         }
     }
 }

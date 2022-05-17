@@ -10,7 +10,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
-    private val topdir = "src/commonTest/data/runWorkflow"
+    private val topdir = "src/commonTest/data/runWorkflowAllAvailable"
 
     @Test
     fun readElectionRecord() {
@@ -87,10 +87,10 @@ class ConsumerTest {
     fun readTrustee() {
         runTest {
             val context = productionGroup()
-            val initDir = "src/commonTest/data/runWorkflow"
+            val initDir = "src/commonTest/data/runWorkflowAllAvailable"
             val electionRecordIn = ElectionRecord(initDir, context)
             val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-            val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
+            val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
             init.guardians.forEach {
                 val trustee = electionRecordIn.readTrustee(trusteeDir, it.guardianId)
                 println("trustee = ${trustee}")
@@ -103,7 +103,7 @@ class ConsumerTest {
     fun readBadTrustee() {
         runTest {
             val context = productionGroup()
-            val trusteeDir = "src/commonTest/data/runWorkflow/private_data/trustees"
+            val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
             val electionRecordIn = ElectionRecord(trusteeDir, context)
             val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
                 electionRecordIn.readTrustee(trusteeDir, "badId")
