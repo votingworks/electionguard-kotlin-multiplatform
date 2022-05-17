@@ -17,7 +17,8 @@ class ConsumerTest {
         runTest {
             val context = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, context)
-            val config = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
+            val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+            val config = init.config
             println("electionRecord.protoVersion = ${config.protoVersion}")
             assertEquals("2.0.0", config.protoVersion)
             println("electionRecord.manifest.specVersion = ${config.manifest.specVersion}")

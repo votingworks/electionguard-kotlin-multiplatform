@@ -126,7 +126,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
 
     actual fun writeEncryptions(
         init: ElectionInitialized,
-        ballots: Iterable<SubmittedBallot>
+        ballots: Iterable<EncryptedBallot>
     ) {
         writeElectionInitialized(init)
         val sink = submittedBallotSink()
@@ -179,7 +179,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     inner class SubmittedBallotSink(path: String) : SubmittedBallotSinkIF {
         val out: FileOutputStream = FileOutputStream(path)
 
-        override fun writeSubmittedBallot(ballot: SubmittedBallot) {
+        override fun writeSubmittedBallot(ballot: EncryptedBallot) {
             val ballotProto: pbandk.Message = ballot.publishSubmittedBallot()
             writeDelimitedTo(ballotProto, out)
         }

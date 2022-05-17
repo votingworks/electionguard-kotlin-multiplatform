@@ -1,7 +1,6 @@
 package electionguard.publish
 
 import electionguard.ballot.*
-import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.protoconvert.publishDecryptingTrustee
 import electionguard.protoconvert.publishDecryptionResult
@@ -74,7 +73,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
 
     actual fun writeEncryptions(
         init: ElectionInitialized,
-        ballots: Iterable<SubmittedBallot>
+        ballots: Iterable<EncryptedBallot>
     ) {
         writeElectionInitialized(init)
         val sink = submittedBallotSink()
@@ -110,11 +109,11 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     @Throws(IOException::class)
-    fun writeSubmittedBallots(submittedBallots: Iterable<SubmittedBallot>): Boolean {
+    fun writeSubmittedBallots(encryptedBallots: Iterable<EncryptedBallot>): Boolean {
         val fileout = path.submittedBallotPath()
         val file: CPointer<FILE> = openFile(fileout)
         try {
-            submittedBallots.forEach {
+            encryptedBallots.forEach {
                 val proto = it.publishSubmittedBallot()
                 val buffer = proto.encodeToByteArray()
 
@@ -195,7 +194,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     inner class SubmittedBallotSink(val fileout: String) : SubmittedBallotSinkIF {
         val file: CPointer<FILE> = openFile(fileout)
 
-        override fun writeSubmittedBallot(ballot: SubmittedBallot) {
+        override fun writeSubmittedBallot(ballot: EncryptedBallot) {
             val ballotProto: pbandk.Message = ballot.publishSubmittedBallot()
             val buffer = ballotProto.encodeToByteArray()
 

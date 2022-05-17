@@ -6,7 +6,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.CiphertextBallot
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.submit
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
@@ -133,7 +133,7 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
     println("   $ncontests contests $perContest msecs/contest")
     println("   $nselections selections $perSelection msecs/selection")
 
-    val submitted: List<SubmittedBallot> = encrypted.map { it.submit(SubmittedBallot.BallotState.CAST) }
+    val submitted: List<EncryptedBallot> = encrypted.map { it.submit(EncryptedBallot.BallotState.CAST) }
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeEncryptions(
@@ -253,7 +253,7 @@ private var count = 0
 fun CoroutineScope.launchSink(input: Channel<CiphertextBallot>, sink: SubmittedBallotSinkIF,
 ) = launch {
     for (ballot in input) {
-        sink.writeSubmittedBallot(ballot.submit(SubmittedBallot.BallotState.CAST))
+        sink.writeSubmittedBallot(ballot.submit(EncryptedBallot.BallotState.CAST))
         if (debug) println(" Sink wrote $count submitted ballot ${ballot.ballotId}")
         count++
     }

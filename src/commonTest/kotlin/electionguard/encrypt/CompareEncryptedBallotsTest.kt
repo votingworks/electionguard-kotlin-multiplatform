@@ -1,6 +1,6 @@
 package electionguard.encrypt
 
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
@@ -52,7 +52,7 @@ class CompareEncryptedBallotsTest {
         }
     }
 
-    fun readBallots(context: GroupContext, topdir: String): List<SubmittedBallot> {
+    fun readBallots(context: GroupContext, topdir: String): List<EncryptedBallot> {
         val electionRecordIn = ElectionRecord(topdir, context)
         return electionRecordIn.iterateSubmittedBallots().toList()
     }

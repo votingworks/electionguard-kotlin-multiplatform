@@ -128,7 +128,7 @@ private fun GroupContext.importRecoveredPartialDecryption(parts: electionguard.p
 
     return Ok(
         RecoveredPartialDecryption(
-            parts.guardianId,
+            parts.decryptingGuardianId,
             parts.missingGuardianId,
             share.unwrap(),
             recoveryKey.unwrap(),

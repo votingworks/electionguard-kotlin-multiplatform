@@ -10,7 +10,7 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrustee
@@ -83,8 +83,8 @@ class PlaintextBallotIterator(
 class SubmittedBallotIterator(
     filename: String,
     val groupContext: GroupContext,
-    val filter: Predicate<electionguard.protogen.SubmittedBallot>,
-) : AbstractIterator<SubmittedBallot>() {
+    val filter: Predicate<electionguard.protogen.EncryptedBallot>,
+) : AbstractIterator<EncryptedBallot>() {
 
     private val input: FileInputStream = FileInputStream(filename)
 
@@ -96,7 +96,7 @@ class SubmittedBallotIterator(
                 return done()
             }
             val message = input.readNBytes(length)
-            val ballotProto = electionguard.protogen.SubmittedBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
+            val ballotProto = electionguard.protogen.EncryptedBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
             if (!filter.test(ballotProto)) {
                 continue // skip it
             }

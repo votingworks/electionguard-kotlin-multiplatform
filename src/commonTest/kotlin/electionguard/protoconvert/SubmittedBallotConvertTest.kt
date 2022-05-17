@@ -1,7 +1,7 @@
 package electionguard.protoconvert
 
 import com.github.michaelbull.result.*
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import kotlin.random.Random
 import kotlin.test.Test
@@ -21,7 +21,7 @@ class SubmittedBallotConvertTest {
     }
 
     companion object {
-        fun generateSubmittedBallot(seq: Int, context: GroupContext): SubmittedBallot {
+        fun generateSubmittedBallot(seq: Int, context: GroupContext): EncryptedBallot {
             val contests = List(9, { generateFakeContest(it, context) })
             //     val ballotId: String,
             //    val ballotStyleId: String,
@@ -32,7 +32,7 @@ class SubmittedBallotConvertTest {
             //    val timestamp: Long,
             //    val cryptoHash: ElementModQ,
             //    val state: BallotState,
-            return SubmittedBallot(
+            return EncryptedBallot(
                 "ballotId $seq",
                 "ballotIdStyle",
                 generateUInt256(context),
@@ -42,13 +42,13 @@ class SubmittedBallotConvertTest {
                 42,
                 generateUInt256(context),
                 if (Random.nextBoolean())
-                    SubmittedBallot.BallotState.CAST
+                    EncryptedBallot.BallotState.CAST
                 else
-                    SubmittedBallot.BallotState.SPOILED,
+                    EncryptedBallot.BallotState.SPOILED,
             )
         }
 
-        private fun generateFakeContest(cseq: Int, context: GroupContext): SubmittedBallot.Contest {
+        private fun generateFakeContest(cseq: Int, context: GroupContext): EncryptedBallot.Contest {
             val selections = List(11, { generateFakeSelection(it, context) })
             //         val contestId: String,
             //        val sequenceOrder: Int,
@@ -57,7 +57,7 @@ class SubmittedBallotConvertTest {
             //        val ciphertextAccumulation: ElGamalCiphertext,
             //        val cryptoHash: ElementModQ,
             //        val proof: ConstantChaumPedersenProofKnownNonce?,
-            return SubmittedBallot.Contest(
+            return EncryptedBallot.Contest(
                 "contest" + cseq,
                 cseq,
                 generateUInt256(context),
@@ -78,8 +78,8 @@ class SubmittedBallotConvertTest {
         private fun generateFakeSelection(
             sseq: Int,
             context: GroupContext
-        ): SubmittedBallot.Selection {
-            return SubmittedBallot.Selection(
+        ): EncryptedBallot.Selection {
+            return EncryptedBallot.Selection(
                 "selection" + sseq,
                 sseq,
                 generateUInt256(context),

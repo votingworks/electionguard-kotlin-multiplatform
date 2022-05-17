@@ -306,7 +306,7 @@ public data class RecoveredParts(
 @pbandk.Export
 public data class RecoveredPartialDecryption(
     val selectionId: String = "",
-    val guardianId: String = "",
+    val decryptingGuardianId: String = "",
     val missingGuardianId: String = "",
     val share: electionguard.protogen.ElementModP? = null,
     val recoveryKey: electionguard.protogen.ElementModP? = null,
@@ -336,11 +336,11 @@ public data class RecoveredPartialDecryption(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "guardian_id",
+                        name = "decrypting_guardian_id",
                         number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "guardianId",
-                        value = electionguard.protogen.RecoveredPartialDecryption::guardianId
+                        jsonName = "decryptingGuardianId",
+                        value = electionguard.protogen.RecoveredPartialDecryption::decryptingGuardianId
                     )
                 )
                 add(
@@ -555,7 +555,7 @@ private fun RecoveredPartialDecryption.protoMergeImpl(plus: pbandk.Message?): Re
 @Suppress("UNCHECKED_CAST")
 private fun RecoveredPartialDecryption.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RecoveredPartialDecryption {
     var selectionId = ""
-    var guardianId = ""
+    var decryptingGuardianId = ""
     var missingGuardianId = ""
     var share: electionguard.protogen.ElementModP? = null
     var recoveryKey: electionguard.protogen.ElementModP? = null
@@ -564,13 +564,13 @@ private fun RecoveredPartialDecryption.Companion.decodeWithImpl(u: pbandk.Messag
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
-            2 -> guardianId = _fieldValue as String
+            2 -> decryptingGuardianId = _fieldValue as String
             3 -> missingGuardianId = _fieldValue as String
             4 -> share = _fieldValue as electionguard.protogen.ElementModP
             5 -> recoveryKey = _fieldValue as electionguard.protogen.ElementModP
             6 -> proof = _fieldValue as electionguard.protogen.GenericChaumPedersenProof
         }
     }
-    return RecoveredPartialDecryption(selectionId, guardianId, missingGuardianId, share,
+    return RecoveredPartialDecryption(selectionId, decryptingGuardianId, missingGuardianId, share,
         recoveryKey, proof, unknownFields)
 }

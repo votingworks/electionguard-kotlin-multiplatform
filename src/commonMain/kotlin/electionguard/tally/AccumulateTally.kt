@@ -2,7 +2,7 @@ package electionguard.tally
 
 import electionguard.ballot.CiphertextTally
 import electionguard.ballot.Manifest
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
 import electionguard.core.encryptedSum
@@ -14,8 +14,8 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
     private val contests = manifest.contests.associate { it.contestId to Contest(it)}
     private val castIds = mutableSetOf<String>()
 
-    fun addCastBallot(ballot: SubmittedBallot): Boolean {
-        if (ballot.state != SubmittedBallot.BallotState.CAST) {
+    fun addCastBallot(ballot: EncryptedBallot): Boolean {
+        if (ballot.state != EncryptedBallot.BallotState.CAST) {
             return false
         }
         if (!this.castIds.add(ballot.ballotId)) {
@@ -46,7 +46,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
     private inner class Contest(val manifestContest : Manifest.ContestDescription) {
         private val selections = manifestContest.selections.associate { it.selectionId to Selection(it)}
 
-        fun accumulate(ballotId : String, ballotContest: SubmittedBallot.Contest) {
+        fun accumulate(ballotId : String, ballotContest: EncryptedBallot.Contest) {
             for (ballotSelection in ballotContest.selections) {
                 if (ballotSelection.isPlaceholderSelection) {
                     continue

@@ -22,7 +22,7 @@ message ElectionRecord {
   PlaintextTally decrypted_tally = 8;
 
   // The guardians present for decryption
-  repeated AvailableGuardian available_guardians = 9;
+  repeated DecryptingGuardian available_guardians = 9;
 }
 
 // ElectionGuard representation of a specific election.

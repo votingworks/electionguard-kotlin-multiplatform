@@ -1,6 +1,6 @@
 package electionguard.decrypt
 
-import electionguard.ballot.AvailableGuardian
+import electionguard.ballot.DecryptingGuardian
 import electionguard.core.ElementModP
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.compatibleContextOrFail
@@ -86,7 +86,7 @@ class PartialDecryption(
         return this
     }
 
-    fun lagrangeInterpolation(guardians: List<AvailableGuardian>) {
+    fun lagrangeInterpolation(guardians: List<DecryptingGuardian>) {
         if (share == null && recoveredDecryptions.isEmpty()) {
             throw IllegalStateException("PartialDecryption $selectionId has neither share nor missingDecryptions")
         }
