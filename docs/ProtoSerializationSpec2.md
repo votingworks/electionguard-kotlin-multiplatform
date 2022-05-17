@@ -1,19 +1,26 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 5/1/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 5/16/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 Notes
 
 1. All fields must be present unless marked as optional.
-2. Proto_version uses [semantic versioning](https://semver.org/)
+2. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
+3. Proto_version uses [semantic versioning](https://semver.org/)
 
 ## common.proto
 
-### message ElementModQ, ElementModP
+### message ElementModQ
 
 | Name  | Type  | Notes                                           |
 |-------|-------|-------------------------------------------------|
-| value | bytes | bigint is variable length, unsigned, big-endian |
+| value | bytes | unsigned, big-endian, 0 left-padded to 32 bytes |
+
+### message ElementModP
+
+| Name  | Type   | Notes                                            |
+|-------|--------|--------------------------------------------------|
+| value | bytes  | unsigned, big-endian, 0 left-padded to 512 bytes |
 
 ### message ElGamalCiphertext
 
@@ -47,9 +54,9 @@ Notes
 
 ### message UInt256
 
-| Name  | Type   | Notes                                     |
-|-------|--------|-------------------------------------------|
-| value | bytes  | bigint is 32 bytes, unsigned, big-endian  |
+| Name  | Type  | Notes                                      |
+|-------|-------|--------------------------------------------|
+| value | bytes | unsigned, big-endian, 0 padded to 32 bytes |
 
 
 ## election_record.proto
@@ -82,7 +89,8 @@ Notes
 | config                    | ElectionConfig      |       |
 | elgamal_public_key        | ElementModP         |       |
 | manifest_hash             | UInt256             |       |
-| crypto_extended_base_hash | UInt256             |       |
+| crypto_base_hash          | UInt256             | Q     |
+| crypto_extended_base_hash | UInt256             | Qbar  |
 | guardians                 | List\<Guardian\>    |       |
 | metadata                  | map<string, string> |       |
 
@@ -249,37 +257,37 @@ Notes
 
 ### message PlaintextBallotContest
 
-| Name           | Type                             | Notes                                     |
-|----------------|----------------------------------|-------------------------------------------|
-| contest_id     | string                           | matches ContestDescription.contest_id     |
-| sequence_order | uint32                           | matches ContestDescription.sequence_order |
-| selections     | List\<PlaintextBallotSelection\> |                                           |
+| Name           | Type                             | Notes                             |
+|----------------|----------------------------------|-----------------------------------|
+| contest_id     | string                           | ContestDescription.contest_id     |
+| sequence_order | uint32                           | ContestDescription.sequence_order |
+| selections     | List\<PlaintextBallotSelection\> |                                   |
 
 ### message PlaintextBallotSelection
 
-| Name                     | Type   | Notes                                       |
-|--------------------------|--------|---------------------------------------------|
-| selection_id             | string | matches SelectionDescription.selection_id   |
-| sequence_order           | uint32 | matches SelectionDescription.sequence_order |
-| vote                     | uint32 |                                             |
-| extended_data            | string | optional, not implemented yet               |
+| Name                     | Type   | Notes                               |
+|--------------------------|--------|-------------------------------------|
+| selection_id             | string | SelectionDescription.selection_id   |
+| sequence_order           | uint32 | SelectionDescription.sequence_order |
+| vote                     | uint32 |                                     |
+| extended_data            | string | optional                            |
 
 
 ## ciphertext_ballot.proto
 
 ### message SubmittedBallot
 
-| Name              | Type                            | Notes                               |
-|-------------------|---------------------------------|-------------------------------------|
-| ballot_id         | string                          | matches PlaintextBallot.ballot_id   |
-| ballot_style_id   | string                          | matches BallotStyle.ballot_style_id |
-| manifest_hash     | UInt256                         | matches Manifest.crypto_hash        |
-| code_seed         | UInt256                         |                                     |
-| code              | UInt256                         |                                     |
-| contests          | List\<CiphertextBallotContest\> |                                     |
-| timestamp         | int64                           | seconds since the unix epoch UTC    |
-| crypto_hash       | UInt256                         |                                     |
-| state             | enum BallotState                | CAST, SPOILED                       |
+| Name              | Type                            | Notes                            |
+|-------------------|---------------------------------|----------------------------------|
+| ballot_id         | string                          | PlaintextBallot.ballot_id        |
+| ballot_style_id   | string                          | BallotStyle.ballot_style_id      |
+| manifest_hash     | UInt256                         | Manifest.crypto_hash             |
+| code_seed         | UInt256                         |                                  |
+| code              | UInt256                         |                                  |
+| contests          | List\<CiphertextBallotContest\> |                                  |
+| timestamp         | int64                           | seconds since the unix epoch UTC |
+| crypto_hash       | UInt256                         |                                  |
+| state             | enum BallotState                | CAST, SPOILED                    |
 
 ### message CiphertextBallotContest
 
@@ -332,21 +340,21 @@ Notes
 
 ### message CiphertextTallyContest
 
-| Name                     | Type                             | Notes                                     |
-|--------------------------|----------------------------------|-------------------------------------------|
-| contest_id               | string                           | matches ContestDescription.contest_id     |
-| sequence_order           | uint32                           | matches ContestDescription.sequence_order |
-| contest_description_hash | UInt256                          | matches ContestDescription.crypto_hash    |
-| selections               | List\<CiphertextTallySelection\> |                                           |
+| Name                     | Type                             | Notes                             |
+|--------------------------|----------------------------------|-----------------------------------|
+| contest_id               | string                           | ContestDescription.contest_id     |
+| sequence_order           | uint32                           | ContestDescription.sequence_order |
+| contest_description_hash | UInt256                          | ContestDescription.crypto_hash    |
+| selections               | List\<CiphertextTallySelection\> |                                   |
 
 ### message CiphertextTallySelection
 
-| Name                       | Type              | Notes                                       |
-|----------------------------|-------------------|---------------------------------------------|
-| selection_id               | string            | matches SelectionDescription.selection_id   |
-| sequence_order             | uint32            | matches SelectionDescription.sequence_order |
-| selection_description_hash | UInt256           | matches SelectionDescription.crypto_hash    |
-| ciphertext                 | ElGamalCiphertext |                                             |
+| Name                       | Type              | Notes                               |
+|----------------------------|-------------------|-------------------------------------|
+| selection_id               | string            | SelectionDescription.selection_id   |
+| sequence_order             | uint32            | SelectionDescription.sequence_order |
+| selection_description_hash | UInt256           | SelectionDescription.crypto_hash    |
+| ciphertext                 | ElGamalCiphertext |                                     |
 
 
 ## plaintext_tally.proto
@@ -360,20 +368,20 @@ Notes
 
 ### message PlaintextTallyContest
 
-| Name       | Type                            | Notes                                  |
-|------------|---------------------------------|----------------------------------------|
-| contest_id | string                          | matches ContestDescription.contest_id. |
-| selections | List\<PlaintextTallySelection\> |                                        |
+| Name       | Type                            | Notes                         |
+|------------|---------------------------------|-------------------------------|
+| contest_id | string                          | ContestDescription.contest_id |
+| selections | List\<PlaintextTallySelection\> |                               |
 
 ### message PlaintextTallySelection
 
-| Name                | Type                        | Notes                                     |
-|---------------------|-----------------------------|-------------------------------------------|
-| selection_id        | string                      | matches SelectionDescription.selection_id |
-| tally               | int                         | decrypted vote count                      |
-| value               | ElementModP                 | g^tally or M in the spec                  |
-| message             | ElGamalCiphertext           | encrypted vote count                      |
-| partial_decryptions | List\<PartialDecryption\>   | direct or recovered, nguardians of them   |
+| Name                | Type                        | Notes                                   |
+|---------------------|-----------------------------|-----------------------------------------|
+| selection_id        | string                      | SelectionDescription.selection_id       |
+| tally               | int                         | decrypted vote count                    |
+| value               | ElementModP                 | g^tally or M in the spec                |
+| message             | ElGamalCiphertext           | encrypted vote count                    |
+| partial_decryptions | List\<PartialDecryption\>   | direct or recovered, nguardians of them |
 
 ### message PartialDecryption
 

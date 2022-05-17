@@ -6,19 +6,21 @@ import electionguard.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
+// Test election records that have been fully decrypted
 class ElectionRecordTest {
-    // @Test
-    fun readElectionRecordWrittenByDecryptorJava() {
+    @Test
+    fun readElectionRecordAllAvailable() {
         runTest {
-            readElectionRecordAndValidate("src/commonTest/data/testJava/decryptor/")
+            readElectionRecordAndValidate("src/commonTest/data/runWorkflowAllAvailable")
         }
     }
 
     @Test
-    fun readElectionRecordWrittenByDecryptorKotlin() {
+    fun readElectionRecordSomeAvailable() {
         runTest {
-            readElectionRecordAndValidate("src/commonTest/data/runWorkflow")
+            readElectionRecordAndValidate("src/commonTest/data/runWorkflowSomeAvailable")
         }
     }
 
@@ -29,7 +31,8 @@ class ElectionRecordTest {
             assertNotNull(electionRecordIn)
             val decryption = electionRecordIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
             readElectionRecord(decryption)
-            validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally, decryption.availableGuardians.size)
+            validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally,
+                decryption.numberOfGuardians(), decryption.quorum(), decryption.availableGuardians.size)
         }
     }
 
@@ -41,9 +44,6 @@ class ElectionRecordTest {
         assertEquals("2.0.0", config.protoVersion)
         assertEquals("Standard", config.constants.name)
         assertEquals("v0.95", config.manifest.specVersion)
-        assertEquals(3, config.numberOfGuardians)
-        assertEquals(3, config.quorum)
-        assertEquals(3, init.guardians.size)
         assertEquals("RunWorkflow", tallyResult.ciphertextTally.tallyId)
         assertEquals("RunWorkflow", decryption.decryptedTally.tallyId)
         assertNotNull(decryption.decryptedTally)
@@ -51,15 +51,29 @@ class ElectionRecordTest {
         assertNotNull(contests)
         val contest = contests["contest24"]
         assertNotNull(contest)
-        assertEquals(3, decryption.availableGuardians.size)
+
+        assertEquals(init.guardians.size, config.numberOfGuardians)
+        assertEquals(init.guardians.size, tallyResult.numberOfGuardians())
+
+        assertEquals(init.guardians.size, config.numberOfGuardians)
+        assertTrue(tallyResult.quorum() <= decryption.availableGuardians.size)
+        assertTrue(tallyResult.numberOfGuardians() >= decryption.availableGuardians.size)
     }
 
-    fun validateTally(jointKey: ElGamalPublicKey, tally: PlaintextTally, nguardians: Int?) {
+    fun validateTally(jointKey: ElGamalPublicKey, tally: PlaintextTally, nguardians: Int, quorum: Int, navailable: Int) {
         for (contest in tally.contests.values) {
             for (selection in contest.selections.values) {
                 val actual : Int? = jointKey.dLog(selection.value, 100)
                 assertEquals(selection.tally, actual)
                 assertEquals(nguardians, selection.partialDecryptions.size)
+                // directly computed == navailable
+                assertEquals(navailable, selection.partialDecryptions.filter { it.proof != null}.count())
+                // indirectly computed (aka compensated, recovered)  == nguardians - navailable
+                assertEquals(nguardians - navailable, selection.partialDecryptions.filter { it.recoveredDecryptions.isNotEmpty()}.count())
+                // the compensated decryptions have a quorum
+                selection.partialDecryptions.filter { it.recoveredDecryptions.isNotEmpty()}.forEach {
+                    assertEquals(quorum, it.recoveredDecryptions.count())
+                }
             }
         }
     }

@@ -10,7 +10,7 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
-    val kotlinDir = "src/commonTest/data/runWorkflow"
+    val kotlinDir = "src/commonTest/data/runWorkflowAllAvailable"
     val decryptorDir = "src/commonTest/data/testJava/decryptor/"
 
     @Test

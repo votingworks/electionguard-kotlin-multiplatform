@@ -15,7 +15,6 @@ import electionguard.core.GroupContext
 import electionguard.core.UInt256
 import electionguard.core.encrypt
 import electionguard.core.hashElements
-import electionguard.core.multP
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.decrypt.DecryptingTrustee
@@ -78,7 +77,7 @@ class FakeKeyCeremonyTrusteeTest {
         val commitmentsHash = hashElements(commitments)
 
         val primes = config.constants
-        val crypto_base_hash: UInt256 = hashElements(
+        val cryptoBaseHash: UInt256 = hashElements(
             primes.largePrime.toHex(), // LOOK is this the same as converting to ElementMod ??
             primes.smallPrime.toHex(),
             primes.generator.toHex(),
@@ -87,7 +86,7 @@ class FakeKeyCeremonyTrusteeTest {
             config.manifest.cryptoHash,
         )
 
-        val cryptoExtendedBaseHash: UInt256 = hashElements(crypto_base_hash, commitmentsHash)
+        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
         val jointPublicKey: ElementModP =
             trustees.map { it.polynomial.coefficientCommitments[0] }.reduce { a, b -> a * b }
         val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
@@ -95,6 +94,7 @@ class FakeKeyCeremonyTrusteeTest {
             config,
             jointPublicKey,
             config.manifest.cryptoHash,
+            cryptoBaseHash,
             cryptoExtendedBaseHash,
             guardians,
         )

@@ -6,7 +6,7 @@ import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.compatibleContextOrFail
 import electionguard.core.multP
 
-/** Partial decryptions from one DecryptingTrustee, includes both direct and compensated decryptions */
+/** Partial decryptions from one DecryptingTrustee, includes both direct and compensated decryptions. */
 class DecryptionShare(
     val decryptingTrustee: String, // who did these Decryptions?
 ) {
@@ -19,11 +19,11 @@ class DecryptionShare(
         return this
     }
 
-    fun addMissingDecryption(
+    fun addRecoveredDecryption(
         contestId: String,
         selectionId: String,
         missingGuardian: String,
-        decryption: MissingPartialDecryption
+        decryption: RecoveredPartialDecryption
     ): DecryptionShare {
         var existing = compensatedDecryptions["${contestId}#@${selectionId}"]
         if (existing == null) {
@@ -46,11 +46,11 @@ data class DirectDecryption(
 class CompensatedDecryption(
     val selectionId: String,
 ) {
-    // keyed by missing guardian id
-    val missingDecryptions: MutableMap<String, MissingPartialDecryption> = mutableMapOf()
+    // keyed by missing guardian id.
+    val missingDecryptions: MutableMap<String, RecoveredPartialDecryption> = mutableMapOf()
 }
 
-data class MissingPartialDecryption(
+data class RecoveredPartialDecryption(
     val decryptingGuardianId: String,
     val missingGuardianId: String,
     val share: ElementModP,  // M_𝑖,ℓ
@@ -63,15 +63,15 @@ class PartialDecryption(
     val selectionId: String,
     val guardianId: String, // share for this guardian
     var share: ElementModP?, // M_𝑖 set by direct decryption, else computed from missingDecryptions
-    val proof: GenericChaumPedersenProof?,
-    recovered: List<MissingPartialDecryption>?
+    val proof: GenericChaumPedersenProof?, // not null when its directly computed
+    recovered: List<RecoveredPartialDecryption>? // not null when its indirectly computed
 ) {
     // When guardian is missing there will be quorum of these
-    val missingDecryptions: MutableList<MissingPartialDecryption> = mutableListOf()
+    val recoveredDecryptions: MutableList<RecoveredPartialDecryption> = mutableListOf()
 
     init {
         if (recovered != null) {
-            missingDecryptions.addAll(recovered)
+            recoveredDecryptions.addAll(recovered)
         }
     }
 
@@ -81,22 +81,22 @@ class PartialDecryption(
     constructor(guardianId: String, partial: CompensatedDecryption) :
             this(partial.selectionId, guardianId, null, null, null)
 
-    fun add(recovered: MissingPartialDecryption): PartialDecryption {
-        missingDecryptions.add(recovered)
+    fun add(recovered: RecoveredPartialDecryption): PartialDecryption {
+        recoveredDecryptions.add(recovered)
         return this
     }
 
     fun lagrangeInterpolation(guardians: List<AvailableGuardian>) {
-        if (share == null && missingDecryptions.isEmpty()) {
+        if (share == null && recoveredDecryptions.isEmpty()) {
             throw IllegalStateException("PartialDecryption $selectionId has neither share nor missingDecryptions")
         }
-        if (share != null && missingDecryptions.isNotEmpty()) {
+        if (share != null && recoveredDecryptions.isNotEmpty()) {
             throw IllegalStateException("PartialDecryption $selectionId has both share and missingDecryptions")
         }
         // the quardians and missingDecryptions are sorted by guardianId, so can use index to match with
         // 𝑀_𝑖 = ∏ ℓ∈𝑈 (𝑀_𝑖,ℓ) mod 𝑝, where 𝑀_𝑖,ℓ = 𝐴^𝑃_𝑖(ℓ) mod 𝑝.
-        if (missingDecryptions.isNotEmpty()) {
-            val shares = missingDecryptions.sortedBy { it.decryptingGuardianId }.mapIndexed { idx, value ->
+        if (recoveredDecryptions.isNotEmpty()) {
+            val shares = recoveredDecryptions.sortedBy { it.decryptingGuardianId }.mapIndexed { idx, value ->
                 value.share powP guardians[idx].lagrangeCoordinate
             }
             val context = compatibleContextOrFail(*shares.toTypedArray())
@@ -105,6 +105,7 @@ class PartialDecryption(
         }
     }
 
+    // When everything is done, the share is never null
     fun share(): ElementModP {
         return share!!
     }
@@ -119,7 +120,7 @@ class PartialDecryption(
         if (guardianId != other.guardianId) return false
         if (share != other.share) return false
         if (proof != other.proof) return false
-        if (missingDecryptions != other.missingDecryptions) return false
+        if (recoveredDecryptions != other.recoveredDecryptions) return false
 
         return true
     }
@@ -129,7 +130,7 @@ class PartialDecryption(
         result = 31 * result + guardianId.hashCode()
         result = 31 * result + (share?.hashCode() ?: 0)
         result = 31 * result + (proof?.hashCode() ?: 0)
-        result = 31 * result + missingDecryptions.hashCode()
+        result = 31 * result + recoveredDecryptions.hashCode()
         return result
     }
 }

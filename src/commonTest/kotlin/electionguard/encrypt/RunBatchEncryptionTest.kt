@@ -9,9 +9,9 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflow",
+                "src/commonTest/data/runWorkflowAllAvailable",
                 "-ballots",
-                "src/commonTest/data/runWorkflow/private_data/input",
+                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
                 "-out",
                 "testOut/testRunBatchEncryptionTest",
                 "-invalidBallots",
