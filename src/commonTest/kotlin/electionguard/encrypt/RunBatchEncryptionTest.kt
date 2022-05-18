@@ -5,6 +5,25 @@ import kotlin.test.Test
 class RunBatchEncryptionTest {
 
     @Test
+    fun testRunBatchEncryptionNoncesTest() {
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowAllAvailable",
+                "-ballots",
+                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "-out",
+                "testOut/testRunBatchEncryptionNoncesTest",
+                "-invalid",
+                "testOut/testRunBatchEncryptionNoncesTest/invalid_ballots",
+                "-fixed",
+                "-nthreads",
+                "1",
+            )
+        )
+    }
+
+    @Test
     fun testRunBatchEncryptionTest() {
         main(
             arrayOf(
@@ -14,30 +33,10 @@ class RunBatchEncryptionTest {
                 "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
                 "-out",
                 "testOut/testRunBatchEncryptionTest",
-                "-invalidBallots",
+                "-invalid",
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
-                "-fixedNonces",
                 "-nthreads",
-                "1",
-            )
-        )
-    }
-
-    @Test
-    fun testRunChannelEncryptionTest() {
-        main(
-            arrayOf(
-                "-in",
-                "src/commonTest/data/runWorkflowAllAvailable",
-                "-ballots",
-                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
-                "-out",
-                "testOut/testRunBatchEncryptionTest",
-                "-invalidBallots",
-                "testOut/testRunBatchEncryptionTest/invalid_ballots",
-                "-fixedNonces",
-                "-nthreads",
-                "11",
+                "12",
             )
         )
     }
