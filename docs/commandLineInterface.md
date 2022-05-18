@@ -17,3 +17,15 @@ Options:
 --nthreads, -nthreads -> Number of parellel threads to use { Int }
 --help, -h -> Usage info 
 ````
+
+Native executable gives output:
+
+````
+$ build/bin/native/RunBatchEncryptionReleaseExecutable/RunBatchEncryption.kexe   -in src/commonTest/data/runWorkflowAllAvailable   -ballots src/commonTest/data/runWorkflowAllAvailable/private_data/input   -out testOut/RunBatchEncryption   -nthreads 11
+RunBatchEncryption starting
+   input= src/commonTest/data/runWorkflowAllAvailable
+   ballots = src/commonTest/data/runWorkflowAllAvailable/private_data/input
+   output = testOut/RunBatchEncryption
+Encryption with nthreads = 11 took 14774 millisecs for 100 ballots = 148 msecs/ballot
+    12500 total encryptions = 125 per ballot = 1.18192 millisecs/encryption
+````
