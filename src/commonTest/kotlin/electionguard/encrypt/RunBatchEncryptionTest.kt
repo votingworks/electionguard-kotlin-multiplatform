@@ -18,7 +18,26 @@ class RunBatchEncryptionTest {
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-fixedNonces",
                 "-nthreads",
-                "11"
+                "1",
+            )
+        )
+    }
+
+    @Test
+    fun testRunChannelEncryptionTest() {
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowAllAvailable",
+                "-ballots",
+                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "-out",
+                "testOut/testRunBatchEncryptionTest",
+                "-invalidBallots",
+                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "-fixedNonces",
+                "-nthreads",
+                "11",
             )
         )
     }

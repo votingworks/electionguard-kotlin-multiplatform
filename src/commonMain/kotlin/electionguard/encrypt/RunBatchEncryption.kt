@@ -47,36 +47,37 @@ private val debug = false
  * All ballots will be cast.
  */
 fun main(args: Array<String>) {
-    val parser = ArgParser("RunBatchEncryption")
+    val parser = ArgParser("RunBatchEncryption.kexe")
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
-        description = "Directory containing input election record"
-    ).required()
-    val outputDir by parser.option(
-        ArgType.String,
-        shortName = "out",
-        description = "Directory to write output election record"
+        description = "Directory containing input ElectionInitialized.protobuf file"
     ).required()
     val ballotDir by parser.option(
         ArgType.String,
         shortName = "ballots",
         description = "Directory to read Plaintext ballots from"
     ).required()
+    val outputDir by parser.option(
+        ArgType.String,
+        shortName = "out",
+        description = "Directory to write output election record"
+    ).required()
     val invalidDir by parser.option(
         ArgType.String,
-        shortName = "invalidBallots",
-        description = "Directory to write invalid Plaintext ballots to"
-    ).required()
+        shortName = "invalid",
+        description = "Directory to write invalid input ballots to"
+    )
     val fixedNonces by parser.option(
         ArgType.Boolean,
-        shortName = "fixedNonces",
+        shortName = "fixed",
         description = "Encrypt with fixed nonces and timestamp")
     val nthreads by parser.option(
         ArgType.Int,
         shortName = "nthreads",
-        description = "Number of parellel threads to use")
+        description = "Number of parallel threads to use")
     parser.parse(args)
+    println("RunBatchEncryption starting\n   input= $inputDir\n   ballots = $ballotDir\n   output = $outputDir")
 
     if (nthreads == 1) {
         batchEncryption(productionGroup(), inputDir, outputDir, ballotDir, invalidDir, fixedNonces?: false)
@@ -87,7 +88,7 @@ fun main(args: Array<String>) {
 }
 
 // single threaded
-fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String, invalidDir: String, fixedNonces: Boolean) {
+fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String, invalidDir: String?, fixedNonces: Boolean) {
     val electionRecordIn = ElectionRecord(inputDir, group)
     val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
@@ -142,7 +143,7 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
     )
     println(" wrote ${submitted.size} submitted ballots to $outputDir")
 
-    if (!invalidBallots.isEmpty()) {
+    if (invalidDir != null && !invalidBallots.isEmpty()) {
         val ballotPublisher = Publisher(outputDir, PublisherMode.createIfMissing)
         ballotPublisher.writePlaintextBallot(invalidDir, invalidBallots)
         println("wrote ${invalidBallots.size} invalid ballots to $invalidDir")
@@ -151,7 +152,7 @@ fun batchEncryption(group: GroupContext, inputDir: String, outputDir: String, ba
 
 // multi threaded
 fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
-                      invalidDir: String, fixedNonces: Boolean, nthreads: Int) {
+                      invalidDir: String?, fixedNonces: Boolean, nthreads: Int) {
     val electionRecordIn = ElectionRecord(inputDir, group)
     val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
@@ -167,8 +168,11 @@ fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, 
         // kotlin.system.exitProcess(1) // kotlin 1.6.20
         return
     }
+    // Map<BallotStyle: String, selectionCount: Int>
+    val styleCount = manifestValidator.countEncryptions()
 
     // BallotInputValidation
+    var countEncryptions: Int = 0
     val invalidBallots = ArrayList<PlaintextBallot>()
     val ballotValidator = BallotInputValidation(electionInit.manifest())
     val filter: ((PlaintextBallot) -> Boolean) = {
@@ -179,6 +183,7 @@ fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, 
             invalidBallots.add(PlaintextBallot(it, mess.toString()))
             false
         } else {
+            countEncryptions += styleCount.get(it.ballotStyleId) ?: 0
             true
         }
     }
@@ -204,11 +209,14 @@ fun channelEncryption(group: GroupContext, inputDir: String, outputDir: String, 
     sink.close()
 
     val took = getSystemTimeInMillis() - starting
-    val perBallot = (took.toDouble() / count).roundToInt()
-    println("ChannelEncryption took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
+    val msecsPerBallot = (took.toDouble() / count).roundToInt()
+    println("Encryption with nthreads = ${nthreads} took $took millisecs for ${count} ballots = $msecsPerBallot msecs/ballot")
+    val msecPerEncryption = (took.toDouble() / countEncryptions)
+    val encryptionPerBallot = (countEncryptions / count)
+    println("    ${countEncryptions} total encryptions = ${encryptionPerBallot} per ballot = $msecPerEncryption millisecs/encryption")
 
     publisher.writeElectionInitialized(electionInit)
-    if (!invalidBallots.isEmpty()) {
+    if (invalidDir != null && !invalidBallots.isEmpty()) {
         publisher.writePlaintextBallot(invalidDir, invalidBallots)
         println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
