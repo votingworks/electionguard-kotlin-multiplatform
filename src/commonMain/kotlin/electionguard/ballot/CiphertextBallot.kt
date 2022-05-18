@@ -44,8 +44,8 @@ data class CiphertextBallot(
     }
 }
 
-fun CiphertextBallot.submit(state: SubmittedBallot.BallotState): SubmittedBallot {
-    return SubmittedBallot(
+fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot {
+    return EncryptedBallot(
         this.ballotId,
         this.ballotStyleId,
         this.manifestHash,
@@ -58,8 +58,8 @@ fun CiphertextBallot.submit(state: SubmittedBallot.BallotState): SubmittedBallot
     )
 }
 
-fun CiphertextBallot.Contest.submit(): SubmittedBallot.Contest {
-    return SubmittedBallot.Contest(
+fun CiphertextBallot.Contest.submit(): EncryptedBallot.Contest {
+    return EncryptedBallot.Contest(
         this.contestId,
         this.sequenceOrder,
         this.contestHash,
@@ -69,8 +69,8 @@ fun CiphertextBallot.Contest.submit(): SubmittedBallot.Contest {
     )
 }
 
-fun CiphertextBallot.Selection.submit(): SubmittedBallot.Selection {
-    return SubmittedBallot.Selection(
+fun CiphertextBallot.Selection.submit(): EncryptedBallot.Selection {
+    return EncryptedBallot.Selection(
         this.selectionId,
         this.sequenceOrder,
         this.selectionHash,

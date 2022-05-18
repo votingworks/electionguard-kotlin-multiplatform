@@ -3,7 +3,7 @@ package electionguard.verifier
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.Guardian
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.ConstantChaumPedersenProofKnownNonce
 import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
 import electionguard.core.ElGamalCiphertext
@@ -139,7 +139,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
 
     // multithreaded version
     private val nthreads = 11
-    fun verifySubmittedBallots(ballots: Iterable<SubmittedBallot>): Boolean {
+    fun verifySubmittedBallots(ballots: Iterable<EncryptedBallot>): Boolean {
         val starting = getSystemTimeInMillis()
 
         runBlocking {
@@ -159,7 +159,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
         return allOk
     }
 
-    fun verifySubmittedBallot(ballot: SubmittedBallot): Boolean {
+    fun verifySubmittedBallot(ballot: EncryptedBallot): Boolean {
         var bvalid = true
         var ncontests = 0
         var nselections = 0
@@ -196,7 +196,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
 
 private var allOk = true
 private var count = 0
-fun CoroutineScope.produceBallots(producer: Iterable<SubmittedBallot>): ReceiveChannel<SubmittedBallot> = produce {
+fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> = produce {
     for (ballot in producer) {
         send(ballot)
         yield()
@@ -209,8 +209,8 @@ fun CoroutineScope.produceBallots(producer: Iterable<SubmittedBallot>): ReceiveC
 // LOOK not possible to do ballot chaining
 fun CoroutineScope.launchVerifier(
     id: Int,
-    input: ReceiveChannel<SubmittedBallot>,
-    verify: (SubmittedBallot) -> Boolean,
+    input: ReceiveChannel<EncryptedBallot>,
+    verify: (EncryptedBallot) -> Boolean,
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
         if (debugChannels) println("$id channel working on ${ballot.ballotId}")

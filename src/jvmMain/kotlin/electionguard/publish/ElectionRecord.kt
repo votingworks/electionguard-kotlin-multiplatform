@@ -6,7 +6,7 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
@@ -57,7 +57,7 @@ actual class ElectionRecord actual constructor(
     }
 
     // all submitted ballots, cast or spoiled
-    actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateSubmittedBallots(): Iterable<EncryptedBallot> {
         val filename = path.submittedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
@@ -66,24 +66,24 @@ actual class ElectionRecord actual constructor(
     }
 
     // only cast SubmittedBallots
-    actual fun iterateCastBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateCastBallots(): Iterable<EncryptedBallot> {
         val filename = path.submittedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
         val filter =
-            Predicate<electionguard.protogen.SubmittedBallot> { it.state == electionguard.protogen.SubmittedBallot.BallotState.CAST }
+            Predicate<electionguard.protogen.EncryptedBallot> { it.state == electionguard.protogen.EncryptedBallot.BallotState.CAST }
         return Iterable { SubmittedBallotIterator(filename, groupContext, filter) }
     }
 
     // only spoiled SubmittedBallots
-    actual fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
         val filename = path.submittedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
         val filter =
-            Predicate<electionguard.protogen.SubmittedBallot> { it.state == electionguard.protogen.SubmittedBallot.BallotState.SPOILED }
+            Predicate<electionguard.protogen.EncryptedBallot> { it.state == electionguard.protogen.EncryptedBallot.BallotState.SPOILED }
         return Iterable { SubmittedBallotIterator(filename, groupContext, filter) }
     }
 

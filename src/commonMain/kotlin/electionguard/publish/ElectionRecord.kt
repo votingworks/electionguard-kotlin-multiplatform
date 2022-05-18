@@ -6,7 +6,7 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
@@ -21,9 +21,9 @@ expect class ElectionRecord(
     fun readDecryptionResult(): Result<DecryptionResult, String>
 
     // Use iterators, so that we never have to read in all objects at once.
-    fun iterateSubmittedBallots(): Iterable<SubmittedBallot>
-    fun iterateCastBallots(): Iterable<SubmittedBallot>
-    fun iterateSpoiledBallots(): Iterable<SubmittedBallot>
+    fun iterateSubmittedBallots(): Iterable<EncryptedBallot>
+    fun iterateCastBallots(): Iterable<EncryptedBallot>
+    fun iterateSpoiledBallots(): Iterable<EncryptedBallot>
     fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally>
 
     // not part of the election record, private data

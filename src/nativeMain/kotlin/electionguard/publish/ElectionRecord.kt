@@ -6,7 +6,7 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.PlaintextTally
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
@@ -39,28 +39,28 @@ actual class ElectionRecord actual constructor(
         return groupContext.readDecryptionResult(path.decryptionResultPath())
     }
 
-    actual fun iterateSubmittedBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateSubmittedBallots(): Iterable<EncryptedBallot> {
         if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
         return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath()) { true } }
     }
 
-    actual fun iterateCastBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateCastBallots(): Iterable<EncryptedBallot> {
         if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
         return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath())
-            { it.state === electionguard.protogen.SubmittedBallot.BallotState.CAST }
+            { it.state === electionguard.protogen.EncryptedBallot.BallotState.CAST }
         }
     }
 
-    actual fun iterateSpoiledBallots(): Iterable<SubmittedBallot> {
+    actual fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
         if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
         return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath())
-            { it.state === electionguard.protogen.SubmittedBallot.BallotState.SPOILED }
+            { it.state === electionguard.protogen.EncryptedBallot.BallotState.SPOILED }
         }
     }
 

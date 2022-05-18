@@ -1,6 +1,6 @@
 package electionguard.decrypt
 
-import electionguard.ballot.AvailableGuardian
+import electionguard.ballot.DecryptingGuardian
 import electionguard.ballot.CiphertextTally
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.TallyResult
@@ -18,13 +18,13 @@ class DecryptingMediator(
     val decryptingTrustees: List<DecryptingTrusteeIF>,
     val missingTrustees: List<String>,
 ) {
-    val availableGuardians: List<AvailableGuardian> by lazy {
-        val result = ArrayList<AvailableGuardian>()
+    val availableGuardians: List<DecryptingGuardian> by lazy {
+        val result = ArrayList<DecryptingGuardian>()
         for (otherTrustee in decryptingTrustees) {
             val present: List<UInt> =
                 decryptingTrustees.filter { !it.id().equals(otherTrustee.id()) }.map { it.xCoordinate() }
             val coeff: ElementModQ = group.computeLagrangeCoefficient(otherTrustee.xCoordinate(), present)
-            result.add(AvailableGuardian(otherTrustee.id(), otherTrustee.xCoordinate().toInt(), coeff))
+            result.add(DecryptingGuardian(otherTrustee.id(), otherTrustee.xCoordinate().toInt(), coeff))
         }
         // sorted by guardianId, to match PartialDecryption.lagrangeInterpolation()
         result.sortedBy { it.guardianId}

@@ -4,7 +4,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.submit
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
@@ -56,7 +56,7 @@ class BallotPrecomputeTest {
 
             val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
             val sink: SubmittedBallotSinkIF = publisher.submittedBallotSink()
-            eballots.forEach { sink.writeSubmittedBallot(it.submit(SubmittedBallot.BallotState.CAST)) }
+            eballots.forEach { sink.writeSubmittedBallot(it.submit(EncryptedBallot.BallotState.CAST)) }
             sink.close()
             println("done")
         }

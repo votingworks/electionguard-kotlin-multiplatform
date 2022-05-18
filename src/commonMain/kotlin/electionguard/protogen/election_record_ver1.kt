@@ -12,7 +12,7 @@ public data class ElectionRecord(
     val devices: List<electionguard.protogen.EncryptionDevice> = emptyList(),
     val ciphertextTally: electionguard.protogen.CiphertextTally? = null,
     val decryptedTally: electionguard.protogen.PlaintextTally? = null,
-    val availableGuardians: List<electionguard.protogen.AvailableGuardian> = emptyList(),
+    val availableGuardians: List<electionguard.protogen.DecryptingGuardian> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.ElectionRecord = protoMergeImpl(other)
@@ -110,7 +110,7 @@ public data class ElectionRecord(
                         messageDescriptor = this@Companion::descriptor,
                         name = "available_guardians",
                         number = 9,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.AvailableGuardian>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.AvailableGuardian.Companion)),
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.DecryptingGuardian>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.DecryptingGuardian.Companion)),
                         jsonName = "availableGuardians",
                         value = electionguard.protogen.ElectionRecord::availableGuardians
                     )
@@ -462,7 +462,7 @@ private fun ElectionRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
     var devices: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptionDevice>? = null
     var ciphertextTally: electionguard.protogen.CiphertextTally? = null
     var decryptedTally: electionguard.protogen.PlaintextTally? = null
-    var availableGuardians: pbandk.ListWithSize.Builder<electionguard.protogen.AvailableGuardian>? = null
+    var availableGuardians: pbandk.ListWithSize.Builder<electionguard.protogen.DecryptingGuardian>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -474,7 +474,7 @@ private fun ElectionRecord.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
             6 -> devices = (devices ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.EncryptionDevice> }
             7 -> ciphertextTally = _fieldValue as electionguard.protogen.CiphertextTally
             8 -> decryptedTally = _fieldValue as electionguard.protogen.PlaintextTally
-            9 -> availableGuardians = (availableGuardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.AvailableGuardian> }
+            9 -> availableGuardians = (availableGuardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptingGuardian> }
         }
     }
     return ElectionRecord(protoVersion, constants, manifest, context,

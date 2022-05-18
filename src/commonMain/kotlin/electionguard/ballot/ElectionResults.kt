@@ -30,7 +30,7 @@ data class TallyResult(
 data class DecryptionResult(
     val tallyResult: TallyResult,
     val decryptedTally: PlaintextTally,
-    val availableGuardians: List<AvailableGuardian>,
+    val availableGuardians: List<DecryptingGuardian>,
     val metadata: Map<String, String> = emptyMap(),
 ) {
     fun numberOfGuardians(): Int {
@@ -41,7 +41,7 @@ data class DecryptionResult(
     }
 }
 
-data class AvailableGuardian(
+data class DecryptingGuardian(
     var guardianId: String,
     var xCoordinate: Int,
     var lagrangeCoordinate: ElementModQ,

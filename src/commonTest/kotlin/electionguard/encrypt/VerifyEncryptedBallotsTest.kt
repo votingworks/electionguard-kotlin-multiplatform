@@ -1,12 +1,11 @@
 package electionguard.encrypt
 
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.publish.ElectionRecord
 import electionguard.verifier.Verifier
-import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class VerifyEncryptedBallotsTest {
@@ -53,14 +52,14 @@ class VerifyEncryptedBallotsTest {
     }
 
     // this is slow - just do first one
-    fun readBallotsOne(context: GroupContext, topdir: String): List<SubmittedBallot> {
+    fun readBallotsOne(context: GroupContext, topdir: String): List<EncryptedBallot> {
         val electionRecordIn = ElectionRecord(topdir, context)
         val ballotIter =  electionRecordIn.iterateSubmittedBallots().iterator()
         assertTrue(ballotIter.hasNext())
         return listOf(ballotIter.next())
     }
 
-    fun readBallots(context: GroupContext, topdir: String): List<SubmittedBallot> {
+    fun readBallots(context: GroupContext, topdir: String): List<EncryptedBallot> {
         val electionRecordIn = ElectionRecord(topdir, context)
         return electionRecordIn.iterateSubmittedBallots().toList()
     }

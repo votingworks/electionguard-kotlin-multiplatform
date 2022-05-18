@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 5/16/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 5/17/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 Notes
 
@@ -66,8 +66,8 @@ Notes
 | Name                | Type                | Notes                |
 |---------------------|---------------------|----------------------|
 | proto_version       | string              | proto schema version |
-| constants           | ElectionConstants   | key ceremony         |
-| manifest            | Manifest            | key ceremony         |
+| constants           | ElectionConstants   |                      |
+| manifest            | Manifest            |                      |
 | number_of_guardians | uint32              |                      |
 | quorum              | uint32              |                      |
 | metadata            | map<string, string> |                      |
@@ -94,7 +94,7 @@ Notes
 | guardians                 | List\<Guardian\>    |       |
 | metadata                  | map<string, string> |       |
 
-### message GuardianRecord
+### message Guardian
 
 | Name                    | Type                 | Notes                          |
 |-------------------------|----------------------|--------------------------------|
@@ -114,14 +114,14 @@ Notes
 
 ### message DecryptionResult
 
-| Name                 | Type                      | Notes |
-|----------------------|---------------------------|-------|
-| tally_result         | TallyResult               |       |
-| decrypted_tally      | PlaintextTally            |       |
-| decrypting_guardians | List\<AvailableGuardian\> |       |
-| metadata             | map<string, string>       |       |
+| Name                 | Type                       | Notes |
+|----------------------|----------------------------|-------|
+| tally_result         | TallyResult                |       |
+| decrypted_tally      | PlaintextTally             |       |
+| decrypting_guardians | List\<DecryptingGuardian\> |       |
+| metadata             | map<string, string>        |       |
 
-### message AvailableGuardian
+### message DecryptingGuardian
 
 | Name                 | Type        | Notes                          |
 |----------------------|-------------|--------------------------------|
@@ -248,12 +248,12 @@ Notes
 
 ### message PlaintextBallot
 
-| Name            | Type                           | Notes                               |
-|-----------------|--------------------------------|-------------------------------------|
-| ballot_id       | string                         | unique input ballot id              |
-| ballot_style_id | string                         | matches BallotStyle.ballot_style_id |
-| contests        | List\<PlaintextBallotContest\> |                                     |
-| errors          | string                         | optional eg an invalid ballot       |
+| Name            | Type                           | Notes                         |
+|-----------------|--------------------------------|-------------------------------|
+| ballot_id       | string                         | unique input ballot id        |
+| ballot_style_id | string                         | BallotStyle.ballot_style_id   |
+| contests        | List\<PlaintextBallotContest\> |                               |
+| errors          | string                         | optional eg an invalid ballot |
 
 ### message PlaintextBallotContest
 
@@ -275,32 +275,32 @@ Notes
 
 ## ciphertext_ballot.proto
 
-### message SubmittedBallot
+### message EncryptedBallot
 
-| Name              | Type                            | Notes                            |
-|-------------------|---------------------------------|----------------------------------|
-| ballot_id         | string                          | PlaintextBallot.ballot_id        |
-| ballot_style_id   | string                          | BallotStyle.ballot_style_id      |
-| manifest_hash     | UInt256                         | Manifest.crypto_hash             |
-| code_seed         | UInt256                         |                                  |
-| code              | UInt256                         |                                  |
-| contests          | List\<CiphertextBallotContest\> |                                  |
-| timestamp         | int64                           | seconds since the unix epoch UTC |
-| crypto_hash       | UInt256                         |                                  |
-| state             | enum BallotState                | CAST, SPOILED                    |
+| Name              | Type                             | Notes                            |
+|-------------------|----------------------------------|----------------------------------|
+| ballot_id         | string                           | PlaintextBallot.ballot_id        |
+| ballot_style_id   | string                           | BallotStyle.ballot_style_id      |
+| manifest_hash     | UInt256                          | Manifest.crypto_hash             |
+| code_seed         | UInt256                          |                                  |
+| code              | UInt256                          |                                  |
+| contests          | List\<EncryptedBallotContest\>   |                                  |
+| timestamp         | int64                            | seconds since the unix epoch UTC |
+| crypto_hash       | UInt256                          |                                  |
+| state             | enum BallotState                 | CAST, SPOILED                    |
 
-### message CiphertextBallotContest
+### message EncryptedBallotContest
 
-| Name                    | Type                              | Notes                                     |
-|-------------------------|-----------------------------------|-------------------------------------------|
-| contest_id              | string                            | matches ContestDescription.contest_id     |
-| sequence_order          | uint32                            | matches ContestDescription.sequence_order |
-| contest_hash            | UInt256                           | matches ContestDescription.crypto_hash    |                                                                     |
-| selections              | List\<CiphertextBallotSelection\> |                                           |
-| crypto_hash             | UInt256                           |                                           |
-| proof                   | ConstantChaumPedersenProof        |                                           |
+| Name                    | Type                               | Notes                                     |
+|-------------------------|------------------------------------|-------------------------------------------|
+| contest_id              | string                             | matches ContestDescription.contest_id     |
+| sequence_order          | uint32                             | matches ContestDescription.sequence_order |
+| contest_hash            | UInt256                            | matches ContestDescription.crypto_hash    |                                                                     |
+| selections              | List\<EncryptedBallotSelection\>   |                                           |
+| crypto_hash             | UInt256                            |                                           |
+| proof                   | ConstantChaumPedersenProof         |                                           |
 
-### message CiphertextBallotSelection
+### message EncryptedBallotSelection
 
 | Name                     | Type                          | Notes                                       |
 |--------------------------|-------------------------------|---------------------------------------------|
@@ -385,20 +385,20 @@ Notes
 
 ### message PartialDecryption
 
-| Name            | Type                               | Notes          |
-|-----------------|------------------------------------|----------------|
-| selection_id    | string                             |                |
-| guardian_id     | string                             |                |
-| share           | ElementModP                        | M_i            |
-| proof           | GenericChaumPedersenProof          | only direct    |
-| recovered_parts | List\<MissingPartialDecryption\>   | only recovered |
+| Name            | Type                               | Notes                         |
+|-----------------|------------------------------------|-------------------------------|
+| selection_id    | string                             |                               |
+| guardian_id     | string                             |                               |
+| share           | ElementModP                        | M_i                           |
+| proof           | GenericChaumPedersenProof          | only direct                   |
+| recovered_parts | List\<RecoveredPartialDecryption\> | only recovered, quota of them |
 
-### message MissingPartialDecryption
+### message RecoveredPartialDecryption
 
-| Name                   | Type                      | Notes |
-|------------------------|---------------------------|-------|
-| decrypting_guardian_id | string                    |       |
-| missing_guardian_id    | string                    |       |
-| share                  | ElementModP               | M_il  |
-| recovery_key           | ElementModP               |       |
-| proof                  | GenericChaumPedersenProof |       |
+| Name                   | Type                      | Notes    |
+|------------------------|---------------------------|----------|
+| decrypting_guardian_id | string                    |          |
+| missing_guardian_id    | string                    |          |
+| share                  | ElementModP               | M_il     |
+| recovery_key           | ElementModP               | g^P_i(ℓ) |
+| proof                  | GenericChaumPedersenProof |          |

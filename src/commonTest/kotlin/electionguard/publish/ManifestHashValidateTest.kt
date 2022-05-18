@@ -16,11 +16,12 @@ class ManifestHashValidateTest {
     val input = "src/commonTest/data/runWorkflowAllAvailable/"
 
     @Test
-    fun readElectionRecordWrittenByEncryptorJava() {
+    fun readElectionRecord() {
         runTest {
             val context = productionGroup()
             val electionRecordIn = ElectionRecord(input, context)
-            val electionConfig = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(input) }
+            val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+            val electionConfig = init.config
             validateManifestHash(electionConfig.manifest)
         }
     }

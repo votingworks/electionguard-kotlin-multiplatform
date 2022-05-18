@@ -7,12 +7,12 @@ import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.SubmittedBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 
 fun GroupContext.importSubmittedBallot(
-    ballot: electionguard.protogen.SubmittedBallot
-): Result<SubmittedBallot, String> {
+    ballot: electionguard.protogen.EncryptedBallot
+): Result<EncryptedBallot, String> {
     val here = ballot.ballotId
 
     val manifestHash = importUInt256(ballot.manifestHash)
@@ -33,7 +33,7 @@ fun GroupContext.importSubmittedBallot(
     }
 
     return Ok(
-        SubmittedBallot(
+        EncryptedBallot(
             ballot.ballotId,
             ballot.ballotStyleId,
             manifestHash.unwrap(),
@@ -47,8 +47,8 @@ fun GroupContext.importSubmittedBallot(
     )
 }
 
-private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState(where: String):
-        Result<SubmittedBallot.BallotState, String> {
+private fun electionguard.protogen.EncryptedBallot.BallotState.importBallotState(where: String):
+        Result<EncryptedBallot.BallotState, String> {
 
     val name = this.name
     if (name == null) {
@@ -56,15 +56,15 @@ private fun electionguard.protogen.SubmittedBallot.BallotState.importBallotState
     }
 
     try {
-        return Ok(SubmittedBallot.BallotState.valueOf(name))
+        return Ok(EncryptedBallot.BallotState.valueOf(name))
     } catch (e: IllegalArgumentException) {
         return Err("Failed to convert ballot state, unknown name $name in $where\"")
     }
 }
 
 private fun GroupContext.importContest(
-    contest: electionguard.protogen.CiphertextBallotContest, where: String,
-): Result<SubmittedBallot.Contest, String> {
+    contest: electionguard.protogen.EncryptedBallotContest, where: String,
+): Result<EncryptedBallot.Contest, String> {
     val here = "$where ${contest.contestId}"
 
     val contestHash = importUInt256(contest.contestHash)
@@ -81,7 +81,7 @@ private fun GroupContext.importContest(
     }
 
     return Ok(
-        SubmittedBallot.Contest(
+        EncryptedBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
             contestHash.unwrap(),
@@ -115,9 +115,9 @@ private fun GroupContext.importConstantChaumPedersenProof(
 }
 
 private fun GroupContext.importSelection(
-    selection: electionguard.protogen.CiphertextBallotSelection,
+    selection: electionguard.protogen.EncryptedBallotSelection,
     where: String
-): Result<SubmittedBallot.Selection, String> {
+): Result<EncryptedBallot.Selection, String> {
     val here = "$where ${selection.selectionId}"
 
     val selectionHash = importUInt256(selection.selectionHash)
@@ -135,7 +135,7 @@ private fun GroupContext.importSelection(
     }
 
     return Ok(
-        SubmittedBallot.Selection(
+        EncryptedBallot.Selection(
             selection.selectionId,
             selection.sequenceOrder,
             selectionHash.unwrap(),
@@ -190,9 +190,9 @@ private fun GroupContext.importDisjunctiveChaumPedersenProof(
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-fun SubmittedBallot.publishSubmittedBallot(): electionguard.protogen.SubmittedBallot {
+fun EncryptedBallot.publishSubmittedBallot(): electionguard.protogen.EncryptedBallot {
     return electionguard.protogen
-        .SubmittedBallot(
+        .EncryptedBallot(
             this.ballotId,
             this.ballotStyleId,
             this.manifestHash.publishUInt256(),
@@ -205,15 +205,15 @@ fun SubmittedBallot.publishSubmittedBallot(): electionguard.protogen.SubmittedBa
         )
 }
 
-private fun SubmittedBallot.BallotState.publishBallotState():
-        electionguard.protogen.SubmittedBallot.BallotState {
-    return electionguard.protogen.SubmittedBallot.BallotState.fromName(this.name)
+private fun EncryptedBallot.BallotState.publishBallotState():
+        electionguard.protogen.EncryptedBallot.BallotState {
+    return electionguard.protogen.EncryptedBallot.BallotState.fromName(this.name)
 }
 
-private fun SubmittedBallot.Contest.publishContest():
-        electionguard.protogen.CiphertextBallotContest {
+private fun EncryptedBallot.Contest.publishContest():
+        electionguard.protogen.EncryptedBallotContest {
     return electionguard.protogen
-        .CiphertextBallotContest(
+        .EncryptedBallotContest(
             this.contestId,
             this.sequenceOrder,
             this.contestHash.publishUInt256(),
@@ -223,10 +223,10 @@ private fun SubmittedBallot.Contest.publishContest():
         )
 }
 
-private fun SubmittedBallot.Selection.publishSelection():
-        electionguard.protogen.CiphertextBallotSelection {
+private fun EncryptedBallot.Selection.publishSelection():
+        electionguard.protogen.EncryptedBallotSelection {
     return electionguard.protogen
-        .CiphertextBallotSelection(
+        .EncryptedBallotSelection(
             this.selectionId,
             this.sequenceOrder,
             this.selectionHash.publishUInt256(),
