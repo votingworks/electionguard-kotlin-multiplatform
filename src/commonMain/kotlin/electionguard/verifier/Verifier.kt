@@ -66,7 +66,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                 val validProof = publicKey.hasValidSchnorrProof(proof)
                 guardianOk = guardianOk && validProof
             }
-            println(" Guardian ${guardian.guardianId} ok = ${guardianOk}")
+            // println(" Guardian ${guardian.guardianId} ok = ${guardianOk}")
             allValid = allValid && guardianOk
         }
 
@@ -133,7 +133,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
                 }
             }
         }
-        println("Tally '${tally.tallyId}' valid $allValid; ncontests = $ncontests; nselections = $nselections; nshares = $nshares")
+        println("Tally '${tally.tallyId}' ok=$allValid; ncontests = $ncontests; nselections = $nselections; nshares = $nshares")
         return allValid
     }
 
@@ -155,7 +155,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
 
         val took = getSystemTimeInMillis() - starting
         val perBallot = (took.toDouble() / count).roundToInt()
-        println(" VerifySubmittedBallots took $took millisecs for $count ballots = $perBallot msecs/ballot")
+        println("VerifySubmittedBallots ok=$allOk took $took millisecs for $count ballots = $perBallot msecs/ballot")
         return allOk
     }
 

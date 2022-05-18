@@ -16,6 +16,7 @@ import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
+import kotlin.math.roundToInt
 
 /**
  * Run tally accumulation.
@@ -39,6 +40,7 @@ fun main(args: Array<String>) {
         description = "Name of accumulation"
     )
     parser.parse(args)
+    println("RunAccumulateTally starting\n   input= $inputDir\n   output = $outputDir")
 
     val group = productionGroup()
     runAccumulateBallots(group, inputDir, outputDir, name?: "RunAccumulateTally")
@@ -63,5 +65,6 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
         TallyResult( group, electionInit, tally, accumulator.ballotIds(), emptyList())
     )
     val took = getSystemTimeInMillis() - starting
-    println("AccumulateTally processed $count ballots, took $took millisecs")
+    val msecPerEncryption = (took.toDouble() / count).roundToInt()
+    println("AccumulateTally processed $count ballots, took $took millisecs, ${msecPerEncryption} msecs per ballot")
 }

@@ -1,8 +1,17 @@
 # Command Line Programs
 
-draft 5/17/2022 for proto_version = 2.0.0
+last update 5/18/2022
 
-## Generate electionConfig
+## Run KeyCeremony
+
+````
+Usage: RunKeyCeremony options_list
+Options: 
+    --inputDir, -in -> Directory containing input election record (always required) { String }
+    --trusteeDir, -trustees -> Directory to write private trustees (always required) { String }
+    --outputDir, -out -> Directory to write output election record (always required) { String }
+    --help, -h -> Usage info 
+````
 
 ## Run Batch Encryption
 
@@ -51,3 +60,39 @@ Encryption with nthreads = 12 took 14155 millisecs for 100 ballots = 142 msecs/b
     12500 total encryptions = 125 per ballot = 1.1324 millisecs/encryption
 ````
 
+## Run Accumulate Tally
+
+````
+Usage: RunAccumulateTally options_list
+Options: 
+    --inputDir, -in -> Directory containing input election record and encrypted ballots (always required) { String }
+    --outputDir, -out -> Directory to write output election record (always required) { String }
+    --name, -name -> Name of accumulation { String }
+    --help, -h -> Usage info 
+````
+
+output:
+
+````
+AccumulateTally processed 100 ballots, took 1246 millisecs, 12 msecs per ballot
+````
+
+## Run Decrypt Tally
+
+````
+Usage: RunDecryptTally options_list
+Options: 
+    --inputDir, -in -> Directory containing input election record (always required) { String }
+    --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
+    --outputDir, -out -> Directory to write output election record (always required) { String }
+    --help, -h -> Usage info 
+````
+
+## Run Verifier
+
+```` 
+Usage: RunVerifier options_list
+Options: 
+    --inputDir, -in -> Directory containing input election record (always required) { String }
+    --help, -h -> Usage info 
+````
