@@ -122,20 +122,6 @@ fun runRecoveredDecryptionTest(
     }
 }
 
-// private
-fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
-    return DecryptingTrustee(
-        ktrustee.id,
-        ktrustee.xCoordinate,
-        ElGamalKeypair(
-            ElGamalSecretKey(ktrustee.polynomial.coefficients[0]),
-            ElGamalPublicKey(ktrustee.polynomial.coefficientCommitments[0])
-        ),
-        ktrustee.guardianSecretKeyShares,
-        ktrustee.guardianPublicKeys.values.associate { it.guardianId to it.coefficientCommitments },
-    )
-}
-
 fun testEncryptRecoveredDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, extendedBaseHash: ElementModQ,
                                 trustees: List<DecryptingTrustee>, present: List<UInt>) {
     println("present $present")

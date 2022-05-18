@@ -7,17 +7,24 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
 import electionguard.core.Base16.toHex
+import electionguard.core.ElGamalKeypair
+import electionguard.core.ElGamalPublicKey
+import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.core.encrypt
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
+import electionguard.core.randomElementModQ
+import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 /** Run a fake KeyCeremony to generate an ElectionInitialized for workflow testing. */
 class RunFakeKeyCeremonyTest {
@@ -45,7 +52,7 @@ fun runFakeKeyCeremony(
     val electionRecordIn = ElectionRecord(configDir, group)
     val config: ElectionConfig = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
-    val trustees: List<KeyCeremonyTrustee> = List(nguardians.toInt()) {
+    val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
         KeyCeremonyTrustee(group, "guardian$seq", seq.toUInt(), quorum)
     }.sortedBy { it.xCoordinate }
@@ -103,8 +110,11 @@ fun runFakeKeyCeremony(
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeElectionInitialized(init)
 
+    val decryptingTrustees: List<DecryptingTrustee> = trustees.map { makeDecryptingTrustee(it) }
     val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
     trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
+
+    testEncryptDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees)
 
     return init
 }
@@ -117,5 +127,36 @@ fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
         publicKeys.coefficientCommitments,
         publicKeys.coefficientProofs,
     )
+}
+
+fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
+    // val id : String,
+    //                             val xCoordinate: UInt,
+    //                             val electionKeypair: ElGamalKeypair,
+    //                             val guardianPublicKeys: Map<String, PublicKeys>,
+    //                             val guardianSecretKeyShares: Map<String, SecretKeyShare>
+    return DecryptingTrustee(
+        ktrustee.id,
+        ktrustee.xCoordinate,
+        ElGamalKeypair(
+            ElGamalSecretKey(ktrustee.polynomial.coefficients[0]),
+            ElGamalPublicKey(ktrustee.polynomial.coefficientCommitments[0])
+        ),
+        ktrustee.guardianSecretKeyShares,
+        ktrustee.guardianPublicKeys.entries.associate { it.key to it.value.coefficientCommitments },
+    )
+}
+
+fun testEncryptDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, trustees: List<DecryptingTrustee>) {
+    val vote = 42
+    val evote = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))
+
+    //decrypt
+    val shares = trustees.map { evote.pad powP it.electionKeypair.secretKey.key }
+    val allSharesProductM: ElementModP = with(group) { shares.multP() }
+    val decryptedValue: ElementModP = evote.data / allSharesProductM
+    val dlogM: Int = publicKey.dLog(decryptedValue) ?: throw RuntimeException("dlog failed")
+    assertEquals(42, dlogM)
+    println("The answer is $dlogM")
 }
 

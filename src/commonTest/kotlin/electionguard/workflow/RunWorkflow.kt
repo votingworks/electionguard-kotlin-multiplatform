@@ -5,6 +5,7 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.decrypt.runDecryptingMediator
 import electionguard.encrypt.batchEncryption
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
