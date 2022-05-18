@@ -185,4 +185,15 @@ class ManifestInputValidation(val manifest: Manifest) {
         }
     }
 
+    // count the number of encryptions in a given ballot style
+    // Map<BallotStyle: String, selectionCount: Int>
+    fun countEncryptions(): Map<String, Int> {
+        return manifest.styleToContestsMap.mapValues {
+            it.value.map{ contest -> contest.countEncryptions() }.sum()
+        }
+    }
+
+    // there will be one encryption for each selection and a placeholder for each voteAllowed
+    private fun Manifest.ContestDescription.countEncryptions() = this.selections.size + this.votesAllowed
+
 }

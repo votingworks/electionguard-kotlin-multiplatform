@@ -5,7 +5,7 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.encrypt.channelEncryption
+import electionguard.encrypt.batchEncryption
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
@@ -43,7 +43,7 @@ class RunWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        channelEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11)
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11)
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow")
@@ -83,7 +83,7 @@ class RunWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        channelEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11)
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11)
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow")

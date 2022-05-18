@@ -97,7 +97,7 @@ fun createDirectories(dir: String): Boolean {
     subdirs.forEach {
         have += it
         if (!exists(have)) {
-            println("try to createDirectory = '$have'")
+            println("create directory = '$have'")
             if (!createDirectory(have)) {
                 return false;
             }
