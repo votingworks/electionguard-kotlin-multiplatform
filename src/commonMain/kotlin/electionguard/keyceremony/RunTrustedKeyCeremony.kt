@@ -10,6 +10,7 @@ import electionguard.core.Base16.toHex
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
@@ -24,10 +25,10 @@ import kotlinx.cli.required
 /**
  * Run KeyCeremony CLI.
  * Read election record from inputDir, write to outputDir.
- * This has access to all the trustees, so is only used for testing.
+ * This has access to all the trustees, so is only used for testing, or in a use case of trust.
  */
 fun main(args: Array<String>) {
-    val parser = ArgParser("RunKeyCeremony")
+    val parser = ArgParser("RunTrustedKeyCeremony")
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
@@ -43,11 +44,16 @@ fun main(args: Array<String>) {
         shortName = "out",
         description = "Directory to write output election record"
     ).required()
+    val createdBy by parser.option(
+        ArgType.String,
+        shortName = "createdBy",
+        description = "who created"
+    )
     parser.parse(args)
-    println("RunKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
+    println("RunTrustedKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
-    runKeyCeremony(group, inputDir, outputDir, trusteeDir)
+    runKeyCeremony(group, inputDir, outputDir, trusteeDir, createdBy)
 }
 
 fun runKeyCeremony(
@@ -55,7 +61,8 @@ fun runKeyCeremony(
     configDir: String,
     outputDir: String,
     trusteeDir: String,
-) {
+    createdBy: String?
+): Boolean {
     val starting = getSystemTimeInMillis()
 
     val electionRecordIn = ElectionRecord(configDir, group)
@@ -71,18 +78,10 @@ fun runKeyCeremony(
         KeyCeremonyTrustee(group, "trustee$seq", seq.toUInt(), config.quorum)
     }.sortedBy { it.xCoordinate }
 
-    // exchange PublicKeys
-    trustees.forEach { t1 ->
-        trustees.forEach { t2 ->
-            t1.receivePublicKeys(t2.sharePublicKeys())
-        }
-    }
-
-    // exchange SecretKeyShares
-    trustees.forEach { t1 ->
-        trustees.forEach { t2 ->
-            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id))
-        }
+    val errors = keyCeremonyExchange(trustees)
+    if (errors != null) {
+        println("$errors")
+        return false
     }
 
     val commitments: MutableList<ElementModP> = mutableListOf()
@@ -101,7 +100,7 @@ fun runKeyCeremony(
 
     val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
     val jointPublicKey: ElementModP =
-        trustees.map { it.polynomial.coefficientCommitments[0] }.reduce { a, b -> a * b }
+        trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
     val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
     val init = ElectionInitialized(
         config,
@@ -110,6 +109,10 @@ fun runKeyCeremony(
         cryptoBaseHash,
         cryptoExtendedBaseHash,
         guardians,
+        mapOf(
+            Pair("CreatedBy", createdBy ?: "RunTrustedKeyCeremony"),
+            Pair("CreatedOn", getSystemDate().toString()),
+            Pair("CreatedFromDir", configDir))
     )
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeElectionInitialized(init)
@@ -118,7 +121,8 @@ fun runKeyCeremony(
     trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
 
     val took = getSystemTimeInMillis() - starting
-    println("RunKeyCeremony took $took millisecs")
+    println("RunTrustedKeyCeremony took $took millisecs")
+    return true
 }
 
 private fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {

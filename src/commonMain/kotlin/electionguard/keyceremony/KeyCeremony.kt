@@ -1,5 +1,7 @@
 package electionguard.keyceremony
 
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getAllErrors
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
@@ -17,12 +19,10 @@ data class PublicKeys(
     }
 
     fun isValid(): Boolean {
-        var idx = 0
-        for (proof in this.coefficientProofs) {
+        for ((idx, proof) in this.coefficientProofs.withIndex()) {
             if (!ElGamalPublicKey(coefficientCommitments[idx]).hasValidSchnorrProof(proof)) {
                 return false
             }
-            idx++
         }
         return true
     }
@@ -40,5 +40,35 @@ data class SecretKeyShare(
     val designatedGuardianId: String,
     val designatedGuardianXCoordinate: UInt,
     val generatingGuardianValue: ElementModQ,
-    val errors: String = "",
 )
+
+/** Exchange publicKeys and secretShares among the trustees */
+fun keyCeremonyExchange(trustees: List<KeyCeremonyTrustee>): String? {
+    // exchange PublicKeys
+    val publicKeyResults: MutableList<Result<PublicKeys, String>> = mutableListOf()
+    trustees.forEach { t1 ->
+        trustees.forEach { t2 ->
+            publicKeyResults.add(t1.receivePublicKeys(t2.sharePublicKeys()))
+        }
+    }
+
+    var errors = publicKeyResults.getAllErrors()
+    if (errors.isNotEmpty()) {
+        return "runKeyCeremony failed exchanging public keys: ${errors.joinToString("\n")}"
+    }
+
+    // exchange SecretKeyShares
+    val secretKeyResults: MutableList<Result<SecretKeyShare, String>> = mutableListOf()
+    trustees.forEach { t1 ->
+        trustees.forEach { t2 ->
+            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id))
+        }
+    }
+
+    errors = secretKeyResults.getAllErrors()
+    if (errors.isNotEmpty()) {
+        return "runKeyCeremony failed exchanging secret keys: ${errors.joinToString("\n")}"
+    }
+
+    return null
+}

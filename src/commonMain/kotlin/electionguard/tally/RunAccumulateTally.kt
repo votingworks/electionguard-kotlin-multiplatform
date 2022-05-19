@@ -7,6 +7,7 @@ import electionguard.ballot.CiphertextTally
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
+import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.publish.ElectionRecord
@@ -39,14 +40,19 @@ fun main(args: Array<String>) {
         shortName = "name",
         description = "Name of accumulation"
     )
+    val createdBy by parser.option(
+        ArgType.String,
+        shortName = "createdBy",
+        description = "who created"
+    )
     parser.parse(args)
     println("RunAccumulateTally starting\n   input= $inputDir\n   output = $outputDir")
 
     val group = productionGroup()
-    runAccumulateBallots(group, inputDir, outputDir, name?: "RunAccumulateTally")
+    runAccumulateBallots(group, inputDir, outputDir, name?: "RunAccumulateTally", createdBy?: "RunAccumulateTally")
 }
 
-fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: String, name: String) {
+fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: String, name: String, createdBy: String) {
     val starting = getSystemTimeInMillis()
 
     val electionRecordIn = ElectionRecord(inputDir, group)
@@ -62,8 +68,14 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeTallyResult(
-        TallyResult( group, electionInit, tally, accumulator.ballotIds(), emptyList())
+        TallyResult( group, electionInit, tally, accumulator.ballotIds(), emptyList(),
+            mapOf(
+                Pair("CreatedBy", createdBy),
+                Pair("CreatedOn", getSystemDate().toString()),
+                Pair("CreatedFromDir", inputDir))
+            )
     )
+
     val took = getSystemTimeInMillis() - starting
     val msecPerEncryption = (took.toDouble() / count).roundToInt()
     println("AccumulateTally processed $count ballots, took $took millisecs, ${msecPerEncryption} msecs per ballot")

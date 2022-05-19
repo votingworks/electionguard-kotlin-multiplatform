@@ -58,7 +58,7 @@ data class RecoveredPartialDecryption(
     val proof: GenericChaumPedersenProof
 )
 
-// heres where all the direct and compensated decryptions are accumulated
+// all the direct and compensated decryptions are accumulated here
 class PartialDecryption(
     val selectionId: String,
     val guardianId: String, // share for this guardian

@@ -22,7 +22,7 @@ class DecryptingMediator(
         val result = ArrayList<DecryptingGuardian>()
         for (otherTrustee in decryptingTrustees) {
             val present: List<UInt> =
-                decryptingTrustees.filter { !it.id().equals(otherTrustee.id()) }.map { it.xCoordinate() }
+                decryptingTrustees.filter { it.id() != otherTrustee.id() }.map { it.xCoordinate() }
             val coeff: ElementModQ = group.computeLagrangeCoefficient(otherTrustee.xCoordinate(), present)
             result.add(DecryptingGuardian(otherTrustee.id(), otherTrustee.xCoordinate().toInt(), coeff))
         }
@@ -41,10 +41,10 @@ class DecryptingMediator(
         val sharesBySelectionId: MutableMap<String, MutableList<PartialDecryption>> = HashMap()
         for (tallyShare in shares) {
             tallyShare.partialDecryptions.entries.map { (selectionId, partial) ->
-                var smap: MutableList<PartialDecryption>? = sharesBySelectionId.get(selectionId)
+                var smap: MutableList<PartialDecryption>? = sharesBySelectionId[selectionId]
                 if (smap == null) {
                     smap = mutableListOf()
-                    sharesBySelectionId.put(selectionId, smap)
+                    sharesBySelectionId[selectionId] = smap
                 }
                 smap.add(PartialDecryption(tallyShare.decryptingTrustee, partial))
             }
@@ -52,10 +52,10 @@ class DecryptingMediator(
 
         for (tallyShare in shares) {
             tallyShare.compensatedDecryptions.entries.map {(selectionId, haveDecrypt) ->
-                var cmap: MutableList<PartialDecryption>? = sharesBySelectionId.get(selectionId)
+                var cmap: MutableList<PartialDecryption>? = sharesBySelectionId[selectionId]
                 if (cmap == null) {
                     cmap = mutableListOf()
-                    sharesBySelectionId.put(selectionId, cmap)
+                    sharesBySelectionId[selectionId] = cmap
                 }
                 // distribute the recoveredDecryptions for this trustee across the missing guardians
                 haveDecrypt.missingDecryptions.values.map { recovered ->
@@ -83,7 +83,7 @@ class DecryptingMediator(
      * @param trustee: The guardian who will partially decrypt the tally
      * @return a DecryptionShare for this trustee
      */
-    fun CiphertextTally.computePartialDecryptionForTally(
+    private fun CiphertextTally.computePartialDecryptionForTally(
         trustee: DecryptingTrusteeIF,
     ): DecryptionShare {
 
@@ -91,7 +91,7 @@ class DecryptingMediator(
         val texts: MutableList<ElGamalCiphertext> = mutableListOf()
         for (tallyContest in this.contests.values) {
             for (selection in tallyContest.selections.values) {
-                texts.add(selection.ciphertext);
+                texts.add(selection.ciphertext)
             }
         }
 
@@ -104,10 +104,10 @@ class DecryptingMediator(
 
         // Place the results into the DecryptionShare
         val decryptionShare = DecryptionShare(trustee.id())
-        var count = 0;
+        var count = 0
         for (tallyContest in this.contests.values) {
             for (tallySelection in tallyContest.selections.values) {
-                val proof: DirectDecryptionAndProof = partialDecryptions.get(count);
+                val proof: DirectDecryptionAndProof = partialDecryptions[count]
                 val partialDecryption = DirectDecryption(
                     tallySelection.selectionId,
                     trustee.id(),
@@ -129,10 +129,10 @@ class DecryptingMediator(
                 trustee.compensatedDecrypt(group, missing, texts, tallyResult.cryptoExtendedBaseHash(), null)
 
             // Place the results into the DecryptionShare
-            var count2 = 0;
+            var count2 = 0
             for (tallyContest in this.contests.values) {
                 for (tallySelection in tallyContest.selections.values) {
-                    val proof: CompensatedDecryptionAndProof = compensatedDecryptions.get(count2);
+                    val proof: CompensatedDecryptionAndProof = compensatedDecryptions[count2]
                     val recoveredDecryption = RecoveredPartialDecryption(
                         trustee.id(),
                         missing,
@@ -156,7 +156,7 @@ class DecryptingMediator(
 }
 
 fun GroupContext.computeLagrangeCoefficient(coordinate: UInt, present: List<UInt>): ElementModQ {
-    val others: List<UInt> = present.filter { !it.equals(coordinate) }
+    val others: List<UInt> = present.filter { it != coordinate }
     val numerator: Int = others.reduce { a, b -> a * b }.toInt()
 
     val diff: List<Int> = others.map { degree -> degree.toInt() - coordinate.toInt() }

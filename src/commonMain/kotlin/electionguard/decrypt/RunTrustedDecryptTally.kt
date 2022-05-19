@@ -20,10 +20,10 @@ import kotlinx.cli.required
 /**
  * Run DecryptingMediator for Tally CLI.
  * Read election record from inputDir, write to outputDir.
- * This has access to all the trustees, so is only used for testing.
+ * This has access to all the trustees, so is only used for testing, or in a use case of trust.
  */
 fun main(args: Array<String>) {
-    val parser = ArgParser("RunDecryptTally")
+    val parser = ArgParser("RunTrustedDecryptTally")
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
@@ -39,11 +39,16 @@ fun main(args: Array<String>) {
         shortName = "out",
         description = "Directory to write output election record"
     ).required()
+    val createdBy by parser.option(
+        ArgType.String,
+        shortName = "createdBy",
+        description = "who created"
+    )
     parser.parse(args)
-    println("RunDecryptTally starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
+    println("RunTrustedDecryptTally starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
-    runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir))
+    runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir), createdBy)
 }
 
 fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String): List<DecryptingTrusteeIF> {
@@ -57,7 +62,8 @@ fun runDecryptingMediator(
     group: GroupContext,
     inputDir: String,
     outputDir: String,
-    decryptingTrustees: List<DecryptingTrusteeIF>
+    decryptingTrustees: List<DecryptingTrusteeIF>,
+    createdBy: String?
 ) {
     val starting = getSystemTimeInMillis()
 
@@ -70,21 +76,19 @@ fun runDecryptingMediator(
     val decryptor = DecryptingMediator(group, tallyResult, decryptingTrustees, missingGuardians)
     val decryptedTally = with(decryptor) { tallyResult.ciphertextTally.decrypt() }
 
-    val metadata: MutableMap<String, String> = mutableMapOf()
-    metadata.put("CreatedBy", "runDecryptingMediator")
-    metadata.put("CreatedOn", getSystemDate().toString())
-    metadata.put("CreatedFrom", inputDir)
-
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeDecryptionResult(
         DecryptionResult(
             tallyResult,
             decryptedTally,
             decryptor.availableGuardians,
-            metadata,
+            mapOf(
+                Pair("CreatedBy", createdBy ?: "RunTrustedDecryptTally"),
+                Pair("CreatedOn", getSystemDate().toString()),
+                Pair("CreatedFromDir", inputDir))
         )
     )
 
     val took = getSystemTimeInMillis() - starting
-    println("RunDecryptingMediator took $took millisecs")
+    println("RunTrustedDecryptTally took $took millisecs")
 }

@@ -3,7 +3,6 @@ package electionguard.encrypt
 import electionguard.ballot.CiphertextBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
-import electionguard.core.ConstantChaumPedersenProofKnownNonce
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
@@ -22,9 +21,6 @@ import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
-import mu.KotlinLogging
-
-private val logger = KotlinLogging.logger("Encryptor")
 
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
@@ -178,8 +174,7 @@ class Encryptor(
         )
     }
 
-    private fun selectionFrom(
-        selectionId: String, sequenceOrder: Int, is_affirmative: Boolean
+    private fun selectionFrom(selectionId: String, sequenceOrder: Int, is_affirmative: Boolean
     ): PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
             selectionId,
@@ -205,7 +200,7 @@ class Encryptor(
         val disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence.get(0)
         val selectionNonce: ElementModQ = nonceSequence.get(selectionDescription.sequenceOrder)
 
-        // TODO
+        // TODO: test
         val extendedDataCiphertext =
             if (extendedData != null) {
                 val extendedDataBytes = extendedData.encodeToByteArray()
@@ -275,7 +270,7 @@ fun Manifest.ContestDescription.encryptContest(
     val nonces: Iterable<ElementModQ> = encryptedSelections.map { it.selectionNonce }
     val aggNonce: ElementModQ = with(group) { nonces.addQ() }
 
-    val proof: ConstantChaumPedersenProofKnownNonce = ciphertextAccumulation.constantChaumPedersenProofKnownNonce(
+    val proof = ciphertextAccumulation.constantChaumPedersenProofKnownNonce(
         this.votesAllowed,
         aggNonce,
         elgamalPublicKey,

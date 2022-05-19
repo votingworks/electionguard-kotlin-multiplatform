@@ -16,6 +16,11 @@ data class ElectionInitialized(
     fun manifest(): Manifest {
         return config.manifest
     }
+    fun addMetadata(vararg pairs: Pair<String, String>): ElectionInitialized {
+        val added = metadata.toMutableMap()
+        pairs.forEach { added[it.first] = it.second }
+        return this.copy(metadata = added)
+    }
 }
 
 /** Public info for the ith Guardian/Trustee. */

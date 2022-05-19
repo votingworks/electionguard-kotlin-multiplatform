@@ -2,14 +2,17 @@
 
 last update 5/18/2022
 
-## Run KeyCeremony
+## Run trusted KeyCeremony
+
+This has access to all the trustees, so is only used for testing, or in a use case of trust.
 
 ````
-Usage: RunKeyCeremony options_list
+Usage: RunTrustedKeyCeremony options_list
 Options: 
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --trusteeDir, -trustees -> Directory to write private trustees (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
+    --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
 
@@ -24,6 +27,7 @@ Options:
     --invalidDir, -invalid -> Directory to write invalid input ballots to { String }
     --fixedNonces, -fixed -> Encrypt with fixed nonces and timestamp 
     --nthreads, -nthreads -> Number of parallel threads to use { Int }
+    --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
 
@@ -68,6 +72,7 @@ Options:
     --inputDir, -in -> Directory containing input election record and encrypted ballots (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
     --name, -name -> Name of accumulation { String }
+    --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
 
@@ -77,14 +82,17 @@ output:
 AccumulateTally processed 100 ballots, took 1246 millisecs, 12 msecs per ballot
 ````
 
-## Run Decrypt Tally
+## Run trusted Decrypt Tally
+
+This has access to all the trustees, so is only used for testing, or in a use case of trust.
 
 ````
-Usage: RunDecryptTally options_list
+Usage: RunTrustedDecryptTally options_list
 Options: 
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
+    --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
 

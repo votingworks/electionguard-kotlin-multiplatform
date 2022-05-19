@@ -19,6 +19,7 @@ import electionguard.core.toUInt256
  * The zero encryptions of all Selections are precomputed.
  * A vote triggers the computation of the one encryption.
  * So most of the work is already done when encrypt() is called, for low latency.
+ * See BallotPrecomputeTest to get timings.
  */
 class BallotPrecompute(
     val group: GroupContext,
@@ -60,9 +61,9 @@ class BallotPrecompute(
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), encryptedContests)
         val ballotCode = hashElements(codeSeed, timestamp, cryptoHash)
 
-        val encryptedBallot = CiphertextBallot(
-            this.ballotId,
-            this.ballotStyleId,
+        return CiphertextBallot(
+            ballotId,
+            ballotStyleId,
             manifest.cryptoHashUInt256(),
             codeSeed.toUInt256(),
             ballotCode,
@@ -71,7 +72,6 @@ class BallotPrecompute(
             cryptoHash,
             masterNonce,
         )
-        return encryptedBallot
     }
 
     inner class Contest(
