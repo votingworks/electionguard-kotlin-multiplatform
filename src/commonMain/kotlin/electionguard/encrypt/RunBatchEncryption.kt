@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalCli::class)
+@file:OptIn(ExperimentalCli::class, ExperimentalCoroutinesApi::class)
 
 package electionguard.encrypt
 
@@ -11,6 +11,7 @@ import electionguard.ballot.submit
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
@@ -27,6 +28,7 @@ import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -37,8 +39,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
+import mu.KotlinLogging
 
-private val debug = false
+private val logger = KotlinLogging.logger("RunBatchEncryption")
 
 /**
  * Run ballot encryption in batch mode.
@@ -78,6 +81,11 @@ fun main(args: Array<String>) {
         shortName = "nthreads",
         description = "Number of parallel threads to use"
     )
+    val createdBy by parser.option(
+        ArgType.String,
+        shortName = "createdBy",
+        description = "who created"
+    )
     parser.parse(args)
     println("RunBatchEncryption starting\n   input= $inputDir\n   ballots = $ballotDir\n   output = $outputDir")
 
@@ -88,14 +96,14 @@ fun main(args: Array<String>) {
         ballotDir,
         invalidDir,
         fixedNonces ?: false,
-        nthreads ?: 6
+        nthreads ?: 6,
+        createdBy
     )
 }
 
-
 fun batchEncryption(
     group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
-    invalidDir: String?, fixedNonces: Boolean, nthreads: Int
+    invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?
 ) {
     val electionRecordIn = ElectionRecord(inputDir, group)
     val electionInit: ElectionInitialized =
@@ -114,7 +122,7 @@ fun batchEncryption(
     val styleCount = manifestValidator.countEncryptions()
 
     // BallotInputValidation
-    var countEncryptions: Int = 0
+    var countEncryptions = 0
     val invalidBallots = ArrayList<PlaintextBallot>()
     val ballotValidator = BallotInputValidation(electionInit.manifest())
     val filter: ((PlaintextBallot) -> Boolean) = {
@@ -168,32 +176,38 @@ fun batchEncryption(
     }
     sink.close()
 
-    val took = getSystemTimeInMillis() - starting
-    val msecsPerBallot = (took.toDouble() / count).roundToInt()
-    println("Encryption with nthreads = ${nthreads} took $took millisecs for ${count} ballots = $msecsPerBallot msecs/ballot")
-    val msecPerEncryption = (took.toDouble() / countEncryptions)
-    val encryptionPerBallot = (countEncryptions / count)
-    println("    ${countEncryptions} total encryptions = ${encryptionPerBallot} per ballot = $msecPerEncryption millisecs/encryption")
-
-    publisher.writeElectionInitialized(electionInit)
+    // LOOK i dont know if this is a good idea
+    publisher.writeElectionInitialized(electionInit.addMetadata(
+            Pair("Used", createdBy ?: "RunBatchEncryption"),
+            Pair("UsedOn", getSystemDate().toString()),
+            Pair("CreatedFromDir", inputDir))
+        )
     if (invalidDir != null && !invalidBallots.isEmpty()) {
         publisher.writePlaintextBallot(invalidDir, invalidBallots)
         println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
+
+    val took = getSystemTimeInMillis() - starting
+    val msecsPerBallot = (took.toDouble() / count).roundToInt()
+    println("Encryption with nthreads = $nthreads took $took millisecs for $count ballots = $msecsPerBallot msecs/ballot")
+    val msecPerEncryption = (took.toDouble() / countEncryptions)
+    val encryptionPerBallot = (countEncryptions / count)
+    println("    $countEncryptions total encryptions = $encryptionPerBallot per ballot = $msecPerEncryption millisecs/encryption")
 }
 
 // place the ballot reading into its own coroutine
 fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveChannel<PlaintextBallot> = produce {
     for (ballot in producer) {
-        if (debug) println("Producer sending plaintext ballot ${ballot.ballotId}")
+        logger.debug{ "Producer sending plaintext ballot ${ballot.ballotId}" }
         send(ballot)
         yield()
     }
     channel.close()
 }
 
-// multiple encryptors allow parallelism at the ballot level
-// LOOK not possible to do ballot chaining
+// coroutines allow parallel encryption at the ballot level
+// LOOK not possible to do ballot chaining, since the order is indeterminate?
+// LOOK or do we just have to work harder??
 fun CoroutineScope.launchEncryptor(
     id: Int,
     group: GroupContext,
@@ -209,11 +223,11 @@ fun CoroutineScope.launchEncryptor(
         else
             encryptor.encrypt(ballot, codeSeed, group.randomElementModQ())
 
-        if (debug) println(" Encryptor #$id sending ciphertext ballot ${encrypted.ballotId}")
+        logger.debug{" Encryptor #$id sending ciphertext ballot ${encrypted.ballotId}"}
         output.send(encrypted)
         yield()
     }
-    if (debug) println("Encryptor #$id done")
+    logger.debug{"Encryptor #$id done"}
 }
 
 // place the ballot writing into its own coroutine
@@ -223,7 +237,7 @@ fun CoroutineScope.launchSink(
 ) = launch {
     for (ballot in input) {
         sink.writeSubmittedBallot(ballot.submit(EncryptedBallot.BallotState.CAST))
-        if (debug) println(" Sink wrote $count submitted ballot ${ballot.ballotId}")
+        logger.debug{" Sink wrote $count submitted ballot ${ballot.ballotId}"}
         count++
     }
 }

@@ -57,6 +57,7 @@ message TallyResult {
   CiphertextTally ciphertext_tally = 2;
   repeated string ballot_ids = 3;
   repeated string tally_ids = 4;
+  map<string, string> metadata = 5;
 }
 
 message DecryptionResult {

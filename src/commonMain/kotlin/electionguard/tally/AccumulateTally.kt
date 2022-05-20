@@ -26,7 +26,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         for (ballotContest in ballot.contests) {
             val contest = contests[ballotContest.contestId]
             if (contest == null) {
-                logger.warn { "Ballot ${ballot.ballotId} has illegal contest ${ballotContest.contestId}"}
+                logger.warn { "Ballot ${ballot.ballotId} has contest ${ballotContest.contestId} not in manifest"}
             } else {
                 contest.accumulate(ballot.ballotId, ballotContest)
             }

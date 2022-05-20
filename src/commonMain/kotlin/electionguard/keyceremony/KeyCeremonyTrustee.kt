@@ -1,5 +1,9 @@
 package electionguard.keyceremony
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.unwrap
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -41,55 +45,58 @@ class KeyCeremonyTrustee(
 
     /** Receive publicKeys from another guardian. Return error message or empty string on success.  */
     // LOOK how do we know it came from the real guardian?
-    fun receivePublicKeys(publicKeys: PublicKeys): String {
+    fun receivePublicKeys(publicKeys: PublicKeys): Result<PublicKeys, String> {
         if (publicKeys.guardianXCoordinate < 1U) {
-            return "${publicKeys.guardianId}: guardianXCoordinate must be >= 1"
+            return Err("${publicKeys.guardianId}: guardianXCoordinate must be >= 1")
         }
         if (publicKeys.coefficientCommitments.size != quorum) {
-            return "${publicKeys.guardianId}: must have quorum ($quorum) coefficientCommitments"
+            return Err("${publicKeys.guardianId}: must have quorum ($quorum) coefficientCommitments")
         }
         if (publicKeys.coefficientProofs.size != quorum) {
-            return "${publicKeys.guardianId}: must have quorum ($quorum) coefficientProofs"
+            return Err("${publicKeys.guardianId}: must have quorum ($quorum) coefficientProofs")
         }
+        if (!publicKeys.isValid()) {
+            return Err("${publicKeys.guardianId}: has invalid proof")
+        }
+
         guardianPublicKeys[publicKeys.guardianId] = publicKeys
-        return ""
+        return Ok(publicKeys)
     }
 
     // LOOK this needs to be encrypted, see p10 spec 1.0
-    fun sendSecretKeyShare(otherGuardian: String): SecretKeyShare {
+    fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
         if (mySecretKeyShares.containsKey(otherGuardian)) {
-            return mySecretKeyShares[otherGuardian]!!
+            return Ok(mySecretKeyShares[otherGuardian]!!)
         }
-        val backup = generateSecretKeyShare(otherGuardian)
-        if (backup.errors.isEmpty()) {
-            mySecretKeyShares[otherGuardian] = backup
+        val result = generateSecretKeyShare(otherGuardian)
+        if (result is Ok) {
+            mySecretKeyShares[otherGuardian] = result.unwrap()
         }
-        return backup
+        return result
     }
 
-    private fun generateSecretKeyShare(otherGuardian: String): SecretKeyShare {
+    private fun generateSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
         val other = guardianPublicKeys[otherGuardian]
-            ?: return SecretKeyShare(
-                id,
-                otherGuardian,
-                0U,
-                group.ZERO_MOD_Q,
-                "Trustee '$id', does not have public key for '$otherGuardian'",
-            )
+        if (other == null) {
+            return Err("Trustee '$id', does not have public key for '$otherGuardian'")
+        }
 
         // Compute my polynomial's y value at the other's x coordinate.
         val value: ElementModQ = polynomial.valueAt(group, other.guardianXCoordinate)
-        return SecretKeyShare(
+        return Ok(SecretKeyShare(
             id,
             otherGuardian,
             other.guardianXCoordinate,
             value,
-        )
+        ))
     }
 
-    fun receiveSecretKeyShare(backup: SecretKeyShare): String {
-        guardianSecretKeyShares[backup.generatingGuardianId] = backup
-        return ""
+    fun receiveSecretKeyShare(result: Result<SecretKeyShare, String>): Result<SecretKeyShare, String> {
+        if (result is Ok) {
+            val backup = result.unwrap()
+            guardianSecretKeyShares[backup.generatingGuardianId] = backup
+        }
+        return result
     }
 
 }

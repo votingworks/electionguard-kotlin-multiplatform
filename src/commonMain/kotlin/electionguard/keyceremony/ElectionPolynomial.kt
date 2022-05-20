@@ -23,15 +23,15 @@ data class ElectionPolynomial(
     // The value of the polynomial at xcoord
     fun valueAt(group: GroupContext, xcoord : UInt): ElementModQ {
         val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord)
-        var computed_value: ElementModQ = group.ZERO_MOD_Q
+        var computedValue: ElementModQ = group.ZERO_MOD_Q
         var xcoordPower: ElementModQ = group.ONE_MOD_Q
 
         for (coefficient in this.coefficients) {
             val term = coefficient * xcoordPower
-            computed_value = computed_value + term
-            xcoordPower = xcoordPower * xcoordQ
+            computedValue += term
+            xcoordPower *= xcoordQ
         }
-        return computed_value
+        return computedValue
     }
 }
 

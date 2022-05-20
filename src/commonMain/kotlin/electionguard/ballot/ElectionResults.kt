@@ -11,11 +11,11 @@ data class TallyResult(
     val ciphertextTally: CiphertextTally,
     val ballotIds: List<String>,
     val tallyIds: List<String>,
+    val metadata: Map<String, String> = emptyMap(),
 ) {
     fun jointPublicKey(): ElGamalPublicKey {
         return ElGamalPublicKey(electionIntialized.jointPublicKey)
     }
-
     fun cryptoExtendedBaseHash(): ElementModQ {
         return electionIntialized.cryptoExtendedBaseHash.toElementModQ(group)
     }

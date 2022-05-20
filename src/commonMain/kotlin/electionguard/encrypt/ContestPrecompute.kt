@@ -17,7 +17,9 @@ import electionguard.core.toUInt256
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
  * A vote triggers the computation of that contest.
- * So most of the work is already done when encrypt() is called, for low latency.
+ * So most of the work is already done when encrypt() is called,
+ *   for low latency when the ballot is finished.
+ * See ContestPrecomputeTest to get timings.
  */
 class ContestPrecompute(
     val group: GroupContext,
@@ -59,9 +61,9 @@ class ContestPrecompute(
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), encryptedContests)
         val ballotCode = hashElements(codeSeed, timestamp, cryptoHash)
 
-        val encryptedBallot = CiphertextBallot(
-            this.ballotId,
-            this.ballotStyleId,
+        return CiphertextBallot(
+            ballotId,
+            ballotStyleId,
             manifest.cryptoHashUInt256(),
             codeSeed.toUInt256(),
             ballotCode,
@@ -70,7 +72,6 @@ class ContestPrecompute(
             cryptoHash,
             masterNonce,
         )
-        return encryptedBallot
     }
 
     inner class Contest(

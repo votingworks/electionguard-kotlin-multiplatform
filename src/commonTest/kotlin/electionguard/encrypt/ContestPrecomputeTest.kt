@@ -22,6 +22,32 @@ import kotlin.test.Test
 
 private val revotes = 0
 
+/*
+Relative timings:
+BallotPrecompute with 0 revotes per ballot
+   Precompute took 8774 millisecs for 11 ballots = 798 msecs/ballot
+   Encrypt 482 millisecs for 11 ballots = 44 msecs/ballot
+
+BallotPrecompute with 10 revotes per ballot
+   Precompute took 9145 millisecs for 11 ballots = 831 msecs/ballot
+   Encrypt 458 millisecs for 11 ballots = 42 msecs/ballot
+
+BallotPrecompute with 20 revotes per ballot
+   Precompute took 9601 millisecs for 11 ballots = 873 msecs/ballot
+   Encrypt 457 millisecs for 11 ballots = 42 msecs/ballotot
+
+ContestPrecompute with 0 revotes per ballot
+   Precompute took 8168 millisecs for 11 ballots = 743 msecs/ballot
+   Encrypt 1 millisecs for 11 ballots = 0 msecs/ballot
+
+ContestPrecompute with 10 revotes per ballot
+   Precompute took 10620 millisecs for 11 ballots = 965 msecs/ballot
+   Encrypt 1 millisecs for 11 ballots = 0 msecs/ballot
+
+ContestPrecompute with 20 revotes per ballot
+   Precompute took 12789 millisecs for 11 ballots = 1163 msecs/ballot
+   Encrypt 1 millisecs for 11 ballots = 0 msecs/ballot
+ */
 class ContestPrecomputeTest {
     val electionRecordDir = "src/commonTest/data/runWorkflowAllAvailable"
     val ballotDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/input/"

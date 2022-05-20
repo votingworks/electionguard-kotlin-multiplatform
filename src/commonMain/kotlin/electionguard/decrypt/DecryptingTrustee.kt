@@ -58,8 +58,8 @@ data class DecryptingTrustee(
             )
 
             if (validate) {
-                require(publicKey.equals(group.G_MOD_P powP privateKey))
-                require(partialDecryption.equals(ciphertext.pad powP privateKey))
+                require(publicKey == group.G_MOD_P powP privateKey)
+                require(partialDecryption == ciphertext.pad powP privateKey)
                 validate(group, ciphertext, extendedBaseHash, publicKey, partialDecryption, proof)
             }
             results.add(DirectDecryptionAndProof(partialDecryption, proof))
@@ -103,8 +103,8 @@ data class DecryptingTrustee(
             )
 
             if (validate) {
-                require(recoveredPublicKeyShare.equals(group.G_MOD_P powP backup.generatingGuardianValue))
-                require(partialDecryptionShare.equals(ciphertext.pad powP backup.generatingGuardianValue))
+                require(recoveredPublicKeyShare == (group.G_MOD_P powP backup.generatingGuardianValue))
+                require(partialDecryptionShare == (ciphertext.pad powP backup.generatingGuardianValue))
                 validate(group, ciphertext, extendedBaseHash, recoveredPublicKeyShare, partialDecryptionShare, proof)
             }
 
@@ -154,7 +154,7 @@ data class DecryptingTrustee(
         var result: ElementModP = group.ONE_MOD_P
         for (commitment in otherCommitments) {
             val term = commitment powP exponent
-            result = result * term
+            result *= term
             exponent = xcoordQ * exponent // = l^j
         }
         return result

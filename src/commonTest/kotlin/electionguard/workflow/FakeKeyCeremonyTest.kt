@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCli::class)
-
 package electionguard.workflow
 
 import com.github.michaelbull.result.getOrThrow
@@ -19,10 +17,10 @@ import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
+import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
-import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -58,18 +56,7 @@ fun runFakeKeyCeremony(
     }.sortedBy { it.xCoordinate }
 
     // exchange PublicKeys
-    trustees.forEach { t1 ->
-        trustees.forEach { t2 ->
-            t1.receivePublicKeys(t2.sharePublicKeys())
-        }
-    }
-
-    // exchange SecretKeyShares
-    trustees.forEach { t1 ->
-        trustees.forEach { t2 ->
-            t1.receiveSecretKeyShare(t2.sendSecretKeyShare(t1.id))
-        }
-    }
+    keyCeremonyExchange(trustees)
 
     val commitments: MutableList<ElementModP> = mutableListOf()
     trustees.forEach { commitments.addAll(it.polynomial.coefficientCommitments) }
@@ -87,7 +74,7 @@ fun runFakeKeyCeremony(
 
     val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
     val jointPublicKey: ElementModP =
-        trustees.map { it.polynomial.coefficientCommitments[0] }.reduce { a, b -> a * b }
+        trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
     val newConfig = ElectionConfig(
         config.protoVersion,
@@ -140,7 +127,7 @@ fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
         ktrustee.xCoordinate,
         ElGamalKeypair(
             ElGamalSecretKey(ktrustee.polynomial.coefficients[0]),
-            ElGamalPublicKey(ktrustee.polynomial.coefficientCommitments[0])
+            ElGamalPublicKey(ktrustee.electionPublicKey())
         ),
         ktrustee.guardianSecretKeyShares,
         ktrustee.guardianPublicKeys.entries.associate { it.key to it.value.coefficientCommitments },
@@ -159,4 +146,3 @@ fun testEncryptDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, trustee
     assertEquals(42, dlogM)
     println("The answer is $dlogM")
 }
-

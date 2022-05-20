@@ -105,12 +105,13 @@ Notes
 
 ### message TallyResult
 
-| Name             | Type                | Notes |
-|------------------|---------------------|-------|
-| election_init    | ElectionInitialized |       |
-| ciphertext_tally | CiphertextTally     |       |
-| ballot_ids       | List<string>        |       |
-| tally_ids        | List<string>        |       |
+| Name             | Type                 | Notes |
+|------------------|----------------------|-------|
+| election_init    | ElectionInitialized  |       |
+| ciphertext_tally | CiphertextTally      |       |
+| ballot_ids       | List<string>         |       |
+| tally_ids        | List<string>         |       |
+| metadata         | map<string, string>  |       |
 
 ### message DecryptionResult
 

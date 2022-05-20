@@ -112,7 +112,7 @@ fun KeyCeremonyTrustee.publishDecryptingTrustee(): electionguard.protogen.Decryp
         this.xCoordinate.toInt(),
         ElGamalKeypair(
             ElGamalSecretKey(this.polynomial.coefficients[0]),
-            ElGamalPublicKey(this.polynomial.coefficientCommitments[0])
+            ElGamalPublicKey(this.electionPublicKey())
         ).publishElGamalKeyPair(),
         this.guardianSecretKeyShares.values.map { it.publishSecretKeyShare() },
         this.guardianPublicKeys.values.map { it.publishCommitmentSet() },
