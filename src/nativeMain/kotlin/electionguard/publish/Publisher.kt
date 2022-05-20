@@ -21,7 +21,6 @@ import pbandk.encodeToByteArray
 import platform.posix.FILE
 import platform.posix.fclose
 import platform.posix.fflush
-import platform.posix.fopen
 import platform.posix.fwrite
 
 /** Write the Election Record as protobuf files.  */
@@ -191,7 +190,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     actual fun submittedBallotSink(): SubmittedBallotSinkIF =
         SubmittedBallotSink(path.submittedBallotPath())
 
-    inner class SubmittedBallotSink(val fileout: String) : SubmittedBallotSinkIF {
+    private inner class SubmittedBallotSink(val fileout: String) : SubmittedBallotSinkIF {
         val file: CPointer<FILE> = openFile(fileout)
 
         override fun writeSubmittedBallot(ballot: EncryptedBallot) {
@@ -210,20 +209,28 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
             fclose(file)
         }
     }
-}
 
-@Throws(IOException::class)
-private fun openFile(abspath: String): CPointer<FILE> {
-    memScoped {
-        // fopen(
-        //       @kotlinx.cinterop.internal.CCall.CString __filename: kotlin.String?,
-        //       @kotlinx.cinterop.internal.CCall.CString __modes: kotlin.String?)
-        //       : kotlinx.cinterop.CPointer<platform.posix.FILE>?
-        val file = fopen(abspath, "w+")
-        if (file == null) {
-            checkErrno { mess -> throw IOException("Fail open $mess on $abspath") }
+    actual fun plaintextTallySink(): PlaintextTallySinkIF =
+        PlaintextTallySink(path.spoiledBallotPath())
+
+    private inner class PlaintextTallySink(val fileout: String) : PlaintextTallySinkIF {
+        val file: CPointer<FILE> = openFile(fileout)
+
+        override fun writePlaintextTally(tally: PlaintextTally) {
+            val ballotProto: pbandk.Message = tally.publishPlaintextTally()
+            val buffer = ballotProto.encodeToByteArray()
+
+            val length = writeVlen(file, fileout, buffer.size)
+            if (length <= 0) {
+                fclose(file)
+                throw IOException("write failed on $fileout")
+            }
+            writeToFile(file, fileout, buffer)
         }
-        return file!!
+
+        override fun close() {
+            fclose(file)
+        }
     }
 }
 

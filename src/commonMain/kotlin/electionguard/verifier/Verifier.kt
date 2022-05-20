@@ -50,7 +50,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
         val tallyOk = verifyDecryptedTally()
         println(" verifyDecryptedTally= $tallyOk\n")
 
-        val ballotsOk = verifySubmittedBallots(electionRecord.iterateSubmittedBallots())
+        val ballotsOk = verifySubmittedBallots(electionRecord.iterateSubmittedBallots { true} )
         println(" verifySubmittedBallots= $ballotsOk\n")
 
         val allOk = guardiansOk && ballotsOk && tallyOk

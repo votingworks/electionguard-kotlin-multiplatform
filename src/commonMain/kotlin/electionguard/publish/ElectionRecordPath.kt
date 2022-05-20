@@ -14,7 +14,7 @@ data class ElectionRecordPath(val topDir : String) {
         const val DECRYPTION_RESULT_NAME = "decryptionResult" + PROTO_SUFFIX
         const val PLAINTEXT_BALLOT_PROTO = "plaintextBallots" + PROTO_SUFFIX
         const val SUBMITTED_BALLOT_PROTO = "encryptedBallots" + PROTO_SUFFIX
-        const val SPOILED_BALLOT_FILE = "spoiledBallotsTally" + PROTO_SUFFIX
+        const val SPOILED_BALLOT_FILE = "spoiledBallotTallies" + PROTO_SUFFIX
     }
 
     fun electionConfigPath(): String {

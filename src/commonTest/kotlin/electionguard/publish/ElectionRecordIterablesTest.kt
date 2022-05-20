@@ -35,7 +35,7 @@ class ElectionRecordIterablesTest {
 
     fun readBallots(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
-        val iterator = electionRecordIn.iterateSubmittedBallots().iterator()
+        val iterator = electionRecordIn.iterateSubmittedBallots { true} .iterator()
         var count = 0;
         for (ballot in iterator) {
             logger.debug { "  $count readBallots ${ballot.ballotId} ${ballot.state}" }

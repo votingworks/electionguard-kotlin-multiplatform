@@ -39,7 +39,7 @@ actual class ElectionRecord actual constructor(
         return groupContext.readDecryptionResult(path.decryptionResultPath())
     }
 
-    actual fun iterateSubmittedBallots(): Iterable<EncryptedBallot> {
+    actual fun iterateSubmittedBallots(filter : (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> {
         if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }

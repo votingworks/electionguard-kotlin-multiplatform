@@ -48,7 +48,7 @@ class ConsumerTest {
             val context = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, context)
             var count = 0
-            for (ballot in electionRecordIn.iterateSubmittedBallots()) {
+            for (ballot in electionRecordIn.iterateSubmittedBallots { true} ) {
                 println("$count ballot = ${ballot.ballotId}")
                 assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++

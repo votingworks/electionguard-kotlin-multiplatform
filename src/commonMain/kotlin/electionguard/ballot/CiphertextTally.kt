@@ -6,7 +6,7 @@ import electionguard.core.UInt256
 /** The encrypted representation of the summed votes for a collection of ballots */
 data class CiphertextTally(
     val tallyId: String,
-    val contests: Map<String, Contest> // map<contestId, contest>
+    val contests: List<Contest>
 ) {
 
     /**
@@ -17,7 +17,7 @@ data class CiphertextTally(
         val contestId: String,
         val sequenceOrder: Int,
         val contestDescriptionHash: UInt256, // matches ContestDescription.cryptoHash
-        val selections: Map<String, Selection> // map<selectionId, selection>
+        val selections: List<Selection>
     )
 
     /**

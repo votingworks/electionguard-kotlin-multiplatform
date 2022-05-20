@@ -21,7 +21,7 @@ expect class ElectionRecord(
     fun readDecryptionResult(): Result<DecryptionResult, String>
 
     // Use iterators, so that we never have to read in all objects at once.
-    fun iterateSubmittedBallots(): Iterable<EncryptedBallot>
+    fun iterateSubmittedBallots(filter : (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot>
     fun iterateCastBallots(): Iterable<EncryptedBallot>
     fun iterateSpoiledBallots(): Iterable<EncryptedBallot>
     fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally>

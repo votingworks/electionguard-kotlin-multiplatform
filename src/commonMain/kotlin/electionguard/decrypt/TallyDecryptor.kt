@@ -15,7 +15,7 @@ class TallyDecryptor(val group: GroupContext, val publicKey: ElGamalPublicKey, p
     /** Shares are in a Map keyed by "${contestId}#@${selectionId}" */
     fun decryptTally(tally: CiphertextTally, shares: Map<String, List<PartialDecryption>>): PlaintextTally {
         val contests: MutableMap<String, PlaintextTally.Contest> = HashMap()
-        for (tallyContest in tally.contests.values) {
+        for (tallyContest in tally.contests) {
             val plaintextTallyContest = decryptContestWithDecryptionShares(tallyContest, shares)
             contests[tallyContest.contestId] = plaintextTallyContest
         }
@@ -27,7 +27,7 @@ class TallyDecryptor(val group: GroupContext, val publicKey: ElGamalPublicKey, p
         shares: Map<String, List<PartialDecryption>>,
     ): PlaintextTally.Contest {
         val selections: MutableMap<String, PlaintextTally.Selection> = HashMap()
-        for (tallySelection in contest.selections.values) {
+        for (tallySelection in contest.selections) {
             val id = "${contest.contestId}#@${tallySelection.selectionId}"
             val sshares = shares[id] ?: throw RuntimeException("*** $id share not found") // TODO
             val plaintextTallySelection = decryptSelectionWithDecryptionShares(tallySelection, sshares)

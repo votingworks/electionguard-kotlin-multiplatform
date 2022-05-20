@@ -98,7 +98,8 @@ class PlaintextBallotIterator(
 class SubmittedBallotIterator(
     val groupContext: GroupContext,
     val filename: String,
-    val filter: (electionguard.protogen.EncryptedBallot) -> Boolean,
+    val protoFilter: ((electionguard.protogen.EncryptedBallot) -> Boolean)?,
+    val filter: ((EncryptedBallot) -> Boolean)?,
 ) : AbstractIterator<EncryptedBallot>() {
 
     private val file = openFile(filename)
@@ -112,11 +113,14 @@ class SubmittedBallotIterator(
             }
             val message = readFromFile(file, length.toULong(), filename)
             val ballotProto = electionguard.protogen.EncryptedBallot.decodeFromByteArray(message)
-            if (!filter(ballotProto)) {
+            if (protoFilter?.invoke(ballotProto) == false) {
                 continue // skip it
             }
             val ballotResult = groupContext.importSubmittedBallot(ballotProto)
             if (ballotResult is Ok) {
+                if (filter?.invoke(ballotResult.unwrap()) == false) {
+                    continue // skip it
+                }
                 setNext(ballotResult.unwrap())
                 break
             } else {
@@ -151,21 +155,6 @@ fun GroupContext.readTrustee(filename: String): DecryptingTrusteeIF {
     val buffer = gulp(filename)
     val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
     return this.importDecryptingTrustee(trusteeProto).getOrElse { throw RuntimeException("DecryptingTrustee $filename didnt parse") }
-}
-
-@Throws(IOException::class)
-private fun openFile(abspath: String): CPointer<FILE> {
-    memScoped {
-        // fopen(
-        //       @kotlinx.cinterop.internal.CCall.CString __filename: kotlin.String?,
-        //       @kotlinx.cinterop.internal.CCall.CString __modes: kotlin.String?)
-        //       : kotlinx.cinterop.CPointer<platform.posix.FILE>?
-        val file = fopen(abspath, "rb")
-        if (file == null) {
-            checkErrno {mess -> throw IOException("Fail open $mess on $abspath")}
-        }
-        return file!!
-    }
 }
 
 /** Read everything in the file and return as a ByteArray. */

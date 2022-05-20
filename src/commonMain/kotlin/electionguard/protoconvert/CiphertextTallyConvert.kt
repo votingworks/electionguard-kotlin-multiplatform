@@ -9,7 +9,6 @@ import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.CiphertextTally
 import electionguard.core.GroupContext
-import electionguard.core.UInt256
 
 fun GroupContext.importCiphertextTally(tally: electionguard.protogen.CiphertextTally?):
         Result<CiphertextTally, String> {
@@ -22,7 +21,7 @@ fun GroupContext.importCiphertextTally(tally: electionguard.protogen.CiphertextT
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(CiphertextTally(tally.tallyId, contests.associateBy {it.contestId}))
+    return Ok(CiphertextTally(tally.tallyId, contests))
 }
 
 private fun GroupContext.importContest(contest: electionguard.protogen.CiphertextTallyContest):
@@ -37,8 +36,7 @@ private fun GroupContext.importContest(contest: electionguard.protogen.Ciphertex
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(CiphertextTally.Contest(contest.contestId, contest.sequenceOrder, contestHash.unwrap(),
-        selections.associateBy {it.selectionId}))
+    return Ok(CiphertextTally.Contest(contest.contestId, contest.sequenceOrder, contestHash.unwrap(), selections))
 }
 
 private fun GroupContext.importSelection(selection: electionguard.protogen.CiphertextTallySelection):
@@ -63,7 +61,7 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Ciphe
 
 fun CiphertextTally.publishCiphertextTally(): electionguard.protogen.CiphertextTally {
     return electionguard.protogen
-        .CiphertextTally(this.tallyId, this.contests.values.map { it.publishContest() })
+        .CiphertextTally(this.tallyId, this.contests.map { it.publishContest() })
 }
 
 private fun CiphertextTally.Contest.publishContest():
@@ -73,7 +71,7 @@ private fun CiphertextTally.Contest.publishContest():
                 this.contestId,
                 this.sequenceOrder,
                 this.contestDescriptionHash.publishUInt256(),
-                this.selections.values.map { it.publishSelection() }
+                this.selections.map { it.publishSelection() }
             )
     }
 

@@ -35,15 +35,7 @@ fun runVerifier(group: GroupContext, inputDir: String) {
     val electionRecordIn = ElectionRecord(inputDir, group)
     val verifier = Verifier(group, electionRecordIn)
 
-    val guardiansOk = verifier.verifyGuardianPublicKey()
-    println("verifyGuardians $guardiansOk\n")
-
-    val ballotsOk = verifier.verifySubmittedBallots(electionRecordIn.iterateSubmittedBallots())
-
-    val tallyOk = verifier.verifyDecryptedTally()
-    println("verifyDecryptedTally $tallyOk\n")
-
-    val allOk = guardiansOk && ballotsOk && tallyOk
+    val allOk = verifier.verify()
 
     val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
     println("RunVerifier $allOk took $took seconds")

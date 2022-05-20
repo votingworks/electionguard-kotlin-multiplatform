@@ -2,6 +2,7 @@ package electionguard.decrypt
 
 import electionguard.ballot.DecryptingGuardian
 import electionguard.ballot.CiphertextTally
+import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.TallyResult
 import electionguard.core.ElGamalCiphertext
@@ -28,6 +29,11 @@ class DecryptingMediator(
         }
         // sorted by guardianId, to match PartialDecryption.lagrangeInterpolation()
         result.sortedBy { it.guardianId}
+    }
+
+    fun decryptBallot(ballot: EncryptedBallot): PlaintextTally {
+        // pretend a ballot is a tally
+        return ballot.convertToTally().decrypt()
     }
 
     fun CiphertextTally.decrypt(): PlaintextTally {
@@ -89,8 +95,8 @@ class DecryptingMediator(
 
         // Get all the Ciphertext that need to be decrypted in one call
         val texts: MutableList<ElGamalCiphertext> = mutableListOf()
-        for (tallyContest in this.contests.values) {
-            for (selection in tallyContest.selections.values) {
+        for (tallyContest in this.contests) {
+            for (selection in tallyContest.selections) {
                 texts.add(selection.ciphertext)
             }
         }
@@ -105,8 +111,8 @@ class DecryptingMediator(
         // Place the results into the DecryptionShare
         val decryptionShare = DecryptionShare(trustee.id())
         var count = 0
-        for (tallyContest in this.contests.values) {
-            for (tallySelection in tallyContest.selections.values) {
+        for (tallyContest in this.contests) {
+            for (tallySelection in tallyContest.selections) {
                 val proof: DirectDecryptionAndProof = partialDecryptions[count]
                 val partialDecryption = DirectDecryption(
                     tallySelection.selectionId,
@@ -130,8 +136,8 @@ class DecryptingMediator(
 
             // Place the results into the DecryptionShare
             var count2 = 0
-            for (tallyContest in this.contests.values) {
-                for (tallySelection in tallyContest.selections.values) {
+            for (tallyContest in this.contests) {
+                for (tallySelection in tallyContest.selections) {
                     val proof: CompensatedDecryptionAndProof = compensatedDecryptions[count2]
                     val recoveredDecryption = RecoveredPartialDecryption(
                         trustee.id(),
@@ -167,4 +173,15 @@ fun GroupContext.computeLagrangeCoefficient(coordinate: UInt, present: List<UInt
             .unaryMinus()
 
     return numerator.toElementModQ(this) / denomQ
+}
+
+private fun EncryptedBallot.convertToTally(): CiphertextTally {
+    val contests = this.contests.map {
+        val selections = it.selections.map {
+            CiphertextTally.Selection(it.selectionId, it.sequenceOrder, it.selectionHash, it.ciphertext)
+        }
+        CiphertextTally.Contest(it.contestId, it.sequenceOrder, it.contestHash, selections)
+    }
+    return CiphertextTally(this.ballotId, contests)
+
 }
