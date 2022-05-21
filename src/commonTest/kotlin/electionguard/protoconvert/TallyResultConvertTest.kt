@@ -19,13 +19,9 @@ class TallyResultConvertTest {
         val roundtrip = context.importTallyResult(proto).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
 
-        //     val group: GroupContext,
-        //    val electionIntialized: ElectionInitialized,
-        //    val ciphertextTally: CiphertextTally,
-        //    val metadata: Map<String, String> = emptyMap()
         assertEquals(roundtrip.group, electionRecord.group)
         assertEquals(roundtrip.electionIntialized, electionRecord.electionIntialized)
-        assertEquals(roundtrip.ciphertextTally, electionRecord.ciphertextTally)
+        assertEquals(roundtrip.encryptedTally, electionRecord.encryptedTally)
         assertEquals(roundtrip.tallyIds, electionRecord.tallyIds)
 
         assertTrue(roundtrip.equals(electionRecord))
@@ -34,14 +30,10 @@ class TallyResultConvertTest {
 }
 
 fun generateTallyResult(context: GroupContext): TallyResult {
-    //     val group: GroupContext,
-    //    val electionIntialized: ElectionInitialized,
-    //    val ciphertextTally: CiphertextTally,
-    //    val metadata: Map<String, String> = emptyMap()
     return TallyResult(
         context,
         generateElectionInitialized(context),
-        CiphertextTallyConvertTest.generateFakeTally(context),
+        EncryptedTallyConvertTest.generateFakeTally(context),
         listOf("ballotID1", "ballotsId42"),
         listOf("precinct342342", "precinct3423333"),
     )

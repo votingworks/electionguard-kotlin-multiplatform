@@ -20,7 +20,7 @@ import electionguard.protoconvert.importElectionConfig
 import electionguard.protoconvert.importElectionInitialized
 import electionguard.protoconvert.importPlaintextBallot
 import electionguard.protoconvert.importPlaintextTally
-import electionguard.protoconvert.importSubmittedBallot
+import electionguard.protoconvert.importEncryptedBallot
 import electionguard.protoconvert.importTallyResult
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
@@ -80,7 +80,7 @@ class PlaintextBallotIterator(
 }
 
 // Create iterators, so that we never have to read in all ballots at once.
-class SubmittedBallotIterator(
+class EncryptedBallotIterator(
     filename: String,
     val groupContext: GroupContext,
     val protoFilter: Predicate<electionguard.protogen.EncryptedBallot>?,
@@ -101,7 +101,7 @@ class SubmittedBallotIterator(
             if (protoFilter != null && !protoFilter.test(ballotProto)) {
                 continue // skip it
             }
-            val ballotResult = groupContext.importSubmittedBallot(ballotProto)
+            val ballotResult = groupContext.importEncryptedBallot(ballotProto)
             if (ballotResult is Ok) {
                 if (filter != null && !filter.test(ballotResult.unwrap())) {
                     continue // skip it

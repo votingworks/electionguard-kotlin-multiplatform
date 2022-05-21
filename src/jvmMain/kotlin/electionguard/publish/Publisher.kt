@@ -8,13 +8,13 @@ import electionguard.protoconvert.publishElectionConfig
 import electionguard.protoconvert.publishElectionInitialized
 import electionguard.protoconvert.publishPlaintextBallot
 import electionguard.protoconvert.publishPlaintextTally
-import electionguard.protoconvert.publishSubmittedBallot
+import electionguard.protoconvert.publishEncryptedBallot
 import electionguard.protoconvert.publishTallyResult
 import electionguard.publish.ElectionRecordPath.Companion.DECRYPTION_RESULT_NAME
 import electionguard.publish.ElectionRecordPath.Companion.ELECTION_CONFIG_FILE_NAME
 import electionguard.publish.ElectionRecordPath.Companion.ELECTION_INITIALIZED_FILE_NAME
 import electionguard.publish.ElectionRecordPath.Companion.SPOILED_BALLOT_FILE
-import electionguard.publish.ElectionRecordPath.Companion.SUBMITTED_BALLOT_PROTO
+import electionguard.publish.ElectionRecordPath.Companion.ENCRYPTED_BALLOT_PROTO
 import electionguard.publish.ElectionRecordPath.Companion.TALLY_RESULT_NAME
 import io.ktor.utils.io.errors.*
 import pbandk.encodeToStream
@@ -101,8 +101,8 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         return electionRecordDir.resolve(SPOILED_BALLOT_FILE).toAbsolutePath()
     }
 
-    fun submittedBallotPath(): Path {
-        return electionRecordDir.resolve(SUBMITTED_BALLOT_PROTO).toAbsolutePath()
+    fun encryptedBallotPath(): Path {
+        return electionRecordDir.resolve(ENCRYPTED_BALLOT_PROTO).toAbsolutePath()
     }
 
     fun tallyResultPath(): Path {
@@ -130,8 +130,8 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         ballots: Iterable<EncryptedBallot>
     ) {
         writeElectionInitialized(init)
-        val sink = submittedBallotSink()
-        ballots.forEach {sink.writeSubmittedBallot(it) }
+        val sink = encryptedBallotSink()
+        ballots.forEach {sink.writeEncryptedBallot(it) }
         sink.close()
     }
 
@@ -174,14 +174,14 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun submittedBallotSink(): SubmittedBallotSinkIF =
-        SubmittedBallotSink(submittedBallotPath().toString())
+    actual fun encryptedBallotSink(): EncryptedBallotSinkIF =
+        EncryptedBallotSink(encryptedBallotPath().toString())
 
-    inner class SubmittedBallotSink(path: String) : SubmittedBallotSinkIF {
+    inner class EncryptedBallotSink(path: String) : EncryptedBallotSinkIF {
         val out: FileOutputStream = FileOutputStream(path)
 
-        override fun writeSubmittedBallot(ballot: EncryptedBallot) {
-            val ballotProto: pbandk.Message = ballot.publishSubmittedBallot()
+        override fun writeEncryptedBallot(ballot: EncryptedBallot) {
+            val ballotProto: pbandk.Message = ballot.publishEncryptedBallot()
             writeDelimitedTo(ballotProto, out)
         }
 

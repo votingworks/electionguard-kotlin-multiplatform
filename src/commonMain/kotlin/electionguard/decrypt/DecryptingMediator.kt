@@ -1,7 +1,7 @@
 package electionguard.decrypt
 
 import electionguard.ballot.DecryptingGuardian
-import electionguard.ballot.CiphertextTally
+import electionguard.ballot.EncryptedTally
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.PlaintextTally
 import electionguard.ballot.TallyResult
@@ -36,7 +36,7 @@ class DecryptingMediator(
         return ballot.convertToTally().decrypt()
     }
 
-    fun CiphertextTally.decrypt(): PlaintextTally {
+    fun EncryptedTally.decrypt(): PlaintextTally {
         val shares: MutableList<DecryptionShare> = ArrayList()
         for (decryptingTrustee in decryptingTrustees) {
             val share: DecryptionShare = this.computePartialDecryptionForTally(decryptingTrustee)
@@ -89,7 +89,7 @@ class DecryptingMediator(
      * @param trustee: The guardian who will partially decrypt the tally
      * @return a DecryptionShare for this trustee
      */
-    private fun CiphertextTally.computePartialDecryptionForTally(
+    private fun EncryptedTally.computePartialDecryptionForTally(
         trustee: DecryptingTrusteeIF,
     ): DecryptionShare {
 
@@ -175,13 +175,13 @@ fun GroupContext.computeLagrangeCoefficient(coordinate: UInt, present: List<UInt
     return numerator.toElementModQ(this) / denomQ
 }
 
-private fun EncryptedBallot.convertToTally(): CiphertextTally {
+private fun EncryptedBallot.convertToTally(): EncryptedTally {
     val contests = this.contests.map {
         val selections = it.selections.map {
-            CiphertextTally.Selection(it.selectionId, it.sequenceOrder, it.selectionHash, it.ciphertext)
+            EncryptedTally.Selection(it.selectionId, it.sequenceOrder, it.selectionHash, it.ciphertext)
         }
-        CiphertextTally.Contest(it.contestId, it.sequenceOrder, it.contestHash, selections)
+        EncryptedTally.Contest(it.contestId, it.sequenceOrder, it.contestHash, selections)
     }
-    return CiphertextTally(this.ballotId, contests)
+    return EncryptedTally(this.ballotId, contests)
 
 }

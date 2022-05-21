@@ -10,19 +10,19 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 
-fun GroupContext.importSubmittedBallot(
+fun GroupContext.importEncryptedBallot(
     ballot: electionguard.protogen.EncryptedBallot
 ): Result<EncryptedBallot, String> {
     val here = ballot.ballotId
 
     val manifestHash = importUInt256(ballot.manifestHash)
-        .toResultOr {"SubmittedBallot $here manifestHash was malformed or missing"}
+        .toResultOr {"EncryptedBallot $here manifestHash was malformed or missing"}
     val trackingHash = importUInt256(ballot.code)
-        .toResultOr {"SubmittedBallot $here trackingHash was malformed or missing"}
+        .toResultOr {"EncryptedBallot $here trackingHash was malformed or missing"}
     val previousTrackingHash = importUInt256(ballot.codeSeed)
-        .toResultOr {"SubmittedBallot $here previousTrackingHash was malformed or missing"}
+        .toResultOr {"EncryptedBallot $here previousTrackingHash was malformed or missing"}
     val cryptoHash = importUInt256(ballot.cryptoHash)
-        .toResultOr {"SubmittedBallot $here cryptoHash was malformed or missing"}
+        .toResultOr {"EncryptedBallot $here cryptoHash was malformed or missing"}
     val ballotState = ballot.state.importBallotState(ballot.ballotId)
 
     val (contests, cerrors) = ballot.contests.map { this.importContest(it, ballot.ballotId) }.partition()
@@ -190,7 +190,7 @@ private fun GroupContext.importDisjunctiveChaumPedersenProof(
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-fun EncryptedBallot.publishSubmittedBallot(): electionguard.protogen.EncryptedBallot {
+fun EncryptedBallot.publishEncryptedBallot(): electionguard.protogen.EncryptedBallot {
     return electionguard.protogen
         .EncryptedBallot(
             this.ballotId,

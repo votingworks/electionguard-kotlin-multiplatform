@@ -51,14 +51,14 @@ class VerifyEncryptedBallotsTest {
     // this is slow - just do first one
     fun readBallotsOne(context: GroupContext, topdir: String): List<EncryptedBallot> {
         val electionRecordIn = ElectionRecord(topdir, context)
-        val ballotIter =  electionRecordIn.iterateSubmittedBallots{true}.iterator()
+        val ballotIter =  electionRecordIn.iterateEncryptedBallots{true}.iterator()
         assertTrue(ballotIter.hasNext())
         return listOf(ballotIter.next())
     }
 
     fun readBallots(context: GroupContext, topdir: String): List<EncryptedBallot> {
         val electionRecordIn = ElectionRecord(topdir, context)
-        return electionRecordIn.iterateSubmittedBallots { true} .toList()
+        return electionRecordIn.iterateEncryptedBallots { true} .toList()
     }
 
 }

@@ -44,7 +44,7 @@ class ElectionRecordTest {
         assertEquals("2.0.0", config.protoVersion)
         assertEquals("Standard", config.constants.name)
         assertEquals("v0.95", config.manifest.specVersion)
-        assertEquals("RunWorkflow", tallyResult.ciphertextTally.tallyId)
+        assertEquals("RunWorkflow", tallyResult.encryptedTally.tallyId)
         assertEquals("RunWorkflow", decryption.decryptedTally.tallyId)
         assertNotNull(decryption.decryptedTally)
         val contests = decryption.decryptedTally.contests

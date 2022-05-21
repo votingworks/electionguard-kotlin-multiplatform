@@ -1,6 +1,6 @@
 package electionguard.decrypt
 
-import electionguard.ballot.CiphertextTally
+import electionguard.ballot.EncryptedTally
 import electionguard.ballot.PlaintextTally
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
@@ -13,7 +13,7 @@ private const val maxDlog: Int = 1000
 class TallyDecryptor(val group: GroupContext, val publicKey: ElGamalPublicKey, private val nguardians: Int) {
 
     /** Shares are in a Map keyed by "${contestId}#@${selectionId}" */
-    fun decryptTally(tally: CiphertextTally, shares: Map<String, List<PartialDecryption>>): PlaintextTally {
+    fun decryptTally(tally: EncryptedTally, shares: Map<String, List<PartialDecryption>>): PlaintextTally {
         val contests: MutableMap<String, PlaintextTally.Contest> = HashMap()
         for (tallyContest in tally.contests) {
             val plaintextTallyContest = decryptContestWithDecryptionShares(tallyContest, shares)
@@ -23,7 +23,7 @@ class TallyDecryptor(val group: GroupContext, val publicKey: ElGamalPublicKey, p
     }
 
     private fun decryptContestWithDecryptionShares(
-        contest: CiphertextTally.Contest,
+        contest: EncryptedTally.Contest,
         shares: Map<String, List<PartialDecryption>>,
     ): PlaintextTally.Contest {
         val selections: MutableMap<String, PlaintextTally.Selection> = HashMap()
@@ -37,7 +37,7 @@ class TallyDecryptor(val group: GroupContext, val publicKey: ElGamalPublicKey, p
     }
 
     private fun decryptSelectionWithDecryptionShares(
-        selection: CiphertextTally.Selection,
+        selection: EncryptedTally.Selection,
         shares: List<PartialDecryption>,
     ): PlaintextTally.Selection {
         if (shares.size != this.nguardians) {

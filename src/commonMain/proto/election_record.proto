@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "ciphertext_tally.proto";
+import "encrypted_tally.proto";
 import "common.proto";
 import "manifest.proto";
 import "plaintext_tally.proto";
@@ -54,7 +54,7 @@ message Guardian {
 
 message TallyResult {
   ElectionInitialized election_init = 1;
-  CiphertextTally ciphertext_tally = 2;
+  EncryptedTally encrypted_tally = 2;
   repeated string ballot_ids = 3;
   repeated string tally_ids = 4;
   map<string, string> metadata = 5;

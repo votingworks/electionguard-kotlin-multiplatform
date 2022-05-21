@@ -43,27 +43,27 @@ actual class ElectionRecord actual constructor(
         return groupContext.readDecryptionResult(path.decryptionResultPath())
     }
 
-    actual fun iterateSubmittedBallots(filter : (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> {
-        if (!exists(path.submittedBallotPath())) {
+    actual fun iterateEncryptedBallots(filter : (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> {
+        if (!exists(path.encryptedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath(), null, null) }
+        return Iterable { EncryptedBallotIterator(groupContext, path.encryptedBallotPath(), null, null) }
     }
 
     actual fun iterateCastBallots(): Iterable<EncryptedBallot> {
-        if (!exists(path.submittedBallotPath())) {
+        if (!exists(path.encryptedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath(),
+        return Iterable { EncryptedBallotIterator(groupContext, path.encryptedBallotPath(),
             { it.state === electionguard.protogen.EncryptedBallot.BallotState.CAST }, null)
         }
     }
 
     actual fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
-        if (!exists(path.submittedBallotPath())) {
+        if (!exists(path.encryptedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath(),
+        return Iterable { EncryptedBallotIterator(groupContext, path.encryptedBallotPath(),
             { it.state === electionguard.protogen.EncryptedBallot.BallotState.SPOILED }, null)
         }
     }

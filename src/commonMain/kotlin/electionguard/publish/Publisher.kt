@@ -11,15 +11,15 @@ expect class Publisher(topDir: String, publisherMode: PublisherMode) {
     fun writeTallyResult(tally: TallyResult)
     fun writeDecryptionResult(decryption: DecryptionResult)
 
-    fun submittedBallotSink(): SubmittedBallotSinkIF
+    fun encryptedBallotSink(): EncryptedBallotSinkIF
     fun plaintextTallySink(): PlaintextTallySinkIF
 
     fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)
     fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee)
 }
 
-interface SubmittedBallotSinkIF {
-    fun writeSubmittedBallot(ballot: EncryptedBallot)
+interface EncryptedBallotSinkIF {
+    fun writeEncryptedBallot(ballot: EncryptedBallot)
     fun close()
 }
 

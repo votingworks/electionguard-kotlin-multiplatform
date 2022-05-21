@@ -16,9 +16,9 @@ fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
         return Err("Null TallyResult")
     }
     val electionInitialized: Result<ElectionInitialized, String> = this.importElectionInitialized(tally.electionInit)
-    val ciphertextTally: Result<CiphertextTally, String> = this.importCiphertextTally(tally.ciphertextTally)
+    val encryptedTally: Result<EncryptedTally, String> = this.importEncryptedTally(tally.encryptedTally)
 
-    val errors = getAllErrors(electionInitialized, ciphertextTally)
+    val errors = getAllErrors(electionInitialized, encryptedTally)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -26,7 +26,7 @@ fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
     return Ok(TallyResult(
         this,
         electionInitialized.unwrap(),
-        ciphertextTally.unwrap(),
+        encryptedTally.unwrap(),
         tally.ballotIds,
         tally.tallyIds,
         tally.metadata.associate {it.key to it.value}
@@ -73,7 +73,7 @@ private fun GroupContext.importAvailableGuardian(guardian: electionguard.protoge
 fun TallyResult.publishTallyResult(): electionguard.protogen.TallyResult {
     return electionguard.protogen.TallyResult(
         this.electionIntialized.publishElectionInitialized(),
-        this.ciphertextTally.publishCiphertextTally(),
+        this.encryptedTally.publishEncryptedTally(),
         this.ballotIds,
         this.tallyIds,
         this.metadata.entries.map { electionguard.protogen.TallyResult.MetadataEntry(it.key, it.value)}

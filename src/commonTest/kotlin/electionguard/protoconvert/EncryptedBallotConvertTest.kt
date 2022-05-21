@@ -8,20 +8,20 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SubmittedBallotConvertTest {
+class EncryptedBallotConvertTest {
 
     @Test
-    fun roundtripSubmittedBallot() {
+    fun roundtripEncryptedBallot() {
         val context = tinyGroup()
-        val ballot = generateSubmittedBallot(42, context)
-        val proto = ballot.publishSubmittedBallot()
-        val roundtrip = context.importSubmittedBallot(proto)
+        val ballot = generateEncryptedBallot(42, context)
+        val proto = ballot.publishEncryptedBallot()
+        val roundtrip = context.importEncryptedBallot(proto)
         assertTrue(roundtrip is Ok)
         assertEquals(roundtrip.unwrap(), ballot)
     }
 
     companion object {
-        fun generateSubmittedBallot(seq: Int, context: GroupContext): EncryptedBallot {
+        fun generateEncryptedBallot(seq: Int, context: GroupContext): EncryptedBallot {
             val contests = List(9, { generateFakeContest(it, context) })
             //     val ballotId: String,
             //    val ballotStyleId: String,

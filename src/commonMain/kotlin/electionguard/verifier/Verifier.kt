@@ -33,7 +33,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord, val 
         println(" verifyDecryptedTally $tallyStats\n")
 
         val verifyBallots = VerifyEncryptedBallots(jointPublicKey, cryptoExtendedBaseHash, nthreads)
-        val ballotStats = verifyBallots.verifyEncryptedBallots(electionRecord.iterateSubmittedBallots { true })
+        val ballotStats = verifyBallots.verifyEncryptedBallots(electionRecord.iterateEncryptedBallots { true })
         println(" verifyEncryptedBallots $ballotStats\n")
 
         val spoiledStats = verifyTally.verifySpoiledBallotTallies(electionRecord.iterateSpoiledBallotTallies(), nthreads)
@@ -45,7 +45,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord, val 
 
     fun verifyEncryptedBallots(): Boolean {
         val verifyBallots = VerifyEncryptedBallots(jointPublicKey, cryptoExtendedBaseHash, nthreads)
-        return verifyBallots.verifyEncryptedBallots(electionRecord.iterateSubmittedBallots { true }).allOk
+        return verifyBallots.verifyEncryptedBallots(electionRecord.iterateEncryptedBallots { true }).allOk
     }
 
     fun verifyGuardianPublicKey(): Boolean {

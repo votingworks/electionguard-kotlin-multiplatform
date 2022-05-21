@@ -8,7 +8,7 @@ import electionguard.protoconvert.publishElectionConfig
 import electionguard.protoconvert.publishElectionInitialized
 import electionguard.protoconvert.publishPlaintextBallot
 import electionguard.protoconvert.publishPlaintextTally
-import electionguard.protoconvert.publishSubmittedBallot
+import electionguard.protoconvert.publishEncryptedBallot
 import electionguard.protoconvert.publishTallyResult
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
@@ -75,8 +75,8 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         ballots: Iterable<EncryptedBallot>
     ) {
         writeElectionInitialized(init)
-        val sink = submittedBallotSink()
-        ballots.forEach {sink.writeSubmittedBallot(it) }
+        val sink = encryptedBallotSink()
+        ballots.forEach {sink.writeEncryptedBallot(it) }
         sink.close()    }
 
     actual fun writeTallyResult(tally: TallyResult) {
@@ -108,12 +108,12 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     @Throws(IOException::class)
-    fun writeSubmittedBallots(encryptedBallots: Iterable<EncryptedBallot>): Boolean {
-        val fileout = path.submittedBallotPath()
+    fun writeEncryptedBallots(encryptedBallots: Iterable<EncryptedBallot>): Boolean {
+        val fileout = path.encryptedBallotPath()
         val file: CPointer<FILE> = openFile(fileout)
         try {
             encryptedBallots.forEach {
-                val proto = it.publishSubmittedBallot()
+                val proto = it.publishEncryptedBallot()
                 val buffer = proto.encodeToByteArray()
 
                 val length = writeVlen(file, fileout, buffer.size)
@@ -130,7 +130,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     @Throws(IOException::class)
-    fun writeSpoiledBallots(spoiledBallots: Iterable<PlaintextTally>): Boolean {
+    fun writeSpoiledBallotTallies(spoiledBallots: Iterable<PlaintextTally>): Boolean {
         val fileout = path.spoiledBallotPath()
         val file: CPointer<FILE> = openFile(fileout)
         try {
@@ -187,14 +187,14 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun submittedBallotSink(): SubmittedBallotSinkIF =
-        SubmittedBallotSink(path.submittedBallotPath())
+    actual fun encryptedBallotSink(): EncryptedBallotSinkIF =
+        EncryptedBallotSink(path.encryptedBallotPath())
 
-    private inner class SubmittedBallotSink(val fileout: String) : SubmittedBallotSinkIF {
+    private inner class EncryptedBallotSink(val fileout: String) : EncryptedBallotSinkIF {
         val file: CPointer<FILE> = openFile(fileout)
 
-        override fun writeSubmittedBallot(ballot: EncryptedBallot) {
-            val ballotProto: pbandk.Message = ballot.publishSubmittedBallot()
+        override fun writeEncryptedBallot(ballot: EncryptedBallot) {
+            val ballotProto: pbandk.Message = ballot.publishEncryptedBallot()
             val buffer = ballotProto.encodeToByteArray()
 
             val length = writeVlen(file, fileout, buffer.size)

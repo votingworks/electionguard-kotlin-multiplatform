@@ -8,7 +8,7 @@ import electionguard.core.toElementModQ
 data class TallyResult(
     val group: GroupContext,
     val electionIntialized: ElectionInitialized,
-    val ciphertextTally: CiphertextTally,
+    val encryptedTally: EncryptedTally,
     val ballotIds: List<String>,
     val tallyIds: List<String>,
     val metadata: Map<String, String> = emptyMap(),
