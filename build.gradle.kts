@@ -176,8 +176,8 @@ val compileProtobuf =
             // TODO lame
             val commandLineStr =
                 "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
-                    "encrypted_ballot.proto ciphertext_tally.proto common.proto " +
-                    "election_record.proto election_record_ver1.proto manifest.proto " +
+                    "common.proto encrypted_ballot.proto encrypted_tally.proto " +
+                    "election_record.proto manifest.proto " +
                     "plaintext_ballot.proto plaintext_tally.proto " +
                     "trustees.proto"
             project.exec { commandLine = commandLineStr.split(" ") }

@@ -7,13 +7,13 @@ import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.CiphertextTally
+import electionguard.ballot.EncryptedTally
 import electionguard.core.GroupContext
 
-fun GroupContext.importCiphertextTally(tally: electionguard.protogen.CiphertextTally?):
-        Result<CiphertextTally, String> {
+fun GroupContext.importEncryptedTally(tally: electionguard.protogen.EncryptedTally?):
+        Result<EncryptedTally, String> {
     if (tally == null) {
-        return Err("Null CiphertextTally")
+        return Err("Null EncryptedTally")
     }
 
     val (contests, errors) = tally.contests.map { this.importContest(it) }.partition()
@@ -21,11 +21,11 @@ fun GroupContext.importCiphertextTally(tally: electionguard.protogen.CiphertextT
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(CiphertextTally(tally.tallyId, contests))
+    return Ok(EncryptedTally(tally.tallyId, contests))
 }
 
-private fun GroupContext.importContest(contest: electionguard.protogen.CiphertextTallyContest):
-        Result<CiphertextTally.Contest, String> {
+private fun GroupContext.importContest(contest: electionguard.protogen.EncryptedTallyContest):
+        Result<EncryptedTally.Contest, String> {
 
     val contestHash = importUInt256(contest.contestDescriptionHash)
         .toResultOr {"Contest ${contest.contestId} description hash was malformed or missing"}
@@ -36,11 +36,11 @@ private fun GroupContext.importContest(contest: electionguard.protogen.Ciphertex
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(CiphertextTally.Contest(contest.contestId, contest.sequenceOrder, contestHash.unwrap(), selections))
+    return Ok(EncryptedTally.Contest(contest.contestId, contest.sequenceOrder, contestHash.unwrap(), selections))
 }
 
-private fun GroupContext.importSelection(selection: electionguard.protogen.CiphertextTallySelection):
-        Result<CiphertextTally.Selection, String> {
+private fun GroupContext.importSelection(selection: electionguard.protogen.EncryptedTallySelection):
+        Result<EncryptedTally.Selection, String> {
 
     val selectionDescriptionHash = importUInt256(selection.selectionDescriptionHash)
     val ciphertext = this.importCiphertext(selection.ciphertext)
@@ -49,7 +49,7 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Ciphe
         return Err("Selection ${selection.selectionId} description hash or ciphertext missing")
     }
 
-    return Ok(CiphertextTally.Selection(
+    return Ok(EncryptedTally.Selection(
         selection.selectionId,
         selection.sequenceOrder,
         selectionDescriptionHash,
@@ -59,15 +59,15 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Ciphe
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-fun CiphertextTally.publishCiphertextTally(): electionguard.protogen.CiphertextTally {
+fun EncryptedTally.publishEncryptedTally(): electionguard.protogen.EncryptedTally {
     return electionguard.protogen
-        .CiphertextTally(this.tallyId, this.contests.map { it.publishContest() })
+        .EncryptedTally(this.tallyId, this.contests.map { it.publishContest() })
 }
 
-private fun CiphertextTally.Contest.publishContest():
-    electionguard.protogen.CiphertextTallyContest {
+private fun EncryptedTally.Contest.publishContest():
+    electionguard.protogen.EncryptedTallyContest {
         return electionguard.protogen
-            .CiphertextTallyContest(
+            .EncryptedTallyContest(
                 this.contestId,
                 this.sequenceOrder,
                 this.contestDescriptionHash.publishUInt256(),
@@ -75,10 +75,10 @@ private fun CiphertextTally.Contest.publishContest():
             )
     }
 
-private fun CiphertextTally.Selection.publishSelection():
-    electionguard.protogen.CiphertextTallySelection {
+private fun EncryptedTally.Selection.publishSelection():
+    electionguard.protogen.EncryptedTallySelection {
         return electionguard.protogen
-            .CiphertextTallySelection(
+            .EncryptedTallySelection(
                 this.selectionId,
                 this.sequenceOrder,
                 this.selectionDescriptionHash.publishUInt256(),

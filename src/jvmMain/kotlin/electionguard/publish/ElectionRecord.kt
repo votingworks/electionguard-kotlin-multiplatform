@@ -61,34 +61,34 @@ actual class ElectionRecord actual constructor(
     }
 
     // all submitted ballots, cast or spoiled
-    actual fun iterateSubmittedBallots(filter: (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> {
-        val filename = path.submittedBallotPath()
+    actual fun iterateEncryptedBallots(filter: (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> {
+        val filename = path.encryptedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(filename, groupContext, null, filter) }
+        return Iterable { EncryptedBallotIterator(filename, groupContext, null, filter) }
     }
 
-    // only cast SubmittedBallots
+    // only EncryptedBallot that are CAST
     actual fun iterateCastBallots(): Iterable<EncryptedBallot> {
-        val filename = path.submittedBallotPath()
+        val filename = path.encryptedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
         val protoFilter =
             Predicate<electionguard.protogen.EncryptedBallot> { it.state == electionguard.protogen.EncryptedBallot.BallotState.CAST }
-        return Iterable { SubmittedBallotIterator(filename, groupContext, protoFilter, null) }
+        return Iterable { EncryptedBallotIterator(filename, groupContext, protoFilter, null) }
     }
 
-    // only spoiled SubmittedBallots
+    // only EncryptedBallot that are SPOILED
     actual fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
-        val filename = path.submittedBallotPath()
+        val filename = path.encryptedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
         val protoFilter =
             Predicate<electionguard.protogen.EncryptedBallot> { it.state == electionguard.protogen.EncryptedBallot.BallotState.SPOILED }
-        return Iterable { SubmittedBallotIterator(filename, groupContext, protoFilter, null) }
+        return Iterable { EncryptedBallotIterator(filename, groupContext, protoFilter, null) }
     }
 
     // all spoiled ballot tallies

@@ -3,7 +3,7 @@
 package electionguard.tally
 
 import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.CiphertextTally
+import electionguard.ballot.EncryptedTally
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
@@ -60,11 +60,11 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
 
     var count = 0
     val accumulator = AccumulateTally(group, electionInit.manifest(), name)
-    for (submittedBallot in electionRecordIn.iterateCastBallots() ) {
-        accumulator.addCastBallot(submittedBallot)
+    for (encryptedBallot in electionRecordIn.iterateCastBallots() ) {
+        accumulator.addCastBallot(encryptedBallot)
         count++
     }
-    val tally: CiphertextTally = accumulator.build()
+    val tally: EncryptedTally = accumulator.build()
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeTallyResult(

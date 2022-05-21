@@ -54,7 +54,7 @@ class CompareEncryptedBallotsTest {
 
     fun readBallots(context: GroupContext, topdir: String): List<EncryptedBallot> {
         val electionRecordIn = ElectionRecord(topdir, context)
-        return electionRecordIn.iterateSubmittedBallots { true} .toList()
+        return electionRecordIn.iterateEncryptedBallots { true} .toList()
     }
 
 }

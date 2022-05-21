@@ -24,6 +24,7 @@ import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -34,7 +35,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import mu.KotlinLogging
-import kotlin.math.roundToInt
 
 private val logger = KotlinLogging.logger("RunTrustedBallotDecryption")
 
@@ -107,14 +107,14 @@ fun runDecryptBallots(
     var ballotIter: Iterable<EncryptedBallot> =
         when {
             (decryptSpoiledList == null) -> electionRecordIn.iterateSpoiledBallots()
-            (decryptSpoiledList.trim().lowercase() == "all") -> electionRecordIn.iterateSubmittedBallots { true }
+            (decryptSpoiledList.trim().lowercase() == "all") -> electionRecordIn.iterateEncryptedBallots { true }
             fileExists(decryptSpoiledList) -> {
                 val wanted: List<String> = fileReadLines(decryptSpoiledList)
-                electionRecordIn.iterateSubmittedBallots { wanted.contains(it.ballotId) }
+                electionRecordIn.iterateEncryptedBallots { wanted.contains(it.ballotId) }
             }
             else -> {
                 val wanted: List<String> = decryptSpoiledList.split(",")
-                electionRecordIn.iterateSubmittedBallots { wanted.contains(it.ballotId) }
+                electionRecordIn.iterateEncryptedBallots { wanted.contains(it.ballotId) }
             }
         }
 
@@ -146,6 +146,7 @@ fun runDecryptBallots(
 }
 
 // place the ballot reading into its own coroutine
+@OptIn(ExperimentalCoroutinesApi::class)
 private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> =
     produce {
         for (ballot in producer) {
@@ -163,9 +164,7 @@ private fun CoroutineScope.launchDecryptor(
     output: SendChannel<PlaintextTally>,
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
-        val decryptedTally = with(decryptor) { tallyResult.ciphertextTally.decrypt() }
-
-        val decrypted: PlaintextTally = decryptor.decryptBallot(ballot)
+         val decrypted: PlaintextTally = decryptor.decryptBallot(ballot)
         logger.debug { " Encryptor #$id sending ciphertext ballot ${decrypted.tallyId}" }
         println(" Encryptor #$id sending ciphertext ballot ${decrypted.tallyId}")
         output.send(decrypted)

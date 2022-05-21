@@ -20,7 +20,7 @@ import electionguard.protoconvert.importElectionConfig
 import electionguard.protoconvert.importElectionInitialized
 import electionguard.protoconvert.importPlaintextBallot
 import electionguard.protoconvert.importPlaintextTally
-import electionguard.protoconvert.importSubmittedBallot
+import electionguard.protoconvert.importEncryptedBallot
 import electionguard.protoconvert.importTallyResult
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
@@ -37,7 +37,6 @@ import mu.KotlinLogging
 import pbandk.decodeFromByteArray
 import platform.posix.FILE
 import platform.posix.fclose
-import platform.posix.fopen
 import platform.posix.fread
 import platform.posix.lstat
 import platform.posix.stat
@@ -95,7 +94,7 @@ class PlaintextBallotIterator(
     }
 }
 
-class SubmittedBallotIterator(
+class EncryptedBallotIterator(
     val groupContext: GroupContext,
     val filename: String,
     val protoFilter: ((electionguard.protogen.EncryptedBallot) -> Boolean)?,
@@ -116,7 +115,7 @@ class SubmittedBallotIterator(
             if (protoFilter?.invoke(ballotProto) == false) {
                 continue // skip it
             }
-            val ballotResult = groupContext.importSubmittedBallot(ballotProto)
+            val ballotResult = groupContext.importEncryptedBallot(ballotProto)
             if (ballotResult is Ok) {
                 if (filter?.invoke(ballotResult.unwrap()) == false) {
                     continue // skip it

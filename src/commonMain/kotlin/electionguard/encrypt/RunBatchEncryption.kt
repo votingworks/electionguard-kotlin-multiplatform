@@ -21,7 +21,7 @@ import electionguard.input.ManifestInputValidation
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
-import electionguard.publish.SubmittedBallotSinkIF
+import electionguard.publish.EncryptedBallotSinkIF
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
@@ -149,7 +149,7 @@ fun batchEncryption(
     )
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
-    val sink: SubmittedBallotSinkIF = publisher.submittedBallotSink()
+    val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
 
     runBlocking {
         val outputChannel = Channel<CiphertextBallot>()
@@ -233,10 +233,10 @@ private fun CoroutineScope.launchEncryptor(
 // place the ballot writing into its own coroutine
 private var count = 0
 private fun CoroutineScope.launchSink(
-    input: Channel<CiphertextBallot>, sink: SubmittedBallotSinkIF,
+    input: Channel<CiphertextBallot>, sink: EncryptedBallotSinkIF,
 ) = launch {
     for (ballot in input) {
-        sink.writeSubmittedBallot(ballot.submit(EncryptedBallot.BallotState.CAST))
+        sink.writeEncryptedBallot(ballot.submit(EncryptedBallot.BallotState.CAST))
         logger.debug{" Sink wrote $count submitted ballot ${ballot.ballotId}"}
         count++
     }

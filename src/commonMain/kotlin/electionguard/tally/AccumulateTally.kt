@@ -1,6 +1,6 @@
 package electionguard.tally
 
-import electionguard.ballot.CiphertextTally
+import electionguard.ballot.EncryptedTally
 import electionguard.ballot.Manifest
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.ElGamalCiphertext
@@ -34,9 +34,9 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         return true
     }
 
-    fun build(): CiphertextTally {
+    fun build(): EncryptedTally {
         val tallyContests = contests.values.map { it.build() }
-        return CiphertextTally(this.name, tallyContests)
+        return EncryptedTally(this.name, tallyContests)
     }
 
     fun ballotIds(): List<String> {
@@ -60,9 +60,9 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
             }
         }
 
-        fun build(): CiphertextTally.Contest {
+        fun build(): EncryptedTally.Contest {
             val tallySelections = selections.values.map { it.build() }
-            return CiphertextTally.Contest(
+            return EncryptedTally.Contest(
                 manifestContest.contestId, manifestContest.sequenceOrder, manifestContest.cryptoHash, tallySelections)
         }
     }
@@ -74,8 +74,8 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
             ciphertextAccumulate.add(selection)
         }
 
-        fun build(): CiphertextTally.Selection {
-            return CiphertextTally.Selection(
+        fun build(): EncryptedTally.Selection {
+            return EncryptedTally.Selection(
                 manifestSelection.selectionId, manifestSelection.sequenceOrder, manifestSelection.cryptoHash,
                 ciphertextAccumulate.encryptedSum(),
             )

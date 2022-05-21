@@ -3,7 +3,7 @@ syntax = "proto3";
 import "common.proto";
 
 option java_package = "electionguard.protogen";
-option java_outer_classname = "CiphertextBallotProto";
+option java_outer_classname = "EncryptedBallotProto";
 
 // An encrypted ballot that has been cast or spoiled
 message EncryptedBallot {

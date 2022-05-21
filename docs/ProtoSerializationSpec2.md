@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 5/17/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 5/21/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 Notes
 
@@ -105,13 +105,13 @@ Notes
 
 ### message TallyResult
 
-| Name             | Type                 | Notes |
-|------------------|----------------------|-------|
-| election_init    | ElectionInitialized  |       |
-| ciphertext_tally | CiphertextTally      |       |
-| ballot_ids       | List<string>         |       |
-| tally_ids        | List<string>         |       |
-| metadata         | map<string, string>  |       |
+| Name            | Type                | Notes |
+|-----------------|---------------------|-------|
+| election_init   | ElectionInitialized |       |
+| encrypted_tally | EncryptedTally      |       |
+| ballot_ids      | List<string>        |       |
+| tally_ids       | List<string>        |       |
+| metadata        | map<string, string> |       |
 
 ### message DecryptionResult
 
@@ -330,25 +330,25 @@ Notes
 | proof1    | GenericChaumPedersenProof |       |
 
 
-## ciphertext_tally.proto
+## encrypted_tally.proto
 
-### message CiphertextTally
+### message EncryptedTally
 
-| Name     | Type                           | Notes                                                             |
-|----------|--------------------------------|-------------------------------------------------------------------|
-| tally_id | string                         | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
-| contests | List\<CiphertextTallyContest\> |                                                                   | 
+| Name     | Type                            | Notes |
+|----------|---------------------------------|-------|
+| tally_id | string                          |       |
+| contests | List\<EncryptedTallyContest\>   |       | 
 
-### message CiphertextTallyContest
+### message EncryptedTallyContest
 
 | Name                     | Type                             | Notes                             |
 |--------------------------|----------------------------------|-----------------------------------|
 | contest_id               | string                           | ContestDescription.contest_id     |
 | sequence_order           | uint32                           | ContestDescription.sequence_order |
 | contest_description_hash | UInt256                          | ContestDescription.crypto_hash    |
-| selections               | List\<CiphertextTallySelection\> |                                   |
+| selections               | List\<EncryptedTallySelection\>  |                                   |
 
-### message CiphertextTallySelection
+### message EncryptedTallySelection
 
 | Name                       | Type              | Notes                               |
 |----------------------------|-------------------|-------------------------------------|
@@ -362,10 +362,10 @@ Notes
 
 ### message PlaintextTally
 
-| Name     | Type                          | Notes                                                             |
-|----------|-------------------------------|-------------------------------------------------------------------|
-| tally_id | string                        | when decrypted spoiled ballots, matches SubmittedBallot.ballot_id |
-| contests | List\<PlaintextTallyContest\> |                                                                   |
+| Name     | Type                          | Notes                                                              |
+|----------|-------------------------------|--------------------------------------------------------------------|
+| tally_id | string                        | when decrypting spoiled ballots, matches EncryptedBallot.ballot_id |
+| contests | List\<PlaintextTallyContest\> |                                                                    |
 
 ### message PlaintextTallyContest
 

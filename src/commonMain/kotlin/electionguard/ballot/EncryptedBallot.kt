@@ -2,6 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.*
 
+/** The encrypted representation of a voter's ballot. */
 data class EncryptedBallot(
     val ballotId: String,
     val ballotStyleId: String,

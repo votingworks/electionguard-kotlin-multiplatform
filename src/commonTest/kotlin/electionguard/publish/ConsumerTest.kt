@@ -43,12 +43,12 @@ class ConsumerTest {
     }
 
     @Test
-    fun readSubmittedBallots() {
+    fun readEncryptedBallots() {
         runTest {
             val context = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, context)
             var count = 0
-            for (ballot in electionRecordIn.iterateSubmittedBallots { true} ) {
+            for (ballot in electionRecordIn.iterateEncryptedBallots { true} ) {
                 println("$count ballot = ${ballot.ballotId}")
                 assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
@@ -57,7 +57,7 @@ class ConsumerTest {
     }
 
     @Test
-    fun readSubmittedBallotsCast() {
+    fun readEncryptedBallotsCast() {
         runTest {
             val context = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, context)
@@ -127,41 +127,5 @@ class ConsumerTest {
             assertFalse(result is Ok)
         }
     }
-
-    /*
-    @Test
-    fun readMissingElectionRecord() {
-        runTest {
-            val context = productionGroup()
-            val electionDir = "src/commonTest/data/testJava/encryptor/election_record"
-            val result: Result<ElectionRecord, Throwable> = runCatching {
-                val electionRecordIn = ElectionRecord(electionDir, context)
-            }
-            assertTrue(result is Err)
-            println("readMissingElectionRecord ${result.getError()}")
-            val message: String = result.getError()?.message ?: "not"
-            assertTrue(message.contains("No such file or directory"))
-        }
-    }
-
-    @Test
-    fun readBadElectionRecord() {
-        runTest {
-            val context = productionGroup()
-            // the submittedBallots.protobuf was renamed to electionRecord.protobuf
-            val electionDir = "src/commonTest/data/testBad"
-            val electionRecordIn = ElectionRecord(electionDir, context)
-            val result: Result<ElectionRecord, Throwable> = runCatching {
-                val electionRecordIn = ElectionRecord(electionDir, context)
-            }
-            assertTrue(result is Err)
-            assertTrue(result.getError() is pbandk.InvalidProtocolBufferException)
-            println("readBadElectionRecord = ${result.getError()}")
-            val message: String = result.getError()?.message ?: "not"
-            assertTrue(message.contains("Unrecognized wire type: WireType(value=4)"))
-        }
-    }
-
-    */
 
 }
