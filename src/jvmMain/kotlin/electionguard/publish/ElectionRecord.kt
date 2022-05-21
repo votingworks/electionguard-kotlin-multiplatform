@@ -18,7 +18,7 @@ import java.util.function.Predicate
 internal val logger = KotlinLogging.logger("ElectionRecord")
 
 actual class ElectionRecord actual constructor(
-    topDir: String,
+    val topDir: String,
     val groupContext: GroupContext,
 ) {
     val path = ElectionRecordPath(topDir)
@@ -27,6 +27,10 @@ actual class ElectionRecord actual constructor(
         if (!Files.exists(Path.of(topDir))) {
             throw RuntimeException("Not existent directory $topDir")
         }
+    }
+
+    actual fun topdir(): String {
+        return this.topDir
     }
 
     actual fun readElectionConfig(): Result<ElectionConfig, String> {

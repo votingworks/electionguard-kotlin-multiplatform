@@ -11,7 +11,6 @@ private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
     val kotlinDir = "src/commonTest/data/runWorkflowAllAvailable"
-    val decryptorDir = "src/commonTest/data/testJava/decryptor/"
 
     @Test
     fun readBallotsWrittenByKotlin() {
@@ -20,16 +19,7 @@ class ElectionRecordIterablesTest {
             readBallots(context, kotlinDir, 100)
             readCastBallots(context, kotlinDir, 100)
             readSpoiledBallots(context, kotlinDir, 0)
-        }
-    }
-
-    // @Test
-    fun readBallotsWrittenByJava() {
-        runTest {
-            val context = productionGroup()
-            readBallots(context, kotlinDir, 11)
-            readCastBallots(context, kotlinDir, 6)
-            readSpoiledBallots(context, kotlinDir, 5)
+            readSpoiledBallotTallies(context, kotlinDir, 100)
         }
     }
 

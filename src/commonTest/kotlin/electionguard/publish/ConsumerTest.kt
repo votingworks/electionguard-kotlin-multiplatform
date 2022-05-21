@@ -28,7 +28,7 @@ class ConsumerTest {
     }
 
     // TODO add SpoiledBallotTallies to test data
-    // @Test
+    @Test
     fun readSpoiledBallotTallys() {
         runTest {
             val context = productionGroup()

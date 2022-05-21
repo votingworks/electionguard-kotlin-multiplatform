@@ -3,34 +3,14 @@ package electionguard.verifier
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.Guardian
-import electionguard.ballot.EncryptedBallot
-import electionguard.core.ConstantChaumPedersenProofKnownNonce
-import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
-import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
-import electionguard.core.encryptedSum
-import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hasValidSchnorrProof
-import electionguard.core.isValid
 import electionguard.publish.ElectionRecord
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.yield
-import kotlin.math.roundToInt
-
-private val debugChannels = false
-private val debugBallots = false
 
 // quick proof verification - not necessarily the verification spec
-class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
+class Verifier(val group: GroupContext, val electionRecord: ElectionRecord, val nthreads: Int = 11) {
     val jointPublicKey: ElGamalPublicKey
     val cryptoExtendedBaseHash: ElementModQ
     val decryption: DecryptionResult
@@ -44,17 +24,28 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
     }
 
     fun verify(): Boolean {
+        println("Verify election record in = ${electionRecord.topdir()}\n")
         val guardiansOk = verifyGuardianPublicKey()
         println(" verifyGuardianPublicKey= $guardiansOk\n")
 
-        val tallyOk = verifyDecryptedTally()
-        println(" verifyDecryptedTally= $tallyOk\n")
+        val verifyTally = VerifyDecryptedTally(group, jointPublicKey, cryptoExtendedBaseHash, guardians)
+        val tallyStats = verifyTally.verifyDecryptedTally(decryption.decryptedTally)
+        println(" verifyDecryptedTally $tallyStats\n")
 
-        val ballotsOk = verifySubmittedBallots(electionRecord.iterateSubmittedBallots { true} )
-        println(" verifySubmittedBallots= $ballotsOk\n")
+        val verifyBallots = VerifyEncryptedBallots(jointPublicKey, cryptoExtendedBaseHash, nthreads)
+        val ballotStats = verifyBallots.verifyEncryptedBallots(electionRecord.iterateSubmittedBallots { true })
+        println(" verifyEncryptedBallots $ballotStats\n")
 
-        val allOk = guardiansOk && ballotsOk && tallyOk
+        val spoiledStats = verifyTally.verifySpoiledBallotTallies(electionRecord.iterateSpoiledBallotTallies(), nthreads)
+        println(" verifySpoiledBallotTallies $spoiledStats\n")
+
+        val allOk = guardiansOk && ballotStats.allOk && tallyStats.allOk && spoiledStats.allOk
         return allOk
+    }
+
+    fun verifyEncryptedBallots(): Boolean {
+        val verifyBallots = VerifyEncryptedBallots(jointPublicKey, cryptoExtendedBaseHash, nthreads)
+        return verifyBallots.verifyEncryptedBallots(electionRecord.iterateSubmittedBallots { true }).allOk
     }
 
     fun verifyGuardianPublicKey(): Boolean {
@@ -74,147 +65,37 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord) {
         allValid = allValid && jointPublicKey.equals(jointPublicKeyComputed)
         return allValid
     }
+}
 
-    fun verifyDecryptedTally(): Boolean {
-        var allValid = true
-        var ncontests = 0
-        var nselections = 0
-        var nshares = 0
-        val tally = decryption.decryptedTally
-        for (contest in tally.contests.values) {
-            ncontests++
-
-            for (selection in contest.selections.values) {
-                nselections++
-                val message = selection.message
-
-                for (partialDecryption in selection.partialDecryptions) {
-                    nshares++
-                    if (partialDecryption.proof != null) {
-                        val guardian = this.guardians.find { it.guardianId.equals(partialDecryption.guardianId) }
-                        val guardianKey = guardian?.publicKey()
-                            ?: throw IllegalStateException("Cant find guardian ${partialDecryption.guardianId}")
-                        val svalid = partialDecryption.proof.isValid(
-                            group.G_MOD_P,
-                            guardianKey,
-                            message.pad,
-                            partialDecryption.share(),
-                            arrayOf(cryptoExtendedBaseHash, guardianKey, message.pad, message.data), // section 7
-                            arrayOf(partialDecryption.share())
-                        )
-                        if (!svalid) {
-                            println("Fail guardian $guardian share proof ${partialDecryption.proof}")
-                        }
-                        allValid = allValid && svalid
-
-                    } else if (partialDecryption.recoveredDecryptions.isNotEmpty()) {
-
-                        for (recoveredDecryption in partialDecryption.recoveredDecryptions) {
-                            val gx = recoveredDecryption.recoveryKey
-                            val hx = recoveredDecryption.share
-                            if (!recoveredDecryption.proof.isValid(
-                                    group.G_MOD_P,
-                                    gx,
-                                    message.pad,
-                                    hx,
-                                    arrayOf(cryptoExtendedBaseHash, gx, message.pad, message.data), // section 7
-                                    arrayOf(hx)
-                                )
-                            ) {
-                                println("CompensatedDecryption proof failure ${contest.contestId}/${selection.selectionId}")
-                                allValid = false
-                            }
-                        }
-
-                    } else {
-                        println("Must have partialDecryption.proof or missingDecryptions ${contest.contestId}/${selection.selectionId}")
-                        allValid = false
-                    }
-                }
-            }
-        }
-        println("Tally '${tally.tallyId}' ok=$allValid; ncontests = $ncontests; nselections = $nselections; nshares = $nshares")
-        return allValid
-    }
-
-    // multithreaded version
-    private val nthreads = 11
-    fun verifySubmittedBallots(ballots: Iterable<EncryptedBallot>): Boolean {
-        val starting = getSystemTimeInMillis()
-
-        runBlocking {
-            val verifierJobs = mutableListOf<Job>()
-            val ballotProducer = produceBallots(ballots)
-            repeat(nthreads) {
-                verifierJobs.add(launchVerifier(it, ballotProducer) { ballot -> verifySubmittedBallot(ballot) })
-            }
-
-            // wait for all encryptions to be done, then close everything
-            joinAll(*verifierJobs.toTypedArray())
-        }
-
-        val took = getSystemTimeInMillis() - starting
-        val perBallot = (took.toDouble() / count).roundToInt()
-        println("VerifySubmittedBallots ok=$allOk took $took millisecs for $count ballots = $perBallot msecs/ballot")
-        return allOk
-    }
-
-    fun verifySubmittedBallot(ballot: EncryptedBallot): Boolean {
-        var bvalid = true
-        var ncontests = 0
-        var nselections = 0
-        for (contest in ballot.contests) {
-            ncontests++
-            // recalculate ciphertextAccumulation
-            val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
-            val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
-            // test that the proof is correct
-            val proof: ConstantChaumPedersenProofKnownNonce = contest.proof
-            var cvalid = proof.isValid(
-                ciphertextAccumulation,
-                this.jointPublicKey,
-                this.cryptoExtendedBaseHash,
-            )
-
-            for (selection in contest.selections) {
-                nselections++
-                val sproof: DisjunctiveChaumPedersenProofKnownNonce = selection.proof
-                val svalid = sproof.isValid(
-                    selection.ciphertext,
-                    this.jointPublicKey,
-                    this.cryptoExtendedBaseHash,
-                )
-                cvalid = cvalid && svalid
-            }
-            // println("     Contest '${contest.contestId}' valid $cvalid")
-            bvalid = bvalid && cvalid
-        }
-        if (debugBallots) println(" Ballot '${ballot.ballotId}' valid $bvalid; ncontests = $ncontests nselections = $nselections")
-        return bvalid
+class Stats(
+    val allOk: Boolean,
+    val ncontests: Int,
+    val nselections: Int,
+    val nshares: Int = 0,
+) {
+    override fun toString(): String {
+        return "allOk=$allOk, ncontests=$ncontests, nselections=$nselections, nshares=$nshares"
     }
 }
 
-private var allOk = true
-private var count = 0
-fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> = produce {
-    for (ballot in producer) {
-        send(ballot)
-        yield()
-        count++
+class StatsAccum {
+    var n: Int = 0
+    var allOk: Boolean = true
+    var ncontests: Int = 0
+    var nselections: Int = 0
+    var nshares: Int = 0
+
+    fun add(stat: Stats) {
+        n++
+        allOk = allOk && stat.allOk
+        ncontests += stat.ncontests
+        nselections += stat.nselections
+        nshares += stat.nshares
     }
-    channel.close()
+
+    override fun toString(): String {
+        return "n=$n, allOk=$allOk, ncontests=$ncontests, nselections=$nselections, nshares=$nshares"
+    }
 }
 
-// multiple encryptors allow parallelism at the ballot level
-// LOOK not possible to do ballot chaining
-fun CoroutineScope.launchVerifier(
-    id: Int,
-    input: ReceiveChannel<EncryptedBallot>,
-    verify: (EncryptedBallot) -> Boolean,
-) = launch(Dispatchers.Default) {
-    for (ballot in input) {
-        if (debugChannels) println("$id channel working on ${ballot.ballotId}")
-        allOk = allOk && verify(ballot)
-        yield()
-    }
-}
+

@@ -15,6 +15,8 @@ expect class ElectionRecord(
     topDir: String,
     groupContext: GroupContext,
 ) {
+    fun topdir() : String
+
     fun readElectionConfig(): Result<ElectionConfig, String>
     fun readElectionInitialized(): Result<ElectionInitialized, String>
     fun readTallyResult(): Result<TallyResult, String>

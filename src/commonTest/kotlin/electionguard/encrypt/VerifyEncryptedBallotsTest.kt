@@ -20,8 +20,7 @@ class VerifyEncryptedBallotsTest {
             val group = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
-            val ballots = readBallotsOne(group, ballotsPrecomputeDir)
-            val ok = verifier.verifySubmittedBallots(ballots)
+            val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok)
         }
     }
@@ -33,8 +32,7 @@ class VerifyEncryptedBallotsTest {
             val group = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
-            val ballots = readBallotsOne(group, ballotsJvmDir)
-            val ok = verifier.verifySubmittedBallots(ballots)
+            val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok)
         }
     }
@@ -45,8 +43,7 @@ class VerifyEncryptedBallotsTest {
             val group = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
-            val ballots = readBallotsOne(group, ballotsNativeDir)
-            val ok = verifier.verifySubmittedBallots(ballots)
+            val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok)
         }
     }

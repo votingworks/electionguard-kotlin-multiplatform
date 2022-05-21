@@ -1,6 +1,6 @@
 # Command Line Programs
 
-last update 5/18/2022
+last update 5/20/2022
 
 ## Run Trusted KeyCeremony
 
