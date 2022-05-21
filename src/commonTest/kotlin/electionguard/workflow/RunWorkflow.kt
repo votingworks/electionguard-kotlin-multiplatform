@@ -5,7 +5,7 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.decrypt.runDecryptingMediator
+import electionguard.decrypt.runDecryptTally
 import electionguard.encrypt.batchEncryption
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
@@ -16,8 +16,8 @@ import kotlin.test.Test
 
 /** Run workflow starting from ElectionConfig in the start directory (125 selections/ballot). */
 class RunWorkflow {
-    val configDir = "src/commonTest/data/start"
-    val nballots = 100
+    private val configDir = "src/commonTest/data/start"
+    private val nballots = 100
 
     @Test
     fun runWorkflowAllAvailable() {
@@ -44,13 +44,13 @@ class RunWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11)
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11, "createdBy")
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow")
+        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
         // decrypt
-        runDecryptingMediator(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present))
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present), "createdBy")
 
         // verify
         println("\nRun Verifier")
@@ -84,13 +84,13 @@ class RunWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11)
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11, "createdBy")
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow")
+        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
         // decrypt
-        runDecryptingMediator(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present))
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present), null)
 
         // verify
         println("\nRun Verifier")

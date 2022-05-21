@@ -11,22 +11,22 @@ topdir/
     encryptedBallots.protobuf
     tallyResult.protobuf
     decryptionResult.protobuf
-    spoiledBallotsTally.protobuf
+    spoiledBallotTallies.protobuf
 ````    
 
 One or more of the above files may be present, depending on the output stage.
 
 
-| Name                         | Type                | Workflow stage      |
-|------------------------------|---------------------|---------------------|
-| electionConfig.protobuf      | ElectionConfig      | start               |
-| electionInitialized.protobuf | ElectionInitialized | key ceremony output |
-| encryptedBallots.protobuf    | EncryptedBallot*    | encryption output   |
-| tallyResult.protobuf         | TallyResult         | tally output        |
-| decryptionResult.protobuf    | DecryptionResult    | decryption output   |
-| spoiledBallotsTally.protobuf | PlaintextTally*     | decryption output   |
+| Name                          | Type                | Workflow stage      |
+|-------------------------------|---------------------|---------------------|
+| electionConfig.protobuf       | ElectionConfig      | start               |
+| electionInitialized.protobuf  | ElectionInitialized | key ceremony output |
+| encryptedBallots.protobuf     | EncryptedBallot*    | encryption output   |
+| tallyResult.protobuf          | TallyResult         | tally output        |
+| decryptionResult.protobuf     | DecryptionResult    | decryption output   |
+| spoiledBallotTallies.protobuf | PlaintextTally*     | decryption output   |
 
-(*) The files encryptedBallots.protobuf and spoiledBallotsTally.protobuf contain multiple length-delimited proto messages. 
+(*) The files encryptedBallots.protobuf and spoiledBallotTallies.protobuf contain multiple length-delimited proto messages. 
 This allows to read messages one at a time, rather than all into memory at once.
 See writeDelimitedTo() and parseDelimitedFrom() methods for varint length-delimited messages.
 

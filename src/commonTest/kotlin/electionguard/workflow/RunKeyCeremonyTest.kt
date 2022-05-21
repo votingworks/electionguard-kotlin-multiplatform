@@ -15,7 +15,7 @@ class RunKeyCeremonyTest {
         val outputDir = "testOut/FakeKeyCeremonyTrusteeTest"
         val trusteeDir = "testOut/FakeKeyCeremonyTrusteeTest/private_data"
 
-        runKeyCeremony(group, configDir, outputDir, trusteeDir)
+        runKeyCeremony(group, configDir, outputDir, trusteeDir, null)
     }
 }
 

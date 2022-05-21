@@ -12,7 +12,7 @@ import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 
 actual class ElectionRecord actual constructor(
-    topDir: String,
+    val topDir: String,
     val groupContext: GroupContext,
 ) {
     val path = ElectionRecordPath(topDir)
@@ -21,6 +21,10 @@ actual class ElectionRecord actual constructor(
         if (!exists(topDir)) {
             throw RuntimeException("Non existent directory $topDir")
         }
+    }
+
+    actual fun topdir(): String {
+        return this.topDir
     }
 
     actual fun readElectionConfig(): Result<ElectionConfig, String> {
@@ -39,19 +43,19 @@ actual class ElectionRecord actual constructor(
         return groupContext.readDecryptionResult(path.decryptionResultPath())
     }
 
-    actual fun iterateSubmittedBallots(): Iterable<EncryptedBallot> {
+    actual fun iterateSubmittedBallots(filter : (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> {
         if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath()) { true } }
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath(), null, null) }
     }
 
     actual fun iterateCastBallots(): Iterable<EncryptedBallot> {
         if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath())
-            { it.state === electionguard.protogen.EncryptedBallot.BallotState.CAST }
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath(),
+            { it.state === electionguard.protogen.EncryptedBallot.BallotState.CAST }, null)
         }
     }
 
@@ -59,8 +63,8 @@ actual class ElectionRecord actual constructor(
         if (!exists(path.submittedBallotPath())) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath())
-            { it.state === electionguard.protogen.EncryptedBallot.BallotState.SPOILED }
+        return Iterable { SubmittedBallotIterator(groupContext, path.submittedBallotPath(),
+            { it.state === electionguard.protogen.EncryptedBallot.BallotState.SPOILED }, null)
         }
     }
 

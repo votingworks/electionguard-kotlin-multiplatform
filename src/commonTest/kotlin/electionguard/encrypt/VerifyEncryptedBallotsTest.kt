@@ -20,8 +20,7 @@ class VerifyEncryptedBallotsTest {
             val group = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
-            val ballots = readBallotsOne(group, ballotsPrecomputeDir)
-            val ok = verifier.verifySubmittedBallots(ballots)
+            val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok)
         }
     }
@@ -33,8 +32,7 @@ class VerifyEncryptedBallotsTest {
             val group = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
-            val ballots = readBallotsOne(group, ballotsJvmDir)
-            val ok = verifier.verifySubmittedBallots(ballots)
+            val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok)
         }
     }
@@ -45,8 +43,7 @@ class VerifyEncryptedBallotsTest {
             val group = productionGroup()
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
-            val ballots = readBallotsOne(group, ballotsNativeDir)
-            val ok = verifier.verifySubmittedBallots(ballots)
+            val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok)
         }
     }
@@ -54,14 +51,14 @@ class VerifyEncryptedBallotsTest {
     // this is slow - just do first one
     fun readBallotsOne(context: GroupContext, topdir: String): List<EncryptedBallot> {
         val electionRecordIn = ElectionRecord(topdir, context)
-        val ballotIter =  electionRecordIn.iterateSubmittedBallots().iterator()
+        val ballotIter =  electionRecordIn.iterateSubmittedBallots{true}.iterator()
         assertTrue(ballotIter.hasNext())
         return listOf(ballotIter.next())
     }
 
     fun readBallots(context: GroupContext, topdir: String): List<EncryptedBallot> {
         val electionRecordIn = ElectionRecord(topdir, context)
-        return electionRecordIn.iterateSubmittedBallots().toList()
+        return electionRecordIn.iterateSubmittedBallots { true} .toList()
     }
 
 }

@@ -24,7 +24,7 @@ class CiphertextTallyConvertTest {
     companion object {
         fun generateFakeTally(context: GroupContext): CiphertextTally {
             val contests = List(7) { generateFakeContest(it, context) }
-            return CiphertextTally("tallyId", contests.associate { it.contestId to it })
+            return CiphertextTally("tallyId", contests)
         }
 
         private fun generateFakeContest(cseq: Int, context: GroupContext): CiphertextTally.Contest {
@@ -33,7 +33,7 @@ class CiphertextTallyConvertTest {
                 "contest" + cseq,
                 cseq,
                 generateUInt256(context),
-                selections.associate { it.selectionId to it },
+                selections,
             )
         }
 

@@ -1,8 +1,8 @@
 # Command Line Programs
 
-last update 5/18/2022
+last update 5/20/2022
 
-## Run trusted KeyCeremony
+## Run Trusted KeyCeremony
 
 This has access to all the trustees, so is only used for testing, or in a use case of trust.
 
@@ -15,6 +15,14 @@ Options:
     --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
+
+input:
+*  _inputDir_/electionConfig.protobuf
+
+output:
+* _trusteeDir_/decryptingTrustee-_guardianId_.protobuf
+* _outputDir_/electionInitialized.protobuf
+
 
 ## Run Batch Encryption
 
@@ -30,6 +38,16 @@ Options:
     --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
+
+input:
+*  _inputDir_/electionInitialized.protobuf
+*  _ballotDir_/plaintextBallots.protobuf
+
+output:
+* _outputDir_/encryptedBallots.protobuf
+* _invalidDir_/plaintextBallots.protobuf
+
+#### Timing
 
 Timing on Intel(R) Xeon(R) CPU E5-1650 v3 @ 3.50GHz,
 Linux jlc 5.13.0-40-generic #45~20.04.1-Ubuntu SMP Mon Apr 4 09:38:31 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
@@ -76,18 +94,27 @@ Options:
     --help, -h -> Usage info 
 ````
 
+Only CAST ballots are tallied.
+
+input:
+*  _inputDir_/electionInitialized.protobuf
+*  _inputDir_/encryptedBallots.protobuf
+
 output:
+* _outputDir_/tallyResult.protobuf
+
+#### Timing
 
 ````
 AccumulateTally processed 100 ballots, took 1246 millisecs, 12 msecs per ballot
 ````
 
-## Run trusted Decrypt Tally
+## Run Trusted Decryption
 
 This has access to all the trustees, so is only used for testing, or in a use case of trust.
 
 ````
-Usage: RunTrustedDecryptTally options_list
+Usage: RunTrustedDecryption options_list
 Options: 
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
@@ -95,6 +122,45 @@ Options:
     --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
+
+input:
+*  _inputDir_/tallyResult.protobuf
+
+output:
+* _outputDir_/decryptionResult.protobuf
+
+
+## Run Trusted Ballot Decryption
+
+This has access to all the trustees, so is only used for testing, or in a use case of trust.
+
+````
+Usage: RunTrustedBallotDecryption options_list
+Options: 
+    --inputDir, -in -> Directory containing input election record (always required) { String }
+    --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
+    --outputDir, -out -> Directory to write output election record (always required) { String }
+    --decryptSpoiledList, -spoiled -> decrypt spoiled ballots { String }
+    --createdBy, -createdBy -> who created { String }
+    --help, -h -> Usage info 
+````
+
+The decryptSpoiledList may be:
+1. a comma-delimited (no spaces) list of ballot Ids referencing encryptedBallots.protobuf
+2. a fully-qualified filename of a text file containing ballot Ids (one per line) referencing encryptedBallots.protobuf
+3. omitted, then decrypt the ballots in encryptedBallots.protobuf that have been marked SPOILED.
+
+
+input:
+*  _inputDir_/tallyResult.protobuf
+*  _inputDir_/encryptedBallots.protobuf
+
+output:
+* _outputDir_/spoiledBallotTallies.protobuf
+
+#### timing
+
+Decrypt ballots with nthreads = 11 took 245 secs for 100 ballots = 2.45464 secs/ballot
 
 ## Run Verifier
 
@@ -104,3 +170,10 @@ Options:
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --help, -h -> Usage info 
 ````
+
+input:
+*  _inputDir_/decryptionResult.protobuf
+*  _inputDir_/spoiledBallotTallies.protobuf (optional)
+
+output:
+* stdout

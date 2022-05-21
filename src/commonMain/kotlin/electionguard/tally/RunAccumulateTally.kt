@@ -60,7 +60,7 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
 
     var count = 0
     val accumulator = AccumulateTally(group, electionInit.manifest(), name)
-    for (submittedBallot in electionRecordIn.iterateSubmittedBallots()) {
+    for (submittedBallot in electionRecordIn.iterateCastBallots() ) {
         accumulator.addCastBallot(submittedBallot)
         count++
     }

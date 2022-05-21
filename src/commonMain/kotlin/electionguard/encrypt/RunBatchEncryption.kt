@@ -96,7 +96,7 @@ fun main(args: Array<String>) {
         ballotDir,
         invalidDir,
         fixedNonces ?: false,
-        nthreads ?: 6,
+        nthreads ?: 11,
         createdBy
     )
 }
@@ -196,7 +196,7 @@ fun batchEncryption(
 }
 
 // place the ballot reading into its own coroutine
-fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveChannel<PlaintextBallot> = produce {
+private fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveChannel<PlaintextBallot> = produce {
     for (ballot in producer) {
         logger.debug{ "Producer sending plaintext ballot ${ballot.ballotId}" }
         send(ballot)
@@ -208,7 +208,7 @@ fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveC
 // coroutines allow parallel encryption at the ballot level
 // LOOK not possible to do ballot chaining, since the order is indeterminate?
 // LOOK or do we just have to work harder??
-fun CoroutineScope.launchEncryptor(
+private fun CoroutineScope.launchEncryptor(
     id: Int,
     group: GroupContext,
     input: ReceiveChannel<PlaintextBallot>,
@@ -232,7 +232,7 @@ fun CoroutineScope.launchEncryptor(
 
 // place the ballot writing into its own coroutine
 private var count = 0
-fun CoroutineScope.launchSink(
+private fun CoroutineScope.launchSink(
     input: Channel<CiphertextBallot>, sink: SubmittedBallotSinkIF,
 ) = launch {
     for (ballot in input) {

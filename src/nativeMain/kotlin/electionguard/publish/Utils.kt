@@ -4,16 +4,24 @@ import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CArrayPointer
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CPointerVar
+import kotlinx.cinterop.CPointerVarOf
+import kotlinx.cinterop.CValuesRef
+import kotlinx.cinterop.NativePtr
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.get
+import kotlinx.cinterop.getRawValue
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
 import platform.posix.DIR
+import platform.posix.FILE
 import platform.posix.PATH_MAX
 import platform.posix.dirent
+import platform.posix.fopen
 import platform.posix.getcwd
+import platform.posix.getline
 import platform.posix.lstat
 import platform.posix.mkdir
 import platform.posix.opendir
@@ -56,7 +64,7 @@ fun absPath(filename: String): String {
     }
 }
 
-fun checkErrno(dothis: (mess : String) -> Unit)  {
+fun checkErrno(dothis: (mess: String) -> Unit) {
     val perrno: Int = posix_errno()
     if (perrno == 0) {
         return
@@ -140,7 +148,7 @@ fun openDir(dirpath: String): List<String> {
         // : kotlinx.cinterop.CPointer<platform.posix.DIR /* = cnames.structs.__dirstream */>? { /* compiled code */ }
         val dir: CPointer<DIR>? = opendir(dirpath)
         if (dir == null) {
-            checkErrno {mess -> throw IOException("Fail opendir $mess on $dirpath")}
+            checkErrno { mess -> throw IOException("Fail opendir $mess on $dirpath") }
         }
         if (debug) println(" success opendir $dir from $dirpath")
 
@@ -165,3 +173,60 @@ fun openDir(dirpath: String): List<String> {
         return result
     }
 }
+
+fun openFile(abspath: String): CPointer<FILE> {
+    memScoped {
+        // fopen(
+        //       @kotlinx.cinterop.internal.CCall.CString __filename: kotlin.String?,
+        //       @kotlinx.cinterop.internal.CCall.CString __modes: kotlin.String?)
+        //       : kotlinx.cinterop.CPointer<platform.posix.FILE>?
+        val file = fopen(abspath, "w+")
+        if (file == null) {
+            checkErrno { mess -> throw IOException("Fail open $mess on $abspath") }
+        }
+        return file!!
+    }
+}
+
+fun fileReadLines(filename: String): List<String> {
+    val result = mutableListOf<String>()
+    memScoped {
+        val file: CPointer<FILE> = openFile(filename)
+
+        // getline(
+        //    __lineptr: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>>
+        //       = kotlinx.cinterop.CPointerVarOf<kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>>
+        //       kotlinx.cinterop.CValuesRef<kotlinx.cinterop.ByteVar = kotlinx.cinterop.ByteVarOf<kotlin.Byte>
+        //    __n: kotlinx.cinterop.CValuesRef<platform.posix.size_tVar /* = kotlinx.cinterop.ULongVarOf<kotlin.ULong> */>?,
+        //    __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
+        //      : platform.posix.__ssize_t /* = kotlin.Long */
+
+        // __lineptr: CValuesRef<CPointerVar<ByteVar>>
+        // __lineptr: CValuesRef<CPointerVarOf<CPointer<ByteVar>>>
+
+        val max = 200 // nice buffer overflow
+        val linep: CValuesRef<CPointerVar<ByteVar>> = allocArray(max)
+        val np: CValuesRef<platform.posix.size_tVar> = allocArray(16)
+
+        while (getline(linep, np, file) >= 0) {
+            val p: CPointer<CPointerVar<ByteVar>> = linep.getPointer(memScope)
+            val native: NativePtr = p.getRawValue()
+            val llll = linep as CValuesRef<CPointerVarOf<CPointer<ByteVar>>>
+            result.add(native.toString())
+        }
+    }
+    return result
+}
+
+ // fun getline(
+//    __lineptr: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>
+//    /* = kotlinx.cinterop.CPointerVarOf<kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>> */>?,
+//
+// ByteVar = ByteVarOf<kotlin.Byte>
+// CPointerVar<ByteVar> = CPointerVarOf<CPointer<ByteVar>
+//
+// __lineptr: CValuesRef<CPointerVar<ByteVar>>
+// __lineptr: CValuesRef<CPointerVarOf<CPointer<ByteVar>>>
+
+
+//    __n: kotlinx.cinterop.CValuesRef<platform.posix.size_tVar /* = kotlinx.cinterop.ULongVarOf<kotlin.ULong> */>?, __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?): platform.posix.__ssize_t /* = kotlin.Long */ { /* compiled code */ }

@@ -18,7 +18,7 @@ import java.util.function.Predicate
 internal val logger = KotlinLogging.logger("ElectionRecord")
 
 actual class ElectionRecord actual constructor(
-    topDir: String,
+    val topDir: String,
     val groupContext: GroupContext,
 ) {
     val path = ElectionRecordPath(topDir)
@@ -27,6 +27,10 @@ actual class ElectionRecord actual constructor(
         if (!Files.exists(Path.of(topDir))) {
             throw RuntimeException("Not existent directory $topDir")
         }
+    }
+
+    actual fun topdir(): String {
+        return this.topDir
     }
 
     actual fun readElectionConfig(): Result<ElectionConfig, String> {
@@ -57,12 +61,12 @@ actual class ElectionRecord actual constructor(
     }
 
     // all submitted ballots, cast or spoiled
-    actual fun iterateSubmittedBallots(): Iterable<EncryptedBallot> {
+    actual fun iterateSubmittedBallots(filter: (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> {
         val filename = path.submittedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
-        return Iterable { SubmittedBallotIterator(filename, groupContext) { true } }
+        return Iterable { SubmittedBallotIterator(filename, groupContext, null, filter) }
     }
 
     // only cast SubmittedBallots
@@ -71,9 +75,9 @@ actual class ElectionRecord actual constructor(
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
-        val filter =
+        val protoFilter =
             Predicate<electionguard.protogen.EncryptedBallot> { it.state == electionguard.protogen.EncryptedBallot.BallotState.CAST }
-        return Iterable { SubmittedBallotIterator(filename, groupContext, filter) }
+        return Iterable { SubmittedBallotIterator(filename, groupContext, protoFilter, null) }
     }
 
     // only spoiled SubmittedBallots
@@ -82,9 +86,9 @@ actual class ElectionRecord actual constructor(
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
-        val filter =
+        val protoFilter =
             Predicate<electionguard.protogen.EncryptedBallot> { it.state == electionguard.protogen.EncryptedBallot.BallotState.SPOILED }
-        return Iterable { SubmittedBallotIterator(filename, groupContext, filter) }
+        return Iterable { SubmittedBallotIterator(filename, groupContext, protoFilter, null) }
     }
 
     // all spoiled ballot tallies

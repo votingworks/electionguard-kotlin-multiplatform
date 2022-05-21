@@ -35,7 +35,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
     }
 
     fun build(): CiphertextTally {
-        val tallyContests = contests.values.associate { it.manifestContest.contestId to it.build() }
+        val tallyContests = contests.values.map { it.build() }
         return CiphertextTally(this.name, tallyContests)
     }
 
@@ -61,7 +61,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         }
 
         fun build(): CiphertextTally.Contest {
-            val tallySelections = selections.values.associate {it.manifestSelection.selectionId to it.build()}
+            val tallySelections = selections.values.map { it.build() }
             return CiphertextTally.Contest(
                 manifestContest.contestId, manifestContest.sequenceOrder, manifestContest.cryptoHash, tallySelections)
         }

@@ -23,27 +23,24 @@ fun main(args: Array<String>) {
         shortName = "in",
         description = "Directory containing input election record"
     ).required()
+    val nthreads by parser.option(
+        ArgType.Int,
+        shortName = "nthreads",
+        description = "Number of parallel threads to use"
+    )
     parser.parse(args)
     println("RunVerifier starting\n   input= $inputDir")
 
     runVerifier(productionGroup(), inputDir)
 }
 
-fun runVerifier(group: GroupContext, inputDir: String) {
+fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int = 11) {
     val starting = getSystemTimeInMillis()
 
     val electionRecordIn = ElectionRecord(inputDir, group)
-    val verifier = Verifier(group, electionRecordIn)
+    val verifier = Verifier(group, electionRecordIn, nthreads)
 
-    val guardiansOk = verifier.verifyGuardianPublicKey()
-    println("verifyGuardians $guardiansOk\n")
-
-    val ballotsOk = verifier.verifySubmittedBallots(electionRecordIn.iterateSubmittedBallots())
-
-    val tallyOk = verifier.verifyDecryptedTally()
-    println("verifyDecryptedTally $tallyOk\n")
-
-    val allOk = guardiansOk && ballotsOk && tallyOk
+    val allOk = verifier.verify()
 
     val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
     println("RunVerifier $allOk took $took seconds")

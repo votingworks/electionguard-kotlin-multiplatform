@@ -18,12 +18,12 @@ import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
 
 /**
- * Run DecryptingMediator for Tally CLI.
+ * Run Trusted Tally Decryption CLI.
  * Read election record from inputDir, write to outputDir.
  * This has access to all the trustees, so is only used for testing, or in a use case of trust.
  */
 fun main(args: Array<String>) {
-    val parser = ArgParser("RunTrustedDecryptTally")
+    val parser = ArgParser("RunTrustedTallyDecryption")
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
@@ -45,10 +45,11 @@ fun main(args: Array<String>) {
         description = "who created"
     )
     parser.parse(args)
-    println("RunTrustedDecryptTally starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
+    println("RunTrustedTallyDecryption starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
-    runDecryptingMediator(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir), createdBy)
+    runDecryptTally(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
+        createdBy)
 }
 
 fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String): List<DecryptingTrusteeIF> {
@@ -58,7 +59,7 @@ fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: St
     return init.guardians.map { consumer.readTrustee(trusteeDir, it.guardianId) }
 }
 
-fun runDecryptingMediator(
+fun runDecryptTally(
     group: GroupContext,
     inputDir: String,
     outputDir: String,
@@ -83,12 +84,12 @@ fun runDecryptingMediator(
             decryptedTally,
             decryptor.availableGuardians,
             mapOf(
-                Pair("CreatedBy", createdBy ?: "RunTrustedDecryptTally"),
+                Pair("CreatedBy", createdBy ?: "RunTrustedDecryption"),
                 Pair("CreatedOn", getSystemDate().toString()),
                 Pair("CreatedFromDir", inputDir))
         )
     )
 
     val took = getSystemTimeInMillis() - starting
-    println("RunTrustedDecryptTally took $took millisecs")
+    println("Decrypt tally took $took millisecs")
 }
