@@ -78,5 +78,5 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
 
     val took = getSystemTimeInMillis() - starting
     val msecPerEncryption = (took.toDouble() / count).roundToInt()
-    println("AccumulateTally processed $count ballots, took $took millisecs, ${msecPerEncryption} msecs per ballot")
+    println("AccumulateTally processed $count ballots, took $took millisecs, $msecPerEncryption msecs per ballot")
 }

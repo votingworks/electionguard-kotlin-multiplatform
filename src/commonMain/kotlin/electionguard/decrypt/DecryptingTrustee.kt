@@ -15,7 +15,7 @@ import electionguard.keyceremony.SecretKeyShare
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DecryptingTrustee")
-private val validate = true // expensive, debugging only
+private const val validate = true // expensive, debugging only
 
 /** A Trustee that knows its secret key, for the purpose of decryption. */
 data class DecryptingTrustee(
@@ -74,10 +74,8 @@ data class DecryptingTrustee(
         extendedBaseHash: ElementModQ,
         nonce: ElementModQ?,
     ): List<CompensatedDecryptionAndProof> {
-        val backup: SecretKeyShare? = this.secretKeyShares[missingGuardianId]
-        if (backup == null) {
-            throw IllegalStateException("compensate_decrypt guardian $id missing backup for $missingGuardianId")
-        }
+        val backup: SecretKeyShare = this.secretKeyShares[missingGuardianId]
+            ?: throw IllegalStateException("compensate_decrypt guardian $id missing backup for $missingGuardianId")
 
         val results: MutableList<CompensatedDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
@@ -144,10 +142,8 @@ data class DecryptingTrustee(
     // compute the recovered public key share, g^P_i(l) = Prod(K_ij^(l^j)) for j in 0..k-1.
     // see section 3.5.2, eq 12
     private fun recoveredPublicKeyShare(group: GroupContext, missingGuardianId: String): ElementModP {
-        val otherCommitments: List<ElementModP>? = this.coefficientCommitments[missingGuardianId] // K_ij
-        if (otherCommitments == null) {
-            throw IllegalStateException("guardian $id missing coefficientCommitments for $missingGuardianId")
-        }
+        val otherCommitments: List<ElementModP> = this.coefficientCommitments[missingGuardianId]
+            ?: throw IllegalStateException("guardian $id missing coefficientCommitments for $missingGuardianId") // K_ij
         val xcoordQ: ElementModQ = group.uIntToElementModQ(this.xCoordinate) // = l
 
         var exponent = group.ONE_MOD_Q

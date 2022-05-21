@@ -32,13 +32,13 @@ class ElectionRecordTest {
             val decryption = electionRecordIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
             readElectionRecord(decryption)
             validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally,
-                decryption.numberOfGuardians(), decryption.quorum(), decryption.availableGuardians.size)
+                decryption.numberOfGuardians(), decryption.quorum(), decryption.decryptingGuardians.size)
         }
     }
 
     fun readElectionRecord(decryption: DecryptionResult) {
         val tallyResult = decryption.tallyResult
-        val init = tallyResult.electionIntialized
+        val init = tallyResult.electionInitialized
         val config = init.config
 
         assertEquals("2.0.0", config.protoVersion)
@@ -56,8 +56,8 @@ class ElectionRecordTest {
         assertEquals(init.guardians.size, tallyResult.numberOfGuardians())
 
         assertEquals(init.guardians.size, config.numberOfGuardians)
-        assertTrue(tallyResult.quorum() <= decryption.availableGuardians.size)
-        assertTrue(tallyResult.numberOfGuardians() >= decryption.availableGuardians.size)
+        assertTrue(tallyResult.quorum() <= decryption.decryptingGuardians.size)
+        assertTrue(tallyResult.numberOfGuardians() >= decryption.decryptingGuardians.size)
     }
 
     fun validateTally(jointKey: ElGamalPublicKey, tally: PlaintextTally, nguardians: Int, quorum: Int, navailable: Int) {

@@ -10,7 +10,7 @@ import electionguard.core.hasValidSchnorrProof
 import electionguard.publish.ElectionRecord
 
 // quick proof verification - not necessarily the verification spec
-class Verifier(val group: GroupContext, val electionRecord: ElectionRecord, val nthreads: Int = 11) {
+class Verifier(val group: GroupContext, private val electionRecord: ElectionRecord, private val nthreads: Int = 11) {
     val jointPublicKey: ElGamalPublicKey
     val cryptoExtendedBaseHash: ElementModQ
     val decryption: DecryptionResult
@@ -20,7 +20,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord, val 
         decryption = electionRecord.readDecryptionResult().getOrThrow { throw IllegalStateException(it) }
         jointPublicKey = decryption.tallyResult.jointPublicKey()
         cryptoExtendedBaseHash = decryption.tallyResult.cryptoExtendedBaseHash()
-        guardians = decryption.tallyResult.electionIntialized.guardians
+        guardians = decryption.tallyResult.electionInitialized.guardians
     }
 
     fun verify(): Boolean {
@@ -36,11 +36,11 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord, val 
         val ballotStats = verifyBallots.verifyEncryptedBallots(electionRecord.iterateEncryptedBallots { true })
         println(" verifyEncryptedBallots $ballotStats\n")
 
-        val spoiledStats = verifyTally.verifySpoiledBallotTallies(electionRecord.iterateSpoiledBallotTallies(), nthreads)
+        val spoiledStats =
+            verifyTally.verifySpoiledBallotTallies(electionRecord.iterateSpoiledBallotTallies(), nthreads)
         println(" verifySpoiledBallotTallies $spoiledStats\n")
 
-        val allOk = guardiansOk && ballotStats.allOk && tallyStats.allOk && spoiledStats.allOk
-        return allOk
+        return guardiansOk && ballotStats.allOk && tallyStats.allOk && spoiledStats.allOk
     }
 
     fun verifyEncryptedBallots(): Boolean {
@@ -48,7 +48,7 @@ class Verifier(val group: GroupContext, val electionRecord: ElectionRecord, val 
         return verifyBallots.verifyEncryptedBallots(electionRecord.iterateEncryptedBallots { true }).allOk
     }
 
-    fun verifyGuardianPublicKey(): Boolean {
+    private fun verifyGuardianPublicKey(): Boolean {
         var allValid = true
         for (guardian in this.guardians) {
             var guardianOk = true
@@ -81,9 +81,9 @@ class Stats(
 class StatsAccum {
     var n: Int = 0
     var allOk: Boolean = true
-    var ncontests: Int = 0
-    var nselections: Int = 0
-    var nshares: Int = 0
+    private var ncontests: Int = 0
+    private var nselections: Int = 0
+    private var nshares: Int = 0
 
     fun add(stat: Stats) {
         n++

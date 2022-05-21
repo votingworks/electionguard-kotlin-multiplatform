@@ -57,10 +57,8 @@ fun GroupContext.importDecryptionResult(decrypt : electionguard.protogen.Decrypt
 private fun GroupContext.importAvailableGuardian(guardian: electionguard.protogen.DecryptingGuardian):
         Result<DecryptingGuardian, String> {
     val lagrangeCoefficient = this.importElementModQ(guardian.lagrangeCoefficient)
+        ?: return Err("Failed to translate AvailableGuardian from proto, missing lagrangeCoefficient")
 
-    if (lagrangeCoefficient == null) {
-        return Err("Failed to translate AvailableGuardian from proto, missing lagrangeCoefficient")
-    }
     return Ok(DecryptingGuardian(
         guardian.guardianId,
         guardian.xCoordinate,
@@ -72,7 +70,7 @@ private fun GroupContext.importAvailableGuardian(guardian: electionguard.protoge
 
 fun TallyResult.publishTallyResult(): electionguard.protogen.TallyResult {
     return electionguard.protogen.TallyResult(
-        this.electionIntialized.publishElectionInitialized(),
+        this.electionInitialized.publishElectionInitialized(),
         this.encryptedTally.publishEncryptedTally(),
         this.ballotIds,
         this.tallyIds,
@@ -84,7 +82,7 @@ fun DecryptionResult.publishDecryptionResult(): electionguard.protogen.Decryptio
     return electionguard.protogen.DecryptionResult(
         this.tallyResult.publishTallyResult(),
         this.decryptedTally.publishPlaintextTally(),
-        this.availableGuardians.map { it.publishAvailableGuardian() },
+        this.decryptingGuardians.map { it.publishAvailableGuardian() },
         this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value)}
     )
 }

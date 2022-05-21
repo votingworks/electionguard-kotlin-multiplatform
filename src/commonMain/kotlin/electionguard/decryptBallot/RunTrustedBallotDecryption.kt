@@ -97,14 +97,14 @@ fun runDecryptBallots(
     val tallyResult: TallyResult = electionRecordIn.readTallyResult().getOrThrow { IllegalStateException(it) }
     val trusteeNames = decryptingTrustees.map { it.id() }.toSet()
     val missingGuardians =
-        tallyResult.electionIntialized.guardians.filter { !trusteeNames.contains(it.guardianId) }.map { it.guardianId }
+        tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId) }.map { it.guardianId }
 
     val decryptor = DecryptingMediator(group, tallyResult, decryptingTrustees, missingGuardians)
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     val sink: PlaintextTallySinkIF = publisher.plaintextTallySink()
 
-    var ballotIter: Iterable<EncryptedBallot> =
+    val ballotIter: Iterable<EncryptedBallot> =
         when {
             (decryptSpoiledList == null) -> electionRecordIn.iterateSpoiledBallots()
             (decryptSpoiledList.trim().lowercase() == "all") -> electionRecordIn.iterateEncryptedBallots { true }

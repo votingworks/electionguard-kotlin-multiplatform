@@ -31,7 +31,7 @@ interface CryptoHashableElement {
 }
 
 /** Wrapper class to serve as an HMAC-SHA256 machine for the given key. */
-class HmacProcessor(val hmacKey: UInt256) {
+class HmacProcessor(private val hmacKey: UInt256) {
     /**
      * Given zero or more elements, calculate their cryptographic HMAC using HMAC-SHA256, with the
      * given [hmacKey]. Specifically handled types are [Element], [String], and [Iterable]
@@ -72,7 +72,7 @@ private fun hashElementsHelper(
     recursive: (Array<out Any?>) -> UInt256,
     byteHash: (ByteArray) -> UInt256,
     elements: Array<out Any?>
-) : UInt256 {
+): UInt256 {
     val hashMe =
         elements.joinToString(prefix = "|", separator = "|", postfix = "|") {
             when (it) {
@@ -101,8 +101,7 @@ private fun hashElementsHelper(
         }
 
     // println("  hashAll: $hashMe")
-    val digest = byteHash(hashMe.encodeToByteArray())
-    return digest
+    return byteHash(hashMe.encodeToByteArray())
 }
 
 // TODO: do we need to be able to hash anything else that wouldn't already be covered

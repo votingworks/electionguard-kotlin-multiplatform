@@ -111,9 +111,9 @@ fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? {
  */
 class KDF(val key: UInt256, label: String, context: String, length: Int) {
     // we're going to convert the strings as UTF-8
-    val labelBytes = label.encodeToByteArray()
-    val lengthBytes = length.toByteArray()
-    val contextBytes = context.encodeToByteArray()
+    private val labelBytes = label.encodeToByteArray()
+    private val lengthBytes = length.toByteArray()
+    private val contextBytes = context.encodeToByteArray()
 
     /** Get the requested key bits from the sequence. */
     operator fun get(index: Int): UInt256 {

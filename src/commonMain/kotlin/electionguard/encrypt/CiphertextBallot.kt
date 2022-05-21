@@ -1,7 +1,9 @@
-package electionguard.ballot
+package electionguard.encrypt
 
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 
+/** Used only while encrypting. */
 data class CiphertextBallot(
     val ballotId: String,
     val ballotStyleId: String,

@@ -1,6 +1,5 @@
 package electionguard.encrypt
 
-import electionguard.ballot.CiphertextBallot
 import electionguard.ballot.Manifest
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
@@ -30,12 +29,12 @@ class ContestPrecompute(
     val ballotStyleId: String,
     val codeSeed: ElementModQ,
     masterNonce: ElementModQ?, // if null, use random
-    val timestampOverride: Long? = null, // if null, use time of encryption
+    private val timestampOverride: Long? = null, // if null, use time of encryption
 ) {
     val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
-    val masterNonce: ElementModQ = masterNonce ?: group.randomElementModQ()
+    private val masterNonce: ElementModQ = masterNonce ?: group.randomElementModQ()
     val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, masterNonce)
-    val mcontests: List<Manifest.ContestDescription>
+    private val mcontests: List<Manifest.ContestDescription>
     val contests: List<Contest>
 
     init {
@@ -46,10 +45,7 @@ class ContestPrecompute(
     // for one-of-n, a non-zero vote will clear other selections
     // otherwise caller must clear selections to keep within vote limit
     fun vote(contestId: String, selectionId: String, vote: Int): Boolean {
-        val contest = contests.find { it.mcontest.contestId == contestId}
-        if (contest == null) {
-            return false
-        }
+        val contest = contests.find { it.mcontest.contestId == contestId} ?: return false
         return contest.vote(selectionId, vote)
     }
 
@@ -78,10 +74,10 @@ class ContestPrecompute(
         val mcontest: Manifest.ContestDescription,
     ) {
         val selections = mutableListOf<Selection>()
-        val placeholders = mutableListOf<Selection>()
-        val contestNonce: ElementModQ
-        val chaumPedersenNonce: ElementModQ
-        var encryptedContest: CiphertextBallot.Contest? = null
+        private val placeholders = mutableListOf<Selection>()
+        private val contestNonce: ElementModQ
+        private val chaumPedersenNonce: ElementModQ
+        private var encryptedContest: CiphertextBallot.Contest? = null
 
         init {
             val contestDescriptionHash = mcontest.cryptoHash
@@ -101,10 +97,7 @@ class ContestPrecompute(
         }
 
         fun vote(selectionId: String, vote: Int): Boolean {
-            val selection = selections.find { it.mselection.selectionId == selectionId}
-            if (selection == null) {
-                return false
-            }
+            val selection = selections.find { it.mselection.selectionId == selectionId} ?: return false
             if (mcontest.voteVariation == Manifest.VoteVariationType.one_of_m) {
                 selections.forEach { it.vote = 0}
             }
@@ -123,7 +116,7 @@ class ContestPrecompute(
             return encryptedContest!!
         }
 
-        fun encryptContest(): CiphertextBallot.Contest {
+        private fun encryptContest(): CiphertextBallot.Contest {
             val votes = selections.sumOf { it.vote }
             // check for overvotes
             if (votes > mcontest.votesAllowed) {
@@ -159,16 +152,16 @@ class ContestPrecompute(
     inner class Selection(
         val mselection: Manifest.SelectionDescription,
         contestNonce: ElementModQ,
-        val isPlaceholder: Boolean = false
+        private val isPlaceholder: Boolean = false
     ) {
         var vote = 0
-        val disjunctiveChaumPedersenNonce: ElementModQ
-        val selectionNonce: ElementModQ
+        private val disjunctiveChaumPedersenNonce: ElementModQ
+        private val selectionNonce: ElementModQ
 
         init {
             val nonceSequence = Nonces(mselection.cryptoHash.toElementModQ(group), contestNonce)
-            disjunctiveChaumPedersenNonce = nonceSequence.get(0)
-            selectionNonce = nonceSequence.get(mselection.sequenceOrder)
+            disjunctiveChaumPedersenNonce = nonceSequence[0]
+            selectionNonce = nonceSequence[mselection.sequenceOrder]
         }
 
         fun encryptedSelection(): CiphertextBallot.Selection {

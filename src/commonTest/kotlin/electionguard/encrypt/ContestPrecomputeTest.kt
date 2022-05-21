@@ -5,7 +5,6 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.submit
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext

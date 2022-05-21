@@ -84,7 +84,7 @@ object Base16 {
 
     /**
      * Converts from a hex-encoded string to a byte array. Assumes the input has no errors. If
-     * there's an error annyway, throws.
+     * there's an error anyway, throws.
      */
     fun String.fromSafeHex(): ByteArray =
         fromHex() ?: throw IllegalArgumentException("invalid input")

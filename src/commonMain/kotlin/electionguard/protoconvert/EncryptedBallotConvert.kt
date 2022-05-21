@@ -50,15 +50,12 @@ fun GroupContext.importEncryptedBallot(
 private fun electionguard.protogen.EncryptedBallot.BallotState.importBallotState(where: String):
         Result<EncryptedBallot.BallotState, String> {
 
-    val name = this.name
-    if (name == null) {
-        return Err("Failed to convert ballot state, missing name in $where\"")
-    }
+    val name = this.name ?: return Err("Failed to convert ballot state, missing name in $where\"")
 
-    try {
-        return Ok(EncryptedBallot.BallotState.valueOf(name))
+    return try {
+        Ok(EncryptedBallot.BallotState.valueOf(name))
     } catch (e: IllegalArgumentException) {
-        return Err("Failed to convert ballot state, unknown name $name in $where\"")
+        Err("Failed to convert ballot state, unknown name $name in $where\"")
     }
 }
 

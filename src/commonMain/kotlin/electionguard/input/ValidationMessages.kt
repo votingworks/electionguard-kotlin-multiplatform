@@ -1,6 +1,6 @@
 package electionguard.input
 
-class ValidationMessages(val id: String, val level: Int) {
+class ValidationMessages(val id: String, private val level: Int) {
     private val messages = ArrayList<String>()
     private val nested = ArrayList<ValidationMessages>()
     private val indent = Indent(level)
@@ -34,16 +34,16 @@ class ValidationMessages(val id: String, val level: Int) {
 
     fun hasErrors(): Boolean {
         if (!messages.isEmpty()) {
-            return true;
+            return true
         }
         if (nested.isEmpty()) {
-            return false;
+            return false
         }
         return nested.map { it.hasErrors()}.reduce {a, b -> a or b}
     }
 }
 
-private val nspaces : Int = 2
+private const val nspaces : Int = 2
 class Indent(level: Int) {
     private val indent = makeBlanks(level * nspaces)
 

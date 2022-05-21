@@ -25,7 +25,7 @@ class DecryptionResultConvertTest {
         //    //    val metadata: Map<String, String> = emptyMap()
         assertEquals(roundtrip.tallyResult, electionRecord.tallyResult)
         assertEquals(roundtrip.decryptedTally, electionRecord.decryptedTally)
-        assertEquals(roundtrip.availableGuardians, electionRecord.availableGuardians)
+        assertEquals(roundtrip.decryptingGuardians, electionRecord.decryptingGuardians)
         assertEquals(roundtrip.metadata, electionRecord.metadata)
 
         assertTrue(roundtrip.equals(electionRecord))

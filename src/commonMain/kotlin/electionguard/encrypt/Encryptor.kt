@@ -1,6 +1,5 @@
 package electionguard.encrypt
 
-import electionguard.ballot.CiphertextBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.ElGamalCiphertext
@@ -30,10 +29,10 @@ import electionguard.core.toUInt256
 class Encryptor(
     val group: GroupContext,
     val manifest: Manifest,
-    val elgamalPublicKey: ElGamalPublicKey,
+    private val elgamalPublicKey: ElGamalPublicKey,
     val cryptoExtendedBaseHash: UInt256,
 ) {
-    val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
+    private val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
 
     /** Encrypt ballots in a chain with starting codeSeed, and random masterNonce */
     fun encrypt(ballots: Iterable<PlaintextBallot>, codeSeed: ElementModQ): List<CiphertextBallot> {
@@ -70,7 +69,7 @@ class Encryptor(
         return ballot.encryptBallot(codeSeed, masterNonce, timestampOverride)
     }
 
-    fun PlaintextBallot.encryptBallot(
+    private fun PlaintextBallot.encryptBallot(
         codeSeed: ElementModQ,
         masterNonce: ElementModQ,
         timestampOverride: Long? = null,
@@ -84,15 +83,15 @@ class Encryptor(
             val pcontest: PlaintextBallot.Contest = plaintextContests[mcontest.contestId] ?: contestFrom(mcontest)
             encryptedContests.add(pcontest.encryptContest(mcontest, ballotNonce))
         }
-        val sortedContests = encryptedContests.sortedBy { it.sequenceOrder}
+        val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
 
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), sortedContests)
         val ballotCode = hashElements(codeSeed, timestamp, cryptoHash)
 
-        val encryptedBallot = CiphertextBallot(
-            this.ballotId,
-            this.ballotStyleId,
+        return CiphertextBallot(
+            ballotId,
+            ballotStyleId,
             manifest.cryptoHashUInt256(),
             codeSeed.toUInt256(),
             ballotCode,
@@ -101,10 +100,9 @@ class Encryptor(
             cryptoHash,
             masterNonce,
         )
-        return encryptedBallot
     }
 
-    fun contestFrom(mcontest: Manifest.ContestDescription): PlaintextBallot.Contest {
+    private fun contestFrom(mcontest: Manifest.ContestDescription): PlaintextBallot.Contest {
         val selections = mcontest.selections.map { selectionFrom(it.selectionId, it.sequenceOrder, false) }
         return PlaintextBallot.Contest(mcontest.contestId, mcontest.sequenceOrder, selections)
     }
@@ -114,7 +112,7 @@ class Encryptor(
      * @param mcontest:    the corresponding Manifest.ContestDescription
      * @param ballotNonce: the seed for this contest.
      */
-    fun PlaintextBallot.Contest.encryptContest(
+    private fun PlaintextBallot.Contest.encryptContest(
         mcontest: Manifest.ContestDescription,
         ballotNonce: UInt256,
     ): CiphertextBallot.Contest {
@@ -138,12 +136,12 @@ class Encryptor(
 
             // track the votes so we can append the appropriate number of true placeholder votes
             votes += plaintextSelection.vote
-            val encrypted_selection = plaintextSelection.encryptSelection(
+            val encryptedSelection = plaintextSelection.encryptSelection(
                 mselection,
                 contestNonce,
                 false,
             )
-            encryptedSelections.add(encrypted_selection)
+            encryptedSelections.add(encryptedSelection)
         }
 
         // Add a placeholder selection for each possible vote in the contest
@@ -191,14 +189,14 @@ class Encryptor(
      * @param contestNonce:                 aka "nonce seed"
      * @param isPlaceholder:                if this is a placeholder selection
      */
-    fun PlaintextBallot.Selection.encryptSelection(
+    private fun PlaintextBallot.Selection.encryptSelection(
         selectionDescription: Manifest.SelectionDescription,
         contestNonce: ElementModQ,
         isPlaceholder: Boolean = false,
     ): CiphertextBallot.Selection {
         val nonceSequence = Nonces(selectionDescription.cryptoHash.toElementModQ(group), contestNonce)
-        val disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence.get(0)
-        val selectionNonce: ElementModQ = nonceSequence.get(selectionDescription.sequenceOrder)
+        val disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence[0]
+        val selectionNonce: ElementModQ = nonceSequence[selectionDescription.sequenceOrder]
 
         // TODO: test
         val extendedDataCiphertext =
