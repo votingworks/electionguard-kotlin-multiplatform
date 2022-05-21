@@ -90,11 +90,7 @@ private fun GroupContext.importPartialDecryption(partial: electionguard.protogen
 
     val recoveredParts = partial.recoveredParts
     val (parts, perrors) =
-        if (recoveredParts != null) {
-            recoveredParts.fragments.map { this.importRecoveredPartialDecryption(it) }.partition()
-        } else {
-            Pair(null, emptyList())
-        }
+        recoveredParts?.fragments?.map { this.importRecoveredPartialDecryption(it) }?.partition() ?: Pair(null, emptyList())
 
     val errors = getAllErrors(share) + perrors
     if (errors.isNotEmpty()) {

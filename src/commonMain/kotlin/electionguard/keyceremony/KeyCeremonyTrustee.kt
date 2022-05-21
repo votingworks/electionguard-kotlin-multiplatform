@@ -20,7 +20,7 @@ class KeyCeremonyTrustee(
     val guardianPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
 
     // This guardian's share of other guardians' secret keys, keyed by designated guardian id.
-    val mySecretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
+    private val mySecretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
 
     // Other guardians' shares of this guardian's secret key, keyed by generating guardian id.
     val guardianSecretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
@@ -77,9 +77,7 @@ class KeyCeremonyTrustee(
 
     private fun generateSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
         val other = guardianPublicKeys[otherGuardian]
-        if (other == null) {
-            return Err("Trustee '$id', does not have public key for '$otherGuardian'")
-        }
+            ?: return Err("Trustee '$id', does not have public key for '$otherGuardian'")
 
         // Compute my polynomial's y value at the other's x coordinate.
         val value: ElementModQ = polynomial.valueAt(group, other.guardianXCoordinate)

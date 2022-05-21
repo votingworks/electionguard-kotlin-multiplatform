@@ -3,11 +3,9 @@
 package electionguard.encrypt
 
 import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.CiphertextBallot
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.submit
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -133,7 +131,7 @@ fun batchEncryption(
             invalidBallots.add(PlaintextBallot(it, mess.toString()))
             false
         } else {
-            countEncryptions += styleCount.get(it.ballotStyleId) ?: 0
+            countEncryptions += styleCount[it.ballotStyleId] ?: 0
             true
         }
     }

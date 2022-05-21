@@ -8,13 +8,13 @@ private val logger = KotlinLogging.logger("BallotInputValidation")
 
 class BallotInputValidation(val election: Manifest) {
     // TODO use memoized maps on Manifest to reduce cost of validation
-    val contestMap = election.contests.associate { it.contestId  to ElectionContest(it) }
-    val styles = election.ballotStyles.associateBy { it.ballotStyleId }
+    private val contestMap = election.contests.associate { it.contestId  to ElectionContest(it) }
+    private val styles = election.ballotStyles.associateBy { it.ballotStyleId }
 
     /** Determine if a ballot is valid and well-formed for the given election.  */
     fun validate(ballot: PlaintextBallot): ValidationMessages {
         val ballotMesses = ValidationMessages("Ballot" + ballot.ballotId, 0)
-        val ballotStyle: Manifest.BallotStyle? = styles.get(ballot.ballotStyleId)
+        val ballotStyle: Manifest.BallotStyle? = styles[ballot.ballotStyleId]
         
         // Referential integrity of ballot's BallotStyle id
         if (ballotStyle == null) {
@@ -34,7 +34,7 @@ class BallotInputValidation(val election: Manifest) {
                 contestIds.add(ballotContest.contestId)
             }
 
-            val contest: ElectionContest? = contestMap.get(ballotContest.contestId)
+            val contest: ElectionContest? = contestMap[ballotContest.contestId]
             // Referential integrity of ballotContest id
             if (contest == null) {
                 val msg = "Ballot.A.2 Ballot Contest '${ballotContest.contestId}' does not exist in election"
@@ -48,7 +48,7 @@ class BallotInputValidation(val election: Manifest) {
     }
 
     /** Determine if contest is valid for the given election.  */
-    fun validateContest(
+    private fun validateContest(
         ballotContest: PlaintextBallot.Contest,
         ballotStyle: Manifest.BallotStyle,
         electionContest: ElectionContest,

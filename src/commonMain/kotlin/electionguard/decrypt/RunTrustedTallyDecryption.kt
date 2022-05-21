@@ -72,7 +72,7 @@ fun runDecryptTally(
     val tallyResult: TallyResult = electionRecordIn.readTallyResult().getOrThrow { IllegalStateException(it) }
     val trusteeNames = decryptingTrustees.map { it.id()}.toSet()
     val missingGuardians =
-        tallyResult.electionIntialized.guardians.filter { !trusteeNames.contains(it.guardianId)}.map { it.guardianId}
+        tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId)}.map { it.guardianId}
 
     val decryptor = DecryptingMediator(group, tallyResult, decryptingTrustees, missingGuardians)
     val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt() }

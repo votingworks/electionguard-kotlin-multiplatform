@@ -37,6 +37,6 @@ message SecretKeyShare {
   uint32 designated_guardian_x_coordinate = 3;
   // The generatingGuardian's polynomial value at designatedGuardianXCoordinate
   ElementModQ generating_guardian_value = 4;
-  // if not empty, an error has occurrred.
+  // if not empty, an error has occurred.
   string error = 5;
 }

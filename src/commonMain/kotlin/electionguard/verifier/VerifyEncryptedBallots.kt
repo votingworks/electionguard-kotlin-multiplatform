@@ -20,12 +20,12 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
 
-private val debugBallots = false
+private const val debugBallots = false
 
 class VerifyEncryptedBallots(
     val jointPublicKey: ElGamalPublicKey,
     val cryptoExtendedBaseHash: ElementModQ,
-    val nthreads: Int,
+    private val nthreads: Int,
 ) {
 
     // multithreaded version
@@ -49,7 +49,7 @@ class VerifyEncryptedBallots(
         return accumStats
     }
 
-    fun verifyEncryptedBallot(ballot: EncryptedBallot): Stats {
+    private fun verifyEncryptedBallot(ballot: EncryptedBallot): Stats {
         var bvalid = true
         var ncontests = 0
         var nselections = 0
@@ -83,9 +83,9 @@ class VerifyEncryptedBallots(
         return Stats(bvalid, ncontests, nselections)
     }
 
-    val accumStats = StatsAccum()
+    private val accumStats = StatsAccum()
     private var count = 0
-    fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> = produce {
+    private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> = produce {
         for (ballot in producer) {
             send(ballot)
             yield()
@@ -94,7 +94,7 @@ class VerifyEncryptedBallots(
         channel.close()
     }
 
-    fun CoroutineScope.launchVerifier(
+    private fun CoroutineScope.launchVerifier(
         id: Int,
         input: ReceiveChannel<EncryptedBallot>,
         verify: (EncryptedBallot) -> Stats,

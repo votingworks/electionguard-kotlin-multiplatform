@@ -26,7 +26,7 @@ data class EncryptedBallot(
 
     data class Contest(
         val contestId: String, // matches ContestDescription.contestIdd
-        val sequenceOrder: Int, // matches ContestDescription.sequenceOrderv
+        val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
         val contestHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: List<Selection>,
         val cryptoHash: UInt256,

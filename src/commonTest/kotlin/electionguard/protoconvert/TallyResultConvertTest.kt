@@ -20,7 +20,7 @@ class TallyResultConvertTest {
         assertNotNull(roundtrip)
 
         assertEquals(roundtrip.group, electionRecord.group)
-        assertEquals(roundtrip.electionIntialized, electionRecord.electionIntialized)
+        assertEquals(roundtrip.electionInitialized, electionRecord.electionInitialized)
         assertEquals(roundtrip.encryptedTally, electionRecord.encryptedTally)
         assertEquals(roundtrip.tallyIds, electionRecord.tallyIds)
 

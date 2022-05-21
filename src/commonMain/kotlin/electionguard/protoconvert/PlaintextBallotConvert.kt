@@ -8,7 +8,7 @@ fun GroupContext.importPlaintextBallot(ballot: electionguard.protogen.PlaintextB
         ballot.ballotId,
         ballot.ballotStyleId,
         ballot.contests.map { this.importContest(it) },
-        if (ballot.errors.isEmpty()) null else ballot.errors,
+        ballot.errors.ifEmpty { null },
     )
 }
 
@@ -16,11 +16,11 @@ private fun GroupContext.importContest(contest: electionguard.protogen.Plaintext
     return PlaintextBallot.Contest(
         contest.contestId,
         contest.sequenceOrder,
-        contest.selections.map { this.importSelection(it) }
+        contest.selections.map { importSelection(it) }
     )
 }
 
-private fun GroupContext.importSelection(selection: electionguard.protogen.PlaintextBallotSelection):
+private fun importSelection(selection: electionguard.protogen.PlaintextBallotSelection):
     PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
             selection.selectionId,

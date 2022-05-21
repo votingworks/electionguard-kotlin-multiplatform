@@ -11,9 +11,9 @@ class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
     private val dlogger = dLoggerOf(inputKey)
 
     override fun equals(other: Any?) =
-        when {
-            other is ElementModP -> key == other
-            other is ElGamalPublicKey -> key == other.key
+        when (other) {
+            is ElementModP -> key == other
+            is ElGamalPublicKey -> key == other.key
             else -> false
         }
 
@@ -57,9 +57,9 @@ class ElGamalSecretKey(val key: ElementModQ) : CryptoHashableString {
     val negativeKey: ElementModQ = -key
 
     override fun equals(other: Any?) =
-        when {
-            other is ElementModQ -> key == other
-            other is ElGamalSecretKey -> key == other.key
+        when (other) {
+            is ElementModQ -> key == other
+            is ElGamalSecretKey -> key == other.key
             else -> false
         }
 

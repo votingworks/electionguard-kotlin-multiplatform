@@ -81,7 +81,7 @@ class ManifestInputValidation(val manifest: Manifest) {
     }
 
     /** Determine if the manifest contest is valid.  */
-    fun validateContest(contest: Manifest.ContestDescription, ballotMesses: ValidationMessages) {
+    private fun validateContest(contest: Manifest.ContestDescription, ballotMesses: ValidationMessages) {
         val contestMesses = ballotMesses.nested("Contest" + contest.contestId)
 
         // Referential integrity of Contest electoral_district_id
@@ -143,7 +143,7 @@ class ManifestInputValidation(val manifest: Manifest) {
     }
 
     /** Determine if the manifest selection is valid.  */
-    fun validateContestSelections(contest: Manifest.ContestDescription, contestMesses: ValidationMessages) {
+    private fun validateContestSelections(contest: Manifest.ContestDescription, contestMesses: ValidationMessages) {
         val selectionIds: MutableSet<String> = HashSet()
         val selectionSeqs: MutableSet<Int> = HashSet()
         val candidateIds: MutableSet<String> = HashSet()
@@ -189,7 +189,7 @@ class ManifestInputValidation(val manifest: Manifest) {
     // Map<BallotStyle: String, selectionCount: Int>
     fun countEncryptions(): Map<String, Int> {
         return manifest.styleToContestsMap.mapValues {
-            it.value.map{ contest -> contest.countEncryptions() }.sum()
+            it.value.sumOf { contest -> contest.countEncryptions() }
         }
     }
 

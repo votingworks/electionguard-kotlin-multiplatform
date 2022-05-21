@@ -1,20 +1,20 @@
 package electionguard.publish
 
 data class ElectionRecordPath(val topDir : String) {
-    private val electionRecordDir = "$topDir"
+    private val electionRecordDir = topDir
 
     companion object {
         const val PROTO_VERSION = "2.0.0"
 
         const val PROTO_SUFFIX = ".protobuf"
         const val DECRYPTING_TRUSTEE_PREFIX = "decryptingTrustee"
-        const val ELECTION_CONFIG_FILE_NAME = "electionConfig" + PROTO_SUFFIX
-        const val ELECTION_INITIALIZED_FILE_NAME = "electionInitialized" + PROTO_SUFFIX
-        const val TALLY_RESULT_NAME = "tallyResult" + PROTO_SUFFIX
-        const val DECRYPTION_RESULT_NAME = "decryptionResult" + PROTO_SUFFIX
-        const val PLAINTEXT_BALLOT_PROTO = "plaintextBallots" + PROTO_SUFFIX
-        const val ENCRYPTED_BALLOT_PROTO = "encryptedBallots" + PROTO_SUFFIX
-        const val SPOILED_BALLOT_FILE = "spoiledBallotTallies" + PROTO_SUFFIX
+        const val ELECTION_CONFIG_FILE_NAME = "electionConfig$PROTO_SUFFIX"
+        const val ELECTION_INITIALIZED_FILE_NAME = "electionInitialized$PROTO_SUFFIX"
+        const val TALLY_RESULT_NAME = "tallyResult$PROTO_SUFFIX"
+        const val DECRYPTION_RESULT_NAME = "decryptionResult$PROTO_SUFFIX"
+        const val PLAINTEXT_BALLOT_PROTO = "plaintextBallots$PROTO_SUFFIX"
+        const val ENCRYPTED_BALLOT_PROTO = "encryptedBallots$PROTO_SUFFIX"
+        const val SPOILED_BALLOT_FILE = "spoiledBallotTallies$PROTO_SUFFIX"
     }
 
     fun electionConfigPath(): String {

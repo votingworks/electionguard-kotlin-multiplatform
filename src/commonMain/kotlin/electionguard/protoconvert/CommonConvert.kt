@@ -8,7 +8,7 @@ fun GroupContext.importElementModQ(modQ: electionguard.protogen.ElementModQ?): E
     if (modQ == null) null else this.binaryToElementModQ(modQ.value.array)
 
 fun importUInt256(modQ: electionguard.protogen.UInt256?): UInt256? =
-    if (modQ == null) null else modQ.value.array.toUInt256()
+    modQ?.value?.array?.toUInt256()
 
 fun GroupContext.importElementModP(modP: electionguard.protogen.ElementModP?): ElementModP? =
     if (modP == null) null else this.binaryToElementModP(modP.value.array)

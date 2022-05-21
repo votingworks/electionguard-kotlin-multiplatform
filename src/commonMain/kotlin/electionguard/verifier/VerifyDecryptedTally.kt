@@ -16,11 +16,10 @@ import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
 
-private val debugBallots = false
+private const val debugBallots = false
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyDecryptedTally(
@@ -45,7 +44,7 @@ class VerifyDecryptedTally(
                 for (partialDecryption in selection.partialDecryptions) {
                     nshares++
                     if (partialDecryption.proof != null) {
-                        val guardian = this.guardians.find { it.guardianId.equals(partialDecryption.guardianId) }
+                        val guardian = this.guardians.find { it.guardianId == partialDecryption.guardianId }
                         val guardianKey = guardian?.publicKey()
                             ?: throw IllegalStateException("Cant find guardian ${partialDecryption.guardianId}")
                         val svalid = partialDecryption.proof.isValid(
@@ -110,9 +109,9 @@ class VerifyDecryptedTally(
         return globalStat
     }
 
-    val globalStat = StatsAccum()
+    private val globalStat = StatsAccum()
     private var count = 0
-    fun CoroutineScope.produceTallies(producer: Iterable<PlaintextTally>): ReceiveChannel<PlaintextTally> = produce {
+    private fun CoroutineScope.produceTallies(producer: Iterable<PlaintextTally>): ReceiveChannel<PlaintextTally> = produce {
         for (tally in producer) {
             send(tally)
             yield()
@@ -121,7 +120,7 @@ class VerifyDecryptedTally(
         channel.close()
     }
 
-    fun CoroutineScope.launchVerifier(
+    private fun CoroutineScope.launchVerifier(
         id: Int,
         input: ReceiveChannel<PlaintextTally>,
         verify: (PlaintextTally) -> Stats,

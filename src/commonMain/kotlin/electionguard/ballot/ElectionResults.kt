@@ -7,30 +7,30 @@ import electionguard.core.toElementModQ
 
 data class TallyResult(
     val group: GroupContext,
-    val electionIntialized: ElectionInitialized,
+    val electionInitialized: ElectionInitialized,
     val encryptedTally: EncryptedTally,
     val ballotIds: List<String>,
     val tallyIds: List<String>,
     val metadata: Map<String, String> = emptyMap(),
 ) {
     fun jointPublicKey(): ElGamalPublicKey {
-        return ElGamalPublicKey(electionIntialized.jointPublicKey)
+        return ElGamalPublicKey(electionInitialized.jointPublicKey)
     }
     fun cryptoExtendedBaseHash(): ElementModQ {
-        return electionIntialized.cryptoExtendedBaseHash.toElementModQ(group)
+        return electionInitialized.cryptoExtendedBaseHash.toElementModQ(group)
     }
     fun numberOfGuardians(): Int {
-        return electionIntialized.config.numberOfGuardians
+        return electionInitialized.config.numberOfGuardians
     }
     fun quorum(): Int {
-        return electionIntialized.config.quorum
+        return electionInitialized.config.quorum
     }
 }
 
 data class DecryptionResult(
     val tallyResult: TallyResult,
     val decryptedTally: PlaintextTally,
-    val availableGuardians: List<DecryptingGuardian>,
+    val decryptingGuardians: List<DecryptingGuardian>,
     val metadata: Map<String, String> = emptyMap(),
 ) {
     fun numberOfGuardians(): Int {

@@ -16,8 +16,8 @@ import electionguard.core.toElementModQ
 class DecryptingMediator(
     val group: GroupContext,
     val tallyResult: TallyResult,
-    val decryptingTrustees: List<DecryptingTrusteeIF>,
-    val missingTrustees: List<String>,
+    private val decryptingTrustees: List<DecryptingTrusteeIF>,
+    private val missingTrustees: List<String>,
 ) {
     val availableGuardians: List<DecryptingGuardian> by lazy {
         val result = ArrayList<DecryptingGuardian>()
@@ -176,11 +176,11 @@ fun GroupContext.computeLagrangeCoefficient(coordinate: UInt, present: List<UInt
 }
 
 private fun EncryptedBallot.convertToTally(): EncryptedTally {
-    val contests = this.contests.map {
-        val selections = it.selections.map {
+    val contests = this.contests.map { contest ->
+        val selections = contest.selections.map {
             EncryptedTally.Selection(it.selectionId, it.sequenceOrder, it.selectionHash, it.ciphertext)
         }
-        EncryptedTally.Contest(it.contestId, it.sequenceOrder, it.contestHash, selections)
+        EncryptedTally.Contest(contest.contestId, contest.sequenceOrder, contest.contestHash, selections)
     }
     return EncryptedTally(this.ballotId, contests)
 

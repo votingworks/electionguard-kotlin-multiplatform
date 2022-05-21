@@ -42,7 +42,7 @@ private fun electionguard.protogen.BallotStyle.importBallotStyle(): Manifest.Bal
         this.ballotStyleId,
         this.geopoliticalUnitIds,
         this.partyIds,
-        if (this.imageUrl.isEmpty()) null else this.imageUrl,
+        this.imageUrl.ifEmpty { null },
     )
 }
 
@@ -50,8 +50,8 @@ private fun electionguard.protogen.Candidate.importCandidate(): Manifest.Candida
     return Manifest.Candidate(
         this.candidateId,
         if (this.name != null) this.name.importInternationalizedText() else internationalizedTextUnknown(),
-        if (this.partyId.isEmpty()) null else this.partyId,
-        if (this.imageUrl.isEmpty()) null else this.imageUrl,
+        this.partyId.ifEmpty { null },
+        this.imageUrl.ifEmpty { null },
         this.isWriteIn
     )
 }
@@ -62,7 +62,7 @@ private fun electionguard.protogen.ContactInformation.importContactInformation()
         this.addressLine,
         this.email.map { it.importAnnotatedString() },
         this.phone.map { it.importAnnotatedString() },
-        if (this.name.isEmpty()) null else this.name,
+        this.name.ifEmpty { null },
     )
 }
 
@@ -122,7 +122,7 @@ private fun electionguard.protogen.GeopoliticalUnit.importGeopoliticalUnit(): Ma
 
 private fun electionguard.protogen.InternationalizedText.importInternationalizedText():
         Manifest.InternationalizedText {
-    return Manifest.InternationalizedText(this.text.map({ it.importLanguage() }))
+    return Manifest.InternationalizedText(this.text.map { it.importLanguage() })
 }
 
 private fun electionguard.protogen.Language.importLanguage(): Manifest.Language {
@@ -133,9 +133,9 @@ private fun electionguard.protogen.Party.importParty(): Manifest.Party {
     return Manifest.Party(
         this.partyId,
         if (this.name != null) this.name.importInternationalizedText() else internationalizedTextUnknown(),
-        if (this.abbreviation.isEmpty()) null else this.abbreviation,
-        if (this.color.isEmpty()) null else this.color,
-        if (this.logoUri.isEmpty()) null else this.logoUri,
+        this.abbreviation.ifEmpty { null },
+        this.color.ifEmpty { null },
+        this.logoUri.ifEmpty { null },
     )
 }
 
