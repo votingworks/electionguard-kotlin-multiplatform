@@ -37,6 +37,7 @@ import kotlinx.coroutines.yield
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("RunTrustedBallotDecryption")
+private const val debug = false
 
 /**
  * Run Trusted Ballot Decryption CLI.
@@ -90,7 +91,8 @@ fun runDecryptBallots(
     decryptingTrustees: List<DecryptingTrusteeIF>,
     decryptSpoiledList: String?,
     nthreads: Int,
-) {
+): Int {
+    count = 0
     val starting = getSystemTimeInMillis()
 
     val electionRecordIn = ElectionRecord(inputDir, group)
@@ -106,15 +108,26 @@ fun runDecryptBallots(
 
     val ballotIter: Iterable<EncryptedBallot> =
         when {
-            (decryptSpoiledList == null) -> electionRecordIn.iterateSpoiledBallots()
-            (decryptSpoiledList.trim().lowercase() == "all") -> electionRecordIn.iterateEncryptedBallots { true }
+            (decryptSpoiledList == null) -> {
+                println("use all spoiled")
+                electionRecordIn.iterateSpoiledBallots()
+            }
+            (decryptSpoiledList.trim().lowercase() == "all") -> {
+                println("use all")
+                electionRecordIn.iterateEncryptedBallots { true }
+            }
             fileExists(decryptSpoiledList) -> {
+                println("use ballots in file $decryptSpoiledList")
                 val wanted: List<String> = fileReadLines(decryptSpoiledList)
-                electionRecordIn.iterateEncryptedBallots { wanted.contains(it.ballotId) }
+                val wantedTrim: List<String> = wanted.map { it.trim() }
+                electionRecordIn.iterateEncryptedBallots { wantedTrim.contains(it.ballotId) }
             }
             else -> {
+                println("use ballots in list ${decryptSpoiledList}")
                 val wanted: List<String> = decryptSpoiledList.split(",")
-                electionRecordIn.iterateEncryptedBallots { wanted.contains(it.ballotId) }
+                electionRecordIn.iterateEncryptedBallots {
+                    wanted.contains(it.ballotId)
+                }
             }
         }
 
@@ -143,6 +156,7 @@ fun runDecryptBallots(
     val took = getSystemTimeInMillis() - starting
     val msecsPerBallot = (took.toDouble() / 1000 / count)
     println("Decrypt ballots with nthreads = $nthreads took ${took / 1000} secs for $count ballots = $msecsPerBallot secs/ballot")
+    return count
 }
 
 // place the ballot reading into its own coroutine
@@ -164,13 +178,13 @@ private fun CoroutineScope.launchDecryptor(
     output: SendChannel<PlaintextTally>,
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
-         val decrypted: PlaintextTally = decryptor.decryptBallot(ballot)
-        logger.debug { " Encryptor #$id sending ciphertext ballot ${decrypted.tallyId}" }
-        println(" Encryptor #$id sending ciphertext ballot ${decrypted.tallyId}")
+        val decrypted: PlaintextTally = decryptor.decryptBallot(ballot)
+        logger.debug { " DecryptingMediator #$id sending PlaintextTally ${decrypted.tallyId}" }
+        if (debug) println(" Encryptor #$id sending PlaintextTally ${decrypted.tallyId}")
         output.send(decrypted)
         yield()
     }
-    logger.debug { "Encryptor #$id done" }
+    logger.debug { "DecryptingMediator #$id done" }
 }
 
 // place the output writing into its own coroutine

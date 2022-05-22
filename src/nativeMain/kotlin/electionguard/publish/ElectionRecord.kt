@@ -47,7 +47,7 @@ actual class ElectionRecord actual constructor(
         if (!exists(path.encryptedBallotPath())) {
             return emptyList()
         }
-        return Iterable { EncryptedBallotIterator(groupContext, path.encryptedBallotPath(), null, null) }
+        return Iterable { EncryptedBallotIterator(groupContext, path.encryptedBallotPath(), null, filter) }
     }
 
     actual fun iterateCastBallots(): Iterable<EncryptedBallot> {

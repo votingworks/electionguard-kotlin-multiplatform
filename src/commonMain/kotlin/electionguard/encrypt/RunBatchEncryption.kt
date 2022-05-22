@@ -196,7 +196,7 @@ fun batchEncryption(
 // place the ballot reading into its own coroutine
 private fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveChannel<PlaintextBallot> = produce {
     for (ballot in producer) {
-        logger.debug{ "Producer sending plaintext ballot ${ballot.ballotId}" }
+        logger.debug{ "Producer sending PlaintextBallot ${ballot.ballotId}" }
         send(ballot)
         yield()
     }
@@ -221,7 +221,7 @@ private fun CoroutineScope.launchEncryptor(
         else
             encryptor.encrypt(ballot, codeSeed, group.randomElementModQ())
 
-        logger.debug{" Encryptor #$id sending ciphertext ballot ${encrypted.ballotId}"}
+        logger.debug{" Encryptor #$id sending CiphertextBallot ${encrypted.ballotId}"}
         output.send(encrypted)
         yield()
     }
