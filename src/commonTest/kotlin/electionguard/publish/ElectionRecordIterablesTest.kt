@@ -10,7 +10,7 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
-    val kotlinDir = "src/commonTest/data/runWorkflowAllAvailable"
+    private val kotlinDir = "src/commonTest/data/runWorkflowAllAvailable"
 
     @Test
     fun readBallotsWrittenByKotlin() {
@@ -26,7 +26,7 @@ class ElectionRecordIterablesTest {
     fun readBallots(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
         val iterator = electionRecordIn.iterateEncryptedBallots { true} .iterator()
-        var count = 0;
+        var count = 0
         for (ballot in iterator) {
             logger.debug { "  $count readBallots ${ballot.ballotId} ${ballot.state}" }
             count++
@@ -37,7 +37,7 @@ class ElectionRecordIterablesTest {
     fun readCastBallots(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
         val iterator = electionRecordIn.iterateCastBallots().iterator()
-        var count = 0;
+        var count = 0
         for (ballot in iterator) {
             logger.debug { "  $count readCastBallots ${ballot.ballotId} ${ballot.state}" }
             count++
@@ -48,7 +48,7 @@ class ElectionRecordIterablesTest {
     fun readSpoiledBallots(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
         val iterator = electionRecordIn.iterateSpoiledBallots().iterator()
-        var count = 0;
+        var count = 0
         for (ballot in iterator) {
             logger.debug { "  $count readSpoiledBallots ${ballot.ballotId} ${ballot.state}" }
             count++
@@ -59,7 +59,7 @@ class ElectionRecordIterablesTest {
     fun readSpoiledBallotTallies(context: GroupContext, topdir: String, expected: Int) {
         val electionRecordIn = ElectionRecord(topdir, context)
         val iterator = electionRecordIn.iterateSpoiledBallotTallies().iterator()
-        var count = 0;
+        var count = 0
         for (tally in iterator) {
             logger.debug { "  $count readSpoiledBallotTallies ${tally.tallyId}" }
             count++
