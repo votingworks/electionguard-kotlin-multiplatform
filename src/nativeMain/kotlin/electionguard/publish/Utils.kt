@@ -19,6 +19,8 @@ import platform.posix.DIR
 import platform.posix.FILE
 import platform.posix.PATH_MAX
 import platform.posix.dirent
+import platform.posix.fclose
+import platform.posix.fgets
 import platform.posix.fopen
 import platform.posix.getcwd
 import platform.posix.getline
@@ -188,45 +190,26 @@ fun openFile(abspath: String, modes: String): CPointer<FILE> {
     }
 }
 
-fun fileReadLines(filename: String): List<String> {
+fun fgetsFile(filename: String): List<String> {
     val result = mutableListOf<String>()
     memScoped {
         val file: CPointer<FILE> = openFile(filename, "rb")
+        val bufferLength = 255 // nice buffer overflow
+        val linep: CValuesRef<ByteVar> = allocArray(bufferLength)
 
-        // getline(
-        //    __lineptr: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>>
-        //       = kotlinx.cinterop.CPointerVarOf<kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>>
-        //       kotlinx.cinterop.CValuesRef<kotlinx.cinterop.ByteVar = kotlinx.cinterop.ByteVarOf<kotlin.Byte>
-        //    __n: kotlinx.cinterop.CValuesRef<platform.posix.size_tVar /* = kotlinx.cinterop.ULongVarOf<kotlin.ULong> */>?,
-        //    __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
-        //      : platform.posix.__ssize_t /* = kotlin.Long */
-
-        // __lineptr: CValuesRef<CPointerVar<ByteVar>>
-        // __lineptr: CValuesRef<CPointerVarOf<CPointer<ByteVar>>>
-
-        val max = 200 // nice buffer overflow
-        val linep: CValuesRef<CPointerVar<ByteVar>> = allocArray(max)
-        val np: CValuesRef<platform.posix.size_tVar> = allocArray(16)
-
-        while (getline(linep, np, file) >= 0) {
-            val p: CPointer<CPointerVar<ByteVar>> = linep.getPointer(memScope)
-            val native: NativePtr = p.getRawValue()
-            val llll = linep as CValuesRef<CPointerVarOf<CPointer<ByteVar>>>
-            result.add(native.toString())
+        // gets(
+        // __s: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>?,
+        // __n: kotlin.Int,
+        // __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
+        // : kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>? { /* compiled code */ }
+        while (fgets(linep, bufferLength, file) != null) {
+            val s = linep.getPointer(memScope) as CArrayPointer<ByteVar>
+            val ks = s.toKString()
+            println("read line = $ks")
+            result.add(ks)
         }
+
+        fclose(file);
     }
     return result
 }
-
- // fun getline(
-//    __lineptr: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>
-//    /* = kotlinx.cinterop.CPointerVarOf<kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>> */>?,
-//
-// ByteVar = ByteVarOf<kotlin.Byte>
-// CPointerVar<ByteVar> = CPointerVarOf<CPointer<ByteVar>
-//
-// __lineptr: CValuesRef<CPointerVar<ByteVar>>
-// __lineptr: CValuesRef<CPointerVarOf<CPointer<ByteVar>>>
-
-
-//    __n: kotlinx.cinterop.CValuesRef<platform.posix.size_tVar /* = kotlinx.cinterop.ULongVarOf<kotlin.ULong> */>?, __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?): platform.posix.__ssize_t /* = kotlin.Long */ { /* compiled code */ }

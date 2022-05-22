@@ -148,6 +148,7 @@ Options:
 The decryptSpoiledList may be:
 1. a comma-delimited (no spaces) list of ballot Ids referencing encryptedBallots.protobuf
 2. a fully-qualified filename of a text file containing ballot Ids (one per line) referencing encryptedBallots.protobuf
+3. "All", then decrypt all the ballots in encryptedBallots.protobuf
 3. omitted, then decrypt the ballots in encryptedBallots.protobuf that have been marked SPOILED.
 
 
