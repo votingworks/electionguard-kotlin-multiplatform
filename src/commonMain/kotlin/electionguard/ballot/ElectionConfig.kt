@@ -27,4 +27,28 @@ data class ElectionConstants(
     val cofactor: ByteArray,
     /** generator or G. */
     val generator: ByteArray,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as ElectionConstants
+
+        if (name != other.name) return false
+        if (!largePrime.contentEquals(other.largePrime)) return false
+        if (!smallPrime.contentEquals(other.smallPrime)) return false
+        if (!cofactor.contentEquals(other.cofactor)) return false
+        if (!generator.contentEquals(other.generator)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + largePrime.contentHashCode()
+        result = 31 * result + smallPrime.contentHashCode()
+        result = 31 * result + cofactor.contentHashCode()
+        result = 31 * result + generator.contentHashCode()
+        return result
+    }
+}

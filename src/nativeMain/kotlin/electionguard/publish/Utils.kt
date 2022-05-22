@@ -31,7 +31,7 @@ import platform.posix.realpath
 import platform.posix.stat
 import platform.posix.strerror_r
 
-private val debug = true
+private const val debug = true
 
 fun absPath(filename: String): String {
     memScoped {
@@ -174,13 +174,13 @@ fun openDir(dirpath: String): List<String> {
     }
 }
 
-fun openFile(abspath: String): CPointer<FILE> {
+fun openFile(abspath: String, modes: String): CPointer<FILE> {
     memScoped {
         // fopen(
         //       @kotlinx.cinterop.internal.CCall.CString __filename: kotlin.String?,
         //       @kotlinx.cinterop.internal.CCall.CString __modes: kotlin.String?)
         //       : kotlinx.cinterop.CPointer<platform.posix.FILE>?
-        val file = fopen(abspath, "w+")
+        val file = fopen(abspath, modes)
         if (file == null) {
             checkErrno { mess -> throw IOException("Fail open $mess on $abspath") }
         }
@@ -191,7 +191,7 @@ fun openFile(abspath: String): CPointer<FILE> {
 fun fileReadLines(filename: String): List<String> {
     val result = mutableListOf<String>()
     memScoped {
-        val file: CPointer<FILE> = openFile(filename)
+        val file: CPointer<FILE> = openFile(filename, "rb")
 
         // getline(
         //    __lineptr: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.CPointerVar<kotlinx.cinterop.ByteVar>>

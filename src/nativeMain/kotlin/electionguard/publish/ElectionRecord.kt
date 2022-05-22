@@ -12,10 +12,10 @@ import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 
 actual class ElectionRecord actual constructor(
-    val topDir: String,
-    val groupContext: GroupContext,
+    private val topDir: String,
+    private val groupContext: GroupContext,
 ) {
-    val path = ElectionRecordPath(topDir)
+    private val path = ElectionRecordPath(topDir)
 
     init {
         if (!exists(topDir)) {
@@ -28,7 +28,7 @@ actual class ElectionRecord actual constructor(
     }
 
     actual fun readElectionConfig(): Result<ElectionConfig, String> {
-        return groupContext.readElectionConfig(path.electionConfigPath())
+        return readElectionConfig(path.electionConfigPath())
     }
 
     actual fun readElectionInitialized(): Result<ElectionInitialized, String> {

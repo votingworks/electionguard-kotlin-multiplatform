@@ -47,7 +47,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.electionConfigPath()
-        val file: CPointer<FILE> = openFile(fileout)
+        val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             writeToFile(file, fileout, buffer)
         } finally {
@@ -61,7 +61,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.electionInitializedPath()
-        val file: CPointer<FILE> = openFile(fileout)
+        val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             writeToFile(file, fileout, buffer)
         } finally {
@@ -77,14 +77,15 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         writeElectionInitialized(init)
         val sink = encryptedBallotSink()
         ballots.forEach {sink.writeEncryptedBallot(it) }
-        sink.close()    }
+        sink.close()
+    }
 
     actual fun writeTallyResult(tally: TallyResult) {
         val proto = tally.publishTallyResult()
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.tallyResultPath()
-        val file: CPointer<FILE> = openFile(fileout)
+        val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             writeToFile(file, fileout, buffer)
         } finally {
@@ -98,7 +99,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.decryptionResultPath()
-        val file: CPointer<FILE> = openFile(fileout)
+        val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             writeToFile(file, fileout, buffer)
         } finally {
@@ -108,31 +109,9 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     @Throws(IOException::class)
-    fun writeEncryptedBallots(encryptedBallots: Iterable<EncryptedBallot>): Boolean {
-        val fileout = path.encryptedBallotPath()
-        val file: CPointer<FILE> = openFile(fileout)
-        try {
-            encryptedBallots.forEach {
-                val proto = it.publishEncryptedBallot()
-                val buffer = proto.encodeToByteArray()
-
-                val length = writeVlen(file, fileout, buffer.size)
-                if (length <= 0) {
-                    fclose(file)
-                    return false
-                }
-                writeToFile(file, fileout, buffer)
-            }
-        } finally {
-            fclose(file)
-        }
-        return true
-    }
-
-    @Throws(IOException::class)
     fun writeSpoiledBallotTallies(spoiledBallots: Iterable<PlaintextTally>): Boolean {
         val fileout = path.spoiledBallotPath()
-        val file: CPointer<FILE> = openFile(fileout)
+        val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             spoiledBallots.forEach {
                 val proto = it.publishPlaintextTally()
@@ -155,7 +134,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     actual fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
         if (plaintextBallots.isNotEmpty()) {
             val fileout = path.plaintextBallotPath(outputDir)
-            val file: CPointer<FILE> = openFile(fileout)
+            val file: CPointer<FILE> = openFile(fileout, "wb")
             try {
                 plaintextBallots.forEach {
                     val proto = it.publishPlaintextBallot()
@@ -178,7 +157,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.decryptingTrusteePath(trusteeDir, trustee.id)
-        val file: CPointer<FILE> = openFile(fileout)
+        val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             writeToFile(file, fileout, buffer)
         } finally {
@@ -191,7 +170,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         EncryptedBallotSink(path.encryptedBallotPath())
 
     private inner class EncryptedBallotSink(val fileout: String) : EncryptedBallotSinkIF {
-        val file: CPointer<FILE> = openFile(fileout)
+        val file: CPointer<FILE> = openFile(fileout, "wb")
 
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val ballotProto: pbandk.Message = ballot.publishEncryptedBallot()
@@ -214,7 +193,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         PlaintextTallySink(path.spoiledBallotPath())
 
     private inner class PlaintextTallySink(val fileout: String) : PlaintextTallySinkIF {
-        val file: CPointer<FILE> = openFile(fileout)
+        val file: CPointer<FILE> = openFile(fileout, "wb")
 
         override fun writePlaintextTally(tally: PlaintextTally) {
             val ballotProto: pbandk.Message = tally.publishPlaintextTally()
