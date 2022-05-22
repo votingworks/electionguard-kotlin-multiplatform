@@ -34,7 +34,7 @@ actual class ElectionRecord actual constructor(
     }
 
     actual fun readElectionConfig(): Result<ElectionConfig, String> {
-        return groupContext.readElectionConfig(path.electionConfigPath())
+        return readElectionConfig(path.electionConfigPath())
     }
 
     actual fun readElectionInitialized(): Result<ElectionInitialized, String> {

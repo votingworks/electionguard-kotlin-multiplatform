@@ -43,7 +43,7 @@ import platform.posix.stat
 
 internal val logger = KotlinLogging.logger("Consumer")
 
-fun GroupContext.readElectionConfig(filename: String): Result<ElectionConfig, String> {
+fun readElectionConfig(filename: String): Result<ElectionConfig, String> {
     val buffer = gulp(filename)
     val proto = electionguard.protogen.ElectionConfig.decodeFromByteArray(buffer)
     return importElectionConfig(proto)
@@ -68,12 +68,12 @@ fun GroupContext.readDecryptionResult(filename: String): Result<DecryptionResult
 }
 
 class PlaintextBallotIterator(
-    val group: GroupContext,
-    val filename: String,
+    private val group: GroupContext,
+    private val filename: String,
     val filter : (PlaintextBallot) -> Boolean,
 ) : AbstractIterator<PlaintextBallot>() {
 
-    private val file = openFile(filename)
+    private val file = openFile(filename, "rb")
 
     override fun computeNext() {
         while (true) {
@@ -95,13 +95,13 @@ class PlaintextBallotIterator(
 }
 
 class EncryptedBallotIterator(
-    val groupContext: GroupContext,
-    val filename: String,
-    val protoFilter: ((electionguard.protogen.EncryptedBallot) -> Boolean)?,
-    val filter: ((EncryptedBallot) -> Boolean)?,
+    private val groupContext: GroupContext,
+    private val filename: String,
+    private val protoFilter: ((electionguard.protogen.EncryptedBallot) -> Boolean)?,
+    private val filter: ((EncryptedBallot) -> Boolean)?,
 ) : AbstractIterator<EncryptedBallot>() {
 
-    private val file = openFile(filename)
+    private val file = openFile(filename, "rb")
 
     override fun computeNext() {
         while (true) {
@@ -131,11 +131,11 @@ class EncryptedBallotIterator(
 }
 
 class SpoiledBallotTallyIterator(
-    val groupContext: GroupContext,
-    val filename: String,
+    private val groupContext: GroupContext,
+    private val filename: String,
 ) : AbstractIterator<PlaintextTally>() {
 
-    private val file = openFile(filename)
+    private val file = openFile(filename, "rb")
 
     override fun computeNext() {
         val length = readVlen(file, filename)
@@ -146,14 +146,14 @@ class SpoiledBallotTallyIterator(
         val message = readFromFile(file, length.toULong(), filename)
         val tallyProto = electionguard.protogen.PlaintextTally.decodeFromByteArray(message)
         val tally = groupContext.importPlaintextTally(tallyProto)
-        setNext(tally.getOrElse { throw RuntimeException("PlaintextTally didnt parse") })
+        setNext(tally.getOrElse { throw RuntimeException("PlaintextTally failed to parse") })
     }
 }
 
 fun GroupContext.readTrustee(filename: String): DecryptingTrusteeIF {
     val buffer = gulp(filename)
     val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
-    return this.importDecryptingTrustee(trusteeProto).getOrElse { throw RuntimeException("DecryptingTrustee $filename didnt parse") }
+    return this.importDecryptingTrustee(trusteeProto).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
 }
 
 /** Read everything in the file and return as a ByteArray. */
@@ -168,21 +168,8 @@ private fun gulp(filename: String): ByteArray {
             checkErrno {mess -> throw IOException("Fail lstat $mess on $filename")}
         }
         val size = stat.st_size.toULong()
-        val file = openFile(filename)
+        val file = openFile(filename, "rb")
         val ba = readFromFile(file, size, filename)
-        fclose(file)
-
-        return@memScoped ba
-    }
-}
-
-/** Read first vlen record in the file and return as a ByteArray. */
-@Throws(IOException::class)
-private fun gulpVlen(filename: String): ByteArray {
-    return memScoped {
-        val file = openFile(filename)
-        val length = readVlen(file, filename)
-        val ba = readFromFile(file, length.toULong(), filename)
         fclose(file)
 
         return@memScoped ba
@@ -192,7 +179,7 @@ private fun gulpVlen(filename: String): ByteArray {
 @Throws(IOException::class)
 private fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String): ByteArray {
     return memScoped {
-        val bytePtr : CArrayPointer<ByteVar> = allocArray(nbytes.toInt())
+        val bytePtr: CArrayPointer<ByteVar> = allocArray(nbytes.toInt())
 
         // fread(
         //   __ptr: kotlinx.cinterop.CValuesRef<*>?,
@@ -202,13 +189,12 @@ private fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String
         //   : kotlin.ULong { /* compiled code */ }
         val nread = fread(bytePtr, 1, nbytes, file)
         if (nread < 0u) {
-            checkErrno {mess -> throw IOException("Fail read $mess on $filename")}
+            checkErrno { mess -> throw IOException("Fail read $mess on $filename") }
         }
         if (nread != nbytes) {
             throw IOException("Fail read $nread != $nbytes  on $filename")
         }
-        val ba: ByteArray = bytePtr.readBytes(nread.toInt())
-        return@memScoped ba
+        return@memScoped bytePtr.readBytes(nread.toInt())
     }
 }
 

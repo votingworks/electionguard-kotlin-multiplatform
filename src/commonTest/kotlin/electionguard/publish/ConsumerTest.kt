@@ -27,7 +27,6 @@ class ConsumerTest {
         }
     }
 
-    // TODO add SpoiledBallotTallies to test data
     @Test
     fun readSpoiledBallotTallys() {
         runTest {
