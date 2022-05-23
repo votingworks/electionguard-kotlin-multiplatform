@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 
 class PublisherTest {
     private val input = "src/commonTest/data/runWorkflowAllAvailable"
-    private val output = "testout/PublisherTest"
+    private val output = "testOut/PublisherTest"
     val publisher = Publisher(output, PublisherMode.createNew)
 
     @Test

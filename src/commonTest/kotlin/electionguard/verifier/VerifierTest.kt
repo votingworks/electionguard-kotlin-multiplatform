@@ -14,9 +14,12 @@ class VerifierTest {
 
     @Test
     fun readRecoveredElectionRecordAndValidate() {
-        runTest {
-            runVerifier(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
-        }
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowSomeAvailable",
+            )
+        )
     }
 
 }
