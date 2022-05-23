@@ -1,6 +1,5 @@
 package electionguard.core
 
-import electionguard.core.*
 import kotlinx.coroutines.runBlocking
 import java.time.temporal.ChronoUnit
 import kotlin.random.Random

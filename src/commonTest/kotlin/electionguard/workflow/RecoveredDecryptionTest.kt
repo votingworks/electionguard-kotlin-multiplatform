@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCli::class)
-
 package electionguard.workflow
 
 import com.github.michaelbull.result.getOrThrow
@@ -8,9 +6,7 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
 import electionguard.core.Base16.toHex
 import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElGamalKeypair
 import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -26,7 +22,6 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.publish.ElectionRecord
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
-import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

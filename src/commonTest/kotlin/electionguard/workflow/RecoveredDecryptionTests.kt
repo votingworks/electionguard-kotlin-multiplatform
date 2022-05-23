@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCli::class)
-
 package electionguard.workflow
 
 import electionguard.core.ElGamalPublicKey
@@ -7,7 +5,6 @@ import electionguard.core.ElementModP
 import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
-import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
 
 /** Test KeyCeremony Trustee generation and recovered decryption. */
