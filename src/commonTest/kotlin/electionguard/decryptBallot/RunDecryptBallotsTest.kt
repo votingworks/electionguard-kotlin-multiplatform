@@ -14,7 +14,14 @@ class RunDecryptBallotsTest {
         val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
         val outputDir = "testOut/testDecryptingBallotsAll"
-        val n = runDecryptBallots(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir), "ALL", 11)
+        val n = runDecryptBallots(
+            group,
+            inputDir,
+            outputDir,
+            readDecryptingTrustees(group, inputDir, trusteeDir),
+            "ALL",
+            11
+        )
         assertEquals(100, n)
     }
 
@@ -24,9 +31,11 @@ class RunDecryptBallotsTest {
         val inputDir = "src/commonTest/data/runWorkflowSomeAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"
         val outputDir = "testOut/testDecryptingBallotsSome"
-        val n = runDecryptBallots(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
+        val n = runDecryptBallots(
+            group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
             "ballot-id-294429550,ballot-id--1563716819,ballot-id-1036102189",
-            11)
+            11
+        )
         assertEquals(3, n)
     }
 
@@ -37,9 +46,25 @@ class RunDecryptBallotsTest {
         val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"
         val wantBallots = "src/commonTest/data/runWorkflowSomeAvailable/private_data/wantedBallots.txt"
         val outputDir = "testOut/testDecryptingBallotsSome"
-        val n = runDecryptBallots(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
+        val n = runDecryptBallots(
+            group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
             wantBallots,
-            11)
+            11
+        )
         assertEquals(2, n)
+    }
+
+    @Test
+    fun testDecryptingBallotsMain() {
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowSomeAvailable",
+                "-trustees",
+                "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees",
+                "-out",
+                "testOut/testDecryptingBallotsSome",
+            )
+        )
     }
 }

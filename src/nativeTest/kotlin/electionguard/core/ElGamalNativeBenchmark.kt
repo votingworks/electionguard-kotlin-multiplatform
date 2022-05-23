@@ -7,7 +7,7 @@ import kotlin.system.measureTimeMillis
 
 // this is a simple benchmark that just measures how fast ElGamal encryption runs
 
-fun elGamalPerfTest() {
+fun main() {
     val N = 1000
 
     ProductionMode.values()

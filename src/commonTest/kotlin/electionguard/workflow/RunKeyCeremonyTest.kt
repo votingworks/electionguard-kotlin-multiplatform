@@ -1,10 +1,7 @@
-@file:OptIn(ExperimentalCli::class)
-
 package electionguard.workflow
 
 import electionguard.core.productionGroup
 import electionguard.keyceremony.runKeyCeremony
-import kotlinx.cli.ExperimentalCli
 import kotlin.test.Test
 
 class RunKeyCeremonyTest {

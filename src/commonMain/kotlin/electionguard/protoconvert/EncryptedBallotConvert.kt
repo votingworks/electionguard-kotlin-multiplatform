@@ -155,29 +155,6 @@ private fun GroupContext.importDisjunctiveChaumPedersenProof(
     var proof1 = this.importChaumPedersenProof(disjunct.proof1)
     val proofChallenge = this.importElementModQ(disjunct.challenge)
 
-    if (proof0 == null && proof1 == null) {
-        // 1.0 election record
-        val proofZeroPad = this.importElementModP(disjunct.proofZeroPad)
-        val proofZeroData = this.importElementModP(disjunct.proofZeroData)
-        val proofZeroChallenge = this.importElementModQ(disjunct.proofZeroChallenge)
-        val proofZeroResponse = this.importElementModQ(disjunct.proofZeroResponse)
-
-        val proofOnePad = this.importElementModP(disjunct.proofOnePad)
-        val proofOneData = this.importElementModP(disjunct.proofOneData)
-        val proofOneChallenge = this.importElementModQ(disjunct.proofOneChallenge)
-        val proofOneResponse = this.importElementModQ(disjunct.proofOneResponse)
-
-        if (proofZeroPad == null || proofZeroData == null || proofZeroChallenge == null ||
-            proofZeroResponse == null || proofOnePad == null || proofOneData == null ||
-            proofOneChallenge == null || proofOneResponse == null || proofChallenge == null
-        ) {
-            return Err("Failed to convert DisjunctiveChaumPedersenProofKnownNonce $where from proto (1)")
-        }
-
-        proof0 = GenericChaumPedersenProof(proofZeroChallenge, proofZeroResponse)
-        proof1 = GenericChaumPedersenProof(proofOneChallenge, proofOneResponse)
-    }
-
     if (proof0 == null || proof1 == null || proofChallenge == null) {
         return Err("Failed to convert DisjunctiveChaumPedersenProofKnownNonce $where from proto (2)")
     }
