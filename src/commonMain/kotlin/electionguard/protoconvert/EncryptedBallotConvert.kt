@@ -98,14 +98,7 @@ private fun GroupContext.importConstantChaumPedersenProof(
     var proof = this.importChaumPedersenProof(constant.proof)
 
     if (proof == null) {
-        // 1.0
-        val challenge = this.importElementModQ(constant.challenge)
-        val response = this.importElementModQ(constant.response)
-
-        if (challenge == null || response == null) {
             return Err("Missing fields ConstantChaumPedersenProof in $where")
-        }
-        proof = GenericChaumPedersenProof(challenge, response)
     }
 
     return Ok(ConstantChaumPedersenProofKnownNonce(proof, constant.constant))
@@ -216,10 +209,6 @@ fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof():
         electionguard.protogen.ConstantChaumPedersenProof {
     return electionguard.protogen
         .ConstantChaumPedersenProof(
-            null,
-            null,
-            null,
-            null, // 1.0 0nly
             this.constant,
             this.proof.publishChaumPedersenProof(),
         )
@@ -229,14 +218,6 @@ fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof
         electionguard.protogen.DisjunctiveChaumPedersenProof {
     return electionguard.protogen
         .DisjunctiveChaumPedersenProof(
-            null,
-            null,
-            null,
-            null, // 1.0 0nly
-            null,
-            null,
-            null,
-            null, // 1.0 0nly
             this.c.publishElementModQ(),
             this.proof0.publishChaumPedersenProof(),
             this.proof1.publishChaumPedersenProof(),

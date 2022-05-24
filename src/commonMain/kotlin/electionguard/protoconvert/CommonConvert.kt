@@ -83,8 +83,6 @@ fun GenericChaumPedersenProof.publishChaumPedersenProof():
     electionguard.protogen.GenericChaumPedersenProof {
         return electionguard.protogen
             .GenericChaumPedersenProof(
-                null, // 1.0 0nly
-                null, // 1.0 0nly
                 this.c.publishElementModQ(),
                 this.r.publishElementModQ(),
             )
@@ -103,8 +101,6 @@ fun HashedElGamalCiphertext.publishHashedCiphertext() :
 fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen
         .SchnorrProof(
-            null,   // 1.0 0nly
-            null, // 1.0 0nly
             this.challenge.publishElementModQ(),
             this.response.publishElementModQ()
         )

@@ -48,24 +48,24 @@ message EncryptedBallotSelection {
 }
 
 message ConstantChaumPedersenProof {
-  ElementModP pad = 1; // 1-4 are 1.0
-  ElementModP data = 2;
-  ElementModQ challenge = 3;
-  ElementModQ response = 4;
+  reserved 1;
+  reserved 2;
+  reserved 3;
+  reserved 4;
   uint32 constant = 5;
-  GenericChaumPedersenProof proof = 6; // 2.0
+  GenericChaumPedersenProof proof = 6;
 }
 
 message DisjunctiveChaumPedersenProof {
-  ElementModP proof_zero_pad = 1;  // 1-8 are 1.0
-  ElementModP proof_zero_data = 2;
-  ElementModQ proof_zero_challenge = 3;
-  ElementModQ proof_zero_response = 4;
-  ElementModP proof_one_pad = 5;
-  ElementModP proof_one_data = 6;
-  ElementModQ proof_one_challenge = 7;
-  ElementModQ proof_one_response = 8;
+  reserved 1;
+  reserved 2;
+  reserved 3;
+  reserved 4;
+  reserved 5;
+  reserved 6;
+  reserved 7;
+  reserved 8;
   ElementModQ challenge = 9;
-  GenericChaumPedersenProof proof0 = 10; // 2.0
-  GenericChaumPedersenProof proof1 = 11; // 2.0
+  GenericChaumPedersenProof proof0 = 10;
+  GenericChaumPedersenProof proof1 = 11;
 }

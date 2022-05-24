@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 5/21/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 5/23/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 Notes
 
@@ -163,7 +163,7 @@ Notes
 | Name                  | Type           | Notes                                         |
 |-----------------------|----------------|-----------------------------------------------|
 | ballot_style_id       | string         |                                               |
-| geopolitical_unit_ids | List\<string\> | matches GeoPoliticalUnit.geopolitical_unit_id |
+| geopolitical_unit_ids | List\<string\> | GeoPoliticalUnit.geopolitical_unit_id |
 | party_ids             | List\<string\> | optional matches Party.party_id               |
 | image_uri             | string         | optional                                      |
 
@@ -274,7 +274,7 @@ Notes
 | extended_data            | string | optional                            |
 
 
-## ciphertext_ballot.proto
+## encrypted_ballot.proto
 
 ### message EncryptedBallot
 
@@ -292,27 +292,27 @@ Notes
 
 ### message EncryptedBallotContest
 
-| Name                    | Type                               | Notes                                     |
-|-------------------------|------------------------------------|-------------------------------------------|
-| contest_id              | string                             | matches ContestDescription.contest_id     |
-| sequence_order          | uint32                             | matches ContestDescription.sequence_order |
-| contest_hash            | UInt256                            | matches ContestDescription.crypto_hash    |                                                                     |
-| selections              | List\<EncryptedBallotSelection\>   |                                           |
-| crypto_hash             | UInt256                            |                                           |
-| proof                   | ConstantChaumPedersenProof         |                                           |
+| Name                    | Type                               | Notes                             |
+|-------------------------|------------------------------------|-----------------------------------|
+| contest_id              | string                             | ContestDescription.contest_id     |
+| sequence_order          | uint32                             | ContestDescription.sequence_order |
+| contest_hash            | UInt256                            | ContestDescription.crypto_hash    |                                                                     |
+| selections              | List\<EncryptedBallotSelection\>   |                                   |
+| crypto_hash             | UInt256                            |                                   |
+| proof                   | ConstantChaumPedersenProof         |                                   |
 
 ### message EncryptedBallotSelection
 
-| Name                     | Type                          | Notes                                       |
-|--------------------------|-------------------------------|---------------------------------------------|
-| selection_id             | string                        | matches SelectionDescription.selection_id   |
-| sequence_order           | uint32                        | matches SelectionDescription.sequence_order |
-| selection_hash           | UInt256                       | matches SelectionDescription.crypto_hash    |
-| ciphertext               | ElGamalCiphertext             |                                             |
-| crypto_hash              | UInt256                       |                                             |
-| is_placeholder_selection | bool                          |                                             |
-| proof                    | DisjunctiveChaumPedersenProof |                                             |
-| extended_data            | HashedElGamalCiphertext       | optional                                    |
+| Name                     | Type                          | Notes                                |
+|--------------------------|-------------------------------|--------------------------------------|
+| selection_id             | string                        | SelectionDescription.selection_id    |
+| sequence_order           | uint32                        | SelectionDescription.sequence_order  |
+| selection_hash           | UInt256                       | SelectionDescription.crypto_hash     |
+| ciphertext               | ElGamalCiphertext             |                                      |
+| crypto_hash              | UInt256                       |                                      |
+| is_placeholder_selection | bool                          |                                      |
+| proof                    | DisjunctiveChaumPedersenProof |                                      |
+| extended_data            | HashedElGamalCiphertext       | optional                             |
 
 ### message ConstantChaumPedersenProof
 
