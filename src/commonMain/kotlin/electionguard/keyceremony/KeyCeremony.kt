@@ -1,5 +1,7 @@
 package electionguard.keyceremony
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
 import electionguard.core.ElGamalPublicKey
@@ -18,13 +20,19 @@ data class PublicKeys(
         return ElGamalPublicKey(coefficientCommitments[0])
     }
 
-    fun isValid(): Boolean {
+    fun isValid(): Result<Boolean, String> {
+        val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for ((idx, proof) in this.coefficientProofs.withIndex()) {
             if (!ElGamalPublicKey(coefficientCommitments[idx]).hasValidSchnorrProof(proof)) {
-                return false
+                checkProofs.add(Err("Guardian $guardianId has invalid proof for coefficient $idx"))
+            } else {
+                checkProofs.add(Ok(true))
             }
         }
-        return true
+        return if (checkProofs.getAllErrors().isNotEmpty())
+            Err(checkProofs.getAllErrors().joinToString("\n"))
+        else
+            Ok(true)
     }
 }
 
@@ -43,7 +51,7 @@ data class SecretKeyShare(
 )
 
 /** Exchange publicKeys and secretShares among the trustees */
-fun keyCeremonyExchange(trustees: List<KeyCeremonyTrustee>): String? {
+fun keyCeremonyExchange(trustees: List<KeyCeremonyTrustee>): Result<Boolean, String> {
     // exchange PublicKeys
     val publicKeyResults: MutableList<Result<PublicKeys, String>> = mutableListOf()
     trustees.forEach { t1 ->
@@ -54,7 +62,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrustee>): String? {
 
     var errors = publicKeyResults.getAllErrors()
     if (errors.isNotEmpty()) {
-        return "runKeyCeremony failed exchanging public keys: ${errors.joinToString("\n")}"
+        return Err("runKeyCeremony failed exchanging public keys: ${errors.joinToString("\n")}")
     }
 
     // exchange SecretKeyShares
@@ -67,8 +75,8 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrustee>): String? {
 
     errors = secretKeyResults.getAllErrors()
     if (errors.isNotEmpty()) {
-        return "runKeyCeremony failed exchanging secret keys: ${errors.joinToString("\n")}"
+        return Err("runKeyCeremony failed exchanging secret keys: ${errors.joinToString("\n")}")
     }
 
-    return null
+    return Ok(true)
 }

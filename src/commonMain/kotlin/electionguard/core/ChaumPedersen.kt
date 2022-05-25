@@ -1,5 +1,9 @@
 package electionguard.core
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+
 import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ChaumPedersen")
 
@@ -256,11 +260,16 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey,
     qbar: ElementModQ
-): Boolean {
+): Result<Boolean, String> {
     val context = compatibleContextOrFail(c, ciphertext.pad, publicKey.key, qbar)
-
+    val errors = mutableListOf<String>()
     val (alpha, beta) = ciphertext
+
     val consistentC = proof0.c + proof1.c == c
+    if (!consistentC) {
+        errors.add("    4.D c != (c0 + c1) for disjunctive cpp")
+    }
+
     val eproof0 =
         proof0.expand(
             g = context.G_MOD_P,
@@ -277,9 +286,11 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
         )
 
     val validHash =
-        c ==
-            hashElements(qbar, alpha, beta, eproof0.a, eproof0.b, eproof1.a, eproof1.b)
+        c == hashElements(qbar, alpha, beta, eproof0.a, eproof0.b, eproof1.a, eproof1.b)
                 .toElementModQ(context)
+    if (!validHash) {
+        errors.add("    4.B challenge is incorrectly computed for disjunctive cpp")
+    }
 
     val valid0 =
         eproof0.isValid(
@@ -290,6 +301,9 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             checkC = false,
             hashHeader = arrayOf(qbar),
         )
+    if (!valid0) {
+        errors.add("    4.? invalid proof0 for disjunctive cpp")
+    }
 
     val valid1 =
         eproof1.isValid(
@@ -300,6 +314,9 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             checkC = false,
             hashHeader = arrayOf(qbar),
         )
+    if (!valid1) {
+        errors.add("    4.? invalid proof1 for disjunctive cpp")
+    }
 
     // If valid0 or valid1 is false, this will already have been logged,
     // so we don't have to repeat it here.
@@ -314,7 +331,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
                 ).toString()
         }
 
-    return valid0 && valid1 && consistentC && validHash
+    return if (errors.isNotEmpty()) Err(errors.joinToString("\n")) else Ok(true)
 }
 
 /**

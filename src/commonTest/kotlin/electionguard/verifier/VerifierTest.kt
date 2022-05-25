@@ -7,9 +7,7 @@ import kotlin.test.Test
 class VerifierTest {
     @Test
     fun readElectionRecordAndValidate() {
-        runTest {
-            runVerifier(productionGroup(), "src/commonTest/data/runWorkflowAllAvailable")
-        }
+        runVerifier(productionGroup(), "src/commonTest/data/runWorkflowAllAvailable", 11)
     }
 
     @Test
@@ -20,6 +18,11 @@ class VerifierTest {
                 "src/commonTest/data/runWorkflowSomeAvailable",
             )
         )
+    }
+
+    @Test
+    fun testVerifyEncryptedBallots() {
+        verifyEncryptedBallots(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable", 1)
     }
 
 }
