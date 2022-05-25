@@ -46,7 +46,7 @@ class Encryptor(
         return encryptedBallots
     }
 
-    /** Encrypt ballots with fixed codeSeed, masterNonce, and timestamp, for testing. */
+    /** Encrypt ballots with fixed codeSeed, masterNonce, and timestamp. */
     fun encryptWithFixedNonces(
         ballots: Iterable<PlaintextBallot>,
         codeSeed: ElementModQ,

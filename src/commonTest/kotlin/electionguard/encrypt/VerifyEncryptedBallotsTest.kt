@@ -21,7 +21,7 @@ class VerifyEncryptedBallotsTest {
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
             val ok = verifier.verifyEncryptedBallots()
-            assertTrue(ok)
+            assertTrue(ok.allOk)
         }
     }
 
@@ -33,7 +33,7 @@ class VerifyEncryptedBallotsTest {
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
             val ok = verifier.verifyEncryptedBallots()
-            assertTrue(ok)
+            assertTrue(ok.allOk)
         }
     }
 
@@ -44,7 +44,7 @@ class VerifyEncryptedBallotsTest {
             val electionRecordIn = ElectionRecord(topdir, group)
             val verifier = Verifier(group, electionRecordIn)
             val ok = verifier.verifyEncryptedBallots()
-            assertTrue(ok)
+            assertTrue(ok.allOk)
         }
     }
 

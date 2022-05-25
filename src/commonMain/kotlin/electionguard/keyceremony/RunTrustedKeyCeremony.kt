@@ -2,6 +2,7 @@
 
 package electionguard.keyceremony
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
@@ -78,9 +79,9 @@ fun runKeyCeremony(
         KeyCeremonyTrustee(group, "trustee$seq", seq.toUInt(), config.quorum)
     }.sortedBy { it.xCoordinate }
 
-    val errors = keyCeremonyExchange(trustees)
-    if (errors != null) {
-        println("$errors")
+    val exchangeResult = keyCeremonyExchange(trustees)
+    if (exchangeResult is Err) {
+        println(exchangeResult.error)
         return false
     }
 

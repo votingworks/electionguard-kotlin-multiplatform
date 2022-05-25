@@ -31,16 +31,28 @@ fun main(args: Array<String>) {
     parser.parse(args)
     println("RunVerifier starting\n   input= $inputDir")
 
-    runVerifier(productionGroup(), inputDir)
+    runVerifier(productionGroup(), inputDir, nthreads?: 11)
 }
 
-fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int = 11) {
+fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int) {
     val starting = getSystemTimeInMillis()
 
     val electionRecordIn = ElectionRecord(inputDir, group)
     val verifier = Verifier(group, electionRecordIn, nthreads)
 
     val allOk = verifier.verify()
+
+    val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
+    println("RunVerifier $allOk took $took seconds")
+}
+
+fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int) {
+    val starting = getSystemTimeInMillis()
+
+    val electionRecordIn = ElectionRecord(inputDir, group)
+    val verifier = Verifier(group, electionRecordIn, nthreads)
+
+    val allOk = verifier.verifyEncryptedBallots()
 
     val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
     println("RunVerifier $allOk took $took seconds")

@@ -1,5 +1,6 @@
 package electionguard.core
 
+import com.github.michaelbull.result.Ok
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
@@ -386,26 +387,26 @@ class ChaumPedersenTest {
                     hashHeader
                 )
 
-            assertTrue(goodProof0.isValid(message0, keypair.publicKey, hashHeader))
-            assertTrue(goodProof1.isValid(message1, keypair.publicKey, hashHeader))
+            assertTrue(goodProof0.isValid(message0, keypair.publicKey, hashHeader) is Ok)
+            assertTrue(goodProof1.isValid(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader))
-            assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader))
-            assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader))
+            assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader) is Ok)
+            assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader) is Ok)
 
-            assertFalse(badProof0.isValid(message0, keypair.publicKey, hashHeader))
-            assertFalse(badProof0.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(badProof0.isValid(message0, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof0.isValid(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(badProof1.isValid(message0, keypair.publicKey, hashHeader))
-            assertFalse(badProof1.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(badProof1.isValid(message0, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof1.isValid(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(badProof2.isValid(message0, keypair.publicKey, hashHeader))
-            assertFalse(badProof2.isValid(message1, keypair.publicKey, hashHeader))
+            assertFalse(badProof2.isValid(message0, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof2.isValid(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(badProof3.isValid(message1, keypair.publicKey, hashHeader))
-            assertFalse(badProof3.isValid(message0, keypair.publicKey, hashHeader))
+            assertFalse(badProof3.isValid(message1, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof3.isValid(message0, keypair.publicKey, hashHeader) is Ok)
         }
     }
 
@@ -430,12 +431,12 @@ class ChaumPedersenTest {
                         hashHeader
                     )
 
-                assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader))
+                assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader) is Ok)
 
                 // now, swap the proofs around and verify it fails
                 val badProof = proof.copy(proof0 = proof.proof1, proof1 = proof.proof0, c = proof.c)
 
-                assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader))
+                assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader) is Ok)
             }
         }
     }

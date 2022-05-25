@@ -5,7 +5,7 @@ import kotlin.test.Test
 class RunBatchEncryptionTest {
 
     @Test
-    fun testRunBatchEncryptionNoncesTest() {
+    fun testRunBatchEncryptionNonces() {
         main(
             arrayOf(
                 "-in",
@@ -24,7 +24,7 @@ class RunBatchEncryptionTest {
     }
 
     @Test
-    fun testRunBatchEncryptionTest() {
+    fun testRunBatchEncryption() {
         main(
             arrayOf(
                 "-in",
@@ -37,6 +37,46 @@ class RunBatchEncryptionTest {
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-nthreads",
                 "12",
+            )
+        )
+    }
+
+    @Test
+    fun testRunBatchEncryptionEncryptTwice() {
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowAllAvailable",
+                "-ballots",
+                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "-out",
+                "testOut/testRunBatchEncryptionTest",
+                "-invalid",
+                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "-nthreads",
+                "1",
+                "-check",
+                "EncryptTwice"
+            )
+        )
+    }
+
+    @Test
+    fun testRunBatchEncryptionVerify() {
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowAllAvailable",
+                "-ballots",
+                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "-out",
+                "testOut/testRunBatchEncryptionTest",
+                "-invalid",
+                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "-nthreads",
+                "11",
+                "-check",
+                "Verify",
             )
         )
     }

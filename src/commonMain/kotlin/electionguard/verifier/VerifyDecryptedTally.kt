@@ -30,10 +30,11 @@ class VerifyDecryptedTally(
 ) {
 
     fun verifyDecryptedTally(tally: PlaintextTally): Stats {
-        var allValid = true
         var ncontests = 0
         var nselections = 0
         var nshares = 0
+        val errors = mutableListOf<String>()
+
         for (contest in tally.contests.values) {
             ncontests++
 
@@ -46,19 +47,21 @@ class VerifyDecryptedTally(
                     if (partialDecryption.proof != null) {
                         val guardian = this.guardians.find { it.guardianId == partialDecryption.guardianId }
                         val guardianKey = guardian?.publicKey()
-                            ?: throw IllegalStateException("Cant find guardian ${partialDecryption.guardianId}")
-                        val svalid = partialDecryption.proof.isValid(
-                            group.G_MOD_P,
-                            guardianKey,
-                            message.pad,
-                            partialDecryption.share(),
-                            arrayOf(cryptoExtendedBaseHash, guardianKey, message.pad, message.data), // section 7
-                            arrayOf(partialDecryption.share())
-                        )
-                        if (!svalid) {
-                            println("Fail guardian $guardian share proof ${partialDecryption.proof}")
+                        if (guardianKey != null) {
+                            val svalid = partialDecryption.proof.isValid(
+                                group.G_MOD_P,
+                                guardianKey,
+                                message.pad,
+                                partialDecryption.share(),
+                                arrayOf(cryptoExtendedBaseHash, guardianKey, message.pad, message.data), // section 7
+                                arrayOf(partialDecryption.share())
+                            )
+                            if (!svalid) {
+                                errors.add("Fail guardian $guardian share proof ${partialDecryption.proof}")
+                            }
+                        } else {
+                            errors.add("Cant find guardian ${partialDecryption.guardianId}")
                         }
-                        allValid = allValid && svalid
 
                     } else if (partialDecryption.recoveredDecryptions.isNotEmpty()) {
 
@@ -74,19 +77,18 @@ class VerifyDecryptedTally(
                                     arrayOf(hx)
                                 )
                             ) {
-                                println("CompensatedDecryption proof failure ${contest.contestId}/${selection.selectionId}")
-                                allValid = false
+                                errors.add("CompensatedDecryption proof failure ${contest.contestId}/${selection.selectionId}")
                             }
                         }
 
                     } else {
-                        println("Must have partialDecryption.proof or missingDecryptions ${contest.contestId}/${selection.selectionId}")
-                        allValid = false
+                        errors.add("Must have partialDecryption.proof or missingDecryptions ${contest.contestId}/${selection.selectionId}")
                     }
                 }
             }
         }
-        return Stats(allValid, ncontests, nselections, nshares)
+        val allValid = errors.isEmpty()
+        return Stats(tally.tallyId, allValid, ncontests, nselections, errors.joinToString("\n"), nshares)
     }
 
     fun verifySpoiledBallotTallies(ballots: Iterable<PlaintextTally>, nthreads: Int): StatsAccum {
