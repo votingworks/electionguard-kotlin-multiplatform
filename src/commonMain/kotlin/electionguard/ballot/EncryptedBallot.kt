@@ -41,7 +41,7 @@ data class EncryptedBallot(
         val selectionHash: UInt256, // matches SelectionDescription.cryptoHash
         val ciphertext: ElGamalCiphertext,
         val cryptoHash: UInt256,
-        val isPlaceholderSelection: Boolean,
+        val isPlaceholderSelection: Boolean, // LOOK an attack that modifies isPlaceholderSelection ??
         val proof: DisjunctiveChaumPedersenProofKnownNonce,
         val extendedData: HashedElGamalCiphertext?,
     )  : CryptoHashableUInt256 {

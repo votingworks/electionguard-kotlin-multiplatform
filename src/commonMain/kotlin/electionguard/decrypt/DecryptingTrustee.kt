@@ -1,5 +1,6 @@
 package electionguard.decrypt
 
+import com.github.michaelbull.result.Err
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalKeypair
 import electionguard.core.ElGamalSecretKey
@@ -119,7 +120,7 @@ data class DecryptingTrustee(
         hx: ElementModP,
         proof: GenericChaumPedersenProof
     ) {
-        if (!proof.isValid(
+        val proofResult = proof.isValid(
                 group.G_MOD_P,
                 gx,
                 ciphertext.pad,
@@ -127,14 +128,8 @@ data class DecryptingTrustee(
                 arrayOf(extendedBaseHash, gx, ciphertext.pad, ciphertext.data), // section 7
                 arrayOf(hx)
             )
-        ) {
-            logger.warn {
-                " partialDecrypt invalid proof for $id = $proof\n" +
-                        "   message = $ciphertext\n" +
-                        "   gx = $gx\n" +
-                        "   hx = $hx\n" +
-                        "   extendedBaseHash = $extendedBaseHash\n"
-            }
+        if (proofResult is Err) {
+            logger.warn { " partialDecrypt invalid proof for $id = $proofResult.error" }
             throw IllegalArgumentException("PartialDecrypt invalid proof for $id")
         }
     }

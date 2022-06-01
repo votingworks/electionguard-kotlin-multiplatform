@@ -73,8 +73,9 @@ fun runDecryptTally(
     val trusteeNames = decryptingTrustees.map { it.id()}.toSet()
     val missingGuardians =
         tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId)}.map { it.guardianId}
+    println("runDecryptTally present = $trusteeNames missing = $missingGuardians")
 
-    val decryptor = DecryptingMediator(group, tallyResult, decryptingTrustees, missingGuardians)
+    val decryptor = DecryptingMediator(group, tallyResult.electionInitialized, decryptingTrustees, missingGuardians)
     val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt() }
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)

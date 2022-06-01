@@ -74,7 +74,7 @@ class RunWorkflow {
 
         // key ceremony
         val init: ElectionInitialized = runFakeKeyCeremony(group, configDir, workingDir, trusteeDir, nguardians, quorum)
-        println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
+        println("FakeKeyCeremony created ElectionInitialized, nguardians = $nguardians quorum = $quorum")
 
         // create fake ballots
         val ballotProvider = RandomBallotProvider(init.config.manifest, nballots)

@@ -54,10 +54,23 @@ class PublisherTest {
             val rtInit = rtResult.unwrap()
             assertTrue(rtInit.equals(init))
             assertEquals(init, rtInit)
-
         }
     }
 
+    @Test
+    fun testWriteSpoiledBallots() {
+        val context = productionGroup()
+        val electionRecordIn = ElectionRecord(input, context)
+        val initResult = electionRecordIn.readElectionInitialized()
+        assertTrue(initResult is Ok)
+        val init = initResult.unwrap()
+
+        var count = 0
+        publisher.writeEncryptions(init, electionRecordIn.iterateEncryptedBallots {
+            count++
+            count % 10 == 0
+        })
+    }
 
 
 }

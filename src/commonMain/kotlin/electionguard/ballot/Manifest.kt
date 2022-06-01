@@ -123,6 +123,18 @@ data class Manifest(
         result
     }
 
+    /** Map of contestId to contest limit. */
+    val contestIdToLimit : Map<String, Int> by
+    lazy {
+        contests.associate { it.contestId to it.votesAllowed}
+    }
+
+    /** Map of contestId to contest limit. */
+    val contestAndSelectionSet : Set<String> by
+    lazy {
+        contests.map { contest -> contest.selections.map { it -> "${contest.contestId}/${it.selectionId}" }}.flatten().toSet()
+    }
+
     /**
      * The type of election.
      *

@@ -1,10 +1,10 @@
 package electionguard.decrypt
 
 import electionguard.ballot.DecryptingGuardian
+import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.PlaintextTally
-import electionguard.ballot.TallyResult
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -15,7 +15,7 @@ import electionguard.core.toElementModQ
  */
 class DecryptingMediator(
     val group: GroupContext,
-    val tallyResult: TallyResult,
+    val init: ElectionInitialized,
     private val decryptingTrustees: List<DecryptingTrusteeIF>,
     private val missingTrustees: List<String>,
 ) {
@@ -37,7 +37,7 @@ class DecryptingMediator(
     }
 
     fun EncryptedTally.decrypt(): PlaintextTally {
-        val shares: MutableList<DecryptionShare> = ArrayList()
+        val shares: MutableList<DecryptionShare> = mutableListOf() // one for each decryptingTrustees
         for (decryptingTrustee in decryptingTrustees) {
             val share: DecryptionShare = this.computePartialDecryptionForTally(decryptingTrustee)
             shares.add(share)
@@ -76,11 +76,11 @@ class DecryptingMediator(
         }
 
         if (missingTrustees.isNotEmpty()) {
-            // compute Missing Shares with lagrange interpolation
+            // compute missing shares with lagrange interpolation
             sharesBySelectionId.values.flatten().forEach { it.lagrangeInterpolation(availableGuardians) }
         }
 
-        val decryptor = TallyDecryptor(group, tallyResult.jointPublicKey(), tallyResult.numberOfGuardians())
+        val decryptor = TallyDecryptor(group, init.jointPublicKey(), init.numberOfGuardians())
         return decryptor.decryptTally(this, sharesBySelectionId)
     }
 
@@ -106,7 +106,7 @@ class DecryptingMediator(
 
         // direct decryptions
         val partialDecryptions: List<DirectDecryptionAndProof> =
-            trustee.partialDecrypt(group, texts, tallyResult.cryptoExtendedBaseHash(), null)
+            trustee.partialDecrypt(group, texts, init.cryptoExtendedBaseHash(), null)
 
         // Place the results into the DecryptionShare
         val decryptionShare = DecryptionShare(trustee.id())
@@ -132,7 +132,7 @@ class DecryptingMediator(
         // compensated decryptions
         for (missing in missingTrustees) {
             val compensatedDecryptions: List<CompensatedDecryptionAndProof> =
-                trustee.compensatedDecrypt(group, missing, texts, tallyResult.cryptoExtendedBaseHash(), null)
+                trustee.compensatedDecrypt(group, missing, texts, init.cryptoExtendedBaseHash(), null)
 
             // Place the results into the DecryptionShare
             var count2 = 0
@@ -175,9 +175,10 @@ fun GroupContext.computeLagrangeCoefficient(coordinate: UInt, present: List<UInt
     return numerator.toElementModQ(this) / denomQ
 }
 
+// remove placeholder selections
 private fun EncryptedBallot.convertToTally(): EncryptedTally {
     val contests = this.contests.map { contest ->
-        val selections = contest.selections.map {
+        val selections = contest.selections.filter { !it.isPlaceholderSelection }.map {
             EncryptedTally.Selection(it.selectionId, it.sequenceOrder, it.selectionHash, it.ciphertext)
         }
         EncryptedTally.Contest(contest.contestId, contest.sequenceOrder, contest.contestHash, selections)

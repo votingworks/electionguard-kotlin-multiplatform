@@ -21,13 +21,22 @@ data class ElectionInitialized(
         pairs.forEach { added[it.first] = it.second }
         return this.copy(metadata = added)
     }
+    fun jointPublicKey(): ElGamalPublicKey {
+        return ElGamalPublicKey(this.jointPublicKey)
+    }
+    fun cryptoExtendedBaseHash(): ElementModQ {
+        return this.cryptoExtendedBaseHash.toElementModQ(jointPublicKey.context)
+    }
+    fun numberOfGuardians(): Int {
+        return this.config.numberOfGuardians
+    }
 }
 
 /** Public info for the ith Guardian/Trustee. */
 data class Guardian(
     val guardianId: String,
     val xCoordinate: UInt, // use sequential numbering starting at 1; = i of T_i, K_i
-    val coefficientCommitments: List<ElementModP>,  // h_j = g^a_j, j = 1..quorum; h_0 = K_i = public key
+    val coefficientCommitments: List<ElementModP>,  // g^a_j, j = 1..quorum; h_0 = K_i = public key
     val coefficientProofs: List<SchnorrProof>
 ) {
     fun publicKey() : ElementModP = coefficientCommitments[0]

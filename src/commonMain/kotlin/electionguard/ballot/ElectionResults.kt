@@ -3,7 +3,7 @@ package electionguard.ballot
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
-import electionguard.core.toElementModQ
+import electionguard.core.UInt256
 
 data class TallyResult(
     val group: GroupContext,
@@ -16,8 +16,8 @@ data class TallyResult(
     fun jointPublicKey(): ElGamalPublicKey {
         return ElGamalPublicKey(electionInitialized.jointPublicKey)
     }
-    fun cryptoExtendedBaseHash(): ElementModQ {
-        return electionInitialized.cryptoExtendedBaseHash.toElementModQ(group)
+    fun cryptoExtendedBaseHash(): UInt256 {
+        return electionInitialized.cryptoExtendedBaseHash
     }
     fun numberOfGuardians(): Int {
         return electionInitialized.config.numberOfGuardians

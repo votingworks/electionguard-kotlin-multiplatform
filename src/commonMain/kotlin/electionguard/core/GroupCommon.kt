@@ -312,6 +312,13 @@ interface ElementModP : Element, Comparable<ElementModP> {
 
     /** Converts to Montgomery form, allowing for faster modular multiplication. */
     fun toMontgomeryElementModP(): MontgomeryElementModP
+
+    /** Short version of the String for readability */
+    fun toStringShort(): String {
+        val s = base16()
+        val len = s.length
+        return "${s.substring(0, 7)}...${s.substring(len-8, len)}"
+    }
 }
 
 /**

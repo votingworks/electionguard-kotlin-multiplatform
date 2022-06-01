@@ -279,9 +279,9 @@ fun Manifest.ContestDescription.encryptContest(
     return CiphertextBallot.Contest(
         this.contestId,
         this.sequenceOrder,
-        this.cryptoHash,
+        this.cryptoHash, // manifest contest cryptohash
         encryptedSelections,
-        cryptoHash,
+        cryptoHash,      // CiphertextBallot.Contest cryptohash
         proof,
         contestNonce,
     )

@@ -100,7 +100,6 @@ class PartialDecryption(
                 value.share powP guardians[idx].lagrangeCoordinate
             }
             val context = compatibleContextOrFail(*shares.toTypedArray())
-            shares.toTypedArray()
             share = context.multP(*shares.toTypedArray())
         }
     }

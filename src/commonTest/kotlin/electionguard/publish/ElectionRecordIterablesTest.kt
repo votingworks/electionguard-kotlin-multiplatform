@@ -10,7 +10,7 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
-    private val kotlinDir = "src/commonTest/data/runWorkflowAllAvailable"
+    private val kotlinDir = "src/commonTest/data/runWorkflowSomeAvailable"
 
     @Test
     fun readBallotsWrittenByKotlin() {
@@ -19,7 +19,7 @@ class ElectionRecordIterablesTest {
             readBallots(context, kotlinDir, 100)
             readCastBallots(context, kotlinDir, 100)
             readSpoiledBallots(context, kotlinDir, 0)
-            readSpoiledBallotTallies(context, kotlinDir, 100)
+            readSpoiledBallotTallies(context, kotlinDir, 3)
         }
     }
 

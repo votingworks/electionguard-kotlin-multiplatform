@@ -48,7 +48,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
 
         fun accumulate(ballotId : String, ballotContest: EncryptedBallot.Contest) {
             for (ballotSelection in ballotContest.selections) {
-                if (ballotSelection.isPlaceholderSelection) {
+                if (ballotSelection.isPlaceholderSelection) { // skip placeholders
                     continue
                 }
                 val selection = selections[ballotSelection.selectionId]

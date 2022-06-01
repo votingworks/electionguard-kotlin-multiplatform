@@ -91,7 +91,7 @@ actual class ElectionRecord actual constructor(
         return Iterable { EncryptedBallotIterator(filename, groupContext, protoFilter, null) }
     }
 
-    // all spoiled ballot tallies
+    // all tallies in the file
     actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
         val filename = path.spoiledBallotPath()
         if (!Files.exists(Path.of(filename))) {
