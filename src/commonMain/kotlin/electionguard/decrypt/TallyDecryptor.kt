@@ -5,7 +5,6 @@ import electionguard.ballot.PlaintextTally
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
-import electionguard.core.toElementModQ
 
 // TODO Set this to -1 except when testing
 private const val maxDlog: Int = 1000
@@ -30,7 +29,7 @@ class TallyDecryptor(val group: GroupContext, val jointPublicKey: ElGamalPublicK
         val selections: MutableMap<String, PlaintextTally.Selection> = HashMap()
         for (tallySelection in contest.selections) {
             val id = "${contest.contestId}#@${tallySelection.selectionId}"
-            val sshares = shares[id] ?: throw RuntimeException("*** $id share not found") // TODO
+            val sshares = shares[id] ?: throw IllegalStateException("*** $id share not found") // TODO something better?
             val plaintextTallySelection = decryptSelectionWithDecryptionShares(tallySelection, sshares)
             selections[tallySelection.selectionId] = plaintextTallySelection
         }

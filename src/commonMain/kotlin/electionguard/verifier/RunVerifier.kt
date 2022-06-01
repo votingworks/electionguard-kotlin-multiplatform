@@ -44,7 +44,7 @@ fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int) {
     val allOk = verifier.verify()
 
     val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
-    println("RunVerifier $allOk took $took seconds")
+    println("RunVerifier = $allOk took $took seconds")
 }
 
 fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int) {

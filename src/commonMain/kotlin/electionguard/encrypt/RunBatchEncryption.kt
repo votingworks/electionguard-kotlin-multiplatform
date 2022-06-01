@@ -262,7 +262,7 @@ private fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): 
 
 // coroutines allow parallel encryption at the ballot level
 // LOOK not possible to do ballot chaining, since the order is indeterminate?
-// LOOK or do we just have to work harder??
+//    or do we just have to work harder??
 private fun CoroutineScope.launchEncryptor(
     id: Int,
     input: ReceiveChannel<PlaintextBallot>,

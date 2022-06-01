@@ -16,12 +16,7 @@ class VerifyRecoveredShares(
     val group: GroupContext,
     val decryptionResult: DecryptionResult
 ) {
-    val lagrange_coefficients: Map<String, ElementModQ>
-
-    init {
-        lagrange_coefficients =
-            decryptionResult.decryptingGuardians.associate { it.guardianId to it.lagrangeCoordinate }
-    }
+    val lagrangeCoefficients: Map<String, ElementModQ> = decryptionResult.decryptingGuardians.associate { it.guardianId to it.lagrangeCoordinate }
 
     fun verify(): Result<Boolean, String> {
         val decryptingGuardianCount = decryptionResult.decryptingGuardians.size
@@ -38,13 +33,13 @@ class VerifyRecoveredShares(
         val errors = mutableListOf<String>()
         val guardians: List<DecryptingGuardian> = decryptionResult.decryptingGuardians
         for (guardian in guardians) {
-            val seq_others = mutableListOf<UInt>()
+            val seqOthers = mutableListOf<UInt>()
             for (other in guardians) {
                 if (!other.guardianId.equals(guardian.guardianId)) {
-                    seq_others.add(other.xCoordinate.toUInt())
+                    seqOthers.add(other.xCoordinate.toUInt())
                 }
             }
-            if (!verifyLagrangeCoefficient(guardian.xCoordinate.toUInt(), seq_others, guardian.lagrangeCoordinate)) {
+            if (!verifyLagrangeCoefficient(guardian.xCoordinate.toUInt(), seqOthers, guardian.lagrangeCoordinate)) {
                 errors.add(" *** 10.A Lagrange coefficients failure for guardian ${guardian.guardianId}")
             }
         }
@@ -84,7 +79,7 @@ class VerifyRecoveredShares(
         var product: ElementModP = group.ONE_MOD_P
         for (compShare in partial.recoveredDecryptions) {
             val M_il: ElementModP = compShare.share // M_i,l in the spec
-            val lagrange: ElementModQ = lagrange_coefficients[compShare.decryptingGuardianId]
+            val lagrange: ElementModQ = lagrangeCoefficients[compShare.decryptingGuardianId]
                 ?: throw IllegalStateException("Cant find lagrange coefficient for " + compShare.decryptingGuardianId)
             val term = M_il powP lagrange
             product = product * term

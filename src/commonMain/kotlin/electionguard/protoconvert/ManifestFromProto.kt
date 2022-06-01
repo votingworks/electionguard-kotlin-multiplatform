@@ -73,7 +73,6 @@ private fun electionguard.protogen.ContestDescription.importContestDescription()
         this.sequenceOrder,
         this.geopoliticalUnitId,
         this.voteVariation.importVoteVariationType() ?: Manifest.VoteVariationType.other,
-        // TODO ok?
         this.numberElected,
         this.votesAllowed,
         this.name,

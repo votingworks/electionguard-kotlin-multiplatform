@@ -59,7 +59,6 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Plain
         return Err(errors.joinToString("\n"))
     }
 
-    // TODO: can it ever occur that we have zero shares?
     if (shares.isEmpty()) {
         return Err("No shares in PlaintextTallySelection")
     }

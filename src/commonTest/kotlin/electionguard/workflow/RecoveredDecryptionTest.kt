@@ -91,7 +91,7 @@ fun runRecoveredDecryptionTest(
 
         val primes = config.constants
         val cryptoBaseHash: UInt256 = hashElements(
-            primes.largePrime.toHex(), // LOOK is this the same as converting to ElementMod ??
+            primes.largePrime.toHex(),
             primes.smallPrime.toHex(),
             primes.generator.toHex(),
             config.numberOfGuardians,
@@ -158,7 +158,7 @@ fun ElGamalCiphertext.recoverPartialShare(
     val shares = available.map {
         // M_il
        val partial = it.compensatedDecrypt(group, missing, listOf(this), extendedBaseHash, null)[0]
-       val coeff = lagrange[it.id]?: group.ONE_MOD_Q // LOOK??
+       val coeff = lagrange[it.id]?: throw IllegalStateException("cant find lagrange for ${it.id}")
        // M_il ^ w_l
        partial.partialDecryption powP coeff
     }

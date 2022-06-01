@@ -25,25 +25,25 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
     val jointPublicKey: ElGamalPublicKey
     val cryptoExtendedBaseHash: ElementModQ
     val decryptionResult: DecryptionResult
-    val guardians: List<Guardian>
+    val guardiansPublic: List<Guardian>
     val manifest: Manifest
 
     init {
         decryptionResult = electionRecord.readDecryptionResult().getOrThrow { throw IllegalStateException(it) }
         jointPublicKey = decryptionResult.tallyResult.jointPublicKey()
         cryptoExtendedBaseHash = decryptionResult.tallyResult.cryptoExtendedBaseHash().toElementModQ(group)
-        guardians = decryptionResult.tallyResult.electionInitialized.guardians
         manifest = decryptionResult.tallyResult.electionInitialized.manifest()
+        guardiansPublic = decryptionResult.tallyResult.electionInitialized.guardians
     }
 
     fun verify(): Boolean {
         println("Verify election record in = ${electionRecord.topdir()}\n")
 
         val guardiansOk = verifyGuardianPublicKey()
-        println(" 2. verifyGuardianPublicKey= ${guardiansOk}")
+        println(" 2. verifyGuardianPublicKey= $guardiansOk")
 
         val publicKeyOk = verifyElectionPublicKey(decryptionResult.tallyResult.electionInitialized.cryptoBaseHash)
-        println(" 3. verifyElectionPublicKey= ${publicKeyOk}")
+        println(" 3. verifyElectionPublicKey= $publicKeyOk")
 
         // encryption and vote limits
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, cryptoExtendedBaseHash, nthreads)
@@ -51,27 +51,26 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
         val ballotStats = verifyBallots.verify(electionRecord.iterateEncryptedBallots { true })
         println(" 4,5. verifySelectionEncryptions, contestVoteLimits $ballotStats")
 
-        // LOOK not doing ballot chaining test (box 6)
+        // TODO not doing ballot chaining test (box 6)
 
         // tally accumulation
         val verifyAggregation = VerifyAggregation(group, verifyBallots.aggregator)
         val aggResult = verifyAggregation.verify(decryptionResult.tallyResult.encryptedTally)
-        println(" 7. verifyBallotAggregation ${aggResult}")
+        println(" 7. verifyBallotAggregation $aggResult")
 
         // decryption
-        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardians)
+        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardiansPublic)
         val tallyStats = verifyTally.verifyDecryptedTally(decryptionResult.decryptedTally)
         println(" 8,9,11. verifyDecryptedTally $tallyStats")
 
         // box 10
-        if (guardians.size == decryptionResult.numberOfGuardians()) {
+        if (decryptionResult.decryptingGuardians.size == decryptionResult.numberOfGuardians()) {
             println(" 10. Correctness of Replacement Partial Decryptions not needed since there are no missing guardians")
         } else {
             val pdvStats = VerifyRecoveredShares(group, decryptionResult).verify()
             println(" 10. Correctness of Replacement Partial Decryptions $pdvStats")
         }
 
-        // TODO add spoiled ballots and test
         val spoiledStats =
             verifyTally.verifySpoiledBallotTallies(electionRecord.iterateSpoiledBallotTallies(), nthreads)
         println(" 12. verifySpoiledBallotTallies $spoiledStats")
@@ -81,7 +80,7 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
 
     private fun verifyGuardianPublicKey(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
-        for (guardian in this.guardians) {
+        for (guardian in this.guardiansPublic) {
             guardian.coefficientProofs.forEachIndexed { index, proof ->
                 val publicKey = ElGamalPublicKey(guardian.coefficientCommitments[index])
                 if (!publicKey.hasValidSchnorrProof(proof)) {
@@ -96,14 +95,14 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
     }
 
     private fun verifyElectionPublicKey(cryptoBaseHash: UInt256): Result<Boolean, String> {
-        val jointPublicKeyComputed = this.guardians.map { it.publicKey() }.reduce { a, b -> a * b }
+        val jointPublicKeyComputed = this.guardiansPublic.map { it.publicKey() }.reduce { a, b -> a * b }
         val errors = mutableListOf<String>()
         if (!jointPublicKey.equals(jointPublicKeyComputed)) {
             errors.add("  3.A jointPublicKey does not equal computed")
         }
 
         val commitments = mutableListOf<ElementModP>()
-        this.guardians.forEach { commitments.addAll(it.coefficientCommitments) }
+        this.guardiansPublic.forEach { commitments.addAll(it.coefficientCommitments) }
         val commitmentsHash = hashElements(commitments)
         val computedQbar: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
         if (!cryptoExtendedBaseHash.equals(computedQbar.toElementModQ(group))) {
@@ -124,7 +123,7 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
     }
 
     fun verifyDecryptedTally(tally: PlaintextTally): Stats {
-        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardians)
+        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardiansPublic)
         return verifyTally.verifyDecryptedTally(tally)
     }
 
@@ -137,7 +136,7 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
     }
 
     fun verifySpoiledBallotTallies(): StatsAccum {
-        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardians)
+        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardiansPublic)
         return verifyTally.verifySpoiledBallotTallies(electionRecord.iterateSpoiledBallotTallies(), nthreads)
     }
 
@@ -156,7 +155,7 @@ class Stats(
     }
 }
 
-class StatsAccum() {
+class StatsAccum {
     var allOk: Boolean = true
     var n: Int = 0
     val errors = mutableListOf<String>()

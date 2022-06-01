@@ -1,6 +1,5 @@
 package electionguard.verifier
 
-import electionguard.ballot.DecryptionResult
 import electionguard.core.productionGroup
 import kotlin.test.Test
 
