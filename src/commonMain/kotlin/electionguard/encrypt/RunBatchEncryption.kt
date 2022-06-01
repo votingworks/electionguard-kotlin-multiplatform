@@ -6,6 +6,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.EncryptedBallot
+import electionguard.ballot.Manifest
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
@@ -162,7 +163,7 @@ fun batchEncryption(
         ElGamalPublicKey(electionInit.jointPublicKey),
         electionInit.cryptoExtendedBaseHash
     )
-    val encrypt = RunEncryption(group, encryptor, codeSeed, masterNonce,
+    val encrypt = RunEncryption(group, encryptor, codeSeed, masterNonce, electionInit.manifest(),
         electionInit.jointPublicKey, electionInit.cryptoExtendedBaseHash, check)
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
@@ -203,7 +204,7 @@ fun batchEncryption(
     }
 
     val took = getSystemTimeInMillis() - starting
-    val msecsPerBallot = (took.toDouble() / count).roundToInt()
+    val msecsPerBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
     println("Encryption with nthreads = $nthreads took $took millisecs for $count ballots = $msecsPerBallot msecs/ballot")
     val msecPerEncryption = (took.toDouble() / countEncryptions)
     val encryptionPerBallot = (countEncryptions / count)
@@ -213,13 +214,14 @@ fun batchEncryption(
 // orchestrates the encryption
 private class RunEncryption(
     val group: GroupContext, val encryptor: Encryptor, val codeSeed: ElementModQ, val masterNonce: ElementModQ?,
+    manifest: Manifest,
     jointPublicKey: ElementModP,
     cryptoExtendedBaseHash: UInt256,
     val check: CheckType
 ) {
     val verifier: VerifyEncryptedBallots?
     init {
-        verifier = if (check == CheckType.Verify) VerifyEncryptedBallots(
+        verifier = if (check == CheckType.Verify) VerifyEncryptedBallots(group, manifest,
             ElGamalPublicKey(jointPublicKey), cryptoExtendedBaseHash.toElementModQ(group), 1) else null
     }
     fun encrypt(ballot: PlaintextBallot): EncryptedBallot {

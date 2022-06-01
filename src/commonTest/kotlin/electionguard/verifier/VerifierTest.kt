@@ -1,7 +1,7 @@
 package electionguard.verifier
 
+import electionguard.ballot.DecryptionResult
 import electionguard.core.productionGroup
-import electionguard.core.runTest
 import kotlin.test.Test
 
 class VerifierTest {
@@ -22,7 +22,21 @@ class VerifierTest {
 
     @Test
     fun testVerifyEncryptedBallots() {
-        verifyEncryptedBallots(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable", 1)
+        verifyEncryptedBallots(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable", 11)
     }
 
+    @Test
+    fun verifyDecryptedTallyWithRecoveredShares() {
+        verifyDecryptedTally(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
+    }
+
+    @Test
+    fun verifyRecoveredShareResults() {
+        verifyRecoveredShares(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
+    }
+
+    @Test
+    fun verifySpoiledBallotTallies() {
+        verifySpoiledBallotTallies(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
+    }
 }

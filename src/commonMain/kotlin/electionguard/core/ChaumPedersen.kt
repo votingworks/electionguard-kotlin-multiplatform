@@ -3,6 +3,7 @@ package electionguard.core
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getAllErrors
 
 import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ChaumPedersen")
@@ -200,24 +201,28 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
  * @param qbar The election extended base hash (Q')
  * @param expectedConstant Optional parameter. If specified, the constant in the proof is validated
  *     against the expected constant.
- * @return true if the proof is valid
+ * @return true if the proof is valid, else an error message
  */
 fun ConstantChaumPedersenProofKnownNonce.isValid(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey,
     qbar: ElementModQ,
-    expectedConstant: Int = -1
-) : Boolean {
+    expectedConstant: Int? = null,
+) : Result<Boolean, String> {
     val context = compatibleContextOrFail(proof.c, ciphertext.pad, qbar)
 
     val constantQ = -(constant.toElementModQ(context))
-    return proof.isValid(
+    val validResult = proof.isValid(
         g = context.G_MOD_P,
         gx = ciphertext.pad,
         h = publicKey.key,
         hx = ciphertext.data * (publicKey powP constantQ),
         hashHeader = arrayOf(qbar, publicKey.key, ciphertext.pad, ciphertext.data), // section 7
-    ) and (if (expectedConstant != -1) constant == expectedConstant else true)
+    )
+    val constantResult = if ((expectedConstant != null) && constant != expectedConstant)
+        Err("  5.A invalid constant selection limit") else Ok(true)
+    val errors = getAllErrors(validResult, constantResult)
+    return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
 }
 
 /**
@@ -228,24 +233,28 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
  * @param qbar The election extended base hash (Q')
  * @param expectedConstant Optional parameter. If specified, the constant in the proof is validated
  *     against the expected constant.
- * @return true if the proof is valid
+ * @return true if the proof is valid, else an error message
  */
 fun ConstantChaumPedersenProofKnownSecretKey.isValid(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey,
     qbar: ElementModQ,
     expectedConstant: Int = -1
-) : Boolean {
+) : Result<Boolean, String> {
     val context = compatibleContextOrFail(proof.c, ciphertext.pad, publicKey.key, qbar)
 
     val constantQ = -(constant.toElementModQ(context))
-    return proof.isValid(
+    val validResult = proof.isValid(
         g = context.G_MOD_P,
         gx = publicKey.key,
         h = ciphertext.pad,
         hx = ciphertext.data * (publicKey powP constantQ),
         hashHeader = arrayOf(qbar, publicKey.key, ciphertext.pad, ciphertext.data), // section 7
-    ) and (if (expectedConstant != -1) constant == expectedConstant else true)
+    )
+    val constantResult = if ((expectedConstant != -1) && constant != expectedConstant)
+        Err("  5.A invalid constant selection limit") else Ok(true)
+    val errors = getAllErrors(validResult, constantResult)
+    return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
 }
 
 /**
@@ -254,7 +263,7 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
  * @param ciphertext An ElGamal ciphertext
  * @param publicKey The public key of the election
  * @param qbar The election extended base hash (Q')
- * @return true if the proof is valid
+ * @return true if the proof is valid, else an error message
  */
 fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     ciphertext: ElGamalCiphertext,
@@ -301,8 +310,8 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             checkC = false,
             hashHeader = arrayOf(qbar),
         )
-    if (!valid0) {
-        errors.add("    4.? invalid proof0 for disjunctive cpp")
+    if (valid0 is Err) {
+        errors.add("    invalid proof0 for disjunctive cpp: ${valid0.error}")
     }
 
     val valid1 =
@@ -314,24 +323,11 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             checkC = false,
             hashHeader = arrayOf(qbar),
         )
-    if (!valid1) {
-        errors.add("    4.? invalid proof1 for disjunctive cpp")
+    if (valid1 is Err) {
+        errors.add("    invalid proof1 for disjunctive cpp: ${valid1.error}")
     }
 
-    // If valid0 or valid1 is false, this will already have been logged,
-    // so we don't have to repeat it here.
-    if (!consistentC || !validHash)
-        logger.warn {
-            "Invalid commitments for disjunctive Chaum-Pedersen proof: " +
-                mapOf(
-                    "consistentC" to consistentC,
-                    "validHash" to validHash,
-                    "valid0" to valid0,
-                    "valid1" to valid1
-                ).toString()
-        }
-
-    return if (errors.isNotEmpty()) Err(errors.joinToString("\n")) else Ok(true)
+    return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
 }
 
 /**
@@ -347,7 +343,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
  * @param hashHeader Optional additional values to include in the hash challenge computation hash
  * @param hashFooter Optional additional values to include in the hash challenge computation hash
  * @param checkC If false, the challenge constant is not verified. (default: true)
- * @return true if the proof is valid
+ * @return true if the proof is valid, else an error message
  */
 internal fun GenericChaumPedersenProof.isValid(
     g: ElementModP,
@@ -357,7 +353,7 @@ internal fun GenericChaumPedersenProof.isValid(
     hashHeader: Array<Element>,
     hashFooter: Array<Element> = emptyArray(),
     checkC: Boolean = true,
-): Boolean {
+): Result<Boolean, String> {
     return expand(g, gx, h, hx).isValid(g, gx, h, hx, hashHeader, hashFooter, checkC)
 }
 
@@ -369,31 +365,31 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
     hashHeader: Array<Element>,
     hashFooter: Array<Element> = emptyArray(),
     checkC: Boolean = true
-): Boolean {
+): Result<Boolean, String> {
     val context = compatibleContextOrFail(c, g, gx, h, hx, *hashHeader, *hashFooter)
+    val errors = mutableListOf<String>()
 
     val inBoundsG = g.isValidResidue()
     val inBoundsGx = gx.isValidResidue()
     val inBoundsH = h.isValidResidue()
     val inBoundsHx = hx.isValidResidue()
 
+    if (!(inBoundsG && inBoundsGx && inBoundsH && inBoundsHx)) {
+        errors.add("  4.A invalid residual: " +
+                mapOf(
+                    "inBoundsG" to inBoundsG,
+                    "inBoundsGx" to inBoundsGx,
+                    "inBoundsH" to inBoundsH,
+                    "inBoundsHx" to inBoundsHx,
+                ).toString())
+    }
+
     val hashGood = !checkC || c == hashElements(*hashHeader, a, b, *hashFooter).toElementModQ(context)
+    if (!hashGood) {
+        errors.add("  4.B invalid challenge ")
+    }
 
-    val success = (hashGood && inBoundsG && inBoundsGx && inBoundsH && inBoundsHx)
-
-    if (!success)
-        logger.warn {
-            "Invalid generic Chaum-Pedersen proof: " +
-                    mapOf(
-                        "hashGood" to hashGood,
-                        "inBoundsG" to inBoundsG,
-                        "inBoundsGx" to inBoundsGx,
-                        "inBoundsH" to inBoundsH,
-                        "inBoundsHx" to inBoundsHx,
-                    ).toString()
-        }
-
-    return success
+    return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
 }
 
 /**

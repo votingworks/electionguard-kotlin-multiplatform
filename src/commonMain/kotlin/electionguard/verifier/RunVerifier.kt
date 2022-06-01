@@ -2,6 +2,7 @@
 
 package electionguard.verifier
 
+import com.github.michaelbull.result.getOrThrow
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
@@ -55,5 +56,43 @@ fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int)
     val allOk = verifier.verifyEncryptedBallots()
 
     val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
-    println("RunVerifier $allOk took $took seconds")
+    println("VerifyEncryptedBallots $allOk took $took seconds")
+}
+
+fun verifyDecryptedTally(group: GroupContext, inputDir: String) {
+    val starting = getSystemTimeInMillis()
+
+    val electionRecord = ElectionRecord(inputDir, group)
+    val verifier = Verifier(group, electionRecord, 1)
+
+    val decryptionResult = electionRecord.readDecryptionResult().getOrThrow { throw IllegalStateException(it) }
+    val allOk = verifier.verifyDecryptedTally(decryptionResult.decryptedTally)
+
+    val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
+    println("verifyDecryptedTally $allOk took $took seconds")
+}
+
+fun verifyRecoveredShares(group: GroupContext, inputDir: String) {
+    val starting = getSystemTimeInMillis()
+
+    val electionRecord = ElectionRecord(inputDir, group)
+    val verifier = Verifier(group, electionRecord, 1)
+
+    val decryptionResult = electionRecord.readDecryptionResult().getOrThrow { throw IllegalStateException(it) }
+    val allOk = verifier.verifyRecoveredShares(decryptionResult)
+
+    val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
+    println("verifyRecoveredShares $allOk took $took seconds")
+}
+
+fun verifySpoiledBallotTallies(group: GroupContext, inputDir: String) {
+    val starting = getSystemTimeInMillis()
+
+    val electionRecord = ElectionRecord(inputDir, group)
+    val verifier = Verifier(group, electionRecord, 1)
+
+    val allOk = verifier.verifySpoiledBallotTallies()
+
+    val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
+    println("verifyRecoveredShares $allOk took $took seconds")
 }

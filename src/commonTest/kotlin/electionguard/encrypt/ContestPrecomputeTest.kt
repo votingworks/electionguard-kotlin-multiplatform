@@ -67,7 +67,7 @@ class ContestPrecomputeTest {
                 precomputeContest(group, electionInit, it)
             }
             var took = getSystemTimeInMillis() - starting
-            var perBallot = (took.toDouble() / count).roundToInt()
+            var perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
             println("ContestPrecompute with $revotes revotes per ballot")
             println("   Precompute took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
 
@@ -76,7 +76,7 @@ class ContestPrecomputeTest {
                 it.encrypt()
             }
             took = getSystemTimeInMillis() - starting
-            perBallot = (took.toDouble() / count).roundToInt()
+            perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
             println("   Encrypt $took millisecs for ${count} ballots = $perBallot msecs/ballot")
 
             val publisher = Publisher(outputDir, PublisherMode.createIfMissing)

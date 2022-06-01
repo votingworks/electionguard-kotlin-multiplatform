@@ -73,6 +73,7 @@ fun runFakeKeyCeremony(
     )
 
     val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
+
     val jointPublicKey: ElementModP =
         trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
@@ -134,6 +135,7 @@ fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
     )
 }
 
+// check that the public keys are good
 fun testEncryptDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, trustees: List<DecryptingTrustee>) {
     val vote = 42
     val evote = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))
@@ -144,5 +146,4 @@ fun testEncryptDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, trustee
     val decryptedValue: ElementModP = evote.data / allSharesProductM
     val dlogM: Int = publicKey.dLog(decryptedValue) ?: throw RuntimeException("dlog failed")
     assertEquals(42, dlogM)
-    println("The answer is $dlogM")
 }

@@ -1,13 +1,15 @@
 package electionguard.verifier
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.getError
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
+import electionguard.ballot.Manifest
 import electionguard.core.ConstantChaumPedersenProofKnownNonce
-import electionguard.core.DisjunctiveChaumPedersenProofKnownNonce
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
+import electionguard.core.GroupContext
 import electionguard.core.encryptedSum
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.isValid
@@ -20,6 +22,8 @@ import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
 
@@ -27,20 +31,27 @@ private const val debugBallots = false
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyEncryptedBallots(
+    val group: GroupContext,
+    val manifest: Manifest,
     val jointPublicKey: ElGamalPublicKey,
     val cryptoExtendedBaseHash: ElementModQ,
     private val nthreads: Int,
 ) {
+    val aggregator = SelectionAggregator()
 
-    // multithreaded version
-    fun verifyEncryptedBallots(ballots: Iterable<EncryptedBallot>): StatsAccum {
+    fun verify(ballots: Iterable<EncryptedBallot>, showTime: Boolean = false): StatsAccum {
         val starting = getSystemTimeInMillis()
 
         runBlocking {
             val verifierJobs = mutableListOf<Job>()
             val ballotProducer = produceBallots(ballots)
             repeat(nthreads) {
-                verifierJobs.add(launchVerifier(it, ballotProducer) { ballot -> verifyEncryptedBallot(ballot) })
+                verifierJobs.add(
+                    launchVerifier(
+                        it,
+                        ballotProducer,
+                        aggregator
+                    ) { ballot -> verifyEncryptedBallot(ballot) })
             }
 
             // wait for all encryptions to be done, then close everything
@@ -48,8 +59,8 @@ class VerifyEncryptedBallots(
         }
 
         val took = getSystemTimeInMillis() - starting
-        val perBallot = (took.toDouble() / count).roundToInt()
-        println("VerifyEncryptedBallots with $nthreads threads ok=${accumStats.allOk} took $took millisecs for $count ballots = $perBallot msecs/ballot")
+        val perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
+        if (showTime) println("VerifyEncryptedBallots with $nthreads threads ok=${accumStats.allOk} took $took millisecs for $count ballots = $perBallot msecs/ballot")
         return accumStats
     }
 
@@ -59,61 +70,146 @@ class VerifyEncryptedBallots(
         val errors = mutableListOf<String>()
 
         for (contest in ballot.contests) {
+            val where = "${ballot.ballotId}/${contest.contestId}"
             ncontests++
-            // recalculate ciphertextAccumulation
+            nselections += contest.selections.size
+
+            // calculate ciphertextAccumulation (A, B), note 5.B unneeded because we dont keep (A,B) in election record
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
 
-            // test that the proof is correct
+            // test that the proof is correct; covers 5.C, 5.D, 5.E
             val proof: ConstantChaumPedersenProofKnownNonce = contest.proof
             val cvalid = proof.isValid(
                 ciphertextAccumulation,
                 this.jointPublicKey,
                 this.cryptoExtendedBaseHash,
-                // LOOK how come we dont know the contest limit here?
+                manifest.contestIdToLimit[contest.contestId]
             )
-            if (!cvalid) {
-                errors.add("    5.B cpp failed for ${ballot.ballotId}/${contest.contestId}")
+            if (cvalid is Err) {
+                errors.add("    5. ConstantChaumPedersenProofKnownNonce failed for $where = ${cvalid.error} ")
             }
 
-            for (selection in contest.selections) {
-                nselections++
-                val sproof: DisjunctiveChaumPedersenProofKnownNonce = selection.proof
-                val svalid = sproof.isValid(
-                    selection.ciphertext,
-                    this.jointPublicKey,
-                    this.cryptoExtendedBaseHash,
-                )
-                if (svalid is Err) {
-                    errors.add(svalid.getError()!!)
-                }
+            // TODO I think 5.F and 5.G are not needed because we have simplified proofs.
+            //   review when 2.0 verification spec is out
+
+            /* val challenge = contest.proof.proof.c
+            val response = contest.proof.proof.r
+            val alphaProduct = ciphertextAccumulation.pad
+            val betaProduct = ciphertextAccumulation.data
+            val expandedProof = contest.proof.proof.expand()
+            val a: ElementModP = expandedProof.a
+            val b: ElementModP
+            if (!check5F(challenge, response, expandedProof.a, alphaProduct)) {
+                errors.add(" 5.F Contest ${contest.contestId} failure")
+            }
+            if (!check5G(challenge, response, expandedProof.b, betaProduct, limit)) {
+                errors.add(" 5.F Contest ${contest.contestId} failure")
+            } */
+
+            val svalid = verifySelections(ballot.ballotId, contest)
+            if (svalid is Err) {
+                errors.add(svalid.error)
             }
         }
         val bvalid = errors.isEmpty()
         if (debugBallots) println(" Ballot '${ballot.ballotId}' valid $bvalid; ncontests = $ncontests nselections = $nselections")
-        return Stats(ballot.ballotId, bvalid, ncontests, nselections, errors.joinToString("\n"))
+        return Stats(ballot.ballotId, bvalid, ncontests, nselections, errors)
+    }
+
+    /*
+     * 5.F check if equation g ^ V mod p = a * A ^ C mod p is satisfied,
+     * where
+     *  C =  the contest proof challenge
+     *  V =  the contest proof response
+     *  (a, b) =  the contest proof encryption commitment to L
+     *  A = the accumulative product of all the alpha/pad values on all selections within a contest
+     *
+    private fun check5F(challenge: ElementModQ, response: ElementModQ, a: ElementModP, alphaProduct: ElementModP): Boolean {
+        val left: ElementModP = group.gPowP(response)
+        val right: ElementModP =  a * (alphaProduct powP challenge)
+        return left.equals(right)
+    }
+
+     * 5.G check if equation g ^ (L * C) * (K ^ V) mod p = b * B ^ C mod p is satisfied
+     * where
+     *  C = the contest proof challenge
+     *  V = the contest proof response
+     *  K = election public key
+     *  (a, b) =  the contest proof encryption commitment to L
+     *  B = the accumulative product of all the beta/data values on all selections within a contest
+     *  L = election limit
+     *
+    private fun check5G(challenge: ElementModQ, response: ElementModQ, b: ElementModP, betaProduct: ElementModP, limit: Int): Boolean {
+        val limitAsQ: ElementModQ = limit.toElementModQ(this.group)
+        val leftTerm1: ElementModP = group.gPowP(limitAsQ * challenge)
+        val leftTerm2: ElementModP = this.jointPublicKey powP response
+        val left: ElementModP = leftTerm1.times(leftTerm2)
+        val right: ElementModP =  b * (betaProduct powP challenge)
+        return left.equals(right)
+    }
+    */
+
+    fun verifySelections(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
+        val errors = mutableListOf<String>()
+        var nplaceholders = 0
+        for (selection in contest.selections) {
+            val where = "${ballotId}/${contest.contestId}/${selection.selectionId}"
+            if (selection.isPlaceholderSelection) nplaceholders++
+
+            // test that the proof is correct covers 4.A, 4.B, 4.C, 4.D
+            val svalid = selection.proof.isValid(
+                selection.ciphertext,
+                this.jointPublicKey,
+                this.cryptoExtendedBaseHash,
+            )
+            if (svalid is Err) {
+                errors.add("    4. DisjunctiveChaumPedersenProofKnownNonce failed for $where/${selection.selectionId} = ${svalid.error} ")
+            }
+
+            // TODO I think 4.E, 4.F, 4.G, 4.H are not needed because we have simplified proofs.
+            //   review when 2.0 verification spec is out
+        }
+
+        // 5.A verify the placeholder numbers match the maximum votes allowed
+        val limit = manifest.contestIdToLimit[contest.contestId]
+        if (limit == null) {
+            errors.add(" 5. Contest ${contest.contestId} not in Manifest")
+        } else {
+            if (limit != nplaceholders) {
+                errors.add(" 5.A Contest placeholder $nplaceholders != $limit vote limit for contest ${contest.contestId}")
+            }
+        }
+        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
     }
 
     private val accumStats = StatsAccum()
     private var count = 0
-    private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> = produce {
-        for (ballot in producer) {
-            send(ballot)
-            yield()
-            count++
+    private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> =
+        produce {
+            for (ballot in producer) {
+                send(ballot)
+                yield()
+                count++
+            }
+            channel.close()
         }
-        channel.close()
-    }
+
+    private val mutex = Mutex()
 
     private fun CoroutineScope.launchVerifier(
         id: Int,
         input: ReceiveChannel<EncryptedBallot>,
+        agg: SelectionAggregator,
         verify: (EncryptedBallot) -> Stats,
     ) = launch(Dispatchers.Default) {
         for (ballot in input) {
             if (debugBallots) println("$id channel working on ${ballot.ballotId}")
             val stat = verify(ballot)
-            accumStats.add(stat) // LOOK should be in a mutex
+            mutex.withLock {
+                accumStats.add(stat)
+                agg.add(ballot) // this slows down the ballot parallelism: nselections * (2 (modP multiplication))
+            }
             yield()
         }
     }

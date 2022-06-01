@@ -32,4 +32,14 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
         val message: ElGamalCiphertext,
         val partialDecryptions: List<PartialDecryption>,
     )
+
+    fun showTallies() {
+        println(" Tally $tallyId")
+        contests.values.sortedBy { it.contestId }.forEach { contest ->
+            println("  Contest ${contest.contestId}")
+            contest.selections.values.sortedBy { it.selectionId }.forEach {
+                println("   Selection ${it.selectionId} = ${it.tally}")
+            }
+        }
+    }
 }
