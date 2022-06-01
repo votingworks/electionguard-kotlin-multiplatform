@@ -16,12 +16,12 @@ class VerifyAggregation(
 
     fun verify(encryptedTally: EncryptedTally): Result<Boolean, String> {
         val errors = mutableListOf<String>()
-        var ncontests = 0;
-        var nselections = 0;
+        var ncontests = 0
+        var nselections = 0
         for (contest in encryptedTally.contests) {
-            ncontests++;
+            ncontests++
             for (selection in contest.selections) {
-                nselections++;
+                nselections++
                 val key: String = contest.contestId + "." + selection.selectionId
                 aggregator.get(key)
 
@@ -30,11 +30,11 @@ class VerifyAggregation(
                 // its possible no ballots voted on this
                 if (accum != null) {
                     if (selection.ciphertext != accum) {
-                        errors.add("    Ballot Aggregation does not match $key");
+                        errors.add("    Ballot Aggregation does not match $key")
                     }
                 } else {
-                    if (selection.ciphertext.pad != group.ZERO_MOD_P || selection.ciphertext.data != group.ZERO_MOD_P) { // LOOK ??
-                        errors.add("    Ballot Aggregation empty does not match $key");
+                    if (selection.ciphertext.pad != group.ZERO_MOD_P || selection.ciphertext.data != group.ZERO_MOD_P) { // TODO test
+                        errors.add("    Ballot Aggregation empty does not match $key")
                     }
                 }
             }

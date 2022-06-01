@@ -25,7 +25,7 @@ class VerifyEncryptedBallotsTest {
         }
     }
 
-    // LOOK fix this
+    // TODO fix this
     // @Test
     fun verifyJvmEncryptedBallots() {
         runTest {

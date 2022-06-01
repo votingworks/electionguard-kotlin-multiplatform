@@ -150,7 +150,7 @@ class VerifyEncryptedBallots(
     }
     */
 
-    fun verifySelections(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
+    private fun verifySelections(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val errors = mutableListOf<String>()
         var nplaceholders = 0
         for (selection in contest.selections) {

@@ -40,7 +40,7 @@ private const val debug = false
  *
  * where
  *  Ki = public key of guardian Ti
- *  (A, B) = encrypted aggregate total of votes in contest LOOK WRONG encrypted selection vote
+ *  (A, B) = encrypted aggregate total of votes in contest TODO WRONG encrypted selection vote
  *  Mi = partial decryption of (A, B) by guardian Ti
  *  (ai , bi) = commitment by guardian Ti to partial decryption of (A, B)
  *  ci = challenge to partial decryption of guardian Ti
@@ -54,7 +54,7 @@ private const val debug = false
  * (D) The equation (g ^ v_i,ℓ) mod p = (a_i,ℓ * PKi ^ c_i,ℓ  ) mod p is satisfied.
  * (E) The equation (A ^ v_i,ℓ) mod p = (b_i,ℓ * M_i,ℓ ^ c_i,ℓ ) mod p is satisfied.
  * where
- *  (A, B) = encrypted aggregate total of votes in contest LOOK WRONG encrypted selection vote
+ *  (A, B) = encrypted aggregate total of votes in contest TODO WRONG encrypted selection vote
  *  M_i,ℓ = share of guardian Tℓ of missing partial decryption of (A, B) by guardian Ti
  *  (a_i,ℓ, b_i,ℓ) = commitment by guardian Tℓ to share of partial decryption for missing guardian Ti
  *  c_i,ℓ = challenge to guardian Tℓ ’s share of missing partial decryption of guardian Ti
@@ -62,7 +62,7 @@ private const val debug = false
  *  PKi = ∏ (𝐾_𝑖,𝑗 ^ (l^j)) for 𝑗=0..𝑘−1 (k is quorum)
  *  𝐾_𝑖,𝑗 = g ^ coeff_i,j
  *  coeff_i,j = random polynomial coefficients 𝑗=0..𝑘−1 (k is quorum) for guardian Ti
- *  l = the x coordinate of guardian l, corresponding to the (1 based) guardian index  LOOK not defined in the spec
+ *  l = the x coordinate of guardian l, corresponding to the (1 based) guardian index  TODO not defined in the spec
  *
  * 11. An election verifier should confirm the following equations for each (non-placeholder) option in
  * each contest in the ballot coding file.
@@ -86,7 +86,7 @@ class VerifyDecryptedTally(
     val cryptoExtendedBaseHash: ElementModQ,
     guardians: List<Guardian>,
 ) {
-    val guardianMap: Map<String, Guardian> = guardians.associateBy { it.guardianId }
+    val guardianKeys: Map<String, ElementModP> = guardians.associate { it.guardianId to it.publicKey()}
 
     fun verifyDecryptedTally(tally: PlaintextTally): Stats {
         var ncontests = 0
@@ -101,7 +101,7 @@ class VerifyDecryptedTally(
                 nselections++
                 val where2 = "${contest.contestId}/${selection.selectionId}"
                 if (!manifest.contestAndSelectionSet.contains(where2)) {
-                    errors.add("   11.C Fail manifest does not contain ${where2} ")
+                    errors.add("   11.C Fail manifest does not contain $where2 ")
                 }
                 val selResult = verifySelectionDecryption(where2, selection)
                 if (selResult is Err) {
@@ -111,8 +111,7 @@ class VerifyDecryptedTally(
                 for (partialDecryption in selection.partialDecryptions) {
                     nshares++
                     if (partialDecryption.proof != null) { // directly computed
-                        val guardian = this.guardianMap[partialDecryption.guardianId]
-                        val guardianKey = guardian?.publicKey()
+                        val guardianKey = this.guardianKeys[partialDecryption.guardianId]
                         if (guardianKey != null) {
                             // test that the proof is correct covers 8.A, 8.B, 8.C
                             val svalid = partialDecryption.proof.isValid(
@@ -129,7 +128,7 @@ class VerifyDecryptedTally(
                                 arrayOf(partialDecryption.share())
                             )
                             if (svalid is Err) {
-                                errors.add("   8. Fail guardian $guardian share proof for $where2 = ${svalid.error} ")
+                                errors.add("   8. Fail guardian ${partialDecryption.guardianId} share proof for $where2 = ${svalid.error} ")
                             }
                             // TODO I think 8.D and 8.E are not needed because we have simplified proofs.
                             //   review when 2.0 verification spec is out
@@ -187,21 +186,19 @@ class VerifyDecryptedTally(
     fun verifySelectionDecryption(where: String, selection: PlaintextTally.Selection): Result<Boolean, String> {
         val errors = mutableListOf<String>()
         for (share in selection.partialDecryptions) {
-            val guardian = guardianMap[share.guardianId]
-            val guardianPublicKey = guardian?.publicKey() ?: throw IllegalStateException("Cant find guardian ${share.guardianId}")
             val partialDecryptions: Iterable<ElementModP> = selection.partialDecryptions
                 .map { s -> s.share() }
             val productMi: ElementModP = with(group) { partialDecryptions.multP() }
             val M: ElementModP = selection.value
             val B: ElementModP = selection.message.data
-            if (!B.equals(M * productMi)) {
+            if (B != M * productMi) {
                 errors.add(" 11.A Tally Decryption failed for $where")
             }
 
             // (B) 𝑀 = 𝑔^𝑡 mod 𝑝.
             val tallyQ = selection.tally.toElementModQ(group)
-            if (!selection.value.equals(jointPublicKey powP tallyQ)) {
-                errors.add(" 11.B Tally Decryption failed for $where}");
+            if (selection.value != jointPublicKey powP tallyQ) {
+                errors.add(" 11.B Tally Decryption failed for $where}")
             }
         }
         return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))

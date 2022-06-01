@@ -64,7 +64,7 @@ fun runFakeKeyCeremony(
 
     val primes = config.constants
     val cryptoBaseHash: UInt256 = hashElements(
-        primes.largePrime.toHex(), // LOOK is this the same as converting to ElementMod ??
+        primes.largePrime.toHex(),
         primes.smallPrime.toHex(),
         primes.generator.toHex(),
         nguardians,

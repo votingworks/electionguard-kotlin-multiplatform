@@ -14,7 +14,7 @@ class DecryptionShare(
     val compensatedDecryptions: MutableMap<String, CompensatedDecryption> = mutableMapOf()
 
     fun addPartialDecryption(contestId: String, selectionId: String, decryption: DirectDecryption): DecryptionShare {
-        // LOOK test to see if there are duplicates?
+        // TODO test to see if there are duplicates?
         partialDecryptions["${contestId}#@${selectionId}"] = decryption
         return this
     }
@@ -30,7 +30,7 @@ class DecryptionShare(
             existing = CompensatedDecryption(selectionId)
             compensatedDecryptions["${contestId}#@${selectionId}"] = existing
         }
-        // LOOK test to see if there are duplicates?
+        // TODO test to see if there are duplicates?
         existing.missingDecryptions[missingGuardian] = decryption
         return this
     }
@@ -141,6 +141,6 @@ data class DirectDecryptionAndProof(
 
 /** Compensated decryption from the Decrypting Trustee */
 data class CompensatedDecryptionAndProof(
-    val partialDecryption: ElementModP, // used in the calculation. LOOK encrypt ??
+    val partialDecryption: ElementModP, // used in the calculation. TODO encrypt
     val proof: GenericChaumPedersenProof,
     val recoveredPublicKeyShare: ElementModP) // g^Pi(ℓ), used in the verification

@@ -44,7 +44,7 @@ class KeyCeremonyTrustee(
     }
 
     /** Receive publicKeys from another guardian. Return error message or empty string on success.  */
-    // LOOK how do we know it came from the real guardian?
+    // TODO how do we know it came from the real guardian?
     fun receivePublicKeys(publicKeys: PublicKeys): Result<PublicKeys, String> {
         if (publicKeys.guardianXCoordinate < 1U) {
             return Err("${publicKeys.guardianId}: guardianXCoordinate must be >= 1")
@@ -64,7 +64,7 @@ class KeyCeremonyTrustee(
         return Ok(publicKeys)
     }
 
-    // LOOK this needs to be encrypted, see p10 spec 1.0
+    // TODO this needs to be encrypted, see p10 spec 1.0
     fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
         if (mySecretKeyShares.containsKey(otherGuardian)) {
             return Ok(mySecretKeyShares[otherGuardian]!!)
