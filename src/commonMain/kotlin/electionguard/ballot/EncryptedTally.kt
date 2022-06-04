@@ -23,6 +23,7 @@ data class EncryptedTally(
     /**
      * The homomorphic accumulation of all of the CiphertextBallot.Selection for a specific
      * selection and contest. The selectionId is the Manifest.SelectionDescription.object_id.
+     * @param ciphertext The encrypted vote count = (A, B).
      */
     data class Selection(
         val selectionId: String,

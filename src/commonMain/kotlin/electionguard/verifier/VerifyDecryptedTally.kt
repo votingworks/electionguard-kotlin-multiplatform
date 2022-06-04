@@ -10,6 +10,7 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.expand
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.isValid
 import electionguard.core.toElementModQ
@@ -40,7 +41,7 @@ private const val debug = false
  *
  * where
  *  Ki = public key of guardian Ti
- *  (A, B) = encrypted aggregate total of votes in contest TODO WRONG encrypted selection vote
+ *  (A, B) = encrypted aggregate total of votes for selection
  *  Mi = partial decryption of (A, B) by guardian Ti
  *  (ai , bi) = commitment by guardian Ti to partial decryption of (A, B)
  *  ci = challenge to partial decryption of guardian Ti
@@ -51,18 +52,18 @@ private const val debug = false
  * (A) The given value v_i,ℓ is in the set Zq .
  * (B) The given values a_i,ℓ and b_i,ℓ are both in the set Zrp .
  * (C) The challenge value c_i,ℓ satisfies c_i,ℓ = H(Q, (A, B), (a_i,ℓ, b_i,ℓ), M_i,ℓ).
- * (D) The equation (g ^ v_i,ℓ) mod p = (a_i,ℓ * PKi ^ c_i,ℓ  ) mod p is satisfied.
+ * (D) The equation (g ^ v_i,ℓ) mod p = (a_i,ℓ * Prodj (𝐾_𝑖,𝑗 ^ ℓ^j) ^ c_i,ℓ) mod p is satisfied.
  * (E) The equation (A ^ v_i,ℓ) mod p = (b_i,ℓ * M_i,ℓ ^ c_i,ℓ ) mod p is satisfied.
  * where
- *  (A, B) = encrypted aggregate total of votes in contest TODO WRONG encrypted selection vote
+ *  (A, B) = encrypted aggregate total of votes for selection
  *  M_i,ℓ = share of guardian Tℓ of missing partial decryption of (A, B) by guardian Ti
  *  (a_i,ℓ, b_i,ℓ) = commitment by guardian Tℓ to share of partial decryption for missing guardian Ti
  *  c_i,ℓ = challenge to guardian Tℓ ’s share of missing partial decryption of guardian Ti
  *  v_i,ℓ = response to challenge of guardian Tℓ ’s share of partial decryption of guardian Ti
- *  PKi = ∏ (𝐾_𝑖,𝑗 ^ (l^j)) for 𝑗=0..𝑘−1 (k is quorum)
- *  𝐾_𝑖,𝑗 = g ^ coeff_i,j
- *  coeff_i,j = random polynomial coefficients 𝑗=0..𝑘−1 (k is quorum) for guardian Ti
- *  l = the x coordinate of guardian l, corresponding to the (1 based) guardian index  TODO not defined in the spec
+ *  Prodj(X) = ∏ (X) for 𝑗=0..𝑘−1 (k is quorum)
+ *  Prodj (𝐾_𝑖,𝑗 ^ ℓ^j) = ∏ (𝐾_𝑖,𝑗 ^ (ℓ^j)) for 𝑗=0..𝑘−1 (k is quorum)
+ *  g ^ Pi(ℓ) mod p = Prodj (𝐾_𝑖,𝑗 ^ ℓ^j) (spec 1.03 eq 60)
+ *  RecoveredPartialDecryption.recoveryKey = g ^ Pi(ℓ) mod p
  *
  * 11. An election verifier should confirm the following equations for each (non-placeholder) option in
  * each contest in the ballot coding file.
@@ -141,8 +142,16 @@ class VerifyDecryptedTally(
                         for (recoveredDecryption in partialDecryption.recoveredDecryptions) {
                             val gx = recoveredDecryption.recoveryKey
                             val hx = recoveredDecryption.share
-                            // test that the proof is correct covers 9.A, 9.B, 9.C
-                            val recovered = recoveredDecryption.proof.isValid(
+
+                            // we need to expand in order to get a_il and b_il.
+                            // its possible that 9.D and 9.E are now tautologies
+                            val expandedProof = recoveredDecryption.proof.expand(
+                                group.G_MOD_P,
+                                gx,
+                                selection.message.pad,
+                                hx,)
+                            // testing that the proof is correct covers 9.A, 9.B, 9.C
+                            val recoveredProof = expandedProof.isValid(
                                 group.G_MOD_P,
                                 gx,
                                 selection.message.pad,
@@ -155,11 +164,45 @@ class VerifyDecryptedTally(
                                 ), // section 7
                                 arrayOf(hx)
                             )
-                            if (recovered is Err) {
-                                errors.add("    CompensatedDecryption proof failure $where2 = ${recovered.error}")
+                            if (recoveredProof is Err) {
+                                errors.add("    CompensatedDecryption proof failure $where2 = ${recoveredProof.error}")
                             }
                             // TODO 9.D and 9.E are not needed because we have simplified proofs ??
-                            //   review now against Java or when 2.0 verification spec is out
+                            //   review when 2.0 verification spec is out
+
+                            // 9.D The equation g^v_i,l mod p = (a_i,l * (∏ k−1 j=0 K i,j ) ) mod p is satisfied.
+                            //         vil: ElementModQ, // v_il
+                            //        ail: ElementModP, // a_il
+                            //        cil: ElementModQ, // c_il
+                            //        prodj: ElementModP, // Prodj (𝐾_𝑖,𝑗 ^ ℓ^j)
+                            if (!this.check9D(
+                                    expandedProof.r,
+                                    expandedProof.a,
+                                    expandedProof.c,
+                                    recoveredDecryption.recoveryKey)) {
+                                    errors.add("    9.D failure $where2 " +
+                                    "  for missing guardian ${recoveredDecryption.missingGuardianId}" +
+                                    " by decrypting guardian ${recoveredDecryption.decryptingGuardianId}"
+                                )
+                            }
+
+                            // 9.E The equation A^v i,l mod p = (b i,l * M i,l ^ c i,l) mod p is satisfied.
+                            //         A: ElementModP, // A
+                            //        vil: ElementModQ, // v_il
+                            //        bil: ElementModP, // b_il
+                            //        cil: ElementModQ, // c_il
+                            //        Mil: ElementModP, // M_il
+                            if (!this.check9E(
+                                    selection.message.pad,
+                                    expandedProof.r,
+                                    expandedProof.b,
+                                    expandedProof.c,
+                                    recoveredDecryption.share)) {
+                                errors.add("    9.E failure $where2 " +
+                                        "  for missing guardian ${recoveredDecryption.missingGuardianId}" +
+                                        " by decrypting guardian ${recoveredDecryption.decryptingGuardianId}"
+                                )
+                            }
                         }
 
                     } else {
@@ -170,6 +213,31 @@ class VerifyDecryptedTally(
         }
         val allValid = errors.isEmpty()
         return Stats(tally.tallyId, allValid, ncontests, nselections, errors, nshares)
+    }
+
+     /** (D) The equation (g ^ v_i,ℓ) mod p = (a_i,ℓ * Prodj (𝐾_𝑖,𝑗 ^ ℓ^j) ^ c_i,ℓ) mod p is satisfied. */
+    private fun check9D(
+        vil: ElementModQ, // v_il
+        ail: ElementModP, // a_il
+        cil: ElementModQ, // c_il
+        prodj: ElementModP, // g ^ Pi(ℓ) mod p = Prodj (𝐾_𝑖,𝑗 ^ ℓ^j) = recoveredDecryption.recoveryKey
+    ): Boolean {
+        val left: ElementModP = group.gPowP(vil)
+        val right: ElementModP =  ail * (prodj powP cil)
+        return left.equals(right)
+    }
+
+    /** (E) The equation (A ^ v_i,ℓ) mod p = (b_i,ℓ * M_i,ℓ ^ c_i,ℓ ) mod p is satisfied. */
+    private fun check9E(
+        A: ElementModP, // A
+        vil: ElementModQ, // v_il
+        bil: ElementModP, // b_il
+        cil: ElementModQ, // c_il
+        Mil: ElementModP, // M_il = recoveredDecryption.share
+    ): Boolean {
+        val left: ElementModP = A powP vil
+        val right: ElementModP =  bil * (Mil powP cil)
+        return left.equals(right)
     }
 
     /**
@@ -183,7 +251,7 @@ class VerifyDecryptedTally(
      * the corresponding text labels in the ballot coding file.
      * </pre>
      */
-    fun verifySelectionDecryption(where: String, selection: PlaintextTally.Selection): Result<Boolean, String> {
+    private fun verifySelectionDecryption(where: String, selection: PlaintextTally.Selection): Result<Boolean, String> {
         val errors = mutableListOf<String>()
         for (share in selection.partialDecryptions) {
             val partialDecryptions: Iterable<ElementModP> = selection.partialDecryptions

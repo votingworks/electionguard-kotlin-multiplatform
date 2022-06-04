@@ -5,9 +5,6 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
 
-import mu.KotlinLogging
-private val logger = KotlinLogging.logger("ChaumPedersen")
-
 /** Proof that the ciphertext is a given constant. */
 data class ConstantChaumPedersenProofKnownNonce(
     val proof: GenericChaumPedersenProof,
@@ -45,7 +42,7 @@ data class GenericChaumPedersenProof(val c: ElementModQ, val r: ElementModQ)
  * Expanded form of the [GenericChaumPedersenProof], with the `a` and `b` values recomputed. This
  * should not be serialized.
  */
-internal data class ExpandedGenericChaumPedersenProof(
+data class ExpandedGenericChaumPedersenProof(
     val a: ElementModP,
     val b: ElementModP,
     val c: ElementModQ,
@@ -56,7 +53,7 @@ internal data class ExpandedGenericChaumPedersenProof(
  * Given a [GenericChaumPedersenProof], computes the `a` and `b` values that are needed for proofs
  * and such, but are removed for serialization.
  */
-internal fun GenericChaumPedersenProof.expand(
+fun GenericChaumPedersenProof.expand(
     g: ElementModP,
     gx: ElementModP,
     h: ElementModP,
@@ -375,7 +372,7 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
     val inBoundsHx = hx.isValidResidue()
 
     if (!(inBoundsG && inBoundsGx && inBoundsH && inBoundsHx)) {
-        errors.add("  4.A invalid residual: " +
+        errors.add("  Invalid residual: " +
                 mapOf(
                     "inBoundsG" to inBoundsG,
                     "inBoundsGx" to inBoundsGx,
@@ -386,7 +383,7 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
 
     val hashGood = !checkC || c == hashElements(*hashHeader, a, b, *hashFooter).toElementModQ(context)
     if (!hashGood) {
-        errors.add("  4.B invalid challenge ")
+        errors.add("  Invalid challenge ")
     }
 
     return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))

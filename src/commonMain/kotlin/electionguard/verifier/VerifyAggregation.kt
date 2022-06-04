@@ -9,6 +9,14 @@ import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
 import electionguard.core.plus
 
+/**
+ * Verification 7 (Correctness of ballot aggregation)
+ * An election verifier must confirm for each (non-placeholder) option in each contest in the election
+ * manifest that the aggregate encryption (A, B) satisfies
+ * (7.A) A = Prod(αj) mod p,
+ * (7.B) B = Prod(βj) mod p,
+ * where the (αj, βj ) are the corresponding encryptions on all cast ballots in the election record.
+ */
 class VerifyAggregation(
     val group: GroupContext,
     val aggregator: SelectionAggregator,
@@ -25,9 +33,8 @@ class VerifyAggregation(
                 val key: String = contest.contestId + "." + selection.selectionId
                 aggregator.get(key)
 
+                // Already did the accumulation, just have to verify it.
                 val accum = aggregator.get(key)
-
-                // its possible no ballots voted on this
                 if (accum != null) {
                     if (selection.ciphertext != accum) {
                         errors.add("    Ballot Aggregation does not match $key")

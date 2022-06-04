@@ -12,6 +12,7 @@ import electionguard.core.GroupContext
 import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
 
+/** When there are missing guardians, check "replacement partial decryptions" (box 10). */
 class VerifyRecoveredShares(
     val group: GroupContext,
     val decryptionResult: DecryptionResult
@@ -75,6 +76,7 @@ class VerifyRecoveredShares(
     // 10.B Confirm the correct missing tally share for each (non-placeholder) option
     // in each contest in the ballot coding file for each missing trustee T_i as
     //    M_i = ∏ l∈U (M_i,l)^w_l mod p
+    // guardian i is missing, l is available
     private fun verify10B(partial: PartialDecryption): Boolean {
         var product: ElementModP = group.ONE_MOD_P
         for (compShare in partial.recoveredDecryptions) {
@@ -85,7 +87,7 @@ class VerifyRecoveredShares(
             product = product * term
         }
 
-        val M_i: ElementModP = partial.share() // M_i in the spec, i is missing
+        val M_i: ElementModP = partial.share()
         return M_i.equals(product)
     }
 }

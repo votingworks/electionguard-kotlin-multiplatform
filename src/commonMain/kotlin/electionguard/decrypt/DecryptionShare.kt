@@ -8,14 +8,14 @@ import electionguard.core.multP
 
 /** Partial decryptions from one DecryptingTrustee, includes both direct and compensated decryptions. */
 class DecryptionShare(
-    val decryptingTrustee: String, // who did these Decryptions?
+    val decryptingTrustee: String, // who did these decryptions?
 ) {
-    val partialDecryptions: MutableMap<String, DirectDecryption> = mutableMapOf()
-    val compensatedDecryptions: MutableMap<String, CompensatedDecryption> = mutableMapOf()
+    val directDecryptions: MutableMap<String, DirectDecryption> = mutableMapOf() // key "contestId#@selectionId"
+    val compensatedDecryptions: MutableMap<String, CompensatedDecryption> = mutableMapOf() // key "contestId#@selectionId"
 
-    fun addPartialDecryption(contestId: String, selectionId: String, decryption: DirectDecryption): DecryptionShare {
+    fun addDirectDecryption(contestId: String, selectionId: String, decryption: DirectDecryption): DecryptionShare {
         // TODO test to see if there are duplicates?
-        partialDecryptions["${contestId}#@${selectionId}"] = decryption
+        directDecryptions["${contestId}#@${selectionId}"] = decryption
         return this
     }
 
@@ -50,23 +50,27 @@ class CompensatedDecryption(
     val missingDecryptions: MutableMap<String, RecoveredPartialDecryption> = mutableMapOf()
 }
 
+// serialized to protobuf
 data class RecoveredPartialDecryption(
-    val decryptingGuardianId: String,
-    val missingGuardianId: String,
-    val share: ElementModP,  // M_𝑖,ℓ
-    val recoveryKey: ElementModP,
-    val proof: GenericChaumPedersenProof
+    val decryptingGuardianId: String, // Trustee ℓ
+    val missingGuardianId: String, // Trustee i
+    val share: ElementModP,       // M_𝑖,ℓ
+    val recoveryKey: ElementModP, // g^Pi(ℓ), where Pi(ℓ) is the value of the missing_guardian secret polynomial at
+                                  // available guardian ℓ coordinate. used in the proof verification.
+    val proof: GenericChaumPedersenProof // challenge c_𝑖,ℓ, response v_𝑖,ℓ
 )
 
-// all the direct and compensated decryptions are accumulated here
+// serialized to protobuf
+// All the direct and compensated decryptions are accumulated here
+// Either theres a proof or a recovered field
 class PartialDecryption(
     val selectionId: String,
-    val guardianId: String, // share for this guardian
-    var share: ElementModP?, // M_𝑖 set by direct decryption, else computed from missingDecryptions
-    val proof: GenericChaumPedersenProof?, // not null when its directly computed
-    recovered: List<RecoveredPartialDecryption>? // not null when its indirectly computed
+    val guardianId: String, // share is for this guardian
+    var share: ElementModP?, // M_𝑖 set by direct decryption, else computed from recovered
+    val proof: GenericChaumPedersenProof?,       // present only when its directly computed
+    recovered: List<RecoveredPartialDecryption>? // present only when its indirectly computed
 ) {
-    // When guardian is missing there will be quorum of these
+    // When guardians are missing there will be LOOK quorum or nguardians - nmissing >= quorum of these?
     val recoveredDecryptions: MutableList<RecoveredPartialDecryption> = mutableListOf()
 
     init {
@@ -109,6 +113,7 @@ class PartialDecryption(
         return share!!
     }
 
+    // Not a data class, have to do our own equals
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -141,6 +146,6 @@ data class DirectDecryptionAndProof(
 
 /** Compensated decryption from the Decrypting Trustee */
 data class CompensatedDecryptionAndProof(
-    val partialDecryption: ElementModP, // used in the calculation. TODO encrypt
+    val partialDecryption: ElementModP, // used in the calculation.
     val proof: GenericChaumPedersenProof,
-    val recoveredPublicKeyShare: ElementModP) // g^Pi(ℓ), used in the verification
+    val recoveredPublicKeyShare: ElementModP) // g^Pi(ℓ), used in the proof verification.
