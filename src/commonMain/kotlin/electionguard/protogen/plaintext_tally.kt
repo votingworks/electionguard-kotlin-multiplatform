@@ -305,7 +305,6 @@ public data class RecoveredParts(
 
 @pbandk.Export
 public data class RecoveredPartialDecryption(
-    val selectionId: String = "",
     val decryptingGuardianId: String = "",
     val missingGuardianId: String = "",
     val share: electionguard.protogen.ElementModP? = null,
@@ -321,18 +320,8 @@ public data class RecoveredPartialDecryption(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.RecoveredPartialDecryption = electionguard.protogen.RecoveredPartialDecryption.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.RecoveredPartialDecryption> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.RecoveredPartialDecryption, *>>(6)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.RecoveredPartialDecryption, *>>(5)
             fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "selection_id",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "selectionId",
-                        value = electionguard.protogen.RecoveredPartialDecryption::selectionId
-                    )
-                )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -554,7 +543,6 @@ private fun RecoveredPartialDecryption.protoMergeImpl(plus: pbandk.Message?): Re
 
 @Suppress("UNCHECKED_CAST")
 private fun RecoveredPartialDecryption.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RecoveredPartialDecryption {
-    var selectionId = ""
     var decryptingGuardianId = ""
     var missingGuardianId = ""
     var share: electionguard.protogen.ElementModP? = null
@@ -563,7 +551,6 @@ private fun RecoveredPartialDecryption.Companion.decodeWithImpl(u: pbandk.Messag
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> selectionId = _fieldValue as String
             2 -> decryptingGuardianId = _fieldValue as String
             3 -> missingGuardianId = _fieldValue as String
             4 -> share = _fieldValue as electionguard.protogen.ElementModP
@@ -571,6 +558,6 @@ private fun RecoveredPartialDecryption.Companion.decodeWithImpl(u: pbandk.Messag
             6 -> proof = _fieldValue as electionguard.protogen.GenericChaumPedersenProof
         }
     }
-    return RecoveredPartialDecryption(selectionId, decryptingGuardianId, missingGuardianId, share,
-        recoveryKey, proof, unknownFields)
+    return RecoveredPartialDecryption(decryptingGuardianId, missingGuardianId, share, recoveryKey,
+        proof, unknownFields)
 }

@@ -6,7 +6,7 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
+import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.SchnorrProof
 import electionguard.core.hasValidSchnorrProof
 
@@ -41,13 +41,13 @@ data class PublicKeys(
  * @param generatingGuardianId The Id of the guardian that generated this, who might be missing at decryption
  * @param designatedGuardianId The Id of the guardian to receive this backup, matches the DecryptingTrustee.id
  * @param designatedGuardianXCoordinate The x coordinate of the designated guardian
- * @param generatingGuardianValue The generatingGuardian's polynomial value at designatedGuardianXCoordinate, P𝑖_{l}
+ * @param encryptedCoordinate Encryption of  generatingGuardian's polynomial value at designatedGuardianXCoordinate, El(P𝑖_{l})
  */
 data class SecretKeyShare(
     val generatingGuardianId: String,
     val designatedGuardianId: String,
     val designatedGuardianXCoordinate: UInt,
-    val generatingGuardianValue: ElementModQ,
+    val encryptedCoordinate: HashedElGamalCiphertext,
 )
 
 /** Exchange publicKeys and secretShares among the trustees */
@@ -69,7 +69,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrustee>): Result<Boolean, Str
     val secretKeyResults: MutableList<Result<SecretKeyShare, String>> = mutableListOf()
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id))
+            secretKeyResults.add(t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id)))
         }
     }
 

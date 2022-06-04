@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 5/23/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 6/04/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
 
 Notes
 

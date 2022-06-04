@@ -181,7 +181,7 @@ public data class SecretKeyShare(
     val generatingGuardianId: String = "",
     val designatedGuardianId: String = "",
     val designatedGuardianXCoordinate: Int = 0,
-    val generatingGuardianValue: electionguard.protogen.ElementModQ? = null,
+    val encryptedCoordinate: electionguard.protogen.HashedElGamalCiphertext? = null,
     val error: String = "",
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -228,21 +228,21 @@ public data class SecretKeyShare(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "generating_guardian_value",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
-                        jsonName = "generatingGuardianValue",
-                        value = electionguard.protogen.SecretKeyShare::generatingGuardianValue
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
                         name = "error",
                         number = 5,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "error",
                         value = electionguard.protogen.SecretKeyShare::error
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "encrypted_coordinate",
+                        number = 6,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.HashedElGamalCiphertext.Companion),
+                        jsonName = "encryptedCoordinate",
+                        value = electionguard.protogen.SecretKeyShare::encryptedCoordinate
                     )
                 )
             }
@@ -347,7 +347,7 @@ public fun SecretKeyShare?.orDefault(): electionguard.protogen.SecretKeyShare = 
 
 private fun SecretKeyShare.protoMergeImpl(plus: pbandk.Message?): SecretKeyShare = (plus as? SecretKeyShare)?.let {
     it.copy(
-        generatingGuardianValue = generatingGuardianValue?.plus(plus.generatingGuardianValue) ?: plus.generatingGuardianValue,
+        encryptedCoordinate = encryptedCoordinate?.plus(plus.encryptedCoordinate) ?: plus.encryptedCoordinate,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -357,7 +357,7 @@ private fun SecretKeyShare.Companion.decodeWithImpl(u: pbandk.MessageDecoder): S
     var generatingGuardianId = ""
     var designatedGuardianId = ""
     var designatedGuardianXCoordinate = 0
-    var generatingGuardianValue: electionguard.protogen.ElementModQ? = null
+    var encryptedCoordinate: electionguard.protogen.HashedElGamalCiphertext? = null
     var error = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
@@ -365,10 +365,10 @@ private fun SecretKeyShare.Companion.decodeWithImpl(u: pbandk.MessageDecoder): S
             1 -> generatingGuardianId = _fieldValue as String
             2 -> designatedGuardianId = _fieldValue as String
             3 -> designatedGuardianXCoordinate = _fieldValue as Int
-            4 -> generatingGuardianValue = _fieldValue as electionguard.protogen.ElementModQ
             5 -> error = _fieldValue as String
+            6 -> encryptedCoordinate = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
         }
     }
-    return SecretKeyShare(generatingGuardianId, designatedGuardianId, designatedGuardianXCoordinate, generatingGuardianValue,
+    return SecretKeyShare(generatingGuardianId, designatedGuardianId, designatedGuardianXCoordinate, encryptedCoordinate,
         error, unknownFields)
 }

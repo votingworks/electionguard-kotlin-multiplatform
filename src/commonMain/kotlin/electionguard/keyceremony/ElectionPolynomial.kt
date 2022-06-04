@@ -20,6 +20,7 @@ data class ElectionPolynomial(
     /** A proof of possession of the private key for each secret coefficient. */
     val coefficientProofs: List<SchnorrProof>,
 ) {
+
     // The value of the polynomial at xcoord
     fun valueAt(group: GroupContext, xcoord : UInt): ElementModQ {
         val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord)
