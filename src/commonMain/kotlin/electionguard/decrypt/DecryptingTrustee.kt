@@ -34,7 +34,7 @@ data class DecryptingTrustee(
     override fun xCoordinate(): UInt = xCoordinate
     override fun electionPublicKey(): ElementModP = electionKeypair.publicKey.key
 
-    override fun partialDecrypt(
+    override fun directDecrypt(
         group: GroupContext,
         texts: List<ElGamalCiphertext>,
         extendedBaseHash: ElementModQ,
@@ -45,7 +45,7 @@ data class DecryptingTrustee(
             val publicKey = this.electionKeypair.publicKey.key
             val privateKey = this.electionKeypair.secretKey.key
 
-            // 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 (spec section 3.5 eq 9)
+            // 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 (spec 1.03 section 3.5 eq 51)
             val partialDecryption: ElementModP = ciphertext.computeShare(this.electionKeypair.secretKey)
             // prove that we know x
             val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
@@ -53,7 +53,8 @@ data class DecryptingTrustee(
                 h = ciphertext.pad,
                 x = privateKey,
                 nonce ?: group.randomElementModQ(),
-                // header and footer doesnt matter as long as it matches isValid
+                // header and footer doesnt matter as long as it matches isValid()
+                // other than spec compliance
                 arrayOf(extendedBaseHash, publicKey, ciphertext.pad, ciphertext.data), // section 7
                 arrayOf(partialDecryption),
             )
@@ -80,8 +81,8 @@ data class DecryptingTrustee(
 
         val results: MutableList<CompensatedDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
-            // used in the calculation, needs to be encrypted
-            // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
+            // used in the calculation
+            // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l} (spec 1.03 section 3.5.2 eq 56)
             val partialDecryptionShare: ElementModP =
                 ciphertext.computeShare(ElGamalSecretKey(backup.generatingGuardianValue))
             val recoveredPublicKeyShare: ElementModP = recoveredPublicKeyShare(group, missingGuardianId)
@@ -135,7 +136,7 @@ data class DecryptingTrustee(
     }
 
     // compute the recovered public key share, g^P_i(l) = Prod(K_ij^(l^j)) for j in 0..k-1.
-    // see section 3.5.2, eq 12
+    // see spec 1.03 section 3.5.2, eq 60
     private fun recoveredPublicKeyShare(group: GroupContext, missingGuardianId: String): ElementModP {
         val otherCommitments: List<ElementModP> = this.coefficientCommitments[missingGuardianId]
             ?: throw IllegalStateException("guardian $id missing coefficientCommitments for $missingGuardianId") // K_ij

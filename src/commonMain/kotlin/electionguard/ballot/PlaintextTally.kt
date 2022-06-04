@@ -4,12 +4,18 @@ import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModP
 import electionguard.decrypt.PartialDecryption
 
+/**
+ * The decrypted counts of all contests in the election.
+ *
+ * @param tallyId the name of the tally. Matches ballotId when its a spoiled ballot decryption.
+ * @param contests The contests, keyed by contest.contestId.
+ */
 data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest>) {
     /**
-     * The plaintext representation of the counts of one contest in the election.
+     * The decrypted counts of one contest in the election.
      *
      * @param contestId equals the Manifest.ContestDescription.contestId.
-     * @param selections The collection of selections in the contest, keyed by selection.object_id.
+     * @param selections The collection of selections in the contest, keyed by selection.selectionId.
      */
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
@@ -17,23 +23,23 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
     )
 
     /**
-     * The plaintext representation of the counts of one selection of one contest in the election.
+     * The decrypted count of one selection of one contest in the election.
      *
      * @param selectionId equals the Manifest.SelectionDescription.selectionId.
-     * @param tally the actual count.
+     * @param tally the decrypted vote count.
      * @param value g^tally or M in the spec.
-     * @param message The encrypted vote count.
+     * @param message The encrypted vote count = (A, B).
      * @param partialDecryptions The Guardians' shares of the decryption of a selection, nguardians of them.
      */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val tally: Int,
         val value: ElementModP,
-        val message: ElGamalCiphertext,
-        val partialDecryptions: List<PartialDecryption>,
+        val message: ElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
+        val partialDecryptions: List<PartialDecryption>, // one for each guardian
     )
 
-    fun showTallies() {
+    fun showTally() {
         println(" Tally $tallyId")
         contests.values.sortedBy { it.contestId }.forEach { contest ->
             println("  Contest ${contest.contestId}")

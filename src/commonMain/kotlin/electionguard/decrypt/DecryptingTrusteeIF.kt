@@ -17,14 +17,14 @@ interface DecryptingTrusteeIF {
     fun electionPublicKey(): ElementModP
 
     /**
-     * Compute a partial decryption of an elgamal encryption.
+     * Compute a direct partial decryption of an elgamal encryption.
      *
      * @param texts:            list of `ElGamalCiphertext` that will be partially decrypted
      * @param extendedBaseHash: the extended base hash of the election
      * @param nonce:            an optional nonce to generate the `ChaumPedersenProof`
      * @return a list of DirectDecryptionAndProof, in the same order as the texts
      */
-    fun partialDecrypt(
+    fun directDecrypt(
         group: GroupContext,
         texts: List<ElGamalCiphertext>,
         extendedBaseHash: ElementModQ,

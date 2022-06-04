@@ -64,7 +64,7 @@ class KeyCeremonyTrustee(
         return Ok(publicKeys)
     }
 
-    // TODO this needs to be encrypted, see p10 spec 1.0
+    // TODO this needs to be encrypted, see spec 1.03 p 13, eq 13-16
     fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
         if (mySecretKeyShares.containsKey(otherGuardian)) {
             return Ok(mySecretKeyShares[otherGuardian]!!)

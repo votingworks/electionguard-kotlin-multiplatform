@@ -46,7 +46,7 @@ class DecryptingMediator(
         // now rearrange for use by Decryptor
         val sharesBySelectionId: MutableMap<String, MutableList<PartialDecryption>> = HashMap()
         for (tallyShare in shares) {
-            tallyShare.partialDecryptions.entries.map { (selectionId, partial) ->
+            tallyShare.directDecryptions.entries.map { (selectionId, partial) ->
                 var smap: MutableList<PartialDecryption>? = sharesBySelectionId[selectionId]
                 if (smap == null) {
                     smap = mutableListOf()
@@ -106,7 +106,7 @@ class DecryptingMediator(
 
         // direct decryptions
         val partialDecryptions: List<DirectDecryptionAndProof> =
-            trustee.partialDecrypt(group, texts, init.cryptoExtendedBaseHash(), null)
+            trustee.directDecrypt(group, texts, init.cryptoExtendedBaseHash(), null)
 
         // Place the results into the DecryptionShare
         val decryptionShare = DecryptionShare(trustee.id())
@@ -120,7 +120,7 @@ class DecryptingMediator(
                     proof.partialDecryption,
                     proof.proof,
                 )
-                decryptionShare.addPartialDecryption(
+                decryptionShare.addDirectDecryption(
                     tallyContest.contestId,
                     tallySelection.selectionId,
                     partialDecryption
