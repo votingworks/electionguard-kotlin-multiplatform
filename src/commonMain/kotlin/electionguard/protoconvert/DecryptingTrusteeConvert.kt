@@ -69,10 +69,10 @@ private fun GroupContext.importSecretKeyShare(id:String, keyShare: electionguard
         return Err("DecryptingTrustee $id missing keypair")
     }
 
-    val generatingGuardianvalue = this.importElementModQ(keyShare.generatingGuardianValue)
+    val encryptedCoordinate = this.importHashedCiphertext(keyShare.encryptedCoordinate)
         .toResultOr {"DecryptingTrustee $id secretKey was malformed or missing"}
 
-    val errors = getAllErrors(generatingGuardianvalue)
+    val errors = getAllErrors(encryptedCoordinate)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -81,7 +81,7 @@ private fun GroupContext.importSecretKeyShare(id:String, keyShare: electionguard
         keyShare.generatingGuardianId,
         keyShare.designatedGuardianId,
         keyShare.designatedGuardianXCoordinate.toUInt(),
-        generatingGuardianvalue.unwrap(),
+        encryptedCoordinate.unwrap(),
     ))
 }
 
@@ -131,7 +131,7 @@ private fun SecretKeyShare.publishSecretKeyShare(): electionguard.protogen.Secre
         this.generatingGuardianId,
         this.designatedGuardianId,
         this.designatedGuardianXCoordinate.toInt(),
-        this.generatingGuardianValue.publishElementModQ(),
+        this.encryptedCoordinate.publishHashedCiphertext(),
     )
 }
 

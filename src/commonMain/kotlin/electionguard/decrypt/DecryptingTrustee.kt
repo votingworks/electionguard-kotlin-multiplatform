@@ -9,16 +9,19 @@ import electionguard.core.ElementModQ
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
 import electionguard.core.computeShare
+import electionguard.core.decrypt
 import electionguard.core.genericChaumPedersenProofOf
 import electionguard.core.isValid
 import electionguard.core.randomElementModQ
+import electionguard.core.toElementModQ
+import electionguard.core.toUInt256
 import electionguard.keyceremony.SecretKeyShare
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DecryptingTrustee")
 private const val validate = true // expensive, debugging only
 
-/** A Trustee that knows its secret key, for the purpose of decryption. */
+/** A Trustee that knows its own secret key, for the purpose of decryption. */
 data class DecryptingTrustee(
     val id: String,
     val xCoordinate: UInt,
@@ -29,6 +32,8 @@ data class DecryptingTrustee(
     // for all guardians, keyed by guardian id, the K_ij = g^a_ij
     val coefficientCommitments: Map<String, List<ElementModP>>,
 ) : DecryptingTrusteeIF {
+    // this will be constructed lazily if needed. assumes thread confinement
+    private val generatingGuardianValues = mutableMapOf<String, ElementModQ>()
 
     override fun id(): String = id
     override fun xCoordinate(): UInt = xCoordinate
@@ -76,22 +81,31 @@ data class DecryptingTrustee(
         extendedBaseHash: ElementModQ,
         nonce: ElementModQ?,
     ): List<CompensatedDecryptionAndProof> {
-        val backup: SecretKeyShare = this.secretKeyShares[missingGuardianId]
-            ?: throw IllegalStateException("compensate_decrypt guardian $id missing backup for $missingGuardianId")
+
+        // lazy decryption of key share.
+        var generatingGuardianValue = this.generatingGuardianValues[missingGuardianId]
+        if (generatingGuardianValue == null) {
+            val backup: SecretKeyShare = this.secretKeyShares[missingGuardianId]
+                ?: throw IllegalStateException("compensate_decrypt guardian $id missing backup for $missingGuardianId")
+            val byteArray = backup.encryptedCoordinate.decrypt(this.electionKeypair.secretKey)
+                ?: throw IllegalStateException("$id backup for $missingGuardianId couldnt decrypt encryptedCoordinate")
+            generatingGuardianValue = byteArray.toUInt256().toElementModQ(group)
+            this.generatingGuardianValues[missingGuardianId] = generatingGuardianValue
+        }
 
         val results: MutableList<CompensatedDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
             // used in the calculation
             // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l} (spec 1.03 section 3.5.2 eq 56)
             val partialDecryptionShare: ElementModP =
-                ciphertext.computeShare(ElGamalSecretKey(backup.generatingGuardianValue))
+                ciphertext.computeShare(ElGamalSecretKey(generatingGuardianValue))
             val recoveredPublicKeyShare: ElementModP = recoveredPublicKeyShare(group, missingGuardianId)
 
             // prove that we know x
             val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
                 g = group.G_MOD_P,
                 h = ciphertext.pad,
-                x = backup.generatingGuardianValue,
+                x = generatingGuardianValue,
                 seed = nonce ?: group.randomElementModQ(),
                 hashHeader = arrayOf(
                     extendedBaseHash,
@@ -103,8 +117,8 @@ data class DecryptingTrustee(
             )
 
             if (validate) {
-                require(recoveredPublicKeyShare == (group.G_MOD_P powP backup.generatingGuardianValue))
-                require(partialDecryptionShare == (ciphertext.pad powP backup.generatingGuardianValue))
+                require(recoveredPublicKeyShare == (group.G_MOD_P powP generatingGuardianValue))
+                require(partialDecryptionShare == (ciphertext.pad powP generatingGuardianValue))
                 validate(group, ciphertext, extendedBaseHash, recoveredPublicKeyShare, partialDecryptionShare, proof)
             }
 

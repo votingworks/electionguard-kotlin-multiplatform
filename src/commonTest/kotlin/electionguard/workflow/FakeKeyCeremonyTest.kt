@@ -1,5 +1,6 @@
 package electionguard.workflow
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
@@ -28,13 +29,23 @@ import kotlin.test.assertEquals
 class RunFakeKeyCeremonyTest {
 
     @Test
-    fun runFakeKeyCeremonyTest() {
+    fun runFakeKeyCeremonyAll() {
         val group = productionGroup()
         val configDir = "src/commonTest/data/start"
         val outputDir = "testOut/runFakeKeyCeremonyTest"
         val trusteeDir = "testOut/runFakeKeyCeremonyTest/private_data"
 
         runFakeKeyCeremony(group, configDir, outputDir, trusteeDir, 3, 3)
+    }
+
+    @Test
+    fun runFakeKeyCeremonySome() {
+        val group = productionGroup()
+        val configDir = "src/commonTest/data/start"
+        val outputDir = "testOut/runFakeKeyCeremonyTest"
+        val trusteeDir = "testOut/runFakeKeyCeremonyTest/private_data"
+
+        runFakeKeyCeremony(group, configDir, outputDir, trusteeDir, 5, 3)
     }
 }
 
@@ -56,7 +67,17 @@ fun runFakeKeyCeremony(
     }.sortedBy { it.xCoordinate }
 
     // exchange PublicKeys
-    keyCeremonyExchange(trustees)
+    val exchangeResult = keyCeremonyExchange(trustees)
+    if (exchangeResult is Err) {
+        println("keyCeremonyExchange failed = ${exchangeResult}")
+    }
+
+    // check they are complete
+    trustees.forEach {
+        assertEquals(nguardians, it.guardianPublicKeys.size)
+        assertEquals(nguardians, it.guardianSecretKeyShares.size)
+        assertEquals(nguardians, it.mySecretKeyShares.size)
+    }
 
     val commitments: MutableList<ElementModP> = mutableListOf()
     trustees.forEach { commitments.addAll(it.polynomial.coefficientCommitments) }
