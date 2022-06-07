@@ -6,7 +6,7 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.runTest
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -17,8 +17,8 @@ class EncryptTest {
     fun testEncryption() {
         runTest {
             val group = productionGroup()
-            val electionRecordIn = ElectionRecord(input, group)
-            val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+            val consumerIn = Consumer(input, group)
+            val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
             val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
             val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)
@@ -42,8 +42,8 @@ class EncryptTest {
     fun testEncryptionWithMasterNonce() {
         runTest {
             val group = productionGroup()
-            val electionRecordIn = ElectionRecord(input, group)
-            val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+            val consumerIn = Consumer(input, group)
+            val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
             val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
             val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)

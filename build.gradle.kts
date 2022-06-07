@@ -16,6 +16,7 @@ plugins {
     id("tech.formatter-kt.formatter") version "0.7.9"
 
     java
+    application
 }
 
 group = "electionguard-kotlin-multiplatform"

@@ -10,7 +10,7 @@ import electionguard.core.GroupContext
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ArgParser
@@ -55,12 +55,12 @@ fun main(args: Array<String>) {
 fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: String, name: String, createdBy: String) {
     val starting = getSystemTimeInMillis()
 
-    val electionRecordIn = ElectionRecord(inputDir, group)
-    val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+    val consumerIn = Consumer(inputDir, group)
+    val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
     var count = 0
     val accumulator = AccumulateTally(group, electionInit.manifest(), name)
-    for (encryptedBallot in electionRecordIn.iterateCastBallots() ) {
+    for (encryptedBallot in consumerIn.iterateCastBallots() ) {
         accumulator.addCastBallot(encryptedBallot)
         count++
     }

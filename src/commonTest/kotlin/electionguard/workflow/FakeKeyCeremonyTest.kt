@@ -19,7 +19,7 @@ import electionguard.core.randomElementModQ
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlin.test.Test
@@ -58,12 +58,12 @@ fun runFakeKeyCeremony(
     quorum: Int,
 ): ElectionInitialized {
     // just need the manifest
-    val electionRecordIn = ElectionRecord(configDir, group)
-    val config: ElectionConfig = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
+    val consumerIn = Consumer(configDir, group)
+    val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
-        KeyCeremonyTrustee(group, "guardian$seq", seq.toUInt(), quorum)
+        KeyCeremonyTrustee(group, "guardian$seq", seq, quorum)
     }.sortedBy { it.xCoordinate }
 
     // exchange PublicKeys

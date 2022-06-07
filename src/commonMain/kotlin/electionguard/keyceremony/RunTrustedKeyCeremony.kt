@@ -15,7 +15,7 @@ import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ArgParser
@@ -66,8 +66,8 @@ fun runKeyCeremony(
 ): Boolean {
     val starting = getSystemTimeInMillis()
 
-    val electionRecordIn = ElectionRecord(configDir, group)
-    val config: ElectionConfig = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
+    val consumerIn = Consumer(configDir, group)
+    val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
     // class KeyCeremonyTrustee(
     //    val group: GroupContext,
@@ -76,7 +76,7 @@ fun runKeyCeremony(
     //    val quorum: Int,
     val trustees: List<KeyCeremonyTrustee> = List(config.numberOfGuardians) {
         val seq = it + 1
-        KeyCeremonyTrustee(group, "trustee$seq", seq.toUInt(), config.quorum)
+        KeyCeremonyTrustee(group, "trustee$seq", seq, config.quorum)
     }.sortedBy { it.xCoordinate }
 
     val exchangeResult = keyCeremonyExchange(trustees)

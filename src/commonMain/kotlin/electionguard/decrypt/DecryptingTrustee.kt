@@ -25,7 +25,7 @@ private const val validate = true // expensive, debugging only
 /** A Trustee that knows its own secret key, for the purpose of decryption. */
 data class DecryptingTrustee(
     val id: String,
-    val xCoordinate: UInt,
+    val xCoordinate: Int,
     // this guardian's private and public key
     val electionKeypair: ElGamalKeypair,
     // for all guardians, keyed by guardian id
@@ -37,8 +37,12 @@ data class DecryptingTrustee(
     private val generatingGuardianValues = mutableMapOf<String, ElementModQ>()
     private val gPilMap = mutableMapOf<String, ElementModP>()
 
+    init {
+        require(xCoordinate > 0)
+    }
+
     override fun id(): String = id
-    override fun xCoordinate(): UInt = xCoordinate
+    override fun xCoordinate(): Int = xCoordinate
     override fun electionPublicKey(): ElementModP = electionKeypair.publicKey.key
 
     override fun directDecrypt(

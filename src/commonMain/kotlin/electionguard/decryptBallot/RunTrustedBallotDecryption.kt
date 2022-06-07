@@ -14,7 +14,7 @@ import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingMediator
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.PlaintextTallySinkIF
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
@@ -95,8 +95,8 @@ fun runDecryptBallots(
     count = 0
     val starting = getSystemTimeInMillis()
 
-    val electionRecordIn = ElectionRecord(inputDir, group)
-    val tallyResult: TallyResult = electionRecordIn.readTallyResult().getOrThrow { IllegalStateException(it) }
+    val consumerIn = Consumer(inputDir, group)
+    val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
     val trusteeNames = decryptingTrustees.map { it.id() }.toSet()
     val missingGuardians =
         tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId) }.map { it.guardianId }
@@ -110,22 +110,22 @@ fun runDecryptBallots(
         when {
             (decryptSpoiledList == null) -> {
                 println("use all spoiled")
-                electionRecordIn.iterateSpoiledBallots()
+                consumerIn.iterateSpoiledBallots()
             }
             (decryptSpoiledList.trim().lowercase() == "all") -> {
                 println("use all")
-                electionRecordIn.iterateEncryptedBallots { true }
+                consumerIn.iterateEncryptedBallots { true }
             }
             fileExists(decryptSpoiledList) -> {
                 println("use ballots in file $decryptSpoiledList")
                 val wanted: List<String> = fileReadLines(decryptSpoiledList)
                 val wantedTrim: List<String> = wanted.map { it.trim() }
-                electionRecordIn.iterateEncryptedBallots { wantedTrim.contains(it.ballotId) }
+                consumerIn.iterateEncryptedBallots { wantedTrim.contains(it.ballotId) }
             }
             else -> {
                 println("use ballots in list ${decryptSpoiledList}")
                 val wanted: List<String> = decryptSpoiledList.split(",")
-                electionRecordIn.iterateEncryptedBallots {
+                consumerIn.iterateEncryptedBallots {
                     // println(" ballot ${it.ballotId}")
                     wanted.contains(it.ballotId)
                 }

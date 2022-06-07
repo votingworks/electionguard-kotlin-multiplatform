@@ -129,7 +129,7 @@ data class Manifest(
         contests.associate { it.contestId to it.votesAllowed}
     }
 
-    /** Map of contestId to contest limit. */
+    /** Set of "contestId/selectionId" to detect existence. */
     val contestAndSelectionSet : Set<String> by
     lazy {
         contests.map { contest -> contest.selections.map { it -> "${contest.contestId}/${it.selectionId}" }}.flatten().toSet()

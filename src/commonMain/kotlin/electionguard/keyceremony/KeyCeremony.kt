@@ -12,7 +12,7 @@ import electionguard.core.hasValidSchnorrProof
 
 data class PublicKeys(
     val guardianId: String,
-    val guardianXCoordinate: UInt,
+    val guardianXCoordinate: Int,
     val coefficientCommitments: List<ElementModP>,
     val coefficientProofs: List<SchnorrProof>,
 ) {
@@ -46,7 +46,7 @@ data class PublicKeys(
 data class SecretKeyShare(
     val generatingGuardianId: String,
     val designatedGuardianId: String,
-    val designatedGuardianXCoordinate: UInt,
+    val designatedGuardianXCoordinate: Int,
     val encryptedCoordinate: HashedElGamalCiphertext,
 )
 

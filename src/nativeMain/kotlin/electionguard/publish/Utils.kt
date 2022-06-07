@@ -203,7 +203,7 @@ fun fgetsFile(filename: String): List<String> {
         // __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
         // : kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>? { /* compiled code */ }
         while (fgets(linep, bufferLength, file) != null) {
-            val s = linep.getPointer(memScope) as CArrayPointer<ByteVar>
+            val s = linep.getPointer(memScope)
             val ks = s.toKString()
             println("read line = $ks")
             result.add(ks)

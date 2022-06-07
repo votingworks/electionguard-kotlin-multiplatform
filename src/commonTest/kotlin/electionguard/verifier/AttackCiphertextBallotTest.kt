@@ -1,6 +1,5 @@
 package electionguard.verifier
 
-import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionInitialized
 import electionguard.core.productionGroup
 import electionguard.ballot.EncryptedBallot
@@ -11,7 +10,8 @@ import electionguard.core.hashElements
 import electionguard.decrypt.DecryptingMediator
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
+import electionguard.publish.electionRecordFromConsumer
 import electionguard.tally.AccumulateTally
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
@@ -41,20 +41,17 @@ class AttackEncryptedBallotTest {
     @Test
     fun attackEncryptedBallots() {
         val context = productionGroup()
-        val electionRecordIn = ElectionRecord(inputDir, context)
+        val electionRecord = electionRecordFromConsumer(Consumer(inputDir, context))
         val mungedBallots = mutableListOf<EncryptedBallot>()
 
-        for (ballot in electionRecordIn.iterateEncryptedBallots { true }) {
+        for (ballot in electionRecord.encryptedBallots { true }) {
             // println(" munged ballot ${ballot.ballotId}")
             mungedBallots.add(mungeBallot(ballot))
         }
 
         if (showCount) {
-            val electionInit = electionRecordIn.readElectionInitialized().unwrap()
-
             // sum it up
-            val config = electionInit.config
-            val accumulator = AccumulateTally(context, config.manifest, "attackedTally")
+            val accumulator = AccumulateTally(context, electionRecord.manifest(), "attackedTally")
             for (encryptedBallot in mungedBallots ) {
                 accumulator.addCastBallot(encryptedBallot)
             }
@@ -62,21 +59,21 @@ class AttackEncryptedBallotTest {
 
             // decrypt it
             println("decrypt munged tally ")
-            val mungedTally = decryptTally(context, encryptedTally, electionInit,
+            val mungedTally = decryptTally(context, encryptedTally, electionRecord.electionInit()!!,
                 readDecryptingTrustees(context, inputDir, trusteeDir),
             )
             // println("tally for changed ballots = ${mungedTally.showTallies()}")
 
-            val result = electionRecordIn.readDecryptionResult().unwrap()
+            val decryptedTally = electionRecord.decryptedTally()!!
             // println("original tally = ${result.decryptedTally.showTallies()}")
 
-            compareTallies(result.decryptedTally, mungedTally, true)
-            assertNotEquals(result.decryptedTally, mungedTally)
+            compareTallies(decryptedTally, mungedTally, true)
+            assertNotEquals(decryptedTally, mungedTally)
         }
 
         // verification still passes
         println("verify munged ballots ")
-        val verifier = Verifier(context, electionRecordIn, 11)
+        val verifier = Verifier(electionRecord)
         val stats = verifier.verifyEncryptedBallots(mungedBallots)
         println("verify = ${stats.allOk}")
         if (!stats.allOk) println("  ${stats.errors}")

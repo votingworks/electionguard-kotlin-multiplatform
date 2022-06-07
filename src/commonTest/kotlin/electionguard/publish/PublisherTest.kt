@@ -20,8 +20,8 @@ class PublisherTest {
         publisher.writeElectionConfig(config)
 
         val context = productionGroup()
-        val electionRecordIn = ElectionRecord(output, context)
-        val roundtripResult = electionRecordIn.readElectionConfig()
+        val consumerIn = Consumer(output, context)
+        val roundtripResult = consumerIn.readElectionConfig()
         assertNotNull(roundtripResult)
         assertTrue(roundtripResult is Ok)
         val roundtrip = roundtripResult.unwrap()
@@ -41,15 +41,15 @@ class PublisherTest {
     fun testWriteEncryptions() {
         runTest {
             val context = productionGroup()
-            val electionRecordIn = ElectionRecord(input, context)
-            val initResult = electionRecordIn.readElectionInitialized()
+            val consumerIn = Consumer(input, context)
+            val initResult = consumerIn.readElectionInitialized()
             assertTrue(initResult is Ok)
             val init = initResult.unwrap()
 
-            publisher.writeEncryptions(init, electionRecordIn.iterateEncryptedBallots { true })
+            publisher.writeEncryptions(init, consumerIn.iterateEncryptedBallots { true })
 
-            val electionRecordRoundtrip = ElectionRecord(output, context)
-            val rtResult = electionRecordRoundtrip.readElectionInitialized()
+            val consumerRoundtrip = Consumer(output, context)
+            val rtResult = consumerRoundtrip.readElectionInitialized()
             assertTrue(rtResult is Ok)
             val rtInit = rtResult.unwrap()
             assertTrue(rtInit.equals(init))
@@ -60,13 +60,13 @@ class PublisherTest {
     @Test
     fun testWriteSpoiledBallots() {
         val context = productionGroup()
-        val electionRecordIn = ElectionRecord(input, context)
-        val initResult = electionRecordIn.readElectionInitialized()
+        val consumerIn = Consumer(input, context)
+        val initResult = consumerIn.readElectionInitialized()
         assertTrue(initResult is Ok)
         val init = initResult.unwrap()
 
         var count = 0
-        publisher.writeEncryptions(init, electionRecordIn.iterateEncryptedBallots {
+        publisher.writeEncryptions(init, consumerIn.iterateEncryptedBallots {
             count++
             count % 10 == 0
         })

@@ -17,7 +17,7 @@ import electionguard.core.toUInt256
 class KeyCeremonyTrustee(
     val group: GroupContext,
     val id: String,
-    val xCoordinate: UInt,
+    val xCoordinate: Int,
     val quorum: Int,
 ) {
     val polynomial: ElectionPolynomial = group.generatePolynomial(id, quorum)
@@ -32,7 +32,8 @@ class KeyCeremonyTrustee(
     internal val guardianSecretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
 
     init {
-        // allGuardianPublicKeys include itself.
+        require(xCoordinate > 0)
+        // allGuardianPublicKeys including itself.
         guardianPublicKeys[id] = this.sharePublicKeys()
     }
 
@@ -50,7 +51,7 @@ class KeyCeremonyTrustee(
     /** Receive publicKeys from another guardian. Return error message or empty string on success.  */
     // TODO how do we know it came from the real guardian?
     fun receivePublicKeys(publicKeys: PublicKeys): Result<PublicKeys, String> {
-        if (publicKeys.guardianXCoordinate < 1U) {
+        if (publicKeys.guardianXCoordinate < 1) {
             return Err("${publicKeys.guardianId}: guardianXCoordinate must be >= 1")
         }
         if (publicKeys.coefficientCommitments.size != quorum) {

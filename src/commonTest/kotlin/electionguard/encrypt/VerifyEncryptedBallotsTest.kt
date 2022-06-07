@@ -4,7 +4,8 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import electionguard.core.runTest
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
+import electionguard.publish.electionRecordFromConsumer
 import electionguard.verifier.Verifier
 import kotlin.test.assertTrue
 
@@ -18,8 +19,8 @@ class VerifyEncryptedBallotsTest {
     fun verifyPrecomputeEncryptedBallots() {
         runTest {
             val group = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, group)
-            val verifier = Verifier(group, electionRecordIn)
+            val electionRecord = electionRecordFromConsumer(Consumer(topdir, group))
+            val verifier = Verifier(electionRecord)
             val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok.allOk)
         }
@@ -30,8 +31,8 @@ class VerifyEncryptedBallotsTest {
     fun verifyJvmEncryptedBallots() {
         runTest {
             val group = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, group)
-            val verifier = Verifier(group, electionRecordIn)
+            val electionRecord = electionRecordFromConsumer(Consumer(topdir, group))
+            val verifier = Verifier(electionRecord)
             val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok.allOk)
         }
@@ -41,8 +42,8 @@ class VerifyEncryptedBallotsTest {
     fun verifyNativeEncryptedBallots() {
         runTest {
             val group = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, group)
-            val verifier = Verifier(group, electionRecordIn)
+            val electionRecord = electionRecordFromConsumer(Consumer(topdir, group))
+            val verifier = Verifier(electionRecord)
             val ok = verifier.verifyEncryptedBallots()
             assertTrue(ok.allOk)
         }
@@ -50,15 +51,15 @@ class VerifyEncryptedBallotsTest {
 
     // this is slow - just do first one
     fun readBallotsOne(context: GroupContext, topdir: String): List<EncryptedBallot> {
-        val electionRecordIn = ElectionRecord(topdir, context)
-        val ballotIter =  electionRecordIn.iterateEncryptedBallots{true}.iterator()
+        val consumerIn = Consumer(topdir, context)
+        val ballotIter =  consumerIn.iterateEncryptedBallots{true}.iterator()
         assertTrue(ballotIter.hasNext())
         return listOf(ballotIter.next())
     }
 
     fun readBallots(context: GroupContext, topdir: String): List<EncryptedBallot> {
-        val electionRecordIn = ElectionRecord(topdir, context)
-        return electionRecordIn.iterateEncryptedBallots { true} .toList()
+        val consumerIn = Consumer(topdir, context)
+        return consumerIn.iterateEncryptedBallots { true} .toList()
     }
 
 }

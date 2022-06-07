@@ -22,10 +22,10 @@ class DecryptingMediator(
     val availableGuardians: List<DecryptingGuardian> by lazy {
         val result = ArrayList<DecryptingGuardian>()
         for (otherTrustee in decryptingTrustees) {
-            val present: List<UInt> =
+            val present: List<Int> =
                 decryptingTrustees.filter { it.id() != otherTrustee.id() }.map { it.xCoordinate() }
             val coeff: ElementModQ = group.computeLagrangeCoefficient(otherTrustee.xCoordinate(), present)
-            result.add(DecryptingGuardian(otherTrustee.id(), otherTrustee.xCoordinate().toInt(), coeff))
+            result.add(DecryptingGuardian(otherTrustee.id(), otherTrustee.xCoordinate(), coeff))
         }
         // sorted by guardianId, to match PartialDecryption.lagrangeInterpolation()
         result.sortedBy { it.guardianId}
@@ -161,11 +161,11 @@ class DecryptingMediator(
     }
 }
 
-fun GroupContext.computeLagrangeCoefficient(coordinate: UInt, present: List<UInt>): ElementModQ {
-    val others: List<UInt> = present.filter { it != coordinate }
-    val numerator: Int = others.reduce { a, b -> a * b }.toInt()
+fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>): ElementModQ {
+    val others: List<Int> = present.filter { it != coordinate }
+    val numerator: Int = others.reduce { a, b -> a * b }
 
-    val diff: List<Int> = others.map { degree -> degree.toInt() - coordinate.toInt() }
+    val diff: List<Int> = others.map { degree -> degree - coordinate }
     val denominator = diff.reduce { a, b -> a * b }
 
     val denomQ =

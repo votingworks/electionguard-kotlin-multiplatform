@@ -19,7 +19,7 @@ import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import electionguard.publish.EncryptedBallotSinkIF
@@ -121,9 +121,9 @@ fun batchEncryption(
     group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
     invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None
 ) {
-    val electionRecordIn = ElectionRecord(inputDir, group)
+    val consumerIn = Consumer(inputDir, group)
     val electionInit: ElectionInitialized =
-        electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+        consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
 
     // ManifestInputValidation
     val manifestValidator = ManifestInputValidation(electionInit.manifest())
@@ -172,7 +172,7 @@ fun batchEncryption(
     runBlocking {
         val outputChannel = Channel<EncryptedBallot>()
         val encryptorJobs = mutableListOf<Job>()
-        val ballotProducer = produceBallots(electionRecordIn.iteratePlaintextBallots(ballotDir, filter))
+        val ballotProducer = produceBallots(consumerIn.iteratePlaintextBallots(ballotDir, filter))
         repeat(nthreads) {
             encryptorJobs.add(
                 launchEncryptor(

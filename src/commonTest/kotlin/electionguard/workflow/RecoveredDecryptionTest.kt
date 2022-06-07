@@ -19,7 +19,7 @@ import electionguard.core.toElementModQ
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlin.test.Test
@@ -56,7 +56,7 @@ fun runRecoveredDecryptionTest(
     //    val quorum: Int,
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
-        KeyCeremonyTrustee(group, "guardian$seq", seq.toUInt(), quorum)
+        KeyCeremonyTrustee(group, "guardian$seq", seq, quorum)
     }.sortedBy { it.xCoordinate }
 
     // exchange PublicKeys
@@ -78,7 +78,7 @@ fun runRecoveredDecryptionTest(
     val jointPublicKey: ElementModP =
         dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
-    testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), group.TWO_MOD_Q, dTrustees, listOf(2U,3U, 4U))
+    testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), group.TWO_MOD_Q, dTrustees, listOf(2, 3, 4))
 
     //////////////////////////////////////////////////////////
     if (writeout) {
@@ -86,8 +86,8 @@ fun runRecoveredDecryptionTest(
         trustees.forEach { commitments.addAll(it.polynomial.coefficientCommitments) }
         val commitmentsHash = hashElements(commitments)
 
-        val electionRecordIn = ElectionRecord(configDir, group)
-        val config: ElectionConfig = electionRecordIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
+        val consumerIn = Consumer(configDir, group)
+        val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
         val primes = config.constants
         val cryptoBaseHash: UInt256 = hashElements(
@@ -118,7 +118,7 @@ fun runRecoveredDecryptionTest(
 }
 
 fun testEncryptRecoveredDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, extendedBaseHash: ElementModQ,
-                                trustees: List<DecryptingTrustee>, present: List<UInt>) {
+                                trustees: List<DecryptingTrustee>, present: List<Int>) {
     println("present $present")
     val vote = 42
     val evote = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))

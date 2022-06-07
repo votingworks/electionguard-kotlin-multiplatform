@@ -12,7 +12,7 @@ import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.core.toElementModQ
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import electionguard.publish.EncryptedBallotSinkIF
@@ -30,9 +30,9 @@ class BallotPrecomputeTest {
     fun testBallotPrecompute() {
         runTest {
             val group = productionGroup()
-            val electionRecordIn = ElectionRecord(electionRecordDir, group)
-            val electionInit: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
-            val ballots = electionRecordIn.iteratePlaintextBallots(ballotDir) { true }
+            val consumerIn = Consumer(electionRecordDir, group)
+            val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+            val ballots = consumerIn.iteratePlaintextBallots(ballotDir) { true }
 
             var starting = getSystemTimeInMillis()
             var count = 0

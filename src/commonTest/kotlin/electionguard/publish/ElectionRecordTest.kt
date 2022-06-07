@@ -27,9 +27,9 @@ class ElectionRecordTest {
     fun readElectionRecordAndValidate(topdir : String) {
         runTest {
             val group = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, group)
-            assertNotNull(electionRecordIn)
-            val decryption = electionRecordIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
+            val consumerIn = Consumer(topdir, group)
+            assertNotNull(consumerIn)
+            val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
             readElectionRecord(decryption)
             validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally,
                 decryption.numberOfGuardians(), decryption.quorum(), decryption.decryptingGuardians.size)
