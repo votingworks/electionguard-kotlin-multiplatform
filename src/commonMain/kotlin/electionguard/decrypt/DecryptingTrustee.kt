@@ -16,6 +16,7 @@ import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
 import electionguard.keyceremony.SecretKeyShare
+import electionguard.keyceremony.calculateGexpPiAtL
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DecryptingTrustee")
@@ -32,8 +33,9 @@ data class DecryptingTrustee(
     // for all guardians, keyed by guardian id, the K_ij = g^a_ij
     val coefficientCommitments: Map<String, List<ElementModP>>,
 ) : DecryptingTrusteeIF {
-    // this will be constructed lazily if needed. assumes thread confinement
+    // these will be constructed lazily if needed. keyed by missing_id
     private val generatingGuardianValues = mutableMapOf<String, ElementModQ>()
+    private val gPilMap = mutableMapOf<String, ElementModP>()
 
     override fun id(): String = id
     override fun xCoordinate(): UInt = xCoordinate
@@ -93,13 +95,21 @@ data class DecryptingTrustee(
             this.generatingGuardianValues[missingGuardianId] = generatingGuardianValue
         }
 
+        // lazy calculation of g^Pi(l).
+        var gPil = this.gPilMap[missingGuardianId]
+        if (gPil == null) {
+            val coefficientCommitments: List<ElementModP> = this.coefficientCommitments[missingGuardianId]
+                ?: throw IllegalStateException("guardian $id missing coefficientCommitments for $missingGuardianId")
+            gPil = calculateGexpPiAtL(this.xCoordinate, coefficientCommitments)
+            this.gPilMap[missingGuardianId] = gPil
+        }
+
         val results: MutableList<CompensatedDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
             // used in the calculation
             // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l} (spec 1.03 section 3.5.2 eq 56)
             val partialDecryptionShare: ElementModP =
                 ciphertext.computeShare(ElGamalSecretKey(generatingGuardianValue))
-            val recoveredPublicKeyShare: ElementModP = recoveredPublicKeyShare(group, missingGuardianId)
 
             // prove that we know x
             val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
@@ -109,7 +119,7 @@ data class DecryptingTrustee(
                 seed = nonce ?: group.randomElementModQ(),
                 hashHeader = arrayOf(
                     extendedBaseHash,
-                    recoveredPublicKeyShare,
+                    gPil,
                     ciphertext.pad,
                     ciphertext.data
                 ), // section 7
@@ -117,12 +127,12 @@ data class DecryptingTrustee(
             )
 
             if (validate) {
-                require(recoveredPublicKeyShare == (group.G_MOD_P powP generatingGuardianValue))
+                require(gPil == (group.G_MOD_P powP generatingGuardianValue))
                 require(partialDecryptionShare == (ciphertext.pad powP generatingGuardianValue))
-                validate(group, ciphertext, extendedBaseHash, recoveredPublicKeyShare, partialDecryptionShare, proof)
+                validate(group, ciphertext, extendedBaseHash, gPil, partialDecryptionShare, proof)
             }
 
-            results.add(CompensatedDecryptionAndProof(partialDecryptionShare, proof, recoveredPublicKeyShare))
+            results.add(CompensatedDecryptionAndProof(partialDecryptionShare, proof, gPil))
         }
         return results
     }
@@ -147,22 +157,5 @@ data class DecryptingTrustee(
             logger.warn { " partialDecrypt invalid proof for $id = $proofResult.error" }
             throw IllegalArgumentException("PartialDecrypt invalid proof for $id")
         }
-    }
-
-    // compute the recovered public key share, g^P_i(l) = Prod(K_ij^(l^j)) for j in 0..k-1.
-    // see spec 1.03 section 3.5.2, eq 60
-    private fun recoveredPublicKeyShare(group: GroupContext, missingGuardianId: String): ElementModP {
-        val otherCommitments: List<ElementModP> = this.coefficientCommitments[missingGuardianId]
-            ?: throw IllegalStateException("guardian $id missing coefficientCommitments for $missingGuardianId") // K_ij
-        val xcoordQ: ElementModQ = group.uIntToElementModQ(this.xCoordinate) // = l
-
-        var exponent = group.ONE_MOD_Q
-        var result: ElementModP = group.ONE_MOD_P
-        for (commitment in otherCommitments) {
-            val term = commitment powP exponent
-            result *= term
-            exponent = xcoordQ * exponent // = l^j
-        }
-        return result
     }
 }

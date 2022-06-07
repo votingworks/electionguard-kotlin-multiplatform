@@ -41,7 +41,7 @@ data class PublicKeys(
  * @param generatingGuardianId The Id of the guardian that generated this, who might be missing at decryption
  * @param designatedGuardianId The Id of the guardian to receive this backup, matches the DecryptingTrustee.id
  * @param designatedGuardianXCoordinate The x coordinate of the designated guardian
- * @param encryptedCoordinate Encryption of  generatingGuardian's polynomial value at designatedGuardianXCoordinate, El(P𝑖_{l})
+ * @param encryptedCoordinate Encryption of generatingGuardian's polynomial value at designatedGuardianXCoordinate, El(P𝑖_{l})
  */
 data class SecretKeyShare(
     val generatingGuardianId: String,

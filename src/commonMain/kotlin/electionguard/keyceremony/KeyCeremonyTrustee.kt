@@ -8,7 +8,6 @@ import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
-import electionguard.core.compatibleContextOrFail
 import electionguard.core.decrypt
 import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.toElementModQ
@@ -117,31 +116,12 @@ class KeyCeremonyTrustee(
         val byteArray = backup.encryptedCoordinate.decrypt(secretKey)
             ?: throw IllegalStateException("Trustee $id backup for ${backup.generatingGuardianId} couldnt decrypt encryptedCoordinate")
         val expected: ElementModQ = byteArray.toUInt256().toElementModQ(group)
-        if (group.gPowP(expected) != gPil(this.xCoordinate, generatingKeys.coefficientCommitments)) {
+        if (group.gPowP(expected) != calculateGexpPiAtL(this.xCoordinate, generatingKeys.coefficientCommitments)) {
             return Err("Trustee $id failed to verify backup from ${backup.generatingGuardianId}")
         }
 
         guardianSecretKeyShares[backup.generatingGuardianId] = backup
         return Ok(backup)
-    }
-
-    // LOOK is this needed anywhere else ? in the verifier ??
-    // g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, k-1 because there are always k coefficients
-    fun gPil(
-        xcoord: UInt,  // l
-        coefficientCommitments: List<ElementModP>  // the committments to Pi
-    ): ElementModP {
-        val group = compatibleContextOrFail(*coefficientCommitments.toTypedArray())
-        val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord)
-        var computedValue: ElementModP = group.ONE_MOD_P
-        var xcoordPower: ElementModQ = group.ONE_MOD_Q // ℓ^j
-
-        for (commitment in coefficientCommitments) {
-            val term = commitment powP xcoordPower // (K_i,j)^ℓ^j
-            computedValue *= term
-            xcoordPower *= xcoordQ
-        }
-        return computedValue
     }
 
 }
