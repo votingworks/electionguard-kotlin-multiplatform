@@ -5,6 +5,7 @@ import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.SchnorrProof
+import electionguard.core.compatibleContextOrFail
 import electionguard.core.elGamalKeyPairFromRandom
 import electionguard.core.schnorrProof
 
@@ -34,6 +35,25 @@ data class ElectionPolynomial(
         }
         return computedValue
     }
+}
+
+// Used in KeyCeremonyTrustee and DecryptingTrustee
+// g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, k-1 because there are always k coefficients
+fun calculateGexpPiAtL(
+    xcoord: UInt,  // l
+    coefficientCommitments: List<ElementModP>  // the committments to Pi
+): ElementModP {
+    val group = compatibleContextOrFail(*coefficientCommitments.toTypedArray())
+    val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord)
+    var result: ElementModP = group.ONE_MOD_P
+    var xcoordPower: ElementModQ = group.ONE_MOD_Q // ℓ^j
+
+    for (commitment in coefficientCommitments) {
+        val term = commitment powP xcoordPower // (K_i,j)^ℓ^j
+        result *= term
+        xcoordPower *= xcoordQ
+    }
+    return result
 }
 
 fun GroupContext.generatePolynomial(
