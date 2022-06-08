@@ -33,7 +33,7 @@ fun testEncryptRecoveredDecrypt(present: List<Int>) {
 
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
-        KeyCeremonyTrustee(group, "guardian$seq", seq.toUInt(), quorum)
+        KeyCeremonyTrustee(group, "guardian$seq", seq, quorum)
     }.sortedBy { it.xCoordinate }
 
     // exchange PublicKeys
@@ -55,7 +55,7 @@ fun testEncryptRecoveredDecrypt(present: List<Int>) {
     val jointPublicKey: ElementModP =
         dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
-    testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), group.TWO_MOD_Q, dTrustees, present.map {it.toUInt()})
+    testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), group.TWO_MOD_Q, dTrustees, present)
 }
 
 

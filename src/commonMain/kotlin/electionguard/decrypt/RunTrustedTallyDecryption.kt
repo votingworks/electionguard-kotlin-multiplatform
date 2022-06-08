@@ -9,7 +9,7 @@ import electionguard.core.GroupContext
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ArgParser
@@ -53,9 +53,9 @@ fun main(args: Array<String>) {
 }
 
 fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String): List<DecryptingTrusteeIF> {
-    val electionRecordIn = ElectionRecord(inputDir, group)
-    val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-    val consumer = ElectionRecord(trusteeDir, group)
+    val consumerIn = Consumer(inputDir, group)
+    val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+    val consumer = Consumer(trusteeDir, group)
     return init.guardians.map { consumer.readTrustee(trusteeDir, it.guardianId) }
 }
 
@@ -68,8 +68,8 @@ fun runDecryptTally(
 ) {
     val starting = getSystemTimeInMillis()
 
-    val electionRecordIn = ElectionRecord(inputDir, group)
-    val tallyResult: TallyResult = electionRecordIn.readTallyResult().getOrThrow { IllegalStateException(it) }
+    val consumerIn = Consumer(inputDir, group)
+    val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
     val trusteeNames = decryptingTrustees.map { it.id()}.toSet()
     val missingGuardians =
         tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId)}.map { it.guardianId}

@@ -67,7 +67,7 @@ private fun GroupContext.importGuardian(
 
     return Ok(Guardian(
         guardian.guardianId,
-        guardian.xCoordinate.toUInt(),
+        guardian.xCoordinate,
         coefficientCommitments,
         coefficientProofs,
     ))
@@ -96,7 +96,7 @@ private fun Guardian.publishGuardian(): electionguard.protogen.Guardian {
     return electionguard.protogen
         .Guardian(
             this.guardianId,
-            this.xCoordinate.toInt(), // why proto is not a UInt?
+            this.xCoordinate,
             coefficientCommitments,
             coefficientProofs,
         )

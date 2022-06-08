@@ -23,8 +23,8 @@ data class ElectionPolynomial(
 ) {
 
     // The value of the polynomial at xcoord
-    fun valueAt(group: GroupContext, xcoord : UInt): ElementModQ {
-        val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord)
+    fun valueAt(group: GroupContext, xcoord : Int): ElementModQ {
+        val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())
         var computedValue: ElementModQ = group.ZERO_MOD_Q
         var xcoordPower: ElementModQ = group.ONE_MOD_Q
 
@@ -40,11 +40,11 @@ data class ElectionPolynomial(
 // Used in KeyCeremonyTrustee and DecryptingTrustee
 // g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, k-1 because there are always k coefficients
 fun calculateGexpPiAtL(
-    xcoord: UInt,  // l
+    xcoord: Int,  // l
     coefficientCommitments: List<ElementModP>  // the committments to Pi
 ): ElementModP {
     val group = compatibleContextOrFail(*coefficientCommitments.toTypedArray())
-    val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord)
+    val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())
     var result: ElementModP = group.ONE_MOD_P
     var xcoordPower: ElementModQ = group.ONE_MOD_Q // ℓ^j
 

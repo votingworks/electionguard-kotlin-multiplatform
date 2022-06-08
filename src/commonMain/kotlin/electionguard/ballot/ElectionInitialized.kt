@@ -35,7 +35,7 @@ data class ElectionInitialized(
 /** Public info for the ith Guardian/Trustee. */
 data class Guardian(
     val guardianId: String,
-    val xCoordinate: UInt, // use sequential numbering starting at 1; = i of T_i, K_i
+    val xCoordinate: Int, // use sequential numbering starting at 1; = i of T_i, K_i
     val coefficientCommitments: List<ElementModP>,  // g^a_j, j = 1..quorum; h_0 = K_i = public key
     val coefficientProofs: List<SchnorrProof>
 ) {

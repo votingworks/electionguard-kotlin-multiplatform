@@ -4,7 +4,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.productionGroup
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlin.test.Test
@@ -19,8 +19,8 @@ class RunFakeBallotTest {
         val outputDir =  "testOut/runFakeBallotTest/private_data"
         val nballots = 33
 
-        val electionRecordIn = ElectionRecord(inputDir, group)
-        val init: ElectionInitialized = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+        val consumerIn = Consumer(inputDir, group)
+        val init: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
 
         val ballotProvider = RandomBallotProvider(init.config.manifest, nballots)
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()

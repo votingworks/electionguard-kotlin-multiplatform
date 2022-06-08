@@ -16,8 +16,8 @@ class ConsumerTest {
     fun readElectionRecord() {
         runTest {
             val context = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, context)
-            val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+            val consumerIn = Consumer(topdir, context)
+            val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val config = init.config
             println("electionRecord.protoVersion = ${config.protoVersion}")
             assertEquals("2.0.0", config.protoVersion)
@@ -31,9 +31,9 @@ class ConsumerTest {
     fun readSpoiledBallotTallys() {
         runTest {
             val context = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, context)
+            val consumerIn = Consumer(topdir, context)
             var count = 0
-            for (tally in electionRecordIn.iterateSpoiledBallotTallies()) {
+            for (tally in consumerIn.iterateSpoiledBallotTallies()) {
                 println("$count tally = ${tally.tallyId}")
                 assertTrue(tally.tallyId.startsWith("ballot-id"))
                 count++
@@ -45,9 +45,9 @@ class ConsumerTest {
     fun readEncryptedBallots() {
         runTest {
             val context = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, context)
+            val consumerIn = Consumer(topdir, context)
             var count = 0
-            for (ballot in electionRecordIn.iterateEncryptedBallots { true} ) {
+            for (ballot in consumerIn.iterateEncryptedBallots { true} ) {
                 println("$count ballot = ${ballot.ballotId}")
                 assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
@@ -59,9 +59,9 @@ class ConsumerTest {
     fun readEncryptedBallotsCast() {
         runTest {
             val context = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, context)
+            val consumerIn = Consumer(topdir, context)
             var count = 0
-            for (ballot in electionRecordIn.iterateCastBallots()) {
+            for (ballot in consumerIn.iterateCastBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
                 assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
@@ -73,9 +73,9 @@ class ConsumerTest {
     fun readSubmittedBallotsSpoiled() {
         runTest {
             val context = productionGroup()
-            val electionRecordIn = ElectionRecord(topdir, context)
+            val consumerIn = Consumer(topdir, context)
             var count = 0
-            for (ballot in electionRecordIn.iterateSpoiledBallots()) {
+            for (ballot in consumerIn.iterateSpoiledBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
                 assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
@@ -88,11 +88,11 @@ class ConsumerTest {
         runTest {
             val context = productionGroup()
             val initDir = "src/commonTest/data/runWorkflowAllAvailable"
-            val electionRecordIn = ElectionRecord(initDir, context)
-            val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+            val consumerIn = Consumer(initDir, context)
+            val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
             init.guardians.forEach {
-                val trustee = electionRecordIn.readTrustee(trusteeDir, it.guardianId)
+                val trustee = consumerIn.readTrustee(trusteeDir, it.guardianId)
                 println("trustee = ${trustee}")
                 assertTrue(trustee.id().equals(it.guardianId))
             }
@@ -104,9 +104,9 @@ class ConsumerTest {
         runTest {
             val context = productionGroup()
             val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
-            val electionRecordIn = ElectionRecord(trusteeDir, context)
+            val consumerIn = Consumer(trusteeDir, context)
             val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
-                electionRecordIn.readTrustee(trusteeDir, "badId")
+                consumerIn.readTrustee(trusteeDir, "badId")
             }
             assertTrue(result is Err)
             val message: String = result.getError()?.message ?: "not"
@@ -120,8 +120,8 @@ class ConsumerTest {
             val context = productionGroup()
             val trusteeDir = "src/commonTest/data/testBad/nonexistant"
             val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
-                val electionRecordIn = ElectionRecord(trusteeDir, context)
-                electionRecordIn.readTrustee(trusteeDir, "randomName")
+                val consumerIn = Consumer(trusteeDir, context)
+                consumerIn.readTrustee(trusteeDir, "randomName")
             }
             assertFalse(result is Ok)
         }

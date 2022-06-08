@@ -5,23 +5,32 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
 import electionguard.ballot.DecryptingGuardian
-import electionguard.ballot.DecryptionResult
+import electionguard.ballot.PlaintextTally
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
+import electionguard.publish.ElectionRecord
 
 /** When there are missing guardians, check "replacement partial decryptions" (box 10). */
 class VerifyRecoveredShares(
     val group: GroupContext,
-    val decryptionResult: DecryptionResult
+    val record: ElectionRecord
 ) {
-    val lagrangeCoefficients: Map<String, ElementModQ> = decryptionResult.decryptingGuardians.associate { it.guardianId to it.lagrangeCoordinate }
+    val decryptingGuardians : List<DecryptingGuardian>
+    val lagrangeCoefficients: Map<String, ElementModQ>
+    val decryptedTally : PlaintextTally
+
+    init {
+        decryptingGuardians = record.decryptingGuardians()
+        lagrangeCoefficients = decryptingGuardians.associate { it.guardianId to it.lagrangeCoordinate }
+        decryptedTally = record.decryptedTally()!!
+    }
 
     fun verify(): Result<Boolean, String> {
-        val decryptingGuardianCount = decryptionResult.decryptingGuardians.size
-        if (decryptingGuardianCount == decryptionResult.numberOfGuardians()) {
+        val decryptingGuardianCount = decryptingGuardians.size
+        if (decryptingGuardianCount == record.numberOfGuardians()) {
             println(" Does not have missing guardians")
             return Ok(true)
         }
@@ -32,15 +41,14 @@ class VerifyRecoveredShares(
     /** Verify 10.A for available guardians lagrange coefficients, if there are missing guardians.  */
     fun verifyLagrangeCoefficients(): Result<Boolean, String> {
         val errors = mutableListOf<String>()
-        val guardians: List<DecryptingGuardian> = decryptionResult.decryptingGuardians
-        for (guardian in guardians) {
-            val seqOthers = mutableListOf<UInt>()
-            for (other in guardians) {
+        for (guardian in decryptingGuardians) {
+            val seqOthers = mutableListOf<Int>()
+            for (other in decryptingGuardians) {
                 if (!other.guardianId.equals(guardian.guardianId)) {
-                    seqOthers.add(other.xCoordinate.toUInt())
+                    seqOthers.add(other.xCoordinate)
                 }
             }
-            if (!verifyLagrangeCoefficient(guardian.xCoordinate.toUInt(), seqOthers, guardian.lagrangeCoordinate)) {
+            if (!verifyLagrangeCoefficient(guardian.xCoordinate, seqOthers, guardian.lagrangeCoordinate)) {
                 errors.add(" *** 10.A Lagrange coefficients failure for guardian ${guardian.guardianId}")
             }
         }
@@ -50,7 +58,7 @@ class VerifyRecoveredShares(
     // 10.A. An election verifier should confirm that for each trustee T_l serving to help compute a missing
     // share of a tally, that its Lagrange coefficient w_l is correctly computed by confirming the equation
     //     (∏ j∈(U−{l}) j) mod q = (w_l ⋅ (∏ j∈(U−{l}) (j − l) )) mod q
-    fun verifyLagrangeCoefficient(coordinate: UInt, present: List<UInt>, expected: ElementModQ): Boolean {
+    fun verifyLagrangeCoefficient(coordinate: Int, present: List<Int>, expected: ElementModQ): Boolean {
         val computed = group.computeLagrangeCoefficient(coordinate, present)
         return expected == computed
     }
@@ -58,7 +66,7 @@ class VerifyRecoveredShares(
     // 10.B Confirm missing tally shares
     private fun verifyShares(): Result<Boolean, String> {
         val errors = mutableListOf<String>()
-        for (contest in decryptionResult.decryptedTally.contests.values) {
+        for (contest in decryptedTally.contests.values) {
             for (selection in contest.selections.values) {
                 val id: String = contest.contestId + "-" + selection.selectionId
                 for (partial in selection.partialDecryptions) {

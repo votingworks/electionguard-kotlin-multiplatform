@@ -11,7 +11,7 @@ interface DecryptingTrusteeIF {
     fun id(): String
 
     /** Guardian x coordinate, for compensated partial decryption  */
-    fun xCoordinate(): UInt
+    fun xCoordinate(): Int
 
     /** The guardian's public key = K_i.  */
     fun electionPublicKey(): ElementModP

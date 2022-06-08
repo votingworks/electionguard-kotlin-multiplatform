@@ -1,35 +1,47 @@
 package electionguard.publish
 
-import com.github.michaelbull.result.Result
-import electionguard.ballot.DecryptionResult
-import electionguard.ballot.ElectionConfig
+import electionguard.ballot.DecryptingGuardian
+import electionguard.ballot.ElectionConstants
 import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.PlaintextTally
 import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.TallyResult
-import electionguard.core.GroupContext
-import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.ballot.EncryptedTally
+import electionguard.ballot.Guardian
+import electionguard.ballot.Manifest
+import electionguard.ballot.PlaintextTally
+import electionguard.core.ElementModP
+import electionguard.core.ElementModQ
+import electionguard.core.UInt256
 
-expect class ElectionRecord(
-    topDir: String,
-    groupContext: GroupContext,
-) {
+/** Interface to the published election record.  */
+interface ElectionRecord {
+    enum class Stage { CONFIG, INIT, ENCRYPTED, TALLIED, DECRYPTED, }
+
+    fun stage() : Stage
     fun topdir() : String
 
-    fun readElectionConfig(): Result<ElectionConfig, String>
-    fun readElectionInitialized(): Result<ElectionInitialized, String>
-    fun readTallyResult(): Result<TallyResult, String>
-    fun readDecryptionResult(): Result<DecryptionResult, String>
+    fun protoVersion(): String
+    fun constants(): ElectionConstants
+    fun manifest(): Manifest
+    /** The number of guardians necessary to generate the public key. */
+    fun numberOfGuardians(): Int
+    /** The quorum of guardians necessary to decrypt an election. Must be <= number_of_guardians. */
+    fun quorum(): Int
 
-    // Use iterators, so that we never have to read in all objects at once.
-    fun iterateEncryptedBallots(filter : (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot>
-    fun iterateCastBallots(): Iterable<EncryptedBallot>
-    fun iterateSpoiledBallots(): Iterable<EncryptedBallot>
-    fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally>
+    /** The extended base hash, Qbar in the spec.  */
+    fun cryptoExtendedBaseHash(): UInt256?
+    /** The base hash, Q in the spec.  */
+    fun cryptoBaseHash(): UInt256?
+    /** Joint election key, K in the spec.  */
+    fun jointPublicKey(): ElementModP?
+    /** public data of the guardians. */
+    fun guardians(): List<Guardian> // may be empty
+    fun electionInit(): ElectionInitialized?
 
-    // not part of the election record, private data
-    fun iteratePlaintextBallots(ballotDir: String, filter : (PlaintextBallot) -> Boolean): Iterable<PlaintextBallot>
-    fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF
+    fun encryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> // may be empty
 
+    fun encryptedTally(): EncryptedTally?
+
+    fun decryptedTally(): PlaintextTally?
+    fun decryptingGuardians(): List<DecryptingGuardian> // may be empty
+    fun spoiledBallotTallies(): Iterable<PlaintextTally> // may be empty
 }

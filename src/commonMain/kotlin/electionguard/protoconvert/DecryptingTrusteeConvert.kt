@@ -32,7 +32,7 @@ fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.Decryptin
 
     val result = DecryptingTrustee(
         proto.guardianId,
-        proto.guardianXCoordinate.toUInt(),
+        proto.guardianXCoordinate,
         electionKeyPair.unwrap(),
         shares.associateBy { it.generatingGuardianId },
         commitments.associate { it.guardianId to it.commitments },
@@ -80,7 +80,7 @@ private fun GroupContext.importSecretKeyShare(id:String, keyShare: electionguard
     return Ok(SecretKeyShare(
         keyShare.generatingGuardianId,
         keyShare.designatedGuardianId,
-        keyShare.designatedGuardianXCoordinate.toUInt(),
+        keyShare.designatedGuardianXCoordinate,
         encryptedCoordinate.unwrap(),
     ))
 }
@@ -109,7 +109,7 @@ private data class CommitmentSet(val guardianId: String, val commitments: List<E
 fun KeyCeremonyTrustee.publishDecryptingTrustee(): electionguard.protogen.DecryptingTrustee {
     return electionguard.protogen.DecryptingTrustee(
         this.id,
-        this.xCoordinate.toInt(),
+        this.xCoordinate,
         ElGamalKeypair(
             ElGamalSecretKey(this.polynomial.coefficients[0]),
             ElGamalPublicKey(this.electionPublicKey())
@@ -130,7 +130,7 @@ private fun SecretKeyShare.publishSecretKeyShare(): electionguard.protogen.Secre
     return electionguard.protogen.SecretKeyShare(
         this.generatingGuardianId,
         this.designatedGuardianId,
-        this.designatedGuardianXCoordinate.toInt(),
+        this.designatedGuardianXCoordinate,
         this.encryptedCoordinate.publishHashedCiphertext(),
     )
 }

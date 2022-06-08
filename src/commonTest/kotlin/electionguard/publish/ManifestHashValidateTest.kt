@@ -19,8 +19,8 @@ class ManifestHashValidateTest {
     fun readElectionRecord() {
         runTest {
             val context = productionGroup()
-            val electionRecordIn = ElectionRecord(input, context)
-            val init = electionRecordIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+            val consumerIn = Consumer(input, context)
+            val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val electionConfig = init.config
             validateManifestHash(electionConfig.manifest)
         }

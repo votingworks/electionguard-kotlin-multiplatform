@@ -29,7 +29,7 @@ class LagrangeCoefficientsTest {
             val coeff: Int = computeLagrangeCoefficientInt(coord, others)
             val numer: Int = computeLagrangeNumerator(coord, others)
             val denom: Int = computeLagrangeDenominator(coord, others)
-            val coeffQ = group.computeLagrangeCoefficient(coord.toUInt(), others.map { it.toUInt() })
+            val coeffQ = group.computeLagrangeCoefficient(coord, others.map { it})
             println("($coord) $coeff == ${numer} / ${denom} rem ${numer % denom} == $coeffQ")
             if (exact) {
                 assertEquals(0, numer % denom)

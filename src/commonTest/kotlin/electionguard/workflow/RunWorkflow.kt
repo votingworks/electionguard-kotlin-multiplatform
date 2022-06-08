@@ -7,9 +7,10 @@ import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.runDecryptTally
 import electionguard.encrypt.batchEncryption
-import electionguard.publish.ElectionRecord
+import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
+import electionguard.publish.electionRecordFromConsumer
 import electionguard.tally.runAccumulateBallots
 import electionguard.verifier.Verifier
 import kotlin.test.Test
@@ -28,7 +29,7 @@ class RunWorkflow {
         val invalidDir =  "${privateDir}/invalid"
 
         val group = productionGroup()
-        val present = listOf(1U, 2U, 3U) // all guardians present
+        val present = listOf(1, 2, 3) // all guardians present
         val nguardians = present.maxOf { it }.toInt()
         val quorum = present.count()
 
@@ -54,7 +55,8 @@ class RunWorkflow {
 
         // verify
         println("\nRun Verifier")
-        val verifier = Verifier(group, ElectionRecord(workingDir, group))
+        val record = electionRecordFromConsumer(Consumer(workingDir, group))
+        val verifier = Verifier(record)
         val ok = verifier.verify()
         println("Verify is $ok")
     }
@@ -70,7 +72,7 @@ class RunWorkflow {
         val invalidDir =  "${privateDir}/invalid"
 
         val group = productionGroup()
-        val present = listOf(1U, 2U, 5U) // 3 of 5 guardians present
+        val present = listOf(1, 2, 5) // 3 of 5 guardians present
         val nguardians = present.maxOf { it }.toInt()
         val quorum = present.count()
 
@@ -96,7 +98,8 @@ class RunWorkflow {
 
         // verify
         println("\nRun Verifier")
-        val verifier = Verifier(group, ElectionRecord(workingDir, group))
+        val record = electionRecordFromConsumer(Consumer(workingDir, group))
+        val verifier = Verifier(record)
         val ok = verifier.verify()
         println("Verify is $ok")
     }
@@ -106,8 +109,8 @@ fun readDecryptingTrustees(
     group: GroupContext,
     trusteeDir: String,
     init: ElectionInitialized,
-    present: List<UInt>,
+    present: List<Int>,
 ): List<DecryptingTrusteeIF> {
-    val consumer = ElectionRecord(trusteeDir, group)
+    val consumer = Consumer(trusteeDir, group)
     return init.guardians.filter { present.contains(it.xCoordinate)}.map { consumer.readTrustee(trusteeDir, it.guardianId) }
 }

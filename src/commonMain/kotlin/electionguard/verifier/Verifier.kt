@@ -4,10 +4,8 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
-import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Guardian
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextTally
 import electionguard.core.ElGamalPublicKey
@@ -17,62 +15,90 @@ import electionguard.core.GroupContext
 import electionguard.core.UInt256
 import electionguard.core.hasValidSchnorrProof
 import electionguard.core.hashElements
+import electionguard.core.productionGroup
 import electionguard.core.toElementModQ
 import electionguard.publish.ElectionRecord
 
 // quick proof verification - not necessarily the verification spec
-class Verifier(val group: GroupContext, private val electionRecord: ElectionRecord, private val nthreads: Int = 11) {
+class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
+    val group: GroupContext
+    val manifest: Manifest
     val jointPublicKey: ElGamalPublicKey
     val cryptoExtendedBaseHash: ElementModQ
-    val decryptionResult: DecryptionResult
-    val guardiansPublic: List<Guardian>
-    val manifest: Manifest
+    // val decryptionResult: DecryptionResult
+    // val guardiansPublic: List<Guardian>
 
     init {
-        decryptionResult = electionRecord.readDecryptionResult().getOrThrow { throw IllegalStateException(it) }
-        jointPublicKey = decryptionResult.tallyResult.jointPublicKey()
-        cryptoExtendedBaseHash = decryptionResult.tallyResult.cryptoExtendedBaseHash().toElementModQ(group)
-        manifest = decryptionResult.tallyResult.electionInitialized.manifest()
-        guardiansPublic = decryptionResult.tallyResult.electionInitialized.guardians
+        if (record.stage() < ElectionRecord.Stage.INIT) {
+            throw IllegalStateException("election record stage = ${record.stage()}, not initialized\n")
+        }
+
+        group = productionGroup()
+        jointPublicKey = ElGamalPublicKey(record.jointPublicKey()!!)
+        cryptoExtendedBaseHash = record.cryptoExtendedBaseHash()!!.toElementModQ(group)
+        manifest = record.manifest()
     }
 
     fun verify(): Boolean {
-        println("Verify election record in = ${electionRecord.topdir()}\n")
+        println("Verify election record in = ${record.topdir()}\n")
+
+        if (record.stage() < ElectionRecord.Stage.INIT) {
+            println("election record stage = ${record.stage()}, stopping verification now\n")
+            return false
+        }
 
         val guardiansOk = verifyGuardianPublicKey()
-        println(" 2. verifyGuardianPublicKey= $guardiansOk")
+        println(" 2. verifyGuardianPublicKeys= $guardiansOk")
 
-        val publicKeyOk = verifyElectionPublicKey(decryptionResult.tallyResult.electionInitialized.cryptoBaseHash)
+        val publicKeyOk = verifyElectionPublicKey(record.cryptoBaseHash()!!)
         println(" 3. verifyElectionPublicKey= $publicKeyOk")
+
+        if (record.stage() < ElectionRecord.Stage.ENCRYPTED) {
+            println("election record stage = ${record.stage()}, stopping verification now\n")
+            return true
+        }
 
         // encryption and vote limits
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, cryptoExtendedBaseHash, nthreads)
         // Note we are validating all ballots, not just CAST
-        val ballotStats = verifyBallots.verify(electionRecord.iterateEncryptedBallots { true })
+        val ballotStats = verifyBallots.verify(record.encryptedBallots { true })
         println(" 4,5. verifySelectionEncryptions, contestVoteLimits $ballotStats")
 
         // TODO not doing ballot chaining test (box 6)
 
+        if (record.stage() < ElectionRecord.Stage.TALLIED) {
+            println("election record stage = ${record.stage()}, stopping verification now\n")
+            return true
+        }
+
         // tally accumulation
         val verifyAggregation = VerifyAggregation(group, verifyBallots.aggregator)
-        val aggResult = verifyAggregation.verify(decryptionResult.tallyResult.encryptedTally)
+        val encryptedTally = record.encryptedTally()!!
+        val aggResult = verifyAggregation.verify(encryptedTally)
         println(" 7. verifyBallotAggregation $aggResult")
 
+        if (record.stage() < ElectionRecord.Stage.DECRYPTED) {
+            println("election record stage = ${record.stage()}, stopping verification now\n")
+            return true
+        }
+
         // decryption
-        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardiansPublic)
-        val tallyStats = verifyTally.verifyDecryptedTally(decryptionResult.decryptedTally)
+        val decryptedTally = record.decryptedTally()!!
+        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, record.guardians())
+        val tallyStats = verifyTally.verifyDecryptedTally(decryptedTally)
         println(" 8,9,11. verifyDecryptedTally $tallyStats")
 
         // box 10
-        if (decryptionResult.decryptingGuardians.size == decryptionResult.numberOfGuardians()) {
+        val decryptingGuardians = record.decryptingGuardians()
+        if (decryptingGuardians.size == record.numberOfGuardians()) {
             println(" 10. Correctness of Replacement Partial Decryptions not needed since there are no missing guardians")
         } else {
-            val pdvStats = VerifyRecoveredShares(group, decryptionResult).verify()
+            val pdvStats = VerifyRecoveredShares(group, record).verify()
             println(" 10. Correctness of Replacement Partial Decryptions $pdvStats")
         }
 
         val spoiledStats =
-            verifyTally.verifySpoiledBallotTallies(electionRecord.iterateSpoiledBallotTallies(), nthreads)
+            verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads)
         println(" 12. verifySpoiledBallotTallies $spoiledStats")
 
         return (guardiansOk is Ok) && (publicKeyOk is Ok) && (aggResult is Ok) && ballotStats.allOk && tallyStats.allOk && spoiledStats.allOk
@@ -80,7 +106,7 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
 
     private fun verifyGuardianPublicKey(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
-        for (guardian in this.guardiansPublic) {
+        for (guardian in this.record.guardians()) {
             guardian.coefficientProofs.forEachIndexed { index, proof ->
                 val publicKey = ElGamalPublicKey(guardian.coefficientCommitments[index])
                 if (!publicKey.hasValidSchnorrProof(proof)) {
@@ -95,14 +121,14 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
     }
 
     private fun verifyElectionPublicKey(cryptoBaseHash: UInt256): Result<Boolean, String> {
-        val jointPublicKeyComputed = this.guardiansPublic.map { it.publicKey() }.reduce { a, b -> a * b }
+        val jointPublicKeyComputed = this.record.guardians().map { it.publicKey() }.reduce { a, b -> a * b }
         val errors = mutableListOf<String>()
         if (!jointPublicKey.equals(jointPublicKeyComputed)) {
             errors.add("  3.A jointPublicKey does not equal computed")
         }
 
         val commitments = mutableListOf<ElementModP>()
-        this.guardiansPublic.forEach { commitments.addAll(it.coefficientCommitments) }
+        this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments) }
         val commitmentsHash = hashElements(commitments)
         val computedQbar: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
         if (!cryptoExtendedBaseHash.equals(computedQbar.toElementModQ(group))) {
@@ -114,7 +140,7 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
 
     fun verifyEncryptedBallots(): StatsAccum {
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, cryptoExtendedBaseHash, nthreads)
-        return verifyBallots.verify(electionRecord.iterateEncryptedBallots { true })
+        return verifyBallots.verify(record.encryptedBallots { true })
     }
 
     fun verifyEncryptedBallots(ballots: Iterable<EncryptedBallot>): StatsAccum {
@@ -123,21 +149,18 @@ class Verifier(val group: GroupContext, private val electionRecord: ElectionReco
     }
 
     fun verifyDecryptedTally(tally: PlaintextTally): Stats {
-        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardiansPublic)
+        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, record.guardians())
         return verifyTally.verifyDecryptedTally(tally)
     }
 
-    fun verifyRecoveredShares(result: DecryptionResult): Result<Boolean, String> {
-        val verifier = VerifyRecoveredShares(
-            group,
-            result
-        )
+    fun verifyRecoveredShares(): Result<Boolean, String> {
+        val verifier = VerifyRecoveredShares(group, record)
         return verifier.verify()
     }
 
     fun verifySpoiledBallotTallies(): StatsAccum {
-        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, guardiansPublic)
-        return verifyTally.verifySpoiledBallotTallies(electionRecord.iterateSpoiledBallotTallies(), nthreads)
+        val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, record.guardians())
+        return verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads)
     }
 
 }
