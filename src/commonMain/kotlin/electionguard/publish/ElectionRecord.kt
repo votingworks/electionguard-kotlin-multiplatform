@@ -37,7 +37,7 @@ interface ElectionRecord {
     fun guardians(): List<Guardian> // may be empty
     fun electionInit(): ElectionInitialized?
 
-    fun encryptedBallots(filter : (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> // may be empty
+    fun encryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> // may be empty
 
     fun encryptedTally(): EncryptedTally?
 

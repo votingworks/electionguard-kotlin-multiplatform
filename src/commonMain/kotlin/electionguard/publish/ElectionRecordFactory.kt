@@ -117,7 +117,7 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return init
     }
 
-    override fun encryptedBallots(filter : (EncryptedBallot) -> Boolean): Iterable<EncryptedBallot> {
+    override fun encryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
         return consumer.iterateEncryptedBallots(filter)
     }
 
