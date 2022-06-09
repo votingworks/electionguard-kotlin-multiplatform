@@ -2,6 +2,7 @@ package electionguard.workflow
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
@@ -26,6 +27,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /** Run a fake KeyCeremony to generate an ElectionInitialized for workflow testing. */
+// LOOK can we call RunKeyCeremony instead?
 class RunFakeKeyCeremonyTest {
 
     @Test
@@ -80,7 +82,7 @@ fun runFakeKeyCeremony(
     }
 
     val commitments: MutableList<ElementModP> = mutableListOf()
-    trustees.forEach { commitments.addAll(it.polynomial.coefficientCommitments) }
+    trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
     val commitmentsHash = hashElements(commitments)
 
     val primes = config.constants
@@ -129,7 +131,7 @@ fun runFakeKeyCeremony(
 }
 
 fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
-    val publicKeys = trustee.sharePublicKeys()
+    val publicKeys = trustee.sendPublicKeys().unwrap()
     return Guardian(
         trustee.id,
         trustee.xCoordinate,
@@ -148,7 +150,7 @@ fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
         ktrustee.id,
         ktrustee.xCoordinate,
         ElGamalKeypair(
-            ElGamalSecretKey(ktrustee.polynomial.coefficients[0]),
+            ElGamalSecretKey(ktrustee.electionPrivateKey()),
             ElGamalPublicKey(ktrustee.electionPublicKey())
         ),
         ktrustee.guardianSecretKeyShares,

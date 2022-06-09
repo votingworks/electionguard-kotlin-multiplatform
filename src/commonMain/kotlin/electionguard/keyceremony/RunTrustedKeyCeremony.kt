@@ -4,6 +4,7 @@ package electionguard.keyceremony
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
@@ -69,11 +70,7 @@ fun runKeyCeremony(
     val consumerIn = Consumer(configDir, group)
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
-    // class KeyCeremonyTrustee(
-    //    val group: GroupContext,
-    //    val id: String,
-    //    val xCoordinate: UInt,
-    //    val quorum: Int,
+    // Generate numberOfGuardians KeyCeremonyTrustees, which means this is a trusted situation.
     val trustees: List<KeyCeremonyTrustee> = List(config.numberOfGuardians) {
         val seq = it + 1
         KeyCeremonyTrustee(group, "trustee$seq", seq, config.quorum)
@@ -86,7 +83,7 @@ fun runKeyCeremony(
     }
 
     val commitments: MutableList<ElementModP> = mutableListOf()
-    trustees.forEach { commitments.addAll(it.polynomial.coefficientCommitments) }
+    trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
     val commitmentsHash = hashElements(commitments)
 
     val primes = config.constants
@@ -118,6 +115,7 @@ fun runKeyCeremony(
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeElectionInitialized(init)
 
+    // store the trustees in some private place.
     val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
     trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
 
@@ -126,11 +124,11 @@ fun runKeyCeremony(
     return true
 }
 
-private fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
-    val publicKeys = trustee.sharePublicKeys()
+private fun makeGuardian(trustee: KeyCeremonyTrusteeIF): Guardian {
+    val publicKeys = trustee.sendPublicKeys().unwrap()
     return Guardian(
-        "guardian${trustee.xCoordinate}",
-        trustee.xCoordinate,
+        trustee.id(),
+        trustee.xCoordinate(),
         publicKeys.coefficientCommitments,
         publicKeys.coefficientProofs,
     )

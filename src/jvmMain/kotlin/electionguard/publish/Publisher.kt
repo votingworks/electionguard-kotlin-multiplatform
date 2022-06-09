@@ -16,7 +16,6 @@ import electionguard.publish.ElectionRecordPath.Companion.ELECTION_INITIALIZED_F
 import electionguard.publish.ElectionRecordPath.Companion.SPOILED_BALLOT_FILE
 import electionguard.publish.ElectionRecordPath.Companion.ENCRYPTED_BALLOT_PROTO
 import electionguard.publish.ElectionRecordPath.Companion.TALLY_RESULT_NAME
-import io.ktor.utils.io.errors.*
 import pbandk.encodeToStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -48,7 +47,6 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     }
 
     /** Delete everything in the given directory, but leave that directory.  */
-    @Throws(IOException::class)
     private fun removeAllFiles(path: Path) {
         if (!path.toFile().exists()) {
             return
@@ -151,7 +149,6 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    @Throws(IOException::class)
     actual fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
         if (!plaintextBallots.isEmpty()) {
             val fileout = path.plaintextBallotPath(outputDir)

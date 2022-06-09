@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
+import com.github.michaelbull.result.unwrap
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.HashedElGamalCiphertext
@@ -16,6 +17,13 @@ data class PublicKeys(
     val coefficientCommitments: List<ElementModP>,
     val coefficientProofs: List<SchnorrProof>,
 ) {
+    init {
+        require(guardianId.isNotEmpty())
+        require(guardianXCoordinate > 0)
+        require(coefficientCommitments.isNotEmpty())
+        require(coefficientProofs.isNotEmpty())
+    }
+
     fun publicKey(): ElGamalPublicKey {
         return ElGamalPublicKey(coefficientCommitments[0])
     }
@@ -48,15 +56,27 @@ data class SecretKeyShare(
     val designatedGuardianId: String,
     val designatedGuardianXCoordinate: Int,
     val encryptedCoordinate: HashedElGamalCiphertext,
-)
+) {
+    init {
+        require(generatingGuardianId.isNotEmpty())
+        require(designatedGuardianId.isNotEmpty())
+        require(designatedGuardianXCoordinate > 0)
+    }
+}
 
 /** Exchange publicKeys and secretShares among the trustees */
-fun keyCeremonyExchange(trustees: List<KeyCeremonyTrustee>): Result<Boolean, String> {
+fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<Boolean, String> {
+
     // exchange PublicKeys
     val publicKeyResults: MutableList<Result<PublicKeys, String>> = mutableListOf()
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            publicKeyResults.add(t1.receivePublicKeys(t2.sharePublicKeys()))
+            val sendPublicKeysResult = t2.sendPublicKeys()
+            if (sendPublicKeysResult is Ok) {
+                publicKeyResults.add(t1.receivePublicKeys(sendPublicKeysResult.unwrap()))
+            } else {
+                publicKeyResults.add(sendPublicKeysResult)
+            }
         }
     }
 
@@ -65,13 +85,20 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrustee>): Result<Boolean, Str
         return Err("runKeyCeremony failed exchanging public keys: ${errors.joinToString("\n")}")
     }
 
-    // exchange SecretKeyShares
+    // exchange SecretKeyShares, and validate them
     val secretKeyResults: MutableList<Result<SecretKeyShare, String>> = mutableListOf()
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            secretKeyResults.add(t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id)))
+            val sendSecretKeyShareResult = t1.sendSecretKeyShare(t2.id())
+            if (sendSecretKeyShareResult is Ok) {
+                secretKeyResults.add(t2.receiveSecretKeyShare(sendSecretKeyShareResult.unwrap()))
+            } else {
+                secretKeyResults.add(sendSecretKeyShareResult)
+            }
         }
     }
+
+    // LOOK we are not doing the challenge/response scenario. Not clear under what circumstance that is needed.
 
     errors = secretKeyResults.getAllErrors()
     if (errors.isNotEmpty()) {

@@ -17,6 +17,7 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.PublicKeys
 import electionguard.keyceremony.SecretKeyShare
 
+// DecryptingTrustee must stay private. DecryptingGuardian is its public info.
 fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.DecryptingTrustee):
         Result<DecryptingTrustee, String> {
 
@@ -46,7 +47,6 @@ private fun GroupContext.importElGamalKeypair(id:String, keypair: electionguard.
     if (keypair == null) {
         return Err("DecryptingTrustee $id missing keypair")
     }
-
     val secretKey = this.importElementModQ(keypair.secretKey)
         .toResultOr {"DecryptingTrustee $id secretKey was malformed or missing"}
     val publicKey = this.importElementModP(keypair.publicKey)
@@ -56,7 +56,6 @@ private fun GroupContext.importElGamalKeypair(id:String, keypair: electionguard.
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
-
     return Ok(ElGamalKeypair(
         ElGamalSecretKey(secretKey.unwrap()),
         ElGamalPublicKey(publicKey.unwrap()),
@@ -76,7 +75,6 @@ private fun GroupContext.importSecretKeyShare(id:String, keyShare: electionguard
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
-
     return Ok(SecretKeyShare(
         keyShare.generatingGuardianId,
         keyShare.designatedGuardianId,
@@ -94,7 +92,6 @@ private fun GroupContext.importCommitmentSet(id:String, proto: electionguard.pro
     if (cerrors.isNotEmpty()) {
         return Err(cerrors.joinToString("\n"))
     }
-
     return Ok(CommitmentSet(
         proto.guardianId,
         commitments,
@@ -108,10 +105,10 @@ private data class CommitmentSet(val guardianId: String, val commitments: List<E
 
 fun KeyCeremonyTrustee.publishDecryptingTrustee(): electionguard.protogen.DecryptingTrustee {
     return electionguard.protogen.DecryptingTrustee(
-        this.id,
-        this.xCoordinate,
+        this.id(),
+        this.xCoordinate(),
         ElGamalKeypair(
-            ElGamalSecretKey(this.polynomial.coefficients[0]),
+            ElGamalSecretKey(this.electionPrivateKey()),
             ElGamalPublicKey(this.electionPublicKey())
         ).publishElGamalKeyPair(),
         this.guardianSecretKeyShares.values.map { it.publishSecretKeyShare() },
