@@ -15,14 +15,20 @@ data class ElectionPolynomial(
     /** The secret coefficients `a_j, j = 1..k`  */
     val coefficients: List<ElementModQ>,
 
-    /** The coefficient commitments `K_j = g^a_j`. */
+    /** The public coefficient commitments `K_j = g^a_j`. */
     val coefficientCommitments: List<ElementModP>,
 
-    /** A proof of possession of the private key for each secret coefficient. */
+    /** A public proof of possession for each secret coefficient. */
     val coefficientProofs: List<SchnorrProof>,
 ) {
+    init {
+        require(guardianId.isNotEmpty())
+        require(coefficients.isNotEmpty())
+        require(coefficients.size == coefficientCommitments.size)
+        require(coefficients.size == coefficientProofs.size)
+    }
 
-    // The value of the polynomial at xcoord
+    /** The value of the polynomial at xcoord. This is private information, only shared in encrypted form. */
     fun valueAt(group: GroupContext, xcoord : Int): ElementModQ {
         val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())
         var computedValue: ElementModQ = group.ZERO_MOD_Q
@@ -37,8 +43,10 @@ data class ElectionPolynomial(
     }
 }
 
-// Used in KeyCeremonyTrustee and DecryptingTrustee
-// g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, k-1 because there are always k coefficients
+/**
+ * Calculate g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, quorum-1
+ * Used in KeyCeremonyTrustee and DecryptingTrustee, public information.
+ */
 fun calculateGexpPiAtL(
     xcoord: Int,  // l
     coefficientCommitments: List<ElementModP>  // the committments to Pi
@@ -56,19 +64,20 @@ fun calculateGexpPiAtL(
     return result
 }
 
+/** Generate random coefficients for a polynomial of degree quorum-1. */
 fun GroupContext.generatePolynomial(
-    id: String,
+    guardianId: String,
     quorum: Int,
 ): ElectionPolynomial {
     val coefficients = mutableListOf<ElementModQ>()
     val commitments = mutableListOf<ElementModP>()
     val proofs = mutableListOf<SchnorrProof>()
 
-    for (coeff in 1..quorum) {
+    for (coeff in 0 until quorum) {
         val keypair: ElGamalKeypair = elGamalKeyPairFromRandom(this)
         coefficients.add(keypair.secretKey.key)
         commitments.add(keypair.publicKey.key)
         proofs.add(keypair.schnorrProof())
     }
-    return ElectionPolynomial(id, coefficients, commitments, proofs)
+    return ElectionPolynomial(guardianId, coefficients, commitments, proofs)
 }

@@ -22,7 +22,10 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("DecryptingTrustee")
 private const val validate = true // expensive, debugging only
 
-/** A Trustee that knows its own secret key, for the purpose of decryption. */
+/**
+ * A Trustee that knows its own secret key, for the purpose of decryption.
+ * DecryptingTrustee must stay private. DecryptingGuardian is its public info in the election record.
+ */
 data class DecryptingTrustee(
     val id: String,
     val xCoordinate: Int,

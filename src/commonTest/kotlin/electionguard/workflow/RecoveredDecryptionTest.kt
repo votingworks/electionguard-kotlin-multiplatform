@@ -1,6 +1,7 @@
 package electionguard.workflow
 
 import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
@@ -26,7 +27,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /** Test KeyCeremony Trustee generation and recovered decryption. */
-
+// LOOK can we call RunKeyCeremony instead?
 class RecoveredDecryptionTest {
     @Test
     fun runFakeKeyCeremonyTrusteeTest() {
@@ -62,14 +63,14 @@ fun runRecoveredDecryptionTest(
     // exchange PublicKeys
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            t1.receivePublicKeys(t2.sharePublicKeys())
+            t1.receivePublicKeys(t2.sendPublicKeys().unwrap())
         }
     }
 
     // exchange SecretKeyShares
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id))
+            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id).unwrap())
         }
     }
 
@@ -83,7 +84,7 @@ fun runRecoveredDecryptionTest(
     //////////////////////////////////////////////////////////
     if (writeout) {
         val commitments: MutableList<ElementModP> = mutableListOf()
-        trustees.forEach { commitments.addAll(it.polynomial.coefficientCommitments) }
+        trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
         val commitmentsHash = hashElements(commitments)
 
         val consumerIn = Consumer(configDir, group)

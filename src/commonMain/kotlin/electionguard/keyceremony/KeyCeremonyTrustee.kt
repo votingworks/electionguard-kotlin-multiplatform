@@ -13,14 +13,17 @@ import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
 
-// LOOK needs to be interface so it can be remote
+/**
+ * A Trustee that knows its own secret key and polynomial.
+ * KeyCeremonyTrustee must stay private. Guardian is its public info in the election record.
+ */
 class KeyCeremonyTrustee(
     val group: GroupContext,
     val id: String,
     val xCoordinate: Int,
     val quorum: Int,
-) {
-    val polynomial: ElectionPolynomial = group.generatePolynomial(id, quorum)
+) : KeyCeremonyTrusteeIF {
+    private val polynomial: ElectionPolynomial = group.generatePolynomial(id, quorum)
 
     // All of the guardians' public keys (including this one), keyed by guardian id.
     val guardianPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
@@ -34,23 +37,30 @@ class KeyCeremonyTrustee(
     init {
         require(xCoordinate > 0)
         // allGuardianPublicKeys including itself.
-        guardianPublicKeys[id] = this.sharePublicKeys()
+        guardianPublicKeys[id] = this.sendPublicKeys().unwrap()
     }
 
-    fun electionPublicKey(): ElementModP = polynomial.coefficientCommitments[0]
+    override fun id(): String = id
 
-    fun sharePublicKeys(): PublicKeys {
-        return PublicKeys(
+    override fun xCoordinate(): Int = xCoordinate
+
+    override fun electionPublicKey(): ElementModP = polynomial.coefficientCommitments[0]
+
+    override fun coefficientCommitments(): List<ElementModP> = polynomial.coefficientCommitments
+
+    internal fun electionPrivateKey(): ElementModQ = polynomial.coefficients[0]
+
+    override fun sendPublicKeys(): Result<PublicKeys, String> {
+        return Ok(PublicKeys(
             id,
             xCoordinate,
             polynomial.coefficientCommitments,
             polynomial.coefficientProofs,
-        )
+        ))
     }
 
     /** Receive publicKeys from another guardian. Return error message or empty string on success.  */
-    // TODO how do we know it came from the real guardian?
-    fun receivePublicKeys(publicKeys: PublicKeys): Result<PublicKeys, String> {
+    override fun receivePublicKeys(publicKeys: PublicKeys): Result<PublicKeys, String> {
         if (publicKeys.guardianXCoordinate < 1) {
             return Err("${publicKeys.guardianId}: guardianXCoordinate must be >= 1")
         }
@@ -69,7 +79,7 @@ class KeyCeremonyTrustee(
         return Ok(publicKeys)
     }
 
-    fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
+    override fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
         if (mySecretKeyShares.containsKey(otherGuardian)) {
             return Ok(mySecretKeyShares[otherGuardian]!!)
         }
@@ -86,7 +96,7 @@ class KeyCeremonyTrustee(
 
         // Compute my polynomial's y value at the other's x coordinate = Pi(ℓ)
         val Pil: ElementModQ = polynomial.valueAt(group, other.guardianXCoordinate)
-        // The encryption of that, using the other's public key. See spe 1.03 eq 17
+        // The encryption of that, using the other's public key. See spec 1.03 eq 17.
         val EPil = Pil.byteArray().hashedElGamalEncrypt(other.publicKey())
         return Ok(
             SecretKeyShare(
@@ -98,13 +108,8 @@ class KeyCeremonyTrustee(
         )
     }
 
-    fun receiveSecretKeyShare(result: Result<SecretKeyShare, String>): Result<SecretKeyShare, String> {
-        if (result is Err) {
-            return result
-        }
-        val backup = result.unwrap()
-
-        if (backup.designatedGuardianId != id) {
+    override fun receiveSecretKeyShare(backup: SecretKeyShare): Result<SecretKeyShare, String> {
+         if (backup.designatedGuardianId != id) {
             return Err("Sent backup to wrong trustee ${this.id}, should be trustee ${backup.designatedGuardianId}")
         }
 
