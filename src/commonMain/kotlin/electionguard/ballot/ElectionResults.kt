@@ -33,6 +33,9 @@ data class DecryptionResult(
     val decryptingGuardians: List<DecryptingGuardian>,
     val metadata: Map<String, String> = emptyMap(),
 ) {
+    init {
+        require(decryptingGuardians.isNotEmpty())
+    }
     fun numberOfGuardians(): Int {
         return tallyResult.numberOfGuardians()
     }
@@ -45,4 +48,9 @@ data class DecryptingGuardian(
     var guardianId: String,
     var xCoordinate: Int,
     var lagrangeCoordinate: ElementModQ,
-)
+) {
+    init {
+        require(guardianId.isNotEmpty())
+        require(xCoordinate > 0)
+    }
+}

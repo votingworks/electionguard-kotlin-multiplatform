@@ -10,6 +10,10 @@ data class PlaintextBallot(
     val contests: List<Contest>,
     val errors: String? = null, // error messages from processing, eg when invalid
 ) {
+    init {
+        require(ballotId.isNotEmpty())
+        require(contests.isNotEmpty())
+    }
 
     constructor(org: PlaintextBallot, errors: String):
         this(org.ballotId, org.ballotStyleId, org.contests, errors)
@@ -19,7 +23,12 @@ data class PlaintextBallot(
         val contestId: String, // matches ContestDescription.contestId
         val sequenceOrder: Int,
         val selections: List<Selection>,
-    )
+    ) {
+        init {
+            require(contestId.isNotEmpty())
+            require(selections.isNotEmpty())
+        }
+    }
 
     /** The plaintext representation of one selection for a particular contest. */
     data class Selection(
@@ -27,5 +36,10 @@ data class PlaintextBallot(
         val sequenceOrder: Int,
         val vote: Int,
         val extendedData: String?,
-    )
+    )  {
+        init {
+            require(selectionId.isNotEmpty())
+            require(vote >= 0)
+        }
+    }
 }

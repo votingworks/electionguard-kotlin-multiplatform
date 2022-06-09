@@ -11,7 +11,12 @@ data class ElectionConfig(
     val quorum: Int,
     /** arbitrary key/value metadata. */
     val metadata: Map<String, String> = emptyMap(),
-)
+) {
+    init {
+        require(numberOfGuardians > 0)
+        require(numberOfGuardians >= quorum)
+    }
+}
 
 /**
  * A public description of the mathematical group used for the encryption and processing of ballots.

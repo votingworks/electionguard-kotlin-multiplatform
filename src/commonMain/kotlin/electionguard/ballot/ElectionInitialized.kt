@@ -13,6 +13,10 @@ data class ElectionInitialized(
     val guardians: List<Guardian>,
     val metadata: Map<String, String> = emptyMap(),
 ) {
+    init {
+        require(guardians.isNotEmpty())
+    }
+
     fun manifest(): Manifest {
         return config.manifest
     }
@@ -39,5 +43,11 @@ data class Guardian(
     val coefficientCommitments: List<ElementModP>,  // g^a_j, j = 1..quorum; h_0 = K_i = public key
     val coefficientProofs: List<SchnorrProof>
 ) {
+    init {
+        require(guardianId.isNotEmpty())
+        require(xCoordinate > 0)
+        require(coefficientCommitments.isNotEmpty())
+        require(coefficientProofs.isNotEmpty())
+    }
     fun publicKey() : ElementModP = coefficientCommitments[0]
 }

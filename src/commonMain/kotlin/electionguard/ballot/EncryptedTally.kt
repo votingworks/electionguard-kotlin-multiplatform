@@ -8,6 +8,9 @@ data class EncryptedTally(
     val tallyId: String,
     val contests: List<Contest>
 ) {
+    init {
+        require(contests.isNotEmpty())
+    }
 
     /**
      * The encrypted selections for a specific contest. The contestId is the
@@ -18,7 +21,12 @@ data class EncryptedTally(
         val sequenceOrder: Int,
         val contestDescriptionHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: List<Selection>
-    )
+    ) {
+        init {
+            require(contestId.isNotEmpty())
+            require(selections.isNotEmpty())
+        }
+    }
 
     /**
      * The homomorphic accumulation of all of the CiphertextBallot.Selection for a specific
@@ -30,5 +38,9 @@ data class EncryptedTally(
         val sequenceOrder: Int,
         val selectionDescriptionHash: UInt256, // matches SelectionDescription.cryptoHash
         val ciphertext: ElGamalCiphertext,
-    )
+    ) {
+        init {
+            require(selectionId.isNotEmpty())
+        }
+    }
 }

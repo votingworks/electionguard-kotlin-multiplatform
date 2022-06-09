@@ -14,6 +14,10 @@ data class EncryptedBallot(
     val cryptoHash: UInt256,
     val state: BallotState,
 ) {
+    init {
+        require(ballotId.isNotEmpty())
+        require(contests.isNotEmpty())
+    }
 
     enum class BallotState {
         /** A ballot that has been explicitly cast */
@@ -32,6 +36,9 @@ data class EncryptedBallot(
         val cryptoHash: UInt256,
         val proof: ConstantChaumPedersenProofKnownNonce,
     )  : CryptoHashableUInt256 {
+        init {
+            require(contestId.isNotEmpty())
+        }
         override fun cryptoHashUInt256() = cryptoHash
     }
 
@@ -45,6 +52,9 @@ data class EncryptedBallot(
         val proof: DisjunctiveChaumPedersenProofKnownNonce,
         val extendedData: HashedElGamalCiphertext?,
     )  : CryptoHashableUInt256 {
+        init {
+            require(selectionId.isNotEmpty())
+        }
         override fun cryptoHashUInt256() = cryptoHash
     }
 }
