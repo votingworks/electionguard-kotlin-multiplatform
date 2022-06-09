@@ -58,7 +58,12 @@ data class RecoveredPartialDecryption(
     val recoveryKey: ElementModP, // g^Pi(ℓ), where Pi(ℓ) is the value of the missing_guardian secret polynomial at
                                   // available guardian ℓ coordinate. used in the proof verification.
     val proof: GenericChaumPedersenProof // challenge c_𝑖,ℓ, response v_𝑖,ℓ
-)
+) {
+    init {
+        require(decryptingGuardianId.isNotEmpty())
+        require(missingGuardianId.isNotEmpty())
+    }
+}
 
 // serialized to protobuf
 // All the direct and compensated decryptions are accumulated here
@@ -74,6 +79,8 @@ class PartialDecryption(
     val recoveredDecryptions: MutableList<RecoveredPartialDecryption> = mutableListOf()
 
     init {
+        require(selectionId.isNotEmpty())
+        require(guardianId.isNotEmpty())
         if (recovered != null) {
             recoveredDecryptions.addAll(recovered)
         }

@@ -20,7 +20,12 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
         val selections: Map<String, Selection>,
-    )
+    ) {
+        init {
+            require(contestId.isNotEmpty())
+            require(selections.isNotEmpty())
+        }
+    }
 
     /**
      * The decrypted count of one selection of one contest in the election.
@@ -37,7 +42,13 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
         val value: ElementModP,
         val message: ElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
         val partialDecryptions: List<PartialDecryption>, // one for each guardian
-    )
+    ) {
+        init {
+            require(selectionId.isNotEmpty())
+            require(tally >= 0)
+            require(partialDecryptions.isNotEmpty())
+        }
+    }
 
     fun showTally() {
         println(" Tally $tallyId")
