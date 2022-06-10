@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 option java_package = "electionguard.protogen";
-option java_outer_classname = "CommonProto";
+option java_multiple_files = true;
 
 // A 4096 bit unsigned int, big-endian.
 // A member of the group Z mod P
