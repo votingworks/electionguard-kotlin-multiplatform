@@ -6,15 +6,8 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.Guardian
-import electionguard.core.Base16.toHex
-import electionguard.core.ElementModP
 import electionguard.core.GroupContext
-import electionguard.core.UInt256
-import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
-import electionguard.core.hashElements
 import electionguard.core.productionGroup
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
@@ -81,39 +74,17 @@ fun runKeyCeremony(
         println(exchangeResult.error)
         return false
     }
-
-    val commitments: MutableList<ElementModP> = mutableListOf()
-    trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
-    val commitmentsHash = hashElements(commitments)
-
-    val primes = config.constants
-    val cryptoBaseHash: UInt256 = hashElements(
-        primes.largePrime.toHex(),
-        primes.smallPrime.toHex(),
-        primes.generator.toHex(),
-        config.numberOfGuardians,
-        config.quorum,
-        config.manifest.cryptoHash,
-    )
-
-    val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
-    val jointPublicKey: ElementModP =
-        trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
-    val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
-    val init = ElectionInitialized(
+    val keyCeremonyResults = exchangeResult.unwrap()
+    val electionInitialized = keyCeremonyResults.makeElectionInitialized(
         config,
-        jointPublicKey,
-        config.manifest.cryptoHash,
-        cryptoBaseHash,
-        cryptoExtendedBaseHash,
-        guardians,
         mapOf(
-            Pair("CreatedBy", createdBy ?: "RunTrustedKeyCeremony"),
-            Pair("CreatedOn", getSystemDate().toString()),
-            Pair("CreatedFromDir", configDir))
+            Pair("CreatedBy", createdBy ?: "runKeyCeremony"),
+            Pair("CreatedFromDir", configDir),
+        )
     )
+
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
-    publisher.writeElectionInitialized(init)
+    publisher.writeElectionInitialized(electionInitialized)
 
     // store the trustees in some private place.
     val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
@@ -122,14 +93,4 @@ fun runKeyCeremony(
     val took = getSystemTimeInMillis() - starting
     println("RunTrustedKeyCeremony took $took millisecs")
     return true
-}
-
-private fun makeGuardian(trustee: KeyCeremonyTrusteeIF): Guardian {
-    val publicKeys = trustee.sendPublicKeys().unwrap()
-    return Guardian(
-        trustee.id(),
-        trustee.xCoordinate(),
-        publicKeys.coefficientCommitments,
-        publicKeys.coefficientProofs,
-    )
 }

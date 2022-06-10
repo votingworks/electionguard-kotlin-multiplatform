@@ -108,26 +108,26 @@ class KeyCeremonyTrustee(
         )
     }
 
-    override fun receiveSecretKeyShare(backup: SecretKeyShare): Result<SecretKeyShare, String> {
-         if (backup.designatedGuardianId != id) {
-            return Err("Sent backup to wrong trustee ${this.id}, should be trustee ${backup.designatedGuardianId}")
+    override fun receiveSecretKeyShare(share: SecretKeyShare): Result<SecretKeyShare, String> {
+         if (share.designatedGuardianId != id) {
+            return Err("Sent backup to wrong trustee ${this.id}, should be trustee ${share.designatedGuardianId}")
         }
 
         // Is that value consistent with the generating guardian's commitments?
-        val generatingKeys = guardianPublicKeys[backup.generatingGuardianId]
-            ?: return Err("Trustee $id does not have public keys for  ${backup.generatingGuardianId}")
+        val generatingKeys = guardianPublicKeys[share.generatingGuardianId]
+            ?: return Err("Trustee $id does not have public keys for  ${share.generatingGuardianId}")
 
         // verify spec 1.03, eq 19
         val secretKey = ElGamalSecretKey(this.polynomial.coefficients[0])
-        val byteArray = backup.encryptedCoordinate.decrypt(secretKey)
-            ?: throw IllegalStateException("Trustee $id backup for ${backup.generatingGuardianId} couldnt decrypt encryptedCoordinate")
+        val byteArray = share.encryptedCoordinate.decrypt(secretKey)
+            ?: throw IllegalStateException("Trustee $id backup for ${share.generatingGuardianId} couldnt decrypt encryptedCoordinate")
         val expected: ElementModQ = byteArray.toUInt256().toElementModQ(group)
         if (group.gPowP(expected) != calculateGexpPiAtL(this.xCoordinate, generatingKeys.coefficientCommitments)) {
-            return Err("Trustee $id failed to verify backup from ${backup.generatingGuardianId}")
+            return Err("Trustee $id failed to verify backup from ${share.generatingGuardianId}")
         }
 
-        guardianSecretKeyShares[backup.generatingGuardianId] = backup
-        return Ok(backup)
+        guardianSecretKeyShares[share.generatingGuardianId] = share
+        return Ok(share)
     }
 
 }

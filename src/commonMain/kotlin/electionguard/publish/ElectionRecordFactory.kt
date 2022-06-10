@@ -97,6 +97,10 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return config.quorum
     }
 
+    override fun config(): ElectionConfig {
+        return config
+    }
+
     override fun cryptoExtendedBaseHash(): UInt256? {
         return init?.cryptoExtendedBaseHash
     }

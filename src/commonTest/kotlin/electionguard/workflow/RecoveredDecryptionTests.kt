@@ -1,5 +1,6 @@
 package electionguard.workflow
 
+import com.github.michaelbull.result.unwrap
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.productionGroup
@@ -39,14 +40,14 @@ fun testEncryptRecoveredDecrypt(present: List<Int>) {
     // exchange PublicKeys
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            t1.receivePublicKeys(t2.sharePublicKeys())
+            t1.receivePublicKeys(t2.sendPublicKeys().unwrap())
         }
     }
 
     // exchange SecretKeyShares
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id))
+            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id).unwrap())
         }
     }
 

@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import electionguard.ballot.DecryptingGuardian
+import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionConstants
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedBallot
@@ -9,7 +10,6 @@ import electionguard.ballot.Guardian
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextTally
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
 import electionguard.core.UInt256
 
 /** Interface to the published election record.  */
@@ -26,6 +26,7 @@ interface ElectionRecord {
     fun numberOfGuardians(): Int
     /** The quorum of guardians necessary to decrypt an election. Must be <= number_of_guardians. */
     fun quorum(): Int
+    fun config(): ElectionConfig
 
     /** The extended base hash, Qbar in the spec.  */
     fun cryptoExtendedBaseHash(): UInt256?

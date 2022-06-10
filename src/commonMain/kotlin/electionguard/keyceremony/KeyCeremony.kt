@@ -3,13 +3,65 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getAll
 import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.unwrap
+import electionguard.ballot.ElectionConfig
+import electionguard.ballot.ElectionInitialized
+import electionguard.ballot.Guardian
+import electionguard.core.Base16.toHex
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.SchnorrProof
+import electionguard.core.UInt256
+import electionguard.core.getSystemDate
 import electionguard.core.hasValidSchnorrProof
+import electionguard.core.hashElements
+
+/** Exchange publicKeys and secretShares among the trustees */
+fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremonyResults, String> {
+
+    // exchange PublicKeys
+    val publicKeyResults: MutableList<Result<PublicKeys, String>> = mutableListOf()
+    trustees.forEach { t1 ->
+        trustees.forEach { t2 ->
+            val sendPublicKeysResult = t2.sendPublicKeys()
+            if (sendPublicKeysResult is Ok) {
+                publicKeyResults.add(t1.receivePublicKeys(sendPublicKeysResult.unwrap()))
+            } else {
+                publicKeyResults.add(sendPublicKeysResult)
+            }
+        }
+    }
+
+    var errors = publicKeyResults.getAllErrors()
+    if (errors.isNotEmpty()) {
+        return Err("runKeyCeremony failed exchanging public keys: ${errors.joinToString("\n")}")
+    }
+
+    // exchange SecretKeyShares, and validate them
+    val secretKeyResults: MutableList<Result<SecretKeyShare, String>> = mutableListOf()
+    trustees.forEach { t1 ->
+        trustees.forEach { t2 ->
+            val sendSecretKeyShareResult = t1.sendSecretKeyShare(t2.id())
+            if (sendSecretKeyShareResult is Ok) {
+                secretKeyResults.add(t2.receiveSecretKeyShare(sendSecretKeyShareResult.unwrap()))
+            } else {
+                secretKeyResults.add(sendSecretKeyShareResult)
+            }
+        }
+    }
+
+    // LOOK we are not doing the challenge/response scenario. Not clear under what circumstance that is needed.
+
+    errors = secretKeyResults.getAllErrors()
+    if (errors.isNotEmpty()) {
+        return Err("runKeyCeremony failed exchanging secret keys: ${errors.joinToString("\n")}")
+    }
+
+    return Ok(KeyCeremonyResults(publicKeyResults.getAll()))
+}
 
 data class PublicKeys(
     val guardianId: String,
@@ -64,46 +116,60 @@ data class SecretKeyShare(
     }
 }
 
-/** Exchange publicKeys and secretShares among the trustees */
-fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<Boolean, String> {
+data class KeyCeremonyResults(
+    val publicKeys: List<PublicKeys>,
+) {
+    private val publicKeysSorted = publicKeys.sortedBy { it.guardianXCoordinate }
 
-    // exchange PublicKeys
-    val publicKeyResults: MutableList<Result<PublicKeys, String>> = mutableListOf()
-    trustees.forEach { t1 ->
-        trustees.forEach { t2 ->
-            val sendPublicKeysResult = t2.sendPublicKeys()
-            if (sendPublicKeysResult is Ok) {
-                publicKeyResults.add(t1.receivePublicKeys(sendPublicKeysResult.unwrap()))
-            } else {
-                publicKeyResults.add(sendPublicKeysResult)
-            }
-        }
+    fun makeElectionInitialized(
+        config: ElectionConfig,
+        metadata: Map<String, String> = emptyMap(),
+    ): ElectionInitialized {
+        val jointPublicKey: ElementModP =
+            publicKeysSorted.map { it.coefficientCommitments[0] }.reduce { a, b -> a * b }
+
+        // cryptoBaseHash
+        val primes = config.constants
+        val cryptoBaseHash: UInt256 = hashElements(
+            primes.largePrime.toHex(),
+            primes.smallPrime.toHex(),
+            primes.generator.toHex(),
+            config.numberOfGuardians,
+            config.quorum,
+            config.manifest.cryptoHash,
+        )
+
+        // cryptoExtendedBaseHash
+        val commitments: MutableList<ElementModP> = mutableListOf()
+        publicKeysSorted.forEach { commitments.addAll(it.coefficientCommitments) }
+        val commitmentsHash = hashElements(commitments)
+        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
+
+        val guardians: List<Guardian> = publicKeysSorted.map { makeGuardian(it) }
+
+        val metadataAll = mutableMapOf(
+            Pair("CreatedBy", "keyCeremonyExchange"),
+            Pair("CreatedOn", getSystemDate().toString()),
+        )
+        metadataAll.putAll(metadata)
+
+        return ElectionInitialized(
+            config,
+            jointPublicKey,
+            config.manifest.cryptoHash,
+            cryptoBaseHash,
+            cryptoExtendedBaseHash,
+            guardians,
+            metadataAll,
+        )
     }
+}
 
-    var errors = publicKeyResults.getAllErrors()
-    if (errors.isNotEmpty()) {
-        return Err("runKeyCeremony failed exchanging public keys: ${errors.joinToString("\n")}")
-    }
-
-    // exchange SecretKeyShares, and validate them
-    val secretKeyResults: MutableList<Result<SecretKeyShare, String>> = mutableListOf()
-    trustees.forEach { t1 ->
-        trustees.forEach { t2 ->
-            val sendSecretKeyShareResult = t1.sendSecretKeyShare(t2.id())
-            if (sendSecretKeyShareResult is Ok) {
-                secretKeyResults.add(t2.receiveSecretKeyShare(sendSecretKeyShareResult.unwrap()))
-            } else {
-                secretKeyResults.add(sendSecretKeyShareResult)
-            }
-        }
-    }
-
-    // LOOK we are not doing the challenge/response scenario. Not clear under what circumstance that is needed.
-
-    errors = secretKeyResults.getAllErrors()
-    if (errors.isNotEmpty()) {
-        return Err("runKeyCeremony failed exchanging secret keys: ${errors.joinToString("\n")}")
-    }
-
-    return Ok(true)
+private fun makeGuardian(publicKeys: PublicKeys): Guardian {
+    return Guardian(
+        publicKeys.guardianId,
+        publicKeys.guardianXCoordinate,
+        publicKeys.coefficientCommitments,
+        publicKeys.coefficientProofs,
+    )
 }
