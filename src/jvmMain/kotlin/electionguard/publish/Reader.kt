@@ -1,5 +1,6 @@
 package electionguard.publish
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrElse
@@ -32,27 +33,45 @@ import java.util.function.Predicate
 // The low level reading functions
 
 fun readElectionConfig(filename: String): Result<ElectionConfig, String> {
-    var proto: electionguard.protogen.ElectionConfig
-    FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionConfig.decodeFromStream(inp) }
-    return importElectionConfig(proto)
+    try {
+        var proto: electionguard.protogen.ElectionConfig
+        FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionConfig.decodeFromStream(inp) }
+        return importElectionConfig(proto)
+    } catch (e: Exception) {
+        return Err(e.message ?: "readElectionConfig $filename failed")
+    }
 }
 
 fun GroupContext.readElectionInitialized(filename: String): Result<ElectionInitialized, String> {
-    var proto: electionguard.protogen.ElectionInitialized
-    FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionInitialized.decodeFromStream(inp) }
-    return this.importElectionInitialized(proto)
+    try {
+        var proto: electionguard.protogen.ElectionInitialized
+        FileInputStream(filename).use { inp ->
+            proto = electionguard.protogen.ElectionInitialized.decodeFromStream(inp)
+        }
+        return this.importElectionInitialized(proto)
+    } catch (e: Exception) {
+        return Err(e.message ?: "readElectionInitialized $filename failed")
+    }
 }
 
 fun GroupContext.readTallyResult(filename: String): Result<TallyResult, String> {
-    var proto: electionguard.protogen.TallyResult
-    FileInputStream(filename).use { inp -> proto = electionguard.protogen.TallyResult.decodeFromStream(inp) }
-    return this.importTallyResult(proto)
+    try {
+        var proto: electionguard.protogen.TallyResult
+        FileInputStream(filename).use { inp -> proto = electionguard.protogen.TallyResult.decodeFromStream(inp) }
+        return this.importTallyResult(proto)
+    } catch (e: Exception) {
+        return Err(e.message ?: "readTallyResult $filename failed")
+    }
 }
 
 fun GroupContext.readDecryptionResult(filename: String): Result<DecryptionResult, String> {
-    var proto: electionguard.protogen.DecryptionResult
-    FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptionResult.decodeFromStream(inp) }
-    return this.importDecryptionResult(proto)
+    try {
+        var proto: electionguard.protogen.DecryptionResult
+        FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptionResult.decodeFromStream(inp) }
+        return this.importDecryptionResult(proto)
+    } catch (e: Exception) {
+        return Err(e.message ?: "readDecryptionResult $filename failed")
+    }
 }
 
 class PlaintextBallotIterator(
@@ -140,7 +159,8 @@ class SpoiledBallotTallyIterator(
 fun GroupContext.readTrustee(filename: String): DecryptingTrustee {
     var proto: electionguard.protogen.DecryptingTrustee
     FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptingTrustee.decodeFromStream(inp) }
-    return this.importDecryptingTrustee(proto).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
+    return this.importDecryptingTrustee(proto)
+        .getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
 }
 
 // variable length (base 128) int32

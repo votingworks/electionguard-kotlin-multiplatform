@@ -15,6 +15,8 @@ data class ElectionInitialized(
 ) {
     init {
         require(guardians.isNotEmpty())
+        require(guardians.size == this.config.numberOfGuardians)
+        require(config.manifest.cryptoHash == manifestHash)
     }
 
     fun manifest(): Manifest {

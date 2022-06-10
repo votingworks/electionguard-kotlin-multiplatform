@@ -2,7 +2,6 @@ package electionguard.workflow
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
-import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
@@ -20,6 +19,7 @@ import electionguard.core.randomElementModQ
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
+import electionguard.keyceremony.makeGuardian
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
@@ -128,16 +128,6 @@ fun runFakeKeyCeremony(
     testEncryptDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees)
 
     return init
-}
-
-fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
-    val publicKeys = trustee.sendPublicKeys().unwrap()
-    return Guardian(
-        trustee.id,
-        trustee.xCoordinate,
-        publicKeys.coefficientCommitments,
-        publicKeys.coefficientProofs,
-    )
 }
 
 fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {

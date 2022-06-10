@@ -20,6 +20,7 @@ import electionguard.core.toElementModQ
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.keyceremony.KeyCeremonyTrustee
+import electionguard.keyceremony.makeGuardian
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
