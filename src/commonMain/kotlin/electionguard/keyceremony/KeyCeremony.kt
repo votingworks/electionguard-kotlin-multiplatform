@@ -3,7 +3,6 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAll
 import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
@@ -23,14 +22,17 @@ import electionguard.core.hashElements
 fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremonyResults, String> {
 
     // exchange PublicKeys
+    val publicKeys: MutableList<PublicKeys> = mutableListOf()
     val publicKeyResults: MutableList<Result<PublicKeys, String>> = mutableListOf()
     trustees.forEach { t1 ->
-        trustees.forEach { t2 ->
-            val sendPublicKeysResult = t2.sendPublicKeys()
-            if (sendPublicKeysResult is Ok) {
-                publicKeyResults.add(t1.receivePublicKeys(sendPublicKeysResult.unwrap()))
-            } else {
-                publicKeyResults.add(sendPublicKeysResult)
+        val t1Result = t1.sendPublicKeys()
+        if (t1Result is Err) {
+            publicKeyResults.add(t1Result)
+        } else {
+            val t1Keys = t1Result.unwrap()
+            publicKeys.add(t1Keys)
+            trustees.filter { it.id() != t1.id() }.forEach { t2 ->
+                publicKeyResults.add(t2.receivePublicKeys(t1Keys))
             }
         }
     }
@@ -43,7 +45,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremon
     // exchange SecretKeyShares, and validate them
     val secretKeyResults: MutableList<Result<SecretKeyShare, String>> = mutableListOf()
     trustees.forEach { t1 ->
-        trustees.forEach { t2 ->
+        trustees.filter { it.id() != t1.id() }.forEach { t2 ->
             val sendSecretKeyShareResult = t1.sendSecretKeyShare(t2.id())
             if (sendSecretKeyShareResult is Ok) {
                 secretKeyResults.add(t2.receiveSecretKeyShare(sendSecretKeyShareResult.unwrap()))
@@ -60,7 +62,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremon
         return Err("runKeyCeremony failed exchanging secret keys: ${errors.joinToString("\n")}")
     }
 
-    return Ok(KeyCeremonyResults(publicKeyResults.getAll()))
+    return Ok(KeyCeremonyResults(publicKeys))
 }
 
 data class PublicKeys(

@@ -26,6 +26,7 @@ class KeyCeremonyTrustee(
     private val polynomial: ElectionPolynomial = group.generatePolynomial(id, quorum)
 
     // All of the guardians' public keys (including this one), keyed by guardian id.
+    // doesnt really need to contain its own, i think
     val guardianPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
 
     // This guardian's share of other guardians' secret keys, keyed by designated guardian id.
@@ -75,10 +76,12 @@ class KeyCeremonyTrustee(
             return isValidProofs
         }
 
+        // println("$id receivePublicKeys from ${publicKeys.guardianId}")
         guardianPublicKeys[publicKeys.guardianId] = publicKeys
         return Ok(publicKeys)
     }
 
+    /** Create my SecretKeyShare for another guardian. */
     override fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
         if (mySecretKeyShares.containsKey(otherGuardian)) {
             return Ok(mySecretKeyShares[otherGuardian]!!)
@@ -87,6 +90,7 @@ class KeyCeremonyTrustee(
         if (result is Ok) {
             mySecretKeyShares[otherGuardian] = result.unwrap()
         }
+        // println("$id sendSecretKeyShare for ${otherGuardian}")
         return result
     }
 
@@ -108,6 +112,7 @@ class KeyCeremonyTrustee(
         )
     }
 
+    /** Receive and verify another guardian's SecretKeyShare for me. */
     override fun receiveSecretKeyShare(share: SecretKeyShare): Result<SecretKeyShare, String> {
          if (share.designatedGuardianId != id) {
             return Err("Sent backup to wrong trustee ${this.id}, should be trustee ${share.designatedGuardianId}")
@@ -126,6 +131,7 @@ class KeyCeremonyTrustee(
             return Err("Trustee $id failed to verify backup from ${share.generatingGuardianId}")
         }
 
+        // println("$id receiveSecretKeyShare from ${share.generatingGuardianId}")
         guardianSecretKeyShares[share.generatingGuardianId] = share
         return Ok(share)
     }
