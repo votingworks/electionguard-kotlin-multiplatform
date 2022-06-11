@@ -11,8 +11,7 @@ message DecryptingTrustee {
   ElGamalKeypair election_keypair = 3;  // this guardian's private and public key
   // Other guardians' partial key backups shared with this guardian
   repeated SecretKeyShare secret_key_shares = 4;
-  // The commitments {"public keys K_ij") generated from the election polynomial coefficients.
-  // Duplicated here and in ElectionRecordProto.GuardianRecord, to keep the trustees independent
+  // The commitments {"public keys K_ij") from other guardians.
   repeated CommitmentSet coefficient_commitments = 5;
 }
 
@@ -39,6 +38,4 @@ message SecretKeyShare {
   reserved 4;
   // This is the encryption of that = Eℓ (Pi(ℓ)), see spec 1.03 eq 17.
   HashedElGamalCiphertext encrypted_coordinate = 6;
-  // if not empty, an error has occurred.
-  string error = 5;
 }

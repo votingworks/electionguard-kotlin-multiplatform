@@ -90,7 +90,7 @@ class BallotInputValidation(val election: Manifest) {
                 contestMesses.add(msg)
                 logger.warn { msg }
             } else {
-                // Vote can only be a 0 or 1
+                // Vote can only be a 0 or 1 // LOOK not supporting ranked choice yet.
                 if (selection.vote < 0 || selection.vote > 1) {
                     val msg = "Ballot.C.1 Ballot Selection '${selection.selectionId}' vote ($selection.vote) must be 0 or 1"
                     contestMesses.add(msg)

@@ -3,6 +3,7 @@ package electionguard.ballot
 /**
  * The plaintext representation of a voter's ballot selections as input to the system.
  * The ballotId is a unique Ballot ID created by the external system.
+ * Only the contests and selections voted for need be present.
  */
 data class PlaintextBallot(
     val ballotId: String,       // a unique ballot ID created by the external system
@@ -12,7 +13,6 @@ data class PlaintextBallot(
 ) {
     init {
         require(ballotId.isNotEmpty())
-        require(contests.isNotEmpty())
     }
 
     constructor(org: PlaintextBallot, errors: String):
@@ -26,7 +26,6 @@ data class PlaintextBallot(
     ) {
         init {
             require(contestId.isNotEmpty())
-            require(selections.isNotEmpty())
         }
     }
 

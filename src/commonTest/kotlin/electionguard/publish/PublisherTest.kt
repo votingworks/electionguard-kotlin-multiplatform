@@ -16,7 +16,7 @@ class PublisherTest {
 
     @Test
     fun testWriteElectionConfig() {
-        val config = generateElectionConfig()
+        val config = generateElectionConfig(3, 3)
         publisher.writeElectionConfig(config)
 
         val context = productionGroup()

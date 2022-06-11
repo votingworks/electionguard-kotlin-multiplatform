@@ -75,7 +75,7 @@ data class PublicKeys(
         require(guardianId.isNotEmpty())
         require(guardianXCoordinate > 0)
         require(coefficientCommitments.isNotEmpty())
-        require(coefficientProofs.isNotEmpty())
+        require(coefficientProofs.size == coefficientCommitments.size)
     }
 
     fun publicKey(): ElGamalPublicKey {
@@ -121,7 +121,7 @@ data class SecretKeyShare(
 data class KeyCeremonyResults(
     val publicKeys: List<PublicKeys>,
 ) {
-    private val publicKeysSorted = publicKeys.sortedBy { it.guardianXCoordinate }
+    val publicKeysSorted = publicKeys.sortedBy { it.guardianXCoordinate }
 
     fun makeElectionInitialized(
         config: ElectionConfig,

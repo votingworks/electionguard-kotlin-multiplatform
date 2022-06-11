@@ -29,12 +29,12 @@ private const val validate = true // expensive, debugging only
 data class DecryptingTrustee(
     val id: String,
     val xCoordinate: Int,
-    // this guardian's private and public key
+    // This guardian's private and public key
     val electionKeypair: ElGamalKeypair,
-    // for all guardians, keyed by guardian id
+    // Other guardians' shares of this guardian's secret key, keyed by generating guardian id.
     val secretKeyShares: Map<String, SecretKeyShare>,
     // for all guardians, keyed by guardian id, the K_ij = g^a_ij
-    val coefficientCommitments: Map<String, List<ElementModP>>,
+    val guardianPublicKeys: Map<String, List<ElementModP>>,
 ) : DecryptingTrusteeIF {
     // these will be constructed lazily if needed. keyed by missing_id
     private val generatingGuardianValues = mutableMapOf<String, ElementModQ>()
@@ -105,7 +105,7 @@ data class DecryptingTrustee(
         // lazy calculation of g^Pi(l).
         var gPil = this.gPilMap[missingGuardianId]
         if (gPil == null) {
-            val coefficientCommitments: List<ElementModP> = this.coefficientCommitments[missingGuardianId]
+            val coefficientCommitments: List<ElementModP> = this.guardianPublicKeys[missingGuardianId]
                 ?: throw IllegalStateException("guardian $id missing coefficientCommitments for $missingGuardianId")
             gPil = calculateGexpPiAtL(this.xCoordinate, coefficientCommitments)
             this.gPilMap[missingGuardianId] = gPil
