@@ -35,6 +35,7 @@ data class DecryptionResult(
 ) {
     init {
         require(decryptingGuardians.isNotEmpty())
+        require(decryptingGuardians.size >= tallyResult.quorum())
     }
     fun numberOfGuardians(): Int {
         return tallyResult.numberOfGuardians()

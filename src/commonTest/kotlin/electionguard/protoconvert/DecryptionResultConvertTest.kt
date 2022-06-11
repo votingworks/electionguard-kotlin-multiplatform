@@ -41,7 +41,7 @@ fun generateDecryptionResult(context: GroupContext): DecryptionResult {
     return DecryptionResult(
         generateTallyResult(context),
         PlaintextTallyConvertTest.generateFakeTally(0, context),
-        List(3) { generateDecryptingGuardian(context, it) },
+        List(4) { generateDecryptingGuardian(context, it) },
     )
 }
 

@@ -19,7 +19,6 @@ import kotlinx.cli.required
 
 /**
  * Run KeyCeremony CLI.
- * Read election record from inputDir, write to outputDir.
  * This has access to all the trustees, so is only used for testing, or in a use case of trust.
  */
 fun main(args: Array<String>) {
@@ -63,11 +62,11 @@ fun runKeyCeremony(
     val consumerIn = Consumer(configDir, group)
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
-    // Generate numberOfGuardians KeyCeremonyTrustees, which means this is a trusted situation.
+    // Generate the KeyCeremonyTrustees here, which means this is a trusted situation.
     val trustees: List<KeyCeremonyTrustee> = List(config.numberOfGuardians) {
         val seq = it + 1
         KeyCeremonyTrustee(group, "trustee$seq", seq, config.quorum)
-    }.sortedBy { it.xCoordinate }
+    }
 
     val exchangeResult = keyCeremonyExchange(trustees)
     if (exchangeResult is Err) {

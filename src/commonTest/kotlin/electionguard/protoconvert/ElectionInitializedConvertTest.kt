@@ -45,13 +45,14 @@ fun generateElectionInitialized(context: GroupContext): ElectionInitialized {
     //    val cryptoExtendedBaseHash: UInt256, // qbar
     //    val guardians: List<Guardian>,
     //    val metadata: Map<String, String>
+    val config = generateElectionConfig(6, 4)
     return ElectionInitialized(
-        generateElectionConfig(),
+        config,
         generateElementModP(context),
+        config.manifest.cryptoHash,
         generateUInt256(context),
         generateUInt256(context),
-        generateUInt256(context),
-        List(3) { generateGuardian(it, context) },
+        List(6) { generateGuardian(it, context) },
     )
 }
 

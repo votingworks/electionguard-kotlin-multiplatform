@@ -77,8 +77,8 @@ fun runFakeKeyCeremony(
     // check they are complete
     trustees.forEach {
         assertEquals(nguardians, it.guardianPublicKeys.size)
-        assertEquals(nguardians, it.guardianSecretKeyShares.size)
-        assertEquals(nguardians, it.mySecretKeyShares.size)
+        assertEquals(nguardians - 1, it.guardianSecretKeyShares.size)
+        assertEquals(nguardians - 1, it.secretKeyShares.size)
     }
 
     val commitments: MutableList<ElementModP> = mutableListOf()

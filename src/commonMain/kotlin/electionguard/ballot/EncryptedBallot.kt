@@ -2,7 +2,10 @@ package electionguard.ballot
 
 import electionguard.core.*
 
-/** The encrypted representation of a voter's ballot. */
+/**
+ * The encrypted representation of a voter's ballot.
+ * All contests and selections must be present, so that an inspection of an EncryptedBallot reveals no information.
+ */
 data class EncryptedBallot(
     val ballotId: String,
     val ballotStyleId: String,
@@ -38,6 +41,7 @@ data class EncryptedBallot(
     )  : CryptoHashableUInt256 {
         init {
             require(contestId.isNotEmpty())
+            require(selections.isNotEmpty())
         }
         override fun cryptoHashUInt256() = cryptoHash
     }

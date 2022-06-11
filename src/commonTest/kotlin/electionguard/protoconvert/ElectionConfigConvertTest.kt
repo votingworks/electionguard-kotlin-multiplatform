@@ -2,8 +2,6 @@ package electionguard.protoconvert
 
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
-import electionguard.core.GroupContext
-import electionguard.core.tinyGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -13,7 +11,7 @@ class ElectionConfigConvertTest {
 
     @Test
     fun roundtripElectionConfig() {
-        val electionRecord = generateElectionConfig()
+        val electionRecord = generateElectionConfig(6, 4)
         val proto = electionRecord.publishElectionConfig()
         val roundtrip = importElectionConfig(proto).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
@@ -29,21 +27,12 @@ class ElectionConfigConvertTest {
     }
 }
 
-fun generateElectionConfig(): ElectionConfig {
-    //     val protoVersion: String,
-    //    val constants: ElectionConstants,
-    //    val manifest: Manifest,
-    //    /** The number of guardians necessary to generate the public key. */
-    //    val numberOfGuardians: Int,
-    //    /** The quorum of guardians necessary to decrypt an election. Must be <= number_of_guardians. */
-    //    val quorum: Int,
-    //    /** arbitrary key/value metadata. */
-    //    val metadata: Map<String, String>,
+fun generateElectionConfig(nguardians: Int, quorum: Int): ElectionConfig {
     return ElectionConfig(
         "version",
         generateElectionConstants(),
         ManifestConvertTest.generateFakeManifest(),
-        6, 4
+        nguardians, quorum
     )
 }
 

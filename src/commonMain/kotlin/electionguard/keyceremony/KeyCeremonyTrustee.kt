@@ -26,18 +26,18 @@ class KeyCeremonyTrustee(
     private val polynomial: ElectionPolynomial = group.generatePolynomial(id, quorum)
 
     // All of the guardians' public keys (including this one), keyed by guardian id.
-    // doesnt really need to contain its own, i think
     val guardianPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
 
     // This guardian's share of other guardians' secret keys, keyed by designated guardian id.
-    internal val mySecretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
+    internal val secretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
 
     // Other guardians' shares of this guardian's secret key, keyed by generating guardian id.
     internal val guardianSecretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
 
     init {
         require(xCoordinate > 0)
-        // allGuardianPublicKeys including itself.
+        require(quorum > 0)
+        // doesnt really need to contain its own PublicKeys, but leaving it for now
         guardianPublicKeys[id] = this.sendPublicKeys().unwrap()
     }
 
@@ -83,12 +83,12 @@ class KeyCeremonyTrustee(
 
     /** Create my SecretKeyShare for another guardian. */
     override fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
-        if (mySecretKeyShares.containsKey(otherGuardian)) {
-            return Ok(mySecretKeyShares[otherGuardian]!!)
+        if (secretKeyShares.containsKey(otherGuardian)) {
+            return Ok(secretKeyShares[otherGuardian]!!)
         }
         val result = generateSecretKeyShare(otherGuardian)
         if (result is Ok) {
-            mySecretKeyShares[otherGuardian] = result.unwrap()
+            secretKeyShares[otherGuardian] = result.unwrap()
         }
         // println("$id sendSecretKeyShare for ${otherGuardian}")
         return result
