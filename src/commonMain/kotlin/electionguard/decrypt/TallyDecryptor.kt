@@ -6,13 +6,16 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 
-// TODO Set this to -1 except when testing
+// TODO Use a configuration to set this to the maximum possible vote. Keep low for testing to detect bugs quickly.
 private const val maxDlog: Int = 1000
 
-/** After gathering the shares for all guardians (partial or compensated), we can decrypt */
+/** Decrypt an EncryptedTally into a PlaintextTally. */
 class TallyDecryptor(val group: GroupContext, val jointPublicKey: ElGamalPublicKey, private val nguardians: Int) {
 
-    /** Shares are in a Map keyed by "${contestId}#@${selectionId}" */
+    /**
+     * After gathering the shares for all guardians (partial or compensated), we can decrypt the tally.
+     * Shares are in a Map keyed by "${contestId}#@${selectionId}"
+     */
     fun decryptTally(tally: EncryptedTally, shares: Map<String, List<PartialDecryption>>): PlaintextTally {
         val contests: MutableMap<String, PlaintextTally.Contest> = HashMap()
         for (tallyContest in tally.contests) {

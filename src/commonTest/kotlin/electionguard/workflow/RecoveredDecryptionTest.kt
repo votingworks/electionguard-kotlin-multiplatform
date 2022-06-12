@@ -168,16 +168,3 @@ fun ElGamalCiphertext.recoverPartialShare(
     return with(group) { shares.multP() }
 }
 
-fun GroupContext.computeLagrangeCoefficientOld(coordinate: UInt, present: List<UInt>): ElementModQ {
-    val others: List<UInt> = present.filter { !it.equals(coordinate) }
-    val numerator: Int = others.reduce { a, b -> a * b }.toInt()
-
-    val diff: List<Int> = others.map { degree -> degree.toInt() - coordinate.toInt() }
-    val denominator = diff.reduce { a, b -> a * b }
-
-    val denomQ =
-        if (denominator > 0) denominator.toElementModQ(this) else (-denominator).toElementModQ(this).unaryMinus()
-
-    return numerator.toElementModQ(this) / denomQ
-}
-

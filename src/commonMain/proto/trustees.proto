@@ -9,7 +9,7 @@ message DecryptingTrustee {
   string guardian_id = 1;
   uint32 guardian_x_coordinate = 2;     // the x coefficient (sequence_order), must be > 0
   ElGamalKeypair election_keypair = 3;  // this guardian's private and public key
-  // Other guardians' partial key backups shared with this guardian
+  // Other guardians' shares of this guardian's secret key
   repeated SecretKeyShare secret_key_shares = 4;
   // The commitments {"public keys K_ij") from other guardians.
   repeated CommitmentSet coefficient_commitments = 5;

@@ -21,7 +21,7 @@ interface DecryptingTrusteeIF {
      *
      * @param texts:            list of `ElGamalCiphertext` that will be partially decrypted
      * @param extendedBaseHash: the extended base hash of the election
-     * @param nonce:            an optional nonce to generate the `ChaumPedersenProof`
+     * @param nonce:            an optional nonce to generate the proof
      * @return a list of DirectDecryptionAndProof, in the same order as the texts
      */
     fun directDecrypt(
@@ -35,9 +35,9 @@ interface DecryptingTrusteeIF {
      * Compute a compensated partial decryption of an elgamal encryption on behalf of the missing guardian.
      *
      * @param missingGuardianId: the missing guardian
-     * @param texts:             the ciphertext(s) that will be decrypted
+     * @param texts:             the ciphertext(s) that will be partially decrypted
      * @param extendedBaseHash:  the extended base hash of the election
-     * @param nonce:             an optional nonce to generate the `ChaumPedersenProof`
+     * @param nonce:             an optional nonce to generate the proof
      * @return a list of CompensatedDecryptionAndProof, in the same order as the texts
      */
     fun compensatedDecrypt(

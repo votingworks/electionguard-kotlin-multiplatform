@@ -41,7 +41,7 @@ Only the secret_key is actually private. One could store that separately and sec
 
 | Name                             | Type                    | Notes      |
 |----------------------------------|-------------------------|------------|
-| generating_guardian_id           | string                  |            |
-| designated_guardian_id           | string                  |            |
-| designated_guardian_x_coordinate | uint32                  |            |
-| encrypted_coordinate             | HashedElGamalCiphertext | Eℓ (Pi(ℓ)) |
+| generating_guardian_id           | string                  | i          |
+| designated_guardian_id           | string                  | l          |
+| designated_guardian_x_coordinate | uint32                  | ℓ          |
+| encrypted_coordinate             | HashedElGamalCiphertext | El (Pi(ℓ)) |
