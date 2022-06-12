@@ -7,6 +7,7 @@ import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.runDecryptTally
 import electionguard.encrypt.batchEncryption
+import electionguard.input.RandomBallotProvider
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
