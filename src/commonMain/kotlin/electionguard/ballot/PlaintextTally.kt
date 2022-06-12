@@ -50,13 +50,15 @@ data class PlaintextTally(val tallyId: String, val contests: Map<String, Contest
         }
     }
 
-    fun showTally() {
-        println(" Tally $tallyId")
+    fun showTally(): String {
+        val builder = StringBuilder(5000)
+        builder.appendLine(" Tally $tallyId")
         contests.values.sortedBy { it.contestId }.forEach { contest ->
-            println("  Contest ${contest.contestId}")
+            builder.appendLine("  Contest ${contest.contestId}")
             contest.selections.values.sortedBy { it.selectionId }.forEach {
-                println("   Selection ${it.selectionId} = ${it.tally}")
+                builder.appendLine("   Selection ${it.selectionId} = ${it.tally}")
             }
         }
+        return builder.toString()
     }
 }

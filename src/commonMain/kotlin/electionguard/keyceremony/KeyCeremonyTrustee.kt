@@ -29,10 +29,10 @@ class KeyCeremonyTrustee(
     val guardianPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
 
     // This guardian's share of other guardians' secret keys, keyed by designated guardian id.
-    internal val secretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
+    internal val mySharesForOther: MutableMap<String, SecretKeyShare> = mutableMapOf()
 
     // Other guardians' shares of this guardian's secret key, keyed by generating guardian id.
-    internal val guardianSecretKeyShares: MutableMap<String, SecretKeyShare> = mutableMapOf()
+    internal val otherSharesForMe: MutableMap<String, SecretKeyShare> = mutableMapOf()
 
     init {
         require(xCoordinate > 0)
@@ -83,12 +83,12 @@ class KeyCeremonyTrustee(
 
     /** Create my SecretKeyShare for another guardian. */
     override fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
-        if (secretKeyShares.containsKey(otherGuardian)) {
-            return Ok(secretKeyShares[otherGuardian]!!)
+        if (mySharesForOther.containsKey(otherGuardian)) {
+            return Ok(mySharesForOther[otherGuardian]!!)
         }
         val result = generateSecretKeyShare(otherGuardian)
         if (result is Ok) {
-            secretKeyShares[otherGuardian] = result.unwrap()
+            mySharesForOther[otherGuardian] = result.unwrap()
         }
         // println("$id sendSecretKeyShare for ${otherGuardian}")
         return result
@@ -132,7 +132,7 @@ class KeyCeremonyTrustee(
         }
 
         // println("$id receiveSecretKeyShare from ${share.generatingGuardianId}")
-        guardianSecretKeyShares[share.generatingGuardianId] = share
+        otherSharesForMe[share.generatingGuardianId] = share
         return Ok(share)
     }
 

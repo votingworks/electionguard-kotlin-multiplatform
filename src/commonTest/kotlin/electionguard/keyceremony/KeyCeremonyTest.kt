@@ -39,8 +39,8 @@ class KeyCeremonyTest {
         assertEquals(expected, keys)
 
         trustees.forEach {
-            assertEquals(2, it.guardianSecretKeyShares.size)
-            assertEquals(2, it.secretKeyShares.size)
+            assertEquals(2, it.otherSharesForMe.size)
+            assertEquals(2, it.mySharesForOther.size)
             assertEquals(3, it.guardianPublicKeys.size) // doesnt really need its own
         }
 

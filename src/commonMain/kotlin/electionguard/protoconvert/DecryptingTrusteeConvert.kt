@@ -111,7 +111,7 @@ fun KeyCeremonyTrustee.publishDecryptingTrustee(): electionguard.protogen.Decryp
             ElGamalSecretKey(this.electionPrivateKey()),
             ElGamalPublicKey(this.electionPublicKey())
         ).publishElGamalKeyPair(),
-        this.guardianSecretKeyShares.values.map { it.publishSecretKeyShare() },
+        this.otherSharesForMe.values.map { it.publishSecretKeyShare() },
         this.guardianPublicKeys.values.map { it.publishCommitmentSet() },
     )
 }

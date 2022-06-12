@@ -77,8 +77,8 @@ fun runFakeKeyCeremony(
     // check they are complete
     trustees.forEach {
         assertEquals(nguardians, it.guardianPublicKeys.size)
-        assertEquals(nguardians - 1, it.guardianSecretKeyShares.size)
-        assertEquals(nguardians - 1, it.secretKeyShares.size)
+        assertEquals(nguardians - 1, it.otherSharesForMe.size)
+        assertEquals(nguardians - 1, it.mySharesForOther.size)
     }
 
     val commitments: MutableList<ElementModP> = mutableListOf()
@@ -143,7 +143,7 @@ fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
             ElGamalSecretKey(ktrustee.electionPrivateKey()),
             ElGamalPublicKey(ktrustee.electionPublicKey())
         ),
-        ktrustee.guardianSecretKeyShares,
+        ktrustee.otherSharesForMe,
         ktrustee.guardianPublicKeys.entries.associate { it.key to it.value.coefficientCommitments },
     )
 }

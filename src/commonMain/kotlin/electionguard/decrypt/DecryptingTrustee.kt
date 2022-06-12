@@ -31,9 +31,9 @@ data class DecryptingTrustee(
     val xCoordinate: Int,
     // This guardian's private and public key
     val electionKeypair: ElGamalKeypair,
-    // Other guardians' shares of this guardian's secret key, keyed by generating guardian id.
+    // Other guardians' shares of this guardian's secret key, keyed by generating (missing) guardian id.
     val secretKeyShares: Map<String, SecretKeyShare>,
-    // for all guardians, keyed by guardian id, the K_ij = g^a_ij
+    // Other guardians' coefficient commitments, K_ij = g^a_ij, keyed by guardian id.
     val guardianPublicKeys: Map<String, List<ElementModP>>,
 ) : DecryptingTrusteeIF {
     // these will be constructed lazily if needed. keyed by missing_id
@@ -113,7 +113,6 @@ data class DecryptingTrustee(
 
         val results: MutableList<CompensatedDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
-            // used in the calculation
             // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l} (spec 1.03 section 3.5.2 eq 56)
             val partialDecryptionShare: ElementModP =
                 ciphertext.computeShare(ElGamalSecretKey(generatingGuardianValue))

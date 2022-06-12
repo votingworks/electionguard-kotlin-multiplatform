@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import electionguard.ballot.DecryptingGuardian
+import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionConstants
 import electionguard.ballot.ElectionInitialized
@@ -9,6 +10,7 @@ import electionguard.ballot.EncryptedTally
 import electionguard.ballot.Guardian
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextTally
+import electionguard.ballot.TallyResult
 import electionguard.core.ElementModP
 import electionguard.core.UInt256
 
@@ -41,8 +43,10 @@ interface ElectionRecord {
     fun encryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> // may be empty
 
     fun encryptedTally(): EncryptedTally?
+    fun tallyResult(): TallyResult?
 
     fun decryptedTally(): PlaintextTally?
     fun decryptingGuardians(): List<DecryptingGuardian> // may be empty
     fun spoiledBallotTallies(): Iterable<PlaintextTally> // may be empty
+    fun decryptionResult(): DecryptionResult?
 }

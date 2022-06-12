@@ -6,23 +6,26 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 
-// TODO Set this to -1 except when testing
+// TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
 private const val maxDlog: Int = 1000
 
-/** After gathering the shares for all guardians (partial or compensated), we can decrypt */
+/** Decrypt an EncryptedTally into a PlaintextTally. */
 class TallyDecryptor(val group: GroupContext, val jointPublicKey: ElGamalPublicKey, private val nguardians: Int) {
 
-    /** Shares are in a Map keyed by "${contestId}#@${selectionId}" */
+    /**
+     * After gathering the shares for all guardians (partial or compensated), we can decrypt the tally.
+     * Shares are in a Map keyed by "${contestId}#@${selectionId}"
+     */
     fun decryptTally(tally: EncryptedTally, shares: Map<String, List<PartialDecryption>>): PlaintextTally {
         val contests: MutableMap<String, PlaintextTally.Contest> = HashMap()
         for (tallyContest in tally.contests) {
-            val plaintextTallyContest = decryptContestWithDecryptionShares(tallyContest, shares)
+            val plaintextTallyContest = decryptContest(tallyContest, shares)
             contests[tallyContest.contestId] = plaintextTallyContest
         }
         return PlaintextTally(tally.tallyId, contests)
     }
 
-    private fun decryptContestWithDecryptionShares(
+    private fun decryptContest(
         contest: EncryptedTally.Contest,
         shares: Map<String, List<PartialDecryption>>,
     ): PlaintextTally.Contest {
@@ -30,18 +33,19 @@ class TallyDecryptor(val group: GroupContext, val jointPublicKey: ElGamalPublicK
         for (tallySelection in contest.selections) {
             val id = "${contest.contestId}#@${tallySelection.selectionId}"
             val sshares = shares[id] ?: throw IllegalStateException("*** $id share not found") // TODO something better?
-            val plaintextTallySelection = decryptSelectionWithDecryptionShares(tallySelection, sshares)
+            val plaintextTallySelection = decryptSelection(tallySelection, sshares, contest.contestId)
             selections[tallySelection.selectionId] = plaintextTallySelection
         }
         return PlaintextTally.Contest(contest.contestId, selections)
     }
 
-    private fun decryptSelectionWithDecryptionShares(
+    private fun decryptSelection(
         selection: EncryptedTally.Selection,
         shares: List<PartialDecryption>,
+        contestId: String,
     ): PlaintextTally.Selection {
         if (shares.size != this.nguardians) {
-            throw IllegalStateException("decryptSelectionWithDecryptionShares $selection #shares ${shares.size} must equal #guardians ${this.nguardians}")
+            throw IllegalStateException("decryptSelection $selection #shares ${shares.size} must equal #guardians ${this.nguardians}")
         }
 
         // accumulate all of the shares calculated for the selection
@@ -51,7 +55,8 @@ class TallyDecryptor(val group: GroupContext, val jointPublicKey: ElGamalPublicK
         // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝. (spec 1.03 section 3.5.1 eq 55)
         val decryptedValue: ElementModP = selection.ciphertext.data / allSharesProductM
         // Now we know M, and since 𝑀 = K^t mod 𝑝, t = logK (M) (note version 1 has 𝑀 = g^t)
-        val dlogM: Int = jointPublicKey.dLog(decryptedValue, maxDlog)?: throw RuntimeException("dlog failed")
+        val dlogM: Int = jointPublicKey.dLog(decryptedValue, maxDlog) ?:
+                throw RuntimeException("dlog failed on ${contestId} / ${selection.selectionId}")
 
         return PlaintextTally.Selection(
             selection.selectionId,

@@ -7,7 +7,7 @@ import electionguard.ballot.EncryptedTally
 import electionguard.ballot.PlaintextTally
 import electionguard.core.GroupContext
 import electionguard.core.hashElements
-import electionguard.decrypt.DecryptingMediator
+import electionguard.decrypt.Decryption
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.Consumer
@@ -167,8 +167,8 @@ fun decryptTally(
     electionInit: ElectionInitialized,
     decryptingTrustees: List<DecryptingTrusteeIF>,
 ): PlaintextTally {
-    val decryptor = DecryptingMediator(group, electionInit, decryptingTrustees, emptyList())
-    return with(decryptor) { encryptedTally.decrypt() }
+    val decryption = Decryption(group, electionInit, decryptingTrustees, emptyList())
+    return with(decryption) { encryptedTally.decrypt() }
 }
 
 fun compareTallies(

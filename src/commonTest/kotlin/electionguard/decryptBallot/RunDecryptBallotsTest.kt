@@ -6,10 +6,10 @@ import electionguard.decrypt.readDecryptingTrustees
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** Test DecryptingMediator with in-process DecryptingTrustee's. Cannot use this in production */
+/** Test Decryption with in-process DecryptingTrustee's. Cannot use this in production */
 class RunDecryptBallotsTest {
     @Test
-    fun testDecryptingBallotsAll() {
+    fun testDecryptBallotsAll() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
@@ -26,7 +26,7 @@ class RunDecryptBallotsTest {
     }
 
     @Test
-    fun testDecryptingBallotsSome() {
+    fun testDecryptBallotsSome() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowSomeAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"
@@ -40,7 +40,7 @@ class RunDecryptBallotsTest {
     }
 
     @Test
-    fun testDecryptingBallotsSomeList() {
+    fun testDecryptBallotsSomeList() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowSomeAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"
@@ -55,7 +55,7 @@ class RunDecryptBallotsTest {
     }
 
     @Test
-    fun testDecryptingBallotsMain() {
+    fun testDecryptBallotsMain() {
         main(
             arrayOf(
                 "-in",

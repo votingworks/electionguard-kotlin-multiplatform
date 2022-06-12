@@ -129,6 +129,10 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return tallyResult?.encryptedTally
     }
 
+    override fun tallyResult(): TallyResult? {
+        return tallyResult
+    }
+
     override fun decryptedTally(): PlaintextTally? {
         return decryptionResult?.decryptedTally
     }
@@ -139,5 +143,9 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
 
     override fun spoiledBallotTallies(): Iterable<PlaintextTally> {
         return consumer.iterateSpoiledBallotTallies()
+    }
+
+    override fun decryptionResult(): DecryptionResult? {
+        return decryptionResult
     }
 }

@@ -11,9 +11,9 @@ import electionguard.core.GroupContext
 import electionguard.core.toElementModQ
 
 /**
- * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustee's.
+ * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustees.
  */
-class DecryptingMediator(
+class Decryption(
     val group: GroupContext,
     val init: ElectionInitialized,
     private val decryptingTrustees: List<DecryptingTrusteeIF>,
@@ -37,13 +37,13 @@ class DecryptingMediator(
     }
 
     fun EncryptedTally.decrypt(): PlaintextTally {
-        val shares: MutableList<DecryptionShare> = mutableListOf() // one for each decryptingTrustees
+        val shares: MutableList<DecryptionShare> = mutableListOf() // one for each trustee
         for (decryptingTrustee in decryptingTrustees) {
-            val share: DecryptionShare = this.computePartialDecryptionForTally(decryptingTrustee)
+            val share: DecryptionShare = this.computeDecryptionShareForTrustee(decryptingTrustee)
             shares.add(share)
         }
 
-        // now rearrange for use by Decryptor
+        // now rearrange for use by TallyDecryptor
         val sharesBySelectionId: MutableMap<String, MutableList<PartialDecryption>> = HashMap()
         for (tallyShare in shares) {
             tallyShare.directDecryptions.entries.map { (selectionId, partial) ->
@@ -80,6 +80,7 @@ class DecryptingMediator(
             sharesBySelectionId.values.flatten().forEach { it.lagrangeInterpolation(availableGuardians) }
         }
 
+        // After gathering the shares for all guardians (partial or compensated), we can decrypt.
         val decryptor = TallyDecryptor(group, init.jointPublicKey(), init.numberOfGuardians())
         return decryptor.decryptTally(this, sharesBySelectionId)
     }
@@ -89,7 +90,7 @@ class DecryptingMediator(
      * @param trustee: The guardian who will partially decrypt the tally
      * @return a DecryptionShare for this trustee
      */
-    private fun EncryptedTally.computePartialDecryptionForTally(
+    private fun EncryptedTally.computeDecryptionShareForTrustee(
         trustee: DecryptingTrusteeIF,
     ): DecryptionShare {
 
@@ -161,6 +162,7 @@ class DecryptingMediator(
     }
 }
 
+/** Compute the lagrange coefficient, now that we know which guardians are present. spec 1.03 eq 61. */
 fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>): ElementModQ {
     val others: List<Int> = present.filter { it != coordinate }
     val numerator: Int = others.reduce { a, b -> a * b }
@@ -175,9 +177,10 @@ fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>)
     return numerator.toElementModQ(this) / denomQ
 }
 
-// remove placeholder selections
+/** Convert an EncryptedBallot to an EncryptedTally, for processing spoiled ballots. */
 private fun EncryptedBallot.convertToTally(): EncryptedTally {
     val contests = this.contests.map { contest ->
+        // remove placeholders
         val selections = contest.selections.filter { !it.isPlaceholderSelection }.map {
             EncryptedTally.Selection(it.selectionId, it.sequenceOrder, it.selectionHash, it.ciphertext)
         }

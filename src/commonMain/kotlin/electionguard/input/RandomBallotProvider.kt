@@ -1,10 +1,10 @@
-package electionguard.workflow
+package electionguard.input
 
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import kotlin.random.Random
 
-/** Create nballots randomly generated fake Ballots.  */
+/** Create nballots randomly generated fake Ballots, used for testing.  */
 class RandomBallotProvider(election: Manifest, nballots: Int?) {
     private val nballots: Int
     private val election: Manifest

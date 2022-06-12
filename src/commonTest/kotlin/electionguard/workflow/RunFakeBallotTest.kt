@@ -4,6 +4,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.productionGroup
+import electionguard.input.RandomBallotProvider
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode

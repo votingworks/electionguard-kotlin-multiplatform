@@ -11,7 +11,7 @@ import electionguard.core.fileExists
 import electionguard.core.fileReadLines
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.decrypt.DecryptingMediator
+import electionguard.decrypt.Decryption
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.Consumer
@@ -101,7 +101,7 @@ fun runDecryptBallots(
     val missingGuardians =
         tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId) }.map { it.guardianId }
 
-    val decryptor = DecryptingMediator(group, tallyResult.electionInitialized, decryptingTrustees, missingGuardians)
+    val decryption = Decryption(group, tallyResult.electionInitialized, decryptingTrustees, missingGuardians)
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     val sink: PlaintextTallySinkIF = publisher.plaintextTallySink()
@@ -141,7 +141,7 @@ fun runDecryptBallots(
                 launchDecryptor(
                     it,
                     ballotProducer,
-                    decryptor,
+                    decryption,
                     outputChannel
                 )
             )
@@ -175,17 +175,17 @@ private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): 
 private fun CoroutineScope.launchDecryptor(
     id: Int,
     input: ReceiveChannel<EncryptedBallot>,
-    decryptor: DecryptingMediator,
+    decryption: Decryption,
     output: SendChannel<PlaintextTally>,
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
-        val decrypted: PlaintextTally = decryptor.decryptBallot(ballot)
-        logger.debug { " DecryptingMediator #$id sending PlaintextTally ${decrypted.tallyId}" }
-        if (debug) println(" Encryptor #$id sending PlaintextTally ${decrypted.tallyId}")
+        val decrypted: PlaintextTally = decryption.decryptBallot(ballot)
+        logger.debug { " Decryptor #$id sending PlaintextTally ${decrypted.tallyId}" }
+        if (debug) println(" Decryptor #$id sending PlaintextTally ${decrypted.tallyId}")
         output.send(decrypted)
         yield()
     }
-    logger.debug { "DecryptingMediator #$id done" }
+    logger.debug { "Decryptor #$id done" }
 }
 
 // place the output writing into its own coroutine
