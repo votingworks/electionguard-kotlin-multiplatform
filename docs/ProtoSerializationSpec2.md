@@ -10,33 +10,33 @@ Notes
 
 ## common.proto
 
-### message ElementModQ
+#### message ElementModQ
 
 | Name  | Type  | Notes                                           |
 |-------|-------|-------------------------------------------------|
 | value | bytes | unsigned, big-endian, 0 left-padded to 32 bytes |
 
-### message ElementModP
+#### message ElementModP
 
 | Name  | Type   | Notes                                            |
 |-------|--------|--------------------------------------------------|
 | value | bytes  | unsigned, big-endian, 0 left-padded to 512 bytes |
 
-### message ElGamalCiphertext
+#### message ElGamalCiphertext
 
 | Name | Type        | Notes |
 |------|-------------|-------|
 | pad  | ElementModP |       |
 | data | ElementModP |       |
 
-### message GenericChaumPedersenProof
+#### message GenericChaumPedersenProof
 
 | Name      | Type           | Notes   |
 |-----------|----------------|---------|
 | challenge | ElementModQ    |         |
 | response  | ElementModQ    |         |
 
-### message HashedElGamalCiphertext
+#### message HashedElGamalCiphertext
 
 | Name     | Type        | Notes |
 |----------|-------------|-------|
@@ -45,14 +45,14 @@ Notes
 | c2       | UInt256     |       |
 | numBytes | uint32      |       |
 
-### message SchnorrProof
+#### message SchnorrProof
 
 | Name       | Type        | Notes   |
 |------------|-------------|---------|
 | challenge  | ElementModQ |         |
 | response   | ElementModQ |         |
 
-### message UInt256
+#### message UInt256
 
 | Name  | Type  | Notes                                      |
 |-------|-------|--------------------------------------------|
@@ -61,7 +61,7 @@ Notes
 
 ## election_record.proto
 
-### message ElectionConfig
+#### message ElectionConfig
 
 | Name                | Type                | Notes                |
 |---------------------|---------------------|----------------------|
@@ -72,7 +72,7 @@ Notes
 | quorum              | uint32              |                      |
 | metadata            | map<string, string> |                      |
 
-### message ElectionConstants
+#### message ElectionConstants
 
 | Name        | Type    | Notes                             |
 |-------------|---------|-----------------------------------|
@@ -82,7 +82,7 @@ Notes
 | cofactor    | bytes   | bigint is unsigned and big-endian |
 | generator   | bytes   | bigint is unsigned and big-endian |
 
-### message ElectionInitialized
+#### message ElectionInitialized
 
 | Name                      | Type                | Notes |
 |---------------------------|---------------------|-------|
@@ -94,7 +94,7 @@ Notes
 | guardians                 | List\<Guardian\>    |       |
 | metadata                  | map<string, string> |       |
 
-### message Guardian
+#### message Guardian
 
 | Name                    | Type                 | Notes                          |
 |-------------------------|----------------------|--------------------------------|
@@ -103,7 +103,7 @@ Notes
 | coefficient_commitments | List\<ElementModP\>  |                                |
 | coefficient_proofs      | List\<SchnorrProof\> |                                |
 
-### message TallyResult
+#### message TallyResult
 
 | Name            | Type                | Notes |
 |-----------------|---------------------|-------|
@@ -113,7 +113,7 @@ Notes
 | tally_ids       | List<string>        |       |
 | metadata        | map<string, string> |       |
 
-### message DecryptionResult
+#### message DecryptionResult
 
 | Name                 | Type                       | Notes |
 |----------------------|----------------------------|-------|
@@ -122,7 +122,7 @@ Notes
 | decrypting_guardians | List\<DecryptingGuardian\> |       |
 | metadata             | map<string, string>        |       |
 
-### message DecryptingGuardian
+#### message DecryptingGuardian
 
 | Name                 | Type        | Notes                          |
 |----------------------|-------------|--------------------------------|
@@ -133,7 +133,7 @@ Notes
 
 ## manifest.proto
 
-### message Manifest
+#### message Manifest
 
 | Name                | Type                       | Notes                        |
 |---------------------|----------------------------|------------------------------|
@@ -151,14 +151,14 @@ Notes
 | contact_information | ContactInformation         | optional                     |
 | crypto_hash         | UInt256                    | optional                     |
 
-### message AnnotatedString
+#### message AnnotatedString
 
 | Name       | Type   | Notes |
 |------------|--------|-------|
 | annotation | string |       |
 | value      | string |       |
 
-### message BallotStyle
+#### message BallotStyle
 
 | Name                  | Type           | Notes                                         |
 |-----------------------|----------------|-----------------------------------------------|
@@ -167,7 +167,7 @@ Notes
 | party_ids             | List\<string\> | optional matches Party.party_id               |
 | image_uri             | string         | optional                                      |
 
-### message Candidate
+#### message Candidate
 
 | Name         | Type                  | Notes                           |
 |--------------|-----------------------|---------------------------------|
@@ -177,7 +177,7 @@ Notes
 | image_uri    | string                | optional                        |
 | is_write_in  | bool                  |                                 |
 
-### message ContactInformation
+#### message ContactInformation
 
 | Name         | Type           | Notes    |
 |--------------|----------------|----------|
@@ -186,7 +186,7 @@ Notes
 | email        | List\<string\> | optional |
 | phone        | List\<string\> | optional |
 
-### message GeopoliticalUnit
+#### message GeopoliticalUnit
 
 | Name                 | Type                   | Notes    |
 |----------------------|------------------------|----------|
@@ -195,20 +195,20 @@ Notes
 | type                 | enum ReportingUnitType |          |
 | contact_information  | ContactInformation     | optional |
 
-### message InternationalizedText
+#### message InternationalizedText
 
 | Name | Type             | Notes |
 |------|------------------|-------|
 | text | List\<Language\> |       |
 
-### message Language
+#### message Language
 
 | Name     | Type   | Notes |
 |----------|--------|-------|
 | value    | string |       |
 | language | string |       |
 
-### message Party
+#### message Party
 
 | Name         | Type                  | Notes    |
 |--------------|-----------------------|----------|
@@ -218,7 +218,7 @@ Notes
 | color        | string                | optional |
 | logo_uri     | string                | optional |
 
-### message ContestDescription
+#### message ContestDescription
 
 | Name                 | Type                         | Notes                                         |
 |----------------------|------------------------------|-----------------------------------------------|
@@ -235,7 +235,7 @@ Notes
 | primary_party_ids    | List\<string\>               | optional, match Party.party_id                |
 | crypto_hash          | UInt256                      | optional                                      |
 
-### message SelectionDescription
+#### message SelectionDescription
 
 | Name           | Type     | Notes                          |
 |----------------|----------|--------------------------------|
@@ -247,7 +247,7 @@ Notes
 
 ## plaintext_ballot.proto
 
-### message PlaintextBallot
+#### message PlaintextBallot
 
 | Name            | Type                           | Notes                         |
 |-----------------|--------------------------------|-------------------------------|
@@ -256,7 +256,7 @@ Notes
 | contests        | List\<PlaintextBallotContest\> |                               |
 | errors          | string                         | optional eg an invalid ballot |
 
-### message PlaintextBallotContest
+#### message PlaintextBallotContest
 
 | Name           | Type                             | Notes                             |
 |----------------|----------------------------------|-----------------------------------|
@@ -264,7 +264,7 @@ Notes
 | sequence_order | uint32                           | ContestDescription.sequence_order |
 | selections     | List\<PlaintextBallotSelection\> |                                   |
 
-### message PlaintextBallotSelection
+#### message PlaintextBallotSelection
 
 | Name                     | Type   | Notes                               |
 |--------------------------|--------|-------------------------------------|
@@ -276,7 +276,7 @@ Notes
 
 ## encrypted_ballot.proto
 
-### message EncryptedBallot
+#### message EncryptedBallot
 
 | Name              | Type                             | Notes                            |
 |-------------------|----------------------------------|----------------------------------|
@@ -290,7 +290,7 @@ Notes
 | crypto_hash       | UInt256                          |                                  |
 | state             | enum BallotState                 | CAST, SPOILED                    |
 
-### message EncryptedBallotContest
+#### message EncryptedBallotContest
 
 | Name                    | Type                               | Notes                             |
 |-------------------------|------------------------------------|-----------------------------------|
@@ -301,7 +301,7 @@ Notes
 | crypto_hash             | UInt256                            |                                   |
 | proof                   | ConstantChaumPedersenProof         |                                   |
 
-### message EncryptedBallotSelection
+#### message EncryptedBallotSelection
 
 | Name                     | Type                          | Notes                                |
 |--------------------------|-------------------------------|--------------------------------------|
@@ -314,14 +314,14 @@ Notes
 | proof                    | DisjunctiveChaumPedersenProof |                                      |
 | extended_data            | HashedElGamalCiphertext       | optional                             |
 
-### message ConstantChaumPedersenProof
+#### message ConstantChaumPedersenProof
 
 | Name      | Type                      | Notes |
 |-----------|---------------------------|-------|
 | constant  | uint32                    |       |
 | proof     | GenericChaumPedersenProof |       |
 
-### message DisjunctiveChaumPedersenProof
+#### message DisjunctiveChaumPedersenProof
 
 | Name      | Type                      | Notes |
 |-----------|---------------------------|-------|
@@ -332,14 +332,14 @@ Notes
 
 ## encrypted_tally.proto
 
-### message EncryptedTally
+#### message EncryptedTally
 
 | Name     | Type                            | Notes |
 |----------|---------------------------------|-------|
 | tally_id | string                          |       |
 | contests | List\<EncryptedTallyContest\>   |       | 
 
-### message EncryptedTallyContest
+#### message EncryptedTallyContest
 
 | Name                     | Type                             | Notes                             |
 |--------------------------|----------------------------------|-----------------------------------|
@@ -348,7 +348,7 @@ Notes
 | contest_description_hash | UInt256                          | ContestDescription.crypto_hash    |
 | selections               | List\<EncryptedTallySelection\>  |                                   |
 
-### message EncryptedTallySelection
+#### message EncryptedTallySelection
 
 | Name                       | Type              | Notes                               |
 |----------------------------|-------------------|-------------------------------------|
@@ -367,14 +367,14 @@ Notes
 | tally_id | string                        | when decrypting spoiled ballots, matches EncryptedBallot.ballot_id |
 | contests | List\<PlaintextTallyContest\> |                                                                    |
 
-### message PlaintextTallyContest
+#### message PlaintextTallyContest
 
 | Name       | Type                            | Notes                         |
 |------------|---------------------------------|-------------------------------|
 | contest_id | string                          | ContestDescription.contest_id |
 | selections | List\<PlaintextTallySelection\> |                               |
 
-### message PlaintextTallySelection
+#### message PlaintextTallySelection
 
 | Name                | Type                        | Notes                                   |
 |---------------------|-----------------------------|-----------------------------------------|
@@ -384,7 +384,7 @@ Notes
 | message             | ElGamalCiphertext           | encrypted vote count                    |
 | partial_decryptions | List\<PartialDecryption\>   | direct or recovered, nguardians of them |
 
-### message PartialDecryption
+#### message PartialDecryption
 
 | Name            | Type                               | Notes                         |
 |-----------------|------------------------------------|-------------------------------|
@@ -394,7 +394,7 @@ Notes
 | proof           | GenericChaumPedersenProof          | only direct                   |
 | recovered_parts | List\<RecoveredPartialDecryption\> | only recovered, quota of them |
 
-### message RecoveredPartialDecryption
+#### message RecoveredPartialDecryption
 
 | Name                   | Type                      | Notes    |
 |------------------------|---------------------------|----------|
