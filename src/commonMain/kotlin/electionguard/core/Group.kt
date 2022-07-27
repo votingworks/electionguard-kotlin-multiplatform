@@ -15,5 +15,5 @@ expect fun productionGroup(
 
 // Engineering note: when we originally supported Kotlin/JS, this was a suspending function,
 // to accommodate some JS libraries that want to do things with Promises or async. That causes
-// extra effort for writing the JVM & native code, which don't even need it. So it's now gone.
-// We'll need to introduce some other JS-only function to fetch the production groups.
+// extra effort for writing the JVM & native code. So we removed this when we removed JS.
+// If/when we reintroduce JS, we'll revisit this design.

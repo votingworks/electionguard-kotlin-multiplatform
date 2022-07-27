@@ -26,8 +26,8 @@ EKM is available under an MIT-style open source license.
   making it easier for future ElectionGuard implementations to have compatible
   data serialization.
 
-- EKM uses an optimized encoding of an encrypted ElGamal counter, proposed by [Pereira](https://perso.uclouvain.be/olivier.pereira/). Where regular
-  ElectionGuard defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{ar}g^m\right)$,
+- EKM uses an optimized encoding of an encrypted ElGamal counter, proposed by [Pereira](https://perso.uclouvain.be/olivier.pereira/). Where 
+  ElectionGuard 1.0 defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{ar}g^m\right)$,
   EKM instead defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{a(r + m)}\right)$.
   This allows for one fewer exponentiation per encryption. EKM includes corresponding
   changes in its Chaum-Pedersen proofs and discrete-log engine to support this.
@@ -45,7 +45,9 @@ EKM is available under an MIT-style open source license.
 EKM uses Kotlin's "multiplatform" features to support JVM platforms, including
 Android, and also to support "native" platforms, including iOS. The primary
 difference between these is how big integers are handled. On the JVM, we
-use `java.math.BigInteger`. On native platforms, we use [Microsoft's HACL*](https://www.microsoft.com/en-us/research/publication/hacl-a-verified-modern-cryptographic-library/). In either case, we use a variety of optimizations: 
+use [java.math.BigInteger](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/math/BigInteger.html).
+On native platforms, we use [Microsoft HACL*](https://www.microsoft.com/en-us/research/publication/hacl-a-verified-modern-cryptographic-library/). 
+With both platforms, we use a variety of optimizations: 
 
 - Pereira's "pow-radix" precomputation, used for common bases like
   the group generator or a public key, replaces modular exponentiation with
@@ -69,7 +71,7 @@ use `java.math.BigInteger`. On native platforms, we use [Microsoft's HACL*](http
 
 ## What about JavaScript?
 
-We tried to include JavaScript, which you can see at the tag `BEFORE_REMOVING_JS`. This
+We tried to include JavaScript, which you can see at the tag [BEFORE_REMOVING_JS](https://github.com/danwallach/electionguard-kotlin-multiplatform/releases/tag/BEFORE_REMOVING_JS). This
 used a big integer library called [kt-math](https://github.com/gciatto/kt-math),
 but the performance was not acceptable.
 
@@ -85,11 +87,13 @@ If this ultimately supports foreign function calls to C functions, then the
 
 ## API differences from ElectionGuard-Python
 
-The biggest and most notable difference is the use of `GroupContext` instances. A `GroupContext` provides
+The biggest and most notable difference is the use of [GroupContext](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/kotlin/electionguard/core/GroupCommon.kt#L117) 
+instances. A `GroupContext` provides
 all the necessary state to do computation with a group, replacing a series of global variables, in 
-the Python code, with instance variables inside the group context. You get a group context by calling `productionGroup()`
+the Python code, with instance variables inside the group context. You get a group context by calling 
+[productionGroup()](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/kotlin/electionguard/core/Group.kt#L11)
 with an optional parameter specifying how much precomputation (and memory use) you're willing to tolerate
-in response for more acceleration of the cryptographic primitives. There's also a `testGroup()`, only
+in response for more acceleration of the cryptographic primitives. There's also a [tinyGroup()](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonTest/kotlin/electionguard/core/TinyGroup.kt#L23), only
 available to unit tests, that operates with 32-bit primes rather than the original 256 or 4096-bit primes. This 
 allows the unit tests to run radically faster, and in some cases even discover corner case bugs that would
 be unlikely to manifest if the tests were operating with a production group.
