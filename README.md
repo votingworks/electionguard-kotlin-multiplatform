@@ -27,8 +27,8 @@ EKM is available under an MIT-style open source license.
   data serialization.
 
 - EKM uses an optimized encoding of an encrypted ElGamal counter, proposed by [Pereira](https://perso.uclouvain.be/olivier.pereira/). Where regular
-  ElectionGuard defines $\mathrm{Encrypt}(g^a, r, m) = \left<g^r, g^{ar}g^m\right>$,
-  EKM instead defines $\mathrm{Encrypt}(g^a, r, m) = \left<g^r, g^{a(r + m)}\right>$.
+  ElectionGuard defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{ar}g^m\right)$,
+  EKM instead defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{a(r + m)}\right)$.
   This allows for one fewer exponentiation per encryption. EKM includes corresponding
   changes in its Chaum-Pedersen proofs and discrete-log engine to support this.
 
