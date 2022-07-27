@@ -1,14 +1,14 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 5/13/2022 for proto_version = 1.0.0 (MAJOR.MINOR.PATCH)
+draft 5/13/2022
 
 This covers only the election record, and not any serialized messages used in remote procedure calls.
 
 Notes
 
-1. All fields must be present unless marked as optional.
-2. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
-3. Proto_version uses [semantic versioning](https://semver.org/)
+1. This is version 1 of Election Record, compatible with version 1 JSON encoding.
+2. All fields must be present unless marked as optional.
+3. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
 
 ## common.proto
 

@@ -1,12 +1,11 @@
 # 🗳 Election Record serialization for private classes
 
-draft 6/11/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 6/11/2022
 
-Notes
-
-1. All fields must be present unless marked as optional.
-2. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
-3. Proto_version uses [semantic versioning](https://semver.org/)
+1. This is version 2 of Election Record. It is not backwards compatible with version 1.
+2. All fields must be present unless marked as optional.
+3. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
+4. proto_version = 2.0.0 [MAJOR.MINOR.PATCH](https://semver.org/)
 
 ## trustees.proto
 
