@@ -1,28 +1,92 @@
-# Electionguard-Kotlin-Multiplatform
-This is an experimental attempt to create a multiplatform Kotlin implementation of 
+# ElectionGuard-Kotlin-Multiplatform
+ElectionGuard-Kotlin-Multiplatform (EKM) is an experimental attempt to create a multiplatform Kotlin implementation of 
 [ElectionGuard](https://github.com/microsoft/electionguard), capable of running
-"everywhere" (Android, iOS, Unix native, JavaScript-in-browser).
+"everywhere" (Android / JVM, iOS / Unix native, and eventually JavaScript-in-browser).
 
-ElectionGuard is generally sensitive to the performance of bignum arithmetic, particularly modular exponentation, so
-even though there are pure-Kotlin implementations of bignum arithmetic, they are nowhere near as fast as the
-native implementations. So what's in here?
+Note that EKM is *not* compatible with ElectionGuard-Python or any other
+ElectionGuard implementation. EKM is, however, intended to have full feature-parity
+with the Python codebase.
 
-- For the JVM, we're using `java.math.BigInteger`. This seems to do modular exponentiation at roughly half the
-  speed of GnuMP, which is still impressive. On Android, `BigInteger` ultimately uses the native code that's part
-  of the Android TLS implementation, so that should be fast.
-- For native code, we're currently using HACL*, which is native C code that was generated from a formally verified toolchain.
-  It uses all the magic compiler intrinsics to take advantage of modern 64-bit hardware, and is used by Microsoft's
-  [electionguard-cpp](ihttps://github.com/microsoft/electionguard-cpp/tree/main/src/kremlin) implementation.
-- For the browser, we're currently using [kt-math](https://github.com/gciatto/kt-math) because it "works" everywhere,
-  but wow it's slow. More on this below.
+EKM is available under an MIT-style open source license.
 
-## Differences from ElectionGuard-Python
+*Table of contents*:
+- [Incompatibilities with ElectionGuard 1.0](#incompatibilities-with-electionguard-10)
+- [Cool features of EKM](#cool-features-of-ekm)
+- [What about JavaScript?](#what-about-javascript)
+- [API differences from ElectionGuard-Python](#api-differences-from-electionguard-python)
+- [Protobuf Serialization](#protobuf-serialization)
+- [Command Line Interface](#command-line-interface)
+- [Authors](#authors)
 
-This code is intended to be compatible with the reference implementation in Python, while using Kotlin idioms,
-where appropriate, to make the code easier to write and cleaner to use.
+## Incompatibilities with ElectionGuard 1.0
+
+- EKM does not use JSON for its ballot serialization. Instead, it uses [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers), a binary format
+  that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
+  the relevant data formats, which could be adopted by other implementations,
+  making it easier for future ElectionGuard implementations to have compatible
+  data serialization.
+
+- EKM uses an optimized encoding of an encrypted ElGamal counter, proposed by [Pereira](https://perso.uclouvain.be/olivier.pereira/). Where regular
+  ElectionGuard defines $\mathrm{Encrypt}(g^a, r, m) = \left<g^r, g^{ar}g^m\right>$,
+  EKM instead defines $\mathrm{Encrypt}(g^a, r, m) = \left<g^r, g^{a(r + m)}\right>$.
+  This allows for one fewer exponentiation per encryption. EKM includes corresponding
+  changes in its Chaum-Pedersen proofs and discrete-log engine to support this.
+
+- EKM further optimizes the Chaum-Pedersen proofs with a space-optimization from [Boneh and Shoup](http://toc.cryptobook.us/) that allows
+  the larger elements-mod-p to be elided from the proofs because they can be recomputed by the verifier.
+
+- EKM changes how hashes are computed, defining the result of a hash function as
+  a 256-bit unsigned integer rather than an element-mod-q. This simplifies the code 
+  in a variety of ways. The `UInt256` type is used in a number of other contexts,
+  like HMAC keys, allowing those implementations to be independent of the ElGamal group parameters.
+
+## Cool features of EKM
+
+EKM uses Kotlin's "multiplatform" features to support JVM platforms, including
+Android, and also to support "native" platforms, including iOS. The primary
+difference between these is how big integers are handled. On the JVM, we
+use `java.math.BigInteger`. On native platforms, we use [Microsoft's HACL*](https://www.microsoft.com/en-us/research/publication/hacl-a-verified-modern-cryptographic-library/). In either case, we use a variety of optimizations: 
+
+- Pereira's "pow-radix" precomputation, used for common bases like
+  the group generator or a public key, replaces modular exponentiation with
+  table lookups and multiplies. We support three table sizes. Batch computations
+  might then use larger tables and gain greater speedups, while memory-limited
+  computations would use smaller tables.
+
+- In this table, we transform the numbers to [Montgomery form](https://en.wikipedia.org/wiki/Montgomery_modular_multiplication), allowing us
+  to avoid an expensive modulo operation after each multiply. HACL* has native support
+  for this transformation, resulting in significant speedups.
+
+- ElectionGuard defines two sets of global parameters: using either 3072-bit
+  or 4096-bit modular arithmetic. EKM supports both sets of parameters as well as a
+  "tiny" set of 32-bit parameters, used to radically speed up the unit tests.
+
+- All the code in EKM is thread-safe, and it's mostly functional. This
+  means that you can easily use libraries like [Java Streams](https://docs.oracle.com/javase/tutorial/collections/streams/parallelism.html)
+  to do parallel operations on a multicore computer. Similarly, for a voting
+  machine, you might take advantage of [Kotlin's coroutines](https://kotlinlang.org/docs/coroutines-guide.html)
+  to run an encryption in the background without creating lag on the UI thread.
+
+## What about JavaScript?
+
+We tried to include JavaScript, which you can see at the tag `BEFORE_REMOVING_JS`. This
+used a big integer library called [kt-math](https://github.com/gciatto/kt-math),
+but the performance was not acceptable.
+
+Instead, please check out [ElectionGuard-TypeScript](https://github.com/danwallach/ElectionGuard-TypeScript),
+which is fully compatible with ElectionGuard 1.0 and runs very efficiently.
+If we were going to bring back Kotlin/JS as an EKM target platform, we'd probably borrow the "core"
+cryptographic classes from ElectionGuard-TypeScript, and build up the rest
+of the ballot abstractions in Kotlin.
+
+We note that the Kotlin team is actively developing a [WebAssembly backend](https://youtrack.jetbrains.com/issue/KT-46773).
+If this ultimately supports foreign function calls to C functions, then the
+"native" version of EKM, including HACL* for big integer arithmetic, could potentially run in a JavaScript WASM engine.
+
+## API differences from ElectionGuard-Python
 
 The biggest and most notable difference is the use of `GroupContext` instances. A `GroupContext` provides
-all of the necessary state to do computation with a group, replacing a series of global variables, in 
+all the necessary state to do computation with a group, replacing a series of global variables, in 
 the Python code, with instance variables inside the group context. You get a group context by calling `productionGroup()`
 with an optional parameter specifying how much precomputation (and memory use) you're willing to tolerate
 in response for more acceleration of the cryptographic primitives. There's also a `testGroup()`, only
@@ -30,42 +94,13 @@ available to unit tests, that operates with 32-bit primes rather than the origin
 allows the unit tests to run radically faster, and in some cases even discover corner case bugs that would
 be unlikely to manifest if the tests were operating with a production group.
 
-If a future ElectionGuard were to, for example, offer different values for its core primes `p` and `q`,
-or if it were to offer arithmetic over a very different cryptographic primitive like elliptic curves,
-all of that would be abstracted away through the selection of the proper `GroupContext`. 
-
-Generally speaking, instances of all the common types, like `ElementModP` and `ElementModQ` retain
-internal pointers to the `GroupContext` in which they operate. This means that all the arithmetic
-operations can be expressed naturally, with the usual `+` or `*` operator notation, and all the
-context management happens under the hood. 
-
-The expectation is that any program built using this library will call `productionGroup()` at startup
-time and then retain the resulting group context, perhaps in a global variable, for use throughout
-the remainder of the computation. Unit tests will instead call `testGroup()`, allowing them to run
-much, much faster, and thus consider many more test cases in the same period of time.
-
-## Fast crypto on the browser?
-The current `kt-math` code is unacceptably slow, like two seconds for a single ElGamal encryption! (Node.js, version 16.)
-It's unclear that we can specifically blame `kt-math` for this, since it runs at maybe 1/3 the speed of BigInteger
-(~33 ElGamal encryptions per second) when it's on the JVM. That would be a factor of 60 slowdown when running in the browser.
-That's too slow for production use.
-
-The ultimate goal for the browser will be to use either [gmp-wasm](https://github.com/Daninet/gmp-wasm), which
-is a WebAssembly port of the GMP library, or [hacl-wasm](https://www.npmjs.com/package/hacl-wasm), which doesn't
-currently export its bignum implementation, but maybe it will in the future. At least right now, Kotlin's ability to translate
-the TypeScript headers from gmp-wasm is not working right, so the general approach is to run the TypeScript importer, `dukat`,
-from the command line, and then manually edit the resulting interface definitions.
-
-Branches of note:
-- `gmp-wasm-v3`: an attempt to use the `gmp-wasm` package; seems to trip bugs in both Kotlin/JS as well as bugs in `gmp-wasm`
-- `sjcl-v2`: an attempt to use the Stanford JavaScript Crypto Library; runs more consistently than `gmp-wasm` but still has weird issues
-- [Related bug discussion and links](https://github.com/danwallach/electionguard-kotlin-multiplatform/issues/9)
-
-Maybe the right answer is to use the [Rice student's port of ElectionGuard to TypeScript](https://github.com/Xin128/ElectionGuard-COMP413/)
-for browser-related stuff, while this repo works for virtually everything else. 
-
-At least for now, the Kotlin/JS code is *correct*, in that all the unit tests pass, but it's not yet production-ready
-due to the extreme performance costs of using it.
+As a general rule, we try to use Kotlin's language features to make the code
+simpler and cleaner. For example, we use Kotlin's operator overloading such
+that math operations on `ElementModP` and `ElementModQ` can be written with
+infix notation rather than function calls. We also implemented many 
+[extension functions](https://kotlinlang.org/docs/extensions.html), so if you have a value of any EKM type and you type
+a period, the IDE's autocomplete menu should offer you a variety of useful
+methods.
 
 ## Protobuf Serialization
 * [Protobuf serialization](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec2.md)
@@ -76,3 +111,7 @@ due to the extreme performance costs of using it.
 ## Command Line Interface
 * [Command Line Programs](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/CommandLineInterface.md)
 
+
+## Authors
+- [John Caron](https://github.com/JohnLCaron)
+- [Dan S. Wallach](https://www.cs.rice.edu/~dwallach/)
