@@ -85,7 +85,7 @@ class PlaintextBallotIterator(
             val message = readFromFile(file, length.toULong(), filename)
             val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteArray(message)
             val ballot = group.importPlaintextBallot(ballotProto)
-            if (filter != null && !filter?.invoke(ballot)) {
+            if (filter != null && !filter.invoke(ballot)) {
                 continue
             }
             setNext(ballot)
