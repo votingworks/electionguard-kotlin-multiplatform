@@ -1,14 +1,14 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 6/04/2022 for proto_version = 2.0.0 (MAJOR.MINOR.PATCH)
+draft 6/04/2022
 
-Notes
+1. This is version 2 of Election Record. It is not backwards compatible with version 1.
+2. All fields must be present unless marked as optional.
+3. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
+4. proto_version = 2.0.0 [MAJOR.MINOR.PATCH](https://semver.org/)
 
-1. All fields must be present unless marked as optional.
-2. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
-3. Proto_version uses [semantic versioning](https://semver.org/)
-
-## common.proto
+## common.proto 
+[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/common.proto)
 
 #### message ElementModQ
 
@@ -60,6 +60,7 @@ Notes
 
 
 ## election_record.proto
+[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/election_record.proto)
 
 #### message ElectionConfig
 
@@ -132,6 +133,7 @@ Notes
 
 
 ## manifest.proto
+[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/manifest.proto)
 
 #### message Manifest
 
@@ -246,6 +248,7 @@ Notes
 
 
 ## plaintext_ballot.proto
+[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/plaintext_ballot.proto)
 
 #### message PlaintextBallot
 
@@ -275,6 +278,7 @@ Notes
 
 
 ## encrypted_ballot.proto
+[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/encrypted_ballot.proto)
 
 #### message EncryptedBallot
 
@@ -331,6 +335,7 @@ Notes
 
 
 ## encrypted_tally.proto
+[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/encrypted_tally.proto)
 
 #### message EncryptedTally
 
@@ -359,6 +364,7 @@ Notes
 
 
 ## plaintext_tally.proto
+[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/plaintext_tally.proto)
 
 ### message PlaintextTally
 

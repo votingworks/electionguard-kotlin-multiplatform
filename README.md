@@ -20,7 +20,7 @@ EKM is available under an MIT-style open source license.
 
 ## Incompatibilities with ElectionGuard 1.0
 
-- EKM does not use JSON for its ballot serialization. Instead, it uses [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers), a binary format
+- EKM does not use JSON for serialization. Instead, it uses [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers), a binary format
   that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
   the relevant data formats, which could be adopted by other implementations,
   making it easier for future ElectionGuard implementations to have compatible
