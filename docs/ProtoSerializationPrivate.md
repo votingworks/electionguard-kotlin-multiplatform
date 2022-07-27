@@ -10,7 +10,7 @@ Notes
 
 ## trustees.proto
 
-### message DecryptingTrustee
+#### message DecryptingTrustee
 
 Information passed from the KeyCeremonyTrustee to the DecryptingTrustee.
 Only the secret_key is actually private. One could store that separately and securely, and add it in when decrypting.
@@ -23,21 +23,21 @@ Only the secret_key is actually private. One could store that separately and sec
 | secret_key_shares       | List\<SecretKeyShare\> |         |
 | coefficient_commitments | List\<CommitmentSet\>  | K_ij    |
 
-### message ElGamalKeypair
+#### message ElGamalKeypair
 
 | Name              | Type          | Notes  |
 |-------------------|---------------|--------|
 | secret_key        | ElementModQ   | secret |
 | public_key        | ElementModP   |        |
 
-### message CommitmentSet
+#### message CommitmentSet
 
 | Name         | Type                 | Notes |
 |--------------|----------------------|-------|
 | guardian_id  | string               |       |
 | commitments  | List\<ElementModP\>  | K_ij  |
 
-### message SecretKeyShare
+#### message SecretKeyShare
 
 | Name                             | Type                    | Notes      |
 |----------------------------------|-------------------------|------------|

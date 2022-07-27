@@ -66,3 +66,13 @@ for browser-related stuff, while this repo works for virtually everything else.
 
 At least for now, the Kotlin/JS code is *correct*, in that all the unit tests pass, but it's not yet production-ready
 due to the extreme performance costs of using it.
+
+## Protobuf Serialization
+* [Protobuf serialization](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec2.md)
+* [Election Record serialization for private classes](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationPrivate.md)
+* [Election Record protobuf directory and file layout](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ElectionRecord.md)
+* [Protobuf serialization (ver 1) and comparison with JSON](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec1.md)
+
+## Command Line Interface
+* [Command Line Programs](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/CommandLineInterface.md)
+
