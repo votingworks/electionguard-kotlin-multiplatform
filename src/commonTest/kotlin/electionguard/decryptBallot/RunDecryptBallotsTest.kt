@@ -20,7 +20,7 @@ class RunDecryptBallotsTest {
             outputDir,
             readDecryptingTrustees(group, inputDir, trusteeDir),
             "ALL",
-            11
+            1
         )
         assertEquals(100, n)
     }
@@ -49,7 +49,7 @@ class RunDecryptBallotsTest {
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
             wantBallots,
-            11
+            11,
         )
         assertEquals(2, n)
     }

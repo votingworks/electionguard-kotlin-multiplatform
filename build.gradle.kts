@@ -6,10 +6,10 @@ buildscript {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.6.20"
+    kotlin("multiplatform") version "1.7.10"
 
     // cross-platform serialization support
-    kotlin("plugin.serialization") version "1.6.20"
+    kotlin("plugin.serialization") version "1.7.10"
 
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
@@ -22,8 +22,8 @@ plugins {
 group = "electionguard-kotlin-multiplatform"
 version = "1.0-SNAPSHOT"
 
-val protobufVersion by extra("3.19.4")
-val pbandkVersion by extra("0.13.0")
+val kotlinVersion by extra("1.7.10")
+val pbandkVersion by extra("0.14.1")
 
 repositories {
     google()
@@ -93,61 +93,61 @@ kotlin {
         val commonMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-common", "1.6.20"))
-                    implementation(kotlin("stdlib", "1.6.20"))
+                    implementation(kotlin("stdlib-common", "$kotlinVersion"))
+                    implementation(kotlin("stdlib", "$kotlinVersion"))
 
                     // JSON serialization and DSL
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
                     // Coroutines
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
 
                     // Useful, portable routines
-                    implementation("io.ktor:ktor-utils:1.6.8")
+                    implementation("io.ktor:ktor-utils:2.0.3")
 
                     // Portable logging interface. On the JVM, we'll get "logback", which gives
                     // us lots of features. On Native, it ultimately just prints to stdout.
                     // On JS, it uses console.log, console.error, etc.
-                    implementation("io.github.microutils:kotlin-logging:2.1.21")
+                    implementation("io.github.microutils:kotlin-logging:2.1.23")
 
                     // A multiplatform Kotlin library for working with date and time.
-                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
+                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
                     // A multiplatform Kotlin library for working with protobuf.
                     implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
 
                     // A multiplatform Kotlin library for command-line parsing (could use enableEndorsedLibs instead)
-                    implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.4")
+                    implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
 
                     // A multiplatform Kotlin library for Result monads
-                    implementation("com.michael-bull.kotlin-result:kotlin-result:1.1.15")
+                    implementation("com.michael-bull.kotlin-result:kotlin-result:1.1.16")
                 }
             }
         val commonTest by
             getting {
                 dependencies {
-                    implementation(kotlin("test-common", "1.6.20"))
-                    implementation(kotlin("test-annotations-common", "1.6.20"))
+                    implementation(kotlin("test-common", "$kotlinVersion"))
+                    implementation(kotlin("test-annotations-common", "$kotlinVersion"))
 
                     // runTest() for running suspend functions in tests
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
 
                     // Fancy property-based testing
-                    implementation("io.kotest:kotest-property:5.0.1")
+                    implementation("io.kotest:kotest-property:5.4.0")
                 }
             }
         val jvmMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-jdk8", "1.6.20"))
+                    implementation(kotlin("stdlib-jdk8", "$kotlinVersion"))
 
                     // Progress bars
-                    implementation("me.tongfei:progressbar:0.9.2")
+                    implementation("me.tongfei:progressbar:0.9.3")
 
                     // Logging implementation (used by "kotlin-logging"). Note that we need
                     // a bleeding-edge implementation to ensure we don't have vulnerabilities
                     // similar to (but not as bad) as the log4j issues.
-                    implementation("ch.qos.logback:logback-classic:1.3.0-alpha12")
+                    implementation("ch.qos.logback:logback-classic:1.3.0-alpha16")
                 }
             }
         val jvmTest by
@@ -155,7 +155,7 @@ kotlin {
                 dependencies {
                     // Unclear if we really need all the extra features of JUnit5, but it would
                     // at least be handy if we could get its parallel test runner to work.
-                    implementation(kotlin("test-junit5", "1.6.20"))
+                    implementation(kotlin("test-junit5", "$kotlinVersion"))
                 }
             }
         val nativeMain by getting { dependencies {} }

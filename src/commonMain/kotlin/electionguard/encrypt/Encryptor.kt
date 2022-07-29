@@ -218,7 +218,7 @@ class Encryptor(
     }
 }
 
-////  share with Encryptor, BallotPrecompute
+////  share with Encryptor, BallotPrecompute, ContestPrecompute
 fun Manifest.SelectionDescription.encryptSelection(
     vote: Int,
     elgamalPublicKey: ElGamalPublicKey,
@@ -253,6 +253,7 @@ fun Manifest.SelectionDescription.encryptSelection(
     )
 }
 
+////  share with Encryptor, BallotPrecompute, ContestPrecompute
 fun Manifest.ContestDescription.encryptContest(
     group: GroupContext,
     elgamalPublicKey: ElGamalPublicKey,
