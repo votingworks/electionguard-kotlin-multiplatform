@@ -8,6 +8,7 @@ import electionguard.publish.Consumer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+// check that the outputs are the same */
 class CompareEncryptedBallotsTest {
     val topdir = "src/commonTest/data/testJava/kickstart/encryptor"
     val ballotsJvmDir = "src/commonTest/data/testOut/jvm/runBatchEncryption"

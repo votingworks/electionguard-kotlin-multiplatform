@@ -54,9 +54,9 @@ draft 6/04/2022
 
 #### message UInt256
 
-| Name  | Type  | Notes                                      |
-|-------|-------|--------------------------------------------|
-| value | bytes | unsigned, big-endian, 0 padded to 32 bytes |
+| Name  | Type  | Notes                                           |
+|-------|-------|-------------------------------------------------|
+| value | bytes | unsigned, big-endian, 0 left-padded to 32 bytes |
 
 
 ## election_record.proto
@@ -64,14 +64,14 @@ draft 6/04/2022
 
 #### message ElectionConfig
 
-| Name                | Type                | Notes                |
-|---------------------|---------------------|----------------------|
-| proto_version       | string              | proto schema version |
-| constants           | ElectionConstants   |                      |
-| manifest            | Manifest            |                      |
-| number_of_guardians | uint32              |                      |
-| quorum              | uint32              |                      |
-| metadata            | map<string, string> |                      |
+| Name                | Type                  | Notes                |
+|---------------------|-----------------------|----------------------|
+| proto_version       | string                | proto schema version |
+| constants           | ElectionConstants     |                      |
+| manifest            | Manifest              |                      |
+| number_of_guardians | uint32                |                      |
+| quorum              | uint32                |                      |
+| metadata            | map\<string, string\> |                      |
 
 #### message ElectionConstants
 
@@ -85,15 +85,15 @@ draft 6/04/2022
 
 #### message ElectionInitialized
 
-| Name                      | Type                | Notes |
-|---------------------------|---------------------|-------|
-| config                    | ElectionConfig      |       |
-| elgamal_public_key        | ElementModP         |       |
-| manifest_hash             | UInt256             |       |
-| crypto_base_hash          | UInt256             | Q     |
-| crypto_extended_base_hash | UInt256             | Qbar  |
-| guardians                 | List\<Guardian\>    |       |
-| metadata                  | map<string, string> |       |
+| Name                      | Type                  | Notes |
+|---------------------------|-----------------------|-------|
+| config                    | ElectionConfig        |       |
+| elgamal_public_key        | ElementModP           |       |
+| manifest_hash             | UInt256               |       |
+| crypto_base_hash          | UInt256               | Q     |
+| crypto_extended_base_hash | UInt256               | Qbar  |
+| guardians                 | List\<Guardian\>      |       |
+| metadata                  | map\<string, string\> |       |
 
 #### message Guardian
 
@@ -106,13 +106,13 @@ draft 6/04/2022
 
 #### message TallyResult
 
-| Name            | Type                | Notes |
-|-----------------|---------------------|-------|
-| election_init   | ElectionInitialized |       |
-| encrypted_tally | EncryptedTally      |       |
-| ballot_ids      | List<string>        |       |
-| tally_ids       | List<string>        |       |
-| metadata        | map<string, string> |       |
+| Name            | Type                  | Notes               |
+|-----------------|-----------------------|---------------------|
+| election_init   | ElectionInitialized   |                     |
+| encrypted_tally | EncryptedTally        |                     |
+| ballot_ids      | List\<string\>        | included ballot ids |
+| tally_ids       | List\<string\>        | included tally ids  |
+| metadata        | map\<string, string\> |                     |
 
 #### message DecryptionResult
 

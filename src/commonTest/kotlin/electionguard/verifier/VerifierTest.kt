@@ -15,6 +15,8 @@ class VerifierTest {
             arrayOf(
                 "-in",
                 "src/commonTest/data/runWorkflowSomeAvailable",
+                "-nthreads",
+                "1",
             )
         )
     }

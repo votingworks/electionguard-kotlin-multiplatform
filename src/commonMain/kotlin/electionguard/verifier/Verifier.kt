@@ -61,7 +61,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         // encryption and vote limits
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, cryptoExtendedBaseHash, nthreads)
         // Note we are validating all ballots, not just CAST
-        val ballotStats = verifyBallots.verify(record.encryptedBallots { true })
+        val ballotStats = verifyBallots.verify(record.encryptedBallots { true }, true)
         println(" 4,5. verifySelectionEncryptions, contestVoteLimits $ballotStats")
 
         // TODO not doing ballot chaining test (box 6)

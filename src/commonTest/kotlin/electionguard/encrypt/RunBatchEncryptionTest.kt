@@ -36,7 +36,7 @@ class RunBatchEncryptionTest {
                 "-invalid",
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-nthreads",
-                "12",
+                "1",
             )
         )
     }
@@ -74,10 +74,11 @@ class RunBatchEncryptionTest {
                 "-invalid",
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-nthreads",
-                "11",
+                "1",
                 "-check",
                 "Verify",
             )
         )
     }
+
 }
