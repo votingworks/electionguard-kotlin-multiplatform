@@ -10,6 +10,7 @@ import electionguard.publish.electionRecordFromConsumer
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
+import kotlinx.cli.default
 import kotlinx.cli.required
 import kotlin.math.roundToInt
 
@@ -29,19 +30,24 @@ fun main(args: Array<String>) {
         shortName = "nthreads",
         description = "Number of parallel threads to use"
     )
+    val showTime by parser.option(
+        ArgType.Boolean,
+        shortName = "time",
+        description = "Show timing"
+    ).default(false)
     parser.parse(args)
     println("RunVerifier starting\n   input= $inputDir")
 
-    runVerifier(productionGroup(), inputDir, nthreads?: 11)
+    runVerifier(productionGroup(), inputDir, nthreads?: 11, showTime)
 }
 
-fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int) {
+fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime : Boolean = false) {
     val starting = getSystemTimeInMillis()
 
     val electionRecord = electionRecordFromConsumer(Consumer(inputDir, group))
     val verifier = Verifier( electionRecord, nthreads)
 
-    val allOk = verifier.verify()
+    val allOk = verifier.verify(showTime)
 
     val took = (getSystemTimeInMillis() - starting)
     println("RunVerifier = $allOk took $took msecs")

@@ -89,7 +89,9 @@ class VerifyDecryptedTally(
 ) {
     val guardianKeys: Map<String, ElementModP> = guardians.associate { it.guardianId to it.publicKey()}
 
-    fun verifyDecryptedTally(tally: PlaintextTally): Stats {
+    fun verifyDecryptedTally(tally: PlaintextTally, showTime : Boolean = false): Stats {
+        val starting = getSystemTimeInMillis()
+
         var ncontests = 0
         var nselections = 0
         var nshares = 0
@@ -211,6 +213,9 @@ class VerifyDecryptedTally(
                 }
             }
         }
+        val took = getSystemTimeInMillis() - starting
+        if (showTime) println("   verifyDecryptedTally took $took millisecs")
+
         val allValid = errors.isEmpty()
         return Stats(tally.tallyId, allValid, ncontests, nselections, errors, nshares)
     }

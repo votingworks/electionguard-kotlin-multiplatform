@@ -121,6 +121,8 @@ fun createDirectory(dirName: String): Boolean {
     // mkdir(@kotlinx.cinterop.internal.CCall.CString __path: kotlin.String?,
     // __mode: platform.posix.__mode_t /* = kotlin.UInt */)
     // : kotlin.Int { /* compiled code */ }
+    // TODO macOS needs
+    //     if (mkdir(dirName, convertOctalToDecimal(775).toUShort()) == -1) {
     if (mkdir(dirName, convertOctalToDecimal(775)) == -1) {
         checkErrno { mess -> throw IOException("Fail mkdir $mess on $dirName") }
         return false

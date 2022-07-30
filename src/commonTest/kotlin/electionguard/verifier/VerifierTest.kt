@@ -6,7 +6,7 @@ import kotlin.test.Test
 class VerifierTest {
     @Test
     fun readElectionRecordAndValidate() {
-        runVerifier(productionGroup(), "src/commonTest/data/runWorkflowAllAvailable", 11)
+        runVerifier(productionGroup(), "src/commonTest/data/runWorkflowAllAvailable", 11, true)
     }
 
     @Test
@@ -16,7 +16,8 @@ class VerifierTest {
                 "-in",
                 "src/commonTest/data/runWorkflowSomeAvailable",
                 "-nthreads",
-                "1",
+                "11",
+                "--showTime",
             )
         )
     }

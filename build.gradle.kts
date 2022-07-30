@@ -75,11 +75,11 @@ kotlin {
             }
         }
 
-        binaries {
-            executable("RunBatchEncryption") {
-                entryPoint = "electionguard.encrypt.main"
-            }
-        }
+        //binaries {
+        //    executable("RunBatchEncryption") {
+        //        entryPoint = "electionguard.encrypt.main"
+        //    }
+        // }
         //        binaries {
         //            staticLib {
         //                entryPoint = "main"

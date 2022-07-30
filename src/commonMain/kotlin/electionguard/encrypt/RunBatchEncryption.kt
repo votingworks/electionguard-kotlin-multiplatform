@@ -189,8 +189,9 @@ fun batchEncryption(
         outputChannel.close()
     }
     sink.close()
+    val took = getSystemTimeInMillis() - starting
 
-    // LOOK i dont know if this is a good idea
+    // LOOK i dont know if this is a good idea. leave it out of the timing
     publisher.writeElectionInitialized(
         electionInit.addMetadata(
             Pair("Used", createdBy ?: "RunBatchEncryption"),
@@ -203,7 +204,6 @@ fun batchEncryption(
         println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
     }
 
-    val took = getSystemTimeInMillis() - starting
     val msecsPerBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
     println("Encryption with nthreads = $nthreads took $took millisecs for $count ballots = $msecsPerBallot msecs/ballot")
     val msecPerEncryption = (took.toDouble() / countEncryptions)

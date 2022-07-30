@@ -7,7 +7,9 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
+import electionguard.core.getSystemTimeInMillis
 import electionguard.core.plus
+import kotlin.math.roundToInt
 
 /**
  * Verification 7 (Correctness of ballot aggregation)
@@ -22,7 +24,9 @@ class VerifyAggregation(
     val aggregator: SelectionAggregator,
 ) {
 
-    fun verify(encryptedTally: EncryptedTally): Result<Boolean, String> {
+    fun verify(encryptedTally: EncryptedTally, showTime : Boolean = false): Result<Boolean, String> {
+        val starting = getSystemTimeInMillis()
+
         val errors = mutableListOf<String>()
         var ncontests = 0
         var nselections = 0
@@ -46,6 +50,9 @@ class VerifyAggregation(
                 }
             }
         }
+        val took = getSystemTimeInMillis() - starting
+        if (showTime) println("   VerifyAggregation took $took millisecs")
+
         return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
     }
 }

@@ -60,7 +60,7 @@ class VerifyEncryptedBallots(
 
         val took = getSystemTimeInMillis() - starting
         val perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-        if (showTime) println("VerifyEncryptedBallots with $nthreads threads ok=${accumStats.allOk} took $took millisecs for $count ballots = $perBallot msecs/ballot")
+        if (showTime) println("   VerifyEncryptedBallots with $nthreads threads ok=${accumStats.allOk} took $took millisecs for $count ballots = $perBallot msecs/ballot")
         return accumStats
     }
 

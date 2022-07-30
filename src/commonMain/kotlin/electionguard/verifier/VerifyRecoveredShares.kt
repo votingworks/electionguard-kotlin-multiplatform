@@ -9,6 +9,7 @@ import electionguard.ballot.PlaintextTally
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.getSystemTimeInMillis
 import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.publish.ElectionRecord
@@ -28,13 +29,16 @@ class VerifyRecoveredShares(
         decryptedTally = record.decryptedTally()!!
     }
 
-    fun verify(): Result<Boolean, String> {
+    fun verify(showTime : Boolean = false): Result<Boolean, String> {
+        val starting = getSystemTimeInMillis()
         val decryptingGuardianCount = decryptingGuardians.size
         if (decryptingGuardianCount == record.numberOfGuardians()) {
             println(" Does not have missing guardians")
             return Ok(true)
         }
         val errors = getAllErrors(verifyLagrangeCoefficients(), verifyShares())
+        val took = getSystemTimeInMillis() - starting
+        if (showTime) println("   VerifyRecoveredShares took $took millisecs")
         return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
     }
 
