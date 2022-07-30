@@ -39,7 +39,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         manifest = record.manifest()
     }
 
-    fun verify(): Boolean {
+    fun verify(showTime : Boolean = false): Boolean {
         println("Verify election record in = ${record.topdir()}\n")
 
         if (record.stage() < ElectionRecord.Stage.INIT) {
@@ -61,7 +61,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         // encryption and vote limits
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, cryptoExtendedBaseHash, nthreads)
         // Note we are validating all ballots, not just CAST
-        val ballotStats = verifyBallots.verify(record.encryptedBallots { true }, true)
+        val ballotStats = verifyBallots.verify(record.encryptedBallots { true }, showTime)
         println(" 4,5. verifySelectionEncryptions, contestVoteLimits $ballotStats")
 
         // TODO not doing ballot chaining test (box 6)
@@ -74,8 +74,8 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         // tally accumulation
         val verifyAggregation = VerifyAggregation(group, verifyBallots.aggregator)
         val encryptedTally = record.encryptedTally()!!
-        val aggResult = verifyAggregation.verify(encryptedTally)
-        println(" 7. verifyBallotAggregation $aggResult")
+        val aggResult = verifyAggregation.verify(encryptedTally, showTime)
+        println(" 7. verifyAggregation $aggResult")
 
         if (record.stage() < ElectionRecord.Stage.DECRYPTED) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
@@ -85,7 +85,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         // decryption
         val decryptedTally = record.decryptedTally()!!
         val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, record.guardians())
-        val tallyStats = verifyTally.verifyDecryptedTally(decryptedTally)
+        val tallyStats = verifyTally.verifyDecryptedTally(decryptedTally, showTime)
         println(" 8,9,11. verifyDecryptedTally $tallyStats")
 
         // box 10
@@ -93,7 +93,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         if (decryptingGuardians.size == record.numberOfGuardians()) {
             println(" 10. Correctness of Replacement Partial Decryptions not needed since there are no missing guardians")
         } else {
-            val pdvStats = VerifyRecoveredShares(group, record).verify()
+            val pdvStats = VerifyRecoveredShares(group, record).verify(showTime)
             println(" 10. Correctness of Replacement Partial Decryptions $pdvStats")
         }
 

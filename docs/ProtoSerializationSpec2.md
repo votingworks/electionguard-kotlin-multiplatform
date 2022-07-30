@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 6/04/2022
+draft 7/29/2022
 
 1. This is version 2 of Election Record. It is not backwards compatible with version 1.
 2. All fields must be present unless marked as optional.
@@ -69,9 +69,9 @@ draft 6/04/2022
 | proto_version       | string                | proto schema version |
 | constants           | ElectionConstants     |                      |
 | manifest            | Manifest              |                      |
-| number_of_guardians | uint32                |                      |
-| quorum              | uint32                |                      |
-| metadata            | map\<string, string\> |                      |
+| number_of_guardians | uint32                | n                    |
+| quorum              | uint32                | q                    |
+| metadata            | map\<string, string\> | arbitrary            |
 
 #### message ElectionConstants
 
@@ -85,15 +85,15 @@ draft 6/04/2022
 
 #### message ElectionInitialized
 
-| Name                      | Type                  | Notes |
-|---------------------------|-----------------------|-------|
-| config                    | ElectionConfig        |       |
-| elgamal_public_key        | ElementModP           |       |
-| manifest_hash             | UInt256               |       |
-| crypto_base_hash          | UInt256               | Q     |
-| crypto_extended_base_hash | UInt256               | Qbar  |
-| guardians                 | List\<Guardian\>      |       |
-| metadata                  | map\<string, string\> |       |
+| Name                      | Type                  | Notes       |
+|---------------------------|-----------------------|-------------|
+| config                    | ElectionConfig        |             |
+| elgamal_public_key        | ElementModP           | K           |
+| manifest_hash             | UInt256               |             |
+| crypto_base_hash          | UInt256               | Q           |
+| crypto_extended_base_hash | UInt256               | Qbar        |
+| guardians                 | List\<Guardian\>      | public info |
+| metadata                  | map\<string, string\> | arbitrary   |
 
 #### message Guardian
 
@@ -101,7 +101,7 @@ draft 6/04/2022
 |-------------------------|----------------------|--------------------------------|
 | guardian_id             | string               |                                |
 | x_coordinate            | uint32               | x_coordinate in the polynomial |
-| coefficient_commitments | List\<ElementModP\>  |                                |
+| coefficient_commitments | List\<ElementModP\>  | K_i,j                          |
 | coefficient_proofs      | List\<SchnorrProof\> |                                |
 
 #### message TallyResult
@@ -129,7 +129,7 @@ draft 6/04/2022
 |----------------------|-------------|--------------------------------|
 | guardian_id          | string      |                                |
 | x_coordinate         | string      | x_coordinate in the polynomial |
-| lagrange_coefficient | ElementModQ |                                |
+| lagrange_coefficient | ElementModQ | w_ℓ, see 10A                   |
 
 
 ## manifest.proto
@@ -392,13 +392,13 @@ draft 6/04/2022
 
 #### message PartialDecryption
 
-| Name            | Type                               | Notes                         |
-|-----------------|------------------------------------|-------------------------------|
-| selection_id    | string                             |                               |
-| guardian_id     | string                             |                               |
-| share           | ElementModP                        | M_i                           |
-| proof           | GenericChaumPedersenProof          | only direct                   |
-| recovered_parts | List\<RecoveredPartialDecryption\> | only recovered, quota of them |
+| Name            | Type                               | Notes                             |
+|-----------------|------------------------------------|-----------------------------------|
+| selection_id    | string                             | SelectionDescription.selection_id |
+| guardian_id     | string                             |                                   |
+| share           | ElementModP                        | M_i                               |
+| proof           | GenericChaumPedersenProof          | only direct                       |
+| recovered_parts | List\<RecoveredPartialDecryption\> | only recovered, quota of them     |
 
 #### message RecoveredPartialDecryption
 
