@@ -13,6 +13,7 @@ import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hasValidSchnorrProof
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
@@ -41,6 +42,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
 
     fun verify(showTime : Boolean = false): Boolean {
         println("Verify election record in = ${record.topdir()}\n")
+        val starting = getSystemTimeInMillis()
 
         if (record.stage() < ElectionRecord.Stage.INIT) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
@@ -57,6 +59,8 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
             return true
         }
+        val took = getSystemTimeInMillis() - starting
+        if (showTime) println("   verify 2,3 took $took millisecs")
 
         // encryption and vote limits
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, cryptoExtendedBaseHash, nthreads)
@@ -98,7 +102,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         }
 
         val spoiledStats =
-            verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads)
+            verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, showTime)
         println(" 12. verifySpoiledBallotTallies $spoiledStats")
 
         return (guardiansOk is Ok) && (publicKeyOk is Ok) && (aggResult is Ok) && ballotStats.allOk && tallyStats.allOk && spoiledStats.allOk

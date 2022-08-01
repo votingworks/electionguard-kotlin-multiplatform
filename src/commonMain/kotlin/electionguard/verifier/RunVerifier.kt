@@ -47,10 +47,12 @@ fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime :
     val electionRecord = electionRecordFromConsumer(Consumer(inputDir, group))
     val verifier = Verifier( electionRecord, nthreads)
 
+    val took = (getSystemTimeInMillis() - starting)
+    println("  runVerifier prep = took $took msecs")
     val allOk = verifier.verify(showTime)
 
-    val took = (getSystemTimeInMillis() - starting)
-    println("RunVerifier = $allOk took $took msecs")
+    val tookAll = (getSystemTimeInMillis() - starting)
+    println("RunVerifier = $allOk took $tookAll msecs")
 }
 
 fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int) {
