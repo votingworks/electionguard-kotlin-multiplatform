@@ -287,8 +287,8 @@ draft 7/29/2022
 | ballot_id         | string                           | PlaintextBallot.ballot_id        |
 | ballot_style_id   | string                           | BallotStyle.ballot_style_id      |
 | manifest_hash     | UInt256                          | Manifest.crypto_hash             |
-| code_seed         | UInt256                          |                                  |
-| code              | UInt256                          |                                  |
+| code_seed         | UInt256                          | optional?                        |
+| code              | UInt256                          | tracking code, H_i               |
 | contests          | List\<EncryptedBallotContest\>   |                                  |
 | timestamp         | int64                            | seconds since the unix epoch UTC |
 | crypto_hash       | UInt256                          |                                  |
@@ -382,13 +382,13 @@ draft 7/29/2022
 
 #### message PlaintextTallySelection
 
-| Name                | Type                        | Notes                                   |
-|---------------------|-----------------------------|-----------------------------------------|
-| selection_id        | string                      | SelectionDescription.selection_id       |
-| tally               | int                         | decrypted vote count                    |
-| value               | ElementModP                 | g^tally or M in the spec                |
-| message             | ElGamalCiphertext           | encrypted vote count                    |
-| partial_decryptions | List\<PartialDecryption\>   | direct or recovered, nguardians of them |
+| Name                | Type                        | Notes                             |
+|---------------------|-----------------------------|-----------------------------------|
+| selection_id        | string                      | SelectionDescription.selection_id |
+| tally               | int                         | decrypted vote count              |
+| value               | ElementModP                 | g^tally or M in the spec          |
+| message             | ElGamalCiphertext           | encrypted vote count              |
+| partial_decryptions | List\<PartialDecryption\>   | direct or recovered, n of them    |
 
 #### message PartialDecryption
 
@@ -398,7 +398,7 @@ draft 7/29/2022
 | guardian_id     | string                             |                                   |
 | share           | ElementModP                        | M_i                               |
 | proof           | GenericChaumPedersenProof          | only direct                       |
-| recovered_parts | List\<RecoveredPartialDecryption\> | only recovered, quota of them     |
+| recovered_parts | List\<RecoveredPartialDecryption\> | only recovered, q of them         |
 
 #### message RecoveredPartialDecryption
 

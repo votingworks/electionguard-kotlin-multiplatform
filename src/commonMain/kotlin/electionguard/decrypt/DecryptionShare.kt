@@ -75,7 +75,7 @@ class PartialDecryption(
     val proof: GenericChaumPedersenProof?,       // present only when its directly computed
     recovered: List<RecoveredPartialDecryption>? // present only when its indirectly computed
 ) {
-    // When guardians are missing there will be LOOK quorum or nguardians - nmissing >= quorum of these?
+    // When guardians are missing there will be quorum of these
     val recoveredDecryptions: MutableList<RecoveredPartialDecryption> = mutableListOf()
 
     init {
