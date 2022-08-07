@@ -4,7 +4,6 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
-import electionguard.ballot.DecryptionResult
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextTally
@@ -131,6 +130,8 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             errors.add("  3.A jointPublicKey does not equal computed")
         }
 
+        // LOOK this looks like 2B, and we're not doing 3B ??
+        //   So we have record.cryptoExtendedBaseHash() wrong, (and so does python ??)
         val commitments = mutableListOf<ElementModP>()
         this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments) }
         val commitmentsHash = hashElements(commitments)

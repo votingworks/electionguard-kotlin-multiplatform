@@ -87,14 +87,14 @@ class Encryptor(
 
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), sortedContests)
-        val ballotCode = hashElements(codeSeed, timestamp, cryptoHash)
+        val trackingCode = hashElements(codeSeed, timestamp, cryptoHash)
 
         return CiphertextBallot(
             ballotId,
             ballotStyleId,
             manifest.cryptoHashUInt256(),
             codeSeed.toUInt256(),
-            ballotCode,
+            trackingCode,
             sortedContests,
             timestamp,
             cryptoHash,
@@ -117,7 +117,7 @@ class Encryptor(
         ballotNonce: UInt256,
     ): CiphertextBallot.Contest {
         val contestDescriptionHash = mcontest.cryptoHash
-        val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
+        val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group) // LOOK why? because Nonces wants a Q
         val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
         val contestNonce = nonceSequence[mcontest.sequenceOrder]
         val chaumPedersenNonce = nonceSequence[0]

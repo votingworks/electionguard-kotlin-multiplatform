@@ -130,7 +130,7 @@ data class KeyCeremonyResults(
         val jointPublicKey: ElementModP =
             publicKeysSorted.map { it.coefficientCommitments[0] }.reduce { a, b -> a * b }
 
-        // cryptoBaseHash
+        // cryptoBaseHash = Q
         val primes = config.constants
         val cryptoBaseHash: UInt256 = hashElements(
             primes.largePrime.toHex(),
@@ -141,7 +141,7 @@ data class KeyCeremonyResults(
             config.manifest.cryptoHash,
         )
 
-        // cryptoExtendedBaseHash
+        // cryptoExtendedBaseHash = Qbar
         val commitments: MutableList<ElementModP> = mutableListOf()
         publicKeysSorted.forEach { commitments.addAll(it.coefficientCommitments) }
         val commitmentsHash = hashElements(commitments)

@@ -13,8 +13,8 @@ message ElectionConfig {
   string proto_version = 1; // protobuf serialization version
   ElectionConstants constants = 2;
   Manifest manifest = 3;
-  uint32 number_of_guardians = 4; // The number of guardians necessary to generate the public key
-  uint32 quorum = 5; // The quorum of guardians necessary to decrypt an election.  Must be <= number_of_guardians.
+  uint32 number_of_guardians = 4; // n, the number of guardians necessary to generate the public key
+  uint32 quorum = 5; // k, the quorum of guardians necessary to decrypt an election.  Must be <= number_of_guardians.
   map<string, string> metadata = 6;
 }
 
@@ -31,16 +31,14 @@ message ElectionConstants {
 message ElectionInitialized {
   ElectionConfig config = 1;
 
-  // The `joint public key (K)` in the [ElectionGuard Spec]
-  ElementModP joint_public_key = 2;
-  // Matches Manifest.crypto_hash
-  UInt256 manifest_hash = 3;
-  // the `base hash code (𝑄)` in the [ElectionGuard Spec]
-  UInt256 crypto_base_hash = 7;
-  // the `extended base hash code (𝑄')` in the [ElectionGuard Spec]
-  UInt256 crypto_extended_base_hash = 4;
-  // the public information about the Guardians / Trustees
+  ElementModP joint_public_key = 2; // K
+  UInt256 manifest_hash = 3;        // Manifest.crypto_hash; LOOK why store again?
+  UInt256 crypto_base_hash = 7;     // the base hash code, 𝑄
+  UInt256 crypto_extended_base_hash = 4; // the extended base hash code 𝑄' = H(𝑄, K), aka Qbar
+
+  // public information about the Guardians / Trustees
   repeated Guardian guardians = 5;
+  // arbitrary metadata added by the software
   map<string, string> metadata = 6;
 }
 

@@ -88,15 +88,14 @@ val ElGamalKeypair.context: GroupContext
 
 /**
  * An "exponential ElGamal ciphertext" (i.e., with the plaintext in the exponent to allow for
- * homomorphic addition). (See
- * [ElGamal 1982](https://ieeexplore.ieee.org/abstract/document/1057074))
+ * homomorphic addition). (See [ElGamal 1982](https://ieeexplore.ieee.org/abstract/document/1057074))
  *
  * In a "normal" ElGamal encryption where the message goes into the exponent, a secret key `a`
  * with corresponding public key `g^a`, message `M` and nonce `R` would be encoded as the tuple
- * `<g^R, (g^a)^r * g^M>`.
+ * `(g^R, (g^a)^r * g^M)`.
  *
  * In this particular ElGamal implementation, we're instead encoding the ciphertext as
- * `<g^R, (g^a)^{R+M}>`. This accelerates both the encryption process and the process of generating
+ * `(g^R, (g^a)^{R+M})`. This accelerates both the encryption process and the process of generating
  * the corresponding Chaum-Pedersen proofs.
  *
  * This also means that this ElGamal ciphertext is *not compatible with ElectionGuard 1.0*, but

@@ -19,7 +19,7 @@ import kotlin.test.Test
 /** Run workflow starting from ElectionConfig in the start directory (125 selections/ballot). */
 class RunWorkflow {
     private val configDir = "src/commonTest/data/start"
-    private val nballots = 100
+    private val nballots = 11
 
     @Test
     fun runWorkflowAllAvailable() {

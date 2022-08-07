@@ -153,10 +153,10 @@ fun batchEncryption(
             true
         }
     }
+    val starting = getSystemTimeInMillis() // start timing here
 
     val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
-    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null
-    val starting = getSystemTimeInMillis()
+    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null // LOOK seems wrong
     val encryptor = Encryptor(
         group,
         electionInit.manifest(),
@@ -222,30 +222,34 @@ private class RunEncryption(
     val verifier: VerifyEncryptedBallots?
     init {
         verifier = if (check == CheckType.Verify) VerifyEncryptedBallots(group, manifest,
-            ElGamalPublicKey(jointPublicKey), cryptoExtendedBaseHash.toElementModQ(group), 1) else null
+            ElGamalPublicKey(jointPublicKey), cryptoExtendedBaseHash.toElementModQ(group), 1)
+        else null
     }
+
     fun encrypt(ballot: PlaintextBallot): EncryptedBallot {
-        val encrypted = if (masterNonce != null) // make deterministic
+        val encryptedBallot = if (masterNonce != null) // make result deterministic
             encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
         else
             encryptor.encrypt(ballot, codeSeed, group.randomElementModQ())
+
+        // experiments in testing the encryption
         if (check == CheckType.EncryptTwice) {
-            val encrypted2 = encryptor.encrypt(ballot, codeSeed, encrypted.masterNonce, encrypted.timestamp)
-            if (encrypted2.cryptoHash != encrypted.cryptoHash) {
+            val encrypted2 = encryptor.encrypt(ballot, codeSeed, encryptedBallot.masterNonce, encryptedBallot.timestamp)
+            if (encrypted2.cryptoHash != encryptedBallot.cryptoHash) {
                 logger.warn { "encrypted.cryptoHash doesnt match" }
             }
-            if (encrypted2 != encrypted) {
+            if (encrypted2 != encryptedBallot) {
                 logger.warn { "encrypted doesnt match" }
             }
         } else if (check == CheckType.Verify && verifier != null) {
             // LOOK its possible VerifyEncryptedBallots is doing more work than needed here
-            val submitted = encrypted.submit(EncryptedBallot.BallotState.CAST)
+            val submitted = encryptedBallot.submit(EncryptedBallot.BallotState.CAST)
             val verifyStats = verifier.verifyEncryptedBallot(submitted)
             if (!verifyStats.allOk) {
                 logger.warn { "encrypted doesnt verify = ${verifyStats.errors}" }
             }
         }
-        return encrypted.submit(EncryptedBallot.BallotState.CAST)
+        return encryptedBallot.submit(EncryptedBallot.BallotState.CAST)
     }
 }
 

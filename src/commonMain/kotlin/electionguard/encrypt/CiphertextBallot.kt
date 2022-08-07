@@ -9,7 +9,7 @@ data class CiphertextBallot(
     val ballotStyleId: String,
     val manifestHash: UInt256, // matches Manifest.cryptoHash
     val codeSeed: UInt256,
-    val code: UInt256,
+    val code: UInt256, // tracking code, H_i
     val contests: List<Contest>,
     val timestamp: Long,
     val cryptoHash: UInt256,

@@ -70,7 +70,7 @@ draft 7/29/2022
 | constants           | ElectionConstants     |                      |
 | manifest            | Manifest              |                      |
 | number_of_guardians | uint32                | n                    |
-| quorum              | uint32                | q                    |
+| quorum              | uint32                | k                    |
 | metadata            | map\<string, string\> | arbitrary            |
 
 #### message ElectionConstants
