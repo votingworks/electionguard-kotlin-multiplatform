@@ -122,12 +122,12 @@ There is no python SDK version of this message.
 
 #### message EncryptionDevice
 
-| Name        | JSON Name | Type   | Notes                                  |
-|-------------|-----------|--------|----------------------------------------|
-| device_id   |           | int64  | was uuid LOOK maybe just use a string? |
-| session_id  |           | int64  |                                        |
-| launch_code |           | int64  |                                        |
-| location    |           | string |                                        |
+| Name        | JSON Name | Type   | Notes      |
+|-------------|-----------|--------|------------|
+| device_id   |           | int64  | was uuid   |
+| session_id  |           | int64  |            |
+| launch_code |           | int64  |            |
+| location    |           | string |            |
 
 #### message GuardianRecord
 
@@ -322,7 +322,7 @@ When the optional crypto_hash are passed, they are verified. If not passed in, t
 | crypto_hash    |                          | UInt256                           |                                           |
 |                | nonce                    | ElementModQ                       | removed                                   |
 | proof          |                          | ConstantChaumPedersenProof        |                                           |
-| extended_data  | ciphertext_extended_data | data_ciphertext                   | LOOK what?                                |
+| extended_data  | ciphertext_extended_data | data_ciphertext                   |                                           |
 
 #### message CiphertextBallotSelection
 
@@ -337,7 +337,7 @@ When the optional crypto_hash are passed, they are verified. If not passed in, t
 |                          | nonce            | ElementModQ                   | removed                                     |
 | proof                    |                  | DisjunctiveChaumPedersenProof |                                             |
 | extended_data            |                  | HashedElGamalCiphertext       | optional                                    |
-| extended_data            | extended_data    | string                        | LOOK what?                                  |
+| extended_data            | extended_data    | string                        |                                             |
 
 #### message ConstantChaumPedersenProof
 
