@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
-        description = "Directory containing input election record"
+        description = "Directory containing input ElectionConfig record"
     ).required()
     val trusteeDir by parser.option(
         ArgType.String,
@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
     val outputDir by parser.option(
         ArgType.String,
         shortName = "out",
-        description = "Directory to write output election record"
+        description = "Directory to write output ElectionInitialized record"
     ).required()
     val createdBy by parser.option(
         ArgType.String,

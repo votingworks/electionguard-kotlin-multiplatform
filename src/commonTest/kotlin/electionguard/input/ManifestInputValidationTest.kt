@@ -180,4 +180,6 @@ class TestManifestInputValidation {
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.B.5")
     }
+
+    // TODO C.1 - C.5
 }

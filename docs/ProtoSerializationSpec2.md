@@ -1,6 +1,6 @@
-# 🗳 Election Record serialization (proposed specification)
+# 🗳 Election Record KMP serialization (proposed specification)
 
-draft 7/29/2022
+draft 8/08/2022
 
 1. This is version 2 of Election Record. It is not backwards compatible with version 1.
 2. All fields must be present unless marked as optional.
@@ -162,12 +162,12 @@ draft 7/29/2022
 
 #### message BallotStyle
 
-| Name                  | Type           | Notes                                         |
-|-----------------------|----------------|-----------------------------------------------|
-| ballot_style_id       | string         |                                               |
-| geopolitical_unit_ids | List\<string\> | GeoPoliticalUnit.geopolitical_unit_id |
-| party_ids             | List\<string\> | optional matches Party.party_id               |
-| image_uri             | string         | optional                                      |
+| Name                  | Type           | Notes                                   |
+|-----------------------|----------------|-----------------------------------------|
+| ballot_style_id       | string         |                                         |
+| geopolitical_unit_ids | List\<string\> | GeoPoliticalUnit.geopolitical_unit_id   |
+| party_ids             | List\<string\> | optional matches Party.party_id         |
+| image_uri             | string         | optional                                |
 
 #### message Candidate
 
@@ -252,12 +252,12 @@ draft 7/29/2022
 
 #### message PlaintextBallot
 
-| Name            | Type                           | Notes                         |
-|-----------------|--------------------------------|-------------------------------|
-| ballot_id       | string                         | unique input ballot id        |
-| ballot_style_id | string                         | BallotStyle.ballot_style_id   |
-| contests        | List\<PlaintextBallotContest\> |                               |
-| errors          | string                         | optional eg an invalid ballot |
+| Name            | Type                           | Notes                              |
+|-----------------|--------------------------------|------------------------------------|
+| ballot_id       | string                         | unique input ballot id             |
+| ballot_style_id | string                         | BallotStyle.ballot_style_id        |
+| contests        | List\<PlaintextBallotContest\> |                                    |
+| errors          | string                         | optional, eg for an invalid ballot |
 
 #### message PlaintextBallotContest
 

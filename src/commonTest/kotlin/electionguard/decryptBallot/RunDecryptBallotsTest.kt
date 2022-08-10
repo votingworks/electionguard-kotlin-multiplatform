@@ -20,7 +20,7 @@ class RunDecryptBallotsTest {
             outputDir,
             readDecryptingTrustees(group, inputDir, trusteeDir),
             "ALL",
-            1
+            1,
         )
         assertEquals(100, n)
     }

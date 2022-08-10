@@ -23,7 +23,8 @@ import electionguard.core.toUInt256
 
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
- * The input Ballots must be well-formed and consistent.
+ * The manifest is expected to have passed manifest validation (see ManifestInputValidation).
+ * The input ballots are expected to have passed ballot validation.
  * See RunBatchEncryption and BallotInputValidation to validate ballots before passing them to this class.
  */
 class Encryptor(
@@ -117,7 +118,7 @@ class Encryptor(
         ballotNonce: UInt256,
     ): CiphertextBallot.Contest {
         val contestDescriptionHash = mcontest.cryptoHash
-        val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group) // LOOK why? because Nonces wants a Q
+        val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
         val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
         val contestNonce = nonceSequence[mcontest.sequenceOrder]
         val chaumPedersenNonce = nonceSequence[0]
@@ -198,7 +199,7 @@ class Encryptor(
         val disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence[0]
         val selectionNonce: ElementModQ = nonceSequence[selectionDescription.sequenceOrder]
 
-        // TODO: test
+        // TODO: need to test
         val extendedDataCiphertext =
             if (extendedData != null) {
                 val extendedDataBytes = extendedData.encodeToByteArray()

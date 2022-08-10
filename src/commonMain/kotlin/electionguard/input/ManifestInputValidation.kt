@@ -8,7 +8,10 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestInputValidation")
 
-/** Validate an election manifest, give human readable error information. */
+/**
+ * Validate an election manifest, give human readable error information.
+ * See [ElectionGuard Input Validation](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/InputValidation.md)
+ */
 class ManifestInputValidation(val manifest: Manifest) {
     private val gpUnits: Set<String> = manifest.geopoliticalUnits.map { it.geopoliticalUnitId }.toSet()
     private val gpUnitInStyles: Set<String> = manifest.ballotStyles.map { it.geopoliticalUnitIds }.flatten().toSet()
@@ -17,7 +20,7 @@ class ManifestInputValidation(val manifest: Manifest) {
 
     /** Determine if a manifest is valid.  */
     fun validate(): ValidationMessages {
-        val manifestMessages = ValidationMessages("Manifest" + manifest.electionScopeId, 0)
+        val manifestMessages = ValidationMessages("Manifest '${manifest.electionScopeId}'", 0)
 
         // Referential integrity of BallotStyle geopolitical_unit_ids
         for (ballotStyle in manifest.ballotStyles) {
@@ -82,7 +85,7 @@ class ManifestInputValidation(val manifest: Manifest) {
 
     /** Determine if the manifest contest is valid.  */
     private fun validateContest(contest: Manifest.ContestDescription, ballotMesses: ValidationMessages) {
-        val contestMesses = ballotMesses.nested("Contest" + contest.contestId)
+        val contestMesses = ballotMesses.nested("Contest " + contest.contestId)
 
         // Referential integrity of Contest electoral_district_id
         if (!gpUnits.contains(contest.geopoliticalUnitId)) {

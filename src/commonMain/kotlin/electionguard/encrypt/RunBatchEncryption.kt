@@ -48,7 +48,7 @@ private val logger = KotlinLogging.logger("RunBatchEncryption")
 
 /**
  * Run ballot encryption in batch mode.
- * Read election record from inputDir, write to outputDir.
+ * Read ElectionConfig from inputDir, write electionInit to outputDir.
  * Read plaintext ballots from ballotDir.
  * All ballots will be cast.
  */
@@ -117,7 +117,7 @@ fun main(args: Array<String>) {
 
 enum class CheckType { None, Verify, EncryptTwice }
 
-fun batchEncryption(
+fun batchEncryptionOld(
     group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
     invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None
 ) {
@@ -156,7 +156,7 @@ fun batchEncryption(
     val starting = getSystemTimeInMillis() // start timing here
 
     val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
-    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null // LOOK seems wrong
+    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow nonce to be passed in?
     val encryptor = Encryptor(
         group,
         electionInit.manifest(),
@@ -191,7 +191,6 @@ fun batchEncryption(
     sink.close()
     val took = getSystemTimeInMillis() - starting
 
-    // LOOK i dont know if this is a good idea. leave it out of the timing
     publisher.writeElectionInitialized(
         electionInit.addMetadata(
             Pair("Used", createdBy ?: "RunBatchEncryption"),
@@ -208,6 +207,116 @@ fun batchEncryption(
     println("Encryption with nthreads = $nthreads took $took millisecs for $count ballots = $msecsPerBallot msecs/ballot")
     val msecPerEncryption = (took.toDouble() / countEncryptions)
     val encryptionPerBallot = (countEncryptions / count)
+    println("    $countEncryptions total encryptions = $encryptionPerBallot per ballot = $msecPerEncryption millisecs/encryption")
+}
+
+fun batchEncryption(
+    group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
+    invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None
+) {
+    val consumerIn = Consumer(inputDir, group)
+    return batchEncryption(group, inputDir, outputDir, consumerIn.iteratePlaintextBallots(ballotDir, null),
+        invalidDir, fixedNonces, nthreads, createdBy, check)
+}
+
+fun batchEncryption(
+    group: GroupContext,
+    inputDir: String,
+    outputDir: String,
+    ballots: Iterable<PlaintextBallot>,
+    invalidDir: String?,
+    fixedNonces: Boolean,
+    nthreads: Int,
+    createdBy: String?,
+    check: CheckType = CheckType.None
+) {
+    val consumerIn = Consumer(inputDir, group)
+    val electionInit: ElectionInitialized =
+        consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+
+    // ManifestInputValidation
+    val manifestValidator = ManifestInputValidation(electionInit.manifest())
+    val errors = manifestValidator.validate()
+    if (errors.hasErrors()) {
+        println("*** ManifestInputValidation FAILED on election record in $inputDir")
+        println("$errors")
+        // kotlin.system.exitProcess(1) // kotlin 1.6.20
+        return
+    }
+    // debugging
+    // Map<BallotStyle: String, selectionCount: Int>
+    val styleCount = manifestValidator.countEncryptions()
+
+    // BallotInputValidation
+    var countEncryptions = 0
+    val invalidBallots = ArrayList<PlaintextBallot>()
+    val ballotValidator = BallotInputValidation(electionInit.manifest())
+    val validate: ((PlaintextBallot) -> Boolean) = {
+        val mess = ballotValidator.validate(it)
+        if (mess.hasErrors()) {
+            println("*** BallotInputValidation FAILED on ballot ${it.ballotId}")
+            println("$mess\n")
+            invalidBallots.add(PlaintextBallot(it, mess.toString()))
+            false
+        } else {
+            countEncryptions += styleCount[it.ballotStyleId] ?: 0
+            true
+        }
+    }
+    val starting = getSystemTimeInMillis() // start timing here
+
+    val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
+    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow nonce to be passed in?
+    val encryptor = Encryptor(
+        group,
+        electionInit.manifest(),
+        ElGamalPublicKey(electionInit.jointPublicKey),
+        electionInit.cryptoExtendedBaseHash
+    )
+    val encrypt = RunEncryption(group, encryptor, codeSeed, masterNonce, electionInit.manifest(),
+        electionInit.jointPublicKey, electionInit.cryptoExtendedBaseHash, check)
+
+    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
+
+    runBlocking {
+        val outputChannel = Channel<EncryptedBallot>()
+        val encryptorJobs = mutableListOf<Job>()
+        val ballotProducer = produceBallots(ballots.filter { validate(it) })
+        repeat(nthreads) {
+            encryptorJobs.add(
+                launchEncryptor(
+                    it,
+                    ballotProducer,
+                    outputChannel
+                ) { ballot -> encrypt.encrypt(ballot) }
+            )
+        }
+        launchSink(outputChannel, sink)
+
+        // wait for all encryptions to be done, then close everything
+        joinAll(*encryptorJobs.toTypedArray())
+        outputChannel.close()
+    }
+    sink.close()
+    val took = getSystemTimeInMillis() - starting
+
+    publisher.writeElectionInitialized(
+        electionInit.addMetadata(
+            Pair("Used", createdBy ?: "RunBatchEncryption"),
+            Pair("UsedOn", getSystemDate().toString()),
+            Pair("CreatedFromDir", inputDir)
+        )
+    )
+    if (invalidDir != null && !invalidBallots.isEmpty()) {
+        publisher.writePlaintextBallot(invalidDir, invalidBallots)
+        println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
+    }
+
+    val msecsPerBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
+    println("Encryption with nthreads = $nthreads took $took millisecs for $count ballots = $msecsPerBallot msecs/ballot")
+    val msecPerEncryption = (took.toDouble() / countEncryptions)
+    val encryptionPerBallot = if (count == 0) 0 else (countEncryptions / count)
     println("    $countEncryptions total encryptions = $encryptionPerBallot per ballot = $msecPerEncryption millisecs/encryption")
 }
 
@@ -242,7 +351,7 @@ private class RunEncryption(
                 logger.warn { "encrypted doesnt match" }
             }
         } else if (check == CheckType.Verify && verifier != null) {
-            // LOOK its possible VerifyEncryptedBallots is doing more work than needed here
+            // VerifyEncryptedBallots may be doing more work than actually needed
             val submitted = encryptedBallot.submit(EncryptedBallot.BallotState.CAST)
             val verifyStats = verifier.verifyEncryptedBallot(submitted)
             if (!verifyStats.allOk) {
@@ -265,7 +374,7 @@ private fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): 
     }
 
 // coroutines allow parallel encryption at the ballot level
-// LOOK not possible to do ballot chaining, since the order is indeterminate?
+// TODO not possible to do ballot chaining, since the order is indeterminate?
 //    or do we just have to work harder??
 private fun CoroutineScope.launchEncryptor(
     id: Int,

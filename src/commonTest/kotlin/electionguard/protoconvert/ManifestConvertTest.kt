@@ -57,6 +57,9 @@ class ManifestConvertTest {
     }
 
     companion object {
+        val ncontests = 11
+        val nselections = 5
+
         fun generateFakeManifest(): Manifest {
             //     electionScopeId: String,
             //    specVersion: String,
@@ -77,23 +80,23 @@ class ManifestConvertTest {
                 "2022-02-22T00:00:00",
                 "2022-02-23T23:59:57",
                 List(11) { generateGeopoliticalUnit(it) },
-                List(12) { generateParty(it) },
-                List(13) { generateCandidate(it) },
-                List(9) { generateContest(it) },
+                List(3) { generateParty(it) },
+                List(ncontests * nselections) { generateCandidate(it) },
+                List(ncontests) { generateContest(it) },
                 List(8) { generateBallotStyle(it) },
                 generateInternationalizedText(),
                 generateContactInformation(),
             )
         }
 
-        //         val geopoliticalUnitId: String,
+        //        val geopoliticalUnitId: String,
         //        val name: String,
         //        val type: ReportingUnitType,
         //        val contactInformation: ContactInformation?,
         //        val cryptoHash: ElementModQ
         private fun generateGeopoliticalUnit(cseq: Int): Manifest.GeopoliticalUnit {
             return Manifest.GeopoliticalUnit(
-                "geopoliticalUnitId$cseq",
+                "geode$cseq",
                 "name$cseq",
                 Manifest.ReportingUnitType.city,
                 generateContactInformation(),
@@ -123,10 +126,11 @@ class ManifestConvertTest {
         //        val isWriteIn: Boolean,
         //        val cryptoHash: ElementModQ
         private fun generateCandidate(cseq: Int): Manifest.Candidate {
+            val partyId = cseq % 3
             return Manifest.Candidate(
                 "candidate$cseq",
                 generateInternationalizedText(),
-                "party$cseq",
+                "party$partyId",
                 "imageUri",
                 false,
             )
@@ -148,15 +152,15 @@ class ManifestConvertTest {
             return Manifest.ContestDescription(
                 "contest$cseq",
                 cseq,
-                "geounit",
+                "geode0",
                 Manifest.VoteVariationType.n_of_m,
                 1,
                 1,
                 "contest name",
-                List(11) { generateSelection(it) },
+                List(nselections) { generateSelection(nselections * cseq + it) },
                 generateInternationalizedText(),
                 generateInternationalizedText(),
-                List(11) { "paltry$it" },
+                List(11) { "party$it" },
             )
         }
 

@@ -11,8 +11,8 @@ class BallotInputBuilder internal constructor(val id: String) {
         return this
     }
 
-    fun addContest(contest_id: String): ContestBuilder {
-        val c = ContestBuilder(contest_id)
+    fun addContest(contest_id: String, seqOrder : Int? = null): ContestBuilder {
+        val c = ContestBuilder(contest_id, seqOrder)
         contests.add(c)
         return c
     }
@@ -25,12 +25,12 @@ class BallotInputBuilder internal constructor(val id: String) {
         )
     }
 
-    inner class ContestBuilder internal constructor(val id: String) {
-        private var seq = 1
+    inner class ContestBuilder internal constructor(val id: String, seqOrder : Int? = null) {
+        private var seq = seqOrder?: 1
         private val selections = ArrayList<SelectionBuilder>()
 
-        fun addSelection(id: String, vote: Int): ContestBuilder {
-            val s = SelectionBuilder(id, vote)
+        fun addSelection(id: String, vote: Int, seqOrder : Int? = null): ContestBuilder {
+            val s = SelectionBuilder(id, vote, seqOrder)
             selections.add(s)
             return this
         }
@@ -47,9 +47,9 @@ class BallotInputBuilder internal constructor(val id: String) {
             )
         }
 
-        inner class SelectionBuilder internal constructor(private val id: String, private val vote: Int) {
+        inner class SelectionBuilder internal constructor(private val id: String, private val vote: Int, private val seqOrder : Int? = null) {
             fun build(): PlaintextBallot.Selection {
-                return PlaintextBallot.Selection(id, seq++, vote, null)
+                return PlaintextBallot.Selection(id, seqOrder?: seq++, vote, null)
             }
         }
     }

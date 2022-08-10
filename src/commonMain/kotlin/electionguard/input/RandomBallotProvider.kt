@@ -7,30 +7,31 @@ import kotlin.random.Random
 /** Create nballots randomly generated fake Ballots, used for testing.  */
 class RandomBallotProvider(election: Manifest, nballots: Int?) {
     private val nballots: Int
-    private val election: Manifest
+    private val manifest: Manifest
 
     init {
-        this.election = election
+        this.manifest = election
         this.nballots = if (nballots != null && nballots > 0) nballots else 11
     }
 
-    fun ballots(): List<PlaintextBallot> {
+    fun ballots(ballotStyleId : String? = null): List<PlaintextBallot> {
         val ballotFactory = BallotFactory()
         val ballots: MutableList<PlaintextBallot> = ArrayList()
+        val useStyle = ballotStyleId ?: manifest.ballotStyles[0].ballotStyleId
         for (i in 0 until nballots) {
             val ballot_id = "ballot-id-" + Random.nextInt()
-            ballots.add(ballotFactory.getFakeBallot(election, ballot_id))
+            ballots.add(ballotFactory.getFakeBallot(manifest, useStyle, ballot_id))
         }
         return ballots
     }
 
     private class BallotFactory {
-        fun getFakeBallot(manifest: Manifest, ballot_id: String): PlaintextBallot {
+        fun getFakeBallot(manifest: Manifest, ballotStyleId : String, ballotId: String): PlaintextBallot {
             val contests: MutableList<PlaintextBallot.Contest> = ArrayList()
             for (contestp in manifest.contests) {
                 contests.add(getRandomContestFrom(contestp))
             }
-            return PlaintextBallot(ballot_id, "styling", contests)
+            return PlaintextBallot(ballotId, ballotStyleId, contests)
         }
 
         fun getRandomContestFrom(contest: Manifest.ContestDescription): PlaintextBallot.Contest {

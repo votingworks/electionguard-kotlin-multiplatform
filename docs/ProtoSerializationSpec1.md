@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization (proposed specification)
 
-draft 5/13/2022
+draft 8/10/2022
 
 This covers only the election record, and not any serialized messages used in remote procedure calls.
 
@@ -337,7 +337,7 @@ When the optional crypto_hash are passed, they are verified. If not passed in, t
 |                          | nonce            | ElementModQ                   | removed                                     |
 | proof                    |                  | DisjunctiveChaumPedersenProof |                                             |
 | extended_data            |                  | HashedElGamalCiphertext       | optional                                    |
-| extended_data            | extended_data    | string                        |                                             |
+| extended_data            | extended_data    | string                        | removed                                     |
 
 #### message ConstantChaumPedersenProof
 

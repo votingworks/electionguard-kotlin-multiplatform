@@ -3,6 +3,7 @@ package electionguard.publish
 import com.github.michaelbull.result.*
 import electionguard.core.productionGroup
 import electionguard.core.runTest
+import electionguard.input.ManifestInputValidation
 import electionguard.protoconvert.generateElectionConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,6 +18,16 @@ class PublisherTest {
     @Test
     fun testWriteElectionConfig() {
         val config = generateElectionConfig(3, 3)
+
+        // ManifestInputValidation
+        val manifestValidator = ManifestInputValidation(config.manifest)
+        val errors = manifestValidator.validate()
+        if (errors.hasErrors()) {
+            println("*** ManifestInputValidation FAILED on generated electionConfig")
+            println("$errors")
+            return
+        }
+
         publisher.writeElectionConfig(config)
 
         val context = productionGroup()

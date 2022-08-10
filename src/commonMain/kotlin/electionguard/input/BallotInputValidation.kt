@@ -6,14 +6,16 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("BallotInputValidation")
 
-class BallotInputValidation(val election: Manifest) {
-    // TODO use memoized maps on Manifest to reduce cost of validation
-    private val contestMap = election.contests.associate { it.contestId  to ElectionContest(it) }
-    private val styles = election.ballotStyles.associateBy { it.ballotStyleId }
+/**
+ * Determine if a ballot is valid and well-formed for the given manifest.
+ * See [ElectionGuard Input Validation](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/InputValidation.md)
+ */
+class BallotInputValidation(val manifest: Manifest) {
+    private val contestMap = manifest.contests.associate { it.contestId  to ElectionContest(it) }
+    private val styles = manifest.ballotStyles.associateBy { it.ballotStyleId }
 
-    /** Determine if a ballot is valid and well-formed for the given election.  */
     fun validate(ballot: PlaintextBallot): ValidationMessages {
-        val ballotMesses = ValidationMessages("Ballot" + ballot.ballotId, 0)
+        val ballotMesses = ValidationMessages("Ballot '${ballot.ballotId}'", 0)
         val ballotStyle: Manifest.BallotStyle? = styles[ballot.ballotStyleId]
         
         // Referential integrity of ballot's BallotStyle id
@@ -27,7 +29,7 @@ class BallotInputValidation(val election: Manifest) {
         for (ballotContest in ballot.contests) {
             // No duplicate contests
             if (contestIds.contains(ballotContest.contestId)) {
-                val msg = "Ballot.B.1 Multiple Ballot contests have same id '${ballotContest.contestId}'"
+                val msg = "Ballot.B.1 Multiple Ballot contests have same contest id '${ballotContest.contestId}'"
                 ballotMesses.add(msg)
                 logger.warn { msg }
             } else {
@@ -55,6 +57,13 @@ class BallotInputValidation(val election: Manifest) {
         ballotMesses: ValidationMessages
     ) {
         val contestMesses = ballotMesses.nested("Contest " + ballotContest.contestId)
+
+        if (ballotContest.sequenceOrder != electionContest.sequenceOrder) {
+            val msg = "Ballot.A.2.1 Ballot Contest '${ballotContest.contestId}' sequenceOrder ${ballotContest.sequenceOrder} " +
+                    " does not match manifest contest sequenceOrder ${electionContest.sequenceOrder}"
+            contestMesses.add(msg)
+            logger.warn { msg }
+        }
 
         // Contest geopoliticalUnitId ok for this BallotStyle
         if (!ballotStyle.geopoliticalUnitIds.contains(electionContest.geopoliticalUnitId)) {
@@ -86,11 +95,18 @@ class BallotInputValidation(val election: Manifest) {
             val electionSelection: Manifest.SelectionDescription? = electionContest.selectionMap[selection.selectionId]
             // Referential integrity of ballotSelection id
             if (electionSelection == null) {
-                val msg = "Ballot.B.2.1 Ballot Selection '${selection.selectionId}' does not exist in contest manifest"
+                val msg = "Ballot.A.4 Ballot Selection '${selection.selectionId}' does not exist in contest manifest"
                 contestMesses.add(msg)
                 logger.warn { msg }
             } else {
-                // Vote can only be a 0 or 1 // LOOK not supporting ranked choice yet.
+                if (selection.sequenceOrder != electionSelection.sequenceOrder) {
+                    val msg = "Ballot.A.4.1 Ballot Selection '${selection.selectionId}' sequenceOrder ${selection.sequenceOrder} " +
+                            " does not match manifest selection sequenceOrder ${electionSelection.sequenceOrder}"
+                    contestMesses.add(msg)
+                    logger.warn { msg }
+                }
+
+                // Vote can only be a 0 or 1, not supporting ranked choice, approval yet.
                 if (selection.vote < 0 || selection.vote > 1) {
                     val msg = "Ballot.C.1 Ballot Selection '${selection.selectionId}' vote ($selection.vote) must be 0 or 1"
                     contestMesses.add(msg)
@@ -111,6 +127,7 @@ class BallotInputValidation(val election: Manifest) {
 
     class ElectionContest internal constructor(electionContest: Manifest.ContestDescription) {
         val contestId = electionContest.contestId
+        val sequenceOrder = electionContest.sequenceOrder
         val geopoliticalUnitId = electionContest.geopoliticalUnitId
         val allowed = electionContest.votesAllowed
         val selectionMap = electionContest.selections.associateBy { it.selectionId }
