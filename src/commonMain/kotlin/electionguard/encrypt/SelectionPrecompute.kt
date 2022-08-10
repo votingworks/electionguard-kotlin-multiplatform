@@ -158,7 +158,7 @@ class SelectionPrecompute(
                 disjunctiveChaumPedersenNonce,
                 selectionNonce,
                 isPlaceholder,
-                null // LOOK not handling write-ins
+                null // TODO not handling write-ins
             )
         }
 
@@ -171,7 +171,7 @@ class SelectionPrecompute(
                 disjunctiveChaumPedersenNonce,
                 selectionNonce,
                 isPlaceholder,
-                null // LOOK not handling write-ins
+                null // TODO not handling write-ins
             )
         }
 

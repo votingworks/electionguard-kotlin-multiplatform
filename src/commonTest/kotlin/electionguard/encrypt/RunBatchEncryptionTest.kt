@@ -1,6 +1,12 @@
 package electionguard.encrypt
 
+import com.github.michaelbull.result.getOrThrow
+import electionguard.ballot.ElectionInitialized
+import electionguard.core.productionGroup
+import electionguard.input.RandomBallotProvider
+import electionguard.publish.Consumer
 import kotlin.test.Test
+import kotlin.test.assertContains
 
 class RunBatchEncryptionTest {
 
@@ -79,6 +85,35 @@ class RunBatchEncryptionTest {
                 "Verify",
             )
         )
+    }
+
+    @Test
+    fun testInvalidBallot() {
+        val group = productionGroup()
+        val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
+        val invalidDir = "testOut/testInvalidBallot/invalid_ballots"
+        val consumerIn = Consumer(inputDir, group)
+        val electionInit: ElectionInitialized =
+            consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+        val ballots = RandomBallotProvider(electionInit.manifest(), 1).ballots("badStyleId")
+
+        batchEncryption(
+            group,
+            "src/commonTest/data/runWorkflowAllAvailable",
+            "testOut/testInvalidBallot",
+            ballots,
+            invalidDir,
+            false,
+            1,
+            "testInvalidBallot",
+        )
+
+        val consumerOut = Consumer(invalidDir, group)
+        consumerOut.iteratePlaintextBallots(invalidDir, null).forEach {
+            println("${it.errors}")
+            assertContains(it.errors.toString(), "Ballot.A.1 Ballot Style 'badStyleId' does not exist in election")
+        }
+
     }
 
 }

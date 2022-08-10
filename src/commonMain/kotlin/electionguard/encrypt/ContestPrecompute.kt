@@ -172,7 +172,7 @@ class ContestPrecompute(
                 disjunctiveChaumPedersenNonce,
                 selectionNonce,
                 isPlaceholder,
-                null, // LOOK not handling write-ins
+                null, // TODO not handling write-ins
             )
         }
     }

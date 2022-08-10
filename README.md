@@ -15,7 +15,8 @@ EKM is available under an MIT-style open source license.
 - [What about JavaScript?](#what-about-javascript)
 - [API differences from ElectionGuard-Python](#api-differences-from-electionguard-python)
 - [Protobuf Serialization](#protobuf-serialization)
-- [Command Line Interface](#command-line-interface)
+- [Workflow and Command Line Interfaces](#workflow)
+- [Input Validation](#input-validation)
 - [Authors](#authors)
 
 ## Incompatibilities with ElectionGuard 1.0
@@ -112,9 +113,11 @@ methods.
 * [Election Record protobuf directory and file layout](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ElectionRecord.md)
 * [Protobuf serialization (ver 1) and comparison with JSON](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec1.md)
 
-## Command Line Interface
-* [Command Line Programs](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/CommandLineInterface.md)
+## Workflow
+* [Workflow and Command Line Programs](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/CommandLineInterface.md)
 
+## Input Validation
+* [Input Validation](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/InputValidation.md)
 
 ## Authors
 - [John Caron](https://github.com/JohnLCaron)

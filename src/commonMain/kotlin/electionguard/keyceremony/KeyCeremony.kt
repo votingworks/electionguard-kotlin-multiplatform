@@ -55,7 +55,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremon
         }
     }
 
-    // LOOK we are not doing the challenge/response scenario. Not clear under what circumstance that is needed.
+    // TODO we are not doing the challenge/response scenario. Not clear under what circumstance that is needed.
 
     errors = secretKeyResults.getAllErrors()
     if (errors.isNotEmpty()) {

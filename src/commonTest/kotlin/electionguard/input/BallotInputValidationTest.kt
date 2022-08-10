@@ -23,7 +23,7 @@ class TestBallotInputValidation {
         val validator = ManifestInputValidation(election)
         val problems = validator.validate()
         if (problems.hasErrors()) {
-            println("Problems=%n$problems")
+            println("$problems")
         }
         return !problems.hasErrors()
     }
@@ -38,8 +38,8 @@ class TestBallotInputValidation {
             .build()
         assertTrue(validateManifest(election))
         val builder = BallotInputBuilder("ballot_id")
-        val ballot: PlaintextBallot = builder.addContest("contest_id")
-            .addSelection("selection_id", 1)
+        val ballot: PlaintextBallot = builder.addContest("contest_id", 0)
+            .addSelection("selection_id", 1, 0)
             .done()
             .build()
         val eandb = ElectionAndBallot(election, ballot)
@@ -78,8 +78,8 @@ class TestBallotInputValidation {
             .build()
         assertEquals(validateManifest(election), listed)
         val builder = BallotInputBuilder("ballot_id")
-        val ballot: PlaintextBallot = builder.addContest("contest_id")
-            .addSelection("selection_id", 1)
+        val ballot: PlaintextBallot = builder.addContest("contest_id", 0)
+            .addSelection("selection_id", 1, 0)
             .done()
             .build()
         return ElectionAndBallot(election, ballot)
@@ -91,12 +91,16 @@ class TestBallotInputValidation {
     }
 
     @Test
-    fun testGpunitNotListedValidate() {
-        testValidate(testGpunitListed(false), "Ballot.A.3")
+    fun testGpunitNotListed() {
+        testValidate(
+            testGpunitListed(false),
+            "Ballot.A.3 Contest's geopoliticalUnitId 'parented' not listed in BallotStyle 'styling' geopoliticalUnitIds"
+        )
     }
 
     @Test
-    fun testInvalidContestValidate() {        val ebuilder = ManifestInputBuilder("ballot_id")
+    fun testInvalidContestId() {
+        val ebuilder = ManifestInputBuilder("ballot_id")
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -115,7 +119,7 @@ class TestBallotInputValidation {
     }
 
     @Test
-    fun testInvalidSelectionValidate() {
+    fun testInvalidContestSeq() {
         val ebuilder = ManifestInputBuilder("ballot_id")
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
@@ -124,14 +128,54 @@ class TestBallotInputValidation {
             .build()
         assertTrue(validateManifest(election))
         val builder = BallotInputBuilder("ballot_id")
-        val ballot: PlaintextBallot = builder.addContest("contest_id")
-            .addSelection("selection_id", 0)
-            .addSelection("selection_bad", 1) // invalid selection id
+        val ballot: PlaintextBallot = builder.addContest("contest_id") // invalid contest id
+            .addSelection("selection_id", 1)
+            .addSelection("selection_id2", 0)
             .done()
             .build()
         val eandb = ElectionAndBallot(election, ballot)
 
-        testValidate(eandb, "Ballot.B.2.1")
+        testValidate(eandb, "Ballot.A.2.1")
+    }
+
+    @Test
+    fun testInvalidSelectionId() {
+        val ebuilder = ManifestInputBuilder("ballot_id")
+        val election: Manifest = ebuilder.addContest("contest_id")
+            .addSelection("selection_id", "candidate_1")
+            .addSelection("selection_id2", "candidate_2")
+            .done()
+            .build()
+        assertTrue(validateManifest(election))
+        val builder = BallotInputBuilder("ballot_id")
+        val ballot: PlaintextBallot = builder.addContest("contest_id", 0)
+            .addSelection("selection_id", 0, 0)
+            .addSelection("selection_bad", 1, 1) // invalid selection id
+            .done()
+            .build()
+        val eandb = ElectionAndBallot(election, ballot)
+
+        testValidate(eandb, "Ballot.A.4")
+    }
+
+    @Test
+    fun testInvalidSelectionSeq() {
+        val ebuilder = ManifestInputBuilder("ballot_id")
+        val election: Manifest = ebuilder.addContest("contest_id")
+            .addSelection("selection_id", "candidate_1")
+            .addSelection("selection_id2", "candidate_2")
+            .done()
+            .build()
+        assertTrue(validateManifest(election))
+        val builder = BallotInputBuilder("ballot_id")
+        val ballot: PlaintextBallot = builder.addContest("contest_id", 0)
+            .addSelection("selection_id", 0, 0)
+            .addSelection("selection_id2", 1, 2) // invalid selection id
+            .done()
+            .build()
+        val eandb = ElectionAndBallot(election, ballot)
+
+        testValidate(eandb, "Ballot.A.4.1")
     }
 
     @Test
@@ -145,9 +189,9 @@ class TestBallotInputValidation {
             .build()
         assertTrue(validateManifest(election))
         val builder = BallotInputBuilder("ballot_id")
-        val ballot: PlaintextBallot = builder.addContest("contest_id")
-            .addSelection("selection_id", 0)
-            .addSelection("selection_id2", 2)
+        val ballot: PlaintextBallot = builder.addContest("contest_id", 0)
+            .addSelection("selection_id", 0, 0)
+            .addSelection("selection_id2", 2, 1)
             .done()
             .build()
         val eandb = ElectionAndBallot(election, ballot)
@@ -165,14 +209,14 @@ class TestBallotInputValidation {
             .build()
         assertTrue(validateManifest(election))
         val builder = BallotInputBuilder("ballot_id")
-        val ballot: PlaintextBallot = builder.addContest("contest_id")
-            .addSelection("selection_id", 1)
-            .addSelection("selection_id2", 1)
+        val ballot: PlaintextBallot = builder.addContest("contest_id", 0)
+            .addSelection("selection_id", 1, 0)
+            .addSelection("selection_id2", 1, 1)
             .done()
             .build()
         val eandb = ElectionAndBallot(election, ballot)
 
-        testValidate(eandb, "Ballot.C.2")
+        testValidate(eandb, "Ballot.C.2 Ballot Selection votes (2) exceeds limit (1)")
     }
 
     @Test
@@ -185,16 +229,16 @@ class TestBallotInputValidation {
             .build()
         assertTrue(validateManifest(election))
         val builder = BallotInputBuilder("ballot_id")
-        val ballot: PlaintextBallot = builder.addContest("contest_id")
-            .addSelection("selection_id", 1)
+        val ballot: PlaintextBallot = builder.addContest("contest_id", 0)
+            .addSelection("selection_id", 1, 0)
             .done()
-            .addContest("contest_id")
-            .addSelection("selection_id", 1)
+            .addContest("contest_id", 1)
+            .addSelection("selection_id", 1, 1)
             .done()
             .build()
         val eandb = ElectionAndBallot(election, ballot)
 
-        testValidate(eandb, "Ballot.B.1")
+        testValidate(eandb, "Ballot.B.1 Multiple Ballot contests have same contest id")
     }
 
     @Test
@@ -215,7 +259,28 @@ class TestBallotInputValidation {
             .build()
         val eandb = ElectionAndBallot(election, ballot)
 
-        testValidate(eandb, "Ballot.B.2")
+        testValidate(eandb, "Ballot.B.2 Multiple Ballot selections have duplicate id 'selection_id'")
+    }
+
+    @Test
+    fun testSelectionDuplicateSequence() {
+        val ebuilder = ManifestInputBuilder("ballot_id")
+        val election: Manifest = ebuilder.addContest("contest_id")
+            .setVoteVariationType(Manifest.VoteVariationType.n_of_m, 2)
+            .addSelection("selection_id", "candidate_1")
+            .addSelection("selection_id2", "candidate_2")
+            .done()
+            .build()
+        assertTrue(validateManifest(election))
+        val builder = BallotInputBuilder("ballot_id")
+        val ballot: PlaintextBallot = builder.addContest("contest_id")
+            .addSelection("selection_id", 1, 1)
+            .addSelection("selection_id2", 0, 1) // voting for same candidate twice
+            .done()
+            .build()
+        val eandb = ElectionAndBallot(election, ballot)
+
+        testValidate(eandb, "Ballot.B.3 Multiple Ballot selections have duplicate sequenceOrder '1'")
     }
 
     @Test
@@ -236,14 +301,14 @@ class TestBallotInputValidation {
             .build()
         val eandb = ElectionAndBallot(election, ballot)
 
-        testValidate(eandb, "Ballot.B.2.1")
+        testValidate(eandb, "Ballot.A.4 Ballot Selection 'selection_id3' does not exist in contest manifest")
     }
 
     fun testValidate(eanb: ElectionAndBallot, expectMessage: String?) {
         val validator = BallotInputValidation(eanb.election)
         val problems = validator.validate(eanb.ballot)
         if (problems.hasErrors()) {
-            println("Problems=%n$problems")
+            println("$problems")
         }
         if (expectMessage != null) {
             assertTrue(problems.hasErrors())

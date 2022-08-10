@@ -18,6 +18,7 @@ class VerifierTest {
                 "-nthreads",
                 "11",
                 "--showTime",
+                "--help",
             )
         )
     }

@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
-        description = "Directory containing input election record and encrypted ballots"
+        description = "Directory containing input ElectionInitialized record and encrypted ballots"
     ).required()
     val outputDir by parser.option(
         ArgType.String,

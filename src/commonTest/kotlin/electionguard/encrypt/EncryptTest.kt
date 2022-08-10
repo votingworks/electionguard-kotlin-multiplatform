@@ -63,5 +63,4 @@ class EncryptTest {
             assertEquals(result1, result2)
         }
     }
-
 }
