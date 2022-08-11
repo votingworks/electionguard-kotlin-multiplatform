@@ -4,58 +4,58 @@ last update 8/09/2022
 
 ## Election workflow
 
-1. Generate an ElectionConfig protobuf record. The following examples may be useful:
-   1. A synthetic manifest is created in **electionguard.publish.PublisherTest.testWriteElectionConfig**(), 
+1. **Generate an ElectionConfig protobuf record**. The following examples may be useful:
+   1. A synthetic manifest is created in _electionguard.publish.PublisherTest.testWriteElectionConfig_(), 
       and an ElectionConfig protobuf is written out. 
    2. In the [electionguard-java](https://github.com/JohnLCaron/electionguard-java) repo, 
-      **com.sunya.electionguard.input.MakeManifestForTesting** can read a version 1
+      _com.sunya.electionguard.input.MakeManifestForTesting_ can read a version 1
       JSON manifest and write out a version 2 ElectionConfig protobuf.
 
-2. KeyCeremony. An ElectionConfig record is needed as input, and an ElectionInitialized record is output. The following examples may be useful:
-   1. **electionguard.keyceremony.RunTrustedKeyCeremony** is a CLI for testing, that will run locally in a single process, 
+2. **KeyCeremony**. An ElectionConfig record is needed as input, and an ElectionInitialized record is output. The following examples may be useful:
+   1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI for testing, that will run locally in a single process, 
       generate test guardians, and run the key ceremony. 
    2. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
-      **electionguard.workflow.RunRemoteKeyCeremonyTest** is a CLI for testing, that will run a key ceremony
+      _electionguard.workflow.RunRemoteKeyCeremonyTest_ is a CLI for testing, that will run a key ceremony
       with remote guardians over gRPC, on the same machine but in different processes. Private keys for each
       guardian are kept private and stored separately.
    3. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
-      **electionguard.keyceremony.RunRemoteKeyCeremony** and **electionguard.keyceremony.RunRemoteTrustee**
+      _electionguard.keyceremony.RunRemoteKeyCeremony_ and _electionguard.keyceremony.RunRemoteTrustee_
       are CLI programs with which a remote key ceremony can be run with guardians residing completely on separate machines, 
       communicating over gRPC from anywhere on the internet.
 
-3. Create input plaintext ballots based on the manifest in ElectionConfig. The following examples may be useful:
-    1. RunWorkflow uses RandomBallotProvider to generate random test ballots.
+3. **Create input plaintext ballots** based on the manifest in ElectionConfig. The following examples may be useful:
+    1. _RunWorkflow_ uses _RandomBallotProvider_ to generate random test ballots.
 
-4. Batch Encryption. The following examples may be useful:
-    1. **electionguard.encrypt.RunBatchEncryption** is a CLI that reads an ElectionInitialized record and input plaintext ballots, encrypts the
+4. **Batch Encryption**. The following examples may be useful:
+    1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext ballots, encrypts the
        ballots and writes out EncryptedBallot protobuf records. If any input plaintext ballot fails validation,
        it is annotated and written to a separate directory, and not encrypted.
 
-5. Accumulate Tally. The following examples may be useful:
-    1. **electionguard.tally.RunAccumulateTally** is a CLI that reads an ElectionInitialized record and EncryptedBallot records, sums the
-       votes in the encrypted ballots and writes out a **EncryptedTally** protobuf record.
+5. **Accumulate Tally**. The following examples may be useful:
+    1. _electionguard.tally.RunAccumulateTally_ is a CLI that reads an ElectionInitialized record and EncryptedBallot records, sums the
+       votes in the encrypted ballots and writes out a _EncryptedTally_ protobuf record.
 
-6. Decryption. The following examples may be useful:
-    1. **electionguard.decrypt.RunTrustedTallyDecryption** is a CLI for testing, that will run locally in a single process, 
+6. **Decryption**. The following examples may be useful:
+    1. _electionguard.decrypt.RunTrustedTallyDecryption_ is a CLI for testing, that will run locally in a single process, 
        that reads an EncryptedTally record and local 
-       DecryptingTrustee records, decrypts the tally and writes out a **PlaintextTally** protobuf record.
-    2. **electionguard.decrypt.RunTrustedBallotDecryption** is a CLI for testing, that will run locally in a single process,
+       DecryptingTrustee records, decrypts the tally and writes out a _PlaintextTally_ protobuf record.
+    2. _electionguard.decrypt.RunTrustedBallotDecryption_ is a CLI for testing, that will run locally in a single process,
       that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a 
-      **PlaintextTally** protobuf record that represents the decrypted spoiled ballot.
+      _PlaintextTally_ protobuf record that represents the decrypted spoiled ballot.
     3. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
-       **electionguard.workflow.RunRemoteDecryptionTest** is a CLI for testing, that will decrypt the EncryptedTally 
+       _electionguard.workflow.RunRemoteDecryptionTest_ is a CLI for testing, that will decrypt the EncryptedTally 
        (and optionally spoiled ballots)
        with remote guardians over gRPC, on the same machine but in different processes. Private keys for each
        guardian are kept private and stored separately.
     4. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
-       **electionguard.decrypt.RunRemoteDecryptor** and **electionguard.decrypt.RunRemoteDecryptingTrustee**
+       _electionguard.decrypt.RunRemoteDecryptor_ and _electionguard.decrypt.RunRemoteDecryptingTrustee_
        are CLI programs with which one can decrypt with guardians residing completely on separate machines,
        communicating over gRPC from anywhere on the internet.
 
-7. Run Verifier. The following examples may be useful:
-    1. **electionguard.verify.VerifyElectionRecord** is a CLI that reads an election record and verifies it.
+7. **Verify**. The following examples may be useful:
+    1. _electionguard.verify.VerifyElectionRecord_ is a CLI that reads an election record and verifies it.
 
-8. Complete test Workflow. The following examples may be useful:
+8. **Complete test Workflow**. The following examples may be useful:
    1. A complete test workflow can be run from electionguard.workflow.RunWorkflow in the commonTest module.
    2. A complete test remote workflow can be run from electionguard.workflow.RunRemoteWorkflowTest in the 
       [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo.

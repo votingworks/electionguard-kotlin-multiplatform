@@ -41,7 +41,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
 
     fun verify(showTime : Boolean = false): Boolean {
         println("Verify election record in = ${record.topdir()}\n")
-        val starting = getSystemTimeInMillis()
+        val starting23 = getSystemTimeInMillis()
 
         if (record.stage() < ElectionRecord.Stage.INIT) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
@@ -58,10 +58,10 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
             return true
         }
-        val took = getSystemTimeInMillis() - starting
+        val took = getSystemTimeInMillis() - starting23
         if (showTime) println("   verify 2,3 took $took millisecs")
 
-        // encryption and vote limits
+        // encryption and vote limits 4, 5
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, cryptoExtendedBaseHash, nthreads)
         // Note we are validating all ballots, not just CAST
         val ballotStats = verifyBallots.verify(record.encryptedBallots { true }, showTime)
@@ -100,6 +100,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             println(" 10. Correctness of Replacement Partial Decryptions $pdvStats")
         }
 
+        //  LOOK we think spoiled ballots are the same as tallies. Need to look harder at sections 12-19
         val spoiledStats =
             verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, showTime)
         println(" 12. verifySpoiledBallotTallies $spoiledStats")
@@ -107,6 +108,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         return (guardiansOk is Ok) && (publicKeyOk is Ok) && (aggResult is Ok) && ballotStats.allOk && tallyStats.allOk && spoiledStats.allOk
     }
 
+    // LOOK we assume that hasValidSchnorrProof() covers this. revisit when 2.0 verification comes out
     private fun verifyGuardianPublicKey(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for (guardian in this.record.guardians()) {
@@ -127,17 +129,16 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         val jointPublicKeyComputed = this.record.guardians().map { it.publicKey() }.reduce { a, b -> a * b }
         val errors = mutableListOf<String>()
         if (!jointPublicKey.equals(jointPublicKeyComputed)) {
-            errors.add("  3.A jointPublicKey does not equal computed")
+            errors.add("  3.A jointPublicKey K does not equal computed K = Prod(K_i)")
         }
 
-        // LOOK this looks like 2B, and we're not doing 3B ??
-        //   So we have record.cryptoExtendedBaseHash() wrong, (and so does python ??)
+        // see https://github.com/microsoft/electionguard/issues/290
         val commitments = mutableListOf<ElementModP>()
         this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments) }
         val commitmentsHash = hashElements(commitments)
         val computedQbar: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
         if (!cryptoExtendedBaseHash.equals(computedQbar.toElementModQ(group))) {
-            errors.add("  3.B qbar does not equal computed qbar")
+            errors.add("  3.B qbar does not match computed = H(Q, Prod(K_ij))")
         }
 
         return if (errors.isNotEmpty()) Err(errors.joinToString("\n")) else Ok(true)

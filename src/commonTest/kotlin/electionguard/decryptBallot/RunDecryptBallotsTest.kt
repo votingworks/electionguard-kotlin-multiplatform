@@ -22,7 +22,7 @@ class RunDecryptBallotsTest {
             "ALL",
             1,
         )
-        assertEquals(100, n)
+        assertEquals(11, n)
     }
 
     @Test
@@ -33,7 +33,7 @@ class RunDecryptBallotsTest {
         val outputDir = "testOut/testDecryptingBallotsSome"
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
-            "ballot-id--171736245,ballot-id--1373972434,ballot-id-569389004",
+            "ballot-id-1190979482,ballot-id--965265003,ballot-id-2059574739",
             11
         )
         assertEquals(3, n)

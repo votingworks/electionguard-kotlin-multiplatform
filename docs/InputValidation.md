@@ -1,9 +1,8 @@
-# 🗳 ElectionGuard KMP Input Validation
+# 🗳 EKM Input Validation
 _last changed: Aug 10, 2022_
 
 The election manifest and each input plaintext ballot are expected to be validated before being passed to the 
-electionguard KMP library. Both the encrypted and decrypted tallies may also be validated against the manifest,
-and against each other for consistency. 
+EKM library. 
 
 Input Validation is orthogonal to cryptographic verification.
 This document summarizes required (non-crypto) validations.

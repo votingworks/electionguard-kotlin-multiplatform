@@ -15,6 +15,7 @@ import electionguard.publish.electionRecordFromConsumer
 import electionguard.tally.runAccumulateBallots
 import electionguard.verifier.Verifier
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 /** Run workflow starting from ElectionConfig in the start directory (125 selections/ballot). */
 class RunWorkflow {
@@ -60,6 +61,7 @@ class RunWorkflow {
         val verifier = Verifier(record)
         val ok = verifier.verify()
         println("Verify is $ok")
+        assertTrue(ok)
     }
 
 // LOOK do a test where there are 4 available in a 3 of 5
@@ -103,6 +105,7 @@ class RunWorkflow {
         val verifier = Verifier(record)
         val ok = verifier.verify()
         println("Verify is $ok")
+        assertTrue(ok)
     }
 }
 
