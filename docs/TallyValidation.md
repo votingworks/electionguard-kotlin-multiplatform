@@ -1,7 +1,10 @@
-# 🗳 ElectionGuard KMP Tally Validation
+# 🗳 EKM Tally Validation
 _last changed: Aug 10, 2022_
 
 ## Encrypted Tally
+
+Both the encrypted and decrypted tallies may be validated against the manifest,
+and against each other for consistency.
 
 Encrypted Tally Validation may be run as part of Verification 11.
 

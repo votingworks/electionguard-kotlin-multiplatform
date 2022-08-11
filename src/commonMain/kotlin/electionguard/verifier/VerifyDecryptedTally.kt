@@ -133,8 +133,8 @@ class VerifyDecryptedTally(
                             if (svalid is Err) {
                                 errors.add("   8. Fail guardian ${partialDecryption.guardianId} share proof for $where2 = ${svalid.error} ")
                             }
-                            // TODO I think 8.D and 8.E are not needed because we have simplified proofs.
-                            //   review when 2.0 verification spec is out
+                            //  TODO I think 8.D and 8.E are not needed because we have simplified proofs.
+                            //       review when 2.0 verification spec is out
                         } else {
                             errors.add("Cant find guardian ${partialDecryption.guardianId} in $where2")
                         }
@@ -169,8 +169,8 @@ class VerifyDecryptedTally(
                             if (recoveredProof is Err) {
                                 errors.add("    CompensatedDecryption proof failure $where2 = ${recoveredProof.error}")
                             }
-                            // TODO 9.D and 9.E are not needed because we have simplified proofs ??
-                            //   review when 2.0 verification spec is out
+                            //  TODO 9.D and 9.E are not needed because we have simplified proofs ??
+                            //       review when 2.0 verification spec is out
 
                             // 9.D The equation g^v_i,l mod p = (a_i,l * (∏ k−1 j=0 K i,j ) ) mod p is satisfied.
                             //         vil: ElementModQ, // v_il
