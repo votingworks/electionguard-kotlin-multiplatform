@@ -271,7 +271,7 @@ class VerifyDecryptedTally(
             // (B) 𝑀 = 𝑔^𝑡 mod 𝑝.
             val tallyQ = selection.tally.toElementModQ(group)
             if (selection.value != jointPublicKey powP tallyQ) {
-                errors.add(" 11.B Tally Decryption failed for $where}")
+                errors.add(" 11.B Tally Decryption failed for $where")
             }
         }
         return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
