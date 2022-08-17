@@ -47,8 +47,8 @@ class EncryptTest {
             val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
             val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)
-            val nonce1 = group.randomElementModQ()
-            val nonce2 = group.randomElementModQ()
+            val nonce1 = group.randomElementModQ(minimum = 2)
+            val nonce2 = group.randomElementModQ(minimum = 3)
             val result1 = encryptor.encrypt(ballot, nonce1, nonce2, 0)
             val result2 = encryptor.encrypt(ballot, nonce1, nonce2, 0)
 

@@ -180,7 +180,7 @@ class Stats(
     val nshares: Int = 0,
 ) {
     override fun toString(): String {
-        return "$forWho allOk=$allOk, ncontests=$ncontests, nselections=$nselections, nshares=$nshares, errors=$errors"
+        return "$forWho allOk=$allOk, ncontests=$ncontests, nselections=$nselections, nshares=$nshares, errors=${errors.joinToString("\n")}"
     }
 }
 
@@ -204,7 +204,7 @@ class StatsAccum {
     }
 
     override fun toString(): String {
-        return "allOk=$allOk, n=$n, ncontests=$ncontests, nselections=$nselections, nshares=$nshares, errors=$errors"
+        return "allOk=$allOk, n=$n, ncontests=$ncontests, nselections=$nselections, nshares=$nshares, errors=${errors.joinToString("\n")}"
     }
 }
 

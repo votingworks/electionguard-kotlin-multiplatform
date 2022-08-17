@@ -72,7 +72,7 @@ class Encryptor(
 
     private fun PlaintextBallot.encryptBallot(
         codeSeed: ElementModQ,
-        masterNonce: ElementModQ,
+        masterNonce: ElementModQ, // random
         timestampOverride: Long? = null,
     ): CiphertextBallot {
         val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, masterNonce)
@@ -87,7 +87,7 @@ class Encryptor(
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
 
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
-        val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), sortedContests)
+        val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), sortedContests) // B_i
         val trackingCode = hashElements(codeSeed, timestamp, cryptoHash)
 
         return CiphertextBallot(
@@ -220,41 +220,6 @@ class Encryptor(
 }
 
 ////  share with Encryptor, BallotPrecompute, ContestPrecompute
-fun Manifest.SelectionDescription.encryptSelection(
-    vote: Int,
-    elgamalPublicKey: ElGamalPublicKey,
-    cryptoExtendedBaseHashQ: ElementModQ,
-    disjunctiveChaumPedersenNonce: ElementModQ,
-    selectionNonce: ElementModQ,
-    isPlaceholder: Boolean = false,
-    extendedDataCiphertext: HashedElGamalCiphertext?,
-): CiphertextBallot.Selection {
-    val elgamalEncryption: ElGamalCiphertext = vote.encrypt(elgamalPublicKey, selectionNonce)
-
-    val proof = elgamalEncryption.disjunctiveChaumPedersenProofKnownNonce(
-        vote,
-        selectionNonce,
-        elgamalPublicKey,
-        disjunctiveChaumPedersenNonce,
-        cryptoExtendedBaseHashQ
-    )
-
-    val cryptoHash = hashElements(this.selectionId, this.cryptoHash, elgamalEncryption.cryptoHashUInt256())
-
-    return CiphertextBallot.Selection(
-        this.selectionId,
-        this.sequenceOrder,
-        this.cryptoHash,
-        elgamalEncryption,
-        cryptoHash,
-        isPlaceholder,
-        proof,
-        extendedDataCiphertext,
-        selectionNonce,
-    )
-}
-
-////  share with Encryptor, BallotPrecompute, ContestPrecompute
 fun Manifest.ContestDescription.encryptContest(
     group: GroupContext,
     elgamalPublicKey: ElGamalPublicKey,
@@ -286,5 +251,39 @@ fun Manifest.ContestDescription.encryptContest(
         cryptoHash,      // CiphertextBallot.Contest cryptohash
         proof,
         contestNonce,
+    )
+}
+
+fun Manifest.SelectionDescription.encryptSelection(
+    vote: Int,
+    elgamalPublicKey: ElGamalPublicKey,
+    cryptoExtendedBaseHashQ: ElementModQ,
+    disjunctiveChaumPedersenNonce: ElementModQ,
+    selectionNonce: ElementModQ,
+    isPlaceholder: Boolean = false,
+    extendedDataCiphertext: HashedElGamalCiphertext?,
+): CiphertextBallot.Selection {
+    val elgamalEncryption: ElGamalCiphertext = vote.encrypt(elgamalPublicKey, selectionNonce)
+
+    val proof = elgamalEncryption.disjunctiveChaumPedersenProofKnownNonce(
+        vote,
+        selectionNonce,
+        elgamalPublicKey,
+        disjunctiveChaumPedersenNonce,
+        cryptoExtendedBaseHashQ
+    )
+
+    val cryptoHash = hashElements(this.selectionId, this.cryptoHash, elgamalEncryption.cryptoHashUInt256())
+
+    return CiphertextBallot.Selection(
+        this.selectionId,
+        this.sequenceOrder,
+        this.cryptoHash,
+        elgamalEncryption,
+        cryptoHash,
+        isPlaceholder,
+        proof,
+        extendedDataCiphertext,
+        selectionNonce,
     )
 }
