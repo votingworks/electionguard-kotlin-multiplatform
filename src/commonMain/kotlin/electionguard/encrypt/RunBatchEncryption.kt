@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalCli::class, ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class)
 
 package electionguard.encrypt
 
@@ -26,7 +26,6 @@ import electionguard.publish.EncryptedBallotSinkIF
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
-import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.default
 import kotlinx.cli.required
 import kotlinx.coroutines.CoroutineScope
@@ -117,99 +116,7 @@ fun main(args: Array<String>) {
 
 enum class CheckType { None, Verify, EncryptTwice }
 
-fun batchEncryptionOld(
-    group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
-    invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None
-) {
-    val consumerIn = Consumer(inputDir, group)
-    val electionInit: ElectionInitialized =
-        consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-
-    // ManifestInputValidation
-    val manifestValidator = ManifestInputValidation(electionInit.manifest())
-    val errors = manifestValidator.validate()
-    if (errors.hasErrors()) {
-        println("*** ManifestInputValidation FAILED on election record in $inputDir")
-        println("$errors")
-        // kotlin.system.exitProcess(1) // kotlin 1.6.20
-        return
-    }
-    // Map<BallotStyle: String, selectionCount: Int>
-    val styleCount = manifestValidator.countEncryptions()
-
-    // BallotInputValidation
-    var countEncryptions = 0
-    val invalidBallots = ArrayList<PlaintextBallot>()
-    val ballotValidator = BallotInputValidation(electionInit.manifest())
-    val filter: ((PlaintextBallot) -> Boolean) = {
-        val mess = ballotValidator.validate(it)
-        if (mess.hasErrors()) {
-            println("*** BallotInputValidation FAILED on ballot ${it.ballotId}")
-            println("$mess\n")
-            invalidBallots.add(PlaintextBallot(it, mess.toString()))
-            false
-        } else {
-            countEncryptions += styleCount[it.ballotStyleId] ?: 0
-            true
-        }
-    }
-    val starting = getSystemTimeInMillis() // start timing here
-
-    val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
-    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow nonce to be passed in?
-    val encryptor = Encryptor(
-        group,
-        electionInit.manifest(),
-        ElGamalPublicKey(electionInit.jointPublicKey),
-        electionInit.cryptoExtendedBaseHash
-    )
-    val encrypt = RunEncryption(group, encryptor, codeSeed, masterNonce, electionInit.manifest(),
-        electionInit.jointPublicKey, electionInit.cryptoExtendedBaseHash, check)
-
-    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
-    val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
-
-    runBlocking {
-        val outputChannel = Channel<EncryptedBallot>()
-        val encryptorJobs = mutableListOf<Job>()
-        val ballotProducer = produceBallots(consumerIn.iteratePlaintextBallots(ballotDir, filter))
-        repeat(nthreads) {
-            encryptorJobs.add(
-                launchEncryptor(
-                    it,
-                    ballotProducer,
-                    outputChannel
-                ) { ballot -> encrypt.encrypt(ballot) }
-            )
-        }
-        launchSink(outputChannel, sink)
-
-        // wait for all encryptions to be done, then close everything
-        joinAll(*encryptorJobs.toTypedArray())
-        outputChannel.close()
-    }
-    sink.close()
-    val took = getSystemTimeInMillis() - starting
-
-    publisher.writeElectionInitialized(
-        electionInit.addMetadata(
-            Pair("Used", createdBy ?: "RunBatchEncryption"),
-            Pair("UsedOn", getSystemDate().toString()),
-            Pair("CreatedFromDir", inputDir)
-        )
-    )
-    if (invalidDir != null && !invalidBallots.isEmpty()) {
-        publisher.writePlaintextBallot(invalidDir, invalidBallots)
-        println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
-    }
-
-    val msecsPerBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-    println("Encryption with nthreads = $nthreads took $took millisecs for $count ballots = $msecsPerBallot msecs/ballot")
-    val msecPerEncryption = (took.toDouble() / countEncryptions)
-    val encryptionPerBallot = (countEncryptions / count)
-    println("    $countEncryptions total encryptions = $encryptionPerBallot per ballot = $msecPerEncryption millisecs/encryption")
-}
-
+// encrypt ballots in inputDir
 fun batchEncryption(
     group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
     invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None
@@ -219,6 +126,7 @@ fun batchEncryption(
         invalidDir, fixedNonces, nthreads, createdBy, check)
 }
 
+// encrypt the ballots in Iterable<PlaintextBallot>
 fun batchEncryption(
     group: GroupContext,
     inputDir: String,
@@ -266,14 +174,14 @@ fun batchEncryption(
     val starting = getSystemTimeInMillis() // start timing here
 
     val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
-    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow nonce to be passed in?
+    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow masterNonce to be passed in on command line?
     val encryptor = Encryptor(
         group,
         electionInit.manifest(),
         ElGamalPublicKey(electionInit.jointPublicKey),
         electionInit.cryptoExtendedBaseHash
     )
-    val encrypt = RunEncryption(group, encryptor, codeSeed, masterNonce, electionInit.manifest(),
+    val runEncryption = RunEncryption(group, encryptor, codeSeed, masterNonce, electionInit.manifest(),
         electionInit.jointPublicKey, electionInit.cryptoExtendedBaseHash, check)
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
@@ -289,7 +197,7 @@ fun batchEncryption(
                     it,
                     ballotProducer,
                     outputChannel
-                ) { ballot -> encrypt.encrypt(ballot) }
+                ) { ballot -> runEncryption.encrypt(ballot) }
             )
         }
         launchSink(outputChannel, sink)
@@ -322,7 +230,10 @@ fun batchEncryption(
 
 // orchestrates the encryption
 private class RunEncryption(
-    val group: GroupContext, val encryptor: Encryptor, val codeSeed: ElementModQ, val masterNonce: ElementModQ?,
+    val group: GroupContext,
+    val encryptor: Encryptor,
+    val codeSeed: ElementModQ,
+    val masterNonce: ElementModQ?,
     manifest: Manifest,
     jointPublicKey: ElementModP,
     cryptoExtendedBaseHash: UInt256,
@@ -339,7 +250,7 @@ private class RunEncryption(
         val encryptedBallot = if (masterNonce != null) // make result deterministic
             encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
         else
-            encryptor.encrypt(ballot, codeSeed, group.randomElementModQ())
+            encryptor.encrypt(ballot, codeSeed, group.randomElementModQ()) // each ballot has a random master nonce
 
         // experiments in testing the encryption
         if (check == CheckType.EncryptTwice) {
