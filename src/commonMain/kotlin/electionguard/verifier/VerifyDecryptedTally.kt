@@ -104,7 +104,7 @@ class VerifyDecryptedTally(
                 nselections++
                 val where2 = "${contest.contestId}/${selection.selectionId}"
                 if (!manifest.contestAndSelectionSet.contains(where2)) {
-                    errors.add("   11.C Fail manifest does not contain $where2 ")
+                    errors.add("   11.C Fail manifest does not contain '$where2' ")
                 }
                 val selResult = verifySelectionDecryption(where2, selection)
                 if (selResult is Err) {
@@ -131,12 +131,12 @@ class VerifyDecryptedTally(
                                 arrayOf(partialDecryption.share())
                             )
                             if (svalid is Err) {
-                                errors.add("   8. Fail guardian ${partialDecryption.guardianId} share proof for $where2 = ${svalid.error} ")
+                                errors.add("   8. Fail guardian '${partialDecryption.guardianId}' share proof for '$where2' = ${svalid.error} ")
                             }
                             //  TODO I think 8.D and 8.E are not needed because we have simplified proofs.
                             //       review when 2.0 verification spec is out
                         } else {
-                            errors.add("Cant find guardian ${partialDecryption.guardianId} in $where2")
+                            errors.add("Cant find guardian '${partialDecryption.guardianId}' in '$where2'")
                         }
 
                     } else if (partialDecryption.recoveredDecryptions.isNotEmpty()) { // indirectly computed
@@ -167,7 +167,7 @@ class VerifyDecryptedTally(
                                 arrayOf(hx)
                             )
                             if (recoveredProof is Err) {
-                                errors.add("    CompensatedDecryption proof failure $where2 = ${recoveredProof.error}")
+                                errors.add("    CompensatedDecryption proof failure '$where2' = ${recoveredProof.error}")
                             }
                             //  TODO 9.D and 9.E are not needed because we have simplified proofs ??
                             //       review when 2.0 verification spec is out
@@ -182,9 +182,9 @@ class VerifyDecryptedTally(
                                     expandedProof.a,
                                     expandedProof.c,
                                     recoveredDecryption.recoveryKey)) {
-                                    errors.add("    9.D failure $where2 " +
-                                    "  for missing guardian ${recoveredDecryption.missingGuardianId}" +
-                                    " by decrypting guardian ${recoveredDecryption.decryptingGuardianId}"
+                                    errors.add("    9.D failure '$where2' " +
+                                    "  for missing guardian '${recoveredDecryption.missingGuardianId}'" +
+                                    " by decrypting guardian '${recoveredDecryption.decryptingGuardianId}'"
                                 )
                             }
 
@@ -200,15 +200,15 @@ class VerifyDecryptedTally(
                                     expandedProof.b,
                                     expandedProof.c,
                                     recoveredDecryption.share)) {
-                                errors.add("    9.E failure $where2 " +
-                                        "  for missing guardian ${recoveredDecryption.missingGuardianId}" +
-                                        " by decrypting guardian ${recoveredDecryption.decryptingGuardianId}"
+                                errors.add("    9.E failure '$where2' " +
+                                        "  for missing guardian '${recoveredDecryption.missingGuardianId}'" +
+                                        " by decrypting guardian '${recoveredDecryption.decryptingGuardianId}'"
                                 )
                             }
                         }
 
                     } else {
-                        errors.add("Must have partialDecryption.proof or missingDecryptions $where2")
+                        errors.add("Must have partialDecryption.proof or missingDecryptions '$where2'")
                     }
                 }
             }
@@ -265,13 +265,13 @@ class VerifyDecryptedTally(
             val M: ElementModP = selection.value
             val B: ElementModP = selection.message.data
             if (B != M * productMi) {
-                errors.add(" 11.A Tally Decryption failed for $where")
+                errors.add(" 11.A Tally Decryption failed for '$where' share for '${share.guardianId}'")
             }
 
             // (B) 𝑀 = 𝑔^𝑡 mod 𝑝.
             val tallyQ = selection.tally.toElementModQ(group)
             if (selection.value != jointPublicKey powP tallyQ) {
-                errors.add(" 11.B Tally Decryption failed for $where")
+                errors.add(" 11.B Tally Decryption failed for '$where' share for '${share.guardianId}'")
             }
         }
         return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
