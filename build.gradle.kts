@@ -15,6 +15,8 @@ plugins {
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
     id("tech.formatter-kt.formatter") version "0.7.9"
 
+    id("maven-publish")
+
     java
     application
 }
@@ -225,3 +227,21 @@ configurations.forEach {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
     .configureEach { kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn" }
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/danwallach/electionguard-kotlin-multiplatform")
+            credentials {
+                username = project.findProperty("github.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("github.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            from(components["java"])
+        }
+    }
+}
