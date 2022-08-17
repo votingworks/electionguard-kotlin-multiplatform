@@ -91,7 +91,7 @@ class RunBatchEncryptionTest {
     fun testInvalidBallot() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
-        val invalidDir = "testOut/testInvalidBallot/invalid_ballots"
+        val invalidDir = "testOut/testInvalidBallot"
         val consumerIn = Consumer(inputDir, group)
         val electionInit: ElectionInitialized =
             consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
