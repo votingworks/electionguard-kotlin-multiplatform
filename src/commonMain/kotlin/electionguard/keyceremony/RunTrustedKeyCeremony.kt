@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCli::class)
-
 package electionguard.keyceremony
 
 import com.github.michaelbull.result.Err
@@ -14,7 +12,6 @@ import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
-import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
 
 /**

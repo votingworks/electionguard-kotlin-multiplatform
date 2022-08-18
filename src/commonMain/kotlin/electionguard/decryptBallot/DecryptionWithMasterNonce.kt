@@ -1,5 +1,9 @@
-package electionguard.decrypt
+package electionguard.decryptBallot
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.partition
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
@@ -12,66 +16,66 @@ import electionguard.core.decryptWithNonce
 import electionguard.core.get
 import electionguard.core.hashElements
 import electionguard.core.toElementModQ
-import mu.KotlinLogging
-
-private val logger = KotlinLogging.logger("DecryptionWithMasterNonce")
 
 /** Decryption of a EncryptedBallot using the master nonce. */
-class DecryptionWithMasterNonce(val group : GroupContext, val publicKey: ElGamalPublicKey) {
+class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
 
-    fun decrypt(manifest: Manifest, masterNonce: ElementModQ, ballot: EncryptedBallot): PlaintextBallot? {
-        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, ballot.ballotId, masterNonce)
+    fun EncryptedBallot.decrypt(masterNonce: ElementModQ): Result<PlaintextBallot, String> {
+        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, this.ballotId, masterNonce)
 
-        val plaintext_contests = mutableListOf<PlaintextBallot.Contest>()
-        for (contest in ballot.contests) {
-            val mcontest = manifest.contests.find { it.contestId == contest.contestId}
+        val (plaintextContests, cerrors) = this.contests.map {
+            val mcontest = manifest.contests.find { tcontest -> it.contestId == tcontest.contestId}
             if (mcontest == null) {
-                logger.warn { "Cant find contest ${contest.contestId} in manifest"}
-                return null
+                Err("Cant find contest ${it.contestId} in manifest")
+            } else {
+                decryptContestWithMasterNonce(mcontest, ballotNonce, it)
             }
-            val plaintextContest = decryptContestWithMasterNonce(mcontest, ballotNonce, contest)
-            if (plaintextContest == null) {
-                return null
-            }
-            plaintext_contests.add(plaintextContest)
+        }.partition()
+
+        if (cerrors.isNotEmpty()) {
+            return Err(cerrors.joinToString("\n"))
         }
-        return PlaintextBallot(
-            ballot.ballotId,
-            ballot.ballotStyleId,
-            plaintext_contests,
+        return Ok(PlaintextBallot(
+            this.ballotId,
+            this.ballotStyleId,
+            plaintextContests,
             null
-        )
+        ))
     }
 
     private fun decryptContestWithMasterNonce(
         mcontest: Manifest.ContestDescription,
         ballotNonce: UInt256,
         contest: EncryptedBallot.Contest
-    ): PlaintextBallot.Contest? {
+    ): Result<PlaintextBallot.Contest, String> {
         val contestDescriptionHash = mcontest.cryptoHash
         val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
         val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
         val contestNonce = nonceSequence[contest.sequenceOrder]
 
         val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
+        val errors = mutableListOf<String>()
         for (selection in contest.selections.filter { !it.isPlaceholderSelection }) {
             val mselection = mcontest.selections.find { it.selectionId == selection.selectionId }
             if (mselection == null) {
-                logger.warn { "Cant find selection ${selection.selectionId} in contest ${mcontest.contestId}" }
-                return null
+                errors.add(" Cant find selection ${selection.selectionId} in contest ${mcontest.contestId}")
+                continue
             }
             val plaintextSelection = decryptSelectionWithMasterNonce(mselection, contestNonce, selection)
             if (plaintextSelection == null) {
-                logger.warn { "Selection ${selection.selectionId} in contest ${mcontest.contestId} failed to decrypt" }
-                return null
+                errors.add(" decryption with master nonce failed for contest: ${contest.contestId} selection: ${selection.selectionId}")
+            } else {
+                plaintextSelections.add(plaintextSelection)
             }
-            plaintextSelections.add(plaintextSelection)
         }
-        return PlaintextBallot.Contest(
+        if (errors.isNotEmpty()) {
+            return Err(errors.joinToString("\n"))
+        }
+        return Ok(PlaintextBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
             plaintextSelections
-        )
+        ))
     }
 
     private fun decryptSelectionWithMasterNonce(
