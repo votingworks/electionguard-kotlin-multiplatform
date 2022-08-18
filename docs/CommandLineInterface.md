@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 8/09/2022
+last update 8/18/2022
 
 ## Election workflow
 
@@ -24,7 +24,8 @@ last update 8/09/2022
       communicating over gRPC from anywhere on the internet.
 
 3. **Create input plaintext ballots** based on the manifest in ElectionConfig. The following examples may be useful:
-    1. _RunWorkflow_ uses _RandomBallotProvider_ to generate random test ballots.
+    1. _TestWorkflow_ uses _RandomBallotProvider_ to generate random test ballots.
+    2. _GenerateFakeBallots_ uses _RandomBallotProvider_ to generate random test ballots.
 
 4. **Batch Encryption**. The following examples may be useful:
     1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext ballots, encrypts the
@@ -56,7 +57,7 @@ last update 8/09/2022
     1. _electionguard.verify.VerifyElectionRecord_ is a CLI that reads an election record and verifies it.
 
 8. **Complete test Workflow**. The following examples may be useful:
-   1. A complete test workflow can be run from electionguard.workflow.RunWorkflow in the commonTest module.
+   1. A complete test workflow can be run from electionguard.workflow.TestWorkflow in the commonTest module.
    2. A complete test remote workflow can be run from electionguard.workflow.RunRemoteWorkflowTest in the 
       [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo.
 

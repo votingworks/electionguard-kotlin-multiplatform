@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCli::class)
-
 package electionguard.verifier
 
 import electionguard.core.GroupContext
@@ -9,7 +7,6 @@ import electionguard.publish.Consumer
 import electionguard.publish.electionRecordFromConsumer
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
-import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.default
 import kotlinx.cli.required
 import kotlin.math.roundToInt

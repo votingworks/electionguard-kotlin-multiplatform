@@ -23,13 +23,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-/** Test the embedded nonces in an Encrypted Ballot. */
+/** Verify the embedded nonces in an Encrypted Ballot. */
 class EncryptionNonceTest {
     val input = "src/commonTest/data/runWorkflowAllAvailable"
     val nballots = 11
 
     @Test
-    fun testEncryptionWithMasterNonce() {
+    fun testEncryptionNonces() {
         val group = productionGroup()
         val consumerIn = Consumer(input, group)
         val electionInit: ElectionInitialized =
@@ -47,11 +47,11 @@ class EncryptionNonceTest {
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
             val codeSeed = group.randomElementModQ(minimum = 2)
             val masterNonce = group.randomElementModQ(minimum = 2)
-            val encryptedBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
 
             // decrypt with nonces
-            val decryptionWithNonce = DecryptionTestNonce(group, electionInit.jointPublicKey())
-            val decryptedBallot = decryptionWithNonce.decrypt(electionInit.manifest(), masterNonce, encryptedBallot)
+            val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey())
+            val decryptedBallot = with (decryptionWithNonce) { ciphertextBallot.decrypt() }
             assertNotNull(decryptedBallot)
 
             // all non zero votes match
@@ -89,28 +89,29 @@ class EncryptionNonceTest {
     }
 }
 
-class DecryptionTestNonce(val group : GroupContext, val publicKey: ElGamalPublicKey) {
+// create our own class (instead of DecryptionWithEmbeddedNonces) in order to validate the embedded nonces
+class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
 
-    fun decrypt(manifest: Manifest, masterNonce: ElementModQ, ballot: CiphertextBallot): PlaintextBallot {
-        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, ballot.ballotId, masterNonce)
+    fun CiphertextBallot.decrypt(): PlaintextBallot {
+        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, this.ballotId, this.masterNonce)
 
         val plaintext_contests = mutableListOf<PlaintextBallot.Contest>()
-        for (contest in ballot.contests) {
+        for (contest in this.contests) {
             val mcontest = manifest.contests.find { it.contestId == contest.contestId}
             assertNotNull(mcontest)
-            val plaintextContest = decryptContestWithNonce(mcontest, ballotNonce, contest)
+            val plaintextContest = verifyContestNonces(mcontest, ballotNonce, contest)
             assertNotNull(plaintextContest)
             plaintext_contests.add(plaintextContest)
         }
         return PlaintextBallot(
-            ballot.ballotId,
-            ballot.ballotStyleId,
+            this.ballotId,
+            this.ballotStyleId,
             plaintext_contests,
             null
         )
     }
 
-    private fun decryptContestWithNonce(
+    private fun verifyContestNonces(
         mcontest: Manifest.ContestDescription,
         ballotNonce: UInt256,
         contest: CiphertextBallot.Contest
@@ -127,7 +128,7 @@ class DecryptionTestNonce(val group : GroupContext, val publicKey: ElGamalPublic
         for (selection in contest.selections.filter { !it.isPlaceholderSelection }) {
             val mselection = mcontest.selections.find { it.selectionId == selection.selectionId }
             assertNotNull(mselection)
-            val plaintextSelection = decryptSelectionWithNonce(mselection, contestNonce, selection)
+            val plaintextSelection = verifySelectionNonces(mselection, contestNonce, selection)
             assertNotNull(plaintextSelection)
             plaintextSelections.add(plaintextSelection)
         }
@@ -138,7 +139,7 @@ class DecryptionTestNonce(val group : GroupContext, val publicKey: ElGamalPublic
         )
     }
 
-    private fun decryptSelectionWithNonce(
+    private fun verifySelectionNonces(
         mselection: Manifest.SelectionDescription,
         contestNonce: ElementModQ,
         selection: CiphertextBallot.Selection

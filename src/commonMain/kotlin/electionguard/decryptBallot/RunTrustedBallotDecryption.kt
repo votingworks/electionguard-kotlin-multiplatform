@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCli::class)
-
 package electionguard.decryptBallot
 
 import com.github.michaelbull.result.getOrThrow
@@ -20,7 +18,6 @@ import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
-import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.required
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +37,7 @@ private val logger = KotlinLogging.logger("RunTrustedBallotDecryption")
 private const val debug = false
 
 /**
- * Run Trusted Ballot Decryption CLI.
+ * Decrypt spoiled ballots with local trustees.
  * Read election record from inputDir, write to outputDir.
  * This has access to all the trustees, so is only used for testing, or in a use case of trust.
  */

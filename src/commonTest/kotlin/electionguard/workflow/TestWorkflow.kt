@@ -17,7 +17,7 @@ import electionguard.verifier.Verifier
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-/** Run workflow starting from ElectionConfig in the start directory (125 selections/ballot). */
+/** Run complete workflow starting from ElectionConfig in the start directory, all the way through verify. */
 class RunWorkflow {
     private val configDir = "src/commonTest/data/start"
     private val nballots = 11
