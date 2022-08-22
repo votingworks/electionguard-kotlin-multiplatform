@@ -10,7 +10,7 @@ data class EncryptedBallot(
     val ballotId: String,
     val ballotStyleId: String,
     val manifestHash: UInt256, // matches Manifest.cryptoHash
-    val codeSeed: UInt256, // TODO maybe optional?
+    val codeSeed: UInt256,
     val code: UInt256,
     val contests: List<Contest>,
     val timestamp: Long,

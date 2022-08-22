@@ -19,20 +19,17 @@ import electionguard.core.productionGroup
 import electionguard.core.toElementModQ
 import electionguard.publish.ElectionRecord
 
-// quick proof verification - not necessarily the verification spec
+// since there's no verification spec 2.0, this is approximate
 class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
     val group: GroupContext
     val manifest: Manifest
     val jointPublicKey: ElGamalPublicKey
     val cryptoExtendedBaseHash: ElementModQ
-    // val decryptionResult: DecryptionResult
-    // val guardiansPublic: List<Guardian>
 
     init {
         if (record.stage() < ElectionRecord.Stage.INIT) {
             throw IllegalStateException("election record stage = ${record.stage()}, not initialized\n")
         }
-
         group = productionGroup()
         jointPublicKey = ElGamalPublicKey(record.jointPublicKey()!!)
         cryptoExtendedBaseHash = record.cryptoExtendedBaseHash()!!.toElementModQ(group)
@@ -65,9 +62,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, cryptoExtendedBaseHash, nthreads)
         // Note we are validating all ballots, not just CAST
         val ballotStats = verifyBallots.verify(record.encryptedBallots { true }, showTime)
-        println(" 4,5. verifySelectionEncryptions, contestVoteLimits $ballotStats")
-
-        // TODO not doing ballot chaining test (box 6)
+        println(" 4,5,6. verifySelectionEncryptions, contestVoteLimits $ballotStats")
 
         if (record.stage() < ElectionRecord.Stage.TALLIED) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
@@ -105,7 +100,9 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, showTime)
         println(" 12. verifySpoiledBallotTallies $spoiledStats")
 
-        return (guardiansOk is Ok) && (publicKeyOk is Ok) && (aggResult is Ok) && ballotStats.allOk && tallyStats.allOk && spoiledStats.allOk
+        val allOk = (guardiansOk is Ok) && (publicKeyOk is Ok) && (aggResult is Ok) && ballotStats.allOk() && tallyStats.allOk && spoiledStats.allOk()
+        println("verify allOK = $allOk")
+        return allOk
     }
 
     // LOOK we assume that hasValidSchnorrProof() covers this. revisit when 2.0 verification comes out
@@ -185,15 +182,14 @@ class Stats(
 }
 
 class StatsAccum {
-    var allOk: Boolean = true
     var n: Int = 0
     val errors = mutableListOf<String>()
+
     private var ncontests: Int = 0
     private var nselections: Int = 0
     private var nshares: Int = 0
 
     fun add(stat: Stats) {
-        allOk = allOk && stat.allOk
         n++
         ncontests += stat.ncontests
         nselections += stat.nselections
@@ -203,8 +199,16 @@ class StatsAccum {
         }
     }
 
+    fun add(errs: List<String>) {
+        if (errs.isNotEmpty()) {
+            errors.addAll(errs)
+        }
+    }
+
+    fun allOk() = errors.isEmpty()
+
     override fun toString(): String {
-        return "allOk=$allOk, n=$n, ncontests=$ncontests, nselections=$nselections, nshares=$nshares, errors=${errors.joinToString("\n")}"
+        return "allOk=${allOk()}, n=$n, ncontests=$ncontests, nselections=$nselections, nshares=$nshares, errors=${errors.joinToString("\n")}"
     }
 }
 

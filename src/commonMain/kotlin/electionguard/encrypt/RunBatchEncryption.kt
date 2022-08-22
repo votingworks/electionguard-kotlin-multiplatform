@@ -229,6 +229,7 @@ fun batchEncryption(
 }
 
 // orchestrates the encryption
+// LOOK: codeSeed is constant, not trying to do chaining
 private class RunEncryption(
     val group: GroupContext,
     val encryptor: Encryptor,

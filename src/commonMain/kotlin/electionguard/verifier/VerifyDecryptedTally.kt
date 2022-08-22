@@ -297,7 +297,7 @@ class VerifyDecryptedTally(
 
         val took = getSystemTimeInMillis() - starting
         val perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-        if (showTime) println("   verifySpoiledBallotTallies ok=${globalStat.allOk} took $took millisecs for $count ballots = $perBallot msecs/ballot")
+        if (showTime) println("   verifySpoiledBallotTallies ok=${globalStat.allOk()} took $took millisecs for $count ballots = $perBallot msecs/ballot")
         return globalStat
     }
 

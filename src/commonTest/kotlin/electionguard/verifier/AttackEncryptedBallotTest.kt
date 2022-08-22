@@ -22,12 +22,12 @@ import kotlin.test.assertTrue
  Could be a man-in-the-middle attack or an attack on the stored file.
  The strategy is just to switch two selection identifiers in some contest in the EncryptedBallot.
  The ids are used in the selection cryptoHash, so we need to modify the selection cryptoHash,
- which bubbles up to modifying the contest cryptoHash, and the ballot cryptoHash.
+ which bubbles up to modifying the contest cryptoHash, and the ballot cryptoHash, and the tracking code.
 
- To detect, one needs to prove that the ballot cryptoHash hasnt been changed, eg the linear ballot chaining scheme.
- But if they are able to change the ballot file, they could modify the chained ballot hashes.
- And we are not currently using linear ballot chaining during encryption, because its difficult with coroutines.
- So we are currently susceptible to this attack.
+ To detect, one needs to prove that the ballot cryptoHash hasnt been changed, eg the linear ballot chaining scheme,
+ or a voter checking that their confirmation code matches on a spoiled ballot.
+ But if the attacker is able to change the entire election record, they could modify the chained ballot codes.
+ We are not currently using linear ballot chaining during encryption, so this library is currently susceptible to this attack.
 
  This attack bypasses contest limit and placeholder problems, and the proof remains valid.
  The attacker might switch votes in precincts where they know the likely vote ratio
@@ -75,9 +75,9 @@ class AttackEncryptedBallotTest {
         println("verify munged ballots ")
         val verifier = Verifier(electionRecord)
         val stats = verifier.verifyEncryptedBallots(mungedBallots)
-        println("verify = ${stats.allOk}")
-        if (!stats.allOk) println("  ${stats.errors}")
-        assertTrue(stats.allOk)
+        println("verify = ${stats.allOk()}")
+        if (!stats.allOk()) println("  $stats")
+        assertTrue(stats.allOk())
     }
 
     private fun mungeBallot(ballot: EncryptedBallot): EncryptedBallot {
@@ -91,17 +91,18 @@ class AttackEncryptedBallotTest {
         }
 
         val contestHashes = ccontests.map { it.cryptoHash }
-        val cryptoHash = hashElements(ballot.ballotId, ballot.manifestHash, contestHashes)
+        val cryptoHashMunged = hashElements(ballot.ballotId, ballot.manifestHash, contestHashes)
+        val trackingCodeMunged = hashElements(ballot.codeSeed, ballot.timestamp, cryptoHashMunged)
 
         return EncryptedBallot(
             ballot.ballotId,
             ballot.ballotStyleId,
             ballot.manifestHash,
             ballot.codeSeed,
-            ballot.code,
+            trackingCodeMunged,
             ccontests,
             ballot.timestamp,
-            cryptoHash,
+            cryptoHashMunged,
             ballot.state
         )
     }

@@ -60,12 +60,12 @@ class Encryptor(
         return encryptedBallots
     }
 
-    /** Encrypt the ballot with the given nonces and an optional timestamp override. */
+    /** Encrypt the ballot with the given codeSeed and master nonce and an optional timestamp override. */
     fun encrypt(
         ballot: PlaintextBallot,
         codeSeed: ElementModQ,
         masterNonce: ElementModQ,
-        timestampOverride: Long? = null
+        timestampOverride: Long? = null // if null, use getSystemTimeInMillis()
     ): CiphertextBallot {
         return ballot.encryptBallot(codeSeed, masterNonce, timestampOverride)
     }
@@ -86,6 +86,8 @@ class Encryptor(
         }
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
 
+        // arbitrary choice about how to calculate Hi, the trackingCode (aka confirmation code), and Bi
+        // may not be spec compliant
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), sortedContests) // B_i
         val trackingCode = hashElements(codeSeed, timestamp, cryptoHash)
@@ -130,12 +132,12 @@ class Encryptor(
         var votes = 0
         for (mselection: Manifest.SelectionDescription in mcontest.selections) {
 
-            // Find the actual selection matching the contest description.
+            //Find the actual selection matching the contest description.
             val plaintextSelection = plaintextSelections[mselection.selectionId] ?:
-            // No selection was made for this possible value so we explicitly set it to false
+            //No selection was made for this possible value so we explicitly set it to false
             selectionFrom(mselection.selectionId, mselection.sequenceOrder, false)
 
-            // track the votes so we can append the appropriate number of true placeholder votes
+            //track the votes so we can append the appropriate number of true placeholder votes
             votes += plaintextSelection.vote
             val encryptedSelection = plaintextSelection.encryptSelection(
                 mselection,
@@ -153,8 +155,12 @@ class Encryptor(
             val plaintextSelection = selectionFrom(
                 "${mcontest.contestId}-$sequenceNo", sequenceNo, votes < limit
             )
-            val mselection = Manifest.SelectionDescription(plaintextSelection.selectionId, plaintextSelection.sequenceOrder, "placeholder")
-            val encryptedPlaceholder= plaintextSelection.encryptSelection(
+            val mselection = Manifest.SelectionDescription(
+                plaintextSelection.selectionId,
+                plaintextSelection.sequenceOrder,
+                "placeholder"
+            )
+            val encryptedPlaceholder = plaintextSelection.encryptSelection(
                 mselection,
                 contestNonce,
                 true,
@@ -173,7 +179,8 @@ class Encryptor(
         )
     }
 
-    private fun selectionFrom(selectionId: String, sequenceOrder: Int, is_affirmative: Boolean
+    private fun selectionFrom(
+        selectionId: String, sequenceOrder: Int, is_affirmative: Boolean
     ): PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
             selectionId,
