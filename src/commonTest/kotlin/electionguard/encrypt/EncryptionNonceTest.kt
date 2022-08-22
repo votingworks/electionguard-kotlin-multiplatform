@@ -54,38 +54,45 @@ class EncryptionNonceTest {
             val decryptedBallot = with (decryptionWithNonce) { ciphertextBallot.decrypt() }
             assertNotNull(decryptedBallot)
 
-            // all non zero votes match
-            ballot.contests.forEach { contest1 ->
-                val contest2 = decryptedBallot.contests.find { it.contestId == contest1.contestId }
-                assertNotNull(contest2)
-                contest1.selections.forEach { selection1 ->
-                    val selection2 = contest2.selections.find { it.selectionId == selection1.selectionId }
-                    assertNotNull(selection2)
-                    assertEquals(selection1, selection2)
-                }
-            }
-
-            // all votes match
-            decryptedBallot.contests.forEach { contest2 ->
-                val contest1 = decryptedBallot.contests.find { it.contestId == contest2.contestId }
-                if (contest1 == null) {
-                    contest2.selections.forEach { assertEquals(it.vote, 0) }
-                } else {
-                    contest2.selections.forEach { selection2 ->
-                        val selection1 = contest1.selections.find { it.selectionId == selection2.selectionId }
-                        if (selection1 == null) {
-                            assertEquals(selection2.vote, 0)
-                        } else {
-                            assertEquals(selection1, selection2)
-                        }
-                    }
-                }
-            }
+            compareBallots(ballot, decryptedBallot)
         }
 
         val took = getSystemTimeInMillis() - starting
         val msecsPerBallot = (took.toDouble() / nballots).roundToInt()
-        println("testEncryptionWithMasterNonce $nballots took $took millisecs for $nballots ballots = $msecsPerBallot msecs/ballot")
+        println("testEncryptionNonces $nballots took $took millisecs for $nballots ballots = $msecsPerBallot msecs/ballot")
+    }
+}
+
+fun compareBallots(ballot: PlaintextBallot, decryptedBallot: PlaintextBallot) {
+    assertEquals(ballot.ballotId, decryptedBallot.ballotId)
+    assertEquals(ballot.ballotStyleId, decryptedBallot.ballotStyleId)
+
+    // all non zero votes match
+    ballot.contests.forEach { contest1 ->
+        val contest2 = decryptedBallot.contests.find { it.contestId == contest1.contestId }
+        assertNotNull(contest2)
+        contest1.selections.forEach { selection1 ->
+            val selection2 = contest2.selections.find { it.selectionId == selection1.selectionId }
+            assertNotNull(selection2)
+            assertEquals(selection1, selection2)
+        }
+    }
+
+    // all votes match
+    decryptedBallot.contests.forEach { contest2 ->
+        val contest1 = decryptedBallot.contests.find { it.contestId == contest2.contestId }
+        if (contest1 == null) {
+            contest2.selections.forEach { assertEquals(it.vote, 0) }
+        } else {
+            contest2.selections.forEach { selection2 ->
+                val selection1 = contest1.selections.find { it.selectionId == selection2.selectionId }
+                if (selection1 == null) {
+                    assertEquals(selection2.vote, 0)
+                } else {
+                    assertEquals(selection1, selection2)
+                }
+            }
+        }
     }
 }
 

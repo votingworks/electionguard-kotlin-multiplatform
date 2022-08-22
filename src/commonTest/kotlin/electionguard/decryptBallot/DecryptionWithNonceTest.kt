@@ -21,7 +21,7 @@ import kotlin.test.assertNotNull
 
 class DecryptionWithNonceTest {
     val input = "src/commonTest/data/runWorkflowAllAvailable"
-    val nballots = 13
+    val nballots = 20
 
     /** test DecryptionWithEmbeddedNonces: encrypt ballot, decrypt with embedded nonces, check match. */
     @Test
@@ -30,8 +30,6 @@ class DecryptionWithNonceTest {
         val consumerIn = Consumer(input, group)
         val electionInit: ElectionInitialized =
             consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-
-        // encrypt
         val encryptor = Encryptor(
             group,
             electionInit.manifest(),
@@ -39,13 +37,17 @@ class DecryptionWithNonceTest {
             electionInit.cryptoExtendedBaseHash
         )
 
-        val starting = getSystemTimeInMillis()
+        var encryptTime = 0L
+        var decryptTime = 0L
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
+            val startEncrypt = getSystemTimeInMillis()
             val codeSeed = group.randomElementModQ(minimum = 2)
             val masterNonce = group.randomElementModQ(minimum = 2)
             val encryptedBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+            encryptTime += getSystemTimeInMillis() - startEncrypt
 
-            // decrypt with nonces
+            // decrypt with nonces and check
+            val startDecrypt = getSystemTimeInMillis()
             val decryptionWithNonces = DecryptionWithEmbeddedNonces(electionInit.jointPublicKey())
             val decryptedBallotResult = with (decryptionWithNonces) { encryptedBallot.decrypt() }
             assertFalse(decryptedBallotResult is Err, "decryptionWithNonces failed on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
@@ -78,11 +80,12 @@ class DecryptionWithNonceTest {
                     }
                 }
             }
+            decryptTime += getSystemTimeInMillis() - startDecrypt
         }
 
-        val took = getSystemTimeInMillis() - starting
-        val msecsPerBallot = (took.toDouble() / nballots).roundToInt()
-        println("testDecryptionWithEmbeddedNonces took $took millisecs for $nballots ballots = $msecsPerBallot msecs/ballot")
+        val encryptPerBallot = (encryptTime.toDouble() / nballots).roundToInt()
+        val decryptPerBallot = (decryptTime.toDouble() / nballots).roundToInt()
+        println("testDecryptionWithEmbeddedNonces for $nballots ballots took $encryptPerBallot encrypt, $decryptPerBallot decrypt msecs/ballot")
     }
 
     /** test DecryptionWithMasterNonce: encrypt ballot, decrypt with master nonce, check match. */
@@ -92,8 +95,6 @@ class DecryptionWithNonceTest {
         val consumerIn = Consumer(input, group)
         val electionInit: ElectionInitialized =
             consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-
-        // encrypt
         val encryptor = Encryptor(
             group,
             electionInit.manifest(),
@@ -101,14 +102,18 @@ class DecryptionWithNonceTest {
             electionInit.cryptoExtendedBaseHash
         )
 
-        val starting = getSystemTimeInMillis()
+        var encryptTime = 0L
+        var decryptTime = 0L
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
+            val startEncrypt = getSystemTimeInMillis()
             val codeSeed = group.randomElementModQ(minimum = 2)
             val masterNonce = group.randomElementModQ(minimum = 2)
             val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
+            encryptTime += getSystemTimeInMillis() - startEncrypt
 
-            // decrypt with master nonce
+            // decrypt with master nonce and check
+            val startDecrypt = getSystemTimeInMillis()
             val decryptionWithMasterNonce = DecryptionWithMasterNonce(group, electionInit.manifest(), electionInit.jointPublicKey())
             val decryptedBallotResult = with (decryptionWithMasterNonce) { encryptedBallot.decrypt(masterNonce) }
             assertFalse(decryptedBallotResult is Err, "decryptionWithMasterNonce failed on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
@@ -141,10 +146,11 @@ class DecryptionWithNonceTest {
                     }
                 }
             }
+            decryptTime += getSystemTimeInMillis() - startDecrypt
         }
 
-        val took = getSystemTimeInMillis() - starting
-        val msecsPerBallot = (took.toDouble() / nballots).roundToInt()
-        println("testDecryptionWithMasterNonce took $took millisecs for $nballots ballots = $msecsPerBallot msecs/ballot")
+        val encryptPerBallot = (encryptTime.toDouble() / nballots).roundToInt()
+        val decryptPerBallot = (decryptTime.toDouble() / nballots).roundToInt()
+        println("testDecryptionWithMasterNonce for $nballots ballots took $encryptPerBallot encrypt, $decryptPerBallot decrypt msecs/ballot")
     }
 }

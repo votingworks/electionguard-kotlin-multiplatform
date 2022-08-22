@@ -3,6 +3,7 @@ package electionguard.verifier
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.core.ConstantChaumPedersenProofKnownNonce
@@ -10,8 +11,10 @@ import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
 import electionguard.core.encryptedSum
 import electionguard.core.getSystemTimeInMillis
+import electionguard.core.hashElements
 import electionguard.core.isValid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,13 +57,27 @@ class VerifyEncryptedBallots(
                     ) { ballot -> verifyEncryptedBallot(ballot) })
             }
 
-            // wait for all encryptions to be done, then close everything
+            // wait for all verifications to be done, then close everything
             joinAll(*verifierJobs.toTypedArray())
         }
 
-        val took = getSystemTimeInMillis() - starting
-        val perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-        if (showTime) println("   VerifyEncryptedBallots with $nthreads threads ok=${accumStats.allOk} took $took millisecs for $count ballots = $perBallot msecs/ballot")
+        // check duplicate confirmation codes (6.B)
+        // LOOK what about checking for duplicate ballot ids?
+        val errors = mutableListOf<String>()
+        val checkDuplicates = mutableMapOf<UInt256, String>()
+        confirmationCodes.forEach {
+            if (checkDuplicates[it.code] != null) {
+                errors.add("    6.B. Duplicate tracking code for ballot ${it.ballotId} and ${checkDuplicates[it.code]}")
+            }
+            checkDuplicates[it.code] = it.ballotId
+        }
+        accumStats.add(errors)
+
+        if (showTime) {
+            val took = getSystemTimeInMillis() - starting
+            val perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
+            println("   VerifyEncryptedBallots with $nthreads threads ok=${accumStats.allOk()} took $took millisecs for $count ballots = $perBallot msecs/ballot")
+        }
         return accumStats
     }
 
@@ -68,6 +85,11 @@ class VerifyEncryptedBallots(
         var ncontests = 0
         var nselections = 0
         val errors = mutableListOf<String>()
+
+        val test6 = verifyTrackingCode(ballot)
+        if (test6 is Err) {
+            errors.add(test6.unwrapError())
+        }
 
         for (contest in ballot.contests) {
             val where = "${ballot.ballotId}/${contest.contestId}"
@@ -115,6 +137,23 @@ class VerifyEncryptedBallots(
         val bvalid = errors.isEmpty()
         if (debugBallots) println(" Ballot '${ballot.ballotId}' valid $bvalid; ncontests = $ncontests nselections = $nselections")
         return Stats(ballot.ballotId, bvalid, ncontests, nselections, errors)
+    }
+
+    // 6.A
+    // TODO not doing ballot chaining
+    private fun verifyTrackingCode(ballot: EncryptedBallot): Result<Boolean, String> {
+        val errors = mutableListOf<String>()
+
+        val cryptoHashCalculated = hashElements(ballot.ballotId, manifest.cryptoHashUInt256(), ballot.contests) // B_i
+        if (cryptoHashCalculated != ballot.cryptoHash) {
+            errors.add("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} ")
+        }
+
+        val trackingCodeCalculated = hashElements(ballot.codeSeed, ballot.timestamp, ballot.cryptoHash)
+        if (trackingCodeCalculated != ballot.code) {
+            errors.add("    6.A Test ballot.trackingCode failed for ${ballot.ballotId} ")
+        }
+        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
     }
 
     /*
@@ -195,6 +234,7 @@ class VerifyEncryptedBallots(
             channel.close()
         }
 
+    private val confirmationCodes = mutableListOf<ConfirmationCode>()
     private val mutex = Mutex()
 
     private fun CoroutineScope.launchVerifier(
@@ -207,11 +247,14 @@ class VerifyEncryptedBallots(
             if (debugBallots) println("$id channel working on ${ballot.ballotId}")
             val stat = verify(ballot)
             mutex.withLock {
-                accumStats.add(stat)
                 agg.add(ballot) // this slows down the ballot parallelism: nselections * (2 (modP multiplication))
+                confirmationCodes.add(ConfirmationCode(ballot.ballotId, ballot.code))
+                accumStats.add(stat)
             }
             yield()
         }
     }
-
 }
+
+// check confirmation codes
+data class ConfirmationCode(val ballotId: String, val code: UInt256)
