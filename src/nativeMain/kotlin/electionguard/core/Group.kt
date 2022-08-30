@@ -1,6 +1,3 @@
-@file:OptIn(ExperimentalUnsignedTypes::class)
-@file:Suppress("EXPERIMENTAL_IS_NOT_ENABLED") // fix IntelliJ confusion
-
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
@@ -51,8 +48,8 @@ actual fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) :
         ProductionMode.Mode3072 -> productionGroups3072[acceleration] ?: throw Error("can't happen")
     }
 
-typealias HaclBignumP = ULongArray
-typealias HaclBignumQ = ULongArray
+typealias HaclBignumP = LongArray
+typealias HaclBignumQ = LongArray
 
 internal const val HaclBignumQ_LongWords = 4
 internal const val HaclBignumQ_Bytes = HaclBignumQ_LongWords * 8
@@ -62,7 +59,7 @@ internal fun newZeroBignumP(mode: ProductionMode) = HaclBignumP(mode.numLongWord
 internal fun newZeroBignumQ() = HaclBignumQ(HaclBignumQ_LongWords)
 
 // Helper functions that make it less awful to go back and forth from Kotlin to C interaction.
-// What's going on here: before we can pass a pointer from a Kotlin-managed ULongArray into
+// What's going on here: before we can pass a pointer from a Kotlin-managed LongArray into
 // a C function, we need to "pin" it in memory, guaranteeing that a hypothetical copying
 // garbage collector won't come along and relocate that buffer while we were sending a
 // raw pointer to it into the C library. That's what usePinned() is all about. At least in
@@ -70,37 +67,37 @@ internal fun newZeroBignumQ() = HaclBignumQ(HaclBignumQ_LongWords)
 // whatever we pass in won't be retained, so once the call returns, the pinning is no
 // longer necessary.
 
-internal inline fun <T> nativeElems(a: ULongArray,
-                                    b: ULongArray,
-                                    c: ULongArray,
-                                    d: ULongArray,
-                                    e: ULongArray,
+internal inline fun <T> nativeElems(a: LongArray,
+                                    b: LongArray,
+                                    c: LongArray,
+                                    d: LongArray,
+                                    e: LongArray,
                                     f: (ap: CPointer<ULongVar>, bp: CPointer<ULongVar>, cp: CPointer<ULongVar>, dp: CPointer<ULongVar>, ep: CPointer<ULongVar>) -> T): T =
     a.useNative { ap -> b.useNative { bp -> c.useNative { cp -> d.useNative { dp -> e.useNative { ep -> f(ap, bp, cp, dp, ep) } } } } }
 
-internal inline fun <T> nativeElems(a: ULongArray,
-                                    b: ULongArray,
-                                    c: ULongArray,
-                                    d: ULongArray,
+internal inline fun <T> nativeElems(a: LongArray,
+                                    b: LongArray,
+                                    c: LongArray,
+                                    d: LongArray,
                                     f: (ap: CPointer<ULongVar>, bp: CPointer<ULongVar>, cp: CPointer<ULongVar>, dp: CPointer<ULongVar>) -> T): T =
     a.useNative { ap -> b.useNative { bp -> c.useNative { cp -> d.useNative { dp -> f(ap, bp, cp, dp) } } } }
 
-internal inline fun <T> nativeElems(a: ULongArray,
-                                    b: ULongArray,
-                                    c: ULongArray,
+internal inline fun <T> nativeElems(a: LongArray,
+                                    b: LongArray,
+                                    c: LongArray,
                                     f: (ap: CPointer<ULongVar>, bp: CPointer<ULongVar>, cp: CPointer<ULongVar>) -> T): T =
     a.useNative { ap -> b.useNative { bp -> c.useNative { cp -> f(ap, bp, cp) } } }
 
-internal inline fun <T> nativeElems(a: ULongArray,
-                                    b: ULongArray,
+internal inline fun <T> nativeElems(a: LongArray,
+                                    b: LongArray,
                                     f: (ap: CPointer<ULongVar>, bp: CPointer<ULongVar>) -> T): T =
     a.useNative { ap -> b.useNative { bp -> f(ap, bp) } }
 
-internal inline fun <T> nativeElems(a: ULongArray,
+internal inline fun <T> nativeElems(a: LongArray,
                                     f: (ap: CPointer<ULongVar>) -> T): T =
     a.useNative { ap -> f(ap) }
 
-internal inline fun <T> ULongArray.useNative(f: (CPointer<ULongVar>) -> T): T =
+internal inline fun <T> LongArray.useNative(f: (CPointer<ULongVar>) -> T): T =
     usePinned { ptr ->
         f(ptr.addressOf(0).reinterpret())
     }
@@ -142,9 +139,9 @@ internal fun ByteArray.toHaclBignumQ(doubleMemory: Boolean = false): HaclBignumQ
         }
 
         // make a copy to Kotlin-managed memory and free the Hacl-managed original
-        val result = ULongArray((if (doubleMemory) 2 else 1) * HaclBignumQ_LongWords) {
+        val result = LongArray((if (doubleMemory) 2 else 1) * HaclBignumQ_LongWords) {
             if (it >= HaclBignumQ_LongWords)
-                0UL
+                0L
             else
                 tmp[it].convert()
         }
@@ -195,9 +192,9 @@ internal fun ByteArray.toHaclBignumP(
             Hacl_Bignum64_new_bn_from_bytes_be(numBytes.convert(), bytes) ?: throw OutOfMemoryError()
 
         // make a copy to Kotlin-managed memory and free the Hacl-managed original
-        val result = ULongArray((if (doubleMemory) 2 else 1) * numLongWords) {
+        val result = LongArray((if (doubleMemory) 2 else 1) * numLongWords) {
             if (it >= numLongWords)
-                0UL
+                0L
             else
                 tmp[it].convert()
         }
@@ -238,7 +235,7 @@ internal fun HaclBignumP.gtP(other: HaclBignumP, mode: ProductionMode): Boolean 
     }
 }
 
-private fun Element.getCompat(other: ProductionGroupContext): ULongArray {
+private fun Element.getCompat(other: ProductionGroupContext): LongArray {
     context.assertCompatible(other)
     return when (this) {
         is ProductionElementModP -> this.element
@@ -292,9 +289,9 @@ class ProductionGroupContext(
         twoModP = ProductionElementModP(2U.toHaclBignumP(productionMode), this)
         gModP = ProductionElementModP(g, this).acceleratePow() as ProductionElementModP
         qModP = ProductionElementModP(
-            ULongArray(numPLWords.toInt()) {
+            LongArray(numPLWords.toInt()) {
                 // Copy from 256-bit to 4096-bit, avoid problems later on. Hopefully.
-                    i -> if (i >= HaclBignumQ_LongWords) 0U else q[i]
+                    i -> if (i >= HaclBignumQ_LongWords) 0 else q[i]
             },
             this)
         zeroModQ = ProductionElementModQ(0U.toHaclBignumP(productionMode), this)
@@ -602,7 +599,7 @@ class ProductionElementModQ(val element: HaclBignumQ, val groupContext: Producti
 
     override operator fun times(other: ElementModQ): ElementModQ {
         val result = newZeroBignumQ()
-        val scratch = ULongArray(HaclBignumQ_LongWords * 2) // 512-bit intermediate value
+        val scratch = LongArray(HaclBignumQ_LongWords * 2) // 512-bit intermediate value
 
         nativeElems(result, element, other.getCompat(groupContext), scratch) {
                 r, a, b, s, ->
@@ -727,7 +724,7 @@ open class ProductionElementModP(val element: HaclBignumP, val groupContext: Pro
 
     override operator fun times(other: ElementModP): ElementModP {
         val result = newZeroBignumP(groupContext.productionMode)
-        val scratch = ULongArray(groupContext.numPLWords.toInt() * 2)
+        val scratch = LongArray(groupContext.numPLWords.toInt() * 2)
         nativeElems(result, element, other.getCompat(groupContext), scratch) { r, a, b, s ->
             Hacl_Bignum64_mul(groupContext.numPLWords, a, b, s)
             Hacl_Bignum64_mod_precomp(groupContext.montCtxP, s, r)
