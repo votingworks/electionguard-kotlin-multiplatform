@@ -6,10 +6,10 @@ buildscript {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.7.10"
+    kotlin("multiplatform") version "1.7.20-Beta"
 
     // cross-platform serialization support
-    kotlin("plugin.serialization") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.20-Beta"
 
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
@@ -24,7 +24,7 @@ plugins {
 group = "electionguard-kotlin-multiplatform"
 version = "1.0-SNAPSHOT"
 
-val kotlinVersion by extra("1.7.10")
+val kotlinVersion by extra("1.7.20-Beta")
 val pbandkVersion by extra("0.14.1")
 
 repositories {
@@ -226,7 +226,7 @@ configurations.forEach {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
-    .configureEach { kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn" }
+    .configureEach { kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn" }
 
 publishing {
     repositories {
