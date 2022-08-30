@@ -8,7 +8,8 @@ cmake_minimum_required(VERSION 3.21)
 project(hacl)
 include("cmake/OptimizeForArchitecture.cmake")
 
-OptimizeForArchitecture()
+# This doesn't work at all on M1 Macs
+# OptimizeForArchitecture()
 
 ADD_LIBRARY(hacl STATIC
     libhacl/src/Hacl_Bignum.c
