@@ -6,10 +6,10 @@ buildscript {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.7.10"
+    kotlin("multiplatform") version "1.7.20-Beta"
 
     // cross-platform serialization support
-    kotlin("plugin.serialization") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.20-Beta"
 
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
@@ -24,7 +24,7 @@ plugins {
 group = "electionguard-kotlin-multiplatform"
 version = "1.0-SNAPSHOT"
 
-val kotlinVersion by extra("1.7.10")
+val kotlinVersion by extra("1.7.20-Beta")
 val pbandkVersion by extra("0.14.1")
 
 repositories {
@@ -95,8 +95,8 @@ kotlin {
         val commonMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-common", "$kotlinVersion"))
-                    implementation(kotlin("stdlib", "$kotlinVersion"))
+                    implementation(kotlin("stdlib-common", kotlinVersion))
+                    implementation(kotlin("stdlib", kotlinVersion))
 
                     // JSON serialization and DSL
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
@@ -128,8 +128,8 @@ kotlin {
         val commonTest by
             getting {
                 dependencies {
-                    implementation(kotlin("test-common", "$kotlinVersion"))
-                    implementation(kotlin("test-annotations-common", "$kotlinVersion"))
+                    implementation(kotlin("test-common", kotlinVersion))
+                    implementation(kotlin("test-annotations-common", kotlinVersion))
 
                     // runTest() for running suspend functions in tests
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
@@ -141,7 +141,7 @@ kotlin {
         val jvmMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-jdk8", "$kotlinVersion"))
+                    implementation(kotlin("stdlib-jdk8", kotlinVersion))
 
                     // Progress bars
                     implementation("me.tongfei:progressbar:0.9.3")
@@ -157,7 +157,7 @@ kotlin {
                 dependencies {
                     // Unclear if we really need all the extra features of JUnit5, but it would
                     // at least be handy if we could get its parallel test runner to work.
-                    implementation(kotlin("test-junit5", "$kotlinVersion"))
+                    implementation(kotlin("test-junit5", kotlinVersion))
                 }
             }
         val nativeMain by getting { dependencies {} }
@@ -226,7 +226,7 @@ configurations.forEach {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
-    .configureEach { kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn" }
+    .configureEach { kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn" }
 
 publishing {
     repositories {

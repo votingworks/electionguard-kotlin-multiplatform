@@ -6,9 +6,17 @@ cmake_minimum_required(VERSION 3.21)
 # set(CMAKE_C_COMPILER "/usr/local/bin/gcc-11" CACHE STRING "gcc compiler" FORCE)
 
 project(hacl)
-include("cmake/OptimizeForArchitecture.cmake")
 
-OptimizeForArchitecture()
+# This doesn't work at all on M1 Macs
+# include("cmake/OptimizeForArchitecture.cmake")
+# OptimizeForArchitecture()
+
+# This line requests that we compile universal binaries.
+# More details:
+#   https://stackoverflow.com/a/65811061
+#   https://stackoverflow.com/questions/67490441/cmake-universal-binary-arch-depending-compile-options
+# CMAKE_OSX_ARCHITECTURES=arm64;x86_64
+set (CMAKE_OSX_ARCHITECTURES arm64 x86_64)
 
 ADD_LIBRARY(hacl STATIC
     libhacl/src/Hacl_Bignum.c

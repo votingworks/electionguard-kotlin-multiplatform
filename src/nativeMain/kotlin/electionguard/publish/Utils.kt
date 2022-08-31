@@ -1,37 +1,8 @@
 package electionguard.publish
 
 import io.ktor.utils.io.errors.*
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.CArrayPointer
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.CPointerVar
-import kotlinx.cinterop.CPointerVarOf
-import kotlinx.cinterop.CValuesRef
-import kotlinx.cinterop.NativePtr
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.get
-import kotlinx.cinterop.getRawValue
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.toKString
-import platform.posix.DIR
-import platform.posix.FILE
-import platform.posix.PATH_MAX
-import platform.posix.dirent
-import platform.posix.fclose
-import platform.posix.fgets
-import platform.posix.fopen
-import platform.posix.getcwd
-import platform.posix.getline
-import platform.posix.lstat
-import platform.posix.mkdir
-import platform.posix.opendir
-import platform.posix.posix_errno
-import platform.posix.readdir
-import platform.posix.realpath
-import platform.posix.stat
-import platform.posix.strerror_r
+import kotlinx.cinterop.*
+import platform.posix.*
 
 private const val debug = true
 
@@ -117,13 +88,25 @@ fun createDirectories(dir: String): Boolean {
     return true
 }
 
+/**
+ * Converts a 32-bit unsigned integer, representing a file's `mode_t` into
+ * the platform `mode_t` (which might be 16 bits or 32 bits, depending on
+ * the platform).
+ */
+private inline fun UInt.toModeT(): mode_t {
+    // The convert() method comes to us from kotlinx.cinterop and is a "typed intrinsic",
+    // so it's getting the output type (mode_t) from the lexical context and is then
+    // doing the desired conversion. What kind of conversion? That's not specified
+    // anywhere, but it *probably* behaves like a C typecast, which is to say, it
+    // just passes the data along without any bounds checking of any kind.
+    return this.convert()
+}
+
 fun createDirectory(dirName: String): Boolean {
     // mkdir(@kotlinx.cinterop.internal.CCall.CString __path: kotlin.String?,
     // __mode: platform.posix.__mode_t /* = kotlin.UInt */)
     // : kotlin.Int { /* compiled code */ }
-    // TODO macOS needs
-    //     if (mkdir(dirName, convertOctalToDecimal(775).toUShort()) == -1) {
-    if (mkdir(dirName, convertOctalToDecimal(775)) == -1) {
+    if (mkdir(dirName, convertOctalToDecimal(775).toModeT()) == -1) {
         checkErrno { mess -> throw IOException("Fail mkdir $mess on $dirName") }
         return false
     }
