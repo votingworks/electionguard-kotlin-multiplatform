@@ -12,8 +12,7 @@ import kotlinx.cli.required
 import kotlin.math.roundToInt
 
 /**
- * Run tally accumulation.
- * Read election record from inputDir, write to outputDir.
+ * Run election record verification.
  */
 fun main(args: Array<String>) {
     val parser = ArgParser("RunVerifier")
