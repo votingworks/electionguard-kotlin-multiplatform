@@ -77,16 +77,15 @@ kotlin {
             }
         }
 
-        //binaries {
-        //    executable("RunBatchEncryption") {
-        //        entryPoint = "electionguard.encrypt.main"
-        //    }
-        // }
-        //        binaries {
-        //            staticLib {
-        //                entryPoint = "main"
-        //            }
-        //        }
+        binaries {
+            executable("RunBatchEncryption") {
+                entryPoint = "electionguard.encrypt.main"
+            }
+            sharedLib() {
+                baseName = "ekm" // on Linux and macOS
+                // baseName = "libekm // on Windows
+            }
+        }
     }
 
     sourceSets {
