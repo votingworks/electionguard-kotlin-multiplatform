@@ -46,3 +46,11 @@ message SchnorrProof {
 message UInt256 {
   bytes value = 1;
 }
+
+// strawman
+message ContestData {
+  repeated uint32 overvotes = 1;  // list of selection sequence_number for this contest
+  bool under_vote = 2;
+  bool null_vote = 3;
+  repeated uint32 write_ins = 4; // list of write_in ids
+}

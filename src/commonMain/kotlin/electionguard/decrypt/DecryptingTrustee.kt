@@ -59,7 +59,7 @@ data class DecryptingTrustee(
             val publicKey = this.electionKeypair.publicKey.key
             val privateKey = this.electionKeypair.secretKey.key
 
-            // 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 (spec 1.03 section 3.5 eq 51)
+            // 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 (spec 1.51 section 3.5 eq 64)
             val partialDecryption: ElementModP = ciphertext.computeShare(this.electionKeypair.secretKey)
             // prove that we know x
             val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
@@ -113,7 +113,7 @@ data class DecryptingTrustee(
 
         val results: MutableList<CompensatedDecryptionAndProof> = mutableListOf()
         for (ciphertext: ElGamalCiphertext in texts) {
-            // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l} (spec 1.03 section 3.5.2 eq 56)
+            // 𝑀_{𝑖,l} = 𝐴^P𝑖_{l} (spec 1.51 section 3.5.2 eq 59)
             val partialDecryptionShare: ElementModP =
                 ciphertext.computeShare(ElGamalSecretKey(generatingGuardianValue))
 

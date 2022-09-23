@@ -16,7 +16,6 @@ import electionguard.core.encrypt
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
-import electionguard.core.toElementModQ
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.keyceremony.KeyCeremonyTrustee
@@ -101,7 +100,8 @@ fun runRecoveredDecryptionTest(
             config.manifest.cryptoHash,
         )
 
-        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
+        // spec 1.51, eq 20 and 3.B
+        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
         val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
         val init = ElectionInitialized(
             config,

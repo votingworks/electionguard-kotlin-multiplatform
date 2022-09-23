@@ -100,7 +100,7 @@ class KeyCeremonyTrustee(
 
         // Compute my polynomial's y value at the other's x coordinate = Pi(ℓ)
         val Pil: ElementModQ = polynomial.valueAt(group, other.guardianXCoordinate)
-        // The encryption of that, using the other's public key. See spec 1.03 eq 17.
+        // The encryption of that, using the other's public key. See spec 1.51, section 3.2.2 eq 17.
         val EPil = Pil.byteArray().hashedElGamalEncrypt(other.publicKey())
         return Ok(
             SecretKeyShare(
@@ -122,7 +122,7 @@ class KeyCeremonyTrustee(
         val generatingKeys = guardianPublicKeys[share.generatingGuardianId]
             ?: return Err("Trustee $id does not have public keys for  ${share.generatingGuardianId}")
 
-        // verify spec 1.03, eq 19
+        // verify spec 1.51, sec 3.2.2 eq 19
         val secretKey = ElGamalSecretKey(this.polynomial.coefficients[0])
         val byteArray = share.encryptedCoordinate.decrypt(secretKey)
             ?: throw IllegalStateException("Trustee $id backup for ${share.generatingGuardianId} couldnt decrypt encryptedCoordinate")

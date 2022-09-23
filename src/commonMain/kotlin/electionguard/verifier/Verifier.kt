@@ -129,13 +129,13 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             errors.add("  3.A jointPublicKey K does not equal computed K = Prod(K_i)")
         }
 
-        // see https://github.com/microsoft/electionguard/issues/290
         val commitments = mutableListOf<ElementModP>()
         this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments) }
         val commitmentsHash = hashElements(commitments)
-        val computedQbar: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
+        // spec 1.51, eq 20 and 3.B
+        val computedQbar: UInt256 = hashElements(cryptoBaseHash, jointPublicKeyComputed, commitmentsHash)
         if (!cryptoExtendedBaseHash.equals(computedQbar.toElementModQ(group))) {
-            errors.add("  3.B qbar does not match computed = H(Q, Prod(K_ij))")
+            errors.add("  3.B qbar does not match computed = H(Q, K, Prod(K_ij))")
         }
 
         return if (errors.isNotEmpty()) Err(errors.joinToString("\n")) else Ok(true)

@@ -162,7 +162,7 @@ class Decryption(
     }
 }
 
-/** Compute the lagrange coefficient, now that we know which guardians are present. spec 1.03 eq 61. */
+/** Compute the lagrange coefficient, now that we know which guardians are present. spec 1.51 section 3.5.2, eq 64. */
 fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>): ElementModQ {
     val others: List<Int> = present.filter { it != coordinate }
     val numerator: Int = others.reduce { a, b -> a * b }

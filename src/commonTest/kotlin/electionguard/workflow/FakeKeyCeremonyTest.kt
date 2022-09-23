@@ -95,10 +95,11 @@ fun runFakeKeyCeremony(
         config.manifest.cryptoHash,
     )
 
-    val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
-
     val jointPublicKey: ElementModP =
         trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
+
+    // spec 1.51, eq 20 and 3.B
+    val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
 
     val newConfig = ElectionConfig(
         config.protoVersion,

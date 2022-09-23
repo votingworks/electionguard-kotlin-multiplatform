@@ -32,6 +32,7 @@ import kotlin.math.roundToInt
 
 private const val debugBallots = false
 
+// TODO redo this with 1.51 Verification box 4, 5, 6
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyEncryptedBallots(
     val group: GroupContext,
@@ -91,6 +92,7 @@ class VerifyEncryptedBallots(
             errors.add(test6.unwrapError())
         }
 
+        // TODO redo this with 1.51 Verification box 5
         for (contest in ballot.contests) {
             val where = "${ballot.ballotId}/${contest.contestId}"
             ncontests++
@@ -111,9 +113,6 @@ class VerifyEncryptedBallots(
             if (cvalid is Err) {
                 errors.add("    5. ConstantChaumPedersenProofKnownNonce failed for $where = ${cvalid.error} ")
             }
-
-            // TODO I think 5.F and 5.G are not needed because we have simplified proofs.
-            //   review when 2.0 verification spec is out
 
             /* val challenge = contest.proof.proof.c
             val response = contest.proof.proof.r
@@ -139,8 +138,7 @@ class VerifyEncryptedBallots(
         return Stats(ballot.ballotId, bvalid, ncontests, nselections, errors)
     }
 
-    // 6.A
-    // TODO not doing ballot chaining
+    // TODO redo this with 1.51 Verification box 6
     private fun verifyTrackingCode(ballot: EncryptedBallot): Result<Boolean, String> {
         val errors = mutableListOf<String>()
 
@@ -189,6 +187,7 @@ class VerifyEncryptedBallots(
     }
     */
 
+    // TODO redo this with 1.51 Verification box 4
     private fun verifySelections(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val errors = mutableListOf<String>()
         var nplaceholders = 0
@@ -205,9 +204,6 @@ class VerifyEncryptedBallots(
             if (svalid is Err) {
                 errors.add("    4. DisjunctiveChaumPedersenProofKnownNonce failed for $where/${selection.selectionId} = ${svalid.error} ")
             }
-
-            // TODO I think 4.E, 4.F, 4.G, 4.H are not needed because we have simplified proofs.
-            //   review when 2.0 verification spec is out
         }
 
         // 5.A verify the placeholder numbers match the maximum votes allowed

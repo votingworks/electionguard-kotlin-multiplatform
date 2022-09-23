@@ -131,6 +131,11 @@ data class KeyCeremonyResults(
             publicKeysSorted.map { it.coefficientCommitments[0] }.reduce { a, b -> a * b }
 
         // cryptoBaseHash = Q
+        // spec 3.51, section 3.1.2. The contents of [the manifest] are hashed together with the
+        // prime modulus (p), subgroup order (q), generator (g), number of guardians (n), decryption quorum
+        // threshold value (k), date, and jurisdictional information to form a base hash code (Q) which will
+        // be incorporated into every subsequent hash computation in the election.
+        // TODO: add date, and jurisdictional information ??
         val primes = config.constants
         val cryptoBaseHash: UInt256 = hashElements(
             primes.largePrime.toHex(),
@@ -145,7 +150,8 @@ data class KeyCeremonyResults(
         val commitments: MutableList<ElementModP> = mutableListOf()
         publicKeysSorted.forEach { commitments.addAll(it.coefficientCommitments) }
         val commitmentsHash = hashElements(commitments)
-        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, commitmentsHash)
+        // spec 1.51, eq 20 and 3.B
+        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
 
         val guardians: List<Guardian> = publicKeysSorted.map { makeGuardian(it) }
 
