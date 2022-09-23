@@ -14,6 +14,7 @@ import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.publish.ElectionRecord
 
+// TODO check this with 1.51 Verification box 10
 /** When there are missing guardians, check "replacement partial decryptions" (box 10). */
 class VerifyRecoveredShares(
     val group: GroupContext,

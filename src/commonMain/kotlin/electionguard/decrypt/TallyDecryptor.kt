@@ -52,7 +52,7 @@ class TallyDecryptor(val group: GroupContext, val jointPublicKey: ElGamalPublicK
         val decryptionShares: Iterable<ElementModP> = shares.map { it.share() }
         val allSharesProductM: ElementModP = with (group) { decryptionShares.multP() }
 
-        // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝. (spec 1.03 section 3.5.1 eq 55)
+        // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝. (spec 1.51 section 3.5.1 eq 58)
         val decryptedValue: ElementModP = selection.ciphertext.data / allSharesProductM
         // Now we know M, and since 𝑀 = K^t mod 𝑝, t = logK (M) (note version 1 has 𝑀 = g^t)
         val dlogM: Int = jointPublicKey.dLog(decryptedValue, maxDlog) ?:

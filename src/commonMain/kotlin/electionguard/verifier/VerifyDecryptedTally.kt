@@ -30,6 +30,7 @@ import kotlin.math.roundToInt
 
 private const val debug = false
 
+// TODO redo this with 1.51 Verification box 8, 9, 11
 /**
  * 8. Correctness of partial decryptions.
  * Confirm for each (non-placeholder) option for each decrypting guardian Ti:
@@ -62,7 +63,7 @@ private const val debug = false
  *  v_i,ℓ = response to challenge of guardian Tℓ ’s share of partial decryption of guardian Ti
  *  Prodj(X) = ∏ (X) for 𝑗=0..𝑘−1 (k is quorum)
  *  Prodj (𝐾_𝑖,𝑗 ^ ℓ^j) = ∏ (𝐾_𝑖,𝑗 ^ (ℓ^j)) for 𝑗=0..𝑘−1 (k is quorum)
- *  g ^ Pi(ℓ) mod p = Prodj (𝐾_𝑖,𝑗 ^ ℓ^j) (spec 1.03 eq 60)
+ *  g ^ Pi(ℓ) mod p = Prodj (𝐾_𝑖,𝑗 ^ ℓ^j) (spec 1.51, section 3.5.2, eq 63)
  *  RecoveredPartialDecryption.recoveryKey = g ^ Pi(ℓ) mod p
  *
  * 11. An election verifier should confirm the following equations for each (non-placeholder) option in
