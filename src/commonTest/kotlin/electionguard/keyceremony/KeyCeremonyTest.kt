@@ -86,7 +86,6 @@ fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
     return Guardian(
         trustee.id,
         trustee.xCoordinate,
-        publicKeys.coefficientCommitments,
         publicKeys.coefficientProofs,
     )
 }

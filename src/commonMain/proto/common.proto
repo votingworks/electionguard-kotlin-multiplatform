@@ -35,10 +35,9 @@ message HashedElGamalCiphertext {
 }
 
 message SchnorrProof {
-  reserved 1;
-  reserved 2;
-  ElementModQ challenge = 3; // c in the spec
-  ElementModQ response = 4; // u in the spec
+  ElementModP public_key = 1; // K_ij in the spec
+  ElementModQ challenge = 2; // c_ij in the spec
+  ElementModQ response = 3; // v_ij in the spec
 }
 
 // A 256 bit unsigned int, big-endian. Always exactly 32 bytes.

@@ -65,7 +65,6 @@ private fun generateGuardian(seq: Int, context: GroupContext): Guardian {
     return Guardian(
         "guardian $seq",
         (seq + 1),
-        List(3) { generateElementModP(context) },
         List(3) { generateSchnorrProof(context) },
     )
 }

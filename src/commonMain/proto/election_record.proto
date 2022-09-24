@@ -46,8 +46,8 @@ message ElectionInitialized {
 message Guardian {
   string guardian_id = 1;     // guardian id
   uint32 x_coordinate = 2;    // x coordinate in the secret polynomial. must be > 0
-  repeated ElementModP  coefficient_commitments = 3;  // Kij, j=0...number_of_guardians-1
-  repeated SchnorrProof coefficient_proofs = 4;  // size = number_of_guardians
+  reserved 3;  // was coefficient_commitments, now directly in the proofs
+  repeated SchnorrProof coefficient_proofs = 4;  // size = quorum (k)
 }
 
 message TallyResult {

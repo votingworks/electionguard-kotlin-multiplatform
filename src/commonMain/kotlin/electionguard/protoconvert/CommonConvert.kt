@@ -45,10 +45,12 @@ fun GroupContext.importHashedCiphertext(
 
 fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?): SchnorrProof? {
     if (proof == null) return null
+    val publicKey = this.importElementModP(proof.publicKey)
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
 
-    return if (challenge == null || response == null) null else SchnorrProof(challenge, response)
+    return if (publicKey == null || challenge == null || response == null) null
+           else SchnorrProof(publicKey, challenge, response)
 }
 
 fun GroupContext.importElGamalPublicKey(
@@ -101,6 +103,7 @@ fun HashedElGamalCiphertext.publishHashedCiphertext() :
 fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
     return electionguard.protogen
         .SchnorrProof(
+            this.publicKey.publishElementModP(),
             this.challenge.publishElementModQ(),
             this.response.publishElementModQ()
         )

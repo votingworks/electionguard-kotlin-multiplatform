@@ -55,7 +55,6 @@ class KeyCeremonyTrustee(
         return Ok(PublicKeys(
             id,
             xCoordinate,
-            polynomial.coefficientCommitments,
             polynomial.coefficientProofs,
         ))
     }
@@ -64,9 +63,6 @@ class KeyCeremonyTrustee(
     override fun receivePublicKeys(publicKeys: PublicKeys): Result<PublicKeys, String> {
         if (publicKeys.guardianXCoordinate < 1) {
             return Err("${publicKeys.guardianId}: guardianXCoordinate must be >= 1")
-        }
-        if (publicKeys.coefficientCommitments.size != quorum) {
-            return Err("${publicKeys.guardianId}: must have quorum ($quorum) coefficientCommitments")
         }
         if (publicKeys.coefficientProofs.size != quorum) {
             return Err("${publicKeys.guardianId}: must have quorum ($quorum) coefficientProofs")
@@ -127,7 +123,7 @@ class KeyCeremonyTrustee(
         val byteArray = share.encryptedCoordinate.decrypt(secretKey)
             ?: throw IllegalStateException("Trustee $id backup for ${share.generatingGuardianId} couldnt decrypt encryptedCoordinate")
         val expected: ElementModQ = byteArray.toUInt256().toElementModQ(group)
-        if (group.gPowP(expected) != calculateGexpPiAtL(this.xCoordinate, generatingKeys.coefficientCommitments)) {
+        if (group.gPowP(expected) != calculateGexpPiAtL(this.xCoordinate, generatingKeys.coefficientCommitments())) {
             return Err("Trustee $id failed to verify backup from ${share.generatingGuardianId}")
         }
 

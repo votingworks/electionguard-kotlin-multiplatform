@@ -48,27 +48,19 @@ private fun GroupContext.importGuardian(
     guardian: electionguard.protogen.Guardian
 ): Result<Guardian, String> {
 
-    val (coefficientCommitments, cerrors) =
-        guardian.coefficientCommitments.map {
-            this.importElementModP(it)
-                .toResultOr {"Guardian ${guardian.guardianId} coefficientCommitment was malformed or missing"}
-        }.partition()
-
     val (coefficientProofs, perrors) =
         guardian.coefficientProofs.map {
             this.importSchnorrProof(it)
                 .toResultOr {"Guardian ${guardian.guardianId} coefficientProof was malformed or missing"}
         }.partition()
 
-    val errors = cerrors + perrors
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
+    if (perrors.isNotEmpty()) {
+        return Err(perrors.joinToString("\n"))
     }
 
     return Ok(Guardian(
         guardian.guardianId,
         guardian.xCoordinate,
-        coefficientCommitments,
         coefficientProofs,
     ))
 }
@@ -88,8 +80,6 @@ fun ElectionInitialized.publishElectionInitialized(): electionguard.protogen.Ele
 }
 
 private fun Guardian.publishGuardian(): electionguard.protogen.Guardian {
-    val coefficientCommitments =
-        this.coefficientCommitments.map { it.publishElementModP() }
     val coefficientProofs =
         this.coefficientProofs.map { it.publishSchnorrProof() }
 
@@ -97,7 +87,6 @@ private fun Guardian.publishGuardian(): electionguard.protogen.Guardian {
         .Guardian(
             this.guardianId,
             this.xCoordinate,
-            coefficientCommitments,
             coefficientProofs,
         )
 }

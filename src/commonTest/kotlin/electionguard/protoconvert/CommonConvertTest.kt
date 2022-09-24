@@ -58,11 +58,12 @@ class CommonConvertTest {
     fun convertSchnorrProof() {
         runTest {
             checkAll(
+                elementsModP(productionGroup()),
                 elementsModQ(productionGroup()),
                 elementsModQ(productionGroup()),
-            ) { c, r ->
+            ) { k, c, r ->
                 val context = productionGroup()
-                val proof = SchnorrProof(c, r)
+                val proof = SchnorrProof(k, c, r)
                 val proto = proof.publishSchnorrProof()
                 val roundtrip = context.importSchnorrProof(proto)
                 assertEquals(roundtrip, proof)

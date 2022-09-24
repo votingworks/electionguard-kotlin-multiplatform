@@ -135,6 +135,6 @@ private fun SecretKeyShare.publishSecretKeyShare(): electionguard.protogen.Secre
 private fun PublicKeys.publishCommitmentSet(): electionguard.protogen.CommitmentSet {
     return electionguard.protogen.CommitmentSet(
         this.guardianId,
-        this.coefficientCommitments.map { it.publishElementModP() },
+        this.coefficientCommitments().map { it.publishElementModP() },
     )
 }

@@ -15,7 +15,6 @@ import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.SchnorrProof
 import electionguard.core.UInt256
 import electionguard.core.getSystemDate
-import electionguard.core.hasValidSchnorrProof
 import electionguard.core.hashElements
 
 /** Exchange publicKeys and secretShares among the trustees */
@@ -68,24 +67,26 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremon
 data class PublicKeys(
     val guardianId: String,
     val guardianXCoordinate: Int,
-    val coefficientCommitments: List<ElementModP>,
     val coefficientProofs: List<SchnorrProof>,
 ) {
     init {
         require(guardianId.isNotEmpty())
         require(guardianXCoordinate > 0)
-        require(coefficientCommitments.isNotEmpty())
-        require(coefficientProofs.size == coefficientCommitments.size)
+        require(coefficientProofs.isNotEmpty())
     }
 
     fun publicKey(): ElGamalPublicKey {
-        return ElGamalPublicKey(coefficientCommitments[0])
+        return ElGamalPublicKey(coefficientProofs[0].publicKey)
+    }
+
+    fun coefficientCommitments(): List<ElementModP> {
+        return coefficientProofs.map { it.publicKey }
     }
 
     fun isValid(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for ((idx, proof) in this.coefficientProofs.withIndex()) {
-            if (!ElGamalPublicKey(coefficientCommitments[idx]).hasValidSchnorrProof(proof)) {
+            if (!proof.isValid()) {
                 checkProofs.add(Err("Guardian $guardianId has invalid proof for coefficient $idx"))
             } else {
                 checkProofs.add(Ok(true))
@@ -128,7 +129,7 @@ data class KeyCeremonyResults(
         metadata: Map<String, String> = emptyMap(),
     ): ElectionInitialized {
         val jointPublicKey: ElementModP =
-            publicKeysSorted.map { it.coefficientCommitments[0] }.reduce { a, b -> a * b }
+            publicKeysSorted.map { it.publicKey().key }.reduce { a, b -> a * b }
 
         // cryptoBaseHash = Q
         // spec 3.51, section 3.1.2. The contents of [the manifest] are hashed together with the
@@ -148,7 +149,7 @@ data class KeyCeremonyResults(
 
         // cryptoExtendedBaseHash = Qbar
         val commitments: MutableList<ElementModP> = mutableListOf()
-        publicKeysSorted.forEach { commitments.addAll(it.coefficientCommitments) }
+        publicKeysSorted.forEach { commitments.addAll(it.coefficientCommitments()) }
         val commitmentsHash = hashElements(commitments)
         // spec 1.51, eq 20 and 3.B
         val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
@@ -177,7 +178,6 @@ private fun makeGuardian(publicKeys: PublicKeys): Guardian {
     return Guardian(
         publicKeys.guardianId,
         publicKeys.guardianXCoordinate,
-        publicKeys.coefficientCommitments,
         publicKeys.coefficientProofs,
     )
 }

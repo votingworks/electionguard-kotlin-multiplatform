@@ -26,7 +26,7 @@ class KeyCeremonyTrusteeTest {
         val keys = result.unwrap()
         assertEquals(trustee.id(), keys.guardianId)
         assertEquals(trustee.xCoordinate(), keys.guardianXCoordinate)
-        assertEquals(trustee.coefficientCommitments(), keys.coefficientCommitments)
+        assertEquals(trustee.coefficientCommitments(), keys.coefficientCommitments())
         assertEquals(4, keys.coefficientProofs.size)
     }
 
