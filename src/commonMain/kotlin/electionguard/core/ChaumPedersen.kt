@@ -1,9 +1,7 @@
 package electionguard.core
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
+import com.github.michaelbull.result.*
+import kotlin.collections.fold
 
 /** Proof that the ciphertext is a given constant. */
 data class ConstantChaumPedersenProofKnownNonce(
@@ -24,6 +22,17 @@ data class ConstantChaumPedersenProofKnownSecretKey(
 data class DisjunctiveChaumPedersenProofKnownNonce(
     val proof0: GenericChaumPedersenProof,
     val proof1: GenericChaumPedersenProof,
+    val c: ElementModQ
+)
+
+/**
+ * Disjunctive proof that the ciphertext is between zero and a maximum
+ * value, inclusive. Note that the size of the proof is proportional to
+ * the maximum value. Example: a proof that a ciphertext is in [0, 5]
+ * will have six internal proof components.
+ */
+data class RangeChaumPedersenProofKnownNonce(
+    val proofs: List<GenericChaumPedersenProof>,
     val c: ElementModQ
 )
 
@@ -191,6 +200,96 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
 }
 
 /**
+ * Produces a proof that a given ElGamal encryption corresponds to a value between zero and a
+ * given limit (inclusive), given that the prover to know the nonce (the r behind the g^r).
+ *
+ * @param plaintext The actual plaintext constant value used to make the ElGamal ciphertext (L in
+ *     the spec)
+ * @param limit The maximum possible value for the plaintext (inclusive)
+ * @param nonce The aggregate nonce used creating the ElGamal ciphertext (r in the spec)
+ * @param publicKey The ElGamal public key for the election
+ * @param seed Used to generate other random values here
+ * @param qbar The election extended base hash (Q')
+ */
+fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
+    plaintext: Int,
+    limit: Int,
+    nonce: ElementModQ,
+    publicKey: ElGamalPublicKey,
+    seed: ElementModQ,
+    qbar: ElementModQ
+): RangeChaumPedersenProofKnownNonce {
+    if (plaintext < 0) {
+        throw ArithmeticException("negative plaintexts not supported")
+    }
+    if (limit < 0) {
+        throw ArithmeticException("negative limits not supported")
+    }
+    if (limit < plaintext) {
+        throw ArithmeticException("limit must be at least as big as the plaintext")
+    }
+
+    val (alpha, beta) = this
+    val context = compatibleContextOrFail(pad, nonce, publicKey.key, seed, qbar, alpha, beta)
+
+    // Performance note: these lists are actually ArrayList, so indexing will
+    // be a constant-time operation.
+
+    val uList = Nonces(seed, "range-chaum-pedersen-proof").take(limit)
+
+    // Randomly chosen c-values; note that c[plaintext] (c_l in the spec) should
+    // not be taken from this list; that's going to be computed later on.
+    val cList = Nonces(seed, "range-chaum-pedersen-proof-constants").take(limit)
+
+    val aList = uList.map { u -> context.gPowP(u) }
+    val bList = uList.mapIndexed { j, u ->
+        if (j == plaintext) {
+            // Spec, page 22, equation 48.
+            // We're not using cList for this specific b value.
+            publicKey powP u
+        } else {
+            // Spec, page 22, equation 49.
+
+            // We can't convert a negative number to an ElementModQ,
+            // so we instead use the unaryMinus operator.
+            val plaintextMinusIndex = if (plaintext < j)
+                (plaintext - j).toElementModQ(context)
+            else
+                -((plaintext - j).toElementModQ(context))
+
+            publicKey powP (plaintextMinusIndex * cList[j] + u)
+        }
+    }
+
+    // (a1, a2, a3) x (b1, b2, b3) ==> (a1, b1, a2, b2, a3, b3, ...)
+    val hashMe = aList.zip(bList).flatMap { listOf(it.first, it.second) }
+
+    // Spec, page 22, equation 50; we need to have this very
+    // specific ordering of inputs for computing c.
+    val c = hashElements(qbar, alpha, beta, *(hashMe.toTypedArray())).toElementModQ(context)
+
+    // Spec, page 22, equation 51. (c_l)
+    val cPlaintext = c -
+            cList.filterIndexed { j, _ -> j != plaintext }
+                .fold(context.ZERO_MOD_Q) { a, b -> a + b }
+
+    val vList = uList.zip(cList).mapIndexed { j, (uj, cj) ->
+        val cjActual = if (j == plaintext) cPlaintext else cj
+
+        // Spec, page 22, equation 52 (v_j)
+        uj - cjActual * nonce
+    }
+
+    return RangeChaumPedersenProofKnownNonce(
+        cList.zip(vList).mapIndexed { j, (cj, vj) ->
+            val cjActual = if (j == plaintext) cPlaintext else cj
+            GenericChaumPedersenProof(cjActual, vj)
+        },
+        c
+    )
+}
+
+/**
  * Validates a proof against an ElGamal ciphertext.
  *
  * @param ciphertext An ElGamal ciphertext
@@ -325,6 +424,73 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
     }
 
     return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+}
+
+/**
+ * Validates a range proof against an ElGamal ciphertext for the
+ * range [0, limit], inclusive.
+ *
+ * @param ciphertext An ElGamal ciphertext
+ * @param publicKey The public key of the election
+ * @param qbar The election extended base hash (Q')
+ * @param limit The maximum possible value for the plaintext (inclusive)
+ * @return true if the proof is valid, else an error message
+ */
+fun RangeChaumPedersenProofKnownNonce.isValid(
+    ciphertext: ElGamalCiphertext,
+    publicKey: ElGamalPublicKey,
+    qbar: ElementModQ,
+    limit: Int
+): Result<Boolean, String> {
+    val context = compatibleContextOrFail(this.proofs[0].c, ciphertext.pad, publicKey.key, qbar)
+
+    if (limit != proofs.size) {
+        return Err("    expected ${limit} proofs, only found ${proofs.size}")
+    }
+
+    // gets us the sequence of b_j values (public_key ^ {v_j - j_c})
+    val hxList = generateSequence(ciphertext.data) { it * publicKey.inverseKey }.take(limit).toList()
+
+    val expandedProofs = proofs.mapIndexed { j, proof ->
+        // recomputes all the a and b values
+        proof.expand(
+            g = context.G_MOD_P,
+            gx = ciphertext.pad,
+            h = publicKey.key,
+            hx = hxList[j]
+        )
+    }
+
+    val cSum = this.proofs.fold(context.ZERO_MOD_Q) { a, b -> a + b.c }
+    val csumError = if (cSum == c) Ok(true) else Err("    c sum is invalid (5.C)")
+
+    val abList = expandedProofs.flatMap { listOf(it.a, it.b) }.toTypedArray()
+
+    val hashError =
+        if (hashElements(qbar, ciphertext.pad, ciphertext.data, *abList) == c.toUInt256())
+            Ok(true)
+        else
+            Err("    hash of reconstructed a, b values doesn't match proof c (5.3)")
+
+    val proofsValid = expandedProofs.mapIndexed { j, proof ->
+        proof.isValid(
+            g = context.G_MOD_P,
+            gx = ciphertext.pad,
+            h = publicKey.key,
+            hx = hxList[j],
+            checkC = false,
+            hashHeader = emptyArray(),
+            hashFooter = emptyArray()
+        )
+    }
+
+    val allErrors = proofsValid + hashError + csumError
+
+    return if (allErrors.isEmpty()) {
+        Ok(true)
+    } else {
+        Err(allErrors.joinToString("\n"))
+    }
 }
 
 /**
