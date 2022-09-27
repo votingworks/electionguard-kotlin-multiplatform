@@ -15,12 +15,11 @@ message PlaintextBallotContest {
   string contest_id = 1; // matches the ContestDescription.contest_id
   uint32 sequence_order = 2;
   repeated PlaintextBallotSelection selections = 3;
+  repeated string write_ins = 4; // used for write-in candidate(s)
 }
 
 message PlaintextBallotSelection {
   string selection_id = 1; // matches the SelectionDescription.selection_id
   uint32 sequence_order = 2;
   uint32 vote = 3;  // 0 or 1
-  reserved 4;
-  string extended_data = 5; // used for write-in candidate value
 }

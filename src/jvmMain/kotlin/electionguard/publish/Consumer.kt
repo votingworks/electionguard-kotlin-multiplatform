@@ -5,7 +5,7 @@ import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
@@ -99,7 +99,7 @@ actual class Consumer actual constructor(
     }
 
     // all tallies in the file
-    actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
+    actual fun iterateSpoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> {
         val filename = path.spoiledBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()

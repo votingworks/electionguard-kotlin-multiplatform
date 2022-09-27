@@ -36,7 +36,7 @@ fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
 fun GroupContext.importDecryptionResult(decrypt : electionguard.protogen.DecryptionResult):
         Result<DecryptionResult, String>  {
     val tallyResult = this.importTallyResult(decrypt.tallyResult)
-    val decryptedTally = this.importPlaintextTally(decrypt.decryptedTally)
+    val decryptedTally = this.importDecryptedTallyOrBallot(decrypt.decryptedTally)
 
     val (guardians, gerrors) =
         decrypt.decryptingGuardians.map { importAvailableGuardian(it) }.partition()
@@ -81,7 +81,7 @@ fun TallyResult.publishTallyResult(): electionguard.protogen.TallyResult {
 fun DecryptionResult.publishDecryptionResult(): electionguard.protogen.DecryptionResult {
     return electionguard.protogen.DecryptionResult(
         this.tallyResult.publishTallyResult(),
-        this.decryptedTally.publishPlaintextTally(),
+        this.decryptedTallyOrBallot.publishDecryptedTallyOrBallot(),
         this.decryptingGuardians.map { it.publishAvailableGuardian() },
         this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value)}
     )

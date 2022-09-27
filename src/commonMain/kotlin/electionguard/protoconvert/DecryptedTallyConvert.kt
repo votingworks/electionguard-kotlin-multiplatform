@@ -7,20 +7,20 @@ import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
 import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.RecoveredPartialDecryption
 
-fun GroupContext.importPlaintextTally(tally: electionguard.protogen.PlaintextTally?):
-        Result<PlaintextTally, String> {
+fun GroupContext.importDecryptedTallyOrBallot(tally: electionguard.protogen.DecryptedTallyOrBallot?):
+        Result<DecryptedTallyOrBallot, String> {
     if (tally == null) {
-        return Err("Null PlaintextTally")
+        return Err("Null DecryptedTallyOrBallot")
     }
 
     if (tally.contests.isEmpty()) {
-        return Err("No contests in PlaintextTally")
+        return Err("No contests in DecryptedTallyOrBallot")
     }
 
     val (contests, errors) = tally.contests.map { this.importContest(it) }.partition()
@@ -28,14 +28,14 @@ fun GroupContext.importPlaintextTally(tally: electionguard.protogen.PlaintextTal
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(PlaintextTally(tally.tallyId, contests.associateBy { it.contestId }))
+    return Ok(DecryptedTallyOrBallot(tally.tallyId, contests.associateBy { it.contestId }))
 }
 
-private fun GroupContext.importContest(contest: electionguard.protogen.PlaintextTallyContest):
-        Result<PlaintextTally.Contest, String> {
+private fun GroupContext.importContest(contest: electionguard.protogen.DecryptedContest):
+        Result<DecryptedTallyOrBallot.Contest, String> {
 
     if (contest.selections.isEmpty()) {
-        return Err("No selections in PlaintextTallyContest")
+        return Err("No selections in DecryptedContest")
     }
 
     val (selections, errors) = contest.selections.map { this.importSelection(it) }.partition()
@@ -43,15 +43,19 @@ private fun GroupContext.importContest(contest: electionguard.protogen.Plaintext
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(PlaintextTally.Contest(contest.contestId, selections.associateBy { it.selectionId }))
+    return Ok(DecryptedTallyOrBallot.Contest(
+        contest.contestId,
+        selections.associateBy { it.selectionId },
+    null, // TODO
+    ))
 }
 
-private fun GroupContext.importSelection(selection: electionguard.protogen.PlaintextTallySelection):
-        Result<PlaintextTally.Selection, String> {
+private fun GroupContext.importSelection(selection: electionguard.protogen.DecryptedSelection):
+        Result<DecryptedTallyOrBallot.Selection, String> {
     val value = this.importElementModP(selection.value)
-        .toResultOr { "PlaintextTallySelection ${selection.selectionId} value was malformed or missing" }
+        .toResultOr { "DecryptedSelection ${selection.selectionId} value was malformed or missing" }
     val message = this.importCiphertext(selection.message)
-        .toResultOr { "PlaintextTallySelection ${selection.selectionId} message was malformed or missing" }
+        .toResultOr { "DecryptedSelection ${selection.selectionId} message was malformed or missing" }
     val (shares, serrors) = selection.partialDecryptions.map { this.importPartialDecryption(it) }.partition()
 
     val errors = getAllErrors(value, message) + serrors
@@ -60,11 +64,11 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Plain
     }
 
     if (shares.isEmpty()) {
-        return Err("No shares in PlaintextTallySelection")
+        return Err("No shares in DecryptedSelection")
     }
 
     return Ok(
-        PlaintextTally.Selection(
+        DecryptedTallyOrBallot.Selection(
             selection.selectionId,
             selection.tally,
             value.unwrap(),
@@ -134,20 +138,20 @@ private fun GroupContext.importRecoveredPartialDecryption(selectionId: String, p
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-fun PlaintextTally.publishPlaintextTally(): electionguard.protogen.PlaintextTally {
+fun DecryptedTallyOrBallot.publishDecryptedTallyOrBallot(): electionguard.protogen.DecryptedTallyOrBallot {
     return electionguard.protogen
-        .PlaintextTally(this.tallyId, this.contests.values.map { it.publishContest() })
+        .DecryptedTallyOrBallot(this.tallyId, this.contests.values.map { it.publishContest() })
 }
 
-private fun PlaintextTally.Contest.publishContest(): electionguard.protogen.PlaintextTallyContest {
+private fun DecryptedTallyOrBallot.Contest.publishContest(): electionguard.protogen.DecryptedContest {
     return electionguard.protogen
-        .PlaintextTallyContest(this.contestId, this.selections.values.map { it.publishSelection() })
+        .DecryptedContest(this.contestId, this.selections.values.map { it.publishSelection() })
 }
 
-private fun PlaintextTally.Selection.publishSelection():
-        electionguard.protogen.PlaintextTallySelection {
+private fun DecryptedTallyOrBallot.Selection.publishSelection():
+        electionguard.protogen.DecryptedSelection {
     return electionguard.protogen
-        .PlaintextTallySelection(
+        .DecryptedSelection(
             this.selectionId,
             this.tally,
             this.value.publishElementModP(),

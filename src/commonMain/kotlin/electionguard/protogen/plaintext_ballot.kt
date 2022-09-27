@@ -76,6 +76,7 @@ public data class PlaintextBallotContest(
     val contestId: String = "",
     val sequenceOrder: Int = 0,
     val selections: List<electionguard.protogen.PlaintextBallotSelection> = emptyList(),
+    val writeIns: List<String> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextBallotContest = protoMergeImpl(other)
@@ -86,7 +87,7 @@ public data class PlaintextBallotContest(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.PlaintextBallotContest = electionguard.protogen.PlaintextBallotContest.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextBallotContest> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallotContest, *>>(3)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallotContest, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -118,6 +119,16 @@ public data class PlaintextBallotContest(
                         value = electionguard.protogen.PlaintextBallotContest::selections
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "write_ins",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "writeIns",
+                        value = electionguard.protogen.PlaintextBallotContest::writeIns
+                    )
+                )
             }
             pbandk.MessageDescriptor(
                 fullName = "PlaintextBallotContest",
@@ -134,7 +145,6 @@ public data class PlaintextBallotSelection(
     val selectionId: String = "",
     val sequenceOrder: Int = 0,
     val vote: Int = 0,
-    val extendedData: String = "",
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.PlaintextBallotSelection = protoMergeImpl(other)
@@ -145,7 +155,7 @@ public data class PlaintextBallotSelection(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.PlaintextBallotSelection = electionguard.protogen.PlaintextBallotSelection.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextBallotSelection> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallotSelection, *>>(4)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallotSelection, *>>(3)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -175,16 +185,6 @@ public data class PlaintextBallotSelection(
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "vote",
                         value = electionguard.protogen.PlaintextBallotSelection::vote
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "extended_data",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "extendedData",
-                        value = electionguard.protogen.PlaintextBallotSelection::extendedData
                     )
                 )
             }
@@ -234,6 +234,7 @@ public fun PlaintextBallotContest?.orDefault(): electionguard.protogen.Plaintext
 private fun PlaintextBallotContest.protoMergeImpl(plus: pbandk.Message?): PlaintextBallotContest = (plus as? PlaintextBallotContest)?.let {
     it.copy(
         selections = selections + plus.selections,
+        writeIns = writeIns + plus.writeIns,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -243,15 +244,17 @@ private fun PlaintextBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDec
     var contestId = ""
     var sequenceOrder = 0
     var selections: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextBallotSelection>? = null
+    var writeIns: pbandk.ListWithSize.Builder<String>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
             3 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextBallotSelection> }
+            4 -> writeIns = (writeIns ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
         }
     }
-    return PlaintextBallotContest(contestId, sequenceOrder, pbandk.ListWithSize.Builder.fixed(selections), unknownFields)
+    return PlaintextBallotContest(contestId, sequenceOrder, pbandk.ListWithSize.Builder.fixed(selections), pbandk.ListWithSize.Builder.fixed(writeIns), unknownFields)
 }
 
 @pbandk.Export
@@ -269,15 +272,13 @@ private fun PlaintextBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageD
     var selectionId = ""
     var sequenceOrder = 0
     var vote = 0
-    var extendedData = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
             3 -> vote = _fieldValue as Int
-            5 -> extendedData = _fieldValue as String
         }
     }
-    return PlaintextBallotSelection(selectionId, sequenceOrder, vote, extendedData, unknownFields)
+    return PlaintextBallotSelection(selectionId, sequenceOrder, vote, unknownFields)
 }

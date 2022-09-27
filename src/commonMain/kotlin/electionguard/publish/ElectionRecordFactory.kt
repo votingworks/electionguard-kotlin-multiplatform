@@ -10,7 +10,7 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.Guardian
 import electionguard.ballot.Manifest
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.ElementModP
 import electionguard.core.UInt256
@@ -133,15 +133,15 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return tallyResult
     }
 
-    override fun decryptedTally(): PlaintextTally? {
-        return decryptionResult?.decryptedTally
+    override fun decryptedTally(): DecryptedTallyOrBallot? {
+        return decryptionResult?.decryptedTallyOrBallot
     }
 
     override fun decryptingGuardians(): List<DecryptingGuardian> {
         return decryptionResult?.decryptingGuardians ?: emptyList()
     }
 
-    override fun spoiledBallotTallies(): Iterable<PlaintextTally> {
+    override fun spoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> {
         return consumer.iterateSpoiledBallotTallies()
     }
 

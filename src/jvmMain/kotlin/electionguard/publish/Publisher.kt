@@ -7,7 +7,7 @@ import electionguard.protoconvert.publishDecryptionResult
 import electionguard.protoconvert.publishElectionConfig
 import electionguard.protoconvert.publishElectionInitialized
 import electionguard.protoconvert.publishPlaintextBallot
-import electionguard.protoconvert.publishPlaintextTally
+import electionguard.protoconvert.publishDecryptedTallyOrBallot
 import electionguard.protoconvert.publishEncryptedBallot
 import electionguard.protoconvert.publishTallyResult
 import electionguard.publish.ElectionRecordPath.Companion.DECRYPTION_RESULT_NAME
@@ -187,14 +187,14 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun plaintextTallySink(): PlaintextTallySinkIF =
-        PlaintextTallySink(spoiledBallotPath().toString())
+    actual fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF =
+        DecryptedTallyOrBallotSink(spoiledBallotPath().toString())
 
-    inner class PlaintextTallySink(path: String) : PlaintextTallySinkIF {
+    inner class DecryptedTallyOrBallotSink(path: String) : DecryptedTallyOrBallotSinkIF {
         val out: FileOutputStream = FileOutputStream(path)
 
-        override fun writePlaintextTally(tally: PlaintextTally){
-            val ballotProto: pbandk.Message = tally.publishPlaintextTally()
+        override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot){
+            val ballotProto: pbandk.Message = tally.publishDecryptedTallyOrBallot()
             writeDelimitedTo(ballotProto, out)
         }
 

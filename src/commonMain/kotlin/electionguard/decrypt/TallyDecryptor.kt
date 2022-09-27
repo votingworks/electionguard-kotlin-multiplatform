@@ -1,7 +1,7 @@
 package electionguard.decrypt
 
 import electionguard.ballot.EncryptedTally
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
@@ -9,41 +9,41 @@ import electionguard.core.GroupContext
 // TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
 private const val maxDlog: Int = 1000
 
-/** Decrypt an EncryptedTally into a PlaintextTally. */
+/** Decrypt an EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(val group: GroupContext, val jointPublicKey: ElGamalPublicKey, private val nguardians: Int) {
 
     /**
      * After gathering the shares for all guardians (partial or compensated), we can decrypt the tally.
      * Shares are in a Map keyed by "${contestId}#@${selectionId}"
      */
-    fun decryptTally(tally: EncryptedTally, shares: Map<String, List<PartialDecryption>>): PlaintextTally {
-        val contests: MutableMap<String, PlaintextTally.Contest> = HashMap()
+    fun decryptTally(tally: EncryptedTally, shares: Map<String, List<PartialDecryption>>): DecryptedTallyOrBallot {
+        val contests: MutableMap<String, DecryptedTallyOrBallot.Contest> = HashMap()
         for (tallyContest in tally.contests) {
-            val plaintextTallyContest = decryptContest(tallyContest, shares)
-            contests[tallyContest.contestId] = plaintextTallyContest
+            val decryptedContest = decryptContest(tallyContest, shares)
+            contests[tallyContest.contestId] = decryptedContest
         }
-        return PlaintextTally(tally.tallyId, contests)
+        return DecryptedTallyOrBallot(tally.tallyId, contests)
     }
 
     private fun decryptContest(
         contest: EncryptedTally.Contest,
         shares: Map<String, List<PartialDecryption>>,
-    ): PlaintextTally.Contest {
-        val selections: MutableMap<String, PlaintextTally.Selection> = HashMap()
+    ): DecryptedTallyOrBallot.Contest {
+        val selections: MutableMap<String, DecryptedTallyOrBallot.Selection> = HashMap()
         for (tallySelection in contest.selections) {
             val id = "${contest.contestId}#@${tallySelection.selectionId}"
             val sshares = shares[id] ?: throw IllegalStateException("*** $id share not found") // TODO something better?
-            val plaintextTallySelection = decryptSelection(tallySelection, sshares, contest.contestId)
-            selections[tallySelection.selectionId] = plaintextTallySelection
+            val decryptedSelection = decryptSelection(tallySelection, sshares, contest.contestId)
+            selections[tallySelection.selectionId] = decryptedSelection
         }
-        return PlaintextTally.Contest(contest.contestId, selections)
+        return DecryptedTallyOrBallot.Contest(contest.contestId, selections, null)
     }
 
     private fun decryptSelection(
         selection: EncryptedTally.Selection,
         shares: List<PartialDecryption>,
         contestId: String,
-    ): PlaintextTally.Selection {
+    ): DecryptedTallyOrBallot.Selection {
         if (shares.size != this.nguardians) {
             throw IllegalStateException("decryptSelection $selection #shares ${shares.size} must equal #guardians ${this.nguardians}")
         }
@@ -58,7 +58,7 @@ class TallyDecryptor(val group: GroupContext, val jointPublicKey: ElGamalPublicK
         val dlogM: Int = jointPublicKey.dLog(decryptedValue, maxDlog) ?:
                 throw RuntimeException("dlog failed on ${contestId} / ${selection.selectionId}")
 
-        return PlaintextTally.Selection(
+        return DecryptedTallyOrBallot.Selection(
             selection.selectionId,
             dlogM,
             decryptedValue,

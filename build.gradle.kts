@@ -180,7 +180,7 @@ val compileProtobuf =
                 "protoc --pbandk_out=./src/commonMain/kotlin/ --proto_path=./src/commonMain/proto " +
                     "common.proto encrypted_ballot.proto encrypted_tally.proto " +
                     "election_record.proto manifest.proto " +
-                    "plaintext_ballot.proto plaintext_tally.proto " +
+                    "plaintext_ballot.proto decrypted_tally.proto " +
                     "trustees.proto"
             project.exec { commandLine = commandLineStr.split(" ") }
         }

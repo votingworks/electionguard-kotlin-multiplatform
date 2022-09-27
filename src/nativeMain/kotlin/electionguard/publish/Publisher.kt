@@ -7,7 +7,7 @@ import electionguard.protoconvert.publishDecryptionResult
 import electionguard.protoconvert.publishElectionConfig
 import electionguard.protoconvert.publishElectionInitialized
 import electionguard.protoconvert.publishPlaintextBallot
-import electionguard.protoconvert.publishPlaintextTally
+import electionguard.protoconvert.publishDecryptedTallyOrBallot
 import electionguard.protoconvert.publishEncryptedBallot
 import electionguard.protoconvert.publishTallyResult
 import io.ktor.utils.io.errors.*
@@ -109,12 +109,12 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     @Throws(IOException::class)
-    fun writeSpoiledBallotTallies(spoiledBallots: Iterable<PlaintextTally>): Boolean {
+    fun writeSpoiledBallotTallies(spoiledBallots: Iterable<DecryptedTallyOrBallot>): Boolean {
         val fileout = path.spoiledBallotPath()
         val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             spoiledBallots.forEach {
-                val proto = it.publishPlaintextTally()
+                val proto = it.publishDecryptedTallyOrBallot()
                 val buffer = proto.encodeToByteArray()
 
                 val length = writeVlen(file, fileout, buffer.size)
@@ -189,14 +189,14 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun plaintextTallySink(): PlaintextTallySinkIF =
-        PlaintextTallySink(path.spoiledBallotPath())
+    actual fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF =
+        DecryptedTallyOrBallotSink(path.spoiledBallotPath())
 
-    private inner class PlaintextTallySink(val fileout: String) : PlaintextTallySinkIF {
+    private inner class DecryptedTallyOrBallotSink(val fileout: String) : DecryptedTallyOrBallotSinkIF {
         val file: CPointer<FILE> = openFile(fileout, "wb")
 
-        override fun writePlaintextTally(tally: PlaintextTally) {
-            val ballotProto: pbandk.Message = tally.publishPlaintextTally()
+        override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot) {
+            val ballotProto: pbandk.Message = tally.publishDecryptedTallyOrBallot()
             val buffer = ballotProto.encodeToByteArray()
 
             val length = writeVlen(file, fileout, buffer.size)

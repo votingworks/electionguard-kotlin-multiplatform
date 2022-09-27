@@ -31,25 +31,25 @@ Plaintext Tally Validation may be run as part of verification.
 
 ### A. Referential integrity with Manifest
 
-1. For each PlaintextTally.Contest in the tally, the contestId must match a ContestDescription.contestId in Manifest.contests.
+1. For each DecryptedTallyOrBallot.Contest in the tally, the contestId must match a ContestDescription.contestId in Manifest.contests.
    
-2. Within the PlaintextTally.Contest and matching ContestDescription, each PlaintextTally.Selection.selectionId must match a SelectionDescription.selectionId.
+2. Within the DecryptedTallyOrBallot.Contest and matching ContestDescription, each DecryptedTallyOrBallot.Selection.selectionId must match a SelectionDescription.selectionId.
 
 ### B. Referential integrity with Ciphertext Tally
 
-1. For each PlaintextTally.Contest in the tally, the contestId must match a EncryptedTally.Contest.contestId.
+1. For each DecryptedTallyOrBallot.Contest in the tally, the contestId must match a EncryptedTally.Contest.contestId.
    
-2. Within the PlaintextTally.Contest and matching EncryptedTally.Contest, each PlaintextTally.Selection.selectionId must match a EncryptedTally.Selection.selectionId.
+2. Within the DecryptedTallyOrBallot.Contest and matching EncryptedTally.Contest, each DecryptedTallyOrBallot.Selection.selectionId must match a EncryptedTally.Selection.selectionId.
 
-   2.1 The PlaintextTally.Selection.message must compare equal to the EncryptedTally.Selection.message.
+   2.1 The DecryptedTallyOrBallot.Selection.message must compare equal to the EncryptedTally.Selection.message.
    
 ### C. Duplication
 
-1. All PlaintextTally.Contest must have a unique contestId. 
+1. All DecryptedTallyOrBallot.Contest must have a unique contestId. 
 
    1.1 In the contests map, the key must match the value.object_id.  (JSON only)
 
-2. Within a PlaintextTally.Contest, all PlaintextTally.Selection have a unique selectionId. 
+2. Within a DecryptedTallyOrBallot.Contest, all DecryptedTallyOrBallot.Selection have a unique selectionId. 
 
     2.1 In the selections map, the key must match the value.object_id. (JSON only)
 
@@ -57,9 +57,9 @@ Plaintext Tally Validation may be run as part of verification.
 
 1. All Selection shares have a selectionId matching the Selection.selectionId.
 
-2. Within a PlaintextTally.Selection, the PartialDecryption's have a unique guardianId. 
+2. Within a DecryptedTallyOrBallot.Selection, the PartialDecryption's have a unique guardianId. 
 
-3. There are _nguardians_ PartialDecryptions in the PlaintextTally.Selection.
+3. There are _nguardians_ PartialDecryptions in the DecryptedTallyOrBallot.Selection.
 
 ### E. RecoveredPartialDecryption (when PartialDecryption contains non-empty RecoveredPartialDecryptions)
 

@@ -23,6 +23,7 @@ data class PlaintextBallot(
         val contestId: String, // matches ContestDescription.contestId
         val sequenceOrder: Int,
         val selections: List<Selection>,
+        val writeIns: List<String> = emptyList(),
     ) {
         init {
             require(contestId.isNotEmpty())
@@ -34,7 +35,6 @@ data class PlaintextBallot(
         val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int,
         val vote: Int,
-        val extendedData: String?,
     )  {
         init {
             require(selectionId.isNotEmpty())

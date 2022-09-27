@@ -163,7 +163,6 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
                 selection.selectionId,
                 selection.sequenceOrder,
                 decodedVote,
-                null
             )
         }
     }

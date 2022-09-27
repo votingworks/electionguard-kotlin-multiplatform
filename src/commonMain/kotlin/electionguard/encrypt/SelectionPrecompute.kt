@@ -124,6 +124,7 @@ class SelectionPrecompute(
                 contestNonce,
                 chaumPedersenNonce,
                 encryptedSelections,
+                null // TODO not handling write-ins
             )
         }
     }
@@ -158,7 +159,6 @@ class SelectionPrecompute(
                 disjunctiveChaumPedersenNonce,
                 selectionNonce,
                 isPlaceholder,
-                null // TODO not handling write-ins
             )
         }
 
@@ -171,7 +171,6 @@ class SelectionPrecompute(
                 disjunctiveChaumPedersenNonce,
                 selectionNonce,
                 isPlaceholder,
-                null // TODO not handling write-ins
             )
         }
 

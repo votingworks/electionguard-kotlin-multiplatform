@@ -27,6 +27,7 @@ data class CiphertextBallot(
         val cryptoHash: UInt256,
         val proof: ConstantChaumPedersenProofKnownNonce,
         val contestNonce: ElementModQ,
+        val contestData: HashedElGamalCiphertext?,
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
@@ -39,7 +40,6 @@ data class CiphertextBallot(
         val cryptoHash: UInt256,
         val isPlaceholderSelection: Boolean,
         val proof: DisjunctiveChaumPedersenProofKnownNonce,
-        val extendedData: HashedElGamalCiphertext?,
         val selectionNonce: ElementModQ,
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
@@ -68,6 +68,7 @@ fun CiphertextBallot.Contest.submit(): EncryptedBallot.Contest {
         this.selections.map { it.submit() },
         this.cryptoHash,
         this.proof,
+        this.contestData,
     )
 }
 
@@ -80,6 +81,5 @@ fun CiphertextBallot.Selection.submit(): EncryptedBallot.Selection {
         this.cryptoHash,
         this.isPlaceholderSelection,
         this.proof,
-        this.extendedData,
     )
 }

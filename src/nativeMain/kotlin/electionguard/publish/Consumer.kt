@@ -5,7 +5,7 @@ import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
@@ -72,7 +72,7 @@ actual class Consumer actual constructor(
         }
     }
 
-    actual fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally> {
+    actual fun iterateSpoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> {
         if (!exists(path.spoiledBallotPath())) {
             return emptyList()
         }

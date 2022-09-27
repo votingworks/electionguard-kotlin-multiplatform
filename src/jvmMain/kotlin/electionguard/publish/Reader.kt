@@ -10,7 +10,7 @@ import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
@@ -20,7 +20,7 @@ import electionguard.protoconvert.importDecryptionResult
 import electionguard.protoconvert.importElectionConfig
 import electionguard.protoconvert.importElectionInitialized
 import electionguard.protoconvert.importPlaintextBallot
-import electionguard.protoconvert.importPlaintextTally
+import electionguard.protoconvert.importDecryptedTallyOrBallot
 import electionguard.protoconvert.importEncryptedBallot
 import electionguard.protoconvert.importTallyResult
 import pbandk.decodeFromByteBuffer
@@ -140,7 +140,7 @@ class EncryptedBallotIterator(
 class SpoiledBallotTallyIterator(
     filename: String,
     private val groupContext: GroupContext,
-) : AbstractIterator<PlaintextTally>() {
+) : AbstractIterator<DecryptedTallyOrBallot>() {
     private val input: FileInputStream = FileInputStream(filename)
 
     override fun computeNext() {
@@ -150,8 +150,8 @@ class SpoiledBallotTallyIterator(
             return done()
         }
         val message = input.readNBytes(length)
-        val tallyProto = electionguard.protogen.PlaintextTally.decodeFromByteBuffer(ByteBuffer.wrap(message))
-        val tally = groupContext.importPlaintextTally(tallyProto)
+        val tallyProto = electionguard.protogen.DecryptedTallyOrBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
+        val tally = groupContext.importDecryptedTallyOrBallot(tallyProto)
         setNext(tally.getOrElse { throw RuntimeException("Tally failed to parse") })
     }
 }

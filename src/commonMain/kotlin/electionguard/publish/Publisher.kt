@@ -12,7 +12,7 @@ expect class Publisher(topDir: String, publisherMode: PublisherMode) {
     fun writeDecryptionResult(decryption: DecryptionResult)
 
     fun encryptedBallotSink(): EncryptedBallotSinkIF
-    fun plaintextTallySink(): PlaintextTallySinkIF
+    fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF
 
     fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)
     fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee)
@@ -23,8 +23,8 @@ interface EncryptedBallotSinkIF {
     fun close()
 }
 
-interface PlaintextTallySinkIF {
-    fun writePlaintextTally(tally: PlaintextTally)
+interface DecryptedTallyOrBallotSinkIF {
+    fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot)
     fun close()
 }
 

@@ -85,6 +85,7 @@ private fun GroupContext.importContest(
             selections,
             cryptoHash.unwrap(),
             proof.unwrap(),
+            null, // TODO
         )
     )
 }
@@ -117,7 +118,6 @@ private fun GroupContext.importSelection(
     val cryptoHash = importUInt256(selection.cryptoHash)
         .toResultOr {"CiphertextBallotSelection $here cryptoHash was malformed or missing"}
     val proof = this.importDisjunctiveChaumPedersenProof(selection.proof, here)
-    val extendedData = this.importHashedCiphertext(selection.extendedData)
 
     val errors = getAllErrors(proof, selectionHash, ciphertext, cryptoHash)
     if (errors.isNotEmpty()) {
@@ -133,7 +133,6 @@ private fun GroupContext.importSelection(
             cryptoHash.unwrap(),
             selection.isPlaceholderSelection,
             proof.unwrap(),
-            extendedData
         )
     )
 }
@@ -187,6 +186,7 @@ private fun EncryptedBallot.Contest.publishContest():
             this.selections.map { it.publishSelection() },
             this.cryptoHash.publishUInt256(),
             this.proof.let { this.proof.publishConstantChaumPedersenProof() },
+            this.contestData?.let { this.contestData.publishHashedCiphertext() },
         )
 }
 
@@ -201,7 +201,6 @@ private fun EncryptedBallot.Selection.publishSelection():
             this.cryptoHash.publishUInt256(),
             this.isPlaceholderSelection,
             this.proof.let { this.proof.publishDisjunctiveChaumPedersenProof() },
-            this.extendedData?.let { this.extendedData.publishHashedCiphertext() },
         )
 }
 

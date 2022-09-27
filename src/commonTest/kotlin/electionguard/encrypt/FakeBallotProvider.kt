@@ -23,6 +23,6 @@ fun makeContest(contest: Manifest.ContestDescription, selectionIdx: Int): Plaint
 fun makeSelection(selection: Manifest.SelectionDescription): PlaintextBallot.Selection {
     return PlaintextBallot.Selection(
         selection.selectionId, selection.sequenceOrder,
-        1, null
+        1,
     )
 }

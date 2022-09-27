@@ -6,7 +6,7 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
@@ -148,7 +148,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         return verifyBallots.verify(ballots)
     }
 
-    fun verifyDecryptedTally(tally: PlaintextTally): Stats {
+    fun verifyDecryptedTally(tally: DecryptedTallyOrBallot): Stats {
         val verifyTally = VerifyDecryptedTally(group, manifest, jointPublicKey, cryptoExtendedBaseHash, record.guardians())
         return verifyTally.verifyDecryptedTally(tally)
     }

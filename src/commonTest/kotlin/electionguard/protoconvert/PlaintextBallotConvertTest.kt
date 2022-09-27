@@ -1,7 +1,6 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.PlaintextBallot
-import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import kotlin.random.Random
 import kotlin.test.Test
@@ -34,7 +33,6 @@ class PlaintextBallotConvertTest {
             "selection$sseq",
             sseq,
             vote,
-            "ExtendedData$sseq",
         )
     }
 

@@ -5,7 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.ballot.Guardian
 import electionguard.ballot.Manifest
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
@@ -90,7 +90,7 @@ class VerifyDecryptedTally(
 ) {
     val guardianKeys: Map<String, ElementModP> = guardians.associate { it.guardianId to it.publicKey()}
 
-    fun verifyDecryptedTally(tally: PlaintextTally, showTime : Boolean = false): Stats {
+    fun verifyDecryptedTally(tally: DecryptedTallyOrBallot, showTime : Boolean = false): Stats {
         val starting = getSystemTimeInMillis()
 
         var ncontests = 0
@@ -257,7 +257,7 @@ class VerifyDecryptedTally(
      * the corresponding text labels in the ballot coding file.
      * </pre>
      */
-    private fun verifySelectionDecryption(where: String, selection: PlaintextTally.Selection): Result<Boolean, String> {
+    private fun verifySelectionDecryption(where: String, selection: DecryptedTallyOrBallot.Selection): Result<Boolean, String> {
         val errors = mutableListOf<String>()
         for (share in selection.partialDecryptions) {
             val partialDecryptions: Iterable<ElementModP> = selection.partialDecryptions
@@ -279,7 +279,7 @@ class VerifyDecryptedTally(
     }
 
     fun verifySpoiledBallotTallies(
-        ballots: Iterable<PlaintextTally>,
+        ballots: Iterable<DecryptedTallyOrBallot>,
         nthreads: Int,
         showTime: Boolean = false
     ): StatsAccum {
@@ -304,7 +304,7 @@ class VerifyDecryptedTally(
 
     private val globalStat = StatsAccum()
     private var count = 0
-    private fun CoroutineScope.produceTallies(producer: Iterable<PlaintextTally>): ReceiveChannel<PlaintextTally> =
+    private fun CoroutineScope.produceTallies(producer: Iterable<DecryptedTallyOrBallot>): ReceiveChannel<DecryptedTallyOrBallot> =
         produce {
             for (tally in producer) {
                 send(tally)
@@ -318,8 +318,8 @@ class VerifyDecryptedTally(
 
     private fun CoroutineScope.launchVerifier(
         id: Int,
-        input: ReceiveChannel<PlaintextTally>,
-        verify: (PlaintextTally) -> Stats,
+        input: ReceiveChannel<DecryptedTallyOrBallot>,
+        verify: (DecryptedTallyOrBallot) -> Stats,
     ) = launch(Dispatchers.Default) {
         for (tally in input) {
             if (debug) println("$id channel working on ${tally.tallyId}")

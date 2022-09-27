@@ -5,7 +5,7 @@ import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
@@ -28,7 +28,7 @@ expect class Consumer(
     fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     fun iterateCastBallots(): Iterable<EncryptedBallot>
     fun iterateSpoiledBallots(): Iterable<EncryptedBallot>
-    fun iterateSpoiledBallotTallies(): Iterable<PlaintextTally>
+    fun iterateSpoiledBallotTallies(): Iterable<DecryptedTallyOrBallot>
 
     // not part of the election record, private data
     fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>

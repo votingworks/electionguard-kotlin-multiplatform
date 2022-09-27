@@ -4,7 +4,7 @@ import electionguard.ballot.DecryptingGuardian
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -31,12 +31,12 @@ class Decryption(
         result.sortedBy { it.guardianId}
     }
 
-    fun decryptBallot(ballot: EncryptedBallot): PlaintextTally {
+    fun decryptBallot(ballot: EncryptedBallot): DecryptedTallyOrBallot {
         // pretend a ballot is a tally
         return ballot.convertToTally().decrypt()
     }
 
-    fun EncryptedTally.decrypt(): PlaintextTally {
+    fun EncryptedTally.decrypt(): DecryptedTallyOrBallot {
         val shares: MutableList<DecryptionShare> = mutableListOf() // one for each trustee
         for (decryptingTrustee in decryptingTrustees) {
             val share: DecryptionShare = this.computeDecryptionShareForTrustee(decryptingTrustee)

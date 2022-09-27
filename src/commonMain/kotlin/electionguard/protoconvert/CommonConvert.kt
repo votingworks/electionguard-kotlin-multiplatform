@@ -53,6 +53,7 @@ fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?)
            else SchnorrProof(publicKey, challenge, response)
 }
 
+// LOOK unneeded?
 fun GroupContext.importElGamalPublicKey(
     publicKey: electionguard.protogen.ElementModP?,
 ) : ElGamalPublicKey? {
@@ -109,6 +110,7 @@ fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
         )
 }
 
+// LOOK unneeded?
 fun ElGamalPublicKey.publishElGamalPublicKey() : electionguard.protogen.ElementModP {
     return this.key.publishElementModP()
 }

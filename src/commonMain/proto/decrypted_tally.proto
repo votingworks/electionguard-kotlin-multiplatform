@@ -3,20 +3,27 @@ syntax = "proto3";
 import "common.proto";
 
 option java_package = "electionguard.protogen";
-option java_outer_classname = "PlaintextTallyProto";
+option java_outer_classname = "DecryptedTallyOrBallotProto";
 
-// Decrypted Tally of some collection of ballots.
-message PlaintextTally {
-  string tally_id = 1;
-  repeated PlaintextTallyContest contests = 2;
+// Decrypted Tally or ballot, eg spoiled ballot or decrypted Ballot for RLA
+message DecryptedTallyOrBallot {
+  string tally_id = 1; // when decrypting ballots, matches EncryptedBallot.ballot_id
+  repeated DecryptedContest contests = 2;
 }
 
-message PlaintextTallyContest {
+message DecryptedContest {
   string contest_id = 1; // matches ContestDescription.contest_id
-  repeated PlaintextTallySelection selections = 2;
+  repeated DecryptedSelection selections = 2;
+  DecryptedContestData decrypted_contest_data = 3; // optional, decrypted ballot only
 }
 
-message PlaintextTallySelection {
+message DecryptedContestData {
+  ContestData contest_data = 1;
+  HashedElGamalCiphertext encrypted_contest_data = 2; // see 3.3.3. matches EncryptedBallotContest
+  repeated PartialDecryption partial_decryptions = 3; // one for each Guardian, available or not
+}
+
+message DecryptedSelection {
   string selection_id = 1; // matches SelectionDescription.selection_id
   uint32 tally = 2;
   ElementModP value = 3; // g^tally or M in the spec.
@@ -37,7 +44,7 @@ message PartialDecryption {
   }
 }
 
-// artifact because oneof cant have repeated fields
+// artifact due to "oneof" cant have repeated fields
 message RecoveredParts {
   repeated RecoveredPartialDecryption fragments = 1;
 }

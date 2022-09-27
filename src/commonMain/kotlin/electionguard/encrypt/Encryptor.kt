@@ -16,7 +16,6 @@ import electionguard.core.encryptedSum
 import electionguard.core.get
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
-import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
@@ -176,6 +175,7 @@ class Encryptor(
             contestNonce,
             chaumPedersenNonce,
             encryptedSelections.sortedBy { it.sequenceOrder },
+            null, // TODO contestData
         )
     }
 
@@ -186,7 +186,6 @@ class Encryptor(
             selectionId,
             sequenceOrder,
             if (is_affirmative) 1 else 0,
-            null,
         )
     }
 
@@ -206,14 +205,6 @@ class Encryptor(
         val disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence[0]
         val selectionNonce: ElementModQ = nonceSequence[selectionDescription.sequenceOrder]
 
-        // TODO: need to test
-        val extendedDataCiphertext =
-            if (extendedData != null) {
-                val extendedDataBytes = extendedData.encodeToByteArray()
-                val extendedDataNonce = Nonces(selectionNonce, "extended-data")[0]
-                extendedDataBytes.hashedElGamalEncrypt(elgamalPublicKey, extendedDataNonce)
-            } else null
-
         return selectionDescription.encryptSelection(
             this.vote,
             elgamalPublicKey,
@@ -221,7 +212,6 @@ class Encryptor(
             disjunctiveChaumPedersenNonce,
             selectionNonce,
             isPlaceholder,
-            extendedDataCiphertext,
         )
     }
 }
@@ -234,6 +224,7 @@ fun Manifest.ContestDescription.encryptContest(
     contestNonce: ElementModQ,
     chaumPedersenNonce: ElementModQ,
     encryptedSelections: List<CiphertextBallot.Selection>,
+    extendedDataCiphertext: HashedElGamalCiphertext?,
 ): CiphertextBallot.Contest {
 
     val cryptoHash = hashElements(this.contestId, this.cryptoHash, encryptedSelections)
@@ -258,6 +249,7 @@ fun Manifest.ContestDescription.encryptContest(
         cryptoHash,      // CiphertextBallot.Contest cryptohash
         proof,
         contestNonce,
+        extendedDataCiphertext,
     )
 }
 
@@ -268,7 +260,6 @@ fun Manifest.SelectionDescription.encryptSelection(
     disjunctiveChaumPedersenNonce: ElementModQ,
     selectionNonce: ElementModQ,
     isPlaceholder: Boolean = false,
-    extendedDataCiphertext: HashedElGamalCiphertext?,
 ): CiphertextBallot.Selection {
     val elgamalEncryption: ElGamalCiphertext = vote.encrypt(elgamalPublicKey, selectionNonce)
 
@@ -290,7 +281,6 @@ fun Manifest.SelectionDescription.encryptSelection(
         cryptoHash,
         isPlaceholder,
         proof,
-        extendedDataCiphertext,
         selectionNonce,
     )
 }

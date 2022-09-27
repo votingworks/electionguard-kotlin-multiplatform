@@ -29,7 +29,7 @@ data class TallyResult(
 
 data class DecryptionResult(
     val tallyResult: TallyResult,
-    val decryptedTally: PlaintextTally,
+    val decryptedTallyOrBallot: DecryptedTallyOrBallot,
     val decryptingGuardians: List<DecryptingGuardian>,
     val metadata: Map<String, String> = emptyMap(),
 ) {
