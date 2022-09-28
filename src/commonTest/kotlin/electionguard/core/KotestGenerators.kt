@@ -41,6 +41,9 @@ fun elGamalKeypairs(ctx: GroupContext): Arb<ElGamalKeypair> =
 /** Generates arbitrary UInt256 values. */
 fun uint256s(): Arb<UInt256> = Arb.byteArray(Arb.constant(32), Arb.byte()).map { UInt256(it) }
 
+/** Generates arbitrary ByteArray of length len. */
+fun byteArrays(len: Int): Arb<ByteArray> = Arb.byteArray(Arb.constant(len), Arb.byte())
+
 /**
  * Property-based testing can run slowly. This will speed things up by turning off shrinking and
  * using fewer iterations. Typical usage:

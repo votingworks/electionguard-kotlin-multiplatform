@@ -38,7 +38,7 @@ data class EncryptedBallot(
         val selections: List<Selection>,
         val cryptoHash: UInt256,
         val proof: ConstantChaumPedersenProofKnownNonce,
-        val contestData: HashedElGamalCiphertext?,
+        val contestData: HashedElGamalCiphertext,
     )  : CryptoHashableUInt256 {
         init {
             require(contestId.isNotEmpty())

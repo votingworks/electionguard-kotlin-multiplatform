@@ -73,7 +73,7 @@ class Encryptor(
 
     private fun PlaintextBallot.encryptBallot(
         codeSeed: ElementModQ,
-        masterNonce: ElementModQ, // random
+        masterNonce: ElementModQ, // usually random
         timestampOverride: Long? = null,
     ): CiphertextBallot {
         val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, masterNonce)
@@ -106,7 +106,7 @@ class Encryptor(
     }
 
     private fun makeZeroContest(mcontest: Manifest.ContestDescription): PlaintextBallot.Contest {
-        val selections = mcontest.selections.map { makeZeroSelection(it.selectionId, it.sequenceOrder) }
+        val selections = mcontest.selections.map { makeZeroSelection(it.selectionId, it.sequenceOrder, false) }
         return PlaintextBallot.Contest(mcontest.contestId, mcontest.sequenceOrder, selections)
     }
 
@@ -150,7 +150,7 @@ class Encryptor(
 
             // Set vote to zero if not in manifest or this contest is overvoted
             if (plaintextSelection == null || (status == ContestDataStatus.over_vote)) {
-                plaintextSelection = makeZeroSelection(mselection.selectionId, mselection.sequenceOrder)
+                plaintextSelection = makeZeroSelection(mselection.selectionId, mselection.sequenceOrder, false)
             }
             encryptedSelections.add(plaintextSelection.encryptSelection(
                 mselection,
@@ -160,7 +160,7 @@ class Encryptor(
         }
 
         // TODO remove placeholders
-        /* Add a placeholder selection for each possible vote in the contest
+        // Add a placeholder selection for each possible vote in the contest
         val limit = mcontest.votesAllowed
         val selectionSequenceOrderMax = mcontest.selections.maxOf { it.sequenceOrder }
         for (placeholder in 1..limit) {
@@ -180,14 +180,13 @@ class Encryptor(
             )
             encryptedSelections.add(encryptedPlaceholder)
             votes++
-        } */
+        }
 
         val contestData = ContestData(
             if (status == ContestDataStatus.over_vote) votedFor else emptyList(),
             this.writeIns,
             status
         )
-        println("${mcontest.contestId} contestData $contestData")
 
         return mcontest.encryptContest(
             group,
@@ -200,11 +199,11 @@ class Encryptor(
         )
     }
 
-    private fun makeZeroSelection(selectionId: String, sequenceOrder: Int): PlaintextBallot.Selection {
+    private fun makeZeroSelection(selectionId: String, sequenceOrder: Int, voteFor : Boolean): PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
             selectionId,
             sequenceOrder,
-            0,
+            if (voteFor) 1 else 0,
         )
     }
 
@@ -243,7 +242,7 @@ fun Manifest.ContestDescription.encryptContest(
     contestNonce: ElementModQ,
     chaumPedersenNonce: ElementModQ,
     encryptedSelections: List<CiphertextBallot.Selection>,
-    extendedDataCiphertext: HashedElGamalCiphertext?,
+    extendedDataCiphertext: HashedElGamalCiphertext,
 ): CiphertextBallot.Contest {
 
     val cryptoHash = hashElements(this.contestId, this.cryptoHash, encryptedSelections)

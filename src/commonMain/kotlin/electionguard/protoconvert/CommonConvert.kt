@@ -39,7 +39,6 @@ fun GroupContext.importHashedCiphertext(
     if (ciphertext == null) return null
     val c0 = this.importElementModP(ciphertext.c0)
     val c2 = importUInt256(ciphertext.c2)
-
     return if (c0 == null || c2 == null) null else HashedElGamalCiphertext(c0, ciphertext.c1.array, c2, ciphertext.numBytes)
 }
 

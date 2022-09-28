@@ -1,5 +1,6 @@
 package electionguard.encrypt
 
+import electionguard.ballot.ContestData
 import electionguard.ballot.Manifest
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
@@ -117,6 +118,7 @@ class SelectionPrecompute(
             }
             val allSelections = selections + placeholders
             val encryptedSelections = allSelections.map { it.encryptedSelection() }.sortedBy { it.sequenceOrder }
+            val contestData = ContestData(emptyList(), emptyList())
             return mcontest.encryptContest(
                 group,
                 elgamalPublicKey,
@@ -124,7 +126,7 @@ class SelectionPrecompute(
                 contestNonce,
                 chaumPedersenNonce,
                 encryptedSelections,
-                null // TODO not handling write-ins
+                contestData.encrypt(elgamalPublicKey, mcontest.votesAllowed),
             )
         }
     }

@@ -83,4 +83,23 @@ class CommonConvertTest {
             }
         }
     }
+
+    @Test
+    fun convertHashedElGamalCiphertext() {
+        runTest {
+            checkAll(
+                validElementsModP(productionGroup()),
+                byteArrays(21),
+                uint256s(),
+            ) { p, c1, u ->
+                val context = productionGroup()
+                val target = HashedElGamalCiphertext(p, c1, u, 21)
+                assertEquals(target.numBytes, target.c1.size)
+
+                val proto = target.publishHashedCiphertext()
+                val roundtrip = context.importHashedCiphertext(proto)
+                assertEquals(target, roundtrip)
+            }
+        }
+    }
 }

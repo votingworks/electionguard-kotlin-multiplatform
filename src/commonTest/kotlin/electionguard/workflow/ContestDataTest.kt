@@ -50,10 +50,10 @@ class ContestDataTest {
                     .addSelection(1, vote = 1)
                 .done()
                 .addContest(4)
-                .addWriteIn("0123456789012345678901234567890123456789")
+                .addWriteIn("01234567890123456789012345678901234567890123456789012345678901234567890123456789")
                 .done()
                 .addContest(5)
-                    .addWriteIn("0123456789012345678901234567890123456789")
+                    .addWriteIn("01234567890123456789012345678901234567890123456789012345678901234567890123456789")
                     .addSelection(0, vote = 1)
                 .done()
                 .addContest(6)
@@ -72,7 +72,7 @@ class ContestDataTest {
 
             eballot.contests.forEachIndexed { idx, it ->
                 assertNotNull(it.contestData)
-                assertEquals(32, it.contestData!!.c1.size)
+                assertEquals(64, it.contestData!!.c1.size)
 
                 val baRT = it.contestData?.decrypt(keypair)!!
                 val protoRoundtrip = electionguard.protogen.ContestData.decodeFromByteArray(baRT)
@@ -90,7 +90,7 @@ class ContestDataTest {
                     assertEquals(listOf(8), contestDataRoundtrip.overvotes, )
                 } else if (idx == 3) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status, )
-                    assertEquals(listOf("SekulaGibb", "Sekula-Gibb"), contestDataRoundtrip.writeIns, )
+                    assertEquals(listOf("SekulaGibbs", "Sekula-Gibbs"), contestDataRoundtrip.writeIns, )
                     assertEquals(listOf(12, 13), contestDataRoundtrip.overvotes, )
                 } else if (idx == 4) {
                     assertEquals(ContestDataStatus.normal, contestDataRoundtrip.status)
@@ -98,7 +98,7 @@ class ContestDataTest {
                     assertEquals(emptyList(), contestDataRoundtrip.overvotes)
                 } else if (idx == 5) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)
-                    assertEquals(listOf("0123456789012345678901234"), contestDataRoundtrip.writeIns, )
+                    assertEquals(listOf("012345678901234567890123456789"), contestDataRoundtrip.writeIns, )
                     assertEquals(listOf(20), contestDataRoundtrip.overvotes)
                 } else if (idx == 6) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)

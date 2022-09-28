@@ -1,10 +1,12 @@
 package electionguard.verifier
 
+import electionguard.ballot.ContestData
 import electionguard.ballot.ElectionInitialized
 import electionguard.core.productionGroup
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.hashElements
 import electionguard.decrypt.Decryption
@@ -46,7 +48,7 @@ class AttackEncryptedBallotTest {
 
         for (ballot in electionRecord.encryptedBallots { true }) {
             // println(" munged ballot ${ballot.ballotId}")
-            mungedBallots.add(mungeBallot(ballot))
+            mungedBallots.add(mungeBallot(ballot, ElGamalPublicKey(electionRecord.jointPublicKey()!!)))
         }
 
         if (showCount) {
@@ -80,11 +82,11 @@ class AttackEncryptedBallotTest {
         assertTrue(stats.allOk())
     }
 
-    private fun mungeBallot(ballot: EncryptedBallot): EncryptedBallot {
+    private fun mungeBallot(ballot: EncryptedBallot, publicKey: ElGamalPublicKey): EncryptedBallot {
         val ccontests = mutableListOf<EncryptedBallot.Contest>()
         for (contest in ballot.contests) {
             if (contest.contestId == "contest11") {
-                ccontests.add(mungeContest(contest))
+                ccontests.add(mungeContest(contest, publicKey))
             } else {
                 ccontests.add(contest)
             }
@@ -107,7 +109,7 @@ class AttackEncryptedBallotTest {
         )
     }
 
-    private fun mungeContest(contest: EncryptedBallot.Contest): EncryptedBallot.Contest {
+    private fun mungeContest(contest: EncryptedBallot.Contest, publicKey: ElGamalPublicKey, ): EncryptedBallot.Contest {
         var idx44 = -1
         var idx45 = -1
         contest.selections.forEach {
@@ -129,6 +131,7 @@ class AttackEncryptedBallotTest {
         selections2[idx45] = switch45
 
         val changeCrypto = hashElements(contest.contestId, contest.cryptoHash, selections2)
+        val contestData = ContestData(emptyList(), emptyList())
         return EncryptedBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
@@ -136,7 +139,7 @@ class AttackEncryptedBallotTest {
             selections2,
             changeCrypto,
             contest.proof,
-            null, // TODO
+            contestData.encrypt(publicKey, 1),
         )
     }
 
