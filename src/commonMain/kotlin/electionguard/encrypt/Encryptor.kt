@@ -1,5 +1,7 @@
 package electionguard.encrypt
 
+import electionguard.ballot.ContestData
+import electionguard.ballot.ContestDataStatus
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.ElGamalCiphertext
@@ -79,14 +81,13 @@ class Encryptor(
 
         val encryptedContests = mutableListOf<CiphertextBallot.Contest>()
         for (mcontest in manifest.contests) {
-            // If no contest on the ballot, create a placeholder
-            val pcontest: PlaintextBallot.Contest = plaintextContests[mcontest.contestId] ?: contestFrom(mcontest)
+            // If no contest on the ballot, create a well formed contest with all zeroes
+            val pcontest: PlaintextBallot.Contest = plaintextContests[mcontest.contestId] ?: makeZeroContest(mcontest)
             encryptedContests.add(pcontest.encryptContest(mcontest, ballotNonce))
         }
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
 
-        // arbitrary choice about how to calculate Hi, the trackingCode (aka confirmation code), and Bi
-        // may not be spec compliant
+        // see spec 1.51, section 3.3.6
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), sortedContests) // B_i
         val trackingCode = hashElements(codeSeed, timestamp, cryptoHash)
@@ -104,8 +105,8 @@ class Encryptor(
         )
     }
 
-    private fun contestFrom(mcontest: Manifest.ContestDescription): PlaintextBallot.Contest {
-        val selections = mcontest.selections.map { selectionFrom(it.selectionId, it.sequenceOrder, false) }
+    private fun makeZeroContest(mcontest: Manifest.ContestDescription): PlaintextBallot.Contest {
+        val selections = mcontest.selections.map { makeZeroSelection(it.selectionId, it.sequenceOrder) }
         return PlaintextBallot.Contest(mcontest.contestId, mcontest.sequenceOrder, selections)
     }
 
@@ -124,34 +125,47 @@ class Encryptor(
         val contestNonce = nonceSequence[mcontest.sequenceOrder]
         val chaumPedersenNonce = nonceSequence[0]
 
-        val encryptedSelections = mutableListOf<CiphertextBallot.Selection>()
-        val plaintextSelections = this.selections.associateBy { it.selectionId }
+        val ballotSelections = this.selections.associateBy { it.selectionId }
 
-        // only use selections that match the manifest.
         var votes = 0
+        val votedFor = mutableListOf<Int>()
         for (mselection: Manifest.SelectionDescription in mcontest.selections) {
+            // Find the ballot selection matching the contest description.
+            val plaintextSelection = ballotSelections[mselection.selectionId]
+            if (plaintextSelection != null && plaintextSelection.vote > 0) {
+                votedFor.add(plaintextSelection.sequenceOrder)
+                votes += plaintextSelection.vote
+            }
+        }
 
-            //Find the actual selection matching the contest description.
-            val plaintextSelection = plaintextSelections[mselection.selectionId] ?:
-            //No selection was made for this possible value so we explicitly set it to false
-            selectionFrom(mselection.selectionId, mselection.sequenceOrder, false)
+        val totalVotedFor = votedFor.size + this.writeIns.size
+        val status = if (totalVotedFor == 0) ContestDataStatus.null_vote
+            else if (totalVotedFor < mcontest.votesAllowed)  ContestDataStatus.under_vote
+            else if (totalVotedFor > mcontest.votesAllowed)  ContestDataStatus.over_vote
+            else ContestDataStatus.normal
 
-            //track the votes so we can append the appropriate number of true placeholder votes
-            votes += plaintextSelection.vote
-            val encryptedSelection = plaintextSelection.encryptSelection(
+        val encryptedSelections = mutableListOf<CiphertextBallot.Selection>()
+        for (mselection: Manifest.SelectionDescription in mcontest.selections) {
+            var plaintextSelection = ballotSelections[mselection.selectionId]
+
+            // Set vote to zero if not in manifest or this contest is overvoted
+            if (plaintextSelection == null || (status == ContestDataStatus.over_vote)) {
+                plaintextSelection = makeZeroSelection(mselection.selectionId, mselection.sequenceOrder)
+            }
+            encryptedSelections.add(plaintextSelection.encryptSelection(
                 mselection,
                 contestNonce,
                 false,
-            )
-            encryptedSelections.add(encryptedSelection)
+            ))
         }
 
-        // Add a placeholder selection for each possible vote in the contest
+        // TODO remove placeholders
+        /* Add a placeholder selection for each possible vote in the contest
         val limit = mcontest.votesAllowed
         val selectionSequenceOrderMax = mcontest.selections.maxOf { it.sequenceOrder }
         for (placeholder in 1..limit) {
             val sequenceNo = selectionSequenceOrderMax + placeholder
-            val plaintextSelection = selectionFrom(
+            val plaintextSelection = makeZeroSelection(
                 "${mcontest.contestId}-$sequenceNo", sequenceNo, votes < limit
             )
             val mselection = Manifest.SelectionDescription(
@@ -166,7 +180,14 @@ class Encryptor(
             )
             encryptedSelections.add(encryptedPlaceholder)
             votes++
-        }
+        } */
+
+        val contestData = ContestData(
+            if (status == ContestDataStatus.over_vote) votedFor else emptyList(),
+            this.writeIns,
+            status
+        )
+        println("${mcontest.contestId} contestData $contestData")
 
         return mcontest.encryptContest(
             group,
@@ -175,17 +196,15 @@ class Encryptor(
             contestNonce,
             chaumPedersenNonce,
             encryptedSelections.sortedBy { it.sequenceOrder },
-            null, // TODO contestData
+            contestData.encrypt(elgamalPublicKey, mcontest.votesAllowed),
         )
     }
 
-    private fun selectionFrom(
-        selectionId: String, sequenceOrder: Int, is_affirmative: Boolean
-    ): PlaintextBallot.Selection {
+    private fun makeZeroSelection(selectionId: String, sequenceOrder: Int): PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
             selectionId,
             sequenceOrder,
-            if (is_affirmative) 1 else 0,
+            0,
         )
     }
 
