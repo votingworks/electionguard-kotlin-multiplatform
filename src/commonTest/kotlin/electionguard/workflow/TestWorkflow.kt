@@ -17,8 +17,15 @@ import electionguard.verifier.Verifier
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-/** Run complete workflow starting from ElectionConfig in the start directory, all the way through verify. */
-class RunWorkflow {
+/**
+ * Run complete workflow starting from ElectionConfig in the start directory, all the way through verify.
+ * The results can be copied to the test data sets "src/commonTest/data/runWorkflowAll(Some)Available" whenever the
+ * election record changes.
+ *   1. generate with jvm for src/commonTest/data/runWorkflowAll(Some)Available
+ *   2. generate with native for src/commonTest/data/testElectionRecord/native/
+ *   3. see RunDecryptBallotsTest for another damn thing to do
+ */
+class TestWorkflow {
     private val configDir = "src/commonTest/data/start"
     private val nballots = 11
 

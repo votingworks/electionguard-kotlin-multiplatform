@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 
 // run native verifier on jvm election record
 class VerifyJvmRecordTest {
-    val jvmDir = "src/commonTest/data/testElectionRecord/jvm/"
+    val jvmDir = "src/commonTest/data/runWorkflowSomeAvailable"
 
     @Test
     fun verifyNativeRecordTest() {

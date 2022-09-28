@@ -13,7 +13,6 @@ import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
 import electionguard.core.getSystemTimeInMillis
-import electionguard.core.hasValidSchnorrProof
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
 import electionguard.core.toElementModQ
@@ -105,13 +104,11 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         return allOk
     }
 
-    // LOOK we assume that hasValidSchnorrProof() covers this. revisit when 2.0 verification comes out
     private fun verifyGuardianPublicKey(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for (guardian in this.record.guardians()) {
             guardian.coefficientProofs.forEachIndexed { index, proof ->
-                val publicKey = ElGamalPublicKey(guardian.coefficientCommitments[index])
-                if (!publicKey.hasValidSchnorrProof(proof)) {
+                if (!proof.isValid()) {
                     checkProofs.add(Err("  2.A Guardian ${guardian.guardianId} has invalid proof for coefficient $index"))
                 } else {
                     checkProofs.add(Ok(true))
@@ -130,7 +127,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         }
 
         val commitments = mutableListOf<ElementModP>()
-        this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments) }
+        this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments()) }
         val commitmentsHash = hashElements(commitments)
         // spec 1.51, eq 20 and 3.B
         val computedQbar: UInt256 = hashElements(cryptoBaseHash, jointPublicKeyComputed, commitmentsHash)

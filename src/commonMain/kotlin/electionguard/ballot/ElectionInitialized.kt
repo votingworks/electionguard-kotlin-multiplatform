@@ -42,14 +42,16 @@ data class ElectionInitialized(
 data class Guardian(
     val guardianId: String,
     val xCoordinate: Int, // use sequential numbering starting at 1; = i of T_i, K_i
-    val coefficientCommitments: List<ElementModP>,  // g^a_j, j = 1..quorum; h_0 = K_i = public key
     val coefficientProofs: List<SchnorrProof>
 ) {
     init {
         require(guardianId.isNotEmpty())
         require(xCoordinate > 0)
-        require(coefficientCommitments.isNotEmpty())
         require(coefficientProofs.isNotEmpty())
     }
-    fun publicKey() : ElementModP = coefficientCommitments[0]
+    fun publicKey() : ElementModP = coefficientProofs[0].publicKey
+
+    fun coefficientCommitments(): List<ElementModP> {
+        return coefficientProofs.map { it.publicKey }
+    }
 }

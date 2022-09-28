@@ -30,6 +30,7 @@ fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPeders
 
 fun generateSchnorrProof(context: GroupContext): SchnorrProof {
     return SchnorrProof(
+        generateElementModP(context),
         generateElementModQ(context),
         generateElementModQ(context),
     )

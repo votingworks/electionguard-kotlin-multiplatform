@@ -21,7 +21,7 @@ class SchnorrTest {
                 elementsModQ(tinyGroup())
             ) { kp, n, fakeElementModP, fakeElementModQ ->
                 val goodProof = kp.schnorrProof(n)
-                assertTrue(kp.publicKey.hasValidSchnorrProof(goodProof))
+                assertTrue(goodProof.isValid())
 
                 val fakePublicKey = ElGamalPublicKey(fakeElementModP)
 
@@ -33,15 +33,15 @@ class SchnorrTest {
 
                 assertTrue(
                     goodProof.challenge == fakeElementModQ ||
-                            !kp.publicKey.hasValidSchnorrProof(badProof1)
+                            !badProof1.isValid()
                 )
                 assertTrue(
                     goodProof.response == fakeElementModQ ||
-                            !kp.publicKey.hasValidSchnorrProof(badProof2)
+                            !badProof2.isValid()
                 )
                 assertTrue(
                     kp.publicKey.key == fakeElementModP ||
-                            !fakePublicKey.hasValidSchnorrProof(goodProof)
+                            !badProof2.isValid()
                 )
             }
         }

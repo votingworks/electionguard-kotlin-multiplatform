@@ -371,7 +371,6 @@ public data class ElectionInitialized(
 public data class Guardian(
     val guardianId: String = "",
     val xCoordinate: Int = 0,
-    val coefficientCommitments: List<electionguard.protogen.ElementModP> = emptyList(),
     val coefficientProofs: List<electionguard.protogen.SchnorrProof> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -383,7 +382,7 @@ public data class Guardian(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.Guardian = electionguard.protogen.Guardian.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.Guardian> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.Guardian, *>>(4)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.Guardian, *>>(3)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -403,16 +402,6 @@ public data class Guardian(
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "xCoordinate",
                         value = electionguard.protogen.Guardian::xCoordinate
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "coefficient_commitments",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElementModP>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion)),
-                        jsonName = "coefficientCommitments",
-                        value = electionguard.protogen.Guardian::coefficientCommitments
                     )
                 )
                 add(
@@ -898,7 +887,6 @@ public fun Guardian?.orDefault(): electionguard.protogen.Guardian = this ?: Guar
 
 private fun Guardian.protoMergeImpl(plus: pbandk.Message?): Guardian = (plus as? Guardian)?.let {
     it.copy(
-        coefficientCommitments = coefficientCommitments + plus.coefficientCommitments,
         coefficientProofs = coefficientProofs + plus.coefficientProofs,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -908,18 +896,16 @@ private fun Guardian.protoMergeImpl(plus: pbandk.Message?): Guardian = (plus as?
 private fun Guardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Guardian {
     var guardianId = ""
     var xCoordinate = 0
-    var coefficientCommitments: pbandk.ListWithSize.Builder<electionguard.protogen.ElementModP>? = null
     var coefficientProofs: pbandk.ListWithSize.Builder<electionguard.protogen.SchnorrProof>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> xCoordinate = _fieldValue as Int
-            3 -> coefficientCommitments = (coefficientCommitments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElementModP> }
             4 -> coefficientProofs = (coefficientProofs ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.SchnorrProof> }
         }
     }
-    return Guardian(guardianId, xCoordinate, pbandk.ListWithSize.Builder.fixed(coefficientCommitments), pbandk.ListWithSize.Builder.fixed(coefficientProofs), unknownFields)
+    return Guardian(guardianId, xCoordinate, pbandk.ListWithSize.Builder.fixed(coefficientProofs), unknownFields)
 }
 
 @pbandk.Export
