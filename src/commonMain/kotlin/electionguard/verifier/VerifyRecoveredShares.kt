@@ -5,7 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
 import electionguard.ballot.DecryptingGuardian
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -22,12 +22,12 @@ class VerifyRecoveredShares(
 ) {
     val decryptingGuardians : List<DecryptingGuardian>
     val lagrangeCoefficients: Map<String, ElementModQ>
-    val decryptedTally : PlaintextTally
+    val decryptedTallyOrBallot : DecryptedTallyOrBallot
 
     init {
         decryptingGuardians = record.decryptingGuardians()
         lagrangeCoefficients = decryptingGuardians.associate { it.guardianId to it.lagrangeCoordinate }
-        decryptedTally = record.decryptedTally()!!
+        decryptedTallyOrBallot = record.decryptedTally()!!
     }
 
     fun verify(showTime : Boolean = false): Result<Boolean, String> {
@@ -71,7 +71,7 @@ class VerifyRecoveredShares(
     // 10.B Confirm missing tally shares
     private fun verifyShares(): Result<Boolean, String> {
         val errors = mutableListOf<String>()
-        for (contest in decryptedTally.contests.values) {
+        for (contest in decryptedTallyOrBallot.contests.values) {
             for (selection in contest.selections.values) {
                 val id: String = contest.contestId + "-" + selection.selectionId
                 for (partial in selection.partialDecryptions) {

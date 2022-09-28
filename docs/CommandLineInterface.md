@@ -38,11 +38,11 @@ last update 8/18/2022
 
 6. **Decryption**. The following examples may be useful:
     1. _electionguard.decrypt.RunTrustedTallyDecryption_ is a CLI for testing, that will run locally in a single process, 
-       that reads an EncryptedTally record and local DecryptingTrustee records, decrypts the tally and writes out 
-       a _PlaintextTally_ protobuf record.
+       that reads an EncryptedTally record and local 
+       DecryptingTrustee records, decrypts the tally and writes out a _DecryptedTallyOrBallot_ protobuf record.
     2. _electionguard.decrypt.RunTrustedBallotDecryption_ is a CLI for testing, that will run locally in a single process,
       that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a 
-      _PlaintextTally_ protobuf record that represents the decrypted spoiled ballot.
+      _DecryptedTallyOrBallot_ protobuf record that represents the decrypted spoiled ballot.
     3. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
        _electionguard.workflow.RunRemoteDecryptionTest_ is a CLI for testing, that will decrypt the EncryptedTally 
        (and optionally spoiled ballots)

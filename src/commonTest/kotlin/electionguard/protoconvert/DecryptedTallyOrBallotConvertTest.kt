@@ -1,7 +1,7 @@
 package electionguard.protoconvert
 
 import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
 import electionguard.decrypt.PartialDecryption
@@ -11,14 +11,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class PlaintextTallyConvertTest {
+class DecryptedTallyOrBallotConvertTest {
 
     @Test
-    fun roundtripPlaintextTally() {
+    fun roundtripDecryptedTallyOrBallot() {
         val context = tinyGroup()
         val tally = generateFakeTally(1, context)
-        val proto = tally.publishPlaintextTally()
-        val roundtrip = context.importPlaintextTally(proto).getOrThrow { IllegalStateException(it) }
+        val proto = tally.publishDecryptedTallyOrBallot()
+        val roundtrip = context.importDecryptedTallyOrBallot(proto).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
         for (entry in roundtrip.contests) {
             val contest =
@@ -42,30 +42,31 @@ class PlaintextTallyConvertTest {
 
     companion object {
 
-        fun generateFakeTally(seq: Int, context: GroupContext): PlaintextTally {
+        fun generateFakeTally(seq: Int, context: GroupContext): DecryptedTallyOrBallot {
             val contests = List(7) { generateFakeContest(it, context) }
-            return PlaintextTally("tallyId$seq", contests.associate { it.contestId to it })
+            return DecryptedTallyOrBallot("tallyId$seq", contests.associate { it.contestId to it })
         }
 
-        private fun generateFakeContest(cseq: Int, context: GroupContext): PlaintextTally.Contest {
+        private fun generateFakeContest(cseq: Int, context: GroupContext): DecryptedTallyOrBallot.Contest {
             val selections = List(11) { generateFakeSelection(it, context) }
-            return PlaintextTally.Contest(
+            return DecryptedTallyOrBallot.Contest(
                 "contest$cseq",
-                selections.associate { it.selectionId to it }
+                selections.associate { it.selectionId to it },
+                null, // TODO
             )
         }
 
         private fun generateFakeSelection(
             sseq: Int,
             context: GroupContext
-        ): PlaintextTally.Selection {
+        ): DecryptedTallyOrBallot.Selection {
             val dselections = List(11) { generateCiphertextDecryptionSelection(it, context) }
             //         val selectionId: String, // matches SelectionDescription.selectionId
             //        val tally: Int,
             //        val value: ElementModP,
             //        val message: ElGamalCiphertext,
             //        val shares: List<DecryptionShare.CiphertextDecryptionSelection>,
-            return PlaintextTally.Selection(
+            return DecryptedTallyOrBallot.Selection(
                 "selection$sseq",
                 sseq,
                 generateElementModP(context),

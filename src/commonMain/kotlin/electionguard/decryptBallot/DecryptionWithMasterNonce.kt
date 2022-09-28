@@ -92,7 +92,6 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
                 selection.selectionId,
                 selection.sequenceOrder,
                 decodedVote,
-                null
             )
         }
     }

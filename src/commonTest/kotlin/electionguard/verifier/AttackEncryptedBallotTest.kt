@@ -4,7 +4,7 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.core.productionGroup
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.GroupContext
 import electionguard.core.hashElements
 import electionguard.decrypt.Decryption
@@ -135,7 +135,8 @@ class AttackEncryptedBallotTest {
             contest.contestHash,
             selections2,
             changeCrypto,
-            contest.proof
+            contest.proof,
+            null, // TODO
         )
     }
 
@@ -157,7 +158,7 @@ class AttackEncryptedBallotTest {
             s1.selectionId, s1.sequenceOrder, s1.selectionHash,
             s2.ciphertext,
             changeCryptoHash,
-            s2.isPlaceholderSelection, s2.proof, s2.extendedData,
+            s2.isPlaceholderSelection, s2.proof,
         )
     }
 }
@@ -167,14 +168,14 @@ fun decryptTally(
     encryptedTally: EncryptedTally,
     electionInit: ElectionInitialized,
     decryptingTrustees: List<DecryptingTrusteeIF>,
-): PlaintextTally {
+): DecryptedTallyOrBallot {
     val decryption = Decryption(group, electionInit, decryptingTrustees, emptyList())
     return with(decryption) { encryptedTally.decrypt() }
 }
 
 fun compareTallies(
-    tally1: PlaintextTally,
-    tally2: PlaintextTally,
+    tally1: DecryptedTallyOrBallot,
+    tally2: DecryptedTallyOrBallot,
     diffOnly: Boolean,
 ) {
     println("Compare  ${tally1.tallyId} to ${tally2.tallyId}")

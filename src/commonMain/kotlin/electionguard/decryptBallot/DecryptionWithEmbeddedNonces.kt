@@ -53,7 +53,6 @@ class DecryptionWithEmbeddedNonces(val publicKey: ElGamalPublicKey) {
                 selection.selectionId,
                 selection.sequenceOrder,
                 decodedVote,
-                null
             )
         }
     }

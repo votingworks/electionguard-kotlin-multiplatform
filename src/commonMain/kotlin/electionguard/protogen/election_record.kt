@@ -554,7 +554,7 @@ public data class TallyResult(
 @pbandk.Export
 public data class DecryptionResult(
     val tallyResult: electionguard.protogen.TallyResult? = null,
-    val decryptedTally: electionguard.protogen.PlaintextTally? = null,
+    val decryptedTally: electionguard.protogen.DecryptedTallyOrBallot? = null,
     val decryptingGuardians: List<electionguard.protogen.DecryptingGuardian> = emptyList(),
     val metadata: List<electionguard.protogen.DecryptionResult.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -584,7 +584,7 @@ public data class DecryptionResult(
                         messageDescriptor = this@Companion::descriptor,
                         name = "decrypted_tally",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PlaintextTally.Companion),
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.DecryptedTallyOrBallot.Companion),
                         jsonName = "decryptedTally",
                         value = electionguard.protogen.DecryptionResult::decryptedTally
                     )
@@ -985,14 +985,14 @@ private fun DecryptionResult.protoMergeImpl(plus: pbandk.Message?): DecryptionRe
 @Suppress("UNCHECKED_CAST")
 private fun DecryptionResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptionResult {
     var tallyResult: electionguard.protogen.TallyResult? = null
-    var decryptedTally: electionguard.protogen.PlaintextTally? = null
+    var decryptedTally: electionguard.protogen.DecryptedTallyOrBallot? = null
     var decryptingGuardians: pbandk.ListWithSize.Builder<electionguard.protogen.DecryptingGuardian>? = null
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.DecryptionResult.MetadataEntry>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> tallyResult = _fieldValue as electionguard.protogen.TallyResult
-            2 -> decryptedTally = _fieldValue as electionguard.protogen.PlaintextTally
+            2 -> decryptedTally = _fieldValue as electionguard.protogen.DecryptedTallyOrBallot
             3 -> decryptingGuardians = (decryptingGuardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptingGuardian> }
             4 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptionResult.MetadataEntry> }
         }

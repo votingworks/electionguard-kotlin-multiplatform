@@ -151,6 +151,7 @@ public data class EncryptedBallotContest(
     val selections: List<electionguard.protogen.EncryptedBallotSelection> = emptyList(),
     val cryptoHash: electionguard.protogen.UInt256? = null,
     val proof: electionguard.protogen.ConstantChaumPedersenProof? = null,
+    val encryptedContestData: electionguard.protogen.HashedElGamalCiphertext? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.EncryptedBallotContest = protoMergeImpl(other)
@@ -161,7 +162,7 @@ public data class EncryptedBallotContest(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedBallotContest = electionguard.protogen.EncryptedBallotContest.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedBallotContest> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedBallotContest, *>>(6)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedBallotContest, *>>(7)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -223,6 +224,16 @@ public data class EncryptedBallotContest(
                         value = electionguard.protogen.EncryptedBallotContest::proof
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "encrypted_contest_data",
+                        number = 8,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.HashedElGamalCiphertext.Companion),
+                        jsonName = "encryptedContestData",
+                        value = electionguard.protogen.EncryptedBallotContest::encryptedContestData
+                    )
+                )
             }
             pbandk.MessageDescriptor(
                 fullName = "EncryptedBallotContest",
@@ -243,7 +254,6 @@ public data class EncryptedBallotSelection(
     val cryptoHash: electionguard.protogen.UInt256? = null,
     val isPlaceholderSelection: Boolean = false,
     val proof: electionguard.protogen.DisjunctiveChaumPedersenProof? = null,
-    val extendedData: electionguard.protogen.HashedElGamalCiphertext? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.EncryptedBallotSelection = protoMergeImpl(other)
@@ -254,7 +264,7 @@ public data class EncryptedBallotSelection(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedBallotSelection = electionguard.protogen.EncryptedBallotSelection.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedBallotSelection> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedBallotSelection, *>>(8)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedBallotSelection, *>>(7)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -324,16 +334,6 @@ public data class EncryptedBallotSelection(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.DisjunctiveChaumPedersenProof.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.EncryptedBallotSelection::proof
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "extended_data",
-                        number = 8,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.HashedElGamalCiphertext.Companion),
-                        jsonName = "extendedData",
-                        value = electionguard.protogen.EncryptedBallotSelection::extendedData
                     )
                 )
             }
@@ -507,6 +507,7 @@ private fun EncryptedBallotContest.protoMergeImpl(plus: pbandk.Message?): Encryp
         selections = selections + plus.selections,
         cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         proof = proof?.plus(plus.proof) ?: plus.proof,
+        encryptedContestData = encryptedContestData?.plus(plus.encryptedContestData) ?: plus.encryptedContestData,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -519,6 +520,7 @@ private fun EncryptedBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDec
     var selections: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptedBallotSelection>? = null
     var cryptoHash: electionguard.protogen.UInt256? = null
     var proof: electionguard.protogen.ConstantChaumPedersenProof? = null
+    var encryptedContestData: electionguard.protogen.HashedElGamalCiphertext? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -528,10 +530,11 @@ private fun EncryptedBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDec
             4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.EncryptedBallotSelection> }
             6 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
             7 -> proof = _fieldValue as electionguard.protogen.ConstantChaumPedersenProof
+            8 -> encryptedContestData = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
         }
     }
     return EncryptedBallotContest(contestId, sequenceOrder, contestHash, pbandk.ListWithSize.Builder.fixed(selections),
-        cryptoHash, proof, unknownFields)
+        cryptoHash, proof, encryptedContestData, unknownFields)
 }
 
 @pbandk.Export
@@ -544,7 +547,6 @@ private fun EncryptedBallotSelection.protoMergeImpl(plus: pbandk.Message?): Encr
         ciphertext = ciphertext?.plus(plus.ciphertext) ?: plus.ciphertext,
         cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         proof = proof?.plus(plus.proof) ?: plus.proof,
-        extendedData = extendedData?.plus(plus.extendedData) ?: plus.extendedData,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -558,7 +560,6 @@ private fun EncryptedBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageD
     var cryptoHash: electionguard.protogen.UInt256? = null
     var isPlaceholderSelection = false
     var proof: electionguard.protogen.DisjunctiveChaumPedersenProof? = null
-    var extendedData: electionguard.protogen.HashedElGamalCiphertext? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -569,11 +570,10 @@ private fun EncryptedBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageD
             5 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
             6 -> isPlaceholderSelection = _fieldValue as Boolean
             7 -> proof = _fieldValue as electionguard.protogen.DisjunctiveChaumPedersenProof
-            8 -> extendedData = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
         }
     }
     return EncryptedBallotSelection(selectionId, sequenceOrder, selectionHash, ciphertext,
-        cryptoHash, isPlaceholderSelection, proof, extendedData, unknownFields)
+        cryptoHash, isPlaceholderSelection, proof, unknownFields)
 }
 
 @pbandk.Export

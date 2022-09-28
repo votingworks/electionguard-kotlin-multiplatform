@@ -19,12 +19,8 @@ class DecryptionResultConvertTest {
         val roundtrip = context.importDecryptionResult(proto).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
 
-        //    val tallyResult: TallyResult,
-        //    //    val decryptedTally: PlaintextTally,
-        //    //    val availableGuardians: List<AvailableGuardian>,
-        //    //    val metadata: Map<String, String> = emptyMap()
         assertEquals(roundtrip.tallyResult, electionRecord.tallyResult)
-        assertEquals(roundtrip.decryptedTally, electionRecord.decryptedTally)
+        assertEquals(roundtrip.decryptedTallyOrBallot, electionRecord.decryptedTallyOrBallot)
         assertEquals(roundtrip.decryptingGuardians, electionRecord.decryptingGuardians)
         assertEquals(roundtrip.metadata, electionRecord.metadata)
 
@@ -34,13 +30,9 @@ class DecryptionResultConvertTest {
 }
 
 fun generateDecryptionResult(context: GroupContext): DecryptionResult {
-    //      val tallyResult: TallyResult,
-    //    val decryptedTally: PlaintextTally,
-    //    val availableGuardians: List<AvailableGuardian>,
-    //    val metadata: Map<String, String> = emptyMap()
     return DecryptionResult(
         generateTallyResult(context),
-        PlaintextTallyConvertTest.generateFakeTally(0, context),
+        DecryptedTallyOrBallotConvertTest.generateFakeTally(0, context),
         List(4) { generateDecryptingGuardian(context, it) },
     )
 }

@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 9/22/2022
+draft 9/27/2022
 
 1. This is version 1.51 of Election Record, corresponding to spec v 1.51
 2. All fields must be present unless marked as optional.
@@ -9,6 +9,14 @@ draft 9/22/2022
 
 ## common.proto 
 [schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/common.proto)
+
+#### message ContestData
+
+| Name       | Type             | Notes                            |
+|------------|------------------|----------------------------------|
+| status     | enum Status      | normal, null_vote, under_vote    |
+| over_votes | List\<uint32\>   | list of selection sequence_order |
+| write_ins  | List\<string\>   | write in candidates(s)           |
 
 #### message ElementModQ
 
@@ -233,7 +241,7 @@ draft 9/22/2022
 | Name                 | Type                       | Notes |
 |----------------------|----------------------------|-------|
 | tally_result         | TallyResult                |       |
-| decrypted_tally      | PlaintextTally             |       |
+| decrypted_tally      | DecryptedTallyOrBallot     |       |
 | decrypting_guardians | List\<DecryptingGuardian\> |       |
 | metadata             | map<string, string>        |       |
 
@@ -265,6 +273,7 @@ draft 9/22/2022
 | contest_id     | string                           | ContestDescription.contest_id     |
 | sequence_order | uint32                           | ContestDescription.sequence_order |
 | selections     | List\<PlaintextBallotSelection\> |                                   |
+| extended_data  | string                           | optional, write-in candiate(s)    |
 
 #### message PlaintextBallotSelection
 
@@ -273,7 +282,6 @@ draft 9/22/2022
 | selection_id             | string | SelectionDescription.selection_id   |
 | sequence_order           | uint32 | SelectionDescription.sequence_order |
 | vote                     | uint32 |                                     |
-| extended_data            | string | optional                            |
 
 
 ## encrypted_ballot.proto
@@ -361,24 +369,33 @@ draft 9/22/2022
 | ciphertext                 | ElGamalCiphertext |                                     |
 
 
-## plaintext_tally.proto
-[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/plaintext_tally.proto)
+## decrypted_tally.proto
+[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/decrypted_tally.proto)
 
-### message PlaintextTally
+### message DecryptedTallyOrBallot
 
-| Name     | Type                          | Notes                                                              |
-|----------|-------------------------------|--------------------------------------------------------------------|
-| tally_id | string                        | when decrypting spoiled ballots, matches EncryptedBallot.ballot_id |
-| contests | List\<PlaintextTallyContest\> |                                                                    |
+| Name     | Type                     | Notes                                                        |
+|----------|--------------------------|--------------------------------------------------------------|
+| tally_id | string                   | when decrypting ballots, matches EncryptedBallot.ballot_id   |
+| contests | List\<DecryptedContest\> |                                                              |
 
-#### message PlaintextTallyContest
+#### message DecryptedContest
 
-| Name       | Type                            | Notes                         |
-|------------|---------------------------------|-------------------------------|
-| contest_id | string                          | ContestDescription.contest_id |
-| selections | List\<PlaintextTallySelection\> |                               |
+| Name                   | Type                         | Notes                            |
+|------------------------|------------------------------|----------------------------------|
+| contest_id             | string                       | ContestDescription.contest_id    |
+| selections             | List\<DecryptedSelection\>   |                                  |
+| decrypted_contest_data | DecryptedContestData         | optional, ballot decryption only |
 
-#### message PlaintextTallySelection
+#### message DecryptedContestData
+
+| Name                   | Type                      | Notes                                     |
+|------------------------|---------------------------|-------------------------------------------|
+| contest_data           | ContestData               |                                           |
+| encrypted_contest_data | HashedElGamalCiphertext   | see 3.3.3. matches EncryptedBallotContest |
+| partial_decryptions    | List\<PartialDecryption\> | direct or recovered, n of them            |
+
+#### message DecryptedSelection
 
 | Name                | Type                        | Notes                             |
 |---------------------|-----------------------------|-----------------------------------|

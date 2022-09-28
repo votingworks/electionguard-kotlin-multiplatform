@@ -2,7 +2,7 @@ package electionguard.decryptBallot
 
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.core.fileExists
@@ -13,7 +13,7 @@ import electionguard.decrypt.Decryption
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.Consumer
-import electionguard.publish.PlaintextTallySinkIF
+import electionguard.publish.DecryptedTallyOrBallotSinkIF
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.cli.ArgParser
@@ -101,7 +101,7 @@ fun runDecryptBallots(
     val decryption = Decryption(group, tallyResult.electionInitialized, decryptingTrustees, missingGuardians)
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
-    val sink: PlaintextTallySinkIF = publisher.plaintextTallySink()
+    val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
 
     val ballotIter: Iterable<EncryptedBallot> =
         when {
@@ -130,7 +130,7 @@ fun runDecryptBallots(
         }
 
     runBlocking {
-        val outputChannel = Channel<PlaintextTally>()
+        val outputChannel = Channel<DecryptedTallyOrBallot>()
         val decryptorJobs = mutableListOf<Job>()
         val ballotProducer = produceBallots(ballotIter)
         repeat(nthreads) {
@@ -173,12 +173,12 @@ private fun CoroutineScope.launchDecryptor(
     id: Int,
     input: ReceiveChannel<EncryptedBallot>,
     decryption: Decryption,
-    output: SendChannel<PlaintextTally>,
+    output: SendChannel<DecryptedTallyOrBallot>,
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
-        val decrypted: PlaintextTally = decryption.decryptBallot(ballot)
-        logger.debug { " Decryptor #$id sending PlaintextTally ${decrypted.tallyId}" }
-        if (debug) println(" Decryptor #$id sending PlaintextTally ${decrypted.tallyId}")
+        val decrypted: DecryptedTallyOrBallot = decryption.decryptBallot(ballot)
+        logger.debug { " Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.tallyId}" }
+        if (debug) println(" Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.tallyId}")
         output.send(decrypted)
         yield()
     }
@@ -188,10 +188,10 @@ private fun CoroutineScope.launchDecryptor(
 // place the output writing into its own coroutine
 private var count = 0
 private fun CoroutineScope.launchSink(
-    input: Channel<PlaintextTally>, sink: PlaintextTallySinkIF,
+    input: Channel<DecryptedTallyOrBallot>, sink: DecryptedTallyOrBallotSinkIF,
 ) = launch {
     for (tally in input) {
-        sink.writePlaintextTally(tally)
+        sink.writeDecryptedTallyOrBallot(tally)
         logger.debug { " Sink wrote $count ballot ${tally.tallyId}" }
         count++
     }

@@ -73,6 +73,7 @@ class EncryptedBallotConvertTest {
             selections,
             generateUInt256(context),
             generateConstantChaumPedersenProofKnownNonce(context),
+            generateHashedCiphertext(context),
         )
     }
 
@@ -96,7 +97,6 @@ class EncryptedBallotConvertTest {
             generateUInt256(context),
             false,
             generateDisjunctiveChaumPedersenProofKnownNonce(context),
-            generateHashedCiphertext(context),
         )
     }
 }

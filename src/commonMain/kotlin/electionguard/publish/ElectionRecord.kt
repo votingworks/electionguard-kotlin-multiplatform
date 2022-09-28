@@ -9,7 +9,7 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.Guardian
 import electionguard.ballot.Manifest
-import electionguard.ballot.PlaintextTally
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.ElementModP
 import electionguard.core.UInt256
@@ -45,8 +45,8 @@ interface ElectionRecord {
     fun encryptedTally(): EncryptedTally?
     fun tallyResult(): TallyResult?
 
-    fun decryptedTally(): PlaintextTally?
+    fun decryptedTally(): DecryptedTallyOrBallot?
     fun decryptingGuardians(): List<DecryptingGuardian> // may be empty
-    fun spoiledBallotTallies(): Iterable<PlaintextTally> // may be empty
+    fun spoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> // may be empty
     fun decryptionResult(): DecryptionResult?
 }

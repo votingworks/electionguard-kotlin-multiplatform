@@ -3,7 +3,7 @@ syntax = "proto3";
 import "encrypted_tally.proto";
 import "common.proto";
 import "manifest.proto";
-import "plaintext_tally.proto";
+import "decrypted_tally.proto";
 
 option java_package = "electionguard.protogen";
 option java_outer_classname = "ElectionRecordProto";
@@ -60,7 +60,7 @@ message TallyResult {
 
 message DecryptionResult {
   TallyResult tally_result = 1;
-  PlaintextTally decrypted_tally = 2;
+  DecryptedTallyOrBallot decrypted_tally = 2;
   repeated DecryptingGuardian decrypting_guardians = 3;
   map<string, string> metadata = 4;
 }

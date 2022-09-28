@@ -16,7 +16,8 @@ private fun GroupContext.importContest(contest: electionguard.protogen.Plaintext
     return PlaintextBallot.Contest(
         contest.contestId,
         contest.sequenceOrder,
-        contest.selections.map { importSelection(it) }
+        contest.selections.map { importSelection(it) },
+        contest.writeIns,
     )
 }
 
@@ -26,7 +27,6 @@ private fun importSelection(selection: electionguard.protogen.PlaintextBallotSel
             selection.selectionId,
             selection.sequenceOrder,
             selection.vote,
-            selection.extendedData,
         )
     }
 
@@ -48,8 +48,9 @@ private fun PlaintextBallot.Contest.publishContest():
             .PlaintextBallotContest(
                 this.contestId,
                 this.sequenceOrder,
-                this.selections.map { it.publishSelection() }
-            )
+                this.selections.map { it.publishSelection() },
+                this.writeIns,
+                )
     }
 
 private fun PlaintextBallot.Selection.publishSelection():
@@ -59,6 +60,5 @@ private fun PlaintextBallot.Selection.publishSelection():
                 this.selectionId,
                 this.sequenceOrder,
                 this.vote,
-                this.extendedData?: ""
             )
     }
