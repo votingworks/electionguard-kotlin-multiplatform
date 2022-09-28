@@ -13,6 +13,7 @@ import kotlin.test.assertEquals
 class EncryptTest {
     val input = "src/commonTest/data/runWorkflowAllAvailable"
 
+    // sanity check that encryption doesnt barf
     @Test
     fun testEncryption() {
         runTest {
@@ -38,6 +39,7 @@ class EncryptTest {
         }
     }
 
+    // test that if you pass in the same master nonce, you get the same encryption
     @Test
     fun testEncryptionWithMasterNonce() {
         runTest {

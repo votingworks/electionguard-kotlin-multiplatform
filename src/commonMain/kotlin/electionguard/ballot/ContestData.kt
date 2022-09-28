@@ -4,13 +4,12 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.safeEnumValueOf
-import electionguard.protoconvert.publishHashedCiphertext
 import mu.KotlinLogging
 import pbandk.encodeToByteArray
 
 private val logger = KotlinLogging.logger("ContestData")
 private const val BLOCK_SIZE : Int = 32
-private const val debug = false
+private const val CHOP_WRITE_INS : Int = 30 // LOOK maybe make smaller in case of multibyte characters?
 
 enum class ContestDataStatus {
     normal, null_vote, over_vote, under_vote
@@ -19,76 +18,96 @@ enum class ContestDataStatus {
 data class ContestData(
     val overvotes: List<Int>,
     val writeIns: List<String>,
-    val status: ContestDataStatus = ContestDataStatus.normal,
+    val status: ContestDataStatus = if (overvotes.isNotEmpty()) ContestDataStatus.over_vote else ContestDataStatus.normal,
 ) {
 
-    fun publish(filler : String = ""): electionguard.protogen.ContestData {
-        return electionguard.protogen
-            .ContestData(
-                this.status?.publishContestDataStatus() ?: electionguard.protogen.ContestData.Status.NORMAL,
-                this.overvotes,
-                this.writeIns,
-                filler,
-            )
+    fun publish(filler: String = ""): electionguard.protogen.ContestData {
+        return publish(
+            this.status,
+            this.overvotes,
+            this.writeIns,
+            filler,
+        )
     }
 
-    fun publish(status: ContestDataStatus, overvotes: List<Int>, writeIns: List<String>, filler : String = ""): electionguard.protogen.ContestData {
+    fun publish(
+        status: ContestDataStatus,
+        overvotes: List<Int>,
+        writeIns: List<String>,
+        filler: String = ""
+    ): electionguard.protogen.ContestData {
         return electionguard.protogen.ContestData(
-                status.publishContestDataStatus(),
-                overvotes,
-                writeIns,
-                filler,
-            )
+            status.publishContestDataStatus(),
+            overvotes,
+            writeIns,
+            filler,
+        )
     }
 
-    fun encrypt(publicKey: ElGamalPublicKey, votesAllowed : Int): HashedElGamalCiphertext  {
-        if (debug) println("  encrypt = $this votes = $votesAllowed")
-        // see how much room we need
-        var contestDataProto = publish()
-        var contestDataBA = contestDataProto.encodeToByteArray()
-        var trialSize = contestDataBA.size
-        if (debug) println("  contestDataBA = $trialSize")
+    fun encrypt(publicKey: ElGamalPublicKey, votesAllowed: Int): HashedElGamalCiphertext {
+        val messageSize = (1 + votesAllowed) * BLOCK_SIZE
 
-        if (trialSize < votesAllowed * BLOCK_SIZE) {
-            val filler = StringBuilder().apply{
-                repeat(votesAllowed * BLOCK_SIZE - trialSize - 2) {
-                    append("*")
-                }
-            }
-            contestDataProto = publish(filler.toString())
-            contestDataBA = contestDataProto.encodeToByteArray()
-            trialSize = contestDataBA.size
-            if (debug) println("  contestDataBA = $trialSize")
-        } else if (trialSize > votesAllowed * BLOCK_SIZE) {
-            val needToRemove = trialSize - votesAllowed * BLOCK_SIZE
-            if (this.writeIns.isNotEmpty()) {
-                val writeinChopped = mutableListOf<String>()
-                val n = this.writeIns.size
-                val chopEach = (needToRemove + n - 1 ) / n
-                this.writeIns.forEach { writeinChopped.add( it.substring(0, it.length - chopEach))}
+        var trialContestData = this
+        var trialContestDataBA = trialContestData.publish().encodeToByteArray()
+        var trialSize = trialContestDataBA.size
 
-                contestDataProto = publish(this.status!!, overvotes, writeinChopped, "")
-                contestDataBA = contestDataProto.encodeToByteArray()
-                trialSize = contestDataBA.size
-                if (debug) println("  contestDataBA = $trialSize")
-            } else {
-                val maxover = (votesAllowed * BLOCK_SIZE + 1) / 2
-                contestDataProto = publish(this.status!!, overvotes.subList(0, maxover), emptyList(), "")
-                contestDataBA = contestDataProto.encodeToByteArray()
-                trialSize = contestDataBA.size
-                if (debug) println("  contestDataBA = $trialSize")
+        if ((trialSize > messageSize) && this.writeIns.isNotEmpty()) {
+            // see if you can just chop the writeIn lengths
+            trialContestData = trialContestData.copy(writeIns = chopWriteins(CHOP_WRITE_INS))
+            trialContestDataBA = trialContestData.publish().encodeToByteArray()
+            trialSize = trialContestDataBA.size
+
+            if ((trialSize > messageSize) && trialContestData.writeIns.size > votesAllowed + 1) {
+                // remove extra write_ins, append a "*"
+                val truncateWriteIns = trialContestData.writeIns.subList(0, votesAllowed + 1)
+                    .toMutableList()
+                truncateWriteIns.add("*")
+                trialContestData = trialContestData.copy(
+                    writeIns = truncateWriteIns,
+                    status = ContestDataStatus.over_vote
+                )
+                trialContestDataBA = trialContestData.publish().encodeToByteArray()
+                trialSize = trialContestDataBA.size
             }
         }
 
-        // HMAC encryption
-        val hashedElGamalEncrypt = contestDataBA.hashedElGamalEncrypt(publicKey)
-        if (debug) println("  hashed = ${hashedElGamalEncrypt.c1.size}")
-        val hashedProto = hashedElGamalEncrypt.publishHashedCiphertext()
-        if (debug) println("  hashedProto = ${hashedProto.c1.array.size}")
-        val hashedProtoBA = hashedProto.encodeToByteArray()
-        if (debug) println("  hashedProtoBA = ${hashedProtoBA.size}")
+        // this next part guarantees the result is <= message length
+        if (trialSize > messageSize) {
+            val bytesToRemove = trialSize - messageSize
+            trialContestData = trialContestData.copy(overvotes = trialContestData.removeOvervotes(bytesToRemove))
+            trialContestDataBA = trialContestData.publish().encodeToByteArray()
+            trialSize = trialContestDataBA.size
+        }
 
-        return hashedElGamalEncrypt
+        // now fill it up so its a uniform message length, if needed
+        if (trialSize < messageSize) {
+            val filler = StringBuilder().apply {
+                repeat(messageSize - trialSize - 2) {
+                    append("*")
+                }
+            }
+            trialContestDataBA = trialContestData.publish(filler.toString()).encodeToByteArray()
+            trialSize = trialContestDataBA.size
+        }
+
+        // HMAC encryption
+        val result = trialContestDataBA.hashedElGamalEncrypt(publicKey)
+        if (result.c1.size != messageSize) {
+            throw IllegalStateException("ContestData,encrypt ${result.c1.size} != $messageSize")
+        }
+        return result
+    }
+}
+
+// LOOK could add a -1 to indicate removal
+fun ContestData.removeOvervotes(bytesToRemove : Int): List<Int> {
+    val remove = (bytesToRemove + 2) // assume 1 byte each
+    return this.overvotes.subList(0, this.overvotes.size - remove)
+}
+
+fun ContestData.chopWriteins(maxlen : Int): List<String> {
+    return this.writeIns.map {
+        if (it.length <= maxlen) it else it.substring(0, maxlen)
     }
 }
 

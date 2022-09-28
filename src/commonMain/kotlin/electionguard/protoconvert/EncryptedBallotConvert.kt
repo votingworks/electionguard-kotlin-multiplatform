@@ -16,13 +16,13 @@ fun GroupContext.importEncryptedBallot(
     val here = ballot.ballotId
 
     val manifestHash = importUInt256(ballot.manifestHash)
-        .toResultOr {"EncryptedBallot $here manifestHash was malformed or missing"}
+        .toResultOr { "EncryptedBallot $here manifestHash was malformed or missing" }
     val trackingHash = importUInt256(ballot.code)
-        .toResultOr {"EncryptedBallot $here trackingHash was malformed or missing"}
+        .toResultOr { "EncryptedBallot $here trackingHash was malformed or missing" }
     val previousTrackingHash = importUInt256(ballot.codeSeed)
-        .toResultOr {"EncryptedBallot $here previousTrackingHash was malformed or missing"}
+        .toResultOr { "EncryptedBallot $here previousTrackingHash was malformed or missing" }
     val cryptoHash = importUInt256(ballot.cryptoHash)
-        .toResultOr {"EncryptedBallot $here cryptoHash was malformed or missing"}
+        .toResultOr { "EncryptedBallot $here cryptoHash was malformed or missing" }
     val ballotState = ballot.state.importBallotState(ballot.ballotId)
 
     val (contests, cerrors) = ballot.contests.map { this.importContest(it, ballot.ballotId) }.partition()
@@ -65,9 +65,9 @@ private fun GroupContext.importContest(
     val here = "$where ${contest.contestId}"
 
     val contestHash = importUInt256(contest.contestHash)
-        .toResultOr {"CiphertextBallotContest $here contestHash was malformed or missing"}
+        .toResultOr { "CiphertextBallotContest $here contestHash was malformed or missing" }
     val cryptoHash = importUInt256(contest.cryptoHash)
-        .toResultOr {"CiphertextBallotContest $here cryptoHash was malformed or missing"}
+        .toResultOr { "CiphertextBallotContest $here cryptoHash was malformed or missing" }
     val proof = this.importConstantChaumPedersenProof(contest.proof, here)
 
     val (selections, serrors) = contest.selections.map { this.importSelection(it, here) }.partition()
@@ -85,7 +85,7 @@ private fun GroupContext.importContest(
             selections,
             cryptoHash.unwrap(),
             proof.unwrap(),
-            null, // TODO
+            this.importHashedCiphertext(contest.encryptedContestData)!!,
         )
     )
 }
@@ -96,10 +96,9 @@ private fun GroupContext.importConstantChaumPedersenProof(
     if (constant == null) {
         return Err("Null ConstantChaumPedersenProof in $where")
     }
-    var proof = this.importChaumPedersenProof(constant.proof)
-
+    val proof = this.importChaumPedersenProof(constant.proof)
     if (proof == null) {
-            return Err("Missing fields ConstantChaumPedersenProof in $where")
+        return Err("Missing fields ConstantChaumPedersenProof in $where")
     }
 
     return Ok(ConstantChaumPedersenProofKnownNonce(proof, constant.constant))
@@ -112,11 +111,11 @@ private fun GroupContext.importSelection(
     val here = "$where ${selection.selectionId}"
 
     val selectionHash = importUInt256(selection.selectionHash)
-        .toResultOr {"CiphertextBallotSelection $here selectionHash was malformed or missing"}
+        .toResultOr { "CiphertextBallotSelection $here selectionHash was malformed or missing" }
     val ciphertext = this.importCiphertext(selection.ciphertext)
-        .toResultOr {"CiphertextBallotSelection $here ciphertext was malformed or missing"}
+        .toResultOr { "CiphertextBallotSelection $here ciphertext was malformed or missing" }
     val cryptoHash = importUInt256(selection.cryptoHash)
-        .toResultOr {"CiphertextBallotSelection $here cryptoHash was malformed or missing"}
+        .toResultOr { "CiphertextBallotSelection $here cryptoHash was malformed or missing" }
     val proof = this.importDisjunctiveChaumPedersenProof(selection.proof, here)
 
     val errors = getAllErrors(proof, selectionHash, ciphertext, cryptoHash)
@@ -143,8 +142,8 @@ private fun GroupContext.importDisjunctiveChaumPedersenProof(
     if (disjunct == null) {
         return Err("Missing DisjunctiveChaumPedersenProof in $where")
     }
-    var proof0 = this.importChaumPedersenProof(disjunct.proof0)
-    var proof1 = this.importChaumPedersenProof(disjunct.proof1)
+    val proof0 = this.importChaumPedersenProof(disjunct.proof0)
+    val proof1 = this.importChaumPedersenProof(disjunct.proof1)
     val proofChallenge = this.importElementModQ(disjunct.challenge)
 
     if (proof0 == null || proof1 == null || proofChallenge == null) {
@@ -186,7 +185,7 @@ private fun EncryptedBallot.Contest.publishContest():
             this.selections.map { it.publishSelection() },
             this.cryptoHash.publishUInt256(),
             this.proof.let { this.proof.publishConstantChaumPedersenProof() },
-            this.contestData?.let { this.contestData.publishHashedCiphertext() },
+            this.contestData.let { this.contestData.publishHashedCiphertext() },
         )
 }
 

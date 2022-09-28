@@ -216,7 +216,7 @@ class TestBallotInputValidation {
             .build()
         val eandb = ElectionAndBallot(election, ballot)
 
-        testValidate(eandb, "Ballot.C.2 Ballot Selection votes (2) exceeds limit (1)")
+        testValidate(eandb, null) // overvotes ok
     }
 
     @Test

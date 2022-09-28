@@ -27,7 +27,7 @@ data class CiphertextBallot(
         val cryptoHash: UInt256,
         val proof: ConstantChaumPedersenProofKnownNonce,
         val contestNonce: ElementModQ,
-        val contestData: HashedElGamalCiphertext?,
+        val contestData: HashedElGamalCiphertext,
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
     }
