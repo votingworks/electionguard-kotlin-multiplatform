@@ -4,9 +4,10 @@ package electionguard.protogen
 
 @pbandk.Export
 public data class ContestData(
-    val vote: electionguard.protogen.ContestData.Status = electionguard.protogen.ContestData.Status.fromValue(0),
+    val status: electionguard.protogen.ContestData.Status = electionguard.protogen.ContestData.Status.fromValue(0),
     val overVotes: List<Int> = emptyList(),
     val writeIns: List<String> = emptyList(),
+    val filler: String = "",
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.ContestData = protoMergeImpl(other)
@@ -17,16 +18,16 @@ public data class ContestData(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ContestData = electionguard.protogen.ContestData.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ContestData> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ContestData, *>>(3)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ContestData, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "vote",
+                        name = "status",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Enum(enumCompanion = electionguard.protogen.ContestData.Status.Companion),
-                        jsonName = "vote",
-                        value = electionguard.protogen.ContestData::vote
+                        jsonName = "status",
+                        value = electionguard.protogen.ContestData::status
                     )
                 )
                 add(
@@ -49,6 +50,16 @@ public data class ContestData(
                         value = electionguard.protogen.ContestData::writeIns
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "filler",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "filler",
+                        value = electionguard.protogen.ContestData::filler
+                    )
+                )
             }
             pbandk.MessageDescriptor(
                 fullName = "ContestData",
@@ -66,11 +77,12 @@ public data class ContestData(
 
         public object NORMAL : Status(0, "normal")
         public object NULL_VOTE : Status(1, "null_vote")
-        public object UNDER_VOTE : Status(2, "under_vote")
+        public object OVER_VOTE : Status(2, "over_vote")
+        public object UNDER_VOTE : Status(3, "under_vote")
         public class UNRECOGNIZED(value: Int) : Status(value)
 
         public companion object : pbandk.Message.Enum.Companion<ContestData.Status> {
-            public val values: List<ContestData.Status> by lazy { listOf(NORMAL, NULL_VOTE, UNDER_VOTE) }
+            public val values: List<ContestData.Status> by lazy { listOf(NORMAL, NULL_VOTE, OVER_VOTE, UNDER_VOTE) }
             override fun fromValue(value: Int): ContestData.Status = values.firstOrNull { it.value == value } ?: UNRECOGNIZED(value)
             override fun fromName(name: String): ContestData.Status = values.firstOrNull { it.name == name } ?: throw IllegalArgumentException("No Status with name: $name")
         }
@@ -420,18 +432,20 @@ private fun ContestData.protoMergeImpl(plus: pbandk.Message?): ContestData = (pl
 
 @Suppress("UNCHECKED_CAST")
 private fun ContestData.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ContestData {
-    var vote: electionguard.protogen.ContestData.Status = electionguard.protogen.ContestData.Status.fromValue(0)
+    var status: electionguard.protogen.ContestData.Status = electionguard.protogen.ContestData.Status.fromValue(0)
     var overVotes: pbandk.ListWithSize.Builder<Int>? = null
     var writeIns: pbandk.ListWithSize.Builder<String>? = null
+    var filler = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> vote = _fieldValue as electionguard.protogen.ContestData.Status
+            1 -> status = _fieldValue as electionguard.protogen.ContestData.Status
             2 -> overVotes = (overVotes ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<Int> }
             3 -> writeIns = (writeIns ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
+            4 -> filler = _fieldValue as String
         }
     }
-    return ContestData(vote, pbandk.ListWithSize.Builder.fixed(overVotes), pbandk.ListWithSize.Builder.fixed(writeIns), unknownFields)
+    return ContestData(status, pbandk.ListWithSize.Builder.fixed(overVotes), pbandk.ListWithSize.Builder.fixed(writeIns), filler, unknownFields)
 }
 
 @pbandk.Export

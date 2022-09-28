@@ -77,7 +77,7 @@ class ContestDataSerializationTest {
         return ContestDataPojo(
                 this.overVotes,
              listOf(), // this.writeIns,
-             this.vote,
+             this.status,
             )
     }
 

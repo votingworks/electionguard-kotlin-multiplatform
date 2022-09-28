@@ -1,8 +1,9 @@
 package electionguard.input
 
+import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 
-class BallotInputBuilder internal constructor(val id: String) {
+class BallotInputBuilder internal constructor(val manifest: Manifest, val id: String) {
     private val contests = ArrayList<ContestBuilder>()
     private var style = styleDef
 
@@ -17,6 +18,13 @@ class BallotInputBuilder internal constructor(val id: String) {
         return c
     }
 
+    fun addContest(idx : Int): ContestBuilder {
+        val contest = manifest.contests[idx]
+        val c = ContestBuilder(contest.contestId, contest.sequenceOrder)
+        contests.add(c)
+        return c
+    }
+
     fun build(): PlaintextBallot {
         return PlaintextBallot(
             id,
@@ -25,13 +33,28 @@ class BallotInputBuilder internal constructor(val id: String) {
         )
     }
 
-    inner class ContestBuilder internal constructor(val id: String, seqOrder : Int? = null) {
+    inner class ContestBuilder internal constructor(val contestId: String, seqOrder : Int? = null) {
         private var seq = seqOrder?: 1
         private val selections = ArrayList<SelectionBuilder>()
+        private val writeIns = ArrayList<String>()
 
         fun addSelection(id: String, vote: Int, seqOrder : Int? = null): ContestBuilder {
             val s = SelectionBuilder(id, vote, seqOrder)
             selections.add(s)
+            return this
+        }
+
+        fun addSelection(idx : Int, vote: Int): ContestBuilder {
+            val contest = manifest.contests.find { it.contestId == contestId }
+                ?: throw IllegalArgumentException("Cant find contestId = $contestId")
+            val selection = contest.selections[idx]
+            val s = SelectionBuilder(selection.selectionId, vote, selection.sequenceOrder)
+            selections.add(s)
+            return this
+        }
+
+        fun addWriteIn(writeIn: String): ContestBuilder {
+            writeIns.add(writeIn)
             return this
         }
 
@@ -41,15 +64,16 @@ class BallotInputBuilder internal constructor(val id: String) {
 
         fun build(): PlaintextBallot.Contest {
             return PlaintextBallot.Contest(
-                id,
+                contestId,
                 seq++,
-                selections.map { it.build() }
+                selections.map { it.build() },
+                writeIns
             )
         }
 
-        inner class SelectionBuilder internal constructor(private val id: String, private val vote: Int, private val seqOrder : Int? = null) {
+        inner class SelectionBuilder internal constructor(private val selectionId: String, private val vote: Int, private val seqOrder : Int? = null) {
             fun build(): PlaintextBallot.Selection {
-                return PlaintextBallot.Selection(id, seqOrder?: seq++, vote)
+                return PlaintextBallot.Selection(selectionId, seqOrder?: seq++, vote)
             }
         }
     }

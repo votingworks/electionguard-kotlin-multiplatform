@@ -97,5 +97,3 @@ If an Input Ballots fails validation, it is annotated as to why it failed, and p
 ### C. Voting limits
 
 1. Each PlaintextBallot.Selection must have a vote whose value is 0 or 1.
-
-2. Within a PlaintextBallot.Contest, the sum of the votes must be <= ContestDescription.votesAllowed.
