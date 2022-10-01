@@ -11,7 +11,7 @@ import kotlin.math.max
 private val logger = KotlinLogging.logger("ContestData")
 private const val debug = true
 private const val BLOCK_SIZE : Int = 32
-private const val CHOP_WRITE_INS : Int = 30 // LOOK maybe make smaller in case of multibyte characters?
+private const val CHOP_WRITE_INS : Int = 30
 
 enum class ContestDataStatus {
     normal, null_vote, over_vote, under_vote
@@ -48,7 +48,7 @@ data class ContestData(
 
     // Make sure that the HashedElGamalCiphertext message is exactly (votesAllowed + 1) * BLOCK_SIZE
     // If too large, remove extra writeIns, add "*" to list to indicate some were removed
-    // If still too large, truncate writeIns to CHOP_WRITE_INS characters, append "*" to list to indicate truncated
+    // If still too large, truncate writeIns to CHOP_WRITE_INS characters, append "*" to string to indicate truncated
     // If still too large, truncate overVote to (votesAllowed + 1), append "-1" to list to indicate some were removed
     // If now too small, add a filler string to make it exactly (votesAllowed + 1) * BLOCK_SIZE
     fun encrypt(publicKey: ElGamalPublicKey, votesAllowed: Int): HashedElGamalCiphertext {
