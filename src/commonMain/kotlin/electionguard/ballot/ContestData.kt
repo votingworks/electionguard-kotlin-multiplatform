@@ -6,8 +6,10 @@ import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.safeEnumValueOf
 import mu.KotlinLogging
 import pbandk.encodeToByteArray
+import kotlin.math.max
 
 private val logger = KotlinLogging.logger("ContestData")
+private const val debug = true
 private const val BLOCK_SIZE : Int = 32
 private const val CHOP_WRITE_INS : Int = 30 // LOOK maybe make smaller in case of multibyte characters?
 
@@ -44,70 +46,72 @@ data class ContestData(
         )
     }
 
+    // Make sure that the HashedElGamalCiphertext message is exactly (votesAllowed + 1) * BLOCK_SIZE
+    // If too large, remove extra writeIns, add "*" to list to indicate some were removed
+    // If still too large, truncate writeIns to CHOP_WRITE_INS characters, append "*" to list to indicate truncated
+    // If still too large, truncate overVote to (votesAllowed + 1), append "-1" to list to indicate some were removed
+    // If now too small, add a filler string to make it exactly (votesAllowed + 1) * BLOCK_SIZE
     fun encrypt(publicKey: ElGamalPublicKey, votesAllowed: Int): HashedElGamalCiphertext {
         val messageSize = (1 + votesAllowed) * BLOCK_SIZE
 
         var trialContestData = this
         var trialContestDataBA = trialContestData.publish().encodeToByteArray()
         var trialSize = trialContestDataBA.size
+        val trialSizes = mutableListOf<Int>()
+        trialSizes.add(trialSize)
 
-        if ((trialSize > messageSize) && this.writeIns.isNotEmpty()) {
-            // see if you can just chop the writeIn lengths
-            trialContestData = trialContestData.copy(writeIns = chopWriteins(CHOP_WRITE_INS))
+        // remove extra write_ins, append a "*"
+        if ((trialSize > messageSize) && trialContestData.writeIns.size > votesAllowed) {
+            val truncateWriteIns = trialContestData.writeIns.subList(0, votesAllowed)
+                .toMutableList()
+            truncateWriteIns.add("*")
+            trialContestData = trialContestData.copy(
+                writeIns = truncateWriteIns,
+            )
             trialContestDataBA = trialContestData.publish().encodeToByteArray()
             trialSize = trialContestDataBA.size
-
-            if ((trialSize > messageSize) && trialContestData.writeIns.size > votesAllowed + 1) {
-                // remove extra write_ins, append a "*"
-                val truncateWriteIns = trialContestData.writeIns.subList(0, votesAllowed + 1)
-                    .toMutableList()
-                truncateWriteIns.add("*")
-                trialContestData = trialContestData.copy(
-                    writeIns = truncateWriteIns,
-                    status = ContestDataStatus.over_vote
-                )
-                trialContestDataBA = trialContestData.publish().encodeToByteArray()
-                trialSize = trialContestDataBA.size
-            }
+            trialSizes.add(trialSize)
         }
 
-        // this next part guarantees the result is <= message length
-        if (trialSize > messageSize) {
-            val bytesToRemove = trialSize - messageSize
-            trialContestData = trialContestData.copy(overvotes = trialContestData.removeOvervotes(bytesToRemove))
+        // chop write in vote strings
+        if ((trialSize > messageSize) && trialContestData.writeIns.isNotEmpty()) {
+            val chop = max(CHOP_WRITE_INS, (messageSize - trialSize + votesAllowed - 1) / votesAllowed)
+            val truncateWriteIns = trialContestData.writeIns.map {
+                if (it.length <= CHOP_WRITE_INS) it else it.substring(0, chop) + "*"
+            }
+            trialContestData = trialContestData.copy(writeIns = truncateWriteIns)
             trialContestDataBA = trialContestData.publish().encodeToByteArray()
             trialSize = trialContestDataBA.size
+            trialSizes.add(trialSize)
+        }
+
+        // chop overvote list
+        while (trialSize > messageSize && (trialContestData.overvotes.size > votesAllowed + 1)) {
+            val chopList = trialContestData.overvotes.subList(0, votesAllowed + 1) + (-1)
+            trialContestData = trialContestData.copy(overvotes = chopList)
+            trialContestDataBA = trialContestData.publish().encodeToByteArray()
+            trialSize = trialContestDataBA.size
+            trialSizes.add(trialSize)
         }
 
         // now fill it up so its a uniform message length, if needed
         if (trialSize < messageSize) {
             val filler = StringBuilder().apply {
-                repeat(messageSize - trialSize - 2) {
-                    append("*")
-                }
+                repeat(messageSize - trialSize - 2) { append("*") }
             }
             trialContestDataBA = trialContestData.publish(filler.toString()).encodeToByteArray()
             trialSize = trialContestDataBA.size
+            trialSizes.add(trialSize)
         }
+        if (debug) println("encodedData = $trialContestData")
+        if (debug) println(" trialSizes = $trialSizes")
 
         // HMAC encryption
         val result = trialContestDataBA.hashedElGamalEncrypt(publicKey)
-        if (result.c1.size != messageSize) {
-            throw IllegalStateException("ContestData,encrypt ${result.c1.size} != $messageSize")
-        }
+        //if (result.c1.size != messageSize) {
+        //    throw IllegalStateException("ContestData,encrypt ${result.c1.size} != $messageSize")
+        //}
         return result
-    }
-}
-
-// LOOK could add a -1 to indicate removal
-fun ContestData.removeOvervotes(bytesToRemove : Int): List<Int> {
-    val remove = (bytesToRemove + 2) // assume 1 byte each
-    return this.overvotes.subList(0, this.overvotes.size - remove)
-}
-
-fun ContestData.chopWriteins(maxlen : Int): List<String> {
-    return this.writeIns.map {
-        if (it.length <= maxlen) it else it.substring(0, maxlen)
     }
 }
 
