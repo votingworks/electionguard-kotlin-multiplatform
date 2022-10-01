@@ -107,11 +107,7 @@ data class ContestData(
         if (debug) println(" trialSizes = $trialSizes")
 
         // HMAC encryption
-        val result = trialContestDataBA.hashedElGamalEncrypt(publicKey)
-        //if (result.c1.size != messageSize) {
-        //    throw IllegalStateException("ContestData,encrypt ${result.c1.size} != $messageSize")
-        //}
-        return result
+        return trialContestDataBA.hashedElGamalEncrypt(publicKey)
     }
 }
 
