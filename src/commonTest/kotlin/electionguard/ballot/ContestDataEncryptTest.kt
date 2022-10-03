@@ -14,9 +14,7 @@ import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 import pbandk.decodeFromByteArray
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class ContestDataEncryptTest {
     val context = tinyGroup()
@@ -62,7 +60,7 @@ class ContestDataEncryptTest {
         println("")
         var starting = getSystemTimeInMillis()
 
-        val target = contestData.encrypt(keypair.publicKey, 1)
+        val target = contestData.encrypt(keypair.publicKey, 1, null)
         assertEquals(64, target.c1.size)
         // assertEquals(target.numBytes, target.c1.size)
         var took = getSystemTimeInMillis() - starting
@@ -106,7 +104,7 @@ class ContestDataEncryptTest {
                 println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes)
+                val target = contestData.encrypt(keypair.publicKey, votes, null)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -127,7 +125,7 @@ class ContestDataEncryptTest {
                 println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes)
+                val target = contestData.encrypt(keypair.publicKey, votes, null)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -148,7 +146,7 @@ class ContestDataEncryptTest {
                 println("\ncontestData = $contestData")
 
                 val votes = 2
-                val target = contestData.encrypt(keypair.publicKey, votes)
+                val target = contestData.encrypt(keypair.publicKey, votes, null)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -169,7 +167,7 @@ class ContestDataEncryptTest {
                 println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes)
+                val target = contestData.encrypt(keypair.publicKey, votes, null)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -190,7 +188,7 @@ class ContestDataEncryptTest {
                 println("\ncontestData = $contestData")
 
                 val votes = 3
-                val target = contestData.encrypt(keypair.publicKey, votes)
+                val target = contestData.encrypt(keypair.publicKey, votes, null)
                 if ((1 + votes) * 32 != target.c1.size) {
                     println("${(1 + votes) * 32} != ${target.c1.size}")
                 }
@@ -208,7 +206,7 @@ class ContestDataEncryptTest {
             println("\ncontestData = $contestData")
 
             val votes = 1
-            val target = contestData.encrypt(keypair.publicKey, votes)
+            val target = contestData.encrypt(keypair.publicKey, votes, null)
             if ((1 + votes) * 32 != target.c1.size) {
                 assertEquals((1 + votes) * 32, target.c1.size)
             }

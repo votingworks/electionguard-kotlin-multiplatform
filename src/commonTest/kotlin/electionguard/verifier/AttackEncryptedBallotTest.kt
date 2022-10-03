@@ -139,7 +139,7 @@ class AttackEncryptedBallotTest {
             selections2,
             changeCrypto,
             contest.proof,
-            contestData.encrypt(publicKey, 1),
+            contestData.encrypt(publicKey, 1, null),
         )
     }
 

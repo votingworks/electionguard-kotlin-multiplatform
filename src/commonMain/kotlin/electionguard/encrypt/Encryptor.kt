@@ -15,10 +15,10 @@ import electionguard.core.constantChaumPedersenProofKnownNonce
 import electionguard.core.disjunctiveChaumPedersenProofKnownNonce
 import electionguard.core.encrypt
 import electionguard.core.encryptedSum
-import electionguard.core.get
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
 import electionguard.core.randomElementModQ
+import electionguard.core.take
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
 
@@ -121,9 +121,7 @@ class Encryptor(
     ): CiphertextBallot.Contest {
         val contestDescriptionHash = mcontest.cryptoHash
         val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
-        val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
-        val contestNonce = nonceSequence[mcontest.sequenceOrder]
-        val chaumPedersenNonce = nonceSequence[0]
+        val (contestNonce, chaumPedersenNonce, contestDataNonce) = Nonces(contestDescriptionHashQ, ballotNonce).take(3)
 
         val ballotSelections = this.selections.associateBy { it.selectionId }
 
@@ -188,7 +186,6 @@ class Encryptor(
             status
         )
 
-        // TODO: option to pass master nonce-derived nonce to contestData.encrypt(), see issue #168
         return mcontest.encryptContest(
             group,
             elgamalPublicKey,
@@ -196,7 +193,7 @@ class Encryptor(
             contestNonce,
             chaumPedersenNonce,
             encryptedSelections.sortedBy { it.sequenceOrder },
-            contestData.encrypt(elgamalPublicKey, mcontest.votesAllowed),
+            contestData.encrypt(elgamalPublicKey, mcontest.votesAllowed, contestDataNonce),
         )
     }
 
@@ -220,9 +217,8 @@ class Encryptor(
         contestNonce: ElementModQ,
         isPlaceholder: Boolean = false,
     ): CiphertextBallot.Selection {
-        val nonceSequence = Nonces(selectionDescription.cryptoHash.toElementModQ(group), contestNonce)
-        val disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence[0]
-        val selectionNonce: ElementModQ = nonceSequence[selectionDescription.sequenceOrder]
+        val cryptoHashQ = selectionDescription.cryptoHash.toElementModQ(group)
+        val (disjunctiveChaumPedersenNonce, selectionNonce) = Nonces(cryptoHashQ, contestNonce).take(2)
 
         return selectionDescription.encryptSelection(
             this.vote,

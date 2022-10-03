@@ -40,7 +40,6 @@ class EncryptTest {
     }
 
     // test that if you pass in the same master nonce, you get the same encryption
-    // TODO failing, see issue #168
     @Test
     fun testEncryptionWithMasterNonce() {
         runTest {

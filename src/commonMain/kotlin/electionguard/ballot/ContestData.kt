@@ -1,6 +1,7 @@
 package electionguard.ballot
 
 import electionguard.core.ElGamalPublicKey
+import electionguard.core.ElementModQ
 import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.safeEnumValueOf
@@ -51,8 +52,7 @@ data class ContestData(
     // If still too large, truncate writeIns to CHOP_WRITE_INS characters, append "*" to string to indicate truncated
     // If still too large, truncate overVote to (votesAllowed + 1), append "-1" to list to indicate some were removed
     // If now too small, add a filler string to make it exactly (votesAllowed + 1) * BLOCK_SIZE
-    // TODO: option to pass master nonce-derived nonce to hashedElGamalEncrypt(), see issue #168
-    fun encrypt(publicKey: ElGamalPublicKey, votesAllowed: Int): HashedElGamalCiphertext {
+    fun encrypt(publicKey: ElGamalPublicKey, votesAllowed: Int, contestDataNonce: ElementModQ?): HashedElGamalCiphertext {
         val messageSize = (1 + votesAllowed) * BLOCK_SIZE
 
         var trialContestData = this
@@ -108,7 +108,8 @@ data class ContestData(
         if (debug) println(" trialSizes = $trialSizes")
 
         // HMAC encryption
-        return trialContestDataBA.hashedElGamalEncrypt(publicKey)
+        return if (contestDataNonce == null) trialContestDataBA.hashedElGamalEncrypt(publicKey)
+               else trialContestDataBA.hashedElGamalEncrypt(publicKey, contestDataNonce)
     }
 }
 
