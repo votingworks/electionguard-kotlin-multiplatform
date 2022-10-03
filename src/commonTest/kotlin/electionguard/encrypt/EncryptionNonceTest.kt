@@ -126,8 +126,7 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
         val contestDescriptionHash = mcontest.cryptoHash
         val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
         val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
-        val contestNonce = nonceSequence[contest.sequenceOrder]
-        val chaumPedersenNonce = nonceSequence[0]
+        val contestNonce = nonceSequence[0]
 
         assertEquals(contestNonce, contest.contestNonce)
 
@@ -152,8 +151,7 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
         selection: CiphertextBallot.Selection
     ): PlaintextBallot.Selection? {
         val nonceSequence = Nonces(mselection.cryptoHash.toElementModQ(group), contestNonce)
-        val disjunctiveChaumPedersenNonce: ElementModQ = nonceSequence[0]
-        val selectionNonce: ElementModQ = nonceSequence[selection.sequenceOrder]
+        val selectionNonce: ElementModQ = nonceSequence[1]
 
         assertEquals(selectionNonce, selection.selectionNonce)
 
