@@ -51,6 +51,7 @@ data class ContestData(
     // If still too large, truncate writeIns to CHOP_WRITE_INS characters, append "*" to string to indicate truncated
     // If still too large, truncate overVote to (votesAllowed + 1), append "-1" to list to indicate some were removed
     // If now too small, add a filler string to make it exactly (votesAllowed + 1) * BLOCK_SIZE
+    // TODO: option to pass master nonce-derived nonce to hashedElGamalEncrypt(), see issue #168
     fun encrypt(publicKey: ElGamalPublicKey, votesAllowed: Int): HashedElGamalCiphertext {
         val messageSize = (1 + votesAllowed) * BLOCK_SIZE
 
