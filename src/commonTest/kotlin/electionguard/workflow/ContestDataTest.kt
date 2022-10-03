@@ -94,11 +94,11 @@ class ContestDataTest {
                     assertEquals(listOf(12, 13), contestDataRoundtrip.overvotes, )
                 } else if (idx == 4) {
                     assertEquals(ContestDataStatus.normal, contestDataRoundtrip.status)
-                    assertEquals(listOf("012345678901234567890123456789"), contestDataRoundtrip.writeIns, )
+                    assertEquals(listOf("012345678901234567890123456789*"), contestDataRoundtrip.writeIns, )
                     assertEquals(emptyList(), contestDataRoundtrip.overvotes)
                 } else if (idx == 5) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)
-                    assertEquals(listOf("012345678901234567890123456789"), contestDataRoundtrip.writeIns, )
+                    assertEquals(listOf("012345678901234567890123456789*"), contestDataRoundtrip.writeIns, )
                     assertEquals(listOf(20), contestDataRoundtrip.overvotes)
                 } else if (idx == 6) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)

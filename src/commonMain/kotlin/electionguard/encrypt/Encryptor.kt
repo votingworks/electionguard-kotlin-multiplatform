@@ -188,6 +188,7 @@ class Encryptor(
             status
         )
 
+        // TODO: option to pass master nonce-derived nonce to contestData.encrypt(), see issue #168
         return mcontest.encryptContest(
             group,
             elgamalPublicKey,
