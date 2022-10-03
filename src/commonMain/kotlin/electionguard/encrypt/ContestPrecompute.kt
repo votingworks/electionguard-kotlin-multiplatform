@@ -78,14 +78,16 @@ class ContestPrecompute(
         private val placeholders = mutableListOf<Selection>()
         private val contestNonce: ElementModQ
         private val chaumPedersenNonce: ElementModQ
+        private val contestDataNonce: ElementModQ
         private var encryptedContest: CiphertextBallot.Contest? = null
 
         init {
             val contestDescriptionHash = mcontest.cryptoHash
             val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
             val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
-            contestNonce = nonceSequence[mcontest.sequenceOrder]
-            chaumPedersenNonce = nonceSequence[0]
+            contestNonce = nonceSequence[0]
+            chaumPedersenNonce = nonceSequence[1]
+            contestDataNonce = nonceSequence[2]
             mcontest.selections.forEach { selections.add(Selection(it, contestNonce, false)) }
 
             // Add a placeholder selection for each possible vote in the contest
@@ -138,7 +140,7 @@ class ContestPrecompute(
                 contestNonce,
                 chaumPedersenNonce,
                 encryptedSelections,
-                contestData.encrypt(elgamalPublicKey, mcontest.votesAllowed),
+                contestData.encrypt(elgamalPublicKey, mcontest.votesAllowed, contestDataNonce),
             )
         }
     }
