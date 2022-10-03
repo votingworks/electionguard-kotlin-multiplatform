@@ -10,7 +10,7 @@ import pbandk.encodeToByteArray
 import kotlin.math.max
 
 private val logger = KotlinLogging.logger("ContestData")
-private const val debug = true
+private const val debug = false
 private const val BLOCK_SIZE : Int = 32
 private const val CHOP_WRITE_INS : Int = 30
 
