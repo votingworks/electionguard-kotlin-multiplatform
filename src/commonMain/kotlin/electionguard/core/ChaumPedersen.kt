@@ -253,7 +253,7 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
             // We can't convert a negative number to an ElementModQ,
             // so we instead use the unaryMinus operator.
             val plaintextMinusIndex = if (plaintext < j)
-                (plaintext - j).toElementModQ(context)
+                (j - plaintext).toElementModQ(context)
             else
                 -((plaintext - j).toElementModQ(context))
 
@@ -266,6 +266,7 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
 
     // Spec, page 22, equation 50; we need to have this very
     // specific ordering of inputs for computing c.
+    println("Range proof, hashing: $qbar, $alpha, $beta, (*) ${hashMe.toList()}")
     val c = hashElements(qbar, alpha, beta, *(hashMe.toTypedArray())).toElementModQ(context)
 
     // Spec, page 22, equation 51. (c_l)
@@ -469,8 +470,10 @@ fun RangeChaumPedersenProofKnownNonce.isValid(
     val hashError =
         if (hashElements(qbar, ciphertext.pad, ciphertext.data, *abList) == c.toUInt256())
             Ok(true)
-        else
+        else {
+            println("Verified hash, $qbar, ${ciphertext.pad}, ${ciphertext.data}, (*) ${abList.toList()}")
             Err("    hash of reconstructed a, b values doesn't match proof c (5.3)")
+        }
 
     val proofsValid = expandedProofs.mapIndexed { j, proof ->
         proof.isValid(

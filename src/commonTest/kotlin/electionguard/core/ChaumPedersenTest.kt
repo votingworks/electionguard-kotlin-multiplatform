@@ -1,6 +1,8 @@
 package electionguard.core
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.getOrThrow
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
@@ -670,6 +672,43 @@ class ChaumPedersenTest {
                 arrayOf(extendedBaseHash, jointKey.publicKey.key, ciphertext.pad, ciphertext.data), // section 7
                 arrayOf(partialDecryption)
             ) is Ok)
+        }
+    }
+
+    @Test
+    fun testRangeProofsSimple() {
+        runTest {
+            val context = tinyGroup()
+            val secretKey = 2.toElementModQ(context)
+            val keypair = elGamalKeyPairFromSecret(secretKey)
+            val publicKey = keypair.publicKey
+            val nonce = 3.toElementModQ(context)
+            val seed = 10.toElementModQ(context)
+            val qbar = 42.toElementModQ(context)
+            val ciphertext0 = 0.encrypt(keypair, nonce)
+            val ciphertext2 = 2.encrypt(keypair, nonce)
+
+            val rangeProof01 = ciphertext0.rangeChaumPedersenProofKnownNonce(0, 1, nonce, publicKey, seed, qbar)
+            val valid01 = rangeProof01.isValid(ciphertext0, publicKey, qbar, 1)
+
+            val rangeProof02 = ciphertext0.rangeChaumPedersenProofKnownNonce(0, 2, nonce, publicKey, seed, qbar)
+            val valid02 = rangeProof02.isValid(ciphertext0, publicKey, qbar, 2)
+
+            val rangeProof22 = ciphertext2.rangeChaumPedersenProofKnownNonce(0, 2, nonce, publicKey, seed, qbar)
+            val valid22 = rangeProof22.isValid(ciphertext2, publicKey, qbar, 2)
+
+            if (valid01 is Err) {
+                println("Error in valid01: $valid01")
+            }
+
+            if (valid02 is Err) {
+                println("Error in valid02: $valid02")
+            }
+            if (valid22 is Err) {
+                println("Error in valid02: $valid22")
+            }
+
+            assertTrue(valid01 is Ok && valid02 is Ok && valid22 is Ok)
         }
     }
 }
