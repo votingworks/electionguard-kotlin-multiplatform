@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import com.github.michaelbull.result.*
 
 /**
  * Our own assert function, which isn't available in the Kotlin standard library on JavaScript, even
@@ -139,4 +140,17 @@ inline fun <reified T : Enum<T>> safeEnumValueOf(name: String?): T? {
 fun getSystemDate(): LocalDateTime {
     val currentMoment: Instant = Clock.System.now()
     return currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
+}
+
+/**
+ * Helper function: given a list of [Result] instances, of the type we use in ElectionGuard,
+ * merges together all the results. If they're all Ok, the result is Ok. If any are Err,
+ * then the result is an Err with all the strings joined by newlines.
+ */
+fun List<Result<Boolean, String>>.merge(): Result<Boolean, String> {
+    val errors =  filterIsInstance<Err<String>>()
+    return if (errors.isEmpty())
+        Ok(true)
+    else Err(
+        errors.joinToString("\n") { it.error })
 }

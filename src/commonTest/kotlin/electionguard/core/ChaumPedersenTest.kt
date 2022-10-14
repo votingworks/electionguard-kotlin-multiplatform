@@ -704,6 +704,7 @@ class ChaumPedersenTest {
             if (valid02 is Err) {
                 println("Error in valid02: $valid02")
             }
+
             if (valid22 is Err) {
                 println("Error in valid02: $valid22")
             }
