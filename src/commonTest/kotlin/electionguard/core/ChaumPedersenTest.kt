@@ -6,6 +6,8 @@ import com.github.michaelbull.result.getOrThrow
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -710,6 +712,37 @@ class ChaumPedersenTest {
             }
 
             assertTrue(valid01 is Ok && valid02 is Ok && valid22 is Ok)
+        }
+    }
+
+    @Test
+    fun testRangeProofs() {
+        val context = tinyGroup()
+        runTest {
+            checkAll(
+                Arb.int(0, 5),
+                Arb.int(0, 5),
+                elementsModQNoZero(context),
+                elGamalKeypairs(context),
+                elementsModQ(context),
+                elementsModQ(context)
+            ) { p0, p1, nonce, keypair, seed, qbar ->
+                val plaintext = min(p0, p1)
+                val rangeLimit = max(p0, p1)
+
+                val ciphertext = plaintext.encrypt(keypair, nonce)
+                val proof = ciphertext.rangeChaumPedersenProofKnownNonce(
+                    plaintext,
+                    rangeLimit,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    qbar
+                )
+
+                val proofValidation = proof.isValid(ciphertext, keypair.publicKey, qbar, rangeLimit)
+                assertTrue(proofValidation is Ok)
+            }
         }
     }
 }
