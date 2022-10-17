@@ -5,10 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
-import electionguard.core.ElGamalCiphertext
-import electionguard.core.GroupContext
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.plus
+import electionguard.core.*
 import kotlin.math.roundToInt
 
 /**
@@ -27,7 +24,7 @@ class VerifyAggregation(
     fun verify(encryptedTally: EncryptedTally, showTime : Boolean = false): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<Result<Boolean, String>>()
         var ncontests = 0
         var nselections = 0
         for (contest in encryptedTally.contests) {
@@ -41,11 +38,11 @@ class VerifyAggregation(
                 val accum = aggregator.get(key)
                 if (accum != null) {
                     if (selection.ciphertext != accum) {
-                        errors.add("    Ballot Aggregation does not match $key")
+                        errors.add(Err("    Ballot Aggregation does not match $key"))
                     }
                 } else {
                     if (selection.ciphertext.pad != group.ZERO_MOD_P || selection.ciphertext.data != group.ZERO_MOD_P) { // TODO test
-                        errors.add("    Ballot Aggregation empty does not match $key")
+                        errors.add(Err("    Ballot Aggregation empty does not match $key"))
                     }
                 }
             }
@@ -53,7 +50,7 @@ class VerifyAggregation(
         val took = getSystemTimeInMillis() - starting
         if (showTime) println("   VerifyAggregation took $took millisecs")
 
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+        return errors.merge()
     }
 }
 

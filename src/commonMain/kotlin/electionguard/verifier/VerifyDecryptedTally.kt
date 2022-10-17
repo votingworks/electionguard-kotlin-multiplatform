@@ -1,19 +1,10 @@
 package electionguard.verifier
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.*
 import electionguard.ballot.Guardian
 import electionguard.ballot.Manifest
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.expand
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.isValid
-import electionguard.core.toElementModQ
+import electionguard.core.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -118,7 +109,7 @@ class VerifyDecryptedTally(
                         val guardianKey = this.guardianKeys[partialDecryption.guardianId]
                         if (guardianKey != null) {
                             // test that the proof is correct covers 8.A, 8.B, 8.C
-                            val svalid = partialDecryption.proof.isValid(
+                            val svalid = partialDecryption.proof.validate(
                                 group.G_MOD_P,
                                 guardianKey,
                                 selection.message.pad,
@@ -154,7 +145,7 @@ class VerifyDecryptedTally(
                                 selection.message.pad,
                                 hx,)
                             // testing that the proof is correct covers 9.A, 9.B, 9.C
-                            val recoveredProof = expandedProof.isValid(
+                            val recoveredProof = expandedProof.validate(
                                 group.G_MOD_P,
                                 gx,
                                 selection.message.pad,
@@ -258,7 +249,7 @@ class VerifyDecryptedTally(
      * </pre>
      */
     private fun verifySelectionDecryption(where: String, selection: DecryptedTallyOrBallot.Selection): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<Result<Boolean, String>>()
         for (share in selection.partialDecryptions) {
             val partialDecryptions: Iterable<ElementModP> = selection.partialDecryptions
                 .map { s -> s.share() }
@@ -266,16 +257,16 @@ class VerifyDecryptedTally(
             val M: ElementModP = selection.value
             val B: ElementModP = selection.message.data
             if (B != M * productMi) {
-                errors.add(" 11.A Tally Decryption failed for '$where' share for '${share.guardianId}'")
+                errors.add(Err(" 11.A Tally Decryption failed for '$where' share for '${share.guardianId}'"))
             }
 
             // (B) 𝑀 = 𝑔^𝑡 mod 𝑝.
             val tallyQ = selection.tally.toElementModQ(group)
             if (selection.value != jointPublicKey powP tallyQ) {
-                errors.add(" 11.B Tally Decryption failed for '$where' share for '${share.guardianId}'")
+                errors.add(Err(" 11.B Tally Decryption failed for '$where' share for '${share.guardianId}'"))
             }
         }
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+        return errors.merge()
     }
 
     fun verifySpoiledBallotTallies(

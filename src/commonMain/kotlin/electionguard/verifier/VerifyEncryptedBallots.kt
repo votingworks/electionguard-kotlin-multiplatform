@@ -6,16 +6,7 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
-import electionguard.core.ConstantChaumPedersenProofKnownNonce
-import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
-import electionguard.core.encryptedSum
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.hashElements
-import electionguard.core.isValid
+import electionguard.core.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -104,7 +95,7 @@ class VerifyEncryptedBallots(
 
             // test that the proof is correct; covers 5.C, 5.D, 5.E
             val proof: ConstantChaumPedersenProofKnownNonce = contest.proof
-            val cvalid = proof.isValid(
+            val cvalid = proof.validate(
                 ciphertextAccumulation,
                 this.jointPublicKey,
                 this.cryptoExtendedBaseHash,
@@ -140,18 +131,18 @@ class VerifyEncryptedBallots(
 
     // TODO redo this with 1.51 Verification box 6
     private fun verifyTrackingCode(ballot: EncryptedBallot): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<Result<Boolean, String>>()
 
         val cryptoHashCalculated = hashElements(ballot.ballotId, manifest.cryptoHashUInt256(), ballot.contests) // B_i
         if (cryptoHashCalculated != ballot.cryptoHash) {
-            errors.add("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} ")
+            errors.add(Err("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} "))
         }
 
         val trackingCodeCalculated = hashElements(ballot.codeSeed, ballot.timestamp, ballot.cryptoHash)
         if (trackingCodeCalculated != ballot.code) {
-            errors.add("    6.A Test ballot.trackingCode failed for ${ballot.ballotId} ")
+            errors.add(Err("    6.A Test ballot.trackingCode failed for ${ballot.ballotId} "))
         }
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+        return errors.merge()
     }
 
     /*
@@ -189,33 +180,33 @@ class VerifyEncryptedBallots(
 
     // TODO redo this with 1.51 Verification box 4
     private fun verifySelections(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<Result<Boolean, String>>()
         var nplaceholders = 0
         for (selection in contest.selections) {
             val where = "${ballotId}/${contest.contestId}/${selection.selectionId}"
             if (selection.isPlaceholderSelection) nplaceholders++
 
             // test that the proof is correct covers 4.A, 4.B, 4.C, 4.D
-            val svalid = selection.proof.isValid(
+            val svalid = selection.proof.validate(
                 selection.ciphertext,
                 this.jointPublicKey,
                 this.cryptoExtendedBaseHash,
             )
             if (svalid is Err) {
-                errors.add("    4. DisjunctiveChaumPedersenProofKnownNonce failed for $where/${selection.selectionId} = ${svalid.error} ")
+                errors.add(Err("    4. DisjunctiveChaumPedersenProofKnownNonce failed for $where/${selection.selectionId} = ${svalid.error} "))
             }
         }
 
         // 5.A verify the placeholder numbers match the maximum votes allowed
         val limit = manifest.contestIdToLimit[contest.contestId]
         if (limit == null) {
-            errors.add(" 5. Contest ${contest.contestId} not in Manifest")
+            errors.add(Err(" 5. Contest ${contest.contestId} not in Manifest"))
         } else {
             if (limit != nplaceholders) {
-                errors.add(" 5.A Contest placeholder $nplaceholders != $limit vote limit for contest ${contest.contestId}")
+                errors.add(Err(" 5.A Contest placeholder $nplaceholders != $limit vote limit for contest ${contest.contestId}"))
             }
         }
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+        return errors.merge()
     }
 
     private val accumStats = StatsAccum()

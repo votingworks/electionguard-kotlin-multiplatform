@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import com.github.michaelbull.result.*
 
 /**
  * Our own assert function, which isn't available in the Kotlin standard library on JavaScript, even
@@ -140,3 +141,42 @@ fun getSystemDate(): LocalDateTime {
     val currentMoment: Instant = Clock.System.now()
     return currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
 }
+
+/**
+ * Helper function: given a list of [Result] instances with string errors,
+ * either merges together all the strings (with an optional header provided
+ * by a lambda), or returns an [Ok] with the value provided by another lambda.
+ */
+inline fun <T> List<Result<T, String>>.mergeWithOkay(
+    errHeaderProvider: () -> String = { "" },
+    okProvider: () -> T) : Result<T, String> {
+    val errors =  filterIsInstance<Err<String>>()
+
+    return if (errors.isEmpty()) {
+        Ok(okProvider())
+    } else {
+        val errHeader = errHeaderProvider()
+        val errHeaderWithNewline =
+            if (errHeader.isNotBlank())
+                errHeader + "\n"
+            else
+                ""
+        Err(errHeaderWithNewline +
+                errors.joinToString("\n") { it.error })
+    }
+}
+
+/**
+ * Helper function: given a list of [Result] instances, of the type we often use in
+ * ElectionGuard, merges together all the results. If they're all Ok, the result is
+ * Ok. If any are Err, then the result is an Err with all the strings joined by newlines.
+ */
+inline fun List<Result<Boolean, String>>.merge(): Result<Boolean, String> =
+    mergeWithOkay { true }
+
+// Note: making these merge() functions inline will have a non-trivial
+// performance benefit on the common case that there are no errors.
+// In particular, the call to okProvider() will be inlined, which
+// will eliminate any method call (except isEmpty()) for the common
+// case of returning a constant, like Ok(true).
+

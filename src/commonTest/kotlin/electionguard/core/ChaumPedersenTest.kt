@@ -1,9 +1,12 @@
 package electionguard.core
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -60,11 +63,11 @@ class ChaumPedersenTest {
                     hashHeader
                 )
 
-            assertTrue(goodProof.isValid(message, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(goodProof.isValid(message, keypair.publicKey, badHashHeader) is Ok)
-            assertFalse(badProof1.isValid(message, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(badProof2.isValid(message, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(badProof3.isValid(message, keypair.publicKey, hashHeader) is Ok)
+            assertTrue(goodProof.validate(message, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(goodProof.validate(message, keypair.publicKey, badHashHeader) is Ok)
+            assertFalse(badProof1.validate(message, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof2.validate(message, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof3.validate(message, keypair.publicKey, hashHeader) is Ok)
         }
     }
 
@@ -90,15 +93,15 @@ class ChaumPedersenTest {
                 badMessage2.constantChaumPedersenProofKnownSecretKey(0, keypair, seed, hashHeader)
 
             assertTrue(
-                goodProof.isValid(message, keypair.publicKey, hashHeader, expectedConstant = 0)  is Ok
+                goodProof.validate(message, keypair.publicKey, hashHeader, expectedConstant = 0)  is Ok
             )
             assertFalse(
-                goodProof.isValid(message, keypair.publicKey, hashHeader, expectedConstant = 1)  is Ok
+                goodProof.validate(message, keypair.publicKey, hashHeader, expectedConstant = 1)  is Ok
             )
-            assertFalse(goodProof.isValid(message, keypair.publicKey, badHashHeader) is Ok)
-            assertFalse(badProof1.isValid(message, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(badProof2.isValid(message, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(badProof3.isValid(message, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(goodProof.validate(message, keypair.publicKey, badHashHeader) is Ok)
+            assertFalse(badProof1.validate(message, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof2.validate(message, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof3.validate(message, keypair.publicKey, hashHeader) is Ok)
         }
     }
 
@@ -128,7 +131,7 @@ class ChaumPedersenTest {
                         qbar = context.ONE_MOD_Q
                     )
                 assertTrue(
-                    proof.isValid(
+                    proof.validate(
                         message,
                         keypair.publicKey,
                         context.ONE_MOD_Q,
@@ -137,7 +140,7 @@ class ChaumPedersenTest {
                     "first proof is valid"
                 )
                 assertFalse(
-                    proof.isValid(
+                    proof.validate(
                         message,
                         keypair.publicKey,
                         context.ONE_MOD_Q,
@@ -146,7 +149,7 @@ class ChaumPedersenTest {
                     "modified constant invalidates proof"
                 )
                 assertFalse(
-                    proof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q) is Ok,
+                    proof.validate(badMessage, keypair.publicKey, context.ONE_MOD_Q) is Ok,
                     "modified message invalidates proof"
                 )
 
@@ -159,7 +162,7 @@ class ChaumPedersenTest {
                         qbar = context.ONE_MOD_Q
                     )
                 assertFalse(
-                    badProof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q) is Ok,
+                    badProof.validate(badMessage, keypair.publicKey, context.ONE_MOD_Q) is Ok,
                     "modified proof with consistent message is invalid"
                 )
 
@@ -172,7 +175,7 @@ class ChaumPedersenTest {
                         qbar = context.ONE_MOD_Q
                     )
                 assertFalse(
-                    badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q) is Ok,
+                    badProof2.validate(message, keypair.publicKey, context.ONE_MOD_Q) is Ok,
                     "modified proof with inconsistent message is invalid"
                 )
 
@@ -208,23 +211,23 @@ class ChaumPedersenTest {
                         context.ONE_MOD_Q
                     )
                 assertTrue(
-                    proof.isValid(
+                    proof.validate(
                         message,
                         keypair.publicKey,
                         context.ONE_MOD_Q,
                         expectedConstant = constant
                     )  is Ok
                 )
-                assertTrue(proof.isValid(message, keypair.publicKey, context.ONE_MOD_Q) is Ok)
+                assertTrue(proof.validate(message, keypair.publicKey, context.ONE_MOD_Q) is Ok)
                 assertFalse(
-                    proof.isValid(
+                    proof.validate(
                         message,
                         keypair.publicKey,
                         context.ONE_MOD_Q,
                         expectedConstant = badConstant
                     ) is Ok
                 )
-                assertFalse(proof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q) is Ok)
+                assertFalse(proof.validate(badMessage, keypair.publicKey, context.ONE_MOD_Q) is Ok)
 
                 val badProof =
                     badMessage.constantChaumPedersenProofKnownSecretKey(
@@ -233,7 +236,7 @@ class ChaumPedersenTest {
                         seed,
                         context.ONE_MOD_Q
                     )
-                assertFalse(badProof.isValid(badMessage, keypair.publicKey, context.ONE_MOD_Q) is Ok)
+                assertFalse(badProof.validate(badMessage, keypair.publicKey, context.ONE_MOD_Q) is Ok)
 
                 val badProof2 =
                     message.constantChaumPedersenProofKnownSecretKey(
@@ -242,10 +245,10 @@ class ChaumPedersenTest {
                         seed,
                         context.ONE_MOD_Q
                     )
-                assertFalse(badProof2.isValid(message, keypair.publicKey, context.ONE_MOD_Q) is Ok)
+                assertFalse(badProof2.validate(message, keypair.publicKey, context.ONE_MOD_Q) is Ok)
 
                 val badProof3 = proof.copy(constant = intTestQ - 1)
-                assertFalse(badProof3.isValid(message, keypair.publicKey, context.ONE_MOD_Q) is Ok)
+                assertFalse(badProof3.validate(message, keypair.publicKey, context.ONE_MOD_Q) is Ok)
             }
         }
     }
@@ -311,16 +314,16 @@ class ChaumPedersenTest {
         val hashHeaderX = hashHeader ?: context.ZERO_MOD_Q
 
         val proof = genericChaumPedersenProofOf(g, h, x, seed, arrayOf(hashHeaderX), arrayOf(hashHeaderX))
-        assertTrue(proof.isValid(g, gx, h, hx, arrayOf(hashHeaderX), arrayOf(hashHeaderX)) is Ok)
+        assertTrue(proof.validate(g, gx, h, hx, arrayOf(hashHeaderX), arrayOf(hashHeaderX)) is Ok)
 
         if (gx != gnotx && hx != hnotx) {
             // In the degenerate case where q1 or q2 == 0, then we'd have a problem:
             // g = 1, gx = 1, and gnotx = 1. Same thing for h, hx, hnotx. This means
             // swapping in gnotx for gx doesn't actually do anything.
 
-            assertFalse(proof.isValid(g, gnotx, h, hx, hashHeader = arrayOf(hashHeaderX)) is Ok)
-            assertFalse(proof.isValid(g, gx, h, hnotx, hashHeader = arrayOf(hashHeaderX)) is Ok)
-            assertFalse(proof.isValid(g, gnotx, h, hnotx, hashHeader = arrayOf(hashHeaderX)) is Ok)
+            assertFalse(proof.validate(g, gnotx, h, hx, hashHeader = arrayOf(hashHeaderX)) is Ok)
+            assertFalse(proof.validate(g, gx, h, hnotx, hashHeader = arrayOf(hashHeaderX)) is Ok)
+            assertFalse(proof.validate(g, gnotx, h, hnotx, hashHeader = arrayOf(hashHeaderX)) is Ok)
         }
     }
 
@@ -387,26 +390,26 @@ class ChaumPedersenTest {
                     hashHeader
                 )
 
-            assertTrue(goodProof0.isValid(message0, keypair.publicKey, hashHeader) is Ok)
-            assertTrue(goodProof1.isValid(message1, keypair.publicKey, hashHeader) is Ok)
+            assertTrue(goodProof0.validate(message0, keypair.publicKey, hashHeader) is Ok)
+            assertTrue(goodProof1.validate(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(goodProof0.isValid(message1, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(goodProof0.validate(message1, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(goodProof0.validate(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader) is Ok)
-            assertFalse(goodProof1.isValid(message0, keypair.publicKey, badHashHeader) is Ok)
+            assertFalse(goodProof1.validate(message0, keypair.publicKey, badHashHeader) is Ok)
+            assertFalse(goodProof1.validate(message0, keypair.publicKey, badHashHeader) is Ok)
 
-            assertFalse(badProof0.isValid(message0, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(badProof0.isValid(message1, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof0.validate(message0, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof0.validate(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(badProof1.isValid(message0, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(badProof1.isValid(message1, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof1.validate(message0, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof1.validate(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(badProof2.isValid(message0, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(badProof2.isValid(message1, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof2.validate(message0, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof2.validate(message1, keypair.publicKey, hashHeader) is Ok)
 
-            assertFalse(badProof3.isValid(message1, keypair.publicKey, hashHeader) is Ok)
-            assertFalse(badProof3.isValid(message0, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof3.validate(message1, keypair.publicKey, hashHeader) is Ok)
+            assertFalse(badProof3.validate(message0, keypair.publicKey, hashHeader) is Ok)
         }
     }
 
@@ -431,12 +434,12 @@ class ChaumPedersenTest {
                         hashHeader
                     )
 
-                assertTrue(proof.isValid(ciphertext, keypair.publicKey, hashHeader) is Ok)
+                assertTrue(proof.validate(ciphertext, keypair.publicKey, hashHeader) is Ok)
 
                 // now, swap the proofs around and verify it fails
                 val badProof = proof.copy(proof0 = proof.proof1, proof1 = proof.proof0, c = proof.c)
 
-                assertFalse(badProof.isValid(ciphertext, keypair.publicKey, hashHeader) is Ok)
+                assertFalse(badProof.validate(ciphertext, keypair.publicKey, hashHeader) is Ok)
             }
         }
     }
@@ -462,11 +465,11 @@ class ChaumPedersenTest {
 
                 val badProof = fakeGenericChaumPedersenProofOf(c, seed)
                 assertTrue(
-                    badProof.isValid(g, gx, h, hNotX, arrayOf(hashHeader), checkC = false)  is Ok,
+                    badProof.validate(g, gx, h, hNotX, arrayOf(hashHeader), checkC = false)  is Ok,
                     "if we don't check c, the proof will validate"
                 )
                 assertFalse(
-                    badProof.isValid(g, gx, h, hNotX, arrayOf(hashHeader), checkC = true)  is Ok,
+                    badProof.validate(g, gx, h, hNotX, arrayOf(hashHeader), checkC = true)  is Ok,
                     "if we do check c, the proof will not validate"
                 )
             }
@@ -502,7 +505,7 @@ class ChaumPedersenTest {
                 )
 
             assertTrue(
-                proof.isValid(
+                proof.validate(
                     message,
                     publicKey = publicKey,
                     qbar = hashHeader,
@@ -545,7 +548,7 @@ class ChaumPedersenTest {
                 )
 
             assertTrue(
-                proof.isValid(
+                proof.validate(
                     ciphertextAccumulation,
                     publicKey = publicKey,
                     qbar = hashHeader,
@@ -577,7 +580,7 @@ class ChaumPedersenTest {
             val hx1 = h powP x
 
             val proof1 = genericChaumPedersenProofOf(g, h, x, seed, arrayOf(header))
-            assertTrue(proof1.isValid(g, gx1, h, hx1, arrayOf(header)) is Ok)
+            assertTrue(proof1.validate(g, gx1, h, hx1, arrayOf(header)) is Ok)
 
             // proof that we know the secret, x
             val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
@@ -593,7 +596,7 @@ class ChaumPedersenTest {
             val gx = context.G_MOD_P powP x
             val hx = ciphertext.pad powP x
 
-            assertTrue(proof.isValid(
+            assertTrue(proof.validate(
                 context.G_MOD_P,
                 gx,
                 ciphertext.pad,
@@ -625,7 +628,7 @@ class ChaumPedersenTest {
                 arrayOf(partialDecryption),
             )
 
-            assertTrue(proof.isValid(
+            assertTrue(proof.validate(
                 context.G_MOD_P,
                 publicKey,
                 ciphertext.pad,
@@ -662,7 +665,7 @@ class ChaumPedersenTest {
             // so we need
             val gx = context.G_MOD_P powP generatingGuardianValue
             val hx = ciphertext.pad powP generatingGuardianValue // Mij
-            assertTrue(proof.isValid(
+            assertTrue(proof.validate(
                 g = context.G_MOD_P,
                 gx,
                 h = ciphertext.pad,
@@ -670,6 +673,106 @@ class ChaumPedersenTest {
                 arrayOf(extendedBaseHash, jointKey.publicKey.key, ciphertext.pad, ciphertext.data), // section 7
                 arrayOf(partialDecryption)
             ) is Ok)
+        }
+    }
+
+    @Test
+    fun testRangeProofsSimple() {
+        val context = tinyGroup()
+        val secretKey = 2.toElementModQ(context)
+        val keypair = elGamalKeyPairFromSecret(secretKey)
+        val publicKey = keypair.publicKey
+        val nonce = 3.toElementModQ(context)
+        val seed = 10.toElementModQ(context)
+        val qbar = 42.toElementModQ(context)
+        val ciphertext0 = 0.encrypt(keypair, nonce)
+        val ciphertext2 = 2.encrypt(keypair, nonce)
+
+        val rangeProof01 = ciphertext0.rangeChaumPedersenProofKnownNonce(0, 1, nonce, publicKey, seed, qbar)
+        val valid01 = rangeProof01.validate(ciphertext0, publicKey, qbar, 1)
+
+        val rangeProof02 = ciphertext0.rangeChaumPedersenProofKnownNonce(0, 2, nonce, publicKey, seed, qbar)
+        val valid02 = rangeProof02.validate(ciphertext0, publicKey, qbar, 2)
+
+        val rangeProof22 = ciphertext2.rangeChaumPedersenProofKnownNonce(2, 2, nonce, publicKey, seed, qbar)
+        val valid22 = rangeProof22.validate(ciphertext2, publicKey, qbar, 2)
+
+        if (valid01 is Err) {
+            println("Error in valid01: $valid01")
+        }
+
+        if (valid02 is Err) {
+            println("Error in valid02: $valid02")
+        }
+
+        if (valid22 is Err) {
+            println("Error in valid02: $valid22")
+        }
+
+        assertTrue(valid01 is Ok && valid02 is Ok && valid22 is Ok)
+    }
+
+    @Test
+    fun testRangeProofs() {
+        val context = tinyGroup()
+        runTest {
+            checkAll(
+                Arb.int(0, 5),
+                Arb.int(0, 5),
+                elementsModQNoZero(context),
+                elGamalKeypairs(context),
+                elementsModQ(context),
+                elementsModQ(context)
+            ) { p0, p1, nonce, keypair, seed, qbar ->
+                val plaintext = min(p0, p1)
+                val rangeLimit = max(p0, p1)
+
+                val ciphertext = plaintext.encrypt(keypair, nonce)
+                val proof = ciphertext.rangeChaumPedersenProofKnownNonce(
+                    plaintext,
+                    rangeLimit,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    qbar
+                )
+
+                val proofValidation = proof.validate(ciphertext, keypair.publicKey, qbar, rangeLimit)
+                assertTrue(proofValidation is Ok)
+            }
+        }
+    }
+
+    @Test
+    fun testBadRangeProofs() {
+        val context = tinyGroup()
+        runTest {
+            checkAll(
+                Arb.int(0, 5),
+                Arb.int(1, 5),
+                elementsModQNoZero(context),
+                elGamalKeypairs(context),
+                elementsModQ(context),
+                elementsModQ(context)
+            ) { p0, p1, nonce, keypair, seed, qbar ->
+                // we're deliberately making the plaintext greater than the range limit!
+                val rangeLimit = p0
+                val plaintext = p0 + p1
+
+                val ciphertext = plaintext.encrypt(keypair, nonce)
+                val proof = ciphertext.rangeChaumPedersenProofKnownNonce(
+                    plaintext,
+                    rangeLimit,
+                    nonce,
+                    keypair.publicKey,
+                    seed,
+                    qbar,
+                    true // disables checks that would otherwise reject this proof
+                )
+
+                val proofValidation = proof.validate(ciphertext, keypair.publicKey, qbar, rangeLimit)
+                assertTrue(proofValidation is Err)
+            }
         }
     }
 }

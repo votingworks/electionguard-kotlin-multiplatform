@@ -1,9 +1,7 @@
 package electionguard.core
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
+import com.github.michaelbull.result.*
+import kotlin.collections.fold
 
 /** Proof that the ciphertext is a given constant. */
 data class ConstantChaumPedersenProofKnownNonce(
@@ -24,6 +22,17 @@ data class ConstantChaumPedersenProofKnownSecretKey(
 data class DisjunctiveChaumPedersenProofKnownNonce(
     val proof0: GenericChaumPedersenProof,
     val proof1: GenericChaumPedersenProof,
+    val c: ElementModQ
+)
+
+/**
+ * Disjunctive proof that the ciphertext is between zero and a maximum
+ * value, inclusive. Note that the size of the proof is proportional to
+ * the maximum value. Example: a proof that a ciphertext is in [0, 5]
+ * will have six internal proof components.
+ */
+data class RangeChaumPedersenProofKnownNonce(
+    val proofs: List<GenericChaumPedersenProof>,
     val c: ElementModQ
 )
 
@@ -191,6 +200,99 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
 }
 
 /**
+ * Produces a proof that a given ElGamal encryption corresponds to a value between zero and a
+ * given limit (inclusive), given that the prover to know the nonce (the r behind the g^r).
+ *
+ * @param plaintext The actual plaintext constant value used to make the ElGamal ciphertext (L in
+ *     the spec)
+ * @param limit The maximum possible value for the plaintext (inclusive)
+ * @param nonce The aggregate nonce used creating the ElGamal ciphertext (r in the spec)
+ * @param publicKey The ElGamal public key for the election
+ * @param seed Used to generate other random values here
+ * @param qbar The election extended base hash (Q')
+ * @param overrideErrorChecks Allows the creation of invalid proofs
+ */
+fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
+    plaintext: Int,
+    limit: Int,
+    nonce: ElementModQ,
+    publicKey: ElGamalPublicKey,
+    seed: ElementModQ,
+    qbar: ElementModQ,
+    overrideErrorChecks: Boolean = false
+): RangeChaumPedersenProofKnownNonce {
+    if (!overrideErrorChecks && plaintext < 0) {
+        throw ArithmeticException("negative plaintexts not supported")
+    }
+    if (!overrideErrorChecks && limit < 0) {
+        throw ArithmeticException("negative limits not supported")
+    }
+    if (!overrideErrorChecks && limit < plaintext) {
+        throw ArithmeticException("limit must be at least as big as the plaintext")
+    }
+
+    val (alpha, beta) = this
+    val context = compatibleContextOrFail(pad, nonce, publicKey.key, seed, qbar, alpha, beta)
+
+    // Performance note: these lists are actually ArrayList, so indexing will
+    // be a constant-time operation.
+
+    val uList = Nonces(seed, "range-chaum-pedersen-proof").take(limit + 1)
+
+    // Randomly chosen c-values; note that c[plaintext] (c_l in the spec) should
+    // not be taken from this list; that's going to be computed later on.
+    val cList = Nonces(seed, "range-chaum-pedersen-proof-constants").take(limit + 1)
+
+    val aList = uList.map { u -> context.gPowP(u) }
+    val bList = uList.mapIndexed { j, u ->
+        if (j == plaintext) {
+            // Spec, page 22, equation 48.
+            // We're not using cList for this specific b value.
+            publicKey powP u
+        } else {
+            // Spec, page 22, equation 49.
+
+            // We can't convert a negative number to an ElementModQ,
+            // so we instead use the unaryMinus operator.
+            val plaintextMinusIndex = if (plaintext >= j)
+                (plaintext - j).toElementModQ(context)
+            else
+                -((j - plaintext).toElementModQ(context))
+
+            publicKey powP (plaintextMinusIndex * cList[j] + u)
+        }
+    }
+
+    // (a1, a2, a3) x (b1, b2, b3) ==> (a1, b1, a2, b2, a3, b3, ...)
+    val hashMe = aList.zip(bList).flatMap { listOf(it.first, it.second) }
+
+    // Spec, page 22, equation 50; we need to have this very
+    // specific ordering of inputs for computing c.
+    val c = hashElements(qbar, alpha, beta, *(hashMe.toTypedArray())).toElementModQ(context)
+
+    // Spec, page 22, equation 51. (c_l)
+    val cl = c -
+            cList.filterIndexed { j, _ -> j != plaintext }
+                .fold(context.ZERO_MOD_Q) { a, b -> a + b }
+
+    val cListFinal = cList.mapIndexed { j, cj -> if (j == plaintext) cl else cj }
+
+    val vList = uList.zip(cList).mapIndexed { j, (uj, cj) ->
+        val cjActual = if (j == plaintext) cl else cj
+
+        // Spec, page 22, equation 52 (v_j)
+        uj - cjActual * nonce
+    }
+
+    return RangeChaumPedersenProofKnownNonce(
+        cListFinal.zip(vList).map{ (cj, vj) ->
+            GenericChaumPedersenProof(cj, vj)
+        },
+        c
+    )
+}
+
+/**
  * Validates a proof against an ElGamal ciphertext.
  *
  * @param ciphertext An ElGamal ciphertext
@@ -200,7 +302,7 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
  *     against the expected constant.
  * @return true if the proof is valid, else an error message
  */
-fun ConstantChaumPedersenProofKnownNonce.isValid(
+fun ConstantChaumPedersenProofKnownNonce.validate(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey,
     qbar: ElementModQ,
@@ -209,7 +311,7 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
     val context = compatibleContextOrFail(proof.c, ciphertext.pad, qbar)
 
     val constantQ = -(constant.toElementModQ(context))
-    val validResult = proof.isValid(
+    val validResult = proof.validate(
         g = context.G_MOD_P,
         gx = ciphertext.pad,
         h = publicKey.key,
@@ -218,8 +320,8 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
     )
     val constantResult = if ((expectedConstant != null) && constant != expectedConstant)
         Err("  5.A invalid constant selection limit") else Ok(true)
-    val errors = getAllErrors(validResult, constantResult)
-    return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+    val errors = listOf(validResult, constantResult)
+    return errors.merge()
 }
 
 /**
@@ -232,7 +334,7 @@ fun ConstantChaumPedersenProofKnownNonce.isValid(
  *     against the expected constant.
  * @return true if the proof is valid, else an error message
  */
-fun ConstantChaumPedersenProofKnownSecretKey.isValid(
+fun ConstantChaumPedersenProofKnownSecretKey.validate(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey,
     qbar: ElementModQ,
@@ -241,7 +343,7 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
     val context = compatibleContextOrFail(proof.c, ciphertext.pad, publicKey.key, qbar)
 
     val constantQ = -(constant.toElementModQ(context))
-    val validResult = proof.isValid(
+    val validResult = proof.validate(
         g = context.G_MOD_P,
         gx = publicKey.key,
         h = ciphertext.pad,
@@ -250,8 +352,8 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
     )
     val constantResult = if ((expectedConstant != -1) && constant != expectedConstant)
         Err("  5.A invalid constant selection limit") else Ok(true)
-    val errors = getAllErrors(validResult, constantResult)
-    return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+    val errors = listOf(validResult, constantResult)
+    return errors.merge()
 }
 
 /**
@@ -262,18 +364,18 @@ fun ConstantChaumPedersenProofKnownSecretKey.isValid(
  * @param qbar The election extended base hash (Q')
  * @return true if the proof is valid, else an error message
  */
-fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
+fun DisjunctiveChaumPedersenProofKnownNonce.validate(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey,
     qbar: ElementModQ
 ): Result<Boolean, String> {
     val context = compatibleContextOrFail(c, ciphertext.pad, publicKey.key, qbar)
-    val errors = mutableListOf<String>()
+    val errors = mutableListOf<Result<Boolean, String>>()
     val (alpha, beta) = ciphertext
 
     val consistentC = proof0.c + proof1.c == c
     if (!consistentC) {
-        errors.add("    4.D c != (c0 + c1) for disjunctive cpp")
+        errors.add(Err("    4.D c != (c0 + c1) for disjunctive cpp"))
     }
 
     val eproof0 =
@@ -295,11 +397,11 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
         c == hashElements(qbar, alpha, beta, eproof0.a, eproof0.b, eproof1.a, eproof1.b)
                 .toElementModQ(context)
     if (!validHash) {
-        errors.add("    4.B challenge is incorrectly computed for disjunctive cpp")
+        errors.add(Err("    4.B challenge is incorrectly computed for disjunctive cpp"))
     }
 
     val valid0 =
-        eproof0.isValid(
+        eproof0.validate(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
             h = publicKey.key,
@@ -308,11 +410,11 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             hashHeader = arrayOf(qbar),
         )
     if (valid0 is Err) {
-        errors.add("    invalid proof0 for disjunctive cpp: ${valid0.error}")
+        errors.add(Err("    invalid proof0 for disjunctive cpp: ${valid0.error}"))
     }
 
     val valid1 =
-        eproof1.isValid(
+        eproof1.validate(
             g = context.G_MOD_P,
             gx = ciphertext.pad,
             h = publicKey.key,
@@ -321,10 +423,67 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
             hashHeader = arrayOf(qbar),
         )
     if (valid1 is Err) {
-        errors.add("    invalid proof1 for disjunctive cpp: ${valid1.error}")
+        errors.add(Err("    invalid proof1 for disjunctive cpp: ${valid1.error}"))
     }
 
-    return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+    return errors.merge()
+}
+
+/**
+ * Validates a range proof against an ElGamal ciphertext for the
+ * range [0, limit], inclusive.
+ *
+ * @param ciphertext An ElGamal ciphertext
+ * @param publicKey The public key of the election
+ * @param qbar The election extended base hash (Q')
+ * @param limit The maximum possible value for the plaintext (inclusive)
+ * @return true if the proof is valid, else an error message
+ */
+fun RangeChaumPedersenProofKnownNonce.validate(
+    ciphertext: ElGamalCiphertext,
+    publicKey: ElGamalPublicKey,
+    qbar: ElementModQ,
+    limit: Int
+): Result<Boolean, String> {
+    val context = compatibleContextOrFail(this.proofs[0].c, ciphertext.pad, publicKey.key, qbar)
+
+    if (limit + 1 != proofs.size) {
+        return Err("    expected ${limit + 1} proofs, only found ${proofs.size}")
+    }
+
+    val (alpha, beta) = ciphertext
+
+    val expandedProofs = proofs.mapIndexed { j, proof ->
+        // recomputes all the a and b values
+        val (cj, vj) = proof
+        ExpandedGenericChaumPedersenProof(
+            a = context.gPowP(vj) * (alpha powP cj),
+            b = (publicKey powP (vj - j.toElementModQ(context) * cj)) * (beta powP cj),
+            c = cj,
+            r = vj);
+
+        // TODO: figure out how to do this with the proof.expand() method.
+        //   The way all the c-values fit together in the spec is different
+        //   enough that our "generic" expansion code isn't quite generic
+        //   enough that we can solve for the proper arguments to
+        //   pass the method as-is.
+    }
+
+    val cSum = this.proofs.fold(context.ZERO_MOD_Q) { a, b -> a + b.c }
+
+    val csumResult = if (cSum == c)
+        Ok(true)
+    else
+        Err("    c sum is invalid (5.C)")
+
+    val abList = expandedProofs.flatMap { listOf(it.a, it.b) }.toTypedArray()
+
+    val hashResult = if (hashElements(qbar, alpha, beta, *abList).toElementModQ(context) == c)
+        Ok(true)
+    else
+        Err("    hash of reconstructed a, b values doesn't match proof c (5.3)")
+
+    return listOf(csumResult, hashResult).merge();
 }
 
 /**
@@ -342,7 +501,7 @@ fun DisjunctiveChaumPedersenProofKnownNonce.isValid(
  * @param checkC If false, the challenge constant is not verified. (default: true)
  * @return true if the proof is valid, else an error message
  */
-internal fun GenericChaumPedersenProof.isValid(
+internal fun GenericChaumPedersenProof.validate(
     g: ElementModP,
     gx: ElementModP,
     h: ElementModP,
@@ -351,10 +510,10 @@ internal fun GenericChaumPedersenProof.isValid(
     hashFooter: Array<Element> = emptyArray(),
     checkC: Boolean = true,
 ): Result<Boolean, String> {
-    return expand(g, gx, h, hx).isValid(g, gx, h, hx, hashHeader, hashFooter, checkC)
+    return expand(g, gx, h, hx).validate(g, gx, h, hx, hashHeader, hashFooter, checkC)
 }
 
-internal fun ExpandedGenericChaumPedersenProof.isValid(
+internal fun ExpandedGenericChaumPedersenProof.validate(
     g: ElementModP,
     gx: ElementModP,
     h: ElementModP,
@@ -364,7 +523,7 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
     checkC: Boolean = true
 ): Result<Boolean, String> {
     val context = compatibleContextOrFail(c, g, gx, h, hx, *hashHeader, *hashFooter)
-    val errors = mutableListOf<String>()
+    val errors = mutableListOf<Result<Boolean, String>>()
 
     val inBoundsG = g.isValidResidue()
     val inBoundsGx = gx.isValidResidue()
@@ -372,21 +531,21 @@ internal fun ExpandedGenericChaumPedersenProof.isValid(
     val inBoundsHx = hx.isValidResidue()
 
     if (!(inBoundsG && inBoundsGx && inBoundsH && inBoundsHx)) {
-        errors.add("  Invalid residual: " +
+        errors.add(Err("  Invalid residual: " +
                 mapOf(
                     "inBoundsG" to inBoundsG,
                     "inBoundsGx" to inBoundsGx,
                     "inBoundsH" to inBoundsH,
                     "inBoundsHx" to inBoundsHx,
-                ).toString())
+                ).toString()))
     }
 
     val hashGood = !checkC || c == hashElements(*hashHeader, a, b, *hashFooter).toElementModQ(context)
     if (!hashGood) {
-        errors.add("  Invalid challenge ")
+        errors.add(Err("  Invalid challenge "))
     }
 
-    return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+    return errors.merge()
 }
 
 /**
@@ -432,7 +591,7 @@ fun genericChaumPedersenProofOf(
  * Produces a generic "fake" Chaum-Pedersen proof that two tuples share an exponent, i.e., that for
  * (g, g^x) and (h, h^x), it's the same value of x, but without revealing x. Unlike the regular
  * Chaum-Pedersen proof, this version allows the challenge `c` to be specified, which allows
- * everything to be faked. See the [GenericChaumPedersenProof.isValid] method on the resulting proof
+ * everything to be faked. See the [GenericChaumPedersenProof.validate] method on the resulting proof
  * object. By default, the challenge is validated by hashing elements of the proof, which prevents
  * these "fake" proofs from passing validation, but you can suppress the hash check with an optional
  * parameter.
