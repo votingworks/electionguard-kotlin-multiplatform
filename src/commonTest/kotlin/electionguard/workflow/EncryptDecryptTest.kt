@@ -28,7 +28,7 @@ class EncryptDecryptTest {
             val keypair = ElGamalKeypair(ElGamalSecretKey(secret), publicKey)
             val nonce = group.randomElementModQ(minimum = 1)
 
-            // acumulate random sequence of 1 and 0
+            // accumulate random sequence of 1 and 0
             val vote = 0
             val evote = vote.encrypt(publicKey, nonce)
             assertEquals(group.gPowP(nonce), evote.pad)

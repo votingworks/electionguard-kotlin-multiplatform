@@ -51,7 +51,7 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
         val contestDescriptionHash = mcontest.cryptoHash
         val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
         val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
-        val contestNonce = nonceSequence[contest.sequenceOrder]
+        val contestNonce = nonceSequence[0]
 
         val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
         val errors = mutableListOf<String>()
@@ -84,7 +84,7 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
         selection: EncryptedBallot.Selection
     ): PlaintextBallot.Selection? {
         val nonceSequence = Nonces(mselection.cryptoHash.toElementModQ(group), contestNonce)
-        val selectionNonce: ElementModQ = nonceSequence[selection.sequenceOrder]
+        val selectionNonce: ElementModQ = nonceSequence[1]
 
         val decodedVote: Int? = selection.ciphertext.decryptWithNonce(publicKey, selectionNonce)
         return decodedVote?.let {

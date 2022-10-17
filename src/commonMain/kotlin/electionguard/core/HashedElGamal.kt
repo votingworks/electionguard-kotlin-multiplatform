@@ -70,7 +70,7 @@ fun ByteArray.hashedElGamalEncrypt(
 
     // NIST spec: the length is the size of the message in *bits*, but that's annoying
     // to use anywhere else, so we're otherwise just tracking the size in bytes.
-    val kdf = KDF(kdfKey, "", "", size * 8)
+    val kdf = KDF(kdfKey, "", "", this.size * 8)
     val k0 = kdf[0]
     val c0 = alpha.byteArray()
     val encryptedBlocks =
@@ -78,7 +78,7 @@ fun ByteArray.hashedElGamalEncrypt(
     val c1 = concatByteArrays(*encryptedBlocks)
     val c2 = (c0 + c1).hmacSha256(k0)
 
-    return HashedElGamalCiphertext(alpha, c1, c2, size)
+    return HashedElGamalCiphertext(alpha, c1, c2, this.size)
 }
 
 /**

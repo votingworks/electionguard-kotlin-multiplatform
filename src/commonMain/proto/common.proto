@@ -10,11 +10,13 @@ message ContestData {
   enum Status {
     normal = 0;
     null_vote = 1;
-    under_vote = 2;
+    over_vote = 2;
+    under_vote = 3;
   }
-  Status vote = 1;
+  Status status = 1;
   repeated uint32 over_votes = 2;  // list of selection sequence_number for this contest
   repeated string write_ins = 3; // list of write_in strings
+  string filler = 4; // fill chars to ensure uniform block size
 }
 
 // A 4096 bit unsigned int, big-endian.
@@ -55,7 +57,7 @@ message SchnorrProof {
 }
 
 // A 256 bit unsigned int, big-endian. Always exactly 32 bytes.
-// Used as a hash, when Group operations are no longer needed on it.
+// The output of the hash function.
 message UInt256 {
   bytes value = 1;
 }

@@ -1,21 +1,21 @@
-Ø
-ballot-id--1008017902styling:
+Ù
+ballot-id--533397840stylingH
 contest0
 
-selection0
+selection0
 
-selection1
+selection1
 
-selection2N
+selection2
+
+selection3>
 contest1
 
 selection4
 
 selection5
 
-selection6
-
-selection7P
+selection6P
 contest2
 
 selection8
@@ -23,114 +23,231 @@ selection8
 selection9	
 selection10
 
-selection11A
+selection11P
 contest3
-selection12
-selection13
-selection14A
-contest4
-selection16
-selection17
-selection180
+selection12
+selection13
+selection14
+selection150
+contest4
+selection16
+selection170
 contest5
 selection20
-selection21A
-contest6
-selection24
-selection25
-selection260
+selection21R
+contest6
+selection24
+selection25
+selection26
+selection270
 contest7
 selection28
-selection29R
+selection29A
 contest8
 selection32 
 selection33!
-selection34"
-selection35#
+selection34"0
 contest9	
-selection36$S
+selection36$
+selection37%S
 	contest10
 
 selection40(
-selection41)
-selection42*
-selection43+S
+selection41)
+selection42*
+selection43+Q
 	contest11
 selection44,
 selection45-
-selection46.
-selection47/S
+selection46.
+selection47/S
 	contest12
 selection480
 selection491
 selection502
-selection5131
-	contest13
-selection524
-selection535S
-	contest14
-selection568
-selection579
-selection58:
-selection59;B
+selection513S
+	contest13
+selection524
+selection535
+selection546
+selection557S
+	contest14
+selection568
+selection579
+selection58:
+selection59;S
 	contest15
 selection60<
 selection61=
-selection62>1
-	contest16
-selection64@
-selection65A 
+selection62>
+selection63?S
+	contest16
+selection64@
+selection65A
+selection66B
+selection67C 
 	contest17
-selection68D1
-	contest18
-selection72H
-selection73I1
+selection68D 
+	contest18
+selection72HS
 	contest19
-selection76L
-selection77MB
+selection76L
+selection77M
+selection78N
+selection79OS
 	contest20
-selection80P
-selection81Q
-selection82R1
-	contest21
-selection84T
-selection85U1
+selection80P
+selection81Q
+selection82R
+selection83S1
+	contest21
+selection84T
+selection85UB
 	contest22
 selection88X
-selection89Y1
+selection89Y
+selection90Z 
 	contest23
-selection92\
-selection93]S
+selection92\S
 	contest24
 selection96`
-selection97a
-selection98b
-selection99c¤
-ballot-id--1273495805styling:
+selection97a
+selection98b
+selection99cñ
+ballot-id-1030420130styling:
 contest0
 
 selection0
 
 selection1
 
-selection2
-contest1
+selection2N
+contest1
 
-selection4.
+selection4
+
+selection5
+
+selection6
+
+selection7?
 contest2
 
-selection8
+selection8
 
-selection9	R
-contest3
-selection12
-selection13
-selection14
-selection15R
+selection9	
+selection10
+
+contest3
+selection12R
 contest4
 selection16
-selection17
-selection18
+selection17
+selection18
+selection190
+contest5
+selection20
+selection210
+contest6
+selection24
+selection250
+contest7
+selection28
+selection29R
+contest8
+selection32 
+selection33!
+selection34"
+selection35#
+contest9	
+selection36$S
+	contest10
+
+selection40(
+selection41)
+selection42*
+selection43+ 
+	contest11
+selection44,B
+	contest12
+selection480
+selection491
+selection502B
+	contest13
+selection524
+selection535
+selection546 
+	contest14
+selection5681
+	contest15
+selection60<
+selection61=1
+	contest16
+selection64@
+selection65AB
+	contest17
+selection68D
+selection69E
+selection70FB
+	contest18
+selection72H
+selection73I
+selection74JB
+	contest19
+selection76L
+selection77M
+selection78NS
+	contest20
+selection80P
+selection81Q
+selection82R
+selection83S1
+	contest21
+selection84T
+selection85U1
+	contest22
+selection88X
+selection89Y 
+	contest23
+selection92\S
+	contest24
+selection96`
+selection97a
+selection98b
+selection99c±
+ballot-id-1625222680styling:
+contest0
+
+selection0
+
+selection1
+
+selection2N
+contest1
+
+selection4
+
+selection5
+
+selection6
+
+selection7P
+contest2
+
+selection8
+
+selection9	
+selection10
+
+selection11A
+contest3
+selection12
+selection13
+selection14R
+contest4
+selection16
+selection17
+selection18
 selection190
 contest5
 selection20
@@ -139,24 +256,24 @@ selection9	R
 selection24
 selection25
 selection26
-selection27P
-contest7
-selection28
-selection29
-selection30
-selection310
+selection270
+contest7
+selection28
+selection29
 contest8
-selection32 
-selection33!0
-contest9	
-selection36$
-selection37%1
+selection32 A
+contest9	
+selection36$
+selection37%
+selection38& 
 	contest10
-
-selection40(
-selection41) 
-	contest11
-selection44,S
+
+selection40(Q
+	contest11
+selection44,
+selection45-
+selection46.
+selection47/S
 	contest12
 selection480
 selection491
@@ -164,115 +281,405 @@ selection9	R
 selection5131
 	contest13
 selection524
-selection5351
+selection535S
+	contest14
+selection568
+selection579
+selection58:
+selection59;Q
+	contest15
+selection60<
+selection61=
+selection62>
+selection63? 
+	contest16
+selection64@ 
+	contest17
+selection68D1
+	contest18
+selection72H
+selection73I1
+	contest19
+selection76L
+selection77MB
+	contest20
+selection80P
+selection81Q
+selection82RB
+	contest21
+selection84T
+selection85U
+selection86VB
+	contest22
+selection88X
+selection89Y
+selection90Z1
+	contest23
+selection92\
+selection93]1
+	contest24
+selection96`
+selection97aë
+
+ballot-id--2012331839styling*
+contest0
+
+selection0
+
+selection1.
+contest1
+
+selection4
+
+selection5.
+contest2
+
+selection8
+
+selection9	R
+contest3
+selection12
+selection13
+selection14
+selection15
+contest4
+selection16
+contest5
+selection20A
+contest6
+selection24
+selection25
+selection260
+contest7
+selection28
+selection290
+contest8
+selection32 
+selection33!A
+contest9	
+selection36$
+selection37%
+selection38&B
+	contest10
+
+selection40(
+selection41)
+selection42*Q
+	contest11
+selection44,
+selection45-
+selection46.
+selection47/1
+	contest12
+selection480
+selection4911
+	contest13
+selection524
+selection535B
+	contest14
+selection568
+selection579
+selection58: 
+	contest15
+selection60< 
+	contest16
+selection64@S
+	contest17
+selection68D
+selection69E
+selection70F
+selection71GS
+	contest18
+selection72H
+selection73I
+selection74J
+selection75K 
+	contest19
+selection76L 
+	contest20
+selection80P 
+	contest21
+selection84TB
+	contest22
+selection88X
+selection89Y
+selection90Z 
+	contest23
+selection92\B
+	contest24
+selection96`
+selection97a
+selection98bŒ
+ballot-id-1868376821stylingJ
+contest0
+
+selection0
+
+selection1
+
+selection2
+
+selection3.
+contest1
+
+selection4
+
+selection5P
+contest2
+
+selection8
+
+selection9	
+selection10
+
+selection11R
+contest3
+selection12
+selection13
+selection14
+selection150
+contest4
+selection16
+selection170
+contest5
+selection20
+selection210
+contest6
+selection24
+selection25
+contest7
+selection28
+contest8
+selection32 0
+contest9	
+selection36$
+selection37%1
+	contest10
+
+selection40(
+selection41)S
+	contest11
+selection44,
+selection45-
+selection46.
+selection47/1
+	contest12
+selection480
+selection491B
+	contest13
+selection524
+selection535
+selection5461
 	contest14
 selection568
 selection579S
 	contest15
 selection60<
-selection61=
-selection62>
-selection63?S
+selection61=
+selection62>
+selection63?1
 	contest16
-selection64@
-selection65A
-selection66B
-selection67C1
+selection64@
+selection65A1
 	contest17
 selection68D
-selection69EB
-	contest18
-selection72H
-selection73I
-selection74J 
-	contest19
-selection76LS
-	contest20
-selection80P
-selection81Q
-selection82R
-selection83SQ
-	contest21
-selection84T
-selection85U
-selection86V
-selection87W 
+selection69E 
+	contest18
+selection72H1
+	contest19
+selection76L
+selection77M 
+	contest20
+selection80P1
+	contest21
+selection84T
+selection85U 
 	contest22
-selection88X1
+selection88XS
 	contest23
 selection92\
-selection93]B
-	contest24
-selection96`
-selection97a
-selection98bÏ
-ballot-id-880981755styling
-contest0
+selection93]
+selection94^
+selection95_1
+	contest24
+selection96`
+selection97a›
+ballot-id--344095926stylingJ
+contest0
 
-selection0>
-contest1
+selection0
 
-selection4
+selection1
 
-selection5
+selection2
 
-selection6.
+selection3.
+contest1
+
+selection4
+
+selection5?
 contest2
 
 selection8
 
-selection9	0
+selection9	
+selection10
+A
 contest3
-selection12
-selection13A
-contest4
-selection16
-selection17
-selection18R
+selection12
+selection13
+selection14A
+contest4
+selection16
+selection17
+selection18
 contest5
-selection20
-selection21
-selection22
-selection23R
-contest6
-selection24
-selection25
-selection26
-selection27R
+selection20
+contest6
+selection24A
 contest7
 selection28
 selection29
-selection30
-selection31P
+selection300
+contest8
+selection32 
+selection33!0
+contest9	
+selection36$
+selection37%1
+	contest10
+
+selection40(
+selection41)1
+	contest11
+selection44,
+selection45- 
+	contest12
+selection480 
+	contest13
+selection524S
+	contest14
+selection568
+selection579
+selection58:
+selection59;1
+	contest15
+selection60<
+selection61=B
+	contest16
+selection64@
+selection65A
+selection66BB
+	contest17
+selection68D
+selection69E
+selection70FS
+	contest18
+selection72H
+selection73I
+selection74J
+selection75KQ
+	contest19
+selection76L
+selection77M
+selection78N
+selection79OS
+	contest20
+selection80P
+selection81Q
+selection82R
+selection83S 
+	contest21
+selection84T 
+	contest22
+selection88X1
+	contest23
+selection92\
+selection93] 
+	contest24
+selection96`æ
+ballot-id-511275517stylingJ
+contest0
+
+selection0
+
+selection1
+
+selection2
+
+selection3.
+contest1
+
+selection4
+
+selection5?
+contest2
+
+selection8
+
+selection9	
+selection10
+R
+contest3
+selection12
+selection13
+selection14
+selection15R
+contest4
+selection16
+selection17
+selection18
+selection190
+contest5
+selection20
+selection21
+contest6
+selection24R
+contest7
+selection28
+selection29
+selection30
+selection31A
 contest8
 selection32 
-selection33!
-selection34"
-selection35#A
+selection33!
+selection34"A
 contest9	
 selection36$
 selection37%
-selection38& 
+selection38&Q
 	contest10
-
-selection40( 
+
+selection40(
+selection41)
+selection42*
+selection43+B
 	contest11
-selection44,1
+selection44,
+selection45-
+selection46.1
 	contest12
 selection480
-selection491 
-	contest13
-selection524 
+selection491B
+	contest13
+selection524
+selection535
+selection546 
 	contest14
-selection568 
+selection568S
 	contest15
-selection60< 
+selection60<
+selection61=
+selection62>
+selection63? 
 	contest16
-selection64@B
+selection64@S
 	contest17
 selection68D
 selection69E
-selection70FS
+selection70F
+selection71GS
 	contest18
 selection72H
 selection73I
@@ -282,33 +689,327 @@ selection9	0
 selection76L
 selection77M
 selection78N
-selection79O1
-	contest20
-selection80P
-selection81Q1
-	contest21
-selection84T
-selection85US
+selection79O 
+	contest20
+selection80PB
+	contest21
+selection84T
+selection85U
+selection86VS
 	contest22
 selection88X
 selection89Y
 selection90Z
-selection91[ 
+selection91[1
 	contest23
-selection92\S
-	contest24
-selection96`
-selection97a
-selection98b
-selection99cÚ
-ballot-id-517838645stylingJ
+selection92\
+selection93] 
+	contest24
+selection96`’
+
+ballot-id-773598819styling
 contest0
 
-selection0
+selection0>
+contest1
 
-selection1
+selection4
 
-selection2
+selection5
+
+selection6?
+contest2
+
+selection8
+
+selection9	
+selection10
+A
+contest3
+selection12
+selection13
+selection14
+contest4
+selection16P
+contest5
+selection20
+selection21
+selection22
+selection230
+contest6
+selection24
+selection25
+contest7
+selection280
+contest8
+selection32 
+selection33!
+contest9	
+selection36$ 
+	contest10
+
+selection40(1
+	contest11
+selection44,
+selection45- 
+	contest12
+selection4801
+	contest13
+selection524
+selection535 
+	contest14
+selection568S
+	contest15
+selection60<
+selection61=
+selection62>
+selection63?Q
+	contest16
+selection64@
+selection65A
+selection66B
+selection67CB
+	contest17
+selection68D
+selection69E
+selection70F 
+	contest18
+selection72H 
+	contest19
+selection76L 
+	contest20
+selection80PB
+	contest21
+selection84T
+selection85U
+selection86V 
+	contest22
+selection88XS
+	contest23
+selection92\
+selection93]
+selection94^
+selection95_ 
+	contest24
+selection96`…
+ballot-id-2079360168stylingJ
+contest0
+
+selection0
+
+selection1
+
+selection2
+
+selection3N
+contest1
+
+selection4
+
+selection5
+
+selection6
+
+selection7?
+contest2
+
+selection8
+
+selection9	
+selection10
+R
+contest3
+selection12
+selection13
+selection14
+selection150
+contest4
+selection16
+selection17A
+contest5
+selection20
+selection21
+selection22R
+contest6
+selection24
+selection25
+selection26
+selection27P
+contest7
+selection28
+selection29
+selection30
+selection31A
+contest8
+selection32 
+selection33!
+selection34"R
+contest9	
+selection36$
+selection37%
+selection38&
+selection39'B
+	contest10
+
+selection40(
+selection41)
+selection42* 
+	contest11
+selection44,B
+	contest12
+selection480
+selection491
+selection5021
+	contest13
+selection524
+selection535 
+	contest14
+selection568S
+	contest15
+selection60<
+selection61=
+selection62>
+selection63?B
+	contest16
+selection64@
+selection65A
+selection66BS
+	contest17
+selection68D
+selection69E
+selection70F
+selection71GB
+	contest18
+selection72H
+selection73I
+selection74JS
+	contest19
+selection76L
+selection77M
+selection78N
+selection79O1
+	contest20
+selection80P
+selection81QQ
+	contest21
+selection84T
+selection85U
+selection86V
+selection87W 
+	contest22
+selection88X1
+	contest23
+selection92\
+selection93] 
+	contest24
+selection96`ñ
+ballot-id-1234895127styling:
+contest0
+
+selection0
+
+selection1
+
+selection2.
+contest1
+
+selection4
+
+selection5?
+contest2
+
+selection8
+
+selection9	
+selection10
+
+contest3
+selection12A
+contest4
+selection16
+selection17
+selection180
+contest5
+selection20
+selection210
+contest6
+selection24
+selection25A
+contest7
+selection28
+selection29
+selection30R
+contest8
+selection32 
+selection33!
+selection34"
+selection35#A
+contest9	
+selection36$
+selection37%
+selection38&1
+	contest10
+
+selection40(
+selection41)1
+	contest11
+selection44,
+selection45- 
+	contest12
+selection480B
+	contest13
+selection524
+selection535
+selection546S
+	contest14
+selection568
+selection579
+selection58:
+selection59;S
+	contest15
+selection60<
+selection61=
+selection62>
+selection63?S
+	contest16
+selection64@
+selection65A
+selection66B
+selection67CQ
+	contest17
+selection68D
+selection69E
+selection70F
+selection71G 
+	contest18
+selection72H 
+	contest19
+selection76LS
+	contest20
+selection80P
+selection81Q
+selection82R
+selection83S 
+	contest21
+selection84TB
+	contest22
+selection88X
+selection89Y
+selection90Z1
+	contest23
+selection92\
+selection93]1
+	contest24
+selection96`
+selection97aõ
+ballot-id--1282646252stylingJ
+contest0
+
+selection0
+
+selection1
+
+selection2
 
 selection3.
 contest1
@@ -323,780 +1024,87 @@ selection8
 selection9	
 selection10
 
-selection11
-contest3
-selection120
-contest4
-selection16
-selection17R
-contest5
-selection20
-selection21
-selection22
-selection230
-contest6
-selection24
-selection25A
-contest7
-selection28
-selection29
-selection30R
-contest8
-selection32 
-selection33!
-selection34"
-selection35#
-contest9	
-selection36$S
-	contest10
-
-selection40(
-selection41)
-selection42*
-selection43+ 
-	contest11
-selection44, 
-	contest12
-selection4801
-	contest13
-selection524
-selection535 
-	contest14
-selection568S
-	contest15
-selection60<
-selection61=
-selection62>
-selection63?S
-	contest16
-selection64@
-selection65A
-selection66B
-selection67C1
-	contest17
-selection68D
-selection69EQ
-	contest18
-selection72H
-selection73I
-selection74J
-selection75KQ
-	contest19
-selection76L
-selection77M
-selection78N
-selection79O1
-	contest20
-selection80P
-selection81Q 
-	contest21
-selection84T 
-	contest22
-selection88XB
-	contest23
-selection92\
-selection93]
-selection94^1
-	contest24
-selection96`
-selection97a™
-ballot-id-687323472styling:
-contest0
-
-selection0
-
-selection1
-
-selection2N
-contest1
-
-selection4
-
-selection5
-
-selection6
-
-selection7
-contest2
-
-selection8R
-contest3
-selection12
-selection13
-selection14
-selection150
-contest4
-selection16
-selection17A
-contest5
-selection20
-selection21
-selection22A
-contest6
-selection24
-selection25
-selection26
-contest7
-selection28A
-contest8
-selection32 
-selection33!
-selection34"R
-contest9	
-selection36$
-selection37%
-selection38&
-selection39'S
-	contest10
-
-selection40(
-selection41)
-selection42*
-selection43+B
-	contest11
-selection44,
-selection45-
-selection46.S
-	contest12
-selection480
-selection491
-selection502
-selection513 
-	contest13
-selection524 
-	contest14
-selection568S
-	contest15
-selection60<
-selection61=
-selection62>
-selection63?B
-	contest16
-selection64@
-selection65A
-selection66B1
-	contest17
-selection68D
-selection69ES
-	contest18
-selection72H
-selection73I
-selection74J
-selection75KS
-	contest19
-selection76L
-selection77M
-selection78N
-selection79OS
-	contest20
-selection80P
-selection81Q
-selection82R
-selection83SS
-	contest21
-selection84T
-selection85U
-selection86V
-selection87WQ
-	contest22
-selection88X
-selection89Y
-selection90Z
-selection91[1
-	contest23
-selection92\
-selection93]1
-	contest24
-selection96`
-selection97a¤
-ballot-id-585928973styling:
-contest0
-
-selection0
-
-selection1
-
-selection2>
-contest1
-
-selection4
-
-selection5
-
-selection6.
-contest2
-
-selection8
-
-selection9	R
-contest3
-selection12
-selection13
-selection14
-selection150
-contest4
-selection16
-selection17
-contest5
-selection200
-contest6
-selection24
-selection25R
-contest7
-selection28
-selection29
-selection30
-selection31R
-contest8
-selection32 
-selection33!
-selection34"
-selection35#
-contest9	
-selection36$B
-	contest10
-
-selection40(
-selection41)
-selection42*1
-	contest11
-selection44,
-selection45-1
-	contest12
-selection480
-selection491 
-	contest13
-selection524S
-	contest14
-selection568
-selection579
-selection58:
-selection59;B
-	contest15
-selection60<
-selection61=
-selection62>S
-	contest16
-selection64@
-selection65A
-selection66B
-selection67CS
-	contest17
-selection68D
-selection69E
-selection70F
-selection71GB
-	contest18
-selection72H
-selection73I
-selection74JB
-	contest19
-selection76L
-selection77M
-selection78N1
-	contest20
-selection80P
-selection81Q1
-	contest21
-selection84T
-selection85UB
-	contest22
-selection88X
-selection89Y
-selection90ZB
-	contest23
-selection92\
-selection93]
-selection94^1
-	contest24
-selection96`
-selection97a’
-ballot-id--1567202521styling:
-contest0
-
-selection0
-
-selection1
-
-selection2N
-contest1
-
-selection4
-
-selection5
-
-selection6
-
-selection7P
-contest2
-
-selection8
-
-selection9	
-selection10
-
-selection110
-contest3
-selection12
-selection13R
-contest4
-selection16
-selection17
-selection18
-selection19
-contest5
-selection20A
-contest6
-selection24
-selection25
-selection26A
-contest7
-selection28
-selection29
-selection30
-contest8
-selection32 0
-contest9	
-selection36$
-selection37%Q
-	contest10
-
-selection40(
-selection41)
-selection42*
-selection43+B
-	contest11
-selection44,
-selection45-
-selection46.S
-	contest12
-selection480
-selection491
-selection502
-selection513S
-	contest13
-selection524
-selection535
-selection546
-selection5571
-	contest14
-selection568
-selection579S
-	contest15
-selection60<
-selection61=
-selection62>
-selection63?B
-	contest16
-selection64@
-selection65A
-selection66BS
-	contest17
-selection68D
-selection69E
-selection70F
-selection71G 
-	contest18
-selection72H 
-	contest19
-selection76L1
-	contest20
-selection80P
-selection81QB
-	contest21
-selection84T
-selection85U
-selection86V 
-	contest22
-selection88X 
-	contest23
-selection92\1
-	contest24
-selection96`
-selection97a’
-ballot-id--1426637887styling:
-contest0
-
-selection0
-
-selection1
-
-selection2.
-contest1
-
-selection4
-
-selection5P
-contest2
-
-selection8
-
-selection9	
-selection10
-
-selection11
-contest3
-selection120
-contest4
-selection16
-selection170
-contest5
-selection20
-selection21A
-contest6
-selection24
-selection25
-selection26P
-contest7
-selection28
-selection29
-selection30
-selection31R
-contest8
-selection32 
-selection33!
-selection34"
-selection35#0
-contest9	
-selection36$
-selection37% 
-	contest10
-
-selection40( 
-	contest11
-selection44,Q
-	contest12
-selection480
-selection491
-selection502
-selection513B
-	contest13
-selection524
-selection535
-selection546S
-	contest14
-selection568
-selection579
-selection58:
-selection59;S
-	contest15
-selection60<
-selection61=
-selection62>
-selection63? 
-	contest16
-selection64@1
-	contest17
-selection68D
-selection69EB
-	contest18
-selection72H
-selection73I
-selection74JS
-	contest19
-selection76L
-selection77M
-selection78N
-selection79O 
-	contest20
-selection80PB
-	contest21
-selection84T
-selection85U
-selection86VS
-	contest22
-selection88X
-selection89Y
-selection90Z
-selection91[1
-	contest23
-selection92\
-selection93]1
-	contest24
-selection96`
-selection97a°
-ballot-id--1063750776styling*
-contest0
-
-selection0
-
-selection1
-contest1
-
-selection4.
-contest2
-
-selection8
-
-selection9	
-contest3
-selection120
-contest4
-selection16
-selection17
-contest5
-selection20
-contest6
-selection24R
-contest7
-selection28
-selection29
-selection30
-selection31
-contest8
-selection32 R
-contest9	
-selection36$
-selection37%
-selection38&
-selection39'B
-	contest10
-
-selection40(
-selection41)
-selection42*S
-	contest11
-selection44,
-selection45-
-selection46.
-selection47/S
-	contest12
-selection480
-selection491
-selection502
-selection513B
-	contest13
-selection524
-selection535
-selection546S
-	contest14
-selection568
-selection579
-selection58:
-selection59;S
-	contest15
-selection60<
-selection61=
-selection62>
-selection63?Q
-	contest16
-selection64@
-selection65A
-selection66B
-selection67C 
-	contest17
-selection68DS
-	contest18
-selection72H
-selection73I
-selection74J
-selection75K1
-	contest19
-selection76L
-selection77MS
-	contest20
-selection80P
-selection81Q
-selection82R
-selection83S 
-	contest21
-selection84T 
-	contest22
-selection88X 
-	contest23
-selection92\ 
-	contest24
-selection96`à
-ballot-id--2139699431styling
-contest0
-
-selection0
-contest1
-
-selection4P
-contest2
-
-selection8
-
-selection9	
-selection10
-
 selection11P
 contest3
 selection12
 selection13
 selection14
-selection150
-contest4
-selection16
-selection17
-contest5
-selection20
-contest6
-selection24R
-contest7
-selection28
-selection29
-selection30
-selection31A
-contest8
-selection32 
-selection33!
-selection34"
-contest9	
-selection36$1
-	contest10
-
-selection40(
-selection41)1
-	contest11
-selection44,
-selection45-Q
-	contest12
-selection480
-selection491
-selection502
-selection513S
-	contest13
-selection524
-selection535
-selection546
-selection557S
-	contest14
-selection568
-selection579
-selection58:
-selection59;B
-	contest15
-selection60<
-selection61=
-selection62>1
-	contest16
-selection64@
-selection65A 
-	contest17
-selection68D1
-	contest18
-selection72H
-selection73IQ
-	contest19
-selection76L
-selection77M
-selection78N
-selection79OS
-	contest20
-selection80P
-selection81Q
-selection82R
-selection83S 
-	contest21
-selection84TB
-	contest22
-selection88X
-selection89Y
-selection90ZS
-	contest23
-selection92\
-selection93]
-selection94^
-selection95_ 
-	contest24
-selection96`ï
-ballot-id-774734916styling*
-contest0
-
-selection0
-
-selection1N
-contest1
-
-selection4
-
-selection5
-
-selection6
-
-selection7?
-contest2
-
-selection8
-
-selection9	
-selection10
-0
-contest3
-selection12
-selection13R
+selection15A
 contest4
 selection16
 selection17
-selection18
-selection19P
+selection18R
 contest5
 selection20
 selection21
-selection22
-selection23R
+selection22
+selection230
 contest6
-selection24
-selection25
-selection26
-selection27
+selection24
+selection25
 contest7
-selection28
-contest8
-selection32 
-contest9	
-selection36$S
+selection28R
+contest8
+selection32 
+selection33!
+selection34"
+selection35#A
+contest9	
+selection36$
+selection37%
+selection38&S
 	contest10
 
 selection40(
 selection41)
 selection42*
-selection43+S
+selection43+B
 	contest11
-selection44,
-selection45-
-selection46.
-selection47/B
-	contest12
-selection480
-selection491
-selection502S
+selection44,
+selection45-
+selection46.S
+	contest12
+selection480
+selection491
+selection502
+selection513S
 	contest13
 selection524
 selection535
 selection546
-selection5571
+selection557S
 	contest14
-selection568
-selection579B
-	contest15
-selection60<
+selection568
+selection579
+selection58:
+selection59;Q
+	contest15
+selection60<
 selection61=
-selection62> 
+selection62>
+selection63?S
 	contest16
-selection64@S
+selection64@
+selection65A
+selection66B
+selection67C 
 	contest17
-selection68D
-selection69E
-selection70F
-selection71G1
-	contest18
-selection72H
-selection73I 
+selection68DB
+	contest18
+selection72H
+selection73I
+selection74J 
 	contest19
-selection76LS
+selection76L1
 	contest20
-selection80P
-selection81Q
-selection82R
-selection83S 
+selection80P
+selection81QB
 	contest21
-selection84T1
+selection84T
+selection85U
+selection86V 
 	contest22
-selection88X
-selection89Y1
+selection88X1
 	contest23
 selection92\
 selection93] 
