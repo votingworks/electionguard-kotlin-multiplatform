@@ -161,7 +161,7 @@ class AttackEncryptedBallotTest {
             s1.selectionId, s1.sequenceOrder, s1.selectionHash,
             s2.ciphertext,
             changeCryptoHash,
-            s2.isPlaceholderSelection, s2.proof,
+            s2.proof,
         )
     }
 }

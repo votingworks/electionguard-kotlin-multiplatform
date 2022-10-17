@@ -125,6 +125,7 @@ class SelectionPrecompute(
                 group,
                 elgamalPublicKey,
                 cryptoExtendedBaseHashQ,
+                votes,
                 contestNonce,
                 chaumPedersenNonce,
                 encryptedSelections,

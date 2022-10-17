@@ -33,21 +33,21 @@ class RunDecryptBallotsTest {
     }
 
     @Test
-    fun testDecryptBallotsSome() {
+    fun testDecryptBallotsSomeFromList() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowSomeAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"
         val outputDir = "testOut/testDecryptingBallotsSome"
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
-            "ballot-id--123922783,ballot-id--1023038471,ballot-id-781358070",
+            "ballot-id-1102252248,ballot-id--2108329822,ballot-id--1958530009",
             11
         )
         assertEquals(3, n)
     }
 
     @Test
-    fun testDecryptBallotsSomeList() {
+    fun testDecryptBallotsSomeFromFile() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowSomeAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"

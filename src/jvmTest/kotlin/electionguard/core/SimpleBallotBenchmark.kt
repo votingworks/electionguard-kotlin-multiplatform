@@ -14,20 +14,36 @@ import kotlin.system.measureTimeMillis
 
 class SimplePlaintextBallot(val selections: List<Int>)
 
-class SimpleEncryptedBallot(val selectionsAndProofs: List<Pair<ElGamalCiphertext, DisjunctiveChaumPedersenProofKnownNonce>>, val sumProof: ConstantChaumPedersenProofKnownNonce)
+class SimpleEncryptedBallot(val selectionsAndProofs: List<Pair<ElGamalCiphertext, RangeChaumPedersenProofKnownNonce>>, val sumProof: RangeChaumPedersenProofKnownNonce)
 
-fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair, seed: ElementModQ): SimpleEncryptedBallot {
+fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair, seed: ElementModQ, limit : Int = 1): SimpleEncryptedBallot {
     val encryptionNonces = Nonces(seed, "encryption")
     val proofNonces = Nonces(seed, "proof")
     val plaintextWithNonce = selections.mapIndexed { i, s -> Pair(s, encryptionNonces[i]) }
     val plaintextWithNonceAndCiphertext = plaintextWithNonce.map { (p, n) -> Triple(p, n, p.encrypt(keypair, n))}
     val selectionsAndProofs = plaintextWithNonceAndCiphertext.mapIndexed { i, (p, n, c) ->
-        Pair(c, c.disjunctiveChaumPedersenProofKnownNonce(p, n, keypair.publicKey, proofNonces[i], context.ONE_MOD_Q))
+        Pair(c, c.rangeChaumPedersenProofKnownNonce(p, 1, n, keypair.publicKey, proofNonces[i], context.ONE_MOD_Q))
     }
     val encryptedSum = selectionsAndProofs.map { it.first }.encryptedSum()
     val nonceSum = plaintextWithNonce.map { it.second }.reduce { a, b -> a + b }
     val plaintextSum = selections.sum()
-    val sumProof = encryptedSum.constantChaumPedersenProofKnownNonce(plaintextSum, nonceSum, keypair.publicKey, seed, context.ONE_MOD_Q)
+    // fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
+    //  @param plaintext The actual plaintext constant value used to make the ElGamal ciphertext (L in the spec)
+    // * @param limit The maximum possible value for the plaintext (inclusive)
+    // * @param nonce The aggregate nonce used creating the ElGamal ciphertext (r in the spec)
+    // * @param publicKey The ElGamal public key for the election
+    // * @param seed Used to generate other random values here
+    // * @param qbar The election extended base hash (Q')
+    // * @param overrideErrorChecks Allows the creation of invalid proofs
+    //): RangeChaumPedersenProofKnownNonce {
+
+    //  * @param plaintext The total allowed votes (L in the spec)
+    // * @param nonce The aggregate nonce used creating the ElGamal ciphertext (r in the spec)
+    // * @param publicKey The ElGamal public key for the election
+    // * @param seed Used to generate other random values here
+    // * @param qbar The election extended base hash (Q')
+    val sumProof = encryptedSum.rangeChaumPedersenProofKnownNonce(
+        plaintextSum, limit, nonceSum, keypair.publicKey, seed, context.ONE_MOD_Q)
 
     return SimpleEncryptedBallot(selectionsAndProofs, sumProof)
 }

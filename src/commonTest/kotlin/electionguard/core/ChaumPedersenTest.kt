@@ -124,7 +124,7 @@ class ChaumPedersenTest {
 
                 val proof =
                     message.constantChaumPedersenProofKnownNonce(
-                        plaintext = constant,
+                        limit = constant,
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
@@ -155,7 +155,7 @@ class ChaumPedersenTest {
 
                 val badProof =
                     badMessage.constantChaumPedersenProofKnownNonce(
-                        plaintext = constant,
+                        limit = constant,
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
@@ -168,7 +168,7 @@ class ChaumPedersenTest {
 
                 val badProof2 =
                     message.constantChaumPedersenProofKnownNonce(
-                        plaintext = badConstant,
+                        limit = badConstant,
                         nonce = nonce,
                         publicKey = keypair.publicKey,
                         seed = seed,
@@ -497,7 +497,7 @@ class ChaumPedersenTest {
 
             val proof =
                 message.constantChaumPedersenProofKnownNonce(
-                    plaintext = constant,
+                    limit = constant,
                     nonce = nonceAccum,
                     publicKey = publicKey,
                     seed = seed,
@@ -540,7 +540,7 @@ class ChaumPedersenTest {
 
             val proof =
                 ciphertextAccumulation.constantChaumPedersenProofKnownNonce(
-                    plaintext = constant,
+                    limit = constant,
                     nonce = nonceAccum,
                     publicKey = publicKey,
                     seed = seed,

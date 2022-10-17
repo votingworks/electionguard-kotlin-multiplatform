@@ -181,7 +181,7 @@ fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>)
 private fun EncryptedBallot.convertToTally(): EncryptedTally {
     val contests = this.contests.map { contest ->
         // remove placeholders
-        val selections = contest.selections.filter { !it.isPlaceholderSelection }.map {
+        val selections = contest.selections.map {
             EncryptedTally.Selection(it.selectionId, it.sequenceOrder, it.selectionHash, it.ciphertext)
         }
         EncryptedTally.Contest(contest.contestId, contest.sequenceOrder, contest.contestHash, selections)

@@ -137,6 +137,7 @@ class ContestPrecompute(
                 group,
                 elgamalPublicKey,
                 cryptoExtendedBaseHashQ,
+                votes,
                 contestNonce,
                 chaumPedersenNonce,
                 encryptedSelections,

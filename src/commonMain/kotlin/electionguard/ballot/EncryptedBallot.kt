@@ -37,7 +37,7 @@ data class EncryptedBallot(
         val contestHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: List<Selection>,
         val cryptoHash: UInt256,
-        val proof: ConstantChaumPedersenProofKnownNonce,
+        val proof: RangeChaumPedersenProofKnownNonce,
         val contestData: HashedElGamalCiphertext,
     )  : CryptoHashableUInt256 {
         init {
@@ -53,8 +53,7 @@ data class EncryptedBallot(
         val selectionHash: UInt256, // matches SelectionDescription.cryptoHash
         val ciphertext: ElGamalCiphertext,
         val cryptoHash: UInt256,
-        val isPlaceholderSelection: Boolean,
-        val proof: DisjunctiveChaumPedersenProofKnownNonce,
+        val proof: RangeChaumPedersenProofKnownNonce,
     )  : CryptoHashableUInt256 {
         init {
             require(selectionId.isNotEmpty())
