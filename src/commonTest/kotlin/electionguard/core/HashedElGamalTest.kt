@@ -31,6 +31,10 @@ class HashedElGamalTest {
 
                 assertNotNull(plaintext, "decryption succeeded")
                 assertContentEquals(bytes, plaintext)
+
+                val alsoPlaintext = ciphertext.decryptWithNonce(kp, nonce)
+                assertNotNull(alsoPlaintext, "decryption succeeded")
+                assertContentEquals(bytes, alsoPlaintext)
             }
         }
     }

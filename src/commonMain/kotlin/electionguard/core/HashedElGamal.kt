@@ -91,9 +91,27 @@ fun HashedElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = decrypt(keypair.s
  * Attempts to decrypt the [HashedElGamalCiphertext] using the given secret key. Returns `null` if
  * the decryption fails, likely from an HMAC verification failure.
  */
-fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? {
-    val alpha = c0
-    val beta = c0 powP secretKey.key
+fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? =
+    decryptAlphaBeta(c0, c0 powP secretKey.key)
+
+/**
+ * Attempts to decrypt the [HashedElGamalCiphertext] using the nonce originally used to do the
+ * encryption. Returns `null` if the decryption fails, likely from an HMAC verification failure.
+ */
+fun HashedElGamalCiphertext.decryptWithNonce(keypair: ElGamalKeypair, nonce: ElementModQ): ByteArray? =
+    decryptWithNonce(keypair.publicKey, nonce)
+
+/**
+ * Attempts to decrypt the [HashedElGamalCiphertext] using the nonce originally used to do the
+ * encryption. Returns `null` if the decryption fails, likely from an HMAC verification failure.
+ */
+fun HashedElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ): ByteArray? {
+    // see ByteArray.hashedElGamalEncrypt(), which does the same thing
+    val (alpha, beta) = 0.encrypt(publicKey, nonce)
+    return decryptAlphaBeta(alpha, beta)
+}
+
+private fun HashedElGamalCiphertext.decryptAlphaBeta(alpha: ElementModP, beta: ElementModP): ByteArray? {
     val kdfKey = hashElements(alpha, beta)
     val kdf = KDF(kdfKey, "", "", numBytes * 8)
     val k0 = kdf[0]
@@ -118,6 +136,7 @@ fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? {
         plaintext.copyOfRange(0, numBytes)
     }
 }
+
 
 /**
  * NIST 800-108-compliant key derivation function (KDF) state.
