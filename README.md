@@ -21,12 +21,6 @@ EKM is available under an MIT-style open source license.
 
 ## Incompatibilities with ElectionGuard 1.0
 
-- EKM does not use JSON for serialization. Instead, it uses [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers), a binary format
-  that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
-  the relevant data formats, which could be adopted by other implementations,
-  making it easier for future ElectionGuard implementations to have compatible
-  data serialization.
-
 - EKM uses an optimized encoding of an encrypted ElGamal counter, proposed by [Pereira](https://perso.uclouvain.be/olivier.pereira/). Where 
   ElectionGuard 1.0 defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{ar}g^m\right)$,
   EKM instead defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{a(r + m)}\right)$.
@@ -35,6 +29,21 @@ EKM is available under an MIT-style open source license.
 
 - EKM further optimizes the Chaum-Pedersen proofs with a space-optimization from [Boneh and Shoup](http://toc.cryptobook.us/) that allows
   the larger elements-mod-p to be elided from the proofs because they can be recomputed by the verifier.
+
+- EKM includes a Chaum-Pedersen "range proof", which is a proof that a ciphertext
+  corresponds to a plaintext from 0 to a given constant. These are a generalization of the
+  earlier 0-or-1 disjunctive proofs. The size of the proof will be
+  linear with respect to the size of the constant, and when the constant is "1", 
+  the proof will be the same size as the original disjunctive proof.
+
+The above changes are consistent with changes that have been proposed for ElectionGuard 2.0. The following
+changes are not:
+
+- EKM does not use JSON for serialization. Instead, it uses [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers), a binary format
+  that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
+  the relevant data formats, which could be adopted by other implementations,
+  making it easier for future ElectionGuard implementations to have compatible
+  data serialization.
 
 - EKM changes how hashes are computed, defining the result of a hash function as
   a 256-bit unsigned integer rather than an element-mod-q. This simplifies the code 
@@ -56,9 +65,11 @@ With both platforms, we use a variety of optimizations:
   might then use larger tables and gain greater speedups, while memory-limited
   computations would use smaller tables.
 
+
 - In this table, we transform the numbers to [Montgomery form](https://en.wikipedia.org/wiki/Montgomery_modular_multiplication), allowing us
   to avoid an expensive modulo operation after each multiply. HACL* has native support
   for this transformation, resulting in significant speedups.
+  We also get modest speedups within the JVM.
 
 - ElectionGuard defines two sets of global parameters: using either 3072-bit
   or 4096-bit modular arithmetic. EKM supports both sets of parameters as well as a
@@ -77,7 +88,8 @@ used a big integer library called [kt-math](https://github.com/gciatto/kt-math),
 but the performance was not acceptable.
 
 Instead, please check out [ElectionGuard-TypeScript](https://github.com/danwallach/ElectionGuard-TypeScript),
-which is fully compatible with ElectionGuard 1.0 and runs very efficiently.
+which is fully compatible with ElectionGuard 1.0 and runs very efficiently,
+taking advantage of the built-in `bigint` type of modern JavaScript engines.
 If we were going to bring back Kotlin/JS as an EKM target platform, we'd probably borrow the "core"
 cryptographic classes from ElectionGuard-TypeScript, and build up the rest
 of the ballot abstractions in Kotlin.
@@ -85,6 +97,9 @@ of the ballot abstractions in Kotlin.
 We note that the Kotlin team is actively developing a [WebAssembly backend](https://youtrack.jetbrains.com/issue/KT-46773).
 If this ultimately supports foreign function calls to C functions, then the
 "native" version of EKM, including HACL* for big integer arithmetic, could potentially run in a JavaScript WASM engine.
+Alternatively, the Kotlin team is working on portable support for [BigInteger and
+BigDecimal](https://youtrack.jetbrains.com/issue/KT-20912/BigDecimalBigInteger-types-in-Kotlin-stdlib), which we
+could use here when it's ready.
 
 ## API differences from ElectionGuard-Python
 
