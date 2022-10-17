@@ -11,7 +11,7 @@ import electionguard.core.GroupContext
 import electionguard.core.computeShare
 import electionguard.core.decrypt
 import electionguard.core.genericChaumPedersenProofOf
-import electionguard.core.isValid
+import electionguard.core.validate
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
@@ -151,7 +151,7 @@ data class DecryptingTrustee(
         hx: ElementModP,
         proof: GenericChaumPedersenProof
     ) {
-        val proofResult = proof.isValid(
+        val proofResult = proof.validate(
                 group.G_MOD_P,
                 gx,
                 ciphertext.pad,

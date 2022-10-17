@@ -8,14 +8,8 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
+import electionguard.core.*
 import electionguard.core.Base16.toHex
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.HashedElGamalCiphertext
-import electionguard.core.SchnorrProof
-import electionguard.core.UInt256
-import electionguard.core.getSystemDate
-import electionguard.core.hashElements
 
 /** Exchange publicKeys and secretShares among the trustees */
 fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremonyResults, String> {
@@ -83,7 +77,7 @@ data class PublicKeys(
         return coefficientProofs.map { it.publicKey }
     }
 
-    fun isValid(): Result<Boolean, String> {
+    fun validate(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for ((idx, proof) in this.coefficientProofs.withIndex()) {
             if (!proof.isValid()) {
@@ -92,10 +86,7 @@ data class PublicKeys(
                 checkProofs.add(Ok(true))
             }
         }
-        return if (checkProofs.getAllErrors().isNotEmpty())
-            Err(checkProofs.getAllErrors().joinToString("\n"))
-        else
-            Ok(true)
+        return checkProofs.merge()
     }
 }
 

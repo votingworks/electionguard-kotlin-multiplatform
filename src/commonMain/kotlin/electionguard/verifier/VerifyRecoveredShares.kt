@@ -1,15 +1,9 @@
 package electionguard.verifier
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
+import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptingGuardian
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.getSystemTimeInMillis
+import electionguard.core.*
 import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.publish.ElectionRecord
@@ -37,15 +31,15 @@ class VerifyRecoveredShares(
             println(" Does not have missing guardians")
             return Ok(true)
         }
-        val errors = getAllErrors(verifyLagrangeCoefficients(), verifyShares())
+        val errors = listOf(verifyLagrangeCoefficients(), verifyShares())
         val took = getSystemTimeInMillis() - starting
         if (showTime) println("   VerifyRecoveredShares took $took millisecs")
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+        return errors.merge()
     }
 
     /** Verify 10.A for available guardians lagrange coefficients, if there are missing guardians.  */
     fun verifyLagrangeCoefficients(): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<Result<Boolean, String>>()
         for (guardian in decryptingGuardians) {
             val seqOthers = mutableListOf<Int>()
             for (other in decryptingGuardians) {
@@ -54,10 +48,10 @@ class VerifyRecoveredShares(
                 }
             }
             if (!verifyLagrangeCoefficient(guardian.xCoordinate, seqOthers, guardian.lagrangeCoordinate)) {
-                errors.add(" *** 10.A Lagrange coefficients failure for guardian ${guardian.guardianId}")
+                errors.add(Err(" *** 10.A Lagrange coefficients failure for guardian ${guardian.guardianId}"))
             }
         }
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+        return errors.merge()
     }
 
     // 10.A. An election verifier should confirm that for each trustee T_l serving to help compute a missing
@@ -70,20 +64,20 @@ class VerifyRecoveredShares(
 
     // 10.B Confirm missing tally shares
     private fun verifyShares(): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<Result<Boolean, String>>()
         for (contest in decryptedTallyOrBallot.contests.values) {
             for (selection in contest.selections.values) {
                 val id: String = contest.contestId + "-" + selection.selectionId
                 for (partial in selection.partialDecryptions) {
                     if (partial.recoveredDecryptions.isNotEmpty()) {
                         if (!verify10B(partial)) {
-                            errors.add(" *** 10.B verify replacement share $id for Guardian ${partial.guardianId} failed")
+                            errors.add(Err(" *** 10.B verify replacement share $id for Guardian ${partial.guardianId} failed"))
                         }
                     }
                 }
             }
         }
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+        return errors.merge()
     }
 
     // 10.B Confirm the correct missing tally share for each (non-placeholder) option

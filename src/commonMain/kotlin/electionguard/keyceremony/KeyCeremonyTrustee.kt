@@ -67,9 +67,9 @@ class KeyCeremonyTrustee(
         if (publicKeys.coefficientProofs.size != quorum) {
             return Err("${publicKeys.guardianId}: must have quorum ($quorum) coefficientProofs")
         }
-        val isValidProofs: Result<Boolean, String> = publicKeys.isValid()
-        if (isValidProofs is Err) {
-            return isValidProofs
+        val validProofs: Result<Boolean, String> = publicKeys.validate()
+        if (validProofs is Err) {
+            return validProofs
         }
 
         // println("$id receivePublicKeys from ${publicKeys.guardianId}")

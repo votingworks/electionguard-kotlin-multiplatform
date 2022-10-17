@@ -149,8 +149,10 @@ fun getSystemDate(): LocalDateTime {
  */
 fun List<Result<Boolean, String>>.merge(): Result<Boolean, String> {
     val errors =  filterIsInstance<Err<String>>()
+
     return if (errors.isEmpty())
         Ok(true)
-    else Err(
-        errors.joinToString("\n") { it.error })
+    else {
+        Err(errors.joinToString("\n") { it.error })
+    }
 }

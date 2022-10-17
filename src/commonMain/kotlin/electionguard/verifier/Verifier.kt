@@ -1,21 +1,10 @@
 package electionguard.verifier
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
+import com.github.michaelbull.result.*
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.hashElements
-import electionguard.core.productionGroup
-import electionguard.core.toElementModQ
+import electionguard.core.*
 import electionguard.publish.ElectionRecord
 
 // since there's no verification spec 2.0, this is approximate
@@ -115,15 +104,14 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
                 }
             }
         }
-        val errors = checkProofs.getAllErrors()
-        return if (errors.isNotEmpty()) Err(errors.joinToString("\n")) else Ok(true)
+        return checkProofs.merge()
     }
 
     private fun verifyElectionPublicKey(cryptoBaseHash: UInt256): Result<Boolean, String> {
         val jointPublicKeyComputed = this.record.guardians().map { it.publicKey() }.reduce { a, b -> a * b }
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<Result<Boolean, String>>()
         if (!jointPublicKey.equals(jointPublicKeyComputed)) {
-            errors.add("  3.A jointPublicKey K does not equal computed K = Prod(K_i)")
+            errors.add(Err("  3.A jointPublicKey K does not equal computed K = Prod(K_i)"))
         }
 
         val commitments = mutableListOf<ElementModP>()
@@ -132,10 +120,10 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         // spec 1.51, eq 20 and 3.B
         val computedQbar: UInt256 = hashElements(cryptoBaseHash, jointPublicKeyComputed, commitmentsHash)
         if (!cryptoExtendedBaseHash.equals(computedQbar.toElementModQ(group))) {
-            errors.add("  3.B qbar does not match computed = H(Q, K, Prod(K_ij))")
+            errors.add(Err("  3.B qbar does not match computed = H(Q, K, Prod(K_ij))"))
         }
 
-        return if (errors.isNotEmpty()) Err(errors.joinToString("\n")) else Ok(true)
+        return errors.merge()
     }
 
     fun verifyEncryptedBallots(): StatsAccum {
