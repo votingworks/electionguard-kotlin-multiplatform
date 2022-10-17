@@ -57,14 +57,15 @@ class SimpleBallotBenchmark {
     class SimplePlaintextBallot(val selections: List<Int>)
 
     class SimpleEncryptedBallot(
-        val selectionsAndProofs: List<Pair<ElGamalCiphertext, DisjunctiveChaumPedersenProofKnownNonce>>,
-        val sumProof: ConstantChaumPedersenProofKnownNonce
+        val selectionsAndProofs: List<Pair<ElGamalCiphertext, RangeChaumPedersenProofKnownNonce>>,
+        val sumProof: RangeChaumPedersenProofKnownNonce
     )
 
     fun SimplePlaintextBallot.encrypt(
         context: GroupContext,
         keypair: ElGamalKeypair,
-        seed: ElementModQ
+        seed: ElementModQ,
+        limit : Int = 1,
     ): SimpleEncryptedBallot {
         val encryptionNonces = Nonces(seed, "encryption")
         val proofNonces = Nonces(seed, "proof")
@@ -73,14 +74,15 @@ class SimpleBallotBenchmark {
         val selectionsAndProofs = plaintextWithNonceAndCiphertext.mapIndexed { i, (p, n, c) ->
             Pair(
                 c,
-                c.disjunctiveChaumPedersenProofKnownNonce(p, n, keypair.publicKey, proofNonces[i], context.ONE_MOD_Q)
+                c.rangeChaumPedersenProofKnownNonce(p, 1, n, keypair.publicKey, proofNonces[i], context.ONE_MOD_Q)
             )
         }
         val encryptedSum = selectionsAndProofs.map { it.first }.encryptedSum()
         val nonceSum = plaintextWithNonce.map { it.second }.reduce { a, b -> a + b }
         val plaintextSum = selections.sum()
-        val sumProof = encryptedSum.constantChaumPedersenProofKnownNonce(
+        val sumProof = encryptedSum.rangeChaumPedersenProofKnownNonce(
             plaintextSum,
+            limit,
             nonceSum,
             keypair.publicKey,
             seed,

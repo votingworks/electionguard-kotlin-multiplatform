@@ -16,6 +16,8 @@ import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+private const val debug = false
+
 class ContestDataEncryptTest {
     val context = tinyGroup()
     val keypair = elGamalKeyPairFromRandom(context)
@@ -101,7 +103,7 @@ class ContestDataEncryptTest {
                 Arb.string(),
             ) { nover, writein ->
                 val contestData = ContestData(MutableList(nover) { it }, listOf(writein))
-                println("\ncontestData = $contestData")
+                if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
                 val target = contestData.encrypt(keypair.publicKey, votes, null)
@@ -122,7 +124,7 @@ class ContestDataEncryptTest {
                 Arb.int(min = 1, max = 4),
             ) { nover, writein, nwriteins ->
                 val contestData = ContestData(MutableList(nover) { it }, MutableList(nwriteins) { writein })
-                println("\ncontestData = $contestData")
+                if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
                 val target = contestData.encrypt(keypair.publicKey, votes, null)
@@ -143,7 +145,7 @@ class ContestDataEncryptTest {
                 Arb.int(min = 1, max = 5),
             ) { nover, writein, nwriteins ->
                 val contestData = ContestData(MutableList(nover) { it }, MutableList(nwriteins) { writein })
-                println("\ncontestData = $contestData")
+                if (debug) println("\ncontestData = $contestData")
 
                 val votes = 2
                 val target = contestData.encrypt(keypair.publicKey, votes, null)
@@ -164,7 +166,7 @@ class ContestDataEncryptTest {
                 Arb.int(min = 1, max = 5),
             ) { nover, writein, nwriteins ->
                 val contestData = ContestData(MutableList(nover) { it }, MutableList(nwriteins) { writein })
-                println("\ncontestData = $contestData")
+                if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
                 val target = contestData.encrypt(keypair.publicKey, votes, null)
@@ -203,7 +205,7 @@ class ContestDataEncryptTest {
             val writein =
                 "]e\$B-AGbal7P<A4,O%)fS%%IV1pv8h,-+PDs9M.%z-=2 9uJE;ZGDNDYt,Fq=p\"(7caN4j:(?z mUFW1C;yir]"
             val contestData = ContestData(MutableList(5) { it }, MutableList(3) { writein })
-            println("\ncontestData = $contestData")
+            if (debug) println("\ncontestData = $contestData")
 
             val votes = 1
             val target = contestData.encrypt(keypair.publicKey, votes, null)

@@ -2,10 +2,10 @@
 
 draft 9/27/2022
 
-1. This is version 1.51 of Election Record, corresponding to spec v 1.51
+1. This is version 1.52 of Election Record, corresponding to spec v 1.52
 2. All fields must be present unless marked as optional.
 3. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
-4. proto_version = 1.51.0 [MAJOR.MINOR.PATCH](https://semver.org/)
+4. proto_version = 1.52.0 [MAJOR.MINOR.PATCH](https://semver.org/)
 
 ## common.proto 
 [schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/common.proto)
@@ -315,29 +315,21 @@ draft 9/27/2022
 
 #### message EncryptedBallotSelection
 
-| Name                     | Type                          | Notes                                |
-|--------------------------|-------------------------------|--------------------------------------|
-| selection_id             | string                        | SelectionDescription.selection_id    |
-| sequence_order           | uint32                        | SelectionDescription.sequence_order  |
-| selection_hash           | UInt256                       | SelectionDescription.crypto_hash     |
-| ciphertext               | ElGamalCiphertext             |                                      |
-| crypto_hash              | UInt256                       |                                      |
-| proof                    | DisjunctiveChaumPedersenProof |                                      |
+| Name                     | Type              | Notes                                |
+|--------------------------|-------------------|--------------------------------------|
+| selection_id             | string            | SelectionDescription.selection_id    |
+| sequence_order           | uint32            | SelectionDescription.sequence_order  |
+| selection_hash           | UInt256           | SelectionDescription.crypto_hash     |
+| ciphertext               | ElGamalCiphertext |                                      |
+| crypto_hash              | UInt256           |                                      |
+| proof                    | RangeProof        |                                      |
 
-#### message ConstantChaumPedersenProof
+#### message RangeProof
 
-| Name      | Type                      | Notes |
-|-----------|---------------------------|-------|
-| constant  | uint32                    |       |
-| proof     | GenericChaumPedersenProof |       |
-
-#### message DisjunctiveChaumPedersenProof (change to DisjunctiveProof?)
-
-| Name      | Type                      | Notes |
-|-----------|---------------------------|-------|
-| challenge | ElementModQ               |       |
-| proof0    | GenericChaumPedersenProof |       |
-| proof1    | GenericChaumPedersenProof |       |
+| Name      | Type                              | Notes |
+|-----------|-----------------------------------|-------|
+| proof     | List\<GenericChaumPedersenProof\> |       |
+| constant  | uint32                            |       | 
 
 
 ## encrypted_tally.proto

@@ -11,13 +11,12 @@ import electionguard.core.GroupContext
 import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.Nonces
 import electionguard.core.UInt256
-import electionguard.core.constantChaumPedersenProofKnownNonce
-import electionguard.core.disjunctiveChaumPedersenProofKnownNonce
 import electionguard.core.encrypt
 import electionguard.core.encryptedSum
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
 import electionguard.core.randomElementModQ
+import electionguard.core.rangeChaumPedersenProofKnownNonce
 import electionguard.core.take
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
@@ -125,14 +124,12 @@ class Encryptor(
 
         val ballotSelections = this.selections.associateBy { it.selectionId }
 
-        var votes = 0
         val votedFor = mutableListOf<Int>()
         for (mselection: Manifest.SelectionDescription in mcontest.selections) {
             // Find the ballot selection matching the contest description.
             val plaintextSelection = ballotSelections[mselection.selectionId]
             if (plaintextSelection != null && plaintextSelection.vote > 0) {
                 votedFor.add(plaintextSelection.sequenceOrder)
-                votes += plaintextSelection.vote
             }
         }
 
@@ -157,29 +154,6 @@ class Encryptor(
             ))
         }
 
-        // TODO remove placeholders
-        // Add a placeholder selection for each possible vote in the contest
-        val limit = mcontest.votesAllowed
-        val selectionSequenceOrderMax = mcontest.selections.maxOf { it.sequenceOrder }
-        for (placeholder in 1..limit) {
-            val sequenceNo = selectionSequenceOrderMax + placeholder
-            val plaintextSelection = makeZeroSelection(
-                "${mcontest.contestId}-$sequenceNo", sequenceNo, votes < limit
-            )
-            val mselection = Manifest.SelectionDescription(
-                plaintextSelection.selectionId,
-                plaintextSelection.sequenceOrder,
-                "placeholder"
-            )
-            val encryptedPlaceholder = plaintextSelection.encryptSelection(
-                mselection,
-                contestNonce,
-                true,
-            )
-            encryptedSelections.add(encryptedPlaceholder)
-            votes++
-        }
-
         val contestData = ContestData(
             if (status == ContestDataStatus.over_vote) votedFor else emptyList(),
             this.writeIns,
@@ -190,6 +164,7 @@ class Encryptor(
             group,
             elgamalPublicKey,
             cryptoExtendedBaseHashQ,
+            if (status == ContestDataStatus.over_vote) 0 else totalVotedFor,
             contestNonce,
             chaumPedersenNonce,
             encryptedSelections.sortedBy { it.sequenceOrder },
@@ -236,6 +211,7 @@ fun Manifest.ContestDescription.encryptContest(
     group: GroupContext,
     elgamalPublicKey: ElGamalPublicKey,
     cryptoExtendedBaseHashQ: ElementModQ,
+    plaintext: Int, // The actual number of votes=1, for the range proof
     contestNonce: ElementModQ,
     chaumPedersenNonce: ElementModQ,
     encryptedSelections: List<CiphertextBallot.Selection>,
@@ -248,8 +224,9 @@ fun Manifest.ContestDescription.encryptContest(
     val nonces: Iterable<ElementModQ> = encryptedSelections.map { it.selectionNonce }
     val aggNonce: ElementModQ = with(group) { nonces.addQ() }
 
-    val proof = ciphertextAccumulation.constantChaumPedersenProofKnownNonce(
-        this.votesAllowed,
+    val proof = ciphertextAccumulation.rangeChaumPedersenProofKnownNonce(
+        plaintext, // The actual plaintext constant value used to make the ElGamal ciphertext (ℓ in the spec)
+        this.votesAllowed, // The maximum possible value for the plaintext (inclusive), (L in the spec)
         aggNonce,
         elgamalPublicKey,
         chaumPedersenNonce,
@@ -278,8 +255,9 @@ fun Manifest.SelectionDescription.encryptSelection(
 ): CiphertextBallot.Selection {
     val elgamalEncryption: ElGamalCiphertext = vote.encrypt(elgamalPublicKey, selectionNonce)
 
-    val proof = elgamalEncryption.disjunctiveChaumPedersenProofKnownNonce(
+    val proof = elgamalEncryption.rangeChaumPedersenProofKnownNonce(
         vote,
+        1,
         selectionNonce,
         elgamalPublicKey,
         disjunctiveChaumPedersenNonce,

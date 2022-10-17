@@ -48,9 +48,6 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
 
         fun accumulate(ballotId : String, ballotContest: EncryptedBallot.Contest) {
             for (ballotSelection in ballotContest.selections) {
-                if (ballotSelection.isPlaceholderSelection) { // skip placeholders
-                    continue
-                }
                 val selection = selections[ballotSelection.selectionId]
                 if (selection == null) {
                     logger.warn { "Ballot $ballotId has illegal selection ${ballotSelection.selectionId} in contest ${ballotContest.contestId}"}

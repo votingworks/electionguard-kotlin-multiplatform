@@ -94,12 +94,12 @@ class VerifyEncryptedBallots(
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
 
             // test that the proof is correct; covers 5.C, 5.D, 5.E
-            val proof: ConstantChaumPedersenProofKnownNonce = contest.proof
+            val proof: RangeChaumPedersenProofKnownNonce = contest.proof
             val cvalid = proof.validate(
                 ciphertextAccumulation,
                 this.jointPublicKey,
                 this.cryptoExtendedBaseHash,
-                manifest.contestIdToLimit[contest.contestId]
+                manifest.contestIdToLimit[contest.contestId]!!
             )
             if (cvalid is Err) {
                 errors.add("    5. ConstantChaumPedersenProofKnownNonce failed for $where = ${cvalid.error} ")
@@ -181,23 +181,22 @@ class VerifyEncryptedBallots(
     // TODO redo this with 1.51 Verification box 4
     private fun verifySelections(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
-        var nplaceholders = 0
         for (selection in contest.selections) {
             val where = "${ballotId}/${contest.contestId}/${selection.selectionId}"
-            if (selection.isPlaceholderSelection) nplaceholders++
 
             // test that the proof is correct covers 4.A, 4.B, 4.C, 4.D
             val svalid = selection.proof.validate(
                 selection.ciphertext,
                 this.jointPublicKey,
                 this.cryptoExtendedBaseHash,
+                1,
             )
             if (svalid is Err) {
                 errors.add(Err("    4. DisjunctiveChaumPedersenProofKnownNonce failed for $where/${selection.selectionId} = ${svalid.error} "))
             }
         }
 
-        // 5.A verify the placeholder numbers match the maximum votes allowed
+        /* 5.A verify the placeholder numbers match the maximum votes allowed
         val limit = manifest.contestIdToLimit[contest.contestId]
         if (limit == null) {
             errors.add(Err(" 5. Contest ${contest.contestId} not in Manifest"))
@@ -205,7 +204,7 @@ class VerifyEncryptedBallots(
             if (limit != nplaceholders) {
                 errors.add(Err(" 5.A Contest placeholder $nplaceholders != $limit vote limit for contest ${contest.contestId}"))
             }
-        }
+        } */
         return errors.merge()
     }
 

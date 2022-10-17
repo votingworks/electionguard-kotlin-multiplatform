@@ -55,7 +55,7 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
 
         val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
         val errors = mutableListOf<String>()
-        for (selection in contest.selections.filter { !it.isPlaceholderSelection }) {
+        for (selection in contest.selections) {
             val mselection = mcontest.selections.find { it.selectionId == selection.selectionId }
             if (mselection == null) {
                 errors.add(" Cant find selection ${selection.selectionId} in contest ${mcontest.contestId}")

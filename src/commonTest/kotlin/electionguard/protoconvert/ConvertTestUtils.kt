@@ -5,12 +5,12 @@ import io.ktor.utils.io.core.*
 import kotlin.random.Random
 import kotlin.random.nextUInt
 
-fun generateConstantChaumPedersenProofKnownNonce(
+fun generateRangeChaumPedersenProofKnownNonce(
     context: GroupContext
-): ConstantChaumPedersenProofKnownNonce {
-    return ConstantChaumPedersenProofKnownNonce(
-        generateGenericChaumPedersenProof(context),
-        Random.nextInt(),
+): RangeChaumPedersenProofKnownNonce {
+    return RangeChaumPedersenProofKnownNonce(
+        listOf(generateGenericChaumPedersenProof(context)),
+        generateElementModQ(context),
     )
 }
 

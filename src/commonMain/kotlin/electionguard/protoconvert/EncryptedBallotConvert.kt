@@ -91,17 +91,19 @@ private fun GroupContext.importContest(
 }
 
 private fun GroupContext.importConstantChaumPedersenProof(
-    constant: electionguard.protogen.ConstantChaumPedersenProof?, where: String
-): Result<ConstantChaumPedersenProofKnownNonce, String> {
-    if (constant == null) {
-        return Err("Null ConstantChaumPedersenProof in $where")
+    range: electionguard.protogen.RangeChaumPedersenProofKnownNonce?, where: String
+): Result<RangeChaumPedersenProofKnownNonce, String> {
+    if (range == null) {
+        return Err("Null RangeChaumPedersenProofKnownNonce in $where")
     }
-    val proof = this.importChaumPedersenProof(constant.proof)
-    if (proof == null) {
-        return Err("Missing fields ConstantChaumPedersenProof in $where")
+    if (range.c == null) {
+        return Err("Missing field 'c' in RangeChaumPedersenProofKnownNonce in $where")
     }
 
-    return Ok(ConstantChaumPedersenProofKnownNonce(proof, constant.constant))
+    return Ok(RangeChaumPedersenProofKnownNonce(
+        range.proofs.map { this.importChaumPedersenProof(it)!! },
+        this.importElementModQ(range.c)!!,
+    ))
 }
 
 private fun GroupContext.importSelection(
@@ -116,7 +118,7 @@ private fun GroupContext.importSelection(
         .toResultOr { "CiphertextBallotSelection $here ciphertext was malformed or missing" }
     val cryptoHash = importUInt256(selection.cryptoHash)
         .toResultOr { "CiphertextBallotSelection $here cryptoHash was malformed or missing" }
-    val proof = this.importDisjunctiveChaumPedersenProof(selection.proof, here)
+    val proof = this.importConstantChaumPedersenProof(selection.proof, here)
 
     val errors = getAllErrors(proof, selectionHash, ciphertext, cryptoHash)
     if (errors.isNotEmpty()) {
@@ -130,7 +132,6 @@ private fun GroupContext.importSelection(
             selectionHash.unwrap(),
             ciphertext.unwrap(),
             cryptoHash.unwrap(),
-            selection.isPlaceholderSelection,
             proof.unwrap(),
         )
     )
@@ -184,7 +185,7 @@ private fun EncryptedBallot.Contest.publishContest():
             this.contestHash.publishUInt256(),
             this.selections.map { it.publishSelection() },
             this.cryptoHash.publishUInt256(),
-            this.proof.let { this.proof.publishConstantChaumPedersenProof() },
+            this.proof.let { this.proof.publish() },
             this.contestData.let { this.contestData.publishHashedCiphertext() },
         )
 }
@@ -198,26 +199,24 @@ private fun EncryptedBallot.Selection.publishSelection():
             this.selectionHash.publishUInt256(),
             this.ciphertext.publishCiphertext(),
             this.cryptoHash.publishUInt256(),
-            this.isPlaceholderSelection,
-            this.proof.let { this.proof.publishDisjunctiveChaumPedersenProof() },
+            this.proof.let { this.proof.publish() },
         )
 }
 
-fun ConstantChaumPedersenProofKnownNonce.publishConstantChaumPedersenProof():
-        electionguard.protogen.ConstantChaumPedersenProof {
-    return electionguard.protogen
-        .ConstantChaumPedersenProof(
-            this.constant,
-            this.proof.publishChaumPedersenProof(),
-        )
+fun RangeChaumPedersenProofKnownNonce.publish():
+        electionguard.protogen.RangeChaumPedersenProofKnownNonce {
+    return electionguard.protogen.RangeChaumPedersenProofKnownNonce(
+        this.proofs.map { it.publishChaumPedersenProof() },
+        this.c.publishElementModQ(),
+    )
 }
 
 fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof():
         electionguard.protogen.DisjunctiveChaumPedersenProof {
     return electionguard.protogen
         .DisjunctiveChaumPedersenProof(
-            this.c.publishElementModQ(),
             this.proof0.publishChaumPedersenProof(),
             this.proof1.publishChaumPedersenProof(),
+            this.c.publishElementModQ(),
         )
 }

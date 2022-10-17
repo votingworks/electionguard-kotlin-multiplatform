@@ -80,14 +80,14 @@ fun GenericChaumPedersenProof.expand(
  * Produces a proof that a given ElGamal encryption corresponds to a specific total value. This
  * requires the prover to know the nonce (the r behind the g^r).
  *
- * @param plaintext The total allowed votes (L in the spec)
+ * @param limit The total allowed votes (L in the spec)
  * @param nonce The aggregate nonce used creating the ElGamal ciphertext (r in the spec)
  * @param publicKey The ElGamal public key for the election
  * @param seed Used to generate other random values here
  * @param qbar The election extended base hash (Q')
  */
 fun ElGamalCiphertext.constantChaumPedersenProofKnownNonce(
-    plaintext: Int,
+    limit: Int,
     nonce: ElementModQ,
     publicKey: ElGamalPublicKey,
     seed: ElementModQ,
@@ -102,7 +102,7 @@ fun ElGamalCiphertext.constantChaumPedersenProofKnownNonce(
             seed = seed,
             hashHeader = arrayOf(qbar, publicKey.key, this.pad, this.data),
         ),
-        plaintext
+        limit
     )
 }
 
@@ -203,9 +203,8 @@ fun ElGamalCiphertext.disjunctiveChaumPedersenProofKnownNonce(
  * Produces a proof that a given ElGamal encryption corresponds to a value between zero and a
  * given limit (inclusive), given that the prover to know the nonce (the r behind the g^r).
  *
- * @param plaintext The actual plaintext constant value used to make the ElGamal ciphertext (L in
- *     the spec)
- * @param limit The maximum possible value for the plaintext (inclusive)
+ * @param plaintext The actual plaintext constant value used to make the ElGamal ciphertext (ℓ in the spec)
+ * @param limit The maximum possible value for the plaintext (inclusive), (L in the spec)
  * @param nonce The aggregate nonce used creating the ElGamal ciphertext (r in the spec)
  * @param publicKey The ElGamal public key for the election
  * @param seed Used to generate other random values here
@@ -460,7 +459,7 @@ fun RangeChaumPedersenProofKnownNonce.validate(
             a = context.gPowP(vj) * (alpha powP cj),
             b = (publicKey powP (vj - j.toElementModQ(context) * cj)) * (beta powP cj),
             c = cj,
-            r = vj);
+            r = vj)
 
         // TODO: figure out how to do this with the proof.expand() method.
         //   The way all the c-values fit together in the spec is different
@@ -483,7 +482,7 @@ fun RangeChaumPedersenProofKnownNonce.validate(
     else
         Err("    hash of reconstructed a, b values doesn't match proof c (5.3)")
 
-    return listOf(csumResult, hashResult).merge();
+    return listOf(csumResult, hashResult).merge()
 }
 
 /**

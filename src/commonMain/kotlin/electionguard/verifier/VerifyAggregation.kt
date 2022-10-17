@@ -1,12 +1,10 @@
 package electionguard.verifier
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
 import electionguard.core.*
-import kotlin.math.roundToInt
 
 /**
  * Verification 7 (Correctness of ballot aggregation)
@@ -21,7 +19,7 @@ class VerifyAggregation(
     val aggregator: SelectionAggregator,
 ) {
 
-    fun verify(encryptedTally: EncryptedTally, showTime : Boolean = false): Result<Boolean, String> {
+    fun verify(encryptedTally: EncryptedTally, showTime: Boolean = false): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
         val errors = mutableListOf<Result<Boolean, String>>()
@@ -64,14 +62,12 @@ class SelectionAggregator {
             nballotsCast++
             for (contest in ballot.contests) {
                 for (selection in contest.selections) {
-                    if (!selection.isPlaceholderSelection) { // only non placeholders
-                        val key: String = contest.contestId + "." + selection.selectionId
-                        val total = selectionEncryptions[key]
-                        if (total != null) {
-                            selectionEncryptions[key] = total + selection.ciphertext
-                        } else {
-                            selectionEncryptions[key] = selection.ciphertext
-                        }
+                    val key: String = contest.contestId + "." + selection.selectionId
+                    val total = selectionEncryptions[key]
+                    if (total != null) {
+                        selectionEncryptions[key] = total + selection.ciphertext
+                    } else {
+                        selectionEncryptions[key] = selection.ciphertext
                     }
                 }
             }
