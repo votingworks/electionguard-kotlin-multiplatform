@@ -86,7 +86,7 @@ class Encryptor(
         }
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
 
-        // see spec 1.51, section 3.3.6
+        // see spec 1.52, section 3.3.6
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), sortedContests) // B_i
         val trackingCode = hashElements(codeSeed, timestamp, cryptoHash)

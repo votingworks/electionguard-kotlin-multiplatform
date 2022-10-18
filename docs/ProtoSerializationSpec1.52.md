@@ -310,19 +310,19 @@ draft 9/27/2022
 | contest_hash   | UInt256                          | ContestDescription.crypto_hash    |                                                                     |
 | selections     | List\<EncryptedBallotSelection\> |                                   |
 | crypto_hash    | UInt256                          |                                   |
-| proof          | RangeProof                       |                                   |
+| proof          | RangeProof                       | proof votes <= limit              |
 | contest_data   | HashedElGamalCiphertext          |                                   |
 
 #### message EncryptedBallotSelection
 
-| Name                     | Type              | Notes                                |
-|--------------------------|-------------------|--------------------------------------|
-| selection_id             | string            | SelectionDescription.selection_id    |
-| sequence_order           | uint32            | SelectionDescription.sequence_order  |
-| selection_hash           | UInt256           | SelectionDescription.crypto_hash     |
-| ciphertext               | ElGamalCiphertext |                                      |
-| crypto_hash              | UInt256           |                                      |
-| proof                    | RangeProof        |                                      |
+| Name                     | Type              | Notes                               |
+|--------------------------|-------------------|-------------------------------------|
+| selection_id             | string            | SelectionDescription.selection_id   |
+| sequence_order           | uint32            | SelectionDescription.sequence_order |
+| selection_hash           | UInt256           | SelectionDescription.crypto_hash    |
+| ciphertext               | ElGamalCiphertext |                                     |
+| crypto_hash              | UInt256           |                                     |
+| proof                    | RangeProof        | proof vote = 0 or 1                 |
 
 #### message RangeProof
 

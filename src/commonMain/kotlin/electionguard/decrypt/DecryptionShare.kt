@@ -148,11 +148,11 @@ class PartialDecryption(
 
 /** Direct decryption from the Decrypting Trustee */
 data class DirectDecryptionAndProof(
-    val partialDecryption: ElementModP,
+    val partialDecryption: ElementModP, // Mi = A^si mod p
     val proof: GenericChaumPedersenProof)
 
 /** Compensated decryption from the Decrypting Trustee */
 data class CompensatedDecryptionAndProof(
-    val partialDecryption: ElementModP, // 𝑀_i,l = 𝐴^Pi_(ℓ) (spec 1.51 section 3.5.2 eq 59)
+    val partialDecryption: ElementModP, // 𝑀_i,l = 𝐴^Pi_(ℓ) (spec 1.52 section 3.5.2 eq 53)
     val proof: GenericChaumPedersenProof, // proof that we know Pi_(ℓ)
     val recoveredPublicKeyShare: ElementModP) // g^Pi(ℓ), used in the proof verification.

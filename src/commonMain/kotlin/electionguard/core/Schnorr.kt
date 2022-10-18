@@ -19,7 +19,7 @@ data class SchnorrProof(
         val context = compatibleContextOrFail(publicKey, challenge, response)
 
         val gPowV = context.gPowP(response)
-        val h = gPowV * (publicKey powP challenge)
+        val h = gPowV * (publicKey powP challenge) // spec 1.52, section 3.2.2, eq 2.1
         val c = hashElements(publicKey, h).toElementModQ(context)
 
         val inBoundsU = response.inBounds()
@@ -47,10 +47,10 @@ data class SchnorrProof(
 fun ElGamalKeypair.schnorrProof(
     nonce: ElementModQ = context.randomElementModQ()
 ): SchnorrProof {
-    // spec 1.51, section 3.2.2, eq 10, 11
+    // spec 1.52, section 3.2.2, eq 7, 8
     val context = compatibleContextOrFail(publicKey.key, secretKey.key, nonce)
-    val h = context.gPowP(nonce)
-    val c = hashElements(publicKey, h).toElementModQ(context)
+    val h = context.gPowP(nonce) // eq 7
+    val c = hashElements(publicKey, h).toElementModQ(context) // 2.A, eq 8
     val v = nonce - secretKey.key * c
 
     return SchnorrProof(publicKey.key, c, v)

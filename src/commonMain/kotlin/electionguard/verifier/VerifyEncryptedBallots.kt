@@ -23,7 +23,7 @@ import kotlin.math.roundToInt
 
 private const val debugBallots = false
 
-// TODO redo this with 1.51 Verification box 4, 5, 6
+// TODO redo this with 1.52 Verification box 4, 5, 6
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyEncryptedBallots(
     val group: GroupContext,
@@ -83,7 +83,7 @@ class VerifyEncryptedBallots(
             errors.add(test6.unwrapError())
         }
 
-        // TODO redo this with 1.51 Verification box 5
+        // TODO redo this with 1.52 Verification box 5
         for (contest in ballot.contests) {
             val where = "${ballot.ballotId}/${contest.contestId}"
             ncontests++
@@ -129,7 +129,7 @@ class VerifyEncryptedBallots(
         return Stats(ballot.ballotId, bvalid, ncontests, nselections, errors)
     }
 
-    // TODO redo this with 1.51 Verification box 6
+    // TODO redo this with 1.52 Verification box 6
     private fun verifyTrackingCode(ballot: EncryptedBallot): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
 
@@ -178,7 +178,7 @@ class VerifyEncryptedBallots(
     }
     */
 
-    // TODO redo this with 1.51 Verification box 4
+    // TODO redo this with 1.52 Verification box 4
     private fun verifySelections(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
         for (selection in contest.selections) {
@@ -243,4 +243,4 @@ class VerifyEncryptedBallots(
 }
 
 // check confirmation codes
-data class ConfirmationCode(val ballotId: String, val code: UInt256)
+private data class ConfirmationCode(val ballotId: String, val code: UInt256)

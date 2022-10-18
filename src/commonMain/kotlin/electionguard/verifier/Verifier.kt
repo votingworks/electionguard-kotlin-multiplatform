@@ -93,6 +93,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         return allOk
     }
 
+    // Verification Box 2
     private fun verifyGuardianPublicKey(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for (guardian in this.record.guardians()) {
@@ -107,6 +108,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         return checkProofs.merge()
     }
 
+    // Verification Box 3
     private fun verifyElectionPublicKey(cryptoBaseHash: UInt256): Result<Boolean, String> {
         val jointPublicKeyComputed = this.record.guardians().map { it.publicKey() }.reduce { a, b -> a * b }
         val errors = mutableListOf<Result<Boolean, String>>()
@@ -117,7 +119,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         val commitments = mutableListOf<ElementModP>()
         this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments()) }
         val commitmentsHash = hashElements(commitments)
-        // spec 1.51, eq 20 and 3.B
+        // spec 1.52, eq 17 and 3.B
         val computedQbar: UInt256 = hashElements(cryptoBaseHash, jointPublicKeyComputed, commitmentsHash)
         if (!cryptoExtendedBaseHash.equals(computedQbar.toElementModQ(group))) {
             errors.add(Err("  3.B qbar does not match computed = H(Q, K, Prod(K_ij))"))
