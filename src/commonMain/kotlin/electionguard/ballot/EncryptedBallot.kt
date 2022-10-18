@@ -9,9 +9,9 @@ import electionguard.core.*
 data class EncryptedBallot(
     val ballotId: String,
     val ballotStyleId: String,
-    val manifestHash: UInt256, // matches Manifest.cryptoHash
+    val manifestHash: UInt256,  // matches Manifest.cryptoHash
     val codeSeed: UInt256,
-    val code: UInt256,
+    val code: UInt256,          // confirmation code, aka tracking code
     val contests: List<Contest>,
     val timestamp: Long,
     val cryptoHash: UInt256,

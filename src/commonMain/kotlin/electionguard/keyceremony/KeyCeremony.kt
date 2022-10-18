@@ -142,7 +142,7 @@ data class KeyCeremonyResults(
         val commitments: MutableList<ElementModP> = mutableListOf()
         publicKeysSorted.forEach { commitments.addAll(it.coefficientCommitments()) }
         val commitmentsHash = hashElements(commitments)
-        // spec 1.51, eq 20 and 3.B
+        // spec 1.52, eq 17 and 3.B
         val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
 
         val guardians: List<Guardian> = publicKeysSorted.map { makeGuardian(it) }
