@@ -47,11 +47,10 @@ fun GenericChaumPedersenProof.expand(
     h: ElementModP,
     hx: ElementModP,
 ): ExpandedGenericChaumPedersenProof {
-    val negC = -c
-    val gr = g powP r // g^r = g^{w + xc}
-    val hr = h powP r // h^r = h^{w + xc}
-    val a = gr * (gx powP negC) // cancelling out the xc, getting g^w
-    val b = hr * (hx powP negC) // cancelling out the xc, getting h^w
+    val gr = g powP r // g^r = g^(w - xc)
+    val hr = h powP r // h^r = h^(w - xc)
+    val a = gr * (gx powP c) // cancelling out the xc, getting g^w
+    val b = hr * (hx powP c) // cancelling out the xc, getting h^w
     return ExpandedGenericChaumPedersenProof(a, b, c, r)
 }
 
@@ -292,7 +291,7 @@ fun genericChaumPedersenProofOf(
 
     // The proof generates a random value w ∈ Z q , computes the commitments (a , b) = (g^w , A^w),
     // obtains the challenge value as c = H( Q̄, A, B, a , b, M)
-    // and the response r = (w + c * s) mod q.
+    // and the response r = (w - c * s) mod q.
     // The proof is (a, b, c, r)
 
     val w = Nonces(seed, "generic-chaum-pedersen-proof")[0]
@@ -300,7 +299,7 @@ fun genericChaumPedersenProofOf(
     val b = h powP w
 
     val c = hashElements(*hashHeader, a, b, *hashFooter).toElementModQ(context)
-    val r = w + x * c
+    val r = w - x * c
 
     return GenericChaumPedersenProof(c, r)
 }

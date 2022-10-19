@@ -164,8 +164,8 @@ class VerifyDecryptedTally(
                             //  TODO 9.D and 9.E are not needed because we have simplified proofs ??
                             //       review when 2.0 verification spec is out
 
-                            // 9.D The equation g^v_i,l mod p = (a_i,l * (∏ k−1 j=0 K i,j ) ) mod p is satisfied.
-                            //         vil: ElementModQ, // v_il
+                            /* 9.D The equation g^v_i,l mod p = (a_i,l * (∏ k−1 j=0 K i,j ) ) mod p is satisfied.
+                            //        vil: ElementModQ, // v_il
                             //        ail: ElementModP, // a_il
                             //        cil: ElementModQ, // c_il
                             //        prodj: ElementModP, // Prodj (𝐾_𝑖,𝑗 ^ ℓ^j)
@@ -196,7 +196,7 @@ class VerifyDecryptedTally(
                                         "  for missing guardian '${recoveredDecryption.missingGuardianId}'" +
                                         " by decrypting guardian '${recoveredDecryption.decryptingGuardianId}'"
                                 )
-                            }
+                            } */
                         }
 
                     } else {
