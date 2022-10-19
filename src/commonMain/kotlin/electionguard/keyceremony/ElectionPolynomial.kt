@@ -31,15 +31,15 @@ data class ElectionPolynomial(
     /** The value of the polynomial at xcoord. This is private information, only shared in encrypted form. */
     fun valueAt(group: GroupContext, xcoord : Int): ElementModQ {
         val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())
-        var computedValue: ElementModQ = group.ZERO_MOD_Q
+        var result: ElementModQ = group.ZERO_MOD_Q
         var xcoordPower: ElementModQ = group.ONE_MOD_Q
 
         for (coefficient in this.coefficients) {
             val term = coefficient * xcoordPower
-            computedValue += term
+            result += term
             xcoordPower *= xcoordQ
         }
-        return computedValue
+        return result
     }
 }
 

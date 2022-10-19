@@ -98,7 +98,12 @@ fun runDecryptBallots(
     val missingGuardians =
         tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId) }.map { it.guardianId }
 
-    val decryption = Decryption(group, tallyResult.electionInitialized, decryptingTrustees, missingGuardians)
+    val decryption = Decryption(group,
+        tallyResult.electionInitialized.cryptoExtendedBaseHash(),
+        tallyResult.electionInitialized.jointPublicKey(),
+        tallyResult.electionInitialized.guardians,
+        decryptingTrustees,
+        missingGuardians)
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()

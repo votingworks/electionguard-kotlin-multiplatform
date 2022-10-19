@@ -8,10 +8,7 @@ import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.GroupContext
-import electionguard.decrypt.PartialDecryption
-import electionguard.decrypt.RecoveredPartialDecryption
 
 fun GroupContext.importDecryptedTallyOrBallot(tally: electionguard.protogen.DecryptedTallyOrBallot?):
         Result<DecryptedTallyOrBallot, String> {
@@ -56,15 +53,10 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Decry
         .toResultOr { "DecryptedSelection ${selection.selectionId} value was malformed or missing" }
     val message = this.importCiphertext(selection.message)
         .toResultOr { "DecryptedSelection ${selection.selectionId} message was malformed or missing" }
-    val (shares, serrors) = selection.partialDecryptions.map { this.importPartialDecryption(it) }.partition()
 
-    val errors = getAllErrors(value, message) + serrors
+    val errors = getAllErrors(value, message)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
-    }
-
-    if (shares.isEmpty()) {
-        return Err("No shares in DecryptedSelection")
     }
 
     return Ok(
@@ -73,11 +65,12 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Decry
             selection.tally,
             value.unwrap(),
             message.unwrap(),
-            shares
+            this.importChaumPedersenProof(selection.proof)!!
         )
     )
 }
 
+/*
 private fun GroupContext.importPartialDecryption(partial: electionguard.protogen.PartialDecryption):
         Result<PartialDecryption, String> {
 
@@ -134,7 +127,7 @@ private fun GroupContext.importRecoveredPartialDecryption(selectionId: String, p
             proof.unwrap(),
         )
     )
-}
+} */
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -156,10 +149,11 @@ private fun DecryptedTallyOrBallot.Selection.publishSelection():
             this.tally,
             this.value.publishElementModP(),
             this.message.publishCiphertext(),
-            this.partialDecryptions.map { it.publishPartialDecryption() }
+            this.proof.publishChaumPedersenProof()
         )
 }
 
+/*
 private fun PartialDecryption.publishPartialDecryption():
         electionguard.protogen.PartialDecryption {
     // either proof or recovered_parts is non null
@@ -202,3 +196,4 @@ private fun RecoveredPartialDecryption.publishMissingPartialDecryption():
             this.proof.publishChaumPedersenProof(),
         )
 }
+ */

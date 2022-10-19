@@ -23,7 +23,7 @@ message ElGamalKeypair {
 message CommitmentSet {
   // for which guardian
   string guardian_id = 1;
-  // coefficient commitments, always quorum number of them
+  // coefficient commitments, always quorum (k) number of them, order of secret polynomial
   repeated ElementModP commitments = 3;
 }
 
@@ -34,8 +34,8 @@ message SecretKeyShare {
   string designated_guardian_id = 2;
   // The x coefficient of the designated guardian (l).
   uint32 designated_guardian_x_coordinate = 3;
-  // Pi(l) = The generatingGuardian's polynomial value at designatedGuardianXCoordinate: Pi(l)
+  // Pi(ℓ)= The generatingGuardian's polynomial value at designatedGuardianXCoordinate
   reserved 4;
-  // This is the encryption of that = Eℓ (Pi(ℓ)), see spec 1.03 eq 17.
+  // This is the encryption of that = Eℓ (Pi(ℓ)), see spec 1.52 eq 14.
   HashedElGamalCiphertext encrypted_coordinate = 6;
 }

@@ -7,7 +7,7 @@ private val logger = KotlinLogging.logger("Schnorr")
  * Proof that the prover knows the private key corresponding to the public key.
  */
 data class SchnorrProof(
-    val publicKey: ElementModP,
+    val publicKey: ElementModP, // K_ij
     val challenge: ElementModQ,
     val response: ElementModQ) {
 

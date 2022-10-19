@@ -17,34 +17,29 @@ interface DecryptingTrusteeIF {
     fun electionPublicKey(): ElementModP
 
     /**
-     * Compute a direct partial decryption of an elgamal encryption.
+     * Compute partial decryption(s) of elgamal encryption(s), using spec 1.52 eq 58 and 59.
      *
-     * @param texts:            list of `ElGamalCiphertext` that will be partially decrypted
-     * @param extendedBaseHash: the extended base hash of the election
-     * @param nonce:            an optional nonce to generate the proof
-     * @return a list of DirectDecryptionAndProof, in the same order as the texts
+     * @param lagrangeCoeff    the lagrange coefficient for this trustee
+     * @param missingGuardians the missing guardians' Ids
+     * @param texts            list of `ElGamalCiphertext` that will be partially decrypted
+     * @param nonce            an optional nonce to generate the proof
+     * @return a list of partial decryptions, in the same order as the texts
      */
-    fun directDecrypt(
+    fun decrypt(
         group: GroupContext,
+        lagrangeCoeff: ElementModQ,
+        missingGuardians: List<String>,
         texts: List<ElGamalCiphertext>,
-        extendedBaseHash: ElementModQ,
         nonce: ElementModQ?,
-    ): List<DirectDecryptionAndProof>
+    ): List<PartialDecryption>
 
     /**
-     * Compute a compensated partial decryption of an elgamal encryption on behalf of the missing guardian.
-     *
-     * @param missingGuardianId: the missing guardian
-     * @param texts:             the ciphertext(s) that will be partially decrypted
-     * @param extendedBaseHash:  the extended base hash of the election
-     * @param nonce:             an optional nonce to generate the proof
-     * @return a list of CompensatedDecryptionAndProof, in the same order as the texts
+     * Compute responses to Chaum-Pedersen challenges
+     * @param challenges            list of Chaum-Pedersen challenges
+     * @return a list of responses, in the same order as the challenges
      */
-    fun compensatedDecrypt(
+    fun challenge(
         group: GroupContext,
-        missingGuardianId: String,
-        texts: List<ElGamalCiphertext>,
-        extendedBaseHash: ElementModQ,
-        nonce: ElementModQ?,
-    ): List<CompensatedDecryptionAndProof>
+        challenges: List<ChallengeRequest>,
+    ): List<ChallengeResponse>
 }

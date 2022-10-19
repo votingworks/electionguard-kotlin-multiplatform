@@ -2,8 +2,8 @@ syntax = "proto3";
 
 import "encrypted_tally.proto";
 import "common.proto";
-import "manifest.proto";
 import "decrypted_tally.proto";
+import "manifest.proto";
 
 option java_package = "electionguard.protogen";
 option java_outer_classname = "ElectionRecordProto";
@@ -61,11 +61,11 @@ message TallyResult {
 message DecryptionResult {
   TallyResult tally_result = 1;
   DecryptedTallyOrBallot decrypted_tally = 2;
-  repeated DecryptingGuardian decrypting_guardians = 3;
+  repeated LagrangeCoefficient lagrange_coefficients = 3;
   map<string, string> metadata = 4;
 }
 
-message DecryptingGuardian {
+message LagrangeCoefficient {
   string guardian_id = 1;
   uint32 x_coordinate = 2; // x coordinate in the secret polynomial. must be > 0
   ElementModQ lagrange_coefficient = 3;

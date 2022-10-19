@@ -28,7 +28,7 @@ message DecryptedSelection {
   uint32 tally = 2;
   ElementModP value = 3; // g^tally or M in the spec.
   ElGamalCiphertext message = 4;
-  repeated PartialDecryption partial_decryptions = 5; // one for each Guardian, available or not
+  GenericChaumPedersenProof proof = 6;
 }
 
 // A Guardian's Partial Decryption of a selection

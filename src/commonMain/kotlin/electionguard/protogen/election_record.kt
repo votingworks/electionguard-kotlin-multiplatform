@@ -555,7 +555,7 @@ public data class TallyResult(
 public data class DecryptionResult(
     val tallyResult: electionguard.protogen.TallyResult? = null,
     val decryptedTally: electionguard.protogen.DecryptedTallyOrBallot? = null,
-    val decryptingGuardians: List<electionguard.protogen.DecryptingGuardian> = emptyList(),
+    val lagrangeCoefficients: List<electionguard.protogen.LagrangeCoefficient> = emptyList(),
     val metadata: List<electionguard.protogen.DecryptionResult.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -592,11 +592,11 @@ public data class DecryptionResult(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "decrypting_guardians",
+                        name = "lagrange_coefficients",
                         number = 3,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.DecryptingGuardian>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.DecryptingGuardian.Companion)),
-                        jsonName = "decryptingGuardians",
-                        value = electionguard.protogen.DecryptionResult::decryptingGuardians
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.LagrangeCoefficient>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.LagrangeCoefficient.Companion)),
+                        jsonName = "lagrangeCoefficients",
+                        value = electionguard.protogen.DecryptionResult::lagrangeCoefficients
                     )
                 )
                 add(
@@ -667,21 +667,21 @@ public data class DecryptionResult(
 }
 
 @pbandk.Export
-public data class DecryptingGuardian(
+public data class LagrangeCoefficient(
     val guardianId: String = "",
     val xCoordinate: Int = 0,
     val lagrangeCoefficient: electionguard.protogen.ElementModQ? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.DecryptingGuardian = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptingGuardian> get() = Companion.descriptor
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.LagrangeCoefficient = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.LagrangeCoefficient> get() = Companion.descriptor
     override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.DecryptingGuardian> {
-        public val defaultInstance: electionguard.protogen.DecryptingGuardian by lazy { electionguard.protogen.DecryptingGuardian() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.DecryptingGuardian = electionguard.protogen.DecryptingGuardian.decodeWithImpl(u)
+    public companion object : pbandk.Message.Companion<electionguard.protogen.LagrangeCoefficient> {
+        public val defaultInstance: electionguard.protogen.LagrangeCoefficient by lazy { electionguard.protogen.LagrangeCoefficient() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.LagrangeCoefficient = electionguard.protogen.LagrangeCoefficient.decodeWithImpl(u)
 
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptingGuardian> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptingGuardian, *>>(3)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.LagrangeCoefficient> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.LagrangeCoefficient, *>>(3)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -690,7 +690,7 @@ public data class DecryptingGuardian(
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "guardianId",
-                        value = electionguard.protogen.DecryptingGuardian::guardianId
+                        value = electionguard.protogen.LagrangeCoefficient::guardianId
                     )
                 )
                 add(
@@ -700,7 +700,7 @@ public data class DecryptingGuardian(
                         number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "xCoordinate",
-                        value = electionguard.protogen.DecryptingGuardian::xCoordinate
+                        value = electionguard.protogen.LagrangeCoefficient::xCoordinate
                     )
                 )
                 add(
@@ -710,13 +710,13 @@ public data class DecryptingGuardian(
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "lagrangeCoefficient",
-                        value = electionguard.protogen.DecryptingGuardian::lagrangeCoefficient
+                        value = electionguard.protogen.LagrangeCoefficient::lagrangeCoefficient
                     )
                 )
             }
             pbandk.MessageDescriptor(
-                fullName = "DecryptingGuardian",
-                messageClass = electionguard.protogen.DecryptingGuardian::class,
+                fullName = "LagrangeCoefficient",
+                messageClass = electionguard.protogen.LagrangeCoefficient::class,
                 messageCompanion = this,
                 fields = fieldsList
             )
@@ -976,7 +976,7 @@ private fun DecryptionResult.protoMergeImpl(plus: pbandk.Message?): DecryptionRe
     it.copy(
         tallyResult = tallyResult?.plus(plus.tallyResult) ?: plus.tallyResult,
         decryptedTally = decryptedTally?.plus(plus.decryptedTally) ?: plus.decryptedTally,
-        decryptingGuardians = decryptingGuardians + plus.decryptingGuardians,
+        lagrangeCoefficients = lagrangeCoefficients + plus.lagrangeCoefficients,
         metadata = metadata + plus.metadata,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -986,18 +986,18 @@ private fun DecryptionResult.protoMergeImpl(plus: pbandk.Message?): DecryptionRe
 private fun DecryptionResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptionResult {
     var tallyResult: electionguard.protogen.TallyResult? = null
     var decryptedTally: electionguard.protogen.DecryptedTallyOrBallot? = null
-    var decryptingGuardians: pbandk.ListWithSize.Builder<electionguard.protogen.DecryptingGuardian>? = null
+    var lagrangeCoefficients: pbandk.ListWithSize.Builder<electionguard.protogen.LagrangeCoefficient>? = null
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.DecryptionResult.MetadataEntry>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> tallyResult = _fieldValue as electionguard.protogen.TallyResult
             2 -> decryptedTally = _fieldValue as electionguard.protogen.DecryptedTallyOrBallot
-            3 -> decryptingGuardians = (decryptingGuardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptingGuardian> }
+            3 -> lagrangeCoefficients = (lagrangeCoefficients ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.LagrangeCoefficient> }
             4 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptionResult.MetadataEntry> }
         }
     }
-    return DecryptionResult(tallyResult, decryptedTally, pbandk.ListWithSize.Builder.fixed(decryptingGuardians), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+    return DecryptionResult(tallyResult, decryptedTally, pbandk.ListWithSize.Builder.fixed(lagrangeCoefficients), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export
@@ -1025,10 +1025,10 @@ private fun DecryptionResult.MetadataEntry.Companion.decodeWithImpl(u: pbandk.Me
 }
 
 @pbandk.Export
-@pbandk.JsName("orDefaultForDecryptingGuardian")
-public fun DecryptingGuardian?.orDefault(): electionguard.protogen.DecryptingGuardian = this ?: DecryptingGuardian.defaultInstance
+@pbandk.JsName("orDefaultForLagrangeCoefficient")
+public fun LagrangeCoefficient?.orDefault(): electionguard.protogen.LagrangeCoefficient = this ?: LagrangeCoefficient.defaultInstance
 
-private fun DecryptingGuardian.protoMergeImpl(plus: pbandk.Message?): DecryptingGuardian = (plus as? DecryptingGuardian)?.let {
+private fun LagrangeCoefficient.protoMergeImpl(plus: pbandk.Message?): LagrangeCoefficient = (plus as? LagrangeCoefficient)?.let {
     it.copy(
         lagrangeCoefficient = lagrangeCoefficient?.plus(plus.lagrangeCoefficient) ?: plus.lagrangeCoefficient,
         unknownFields = unknownFields + plus.unknownFields
@@ -1036,7 +1036,7 @@ private fun DecryptingGuardian.protoMergeImpl(plus: pbandk.Message?): Decrypting
 } ?: this
 
 @Suppress("UNCHECKED_CAST")
-private fun DecryptingGuardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptingGuardian {
+private fun LagrangeCoefficient.Companion.decodeWithImpl(u: pbandk.MessageDecoder): LagrangeCoefficient {
     var guardianId = ""
     var xCoordinate = 0
     var lagrangeCoefficient: electionguard.protogen.ElementModQ? = null
@@ -1048,5 +1048,5 @@ private fun DecryptingGuardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder
             3 -> lagrangeCoefficient = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
-    return DecryptingGuardian(guardianId, xCoordinate, lagrangeCoefficient, unknownFields)
+    return LagrangeCoefficient(guardianId, xCoordinate, lagrangeCoefficient, unknownFields)
 }

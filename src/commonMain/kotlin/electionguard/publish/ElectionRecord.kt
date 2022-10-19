@@ -1,6 +1,6 @@
 package electionguard.publish
 
-import electionguard.ballot.DecryptingGuardian
+import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionConstants
@@ -46,7 +46,7 @@ interface ElectionRecord {
     fun tallyResult(): TallyResult?
 
     fun decryptedTally(): DecryptedTallyOrBallot?
-    fun decryptingGuardians(): List<DecryptingGuardian> // may be empty
+    fun decryptingGuardians(): List<LagrangeCoordinate> // may be empty
     fun spoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> // may be empty
     fun decryptionResult(): DecryptionResult?
 }

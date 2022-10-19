@@ -98,6 +98,7 @@ class VerifyDecryptedTally(
                 if (!manifest.contestAndSelectionSet.contains(where2)) {
                     errors.add("   11.C Fail manifest does not contain '$where2' ")
                 }
+                /*
                 val selResult = verifySelectionDecryption(where2, selection)
                 if (selResult is Err) {
                     errors.add(selResult.error)
@@ -203,6 +204,8 @@ class VerifyDecryptedTally(
                         errors.add("Must have partialDecryption.proof or missingDecryptions '$where2'")
                     }
                 }
+
+                 */
             }
         }
         val took = getSystemTimeInMillis() - starting
@@ -237,7 +240,7 @@ class VerifyDecryptedTally(
         return left.equals(right)
     }
 
-    /**
+    /*
      * 11. An election verifier should confirm the following equations for each (non-placeholder) option in
      * each contest in the ballot coding file.
      * <pre>
@@ -247,7 +250,7 @@ class VerifyDecryptedTally(
      * (C) An election verifier should also confirm that the text labels listed in the election record match
      * the corresponding text labels in the ballot coding file.
      * </pre>
-     */
+     *
     private fun verifySelectionDecryption(where: String, selection: DecryptedTallyOrBallot.Selection): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
         for (share in selection.partialDecryptions) {
@@ -268,6 +271,8 @@ class VerifyDecryptedTally(
         }
         return errors.merge()
     }
+
+     */
 
     fun verifySpoiledBallotTallies(
         ballots: Iterable<DecryptedTallyOrBallot>,

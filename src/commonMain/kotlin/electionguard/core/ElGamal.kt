@@ -170,6 +170,12 @@ fun ElGamalCiphertext.computeShare(secretKey: ElGamalSecretKey): ElementModP {
     return pad powP secretKey.key
 }
 
+/** Compute the share of the decryption from the secret key. */
+fun ElGamalCiphertext.computeShare(secretKey: ElementModQ): ElementModP {
+    compatibleContextOrFail(pad, data, secretKey)
+    return pad powP secretKey
+}
+
 fun ElGamalCiphertext.decryptWithShares(publicKey: ElGamalPublicKey, shares: Iterable<ElementModP>): Int? {
     val sharesList = shares.toList()
     val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray())) // shares)

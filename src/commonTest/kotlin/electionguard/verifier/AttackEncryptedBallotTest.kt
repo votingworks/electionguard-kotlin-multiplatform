@@ -172,7 +172,13 @@ fun decryptTally(
     electionInit: ElectionInitialized,
     decryptingTrustees: List<DecryptingTrusteeIF>,
 ): DecryptedTallyOrBallot {
-    val decryption = Decryption(group, electionInit, decryptingTrustees, emptyList())
+    val decryption = Decryption(
+        group,
+        electionInit.cryptoExtendedBaseHash(),
+        electionInit.jointPublicKey(),
+        electionInit.guardians,
+        decryptingTrustees,
+        emptyList())
     return with(decryption) { encryptedTally.decrypt() }
 }
 
