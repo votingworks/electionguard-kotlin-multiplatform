@@ -14,16 +14,6 @@ fun generateRangeChaumPedersenProofKnownNonce(
     )
 }
 
-fun generateDisjunctiveChaumPedersenProofKnownNonce(
-    context: GroupContext
-): DisjunctiveChaumPedersenProofKnownNonce {
-    return DisjunctiveChaumPedersenProofKnownNonce(
-        generateGenericChaumPedersenProof(context),
-        generateGenericChaumPedersenProof(context),
-        generateElementModQ(context),
-    )
-}
-
 fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPedersenProof {
     return GenericChaumPedersenProof(generateElementModQ(context), generateElementModQ(context),)
 }
