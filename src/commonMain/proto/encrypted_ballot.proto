@@ -50,9 +50,3 @@ message RangeChaumPedersenProofKnownNonce {
   repeated GenericChaumPedersenProof proofs = 1;
   ElementModQ c = 2;
 }
-
-message DisjunctiveChaumPedersenProof {
-  GenericChaumPedersenProof proof0 = 1;
-  GenericChaumPedersenProof proof1 = 2;
-  ElementModQ challenge = 3;
-}

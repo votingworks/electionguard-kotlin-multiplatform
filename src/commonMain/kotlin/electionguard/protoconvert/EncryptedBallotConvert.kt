@@ -137,23 +137,6 @@ private fun GroupContext.importSelection(
     )
 }
 
-private fun GroupContext.importDisjunctiveChaumPedersenProof(
-    disjunct: electionguard.protogen.DisjunctiveChaumPedersenProof?, where: String
-): Result<DisjunctiveChaumPedersenProofKnownNonce, String> {
-    if (disjunct == null) {
-        return Err("Missing DisjunctiveChaumPedersenProof in $where")
-    }
-    val proof0 = this.importChaumPedersenProof(disjunct.proof0)
-    val proof1 = this.importChaumPedersenProof(disjunct.proof1)
-    val proofChallenge = this.importElementModQ(disjunct.challenge)
-
-    if (proof0 == null || proof1 == null || proofChallenge == null) {
-        return Err("Failed to convert DisjunctiveChaumPedersenProofKnownNonce $where from proto (2)")
-    }
-
-    return Ok(DisjunctiveChaumPedersenProofKnownNonce(proof0, proof1, proofChallenge))
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun EncryptedBallot.publishEncryptedBallot(): electionguard.protogen.EncryptedBallot {
@@ -209,14 +192,4 @@ fun RangeChaumPedersenProofKnownNonce.publish():
         this.proofs.map { it.publishChaumPedersenProof() },
         this.c.publishElementModQ(),
     )
-}
-
-fun DisjunctiveChaumPedersenProofKnownNonce.publishDisjunctiveChaumPedersenProof():
-        electionguard.protogen.DisjunctiveChaumPedersenProof {
-    return electionguard.protogen
-        .DisjunctiveChaumPedersenProof(
-            this.proof0.publishChaumPedersenProof(),
-            this.proof1.publishChaumPedersenProof(),
-            this.c.publishElementModQ(),
-        )
 }
