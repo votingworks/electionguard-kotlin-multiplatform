@@ -26,9 +26,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /** Test KeyCeremony Trustee generation and recovered decryption. */
-class RecoveredDecryptionTest {
+class EncryptDecryptTest {
     @Test
-    fun runFakeKeyCeremonyTrusteeTest() {
+    fun testEncryptDecrypt() {
         val group = productionGroup()
         val configDir = "src/commonTest/data/start"
         val outputDir = "testOut/RecoveredDecryptionTest"
@@ -137,7 +137,7 @@ fun testEncryptRecoveredDecrypt(group: GroupContext, publicKey: ElGamalPublicKey
         )[0]
     }
 
-    val Mbar: ElementModP = with(group) { shares.map { it.partialDecryption}.multP() }
+    val Mbar: ElementModP = with(group) { shares.map { it.Mbari}.multP() }
     val decryptedValue: ElementModP = evote.data / Mbar
     val dlogM: Int = publicKey.dLog(decryptedValue, 100) ?: throw RuntimeException("dlog failed")
     println("The answer is $dlogM")

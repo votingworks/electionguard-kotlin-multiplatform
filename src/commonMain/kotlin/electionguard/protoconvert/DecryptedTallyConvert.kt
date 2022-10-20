@@ -59,6 +59,10 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Decry
         return Err(errors.joinToString("\n"))
     }
 
+    if (selection.proof == null) {
+        println("WHY?")
+    }
+
     return Ok(
         DecryptedTallyOrBallot.Selection(
             selection.selectionId,
@@ -69,65 +73,6 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Decry
         )
     )
 }
-
-/*
-private fun GroupContext.importPartialDecryption(partial: electionguard.protogen.PartialDecryption):
-        Result<PartialDecryption, String> {
-
-    if (partial.proof == null && partial.recoveredParts == null) {
-        return Err("PartialDecryption ${partial.selectionId} missing both proof and recoveredParts")
-    }
-
-    val share = this.importElementModP(partial.share)
-        .toResultOr { "PartialDecryption ${partial.selectionId} share was malformed or missing" }
-
-    val proof: GenericChaumPedersenProof? =
-        if (partial.proof != null) this.importChaumPedersenProof(partial.proof) else null
-
-    val recoveredParts = partial.recoveredParts
-    val (parts, perrors) =
-        recoveredParts?.fragments?.map { this.importRecoveredPartialDecryption(partial.selectionId, it) }?.partition() ?: Pair(null, emptyList())
-
-    val errors = getAllErrors(share) + perrors
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-
-    return Ok(
-        PartialDecryption(
-            partial.selectionId,
-            partial.guardianId,
-            share.unwrap(),
-            proof,
-            parts,
-        )
-    )
-}
-
-private fun GroupContext.importRecoveredPartialDecryption(selectionId: String, parts: electionguard.protogen.RecoveredPartialDecryption):
-        Result<RecoveredPartialDecryption, String> {
-    val share = this.importElementModP(parts.share)
-        .toResultOr { "RecoveredPartialDecryption $selectionId share was malformed or missing" }
-    val recoveryKey = this.importElementModP(parts.recoveryKey)
-        .toResultOr { "RecoveredPartialDecryption $selectionId recoveryKey was malformed or missing" }
-    val proof = this.importChaumPedersenProof(parts.proof)
-        .toResultOr { "RecoveredPartialDecryption $selectionId proof was malformed or missing" }
-
-    val errors = getAllErrors(share, recoveryKey, proof)
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-
-    return Ok(
-        RecoveredPartialDecryption(
-            parts.decryptingGuardianId,
-            parts.missingGuardianId,
-            share.unwrap(),
-            recoveryKey.unwrap(),
-            proof.unwrap(),
-        )
-    )
-} */
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -152,48 +97,3 @@ private fun DecryptedTallyOrBallot.Selection.publishSelection():
             this.proof.publishChaumPedersenProof()
         )
 }
-
-/*
-private fun PartialDecryption.publishPartialDecryption():
-        electionguard.protogen.PartialDecryption {
-    // either proof or recovered_parts is non null
-    val proofOrParts: electionguard.protogen.PartialDecryption.ProofOrParts<*>?
-    if (this.proof != null) {
-        proofOrParts =
-            electionguard.protogen
-                .PartialDecryption
-                .ProofOrParts
-                .Proof(this.proof.publishChaumPedersenProof())
-    } else if (this.recoveredDecryptions.isNotEmpty()) {
-        val pparts = this.recoveredDecryptions.map { it.publishMissingPartialDecryption() }
-        proofOrParts =
-            electionguard.protogen
-                .PartialDecryption
-                .ProofOrParts
-                .RecoveredParts(electionguard.protogen.RecoveredParts(pparts))
-    } else {
-        throw IllegalStateException(
-            "CiphertextDecryptionSelection must have proof or recoveredParts"
-        )
-    }
-    return electionguard.protogen
-        .PartialDecryption(
-            this.selectionId,
-            this.guardianId,
-            this.share().publishElementModP(),
-            proofOrParts,
-        )
-}
-
-private fun RecoveredPartialDecryption.publishMissingPartialDecryption():
-        electionguard.protogen.RecoveredPartialDecryption {
-    return electionguard.protogen
-        .RecoveredPartialDecryption(
-            this.decryptingGuardianId,
-            this.missingGuardianId,
-            this.share.publishElementModP(),
-            this.recoveryKey.publishElementModP(),
-            this.proof.publishChaumPedersenProof(),
-        )
-}
- */

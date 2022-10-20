@@ -15,6 +15,7 @@ import electionguard.core.toElementModQ
 
 // TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
 private const val maxDlog: Int = 1000
+private var first = false
 
 /**
  * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustees.
@@ -45,6 +46,7 @@ class Decryption(
     }
 
     fun EncryptedTally.decrypt(): DecryptedTallyOrBallot {
+        println("missingTrustees = $missingTrustees")
         val trusteeDecryptions = TrusteeDecryptions()
 
         // LOOK could parallelize this? or is there shared state?
@@ -58,17 +60,29 @@ class Decryption(
         for ((id, results) in trusteeDecryptions.shares) {
             // accumulate all of the shares calculated for the selection
             val shares = results.shares
-            val Mbar: ElementModP = with(group) { shares.values.map { it.partialDecryption }.multP() }
+            val Mbar: ElementModP = with(group) { shares.values.map { it.Mbari }.multP() }
             // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝. (spec 1.52 section 3.5.2 eq 59)
             val M: ElementModP = results.ciphertext.data / Mbar
             // Now we know M, and since 𝑀 = K^t mod 𝑝, t = logK (M)
             results.dlogM = jointPublicKey.dLog(M, maxDlog) ?: throw RuntimeException("dlog failed on $id")
+            results.M = M
 
             // collective proof (spec 1.52 section 3.5.3 eq 61)
-            val a: ElementModP = with(group) { shares.values.map { it.a}.multP() }
-            val b: ElementModP = with(group) { shares.values.map { it.b}.multP() }
+            val a: ElementModP = with(group) { shares.values.map { it.a }.multP() }
+            val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
+
+            if (first) {
+                println("qbar = $qbar")
+                println("jointPublicKey = $jointPublicKey")
+                println("A = ${results.ciphertext.pad}")
+                println("B = ${results.ciphertext.data}")
+                println("a = $a")
+                println("b = $b")
+                println("M = ${M}")
+                first = false
+            }
+
             results.challenge = hashElements(qbar, jointPublicKey, results.ciphertext.pad, results.ciphertext.data, a, b, M) // eq 62
-            results.M = M
         }
 
         // LOOK could parallelize this? or is there shared state?
@@ -123,7 +137,7 @@ class Decryption(
         val requests: MutableList<ChallengeRequest> = mutableListOf()
         for ((id, results) in this.shares) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u))
+            requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u, result.tm))
         }
 
         // ask for all of them at once

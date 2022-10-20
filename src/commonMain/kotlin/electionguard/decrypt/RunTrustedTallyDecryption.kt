@@ -41,19 +41,29 @@ fun main(args: Array<String>) {
         shortName = "createdBy",
         description = "who created"
     )
+    val npresent by parser.option(
+        ArgType.Int,
+        shortName = "npresent",
+        description = "number of guardians present"
+    )
     parser.parse(args)
     println("RunTrustedTallyDecryption starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
-    runDecryptTally(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
+    runDecryptTally(
+        group,
+        inputDir,
+        outputDir,
+        readDecryptingTrustees(group, inputDir, trusteeDir, npresent),
         createdBy)
 }
 
-fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String): List<DecryptingTrusteeIF> {
+fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String, npresent: Int? = null): List<DecryptingTrusteeIF> {
     val consumerIn = Consumer(inputDir, group)
     val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
     val consumer = Consumer(trusteeDir, group)
-    return init.guardians.map { consumer.readTrustee(trusteeDir, it.guardianId) }
+    val allGuardians = init.guardians.map { consumer.readTrustee(trusteeDir, it.guardianId) }
+    return if (npresent == null) allGuardians else allGuardians.subList(0, npresent)
 }
 
 fun runDecryptTally(

@@ -24,10 +24,10 @@ data class DecryptingTrustee(
     // Other guardians' shares of this guardian's secret key, keyed by generating guardian id.
     val secretKeyShares: Map<String, SecretKeyShare>,
     // Other guardians' coefficient commitments, K_ij = g^a_ij, keyed by guardian id.
-    val guardianPublicKeys: Map<String, List<ElementModP>>,
+    val guardianPublicKeys: Map<String, List<ElementModP>>, // LOOK not used anymore
 ) : DecryptingTrusteeIF {
     // these will be constructed lazily as needed. keyed by missing_id = generating guardian
-    // Pi(ℓ) = value of other's secret polynomial at my coordinate = "my share of other's secret key"
+    // Pj(ℓ) = value of other's secret polynomial at my coordinate = "my share of other's secret key"
     private val generatingGuardianValues = mutableMapOf<String, ElementModQ>()
 
     init {
@@ -51,22 +51,22 @@ data class DecryptingTrustee(
 
             // ti = (si + wi * Sum(Pj(i))j∈V) (spec 1.52, eg 58)
             val ti = if (missingGuardians.isEmpty()) privateKey else {
-                val pils = missingGuardians.map { computeShare(group, it) }
-                val sumPils = with(group) { pils.addQ() }
-                privateKey + lagrangeCoeff * sumPils
+                val pjls = missingGuardians.map { computeShare(group, it) }
+                val sumPjls = with(group) { pjls.addQ() }
+                privateKey + lagrangeCoeff * sumPjls // ti = (si + wi * (Sum j∈V Pj (i))) mod q
             }
             val u = nonce?: group.randomElementModQ(2)
             val a = group.gPowP(u)
             val b = ciphertext.pad powP u
-            val Mbar = ciphertext.computeShare(ti)
-            results.add(PartialDecryption(id, Mbar, u, a, b))
+            val Mbari = ciphertext.computeShare(ti) // Mbar_i = A ^ t_i
+            results.add(PartialDecryption(id, Mbari, u, a, b, ti - privateKey))
         }
         return results
     }
 
     // lazy decryption of key share.
-    // encrypted: Eℓ (Pi (ℓ)) = spec 1.52, section 3.2.2 eq 14
-    // decrypted = Pi(ℓ)
+    // encrypted: El(Pj(ℓ)) = spec 1.52, section 3.2.2 eq 14
+    // decrypted = Pj(ℓ)
     private fun computeShare(group: GroupContext, missingGuardianId : String) : ElementModQ {
         var generatingGuardianValue = this.generatingGuardianValues[missingGuardianId]
         if (generatingGuardianValue == null) {
@@ -84,6 +84,8 @@ data class DecryptingTrustee(
         group: GroupContext,
         challenges: List<ChallengeRequest>,
     ): List<ChallengeResponse> {
-        return challenges.map { ChallengeResponse(it.id, it.nonce - it.challenge * electionKeypair.secretKey.key) }
+        return challenges.map {
+            ChallengeResponse(it.id, it.nonce - it.challenge * ( electionKeypair.secretKey.key + it.tm))
+        }
     }
 }

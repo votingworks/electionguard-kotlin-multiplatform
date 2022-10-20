@@ -92,16 +92,16 @@ data class PublicKeys(
 
 /**
  * A point on a secret polynomial, and commitments to verify this point for a designated guardian.
- * @param generatingGuardianId The Id of the guardian that generated this, who might be missing at decryption (i)
+ * @param generatingGuardianId The Id of the guardian that generated this, who might be missing at decryption (j)
  * @param designatedGuardianId The Id of the guardian to receive this backup, matches the DecryptingTrustee.id (l)
  * @param designatedGuardianXCoordinate The x coordinate of the designated guardian (ℓ)
- * @param encryptedCoordinate Encryption of generatingGuardian's polynomial value at designatedGuardianXCoordinate, El(Pi_(ℓ))
+ * @param encryptedCoordinate Encryption of generatingGuardian's polynomial value at designatedGuardianXCoordinate, El(Pj_(ℓ))
  */
 data class SecretKeyShare(
-    val generatingGuardianId: String,
-    val designatedGuardianId: String,
-    val designatedGuardianXCoordinate: Int,
-    val encryptedCoordinate: HashedElGamalCiphertext,
+    val generatingGuardianId: String, // guardian j (missing)
+    val designatedGuardianId: String, // guardian l
+    val designatedGuardianXCoordinate: Int,  // ℓ
+    val encryptedCoordinate: HashedElGamalCiphertext, // El(Pj_(ℓ))
 ) {
     init {
         require(generatingGuardianId.isNotEmpty())

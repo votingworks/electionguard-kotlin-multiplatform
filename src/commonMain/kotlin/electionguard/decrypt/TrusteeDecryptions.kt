@@ -6,9 +6,10 @@ import electionguard.core.ElementModQ
 import electionguard.core.UInt256
 
 data class ChallengeRequest(
-    val id: String,
+    val id: String, // contest-selection id
     val challenge: ElementModQ,
     val nonce: ElementModQ,
+    val tm: ElementModQ,
 )
 
 data class ChallengeResponse(
@@ -18,11 +19,12 @@ data class ChallengeResponse(
 
 /** One decryption from the Decrypting Trustee */
 data class PartialDecryption(
-    val guardianId: String,
-    val partialDecryption: ElementModP, // Mbar_i
+    val guardianId: String,  // guardian i
+    val Mbari: ElementModP, // Mbar_i
     val u: ElementModQ,
     val a: ElementModP,
-    val b: ElementModP
+    val b: ElementModP,
+    val tm: ElementModQ
 )
 
 class DecryptionResults(
