@@ -32,7 +32,7 @@ class ElectionRecordTest {
             val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
             readElectionRecord(decryption)
             validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTallyOrBallot,
-                decryption.numberOfGuardians(), decryption.quorum(), decryption.decryptingGuardians.size)
+                decryption.numberOfGuardians(), decryption.quorum(), decryption.lagrangeCoordinates.size)
         }
     }
 
@@ -56,8 +56,8 @@ class ElectionRecordTest {
         assertEquals(init.guardians.size, tallyResult.numberOfGuardians())
 
         assertEquals(init.guardians.size, config.numberOfGuardians)
-        assertTrue(tallyResult.quorum() <= decryption.decryptingGuardians.size)
-        assertTrue(tallyResult.numberOfGuardians() >= decryption.decryptingGuardians.size)
+        assertTrue(tallyResult.quorum() <= decryption.lagrangeCoordinates.size)
+        assertTrue(tallyResult.numberOfGuardians() >= decryption.lagrangeCoordinates.size)
     }
 
     fun validateTally(jointKey: ElGamalPublicKey, tally: DecryptedTallyOrBallot, nguardians: Int, quorum: Int, navailable: Int) {
@@ -65,15 +65,6 @@ class ElectionRecordTest {
             for (selection in contest.selections.values) {
                 val actual : Int? = jointKey.dLog(selection.value, 100)
                 assertEquals(selection.tally, actual)
-                assertEquals(nguardians, selection.partialDecryptions.size)
-                // directly computed == navailable
-                assertEquals(navailable, selection.partialDecryptions.filter { it.proof != null}.count())
-                // indirectly computed (aka compensated, recovered)  == nguardians - navailable
-                assertEquals(nguardians - navailable, selection.partialDecryptions.filter { it.recoveredDecryptions.isNotEmpty()}.count())
-                // the compensated decryptions have a quorum
-                selection.partialDecryptions.filter { it.recoveredDecryptions.isNotEmpty()}.forEach {
-                    assertEquals(quorum, it.recoveredDecryptions.count())
-                }
             }
         }
     }

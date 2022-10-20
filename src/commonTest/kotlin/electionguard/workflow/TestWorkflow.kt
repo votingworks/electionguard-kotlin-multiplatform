@@ -24,6 +24,9 @@ import kotlin.test.assertTrue
  *   1. generate with jvm for src/commonTest/data/runWorkflowAll(Some)Available
  *   2. generate with native for src/commonTest/data/testElectionRecord/native/
  *   3. see RunDecryptBallotsTest for another damn thing to do
+ *   4. replace src/commonTest/data/runWorkflowSomeAvailable/spoiledBallotTallies.protobuf if needed, which is a
+ *      DecryptedBallotOrTally, by running RunDecryptBallotsTest.testDecryptBallotsSomeFromList and copying that
+ *      file.
  */
 class TestWorkflow {
     private val configDir = "src/commonTest/data/start"

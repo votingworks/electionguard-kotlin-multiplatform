@@ -171,7 +171,7 @@ public data class DecryptedSelection(
     val tally: Int = 0,
     val value: electionguard.protogen.ElementModP? = null,
     val message: electionguard.protogen.ElGamalCiphertext? = null,
-    val partialDecryptions: List<electionguard.protogen.PartialDecryption> = emptyList(),
+    val proof: electionguard.protogen.GenericChaumPedersenProof? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.DecryptedSelection = protoMergeImpl(other)
@@ -227,11 +227,11 @@ public data class DecryptedSelection(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "partial_decryptions",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.PartialDecryption>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PartialDecryption.Companion)),
-                        jsonName = "partialDecryptions",
-                        value = electionguard.protogen.DecryptedSelection::partialDecryptions
+                        name = "proof",
+                        number = 6,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.GenericChaumPedersenProof.Companion),
+                        jsonName = "proof",
+                        value = electionguard.protogen.DecryptedSelection::proof
                     )
                 )
             }
@@ -542,7 +542,7 @@ private fun DecryptedSelection.protoMergeImpl(plus: pbandk.Message?): DecryptedS
     it.copy(
         value = value?.plus(plus.value) ?: plus.value,
         message = message?.plus(plus.message) ?: plus.message,
-        partialDecryptions = partialDecryptions + plus.partialDecryptions,
+        proof = proof?.plus(plus.proof) ?: plus.proof,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -553,7 +553,7 @@ private fun DecryptedSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder
     var tally = 0
     var value: electionguard.protogen.ElementModP? = null
     var message: electionguard.protogen.ElGamalCiphertext? = null
-    var partialDecryptions: pbandk.ListWithSize.Builder<electionguard.protogen.PartialDecryption>? = null
+    var proof: electionguard.protogen.GenericChaumPedersenProof? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -561,11 +561,11 @@ private fun DecryptedSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder
             2 -> tally = _fieldValue as Int
             3 -> value = _fieldValue as electionguard.protogen.ElementModP
             4 -> message = _fieldValue as electionguard.protogen.ElGamalCiphertext
-            5 -> partialDecryptions = (partialDecryptions ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PartialDecryption> }
+            6 -> proof = _fieldValue as electionguard.protogen.GenericChaumPedersenProof
         }
     }
     return DecryptedSelection(selectionId, tally, value, message,
-        pbandk.ListWithSize.Builder.fixed(partialDecryptions), unknownFields)
+        proof, unknownFields)
 }
 
 @pbandk.Export

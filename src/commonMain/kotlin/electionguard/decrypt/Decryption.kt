@@ -1,34 +1,43 @@
 package electionguard.decrypt
 
-import electionguard.ballot.DecryptingGuardian
-import electionguard.ballot.ElectionInitialized
+import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.ballot.Guardian
 import electionguard.core.ElGamalCiphertext
+import electionguard.core.ElGamalPublicKey
+import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.hashElements
 import electionguard.core.toElementModQ
+
+// TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
+private const val maxDlog: Int = 1000
+private var first = false
 
 /**
  * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustees.
  */
 class Decryption(
     val group: GroupContext,
-    val init: ElectionInitialized,
+    val qbar: ElementModQ,
+    val jointPublicKey: ElGamalPublicKey,
+    val guardians: List<Guardian>,
     private val decryptingTrustees: List<DecryptingTrusteeIF>,
     private val missingTrustees: List<String>,
 ) {
-    val availableGuardians: List<DecryptingGuardian> by lazy {
-        val result = ArrayList<DecryptingGuardian>()
+    val lagrangeCoordinates: Map<String, LagrangeCoordinate> by lazy {
+        val dguardians = mutableListOf<LagrangeCoordinate>()
         for (otherTrustee in decryptingTrustees) {
             val present: List<Int> =
                 decryptingTrustees.filter { it.id() != otherTrustee.id() }.map { it.xCoordinate() }
             val coeff: ElementModQ = group.computeLagrangeCoefficient(otherTrustee.xCoordinate(), present)
-            result.add(DecryptingGuardian(otherTrustee.id(), otherTrustee.xCoordinate(), coeff))
+            dguardians.add(LagrangeCoordinate(otherTrustee.id(), otherTrustee.xCoordinate(), coeff))
         }
         // sorted by guardianId, to match PartialDecryption.lagrangeInterpolation()
-        result.sortedBy { it.guardianId}
+        dguardians.associate { it.guardianId to  it }
     }
 
     fun decryptBallot(ballot: EncryptedBallot): DecryptedTallyOrBallot {
@@ -37,62 +46,67 @@ class Decryption(
     }
 
     fun EncryptedTally.decrypt(): DecryptedTallyOrBallot {
-        val shares: MutableList<DecryptionShare> = mutableListOf() // one for each trustee
+        println("missingTrustees = $missingTrustees")
+        val trusteeDecryptions = TrusteeDecryptions()
+
+        // LOOK could parallelize this? or is there shared state?
         for (decryptingTrustee in decryptingTrustees) {
-            val share: DecryptionShare = this.computeDecryptionShareForTrustee(decryptingTrustee)
-            shares.add(share)
+            val available = lagrangeCoordinates[decryptingTrustee.id()] ?: throw RuntimeException("missingh available $decryptingTrustee.id()")
+            this.computeDecryptionShareForTrustee(
+                decryptingTrustee, available.lagrangeCoordinate, trusteeDecryptions)
         }
 
-        // now rearrange for use by TallyDecryptor
-        val sharesBySelectionId: MutableMap<String, MutableList<PartialDecryption>> = HashMap()
-        for (tallyShare in shares) {
-            tallyShare.directDecryptions.entries.map { (selectionId, partial) ->
-                var smap: MutableList<PartialDecryption>? = sharesBySelectionId[selectionId]
-                if (smap == null) {
-                    smap = mutableListOf()
-                    sharesBySelectionId[selectionId] = smap
-                }
-                smap.add(PartialDecryption(tallyShare.decryptingTrustee, partial))
+        // we need all the results before we can do the challenges
+        for ((id, results) in trusteeDecryptions.shares) {
+            // accumulate all of the shares calculated for the selection
+            val shares = results.shares
+            val Mbar: ElementModP = with(group) { shares.values.map { it.Mbari }.multP() }
+            // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝. (spec 1.52 section 3.5.2 eq 59)
+            val M: ElementModP = results.ciphertext.data / Mbar
+            // Now we know M, and since 𝑀 = K^t mod 𝑝, t = logK (M)
+            results.dlogM = jointPublicKey.dLog(M, maxDlog) ?: throw RuntimeException("dlog failed on $id")
+            results.M = M
+
+            // collective proof (spec 1.52 section 3.5.3 eq 61)
+            val a: ElementModP = with(group) { shares.values.map { it.a }.multP() }
+            val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
+
+            if (first) {
+                println("qbar = $qbar")
+                println("jointPublicKey = $jointPublicKey")
+                println("A = ${results.ciphertext.pad}")
+                println("B = ${results.ciphertext.data}")
+                println("a = $a")
+                println("b = $b")
+                println("M = ${M}")
+                first = false
             }
+
+            results.challenge = hashElements(qbar, jointPublicKey, results.ciphertext.pad, results.ciphertext.data, a, b, M) // eq 62
         }
 
-        for (tallyShare in shares) {
-            tallyShare.compensatedDecryptions.entries.map {(selectionId, haveDecrypt) ->
-                var cmap: MutableList<PartialDecryption>? = sharesBySelectionId[selectionId]
-                if (cmap == null) {
-                    cmap = mutableListOf()
-                    sharesBySelectionId[selectionId] = cmap
-                }
-                // distribute the recoveredDecryptions for this trustee across the missing guardians
-                haveDecrypt.missingDecryptions.values.map { recovered ->
-                    var wantDecrypt = cmap.find { it.guardianId == recovered.missingGuardianId}
-                    if (wantDecrypt == null) {
-                        wantDecrypt = PartialDecryption(recovered.missingGuardianId, haveDecrypt)
-                        cmap.add(wantDecrypt)
-                    }
-                    wantDecrypt.add(recovered)
-                }
-            }
+        // LOOK could parallelize this? or is there shared state?
+        for (decryptingTrustee in decryptingTrustees) {
+            trusteeDecryptions.challengeTrustee(decryptingTrustee)
         }
 
-        if (missingTrustees.isNotEmpty()) {
-            // compute missing shares with lagrange interpolation
-            sharesBySelectionId.values.flatten().forEach { it.lagrangeInterpolation(availableGuardians) }
-        }
-
-        // After gathering the shares for all guardians (partial or compensated), we can decrypt.
-        val decryptor = TallyDecryptor(group, init.jointPublicKey(), init.numberOfGuardians())
-        return decryptor.decryptTally(this, sharesBySelectionId)
+        // After gathering the challenge responses from the available guardians, we can verify and publish.
+        val decryptor = TallyDecryptor(group, qbar, jointPublicKey, lagrangeCoordinates, guardians)
+        return decryptor.decryptTally(this, trusteeDecryptions)
     }
 
     /**
-     * Compute a guardian's share of a decryption, aka a 'partial decryption'.
-     * @param trustee: The guardian who will partially decrypt the tally
+     * Compute a guardian's share of a decryption, aka a 'partial decryption', for all selections of
+     *  this tally/ballot.
+     * @param trustee: The trustee who will partially decrypt the tally
+     * @param lagrangeCoordinate: The trustee's lagrange Coordinate
      * @return a DecryptionShare for this trustee
      */
     private fun EncryptedTally.computeDecryptionShareForTrustee(
         trustee: DecryptingTrusteeIF,
-    ): DecryptionShare {
+        lagrangeCoordinate: ElementModQ,
+        trusteeDecryptions: TrusteeDecryptions,
+    ): TrusteeDecryptions {
 
         // Get all the Ciphertext that need to be decrypted in one call
         val texts: MutableList<ElGamalCiphertext> = mutableListOf()
@@ -101,65 +115,38 @@ class Decryption(
                 texts.add(selection.ciphertext)
             }
         }
+        // decrypt all of them at once
+        val results: List<PartialDecryption> =
+            trustee.decrypt(group, lagrangeCoordinate, missingTrustees, texts, null)
 
-        // LOOK could ask for all direct and compensated in one call, so only one call to each trustee,
-        //  instead of 1 + nmissing
-
-        // direct decryptions
-        val partialDecryptions: List<DirectDecryptionAndProof> =
-            trustee.directDecrypt(group, texts, init.cryptoExtendedBaseHash(), null)
-
-        // Place the results into the DecryptionShare
-        val decryptionShare = DecryptionShare(trustee.id())
+        // Place the results into the TrusteeDecryptions
         var count = 0
-        for (tallyContest in this.contests) {
-            for (tallySelection in tallyContest.selections) {
-                val proof: DirectDecryptionAndProof = partialDecryptions[count]
-                val partialDecryption = DirectDecryption(
-                    tallySelection.selectionId,
-                    trustee.id(),
-                    proof.partialDecryption,
-                    proof.proof,
-                )
-                decryptionShare.addDirectDecryption(
-                    tallyContest.contestId,
-                    tallySelection.selectionId,
-                    partialDecryption
-                )
+        for (contest in this.contests) {
+            for (selection in contest.selections) {
+                trusteeDecryptions.addDecryption(contest.contestId, selection.selectionId, selection.ciphertext, results[count])
                 count++
             }
         }
+        return trusteeDecryptions
+    }
 
-        // compensated decryptions
-        for (missing in missingTrustees) {
-            val compensatedDecryptions: List<CompensatedDecryptionAndProof> =
-                trustee.compensatedDecrypt(group, missing, texts, init.cryptoExtendedBaseHash(), null)
-
-            // Place the results into the DecryptionShare
-            var count2 = 0
-            for (tallyContest in this.contests) {
-                for (tallySelection in tallyContest.selections) {
-                    val proof: CompensatedDecryptionAndProof = compensatedDecryptions[count2]
-                    val recoveredDecryption = RecoveredPartialDecryption(
-                        trustee.id(),
-                        missing,
-                        proof.partialDecryption,
-                        proof.recoveredPublicKeyShare,
-                        proof.proof
-                    )
-                    decryptionShare.addRecoveredDecryption(
-                        tallyContest.contestId,
-                        tallySelection.selectionId,
-                        missing,
-                        recoveredDecryption
-                    )
-                    count2++
-                }
-            }
+    fun TrusteeDecryptions.challengeTrustee(
+        trustee: DecryptingTrusteeIF,
+    ) {
+        // Get all the Ciphertext that need to be decrypted
+        val requests: MutableList<ChallengeRequest> = mutableListOf()
+        for ((id, results) in this.shares) {
+            val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
+            requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u, result.tm))
         }
 
-        return decryptionShare
+        // ask for all of them at once
+        val results: List<ChallengeResponse> = trustee.challenge(group, requests)
+
+        // Place the results into the TrusteeDecryptions
+        results.forEach { this.addChallengeResponse(trustee.id(), it) }
     }
+
 }
 
 /** Compute the lagrange coefficient, now that we know which guardians are present. spec 1.52 section 3.5.2, eq 55. */
@@ -187,5 +174,6 @@ private fun EncryptedBallot.convertToTally(): EncryptedTally {
         EncryptedTally.Contest(contest.contestId, contest.sequenceOrder, contest.contestHash, selections)
     }
     return EncryptedTally(this.ballotId, contests)
-
 }
+
+

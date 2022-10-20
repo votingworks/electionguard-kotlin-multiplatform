@@ -2,6 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModP
+import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.HashedElGamalCiphertext
 import electionguard.decrypt.PartialDecryption
 
@@ -20,7 +21,7 @@ data class DecryptedTallyOrBallot(val tallyId: String, val contests: Map<String,
      */
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
-        val selections: Map<String, Selection>,
+        val selections: Map<String, Selection>, // LOOK why Map?
         val decryptedContestData: DecryptedContestData?, // only for ballots
     ) {
         init {
@@ -49,22 +50,21 @@ data class DecryptedTallyOrBallot(val tallyId: String, val contests: Map<String,
      * The decrypted count of one selection of one contest in the election.
      *
      * @param selectionId equals the Manifest.SelectionDescription.selectionId.
-     * @param tally the decrypted vote count.
-     * @param value g^tally or M in the spec.
-     * @param message The encrypted vote count = (A, B).
-     * @param partialDecryptions The Guardians' shares of the decryption of a selection, nguardians of them.
+     * @param tally     the decrypted vote count.
+     * @param value     g^tally or M in the spec.
+     * @param message   The encrypted vote count = (A, B).
+     * @param proof     Proof of correctness
      */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val tally: Int,
         val value: ElementModP,
         val message: ElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
-        val partialDecryptions: List<PartialDecryption>, // one for each guardian
+        val proof: GenericChaumPedersenProof,
     ) {
         init {
             require(selectionId.isNotEmpty())
             require(tally >= 0)
-            require(partialDecryptions.isNotEmpty())
         }
     }
 

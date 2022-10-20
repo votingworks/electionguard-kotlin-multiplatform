@@ -1,10 +1,9 @@
 package electionguard.verifier
 
 import com.github.michaelbull.result.*
-import electionguard.ballot.DecryptingGuardian
+import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.*
-import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.publish.ElectionRecord
 
@@ -14,24 +13,24 @@ class VerifyRecoveredShares(
     val group: GroupContext,
     val record: ElectionRecord
 ) {
-    val decryptingGuardians : List<DecryptingGuardian>
+    val lagrangeCoordinates : List<LagrangeCoordinate>
     val lagrangeCoefficients: Map<String, ElementModQ>
     val decryptedTallyOrBallot : DecryptedTallyOrBallot
 
     init {
-        decryptingGuardians = record.decryptingGuardians()
-        lagrangeCoefficients = decryptingGuardians.associate { it.guardianId to it.lagrangeCoordinate }
+        lagrangeCoordinates = record.decryptingGuardians()
+        lagrangeCoefficients = lagrangeCoordinates.associate { it.guardianId to it.lagrangeCoordinate }
         decryptedTallyOrBallot = record.decryptedTally()!!
     }
 
     fun verify(showTime : Boolean = false): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
-        val decryptingGuardianCount = decryptingGuardians.size
+        val decryptingGuardianCount = lagrangeCoordinates.size
         if (decryptingGuardianCount == record.numberOfGuardians()) {
             println(" Does not have missing guardians")
             return Ok(true)
         }
-        val errors = listOf(verifyLagrangeCoefficients(), verifyShares())
+        val errors = listOf(verifyLagrangeCoefficients()) // , verifyShares())
         val took = getSystemTimeInMillis() - starting
         if (showTime) println("   VerifyRecoveredShares took $took millisecs")
         return errors.merge()
@@ -40,9 +39,9 @@ class VerifyRecoveredShares(
     /** Verify 10.A for available guardians lagrange coefficients, if there are missing guardians.  */
     fun verifyLagrangeCoefficients(): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
-        for (guardian in decryptingGuardians) {
+        for (guardian in lagrangeCoordinates) {
             val seqOthers = mutableListOf<Int>()
-            for (other in decryptingGuardians) {
+            for (other in lagrangeCoordinates) {
                 if (!other.guardianId.equals(guardian.guardianId)) {
                     seqOthers.add(other.xCoordinate)
                 }
@@ -62,6 +61,7 @@ class VerifyRecoveredShares(
         return expected == computed
     }
 
+    /*
     // 10.B Confirm missing tally shares
     private fun verifyShares(): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
@@ -97,4 +97,6 @@ class VerifyRecoveredShares(
         val M_i: ElementModP = partial.share()
         return M_i.equals(product)
     }
+
+     */
 }

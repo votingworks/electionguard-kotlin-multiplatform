@@ -1,7 +1,7 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.Ok
-import electionguard.ballot.DecryptingGuardian
+import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionConstants
@@ -137,8 +137,8 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return decryptionResult?.decryptedTallyOrBallot
     }
 
-    override fun decryptingGuardians(): List<DecryptingGuardian> {
-        return decryptionResult?.decryptingGuardians ?: emptyList()
+    override fun decryptingGuardians(): List<LagrangeCoordinate> {
+        return decryptionResult?.lagrangeCoordinates ?: emptyList()
     }
 
     override fun spoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> {

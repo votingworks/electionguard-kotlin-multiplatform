@@ -39,7 +39,7 @@ fun GroupContext.importDecryptionResult(decrypt : electionguard.protogen.Decrypt
     val decryptedTally = this.importDecryptedTallyOrBallot(decrypt.decryptedTally)
 
     val (guardians, gerrors) =
-        decrypt.decryptingGuardians.map { importAvailableGuardian(it) }.partition()
+        decrypt.lagrangeCoefficients.map { importLagrangeCoefficient(it) }.partition()
 
     val errors = getAllErrors(tallyResult, decryptedTally) + gerrors
     if (errors.isNotEmpty()) {
@@ -54,12 +54,12 @@ fun GroupContext.importDecryptionResult(decrypt : electionguard.protogen.Decrypt
     ))
 }
 
-private fun GroupContext.importAvailableGuardian(guardian: electionguard.protogen.DecryptingGuardian):
-        Result<DecryptingGuardian, String> {
+private fun GroupContext.importLagrangeCoefficient(guardian: electionguard.protogen.LagrangeCoefficient):
+        Result<LagrangeCoordinate, String> {
     val lagrangeCoefficient = this.importElementModQ(guardian.lagrangeCoefficient)
         ?: return Err("Failed to translate AvailableGuardian from proto, missing lagrangeCoefficient")
 
-    return Ok(DecryptingGuardian(
+    return Ok(LagrangeCoordinate(
         guardian.guardianId,
         guardian.xCoordinate,
         lagrangeCoefficient,
@@ -82,13 +82,13 @@ fun DecryptionResult.publishDecryptionResult(): electionguard.protogen.Decryptio
     return electionguard.protogen.DecryptionResult(
         this.tallyResult.publishTallyResult(),
         this.decryptedTallyOrBallot.publishDecryptedTallyOrBallot(),
-        this.decryptingGuardians.map { it.publishAvailableGuardian() },
+        this.lagrangeCoordinates.map { it.publishAvailableGuardian() },
         this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value)}
     )
 }
 
-private fun DecryptingGuardian.publishAvailableGuardian(): electionguard.protogen.DecryptingGuardian {
-    return electionguard.protogen.DecryptingGuardian(
+private fun LagrangeCoordinate.publishAvailableGuardian(): electionguard.protogen.LagrangeCoefficient {
+    return electionguard.protogen.LagrangeCoefficient(
         this.guardianId,
         this.xCoordinate,
         this.lagrangeCoordinate.publishElementModQ(),

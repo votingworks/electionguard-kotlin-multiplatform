@@ -1,33 +1,33 @@
-package electionguard.workflow
+package electionguard.decrypt
 
 import com.github.michaelbull.result.unwrap
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.productionGroup
-import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
+import electionguard.workflow.makeDecryptingTrustee
 import kotlin.test.Test
 
-/** Test KeyCeremony Trustee generation and recovered decryption. */
+/** Test decryption wiyh various combinations of missing guardinas. */
 
 class RecoveredDecryptionTests {
     @Test
     fun testLagrangeCoefficientAreIntegral() {
-        testEncryptRecoveredDecrypt(listOf(1, 2, 3))
-        testEncryptRecoveredDecrypt(listOf(1, 2, 3, 4))
-        testEncryptRecoveredDecrypt(listOf(2, 3, 4))
-        testEncryptRecoveredDecrypt(listOf(2, 4, 5))
-        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 5))
-        testEncryptRecoveredDecrypt(listOf(5, 6, 7, 8, 9))
-        testEncryptRecoveredDecrypt(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9))
-        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 5, 6, 7, 9))
-        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 5, 6, 9))
-        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 5, 6, 7, 11))
-        testEncryptRecoveredDecrypt(listOf(2, 3, 4, 7, 11))
+        testMissingGuardians(listOf(1, 2, 3))
+        testMissingGuardians(listOf(1, 2, 3, 4))
+        testMissingGuardians(listOf(2, 3, 4))
+        testMissingGuardians(listOf(2, 4, 5))
+        testMissingGuardians(listOf(2, 3, 4, 5))
+        testMissingGuardians(listOf(5, 6, 7, 8, 9))
+        testMissingGuardians(listOf(1, 2, 3, 4, 5, 6, 7, 8, 9))
+        testMissingGuardians(listOf(2, 3, 4, 5, 6, 7, 9))
+        testMissingGuardians(listOf(2, 3, 4, 5, 6, 9))
+        testMissingGuardians(listOf(2, 3, 4, 5, 6, 7, 11))
+        testMissingGuardians(listOf(2, 3, 4, 7, 11))
     }
 }
 
-fun testEncryptRecoveredDecrypt(present: List<Int>) {
+fun testMissingGuardians(present: List<Int>) {
     val group = productionGroup()
     val nguardians = present.maxOf { it }
     val quorum = present.count()

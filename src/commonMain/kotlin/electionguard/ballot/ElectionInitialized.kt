@@ -51,6 +51,7 @@ data class Guardian(
     }
     fun publicKey() : ElementModP = coefficientProofs[0].publicKey
 
+    // the K_ij, where K_i0 = Ki
     fun coefficientCommitments(): List<ElementModP> {
         return coefficientProofs.map { it.publicKey }
     }
