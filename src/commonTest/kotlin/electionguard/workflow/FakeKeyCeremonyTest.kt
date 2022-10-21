@@ -83,7 +83,6 @@ fun runFakeKeyCeremony(
 
     val commitments: MutableList<ElementModP> = mutableListOf()
     trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
-    val commitmentsHash = hashElements(commitments)
 
     val primes = config.constants
     val cryptoBaseHash: UInt256 = hashElements(
@@ -99,7 +98,7 @@ fun runFakeKeyCeremony(
         trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
     // spec 1.52, eq 17 and 3.B
-    val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
+    val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitments)
 
     val newConfig = ElectionConfig(
         config.protoVersion,

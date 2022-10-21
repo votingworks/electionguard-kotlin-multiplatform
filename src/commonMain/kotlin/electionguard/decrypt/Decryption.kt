@@ -15,7 +15,6 @@ import electionguard.core.toElementModQ
 
 // TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
 private const val maxDlog: Int = 1000
-private var first = false
 
 /**
  * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustees.
@@ -70,18 +69,6 @@ class Decryption(
             // collective proof (spec 1.52 section 3.5.3 eq 61)
             val a: ElementModP = with(group) { shares.values.map { it.a }.multP() }
             val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
-
-            if (first) {
-                println("qbar = $qbar")
-                println("jointPublicKey = $jointPublicKey")
-                println("A = ${results.ciphertext.pad}")
-                println("B = ${results.ciphertext.data}")
-                println("a = $a")
-                println("b = $b")
-                println("M = ${M}")
-                first = false
-            }
-
             results.challenge = hashElements(qbar, jointPublicKey, results.ciphertext.pad, results.ciphertext.data, a, b, M) // eq 62
         }
 
@@ -175,5 +162,3 @@ private fun EncryptedBallot.convertToTally(): EncryptedTally {
     }
     return EncryptedTally(this.ballotId, contests)
 }
-
-

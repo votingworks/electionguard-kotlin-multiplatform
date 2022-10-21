@@ -163,19 +163,30 @@ fun RangeChaumPedersenProofKnownNonce.validate(
     limit: Int
 ): Result<Boolean, String> {
     val context = compatibleContextOrFail(this.proofs[0].c, ciphertext.pad, publicKey.key, qbar)
+    val results = mutableListOf<Result<Boolean, String>>()
 
     if (limit + 1 != proofs.size) {
         return Err("    expected ${limit + 1} proofs, only found ${proofs.size}")
     }
 
     val (alpha, beta) = ciphertext
+    results.add(
+        if (alpha.isValidResidue() && beta.isValidResidue()) Ok(true) else
+            Err("    alpha = ${alpha.inBounds()} beta = ${beta.inBounds()} (4.A))")
+    )
 
     val expandedProofs = proofs.mapIndexed { j, proof ->
         // recomputes all the a and b values
         val (cj, vj) = proof
+        results.add(
+            if (cj.inBounds() && vj.inBounds()) Ok(true) else
+                Err("    c = ${cj.inBounds()} v = ${vj.inBounds()} idx=$j (4.B,5.B))")
+        )
+
+        val wj = (vj - j.toElementModQ(context) * cj)
         ExpandedGenericChaumPedersenProof(
-            a = context.gPowP(vj) * (alpha powP cj),
-            b = (publicKey powP (vj - j.toElementModQ(context) * cj)) * (beta powP cj),
+            a = context.gPowP(vj) * (alpha powP cj), // 4.1, 4.2, 5.1
+            b = (publicKey powP wj) * (beta powP cj), // 4.3, 4.4, 5.2
             c = cj,
             r = vj)
 
@@ -186,21 +197,19 @@ fun RangeChaumPedersenProofKnownNonce.validate(
         //   pass the method as-is.
     }
 
+    // sum of the proof.c
     val cSum = this.proofs.fold(context.ZERO_MOD_Q) { a, b -> a + b.c }
-
-    val csumResult = if (cSum == c)
-        Ok(true)
-    else
-        Err("    c sum is invalid (5.C)")
+    results.add(
+        if (cSum == c) Ok(true) else Err("    c sum is invalid (4.C,5.C)")
+    )
 
     val abList = expandedProofs.flatMap { listOf(it.a, it.b) }.toTypedArray()
+    results.add(
+        if (hashElements(qbar, alpha, beta, *abList).toElementModQ(context) == c) Ok(true) else
+           Err("    hash of reconstructed a, b values doesn't match proof c (4.5,5.3)")
+    )
 
-    val hashResult = if (hashElements(qbar, alpha, beta, *abList).toElementModQ(context) == c)
-        Ok(true)
-    else
-        Err("    hash of reconstructed a, b values doesn't match proof c (5.3)")
-
-    return listOf(csumResult, hashResult).merge()
+    return results.merge()
 }
 
 /**

@@ -1,5 +1,6 @@
 package electionguard.verifier
 
+import com.github.michaelbull.result.Ok
 import electionguard.ballot.ContestData
 import electionguard.ballot.ElectionInitialized
 import electionguard.core.productionGroup
@@ -77,9 +78,8 @@ class AttackEncryptedBallotTest {
         println("verify munged ballots ")
         val verifier = Verifier(electionRecord)
         val stats = verifier.verifyEncryptedBallots(mungedBallots)
-        println("verify = ${stats.allOk()}")
-        if (!stats.allOk()) println("  $stats")
-        assertTrue(stats.allOk())
+        println("verify = ${stats}")
+        assertTrue(stats.result() is Ok)
     }
 
     private fun mungeBallot(ballot: EncryptedBallot, publicKey: ElGamalPublicKey): EncryptedBallot {
@@ -187,7 +187,7 @@ fun compareTallies(
     tally2: DecryptedTallyOrBallot,
     diffOnly: Boolean,
 ) {
-    println("Compare  ${tally1.tallyId} to ${tally2.tallyId}")
+    println("Compare  ${tally1.id} to ${tally2.id}")
     tally1.contests.values.sortedBy { it.contestId }.forEach { contest1 ->
         if (!diffOnly) println(" Contest ${contest1.contestId}")
         val contest2 = tally2.contests[contest1.contestId] ?:

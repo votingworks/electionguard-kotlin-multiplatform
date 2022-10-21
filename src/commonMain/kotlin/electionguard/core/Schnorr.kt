@@ -1,7 +1,8 @@
 package electionguard.core
 
+import com.github.michaelbull.result.*
 import mu.KotlinLogging
-private val logger = KotlinLogging.logger("Schnorr")
+private val logger = KotlinLogging.logger("SchnorrProof")
 
 /**
  * Proof that the prover knows the private key corresponding to the public key.
@@ -15,15 +16,15 @@ data class SchnorrProof(
         compatibleContextOrFail(publicKey, challenge, response)
     }
 
-    fun isValid(): Boolean {
+    fun validate(): Result<Boolean, String> {
         val context = compatibleContextOrFail(publicKey, challenge, response)
 
-        val gPowV = context.gPowP(response)
-        val h = gPowV * (publicKey powP challenge) // spec 1.52, section 3.2.2, eq 2.1
+        val gPowV = context.gPowP(response) // g^v_ij
+        val h = gPowV * (publicKey powP challenge) // h_ij; spec 1.52, section 3.2.2, eq 2.1
         val c = hashElements(publicKey, h).toElementModQ(context)
 
         val inBoundsU = response.inBounds()
-        val validChallenge = c == challenge
+        val validChallenge = c == challenge // 2.A
         val success = inBoundsU && validChallenge
 
         if (!success) {
@@ -34,9 +35,10 @@ data class SchnorrProof(
                     "proof" to this
                 )
             logger.warn { "found an invalid Schnorr proof: $resultMap" }
+            return Err("inBoundsU=$inBoundsU validChallenge=$validChallenge")
         }
 
-        return success
+        return Ok(true)
     }
 }
 
