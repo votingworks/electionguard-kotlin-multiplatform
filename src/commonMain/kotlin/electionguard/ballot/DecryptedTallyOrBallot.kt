@@ -9,10 +9,10 @@ import electionguard.decrypt.PartialDecryption
 /**
  * The decrypted counts of all contests in the election, for one ballot or a collection of ballots.
  *
- * @param tallyId the name of the tally. Matches ballotId when its a ballot decryption.
+ * @param id matches the tallyId, or th ballotId if its a ballot decryption.
  * @param contests The contests, keyed by contest.contestId.
  */
-data class DecryptedTallyOrBallot(val tallyId: String, val contests: Map<String, Contest>) {
+data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Contest>) {
     /**
      * The decrypted counts of one contest in the election.
      *
@@ -38,7 +38,7 @@ data class DecryptedTallyOrBallot(val tallyId: String, val contests: Map<String,
      */
     data class DecryptedContestData(
         val contestData: ContestData,
-        val encryptedContestCata : HashedElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
+        val encryptedContestData : HashedElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
         val partialDecryptions: List<PartialDecryption>, // one for each guardian
     ) {
         init {
@@ -70,7 +70,7 @@ data class DecryptedTallyOrBallot(val tallyId: String, val contests: Map<String,
 
     fun showTally(): String {
         val builder = StringBuilder(5000)
-        builder.appendLine(" DecryptedTallyOrBallot $tallyId")
+        builder.appendLine(" DecryptedTallyOrBallot $id")
         contests.values.sortedBy { it.contestId }.forEach { contest ->
             builder.appendLine("  Contest ${contest.contestId}")
             contest.selections.values.sortedBy { it.selectionId }.forEach {

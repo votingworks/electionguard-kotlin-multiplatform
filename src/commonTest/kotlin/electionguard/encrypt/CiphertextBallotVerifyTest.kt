@@ -4,7 +4,6 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
-import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.core.*
@@ -51,7 +50,7 @@ class CiphertextBallotVerifyTest {
             // verify
             val stats = verifier.verify(ciphertextBallot)
             println(stats)
-            assertTrue(stats.allOk)
+            assertTrue(stats.result is Ok)
 
             // decrypt and verify embedded nonces
             val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey())
@@ -77,12 +76,9 @@ private class VerifyCiphertextBallot(
     fun verify(ballot: CiphertextBallot): Stats {
         var ncontests = 0
         var nselections = 0
-        val errors = mutableListOf<String>()
+        val errors = mutableListOf<Result<Boolean,String>>()
 
-        val test6 = verifyTrackingCode(ballot)
-        if (test6 is Err) {
-            errors.add(test6.unwrapError())
-        }
+        errors.add(verifyTrackingCode(ballot))
 
         for (contest in ballot.contests) {
             val where = "${ballot.ballotId}/${contest.contestId}"
@@ -102,19 +98,16 @@ private class VerifyCiphertextBallot(
                 manifest.contestIdToLimit[contest.contestId]!!
             )
             if (cvalid is Err) {
-                errors.add("    5. ConstantChaumPedersenProofKnownNonce failed for $where = ${cvalid.error} ")
+                errors.add(Err("    5. ConstantChaumPedersenProofKnownNonce failed for $where = ${cvalid.error} "))
             }
 
             // TODO I think 5.F and 5.G are not needed because we have simplified proofs.
             //   review when 2.0 verification spec is out
 
-            val svalid = verifySelections(ballot.ballotId, contest)
-            if (svalid is Err) {
-                errors.add(svalid.error)
-            }
+            errors.add(verifySelections(ballot.ballotId, contest))
         }
         val bvalid = errors.isEmpty()
-        return Stats(ballot.ballotId, bvalid, ncontests, nselections, errors)
+        return Stats(ballot.ballotId, errors.merge(), ncontests, nselections)
     }
 
     // 6.A

@@ -182,8 +182,8 @@ private fun CoroutineScope.launchDecryptor(
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
         val decrypted: DecryptedTallyOrBallot = decryption.decryptBallot(ballot)
-        logger.debug { " Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.tallyId}" }
-        if (debug) println(" Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.tallyId}")
+        logger.debug { " Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}" }
+        if (debug) println(" Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}")
         output.send(decrypted)
         yield()
     }
@@ -197,7 +197,7 @@ private fun CoroutineScope.launchSink(
 ) = launch {
     for (tally in input) {
         sink.writeDecryptedTallyOrBallot(tally)
-        logger.debug { " Sink wrote $count ballot ${tally.tallyId}" }
+        logger.debug { " Sink wrote $count ballot ${tally.id}" }
         count++
     }
 }

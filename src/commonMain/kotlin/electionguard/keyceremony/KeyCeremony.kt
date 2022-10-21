@@ -5,6 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
@@ -80,10 +81,12 @@ data class PublicKeys(
     fun validate(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for ((idx, proof) in this.coefficientProofs.withIndex()) {
-            if (!proof.isValid()) {
-                checkProofs.add(Err("Guardian $guardianId has invalid proof for coefficient $idx"))
-            } else {
-                checkProofs.add(Ok(true))
+            val result = proof.validate()
+            if (result is Err) {
+                checkProofs.add(Err("  Guardian $guardianId has invalid proof for coefficient $idx " +
+                                result.unwrapError()
+                    )
+                )
             }
         }
         return checkProofs.merge()
@@ -141,9 +144,8 @@ data class KeyCeremonyResults(
         // cryptoExtendedBaseHash = Qbar
         val commitments: MutableList<ElementModP> = mutableListOf()
         publicKeysSorted.forEach { commitments.addAll(it.coefficientCommitments()) }
-        val commitmentsHash = hashElements(commitments)
         // spec 1.52, eq 17 and 3.B
-        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
+        val qbar: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitments)
 
         val guardians: List<Guardian> = publicKeysSorted.map { makeGuardian(it) }
 
@@ -158,7 +160,7 @@ data class KeyCeremonyResults(
             jointPublicKey,
             config.manifest.cryptoHash,
             cryptoBaseHash,
-            cryptoExtendedBaseHash,
+            qbar,
             guardians,
             metadataAll,
         )

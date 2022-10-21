@@ -34,8 +34,8 @@ class ConsumerTest {
             val consumerIn = Consumer(topdir, context)
             var count = 0
             for (tally in consumerIn.iterateSpoiledBallotTallies()) {
-                println("$count tally = ${tally.tallyId}")
-                assertTrue(tally.tallyId.startsWith("ballot-id"))
+                println("$count tally = ${tally.id}")
+                assertTrue(tally.id.startsWith("ballot-id"))
                 count++
             }
         }

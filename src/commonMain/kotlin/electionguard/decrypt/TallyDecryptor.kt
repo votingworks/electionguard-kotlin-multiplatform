@@ -13,8 +13,6 @@ import electionguard.core.compatibleContextOrFail
 import electionguard.core.hashElements
 import electionguard.core.toElementModQ
 
-private var first = false
-
 /** Turn a EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(
     val group: GroupContext,
@@ -78,22 +76,11 @@ class TallyDecryptor(
         return result
     }
 
-    // this is the verifier proof. Replace with eq 64 and 65, which would indicate where theres a problem ??
+    // this is the verifier proof.
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
         val Mbar: ElementModP = this.message.data / this.value
         val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.1
         val b = (this.message.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.2
-
-        if (first) {
-            println("---qbar = $qbar")
-            println("jointPublicKey = $jointPublicKey")
-            println("this.message.pad = ${this.message.pad}")
-            println("this.message.data = ${this.message.data}")
-            println("a = $a")
-            println("b = $b")
-            println("M = ${this.value}")
-            first = false
-        }
 
         val challenge = hashElements(qbar, jointPublicKey, this.message.pad, this.message.data, a, b, this.value) // 8.B
         return (challenge.toElementModQ(group) == this.proof.c)

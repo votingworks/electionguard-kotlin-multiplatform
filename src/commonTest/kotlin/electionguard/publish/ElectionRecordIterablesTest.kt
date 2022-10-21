@@ -61,7 +61,7 @@ class ElectionRecordIterablesTest {
         val iterator = consumerIn.iterateSpoiledBallotTallies().iterator()
         var count = 0
         for (tally in iterator) {
-            logger.debug { "  $count readSpoiledBallotTallies ${tally.tallyId}" }
+            logger.debug { "  $count readSpoiledBallotTallies ${tally.id}" }
             count++
         }
         assertEquals(expected, count)

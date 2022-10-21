@@ -78,7 +78,7 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Decry
 
 fun DecryptedTallyOrBallot.publishDecryptedTallyOrBallot(): electionguard.protogen.DecryptedTallyOrBallot {
     return electionguard.protogen
-        .DecryptedTallyOrBallot(this.tallyId, this.contests.values.map { it.publishContest() })
+        .DecryptedTallyOrBallot(this.id, this.contests.values.map { it.publishContest() })
 }
 
 private fun DecryptedTallyOrBallot.Contest.publishContest(): electionguard.protogen.DecryptedContest {

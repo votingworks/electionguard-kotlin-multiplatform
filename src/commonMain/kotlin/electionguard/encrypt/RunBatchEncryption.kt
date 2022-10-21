@@ -2,6 +2,7 @@
 
 package electionguard.encrypt
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
@@ -266,8 +267,8 @@ private class RunEncryption(
             // VerifyEncryptedBallots may be doing more work than actually needed
             val submitted = encryptedBallot.submit(EncryptedBallot.BallotState.CAST)
             val verifyStats = verifier.verifyEncryptedBallot(submitted)
-            if (!verifyStats.allOk) {
-                logger.warn { "encrypted doesnt verify = ${verifyStats.errors}" }
+            if (verifyStats.result is Err) {
+                logger.warn { "encrypted doesnt verify = ${verifyStats.result}" }
             }
         }
         return encryptedBallot.submit(EncryptedBallot.BallotState.CAST)

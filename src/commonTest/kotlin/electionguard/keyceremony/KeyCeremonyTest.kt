@@ -63,8 +63,7 @@ class KeyCeremonyTest {
 
         val commitments: MutableList<ElementModP> = mutableListOf()
         strustees.forEach { commitments.addAll(it.coefficientCommitments()) }
-        val commitmentsHash = hashElements(commitments)
-        val expectedExtendedBaseHash: UInt256 = hashElements(init.cryptoBaseHash, init.jointPublicKey, commitmentsHash)
+        val expectedExtendedBaseHash: UInt256 = hashElements(init.cryptoBaseHash, init.jointPublicKey, commitments)
 
         assertEquals(config, init.config)
         assertEquals(expectedPublicKey, init.jointPublicKey)

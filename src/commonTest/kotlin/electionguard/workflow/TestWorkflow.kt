@@ -19,6 +19,7 @@ import kotlin.test.assertTrue
 
 /**
  * Run complete workflow starting from ElectionConfig in the start directory, all the way through verify.
+ * (Uses RunFakeKeyCeremonyTest, not real KeyCeremony).
  * The results can be copied to the test data sets "src/commonTest/data/runWorkflowAll(Some)Available" whenever the
  * election record changes.
  *   1. generate with jvm for src/commonTest/data/runWorkflowAll(Some)Available
