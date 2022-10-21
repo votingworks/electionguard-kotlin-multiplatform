@@ -60,7 +60,7 @@ fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int)
     println("VerifyEncryptedBallots $allOk took $took seconds")
 }
 
-fun verifyDecryptedTally(group: GroupContext, inputDir: String) {
+fun verify(group: GroupContext, inputDir: String) {
     val starting = getSystemTimeInMillis()
 
     val electionRecord = electionRecordFromConsumer(Consumer(inputDir, group))

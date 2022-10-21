@@ -9,7 +9,7 @@ import electionguard.core.fileExists
 import electionguard.core.fileReadLines
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.decrypt.Decryption
+import electionguard.decrypt.Decryptor
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.Consumer
@@ -98,7 +98,7 @@ fun runDecryptBallots(
     val missingGuardians =
         tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId) }.map { it.guardianId }
 
-    val decryption = Decryption(group,
+    val decryptor = Decryptor(group,
         tallyResult.electionInitialized.cryptoExtendedBaseHash(),
         tallyResult.electionInitialized.jointPublicKey(),
         tallyResult.electionInitialized.guardians,
@@ -143,7 +143,7 @@ fun runDecryptBallots(
                 launchDecryptor(
                     it,
                     ballotProducer,
-                    decryption,
+                    decryptor,
                     outputChannel
                 )
             )
@@ -177,11 +177,11 @@ private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): 
 private fun CoroutineScope.launchDecryptor(
     id: Int,
     input: ReceiveChannel<EncryptedBallot>,
-    decryption: Decryption,
+    decryptor: Decryptor,
     output: SendChannel<DecryptedTallyOrBallot>,
 ) = launch(Dispatchers.Default) {
     for (ballot in input) {
-        val decrypted: DecryptedTallyOrBallot = decryption.decryptBallot(ballot)
+        val decrypted: DecryptedTallyOrBallot = decryptor.decryptBallot(ballot)
         logger.debug { " Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}" }
         if (debug) println(" Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}")
         output.send(decrypted)
