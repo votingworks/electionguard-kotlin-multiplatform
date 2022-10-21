@@ -8,7 +8,6 @@ public data class DecryptingTrustee(
     val guardianXCoordinate: Int = 0,
     val electionKeypair: electionguard.protogen.ElGamalKeypair? = null,
     val secretKeyShares: List<electionguard.protogen.SecretKeyShare> = emptyList(),
-    val coefficientCommitments: List<electionguard.protogen.CommitmentSet> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.DecryptingTrustee = protoMergeImpl(other)
@@ -19,7 +18,7 @@ public data class DecryptingTrustee(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.DecryptingTrustee = electionguard.protogen.DecryptingTrustee.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptingTrustee> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptingTrustee, *>>(5)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptingTrustee, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -59,16 +58,6 @@ public data class DecryptingTrustee(
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.SecretKeyShare>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.SecretKeyShare.Companion)),
                         jsonName = "secretKeyShares",
                         value = electionguard.protogen.DecryptingTrustee::secretKeyShares
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "coefficient_commitments",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.CommitmentSet>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.CommitmentSet.Companion)),
-                        jsonName = "coefficientCommitments",
-                        value = electionguard.protogen.DecryptingTrustee::coefficientCommitments
                     )
                 )
             }
@@ -159,7 +148,7 @@ public data class CommitmentSet(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "commitments",
-                        number = 3,
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElementModP>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion)),
                         jsonName = "commitments",
                         value = electionguard.protogen.CommitmentSet::commitments
@@ -228,7 +217,7 @@ public data class SecretKeyShare(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "encrypted_coordinate",
-                        number = 6,
+                        number = 5,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.HashedElGamalCiphertext.Companion),
                         jsonName = "encryptedCoordinate",
                         value = electionguard.protogen.SecretKeyShare::encryptedCoordinate
@@ -253,7 +242,6 @@ private fun DecryptingTrustee.protoMergeImpl(plus: pbandk.Message?): DecryptingT
     it.copy(
         electionKeypair = electionKeypair?.plus(plus.electionKeypair) ?: plus.electionKeypair,
         secretKeyShares = secretKeyShares + plus.secretKeyShares,
-        coefficientCommitments = coefficientCommitments + plus.coefficientCommitments,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -264,7 +252,6 @@ private fun DecryptingTrustee.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
     var guardianXCoordinate = 0
     var electionKeypair: electionguard.protogen.ElGamalKeypair? = null
     var secretKeyShares: pbandk.ListWithSize.Builder<electionguard.protogen.SecretKeyShare>? = null
-    var coefficientCommitments: pbandk.ListWithSize.Builder<electionguard.protogen.CommitmentSet>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -272,11 +259,9 @@ private fun DecryptingTrustee.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             2 -> guardianXCoordinate = _fieldValue as Int
             3 -> electionKeypair = _fieldValue as electionguard.protogen.ElGamalKeypair
             4 -> secretKeyShares = (secretKeyShares ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.SecretKeyShare> }
-            5 -> coefficientCommitments = (coefficientCommitments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.CommitmentSet> }
         }
     }
-    return DecryptingTrustee(guardianId, guardianXCoordinate, electionKeypair, pbandk.ListWithSize.Builder.fixed(secretKeyShares),
-        pbandk.ListWithSize.Builder.fixed(coefficientCommitments), unknownFields)
+    return DecryptingTrustee(guardianId, guardianXCoordinate, electionKeypair, pbandk.ListWithSize.Builder.fixed(secretKeyShares), unknownFields)
 }
 
 @pbandk.Export
@@ -324,7 +309,7 @@ private fun CommitmentSet.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Co
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
-            3 -> commitments = (commitments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElementModP> }
+            2 -> commitments = (commitments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElementModP> }
         }
     }
     return CommitmentSet(guardianId, pbandk.ListWithSize.Builder.fixed(commitments), unknownFields)
@@ -353,7 +338,7 @@ private fun SecretKeyShare.Companion.decodeWithImpl(u: pbandk.MessageDecoder): S
             1 -> generatingGuardianId = _fieldValue as String
             2 -> designatedGuardianId = _fieldValue as String
             3 -> designatedGuardianXCoordinate = _fieldValue as Int
-            6 -> encryptedCoordinate = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
+            5 -> encryptedCoordinate = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
         }
     }
     return SecretKeyShare(generatingGuardianId, designatedGuardianId, designatedGuardianXCoordinate, encryptedCoordinate, unknownFields)

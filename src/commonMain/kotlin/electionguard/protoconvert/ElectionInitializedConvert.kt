@@ -9,6 +9,7 @@ import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.GroupContext
+import electionguard.core.SchnorrProof
 
 fun GroupContext.importElectionInitialized(init : electionguard.protogen.ElectionInitialized?):
         Result<ElectionInitialized, String> {
@@ -65,6 +66,16 @@ private fun GroupContext.importGuardian(
     ))
 }
 
+fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?): SchnorrProof? {
+    if (proof == null) return null
+    val publicKey = this.importElementModP(proof.publicKey)
+    val challenge = this.importElementModQ(proof.challenge)
+    val response = this.importElementModQ(proof.response)
+
+    return if (publicKey == null || challenge == null || response == null) null
+    else SchnorrProof(publicKey, challenge, response)
+}
+
 ////////////////////////////////////////////////////////
 
 fun ElectionInitialized.publishElectionInitialized(): electionguard.protogen.ElectionInitialized {
@@ -88,5 +99,14 @@ private fun Guardian.publishGuardian(): electionguard.protogen.Guardian {
             this.guardianId,
             this.xCoordinate,
             coefficientProofs,
+        )
+}
+
+fun SchnorrProof.publishSchnorrProof(): electionguard.protogen.SchnorrProof {
+    return electionguard.protogen
+        .SchnorrProof(
+            this.publicKey.publishElementModP(),
+            this.challenge.publishElementModQ(),
+            this.response.publishElementModQ()
         )
 }

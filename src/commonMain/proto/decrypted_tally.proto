@@ -7,7 +7,7 @@ option java_outer_classname = "DecryptedTallyOrBallotProto";
 
 // Decrypted Tally or ballot, eg spoiled ballot or decrypted Ballot for RLA
 message DecryptedTallyOrBallot {
-  string tally_id = 1; // when decrypting ballots, matches EncryptedBallot.ballot_id
+  string id = 1; // tallyId or ballotId
   repeated DecryptedContest contests = 2;
 }
 
@@ -17,43 +17,16 @@ message DecryptedContest {
   DecryptedContestData decrypted_contest_data = 3; // optional, decrypted ballot only
 }
 
-message DecryptedContestData {
-  ContestData contest_data = 1;
-  HashedElGamalCiphertext encrypted_contest_data = 2; // see 3.3.3. matches EncryptedBallotContest
-  repeated PartialDecryption partial_decryptions = 3; // one for each Guardian, available or not
-}
-
 message DecryptedSelection {
   string selection_id = 1; // matches SelectionDescription.selection_id
   uint32 tally = 2;
   ElementModP value = 3; // g^tally or M in the spec.
   ElGamalCiphertext message = 4;
-  GenericChaumPedersenProof proof = 6;
+  GenericChaumPedersenProof proof = 5;
 }
 
-// A Guardian's Partial Decryption of a selection
-message PartialDecryption {
-  string selection_id = 1;  // matches SelectionDescription.selection_id
-  string guardian_id = 2;   // The Guardian that this share belongs to
-  ElementModP share = 3;    // The Share of the decryption of a selection. `M_i` in the spec.
-
-  // The Proof that the share was decrypted correctly
-  oneof proof_or_parts {
-    GenericChaumPedersenProof proof = 4; // When the guardian generates the share directly
-    RecoveredParts recovered_parts = 5; // When the share is generated on behalf of this guardian by other guardians
-  }
-}
-
-// artifact due to "oneof" cant have repeated fields
-message RecoveredParts {
-  repeated RecoveredPartialDecryption fragments = 1;
-}
-
-message RecoveredPartialDecryption {
-  reserved 1;
-  string decrypting_guardian_id = 2;  // The Available Guardian that this share belongs to
-  string missing_guardian_id = 3; //  // The Missing Guardian for whom this share is calculated on behalf of.
-  ElementModP share = 4; // The Share of the decryption of a selection. M_il in the spec.
-  ElementModP recovery_key = 5; // g^Pi(ℓ), where Pi(ℓ) is the value of the missing_guardian i secret polynomial at available guardian ℓ coordinate.
-  GenericChaumPedersenProof proof = 6; // The Proof that the share was decrypted correctly.
+message DecryptedContestData {
+  ContestData contest_data = 1;
+  HashedElGamalCiphertext encrypted_contest_data = 2; // see 3.3.4. matches EncryptedBallotContest
+  GenericChaumPedersenProof proof = 3;
 }

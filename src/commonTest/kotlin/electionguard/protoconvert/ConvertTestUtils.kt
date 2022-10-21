@@ -10,7 +10,6 @@ fun generateRangeChaumPedersenProofKnownNonce(
 ): RangeChaumPedersenProofKnownNonce {
     return RangeChaumPedersenProofKnownNonce(
         listOf(generateGenericChaumPedersenProof(context)),
-        generateElementModQ(context),
     )
 }
 

@@ -24,9 +24,8 @@ fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.Decryptin
     val id = proto.guardianId
     val electionKeyPair = this.importElGamalKeypair(id, proto.electionKeypair)
     val (shares, serrors) = proto.secretKeyShares.map { this.importSecretKeyShare(id, it) }.partition()
-    val (commitments, cerrors) = proto.coefficientCommitments.map { this.importCommitmentSet(id, it) }.partition()
 
-    val errors = getAllErrors(electionKeyPair) + serrors + cerrors
+    val errors = getAllErrors(electionKeyPair) + serrors
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -36,7 +35,6 @@ fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.Decryptin
         proto.guardianXCoordinate,
         electionKeyPair.unwrap(),
         shares.associateBy { it.generatingGuardianId },
-        commitments.associate { it.guardianId to it.commitments },
     )
 
     return Ok(result)
@@ -83,23 +81,6 @@ private fun GroupContext.importSecretKeyShare(id:String, keyShare: electionguard
     ))
 }
 
-private fun GroupContext.importCommitmentSet(id:String, proto: electionguard.protogen.CommitmentSet):
-        Result<CommitmentSet, String> {
-
-    val (commitments, cerrors) = proto.commitments.map {
-        this.importElementModP(it).toResultOr {"DecryptingTrustee $id commitment was malformed or missing"} }.partition()
-
-    if (cerrors.isNotEmpty()) {
-        return Err(cerrors.joinToString("\n"))
-    }
-    return Ok(CommitmentSet(
-        proto.guardianId,
-        commitments,
-    ))
-}
-
-private data class CommitmentSet(val guardianId: String, val commitments: List<ElementModP>)
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -112,7 +93,6 @@ fun KeyCeremonyTrustee.publishDecryptingTrustee(): electionguard.protogen.Decryp
             ElGamalPublicKey(this.electionPublicKey())
         ).publishElGamalKeyPair(),
         this.otherSharesForMe.values.map { it.publishSecretKeyShare() },
-        this.guardianPublicKeys.values.map { it.publishCommitmentSet() },
     )
 }
 
@@ -129,12 +109,5 @@ private fun SecretKeyShare.publishSecretKeyShare(): electionguard.protogen.Secre
         this.designatedGuardianId,
         this.designatedGuardianXCoordinate,
         this.encryptedCoordinate.publishHashedCiphertext(),
-    )
-}
-
-private fun PublicKeys.publishCommitmentSet(): electionguard.protogen.CommitmentSet {
-    return electionguard.protogen.CommitmentSet(
-        this.guardianId,
-        this.coefficientCommitments().map { it.publishElementModP() },
     )
 }

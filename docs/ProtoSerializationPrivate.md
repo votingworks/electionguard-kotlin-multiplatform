@@ -20,7 +20,6 @@ Only the secret_key is actually private. One could store that separately and sec
 | guardian_x_coordinate   | uint32                 |         |
 | election_keypair        | ElGamalKeypair         | secret  |
 | secret_key_shares       | List\<SecretKeyShare\> |         |
-| coefficient_commitments | List\<CommitmentSet\>  | K_ij    |
 
 #### message ElGamalKeypair
 

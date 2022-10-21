@@ -23,8 +23,6 @@ data class DecryptingTrustee(
     val electionKeypair: ElGamalKeypair,
     // Other guardians' shares of this guardian's secret key, keyed by generating guardian id.
     val secretKeyShares: Map<String, SecretKeyShare>,
-    // Other guardians' coefficient commitments, K_ij = g^a_ij, keyed by guardian id.
-    val guardianPublicKeys: Map<String, List<ElementModP>>, // LOOK not used anymore
 ) : DecryptingTrusteeIF {
     // these will be constructed lazily as needed. keyed by missing_id = generating guardian
     // Pj(ℓ) = value of other's secret polynomial at my coordinate = "my share of other's secret key"

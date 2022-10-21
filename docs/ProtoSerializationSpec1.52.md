@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 9/27/2022
+draft 10/21/2022
 
 1. This is version 1.52 of Election Record, corresponding to spec v 1.52
 2. All fields must be present unless marked as optional.
@@ -12,11 +12,11 @@ draft 9/27/2022
 
 #### message ContestData
 
-| Name       | Type             | Notes                            |
-|------------|------------------|----------------------------------|
-| status     | enum Status      | normal, null_vote, under_vote    |
-| over_votes | List\<uint32\>   | list of selection sequence_order |
-| write_ins  | List\<string\>   | write in candidates(s)           |
+| Name       | Type             | Notes                                    |
+|------------|------------------|------------------------------------------|
+| status     | enum Status      | normal, null_vote, over_vote, under_vote |
+| over_votes | List\<uint32\>   | list of selection sequence_order         |
+| write_ins  | List\<string\>   | write in candidates(s)                   |
 
 #### message ElementModQ
 
@@ -238,14 +238,14 @@ draft 9/27/2022
 
 #### message DecryptionResult
 
-| Name                 | Type                       | Notes |
-|----------------------|----------------------------|-------|
-| tally_result         | TallyResult                |       |
-| decrypted_tally      | DecryptedTallyOrBallot     |       |
-| decrypting_guardians | List\<DecryptingGuardian\> |       |
-| metadata             | map<string, string>        |       |
+| Name                  | Type                        | Notes |
+|-----------------------|-----------------------------|-------|
+| tally_result          | TallyResult                 |       |
+| decrypted_tally       | DecryptedTallyOrBallot      |       |
+| lagrange_coefficients | List\<LagrangeCoefficient\> |       |
+| metadata              | map<string, string>         |       |
 
-#### message DecryptingGuardian
+#### message LagrangeCoefficient
 
 | Name                 | Type        | Notes                             |
 |----------------------|-------------|-----------------------------------|
@@ -366,10 +366,10 @@ draft 9/27/2022
 
 ### message DecryptedTallyOrBallot
 
-| Name     | Type                     | Notes                                                        |
-|----------|--------------------------|--------------------------------------------------------------|
-| tally_id | string                   | when decrypting ballots, matches EncryptedBallot.ballot_id   |
-| contests | List\<DecryptedContest\> |                                                              |
+| Name     | Type                     | Notes                |
+|----------|--------------------------|----------------------|
+| id       | string                   | tallyId or ballotId  |
+| contests | List\<DecryptedContest\> |                      |
 
 #### message DecryptedContest
 
@@ -379,6 +379,16 @@ draft 9/27/2022
 | selections             | List\<DecryptedSelection\>   |                                  |
 | decrypted_contest_data | DecryptedContestData         | optional, ballot decryption only |
 
+#### message DecryptedSelection
+
+| Name         | Type                        | Notes                             |
+|--------------|-----------------------------|-----------------------------------|
+| selection_id | string                      | SelectionDescription.selection_id |
+| tally        | int                         | decrypted vote count              |
+| value        | ElementModP                 | g^tally or M in the spec          |
+| message      | ElGamalCiphertext           | encrypted vote count              |
+| proof        | GenericChaumPedersenProof   |                                   |
+
 #### message DecryptedContestData
 
 | Name                   | Type                      | Notes                                     |
@@ -387,16 +397,6 @@ draft 9/27/2022
 | encrypted_contest_data | HashedElGamalCiphertext   | see 3.3.3. matches EncryptedBallotContest |
 | partial_decryptions    | List\<PartialDecryption\> | direct or recovered, n of them            |
 
-#### message DecryptedSelection
-
-| Name                | Type                        | Notes                             |
-|---------------------|-----------------------------|-----------------------------------|
-| selection_id        | string                      | SelectionDescription.selection_id |
-| tally               | int                         | decrypted vote count              |
-| value               | ElementModP                 | g^tally or M in the spec          |
-| message             | ElGamalCiphertext           | encrypted vote count              |
-| partial_decryptions | List\<PartialDecryption\>   | direct or recovered, n of them    |
-
 #### message PartialDecryption
 
 | Name            | Type                               | Notes                             |
@@ -404,15 +404,4 @@ draft 9/27/2022
 | selection_id    | string                             | SelectionDescription.selection_id |
 | guardian_id     | string                             |                                   |
 | share           | ElementModP                        | M_i                               |
-| proof           | GenericChaumPedersenProof          | only direct                       |
-| recovered_parts | List\<RecoveredPartialDecryption\> | only recovered, q of them         |
-
-#### message RecoveredPartialDecryption
-
-| Name                   | Type                      | Notes    |
-|------------------------|---------------------------|----------|
-| decrypting_guardian_id | string                    |          |
-| missing_guardian_id    | string                    |          |
-| share                  | ElementModP               | M_il     |
-| recovery_key           | ElementModP               | g^P_i(ℓ) |
-| proof                  | GenericChaumPedersenProof |          |
+| proof           | GenericChaumPedersenProof          |                                   |

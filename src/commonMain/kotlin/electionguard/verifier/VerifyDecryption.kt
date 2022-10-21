@@ -42,7 +42,7 @@ class VerifyDecryption(
             ncontests++
             val where = "${decrypted.id}/${contest.contestId}"
             if (manifest.contestIdToLimit[contest.contestId] == null) {
-                results.add(Err("   9.C,13C Ballot contains contest not in manifest: '$where' "))
+                results.add(Err("    9.C,13C Ballot contains contest not in manifest: '$where' "))
                 continue
             }
 
@@ -54,12 +54,12 @@ class VerifyDecryption(
                 ballotSelectionSet.add(here)
 
                 if (!manifest.contestAndSelectionSet.contains(here)) {
-                    results.add(Err("   9.D,13D Ballot contains selection not in manifest: '$where2' "))
+                    results.add(Err("    9.D,13D Ballot contains selection not in manifest: '$where2' "))
                     continue
                 }
 
                 if (!selection.proof.r.inBounds()) {
-                    results.add(Err("   8.A,11.A response out of bounds: '$where2' "))
+                    results.add(Err("    8.A,11.A response out of bounds: '$where2' "))
                 }
 
                 // LOOK should be proof.validate(), but current GenericChaumPedersen is too awkward.
@@ -68,31 +68,31 @@ class VerifyDecryption(
                 val b = (selection.message.pad powP selection.proof.r) * (Mbar powP selection.proof.c) // 8.2
                 val challenge = hashElements(qbar, jointPublicKey, selection.message.pad, selection.message.data, a, b, selection.value) // 8.B
                 if (challenge.toElementModQ(group) != selection.proof.c) {
-                    results.add(Err("   8.B,11.B Challenge does not match: '$where2' "))
+                    results.add(Err("    8.B,11.B Challenge does not match: '$where2' "))
                 }
 
                 // M = K^t mod p.
                 val tallyQ = selection.tally.toElementModQ(group)
                 if (selection.value != jointPublicKey powP tallyQ) {
-                    results.add(Err(" 9.B,12.B Tally Decryption M = K^t mod p failed: '$where2'"))
+                    results.add(Err("    9.B,12.B Tally Decryption M = K^t mod p failed: '$where2'"))
                 }
 
                 if (isBallot && (selection.tally !in (0..1))) {
-                    results.add(Err(" 13.A ballot vote ${selection.tally} must be a 0 or a 1: '$where2'"))
+                    results.add(Err("     13.A ballot vote ${selection.tally} must be a 0 or a 1: '$where2'"))
                 }
                 contestVotes += selection.tally
             }
             if (isBallot) {
                 val limit = manifest.contestIdToLimit[contest.contestId]!!
                 if (contestVotes !in (0..limit)) {
-                    results.add(Err(" 13.B sum of votes ${contestVotes} in contest must be le than $limit: '$where'"))
+                    results.add(Err("     13.B sum of votes ${contestVotes} in contest must be le than $limit: '$where'"))
                 }
             }
         }
 
         manifest.contestAndSelectionSet.forEach {
             if (!ballotSelectionSet.contains(it)) {
-                results.add(Err("   9.E Manifest contains selection not in ballot: '$it' "))
+                results.add(Err("    9.E Manifest contains selection not in ballot: '$it' "))
             }
         }
 

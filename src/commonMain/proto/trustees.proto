@@ -9,22 +9,12 @@ message DecryptingTrustee {
   string guardian_id = 1;
   uint32 guardian_x_coordinate = 2;     // the x coefficient (sequence_order), must be > 0
   ElGamalKeypair election_keypair = 3;  // this guardian's private and public key
-  // Other guardians' shares of this guardian's secret key
-  repeated SecretKeyShare secret_key_shares = 4;
-  // The commitments {"public keys K_ij") from other guardians.
-  repeated CommitmentSet coefficient_commitments = 5;
+  repeated SecretKeyShare secret_key_shares = 4; // Other guardians' shares of this guardian's secret key
 }
 
 message ElGamalKeypair {
   ElementModQ secret_key = 1;
   ElementModP public_key = 2;
-}
-
-message CommitmentSet {
-  // for which guardian
-  string guardian_id = 1;
-  // coefficient commitments, always quorum (k) number of them, order of secret polynomial
-  repeated ElementModP commitments = 3;
 }
 
 message SecretKeyShare {
@@ -35,7 +25,6 @@ message SecretKeyShare {
   // The x coefficient of the designated guardian (l).
   uint32 designated_guardian_x_coordinate = 3;
   // Pi(ℓ)= The generatingGuardian's polynomial value at designatedGuardianXCoordinate
-  reserved 4;
   // This is the encryption of that = Eℓ (Pi(ℓ)), see spec 1.52 eq 14.
-  HashedElGamalCiphertext encrypted_coordinate = 6;
+  HashedElGamalCiphertext encrypted_coordinate = 5;
 }

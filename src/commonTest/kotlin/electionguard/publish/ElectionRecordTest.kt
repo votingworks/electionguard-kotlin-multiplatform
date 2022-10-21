@@ -31,8 +31,7 @@ class ElectionRecordTest {
             assertNotNull(consumerIn)
             val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
             readElectionRecord(decryption)
-            validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTallyOrBallot,
-                decryption.numberOfGuardians(), decryption.quorum(), decryption.lagrangeCoordinates.size)
+            validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTallyOrBallot)
         }
     }
 
@@ -60,7 +59,7 @@ class ElectionRecordTest {
         assertTrue(tallyResult.numberOfGuardians() >= decryption.lagrangeCoordinates.size)
     }
 
-    fun validateTally(jointKey: ElGamalPublicKey, tally: DecryptedTallyOrBallot, nguardians: Int, quorum: Int, navailable: Int) {
+    fun validateTally(jointKey: ElGamalPublicKey, tally: DecryptedTallyOrBallot) {
         for (contest in tally.contests.values) {
             for (selection in contest.selections.values) {
                 val actual : Int? = jointKey.dLog(selection.value, 100)
