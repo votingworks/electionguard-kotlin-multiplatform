@@ -56,7 +56,7 @@ fun testMissingGuardians(present: List<Int>) {
     val jointPublicKey: ElementModP =
         dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
-    testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), group.TWO_MOD_Q, dTrustees, present)
+    testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
 }
 
 

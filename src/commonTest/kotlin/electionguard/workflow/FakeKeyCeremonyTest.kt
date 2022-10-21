@@ -144,7 +144,6 @@ fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
             ElGamalPublicKey(ktrustee.electionPublicKey())
         ),
         ktrustee.otherSharesForMe,
-        ktrustee.guardianPublicKeys.entries.associate { it.key to it.value.coefficientCommitments() },
     )
 }
 

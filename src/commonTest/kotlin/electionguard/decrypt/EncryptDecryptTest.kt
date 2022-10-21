@@ -10,7 +10,6 @@ import electionguard.core.ElGamalKeypair
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
 import electionguard.core.encrypt
@@ -75,7 +74,7 @@ fun runRecoveredDecryption52(
     val jointPublicKey: ElementModP =
         dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
-    testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), group.TWO_MOD_Q, dTrustees, present)
+    testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
 
     //////////////////////////////////////////////////////////
     if (writeout) {
@@ -115,8 +114,10 @@ fun runRecoveredDecryption52(
     }
 }
 
-fun testEncryptRecoveredDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, extendedBaseHash: ElementModQ,
-                                trustees: List<DecryptingTrustee>, present: List<Int>) {
+fun testEncryptRecoveredDecrypt(group: GroupContext,
+                                publicKey: ElGamalPublicKey,
+                                trustees: List<DecryptingTrustee>,
+                                present: List<Int>) {
     println("present $present")
     val vote = 42
     val evote = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))
@@ -153,7 +154,6 @@ fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
             ElGamalPublicKey(ktrustee.electionPublicKey())
         ),
         ktrustee.otherSharesForMe,
-        ktrustee.guardianPublicKeys.entries.associate { it.key to it.value.coefficientCommitments() },
     )
 }
 

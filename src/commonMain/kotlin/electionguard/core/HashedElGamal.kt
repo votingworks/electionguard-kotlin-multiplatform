@@ -12,6 +12,7 @@ data class HashedElGamalCiphertext(
     val c2: UInt256,
     val numBytes: Int
 ) {
+    // override because of the ByteArray
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

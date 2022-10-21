@@ -12,7 +12,6 @@ import kotlin.collections.fold
  */
 data class RangeChaumPedersenProofKnownNonce(
     val proofs: List<GenericChaumPedersenProof>,
-    val c: ElementModQ
 )
 
 /**
@@ -142,7 +141,6 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
         cListFinal.zip(vList).map{ (cj, vj) ->
             GenericChaumPedersenProof(cj, vj)
         },
-        c
     )
 }
 
@@ -166,13 +164,13 @@ fun RangeChaumPedersenProofKnownNonce.validate(
     val results = mutableListOf<Result<Boolean, String>>()
 
     if (limit + 1 != proofs.size) {
-        return Err("    expected ${limit + 1} proofs, only found ${proofs.size}")
+        return Err("    RangeProof expected ${limit + 1} proofs, only found ${proofs.size}")
     }
 
     val (alpha, beta) = ciphertext
     results.add(
         if (alpha.isValidResidue() && beta.isValidResidue()) Ok(true) else
-            Err("    alpha = ${alpha.inBounds()} beta = ${beta.inBounds()} (4.A))")
+            Err("    4.A invalid residue: alpha = ${alpha.inBounds()} beta = ${beta.inBounds()}")
     )
 
     val expandedProofs = proofs.mapIndexed { j, proof ->
@@ -180,7 +178,7 @@ fun RangeChaumPedersenProofKnownNonce.validate(
         val (cj, vj) = proof
         results.add(
             if (cj.inBounds() && vj.inBounds()) Ok(true) else
-                Err("    c = ${cj.inBounds()} v = ${vj.inBounds()} idx=$j (4.B,5.B))")
+                Err("    4.B,5.B c = ${cj.inBounds()} v = ${vj.inBounds()} idx=$j")
         )
 
         val wj = (vj - j.toElementModQ(context) * cj)
@@ -198,15 +196,11 @@ fun RangeChaumPedersenProofKnownNonce.validate(
     }
 
     // sum of the proof.c
+    val abList = expandedProofs.flatMap { listOf(it.a, it.b) }.toTypedArray()
+    val c = hashElements(qbar, alpha, beta, *abList).toElementModQ(context)
     val cSum = this.proofs.fold(context.ZERO_MOD_Q) { a, b -> a + b.c }
     results.add(
-        if (cSum == c) Ok(true) else Err("    c sum is invalid (4.C,5.C)")
-    )
-
-    val abList = expandedProofs.flatMap { listOf(it.a, it.b) }.toTypedArray()
-    results.add(
-        if (hashElements(qbar, alpha, beta, *abList).toElementModQ(context) == c) Ok(true) else
-           Err("    hash of reconstructed a, b values doesn't match proof c (4.5,5.3)")
+        if (cSum == c) Ok(true) else Err("    4.C,5.C challenge sum is invalid")
     )
 
     return results.merge()

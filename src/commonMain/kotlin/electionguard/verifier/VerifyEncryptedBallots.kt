@@ -89,7 +89,6 @@ class VerifyEncryptedBallots(
             }
 
             // Box 5
-            // LOOK we arent keeping "ciphertext accumulation", but maybe we should?
             // calculate ciphertextAccumulation (A, B), note 5.A unneeded because we dont keep (A,B) in election record
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
@@ -103,7 +102,7 @@ class VerifyEncryptedBallots(
                 manifest.contestIdToLimit[contest.contestId]!!
             )
             if (cvalid is Err) {
-                results.add(Err("    5. ConstantChaumPedersenProofKnownNonce failed for $where = ${cvalid.error} "))
+                results.add(Err("    5. ChaumPedersenProof failed for $where = ${cvalid.error} "))
             }
         }
         if (debugBallots) println(" Ballot '${ballot.ballotId}' ncontests = $ncontests nselections = $nselections")

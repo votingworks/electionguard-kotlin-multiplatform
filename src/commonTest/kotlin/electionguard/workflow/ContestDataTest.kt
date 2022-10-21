@@ -72,9 +72,9 @@ class ContestDataTest {
 
             eballot.contests.forEachIndexed { idx, it ->
                 assertNotNull(it.contestData)
-                assertEquals(64, it.contestData!!.c1.size)
+                assertEquals(64, it.contestData.c1.size)
 
-                val baRT = it.contestData?.decrypt(keypair)!!
+                val baRT = it.contestData.decrypt(keypair)!!
                 val protoRoundtrip = electionguard.protogen.ContestData.decodeFromByteArray(baRT)
                 val contestDataRoundtrip = protoRoundtrip.import()
                 println("  $contestDataRoundtrip")

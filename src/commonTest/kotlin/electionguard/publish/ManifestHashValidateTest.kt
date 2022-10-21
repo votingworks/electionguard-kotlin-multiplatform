@@ -85,7 +85,7 @@ class ManifestHashValidateTest {
         )
 
         println()
-        println("***manifest.cryptohash '${manifest.cryptoHash}' ")
+        println("***manifest.cryptohash '$cryptoHash' ")
         println()
 
         val expect = "b2af12d76e8d1a869213fa7f3136eede0bb125250b9f3a23a95998665180d45f".fromSafeHex()
@@ -108,6 +108,7 @@ class ManifestHashValidateTest {
             manifest.name,
             manifest.contactInformation
         )
+        println("  calculated crypto_hash: $cryptoHash")
 
         println("***manifest.electionScopeId '${manifest.electionScopeId}' ")
         println("***manifest.electionType '${manifest.electionType}' ")

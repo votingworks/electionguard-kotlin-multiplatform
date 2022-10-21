@@ -106,7 +106,6 @@ private class VerifyCiphertextBallot(
 
             errors.add(verifySelections(ballot.ballotId, contest))
         }
-        val bvalid = errors.isEmpty()
         return Stats(ballot.ballotId, errors.merge(), ncontests, nselections)
     }
 

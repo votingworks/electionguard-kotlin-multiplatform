@@ -50,12 +50,6 @@ message HashedElGamalCiphertext {
   uint32 numBytes = 4;
 }
 
-message SchnorrProof {
-  ElementModP public_key = 1; // K_ij in the spec
-  ElementModQ challenge = 2; // c_ij in the spec
-  ElementModQ response = 3; // v_ij in the spec
-}
-
 // A 256 bit unsigned int, big-endian. Always exactly 32 bytes.
 // The output of the hash function.
 message UInt256 {
