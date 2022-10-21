@@ -10,7 +10,7 @@ import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.hashElements
-import electionguard.decrypt.Decryption
+import electionguard.decrypt.Decryptor
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.Consumer
@@ -172,14 +172,14 @@ fun decryptTally(
     electionInit: ElectionInitialized,
     decryptingTrustees: List<DecryptingTrusteeIF>,
 ): DecryptedTallyOrBallot {
-    val decryption = Decryption(
+    val decryptor = Decryptor(
         group,
         electionInit.cryptoExtendedBaseHash(),
         electionInit.jointPublicKey(),
         electionInit.guardians,
         decryptingTrustees,
         emptyList())
-    return with(decryption) { encryptedTally.decrypt() }
+    return with(decryptor) { encryptedTally.decrypt() }
 }
 
 fun compareTallies(

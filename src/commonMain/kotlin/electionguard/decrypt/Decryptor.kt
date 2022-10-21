@@ -19,7 +19,7 @@ private const val maxDlog: Int = 1000
 /**
  * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustees.
  */
-class Decryption(
+class Decryptor(
     val group: GroupContext,
     val qbar: ElementModQ,
     val jointPublicKey: ElGamalPublicKey,
