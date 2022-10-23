@@ -27,13 +27,13 @@ class HashedElGamalTest {
                 elementsModQ(group, minimum = 2)
             ) { bytes, kp, nonce ->
                 val ciphertext = bytes.hashedElGamalEncrypt(kp, nonce)
-                val plaintext = ciphertext.decrypt(kp)
 
-                assertNotNull(plaintext, "decryption succeeded")
+                val plaintext = ciphertext.decrypt(kp)
+                assertNotNull(plaintext, "decrypt with secret key failed")
                 assertContentEquals(bytes, plaintext)
 
                 val alsoPlaintext = ciphertext.decryptWithNonce(kp, nonce)
-                assertNotNull(alsoPlaintext, "decryption succeeded")
+                assertNotNull(alsoPlaintext, "decrypt with nonce failed")
                 assertContentEquals(bytes, alsoPlaintext)
             }
         }

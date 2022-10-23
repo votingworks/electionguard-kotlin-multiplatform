@@ -17,19 +17,26 @@ interface DecryptingTrusteeIF {
     fun electionPublicKey(): ElementModP
 
     /**
-     * Compute partial decryption(s) of elgamal encryption(s), using spec 1.52 eq 58 and 59.
-     *
+     * Set missing Guardian info. Once set, cannot be changed.
      * @param lagrangeCoeff    the lagrange coefficient for this trustee
      * @param missingGuardians the missing guardians' Ids
-     * @param texts            list of `ElGamalCiphertext` that will be partially decrypted
+     */
+    fun setMissing(
+        group: GroupContext,
+        lagrangeCoeff: ElementModQ,
+        missingGuardians: List<String>,
+    ) : Boolean
+
+    /**
+     * Compute partial decryption(s) of elgamal encryption(s), using spec 1.52 eq 58 and 59.
+     *
+     * @param texts            list of ElementModP that will be partially decrypted
      * @param nonce            an optional nonce to generate the proof
      * @return a list of partial decryptions, in the same order as the texts
      */
     fun decrypt(
         group: GroupContext,
-        lagrangeCoeff: ElementModQ,
-        missingGuardians: List<String>,
-        texts: List<ElGamalCiphertext>,
+        texts: List<ElementModP>,
         nonce: ElementModQ?,
     ): List<PartialDecryption>
 

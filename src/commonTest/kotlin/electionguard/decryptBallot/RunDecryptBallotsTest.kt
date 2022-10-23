@@ -16,11 +16,12 @@ import kotlin.test.assertEquals
  */
 class RunDecryptBallotsTest {
     @Test
-    fun testDecryptBallotsAll() {
+    fun testDecryptBallotsAllSingleThreaded() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
         val outputDir = "testOut/testDecryptingBallotsAll"
+        println("\ntestDecryptBallotsAll")
         val n = runDecryptBallots(
             group,
             inputDir,
@@ -38,10 +39,11 @@ class RunDecryptBallotsTest {
         val inputDir = "src/commonTest/data/runWorkflowSomeAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"
         val outputDir = "testOut/testDecryptingBallotsSome"
+        println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, 4),
             "ballot-id-1265470130,ballot-id--1899876476,ballot-id--1377297622",
-            11
+            1,
         )
         assertEquals(3, n)
     }
@@ -53,16 +55,18 @@ class RunDecryptBallotsTest {
         val trusteeDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees"
         val wantBallots = "src/commonTest/data/runWorkflowSomeAvailable/private_data/wantedBallots.txt"
         val outputDir = "testOut/testDecryptingBallotsSome"
+        println("\ntestDecryptBallotsSomeFromFile")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, 3),
             wantBallots,
-            11,
+            1,
         )
         assertEquals(2, n)
     }
 
     @Test
-    fun testDecryptBallotsMain() {
+    fun testDecryptBallotsMainMultiThreaded() {
+        println("\ntestDecryptBallotsMain")
         main(
             arrayOf(
                 "-in",
@@ -71,6 +75,10 @@ class RunDecryptBallotsTest {
                 "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees",
                 "-out",
                 "testOut/testDecryptingBallotsSome",
+                "-spoiled",
+                "all",
+                "-nthreads",
+                "6"
             )
         )
     }

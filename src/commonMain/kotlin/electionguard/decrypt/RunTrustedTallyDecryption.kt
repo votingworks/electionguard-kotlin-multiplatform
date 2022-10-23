@@ -104,5 +104,5 @@ fun runDecryptTally(
     )
 
     val took = getSystemTimeInMillis() - starting
-    println("Decrypt tally took $took millisecs")
+    println("DecryptTally took $took millisecs")
 }

@@ -5,7 +5,6 @@ import electionguard.ballot.EncryptedTally
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.Guardian
-import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
@@ -24,19 +23,28 @@ class Decryptor(
     val qbar: ElementModQ,
     val jointPublicKey: ElGamalPublicKey,
     val guardians: List<Guardian>,
-    private val decryptingTrustees: List<DecryptingTrusteeIF>,
-    private val missingTrustees: List<String>,
+    private val decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
+    missingTrustees: List<String>, // ids of the missing trustees
 ) {
-    val lagrangeCoordinates: Map<String, LagrangeCoordinate> by lazy {
+    val lagrangeCoordinates: Map<String, LagrangeCoordinate>
+
+    init {
+        // build the lagrangeCoordinates, needed for output
         val dguardians = mutableListOf<LagrangeCoordinate>()
-        for (otherTrustee in decryptingTrustees) {
-            val present: List<Int> =
-                decryptingTrustees.filter { it.id() != otherTrustee.id() }.map { it.xCoordinate() }
-            val coeff: ElementModQ = group.computeLagrangeCoefficient(otherTrustee.xCoordinate(), present)
-            dguardians.add(LagrangeCoordinate(otherTrustee.id(), otherTrustee.xCoordinate(), coeff))
+        for (trustee in decryptingTrustees) {
+            val present: List<Int> = // available trustees minus me
+                decryptingTrustees.filter { it.id() != trustee.id() }.map { it.xCoordinate() }
+            val coeff: ElementModQ = group.computeLagrangeCoefficient(trustee.xCoordinate(), present)
+            dguardians.add(LagrangeCoordinate(trustee.id(), trustee.xCoordinate(), coeff))
         }
-        // sorted by guardianId, to match PartialDecryption.lagrangeInterpolation()
-        dguardians.associate { it.guardianId to  it }
+        this.lagrangeCoordinates = dguardians.associate { it.guardianId to it }
+
+        // configure the DecryptingTrustees
+        for (decryptingTrustee in decryptingTrustees) {
+            val available = lagrangeCoordinates[decryptingTrustee.id()]
+                ?: throw RuntimeException("missing available $decryptingTrustee.id()")
+            decryptingTrustee.setMissing(group, available.lagrangeCoordinate, missingTrustees)
+        }
     }
 
     fun decryptBallot(ballot: EncryptedBallot): DecryptedTallyOrBallot {
@@ -45,14 +53,10 @@ class Decryptor(
     }
 
     fun EncryptedTally.decrypt(): DecryptedTallyOrBallot {
-        println("missingTrustees = $missingTrustees")
         val trusteeDecryptions = TrusteeDecryptions()
 
-        // LOOK could parallelize this? or is there shared state?
         for (decryptingTrustee in decryptingTrustees) {
-            val available = lagrangeCoordinates[decryptingTrustee.id()] ?: throw RuntimeException("missingh available $decryptingTrustee.id()")
-            this.computeDecryptionShareForTrustee(
-                decryptingTrustee, available.lagrangeCoordinate, trusteeDecryptions)
+            this.computeDecryptionShareForTrustee(decryptingTrustee, trusteeDecryptions)
         }
 
         // we need all the results before we can do the challenges
@@ -72,12 +76,11 @@ class Decryptor(
             results.challenge = hashElements(qbar, jointPublicKey, results.ciphertext.pad, results.ciphertext.data, a, b, M) // eq 62
         }
 
-        // LOOK could parallelize this? or is there shared state?
         for (decryptingTrustee in decryptingTrustees) {
             trusteeDecryptions.challengeTrustee(decryptingTrustee)
         }
 
-        // After gathering the challenge responses from the available guardians, we can verify and publish.
+        // After gathering the challenge responses from the available trustees, we can verify and publish.
         val decryptor = TallyDecryptor(group, qbar, jointPublicKey, lagrangeCoordinates, guardians)
         return decryptor.decryptTally(this, trusteeDecryptions)
     }
@@ -91,20 +94,19 @@ class Decryptor(
      */
     private fun EncryptedTally.computeDecryptionShareForTrustee(
         trustee: DecryptingTrusteeIF,
-        lagrangeCoordinate: ElementModQ,
         trusteeDecryptions: TrusteeDecryptions,
     ): TrusteeDecryptions {
 
-        // Get all the Ciphertext that need to be decrypted in one call
-        val texts: MutableList<ElGamalCiphertext> = mutableListOf()
+        // Get all the text that need to be decrypted in one call
+        val texts: MutableList<ElementModP> = mutableListOf()
         for (tallyContest in this.contests) {
             for (selection in tallyContest.selections) {
-                texts.add(selection.ciphertext)
+                texts.add(selection.ciphertext.pad)
             }
         }
         // decrypt all of them at once
         val results: List<PartialDecryption> =
-            trustee.decrypt(group, lagrangeCoordinate, missingTrustees, texts, null)
+            trustee.decrypt(group, texts, null)
 
         // Place the results into the TrusteeDecryptions
         var count = 0
@@ -124,7 +126,7 @@ class Decryptor(
         val requests: MutableList<ChallengeRequest> = mutableListOf()
         for ((id, results) in this.shares) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u, result.tm))
+            requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u))
         }
 
         // ask for all of them at once
@@ -133,7 +135,6 @@ class Decryptor(
         // Place the results into the TrusteeDecryptions
         results.forEach { this.addChallengeResponse(trustee.id(), it) }
     }
-
 }
 
 /** Compute the lagrange coefficient, now that we know which guardians are present. spec 1.52 section 3.5.2, eq 55. */

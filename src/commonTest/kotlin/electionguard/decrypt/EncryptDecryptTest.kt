@@ -128,12 +128,17 @@ fun testEncryptRecoveredDecrypt(group: GroupContext,
     // once the set of available guardians is determined, the lagrangeCoefficients can be calculated for all decryptions
     val lagrangeCoefficients = available.associate { it.id to group.computeLagrangeCoefficient(it.xCoordinate, coordsPresent) }
 
+    // configure the DecryptingTrustees
+    for (decryptingTrustee in available) {
+        val lc = lagrangeCoefficients[decryptingTrustee.id()]
+            ?: throw RuntimeException("missing available $decryptingTrustee.id()")
+        decryptingTrustee.setMissing(group, lc, missing)
+    }
+
     val shares: List<PartialDecryption> = available.map {
         it.decrypt(
             group,
-            lagrangeCoefficients[it.id]!!,
-            missing,
-            listOf(evote),
+            listOf(evote.pad),
             null,
         )[0]
     }
