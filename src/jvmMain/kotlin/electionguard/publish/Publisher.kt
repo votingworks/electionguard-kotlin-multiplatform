@@ -10,12 +10,12 @@ import electionguard.protoconvert.publishPlaintextBallot
 import electionguard.protoconvert.publishDecryptedTallyOrBallot
 import electionguard.protoconvert.publishEncryptedBallot
 import electionguard.protoconvert.publishTallyResult
-import electionguard.publish.ElectionRecordPath.Companion.DECRYPTION_RESULT_NAME
-import electionguard.publish.ElectionRecordPath.Companion.ELECTION_CONFIG_FILE_NAME
-import electionguard.publish.ElectionRecordPath.Companion.ELECTION_INITIALIZED_FILE_NAME
+import electionguard.publish.ElectionRecordPath.Companion.DECRYPTION_RESULT_FILE
+import electionguard.publish.ElectionRecordPath.Companion.ELECTION_CONFIG_FILE
+import electionguard.publish.ElectionRecordPath.Companion.ELECTION_INITIALIZED_FILE
 import electionguard.publish.ElectionRecordPath.Companion.SPOILED_BALLOT_FILE
-import electionguard.publish.ElectionRecordPath.Companion.ENCRYPTED_BALLOT_PROTO
-import electionguard.publish.ElectionRecordPath.Companion.TALLY_RESULT_NAME
+import electionguard.publish.ElectionRecordPath.Companion.ENCRYPTED_BALLOT_FILE
+import electionguard.publish.ElectionRecordPath.Companion.TALLY_RESULT_FILE
 import pbandk.encodeToStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -84,15 +84,15 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     // duplicated from ElectionRecordPath so that we can use java.nio.file.Path
 
     fun electionConfigPath(): Path {
-        return electionRecordDir.resolve(ELECTION_CONFIG_FILE_NAME).toAbsolutePath()
+        return electionRecordDir.resolve(ELECTION_CONFIG_FILE).toAbsolutePath()
     }
 
     fun electionInitializedPath(): Path {
-        return electionRecordDir.resolve(ELECTION_INITIALIZED_FILE_NAME).toAbsolutePath()
+        return electionRecordDir.resolve(ELECTION_INITIALIZED_FILE).toAbsolutePath()
     }
 
     fun decryptionResultPath(): Path {
-        return electionRecordDir.resolve(DECRYPTION_RESULT_NAME).toAbsolutePath()
+        return electionRecordDir.resolve(DECRYPTION_RESULT_FILE).toAbsolutePath()
     }
 
     fun spoiledBallotPath(): Path {
@@ -100,11 +100,11 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     }
 
     fun encryptedBallotPath(): Path {
-        return electionRecordDir.resolve(ENCRYPTED_BALLOT_PROTO).toAbsolutePath()
+        return electionRecordDir.resolve(ENCRYPTED_BALLOT_FILE).toAbsolutePath()
     }
 
     fun tallyResultPath(): Path {
-        return electionRecordDir.resolve(TALLY_RESULT_NAME).toAbsolutePath()
+        return electionRecordDir.resolve(TALLY_RESULT_FILE).toAbsolutePath()
     }
 
     actual fun writeElectionConfig(config: ElectionConfig) {

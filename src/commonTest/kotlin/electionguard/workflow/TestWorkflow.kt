@@ -63,7 +63,7 @@ class TestWorkflow {
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
-        // decrypt
+        // decrypt tally
         runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present), "createdBy")
 
         // verify

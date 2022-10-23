@@ -134,7 +134,7 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
     }
 
     override fun decryptedTally(): DecryptedTallyOrBallot? {
-        return decryptionResult?.decryptedTallyOrBallot
+        return decryptionResult?.decryptedTally
     }
 
     override fun decryptingGuardians(): List<LagrangeCoordinate> {

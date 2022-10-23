@@ -19,7 +19,7 @@ class VerifyRecoveredShares(
 
     init {
         lagrangeCoordinates = record.decryptingGuardians()
-        lagrangeCoefficients = lagrangeCoordinates.associate { it.guardianId to it.lagrangeCoordinate }
+        lagrangeCoefficients = lagrangeCoordinates.associate { it.guardianId to it.lagrangeCoefficient }
         decryptedTallyOrBallot = record.decryptedTally()!!
     }
 
@@ -46,7 +46,7 @@ class VerifyRecoveredShares(
                     seqOthers.add(other.xCoordinate)
                 }
             }
-            if (!verifyLagrangeCoefficient(guardian.xCoordinate, seqOthers, guardian.lagrangeCoordinate)) {
+            if (!verifyLagrangeCoefficient(guardian.xCoordinate, seqOthers, guardian.lagrangeCoefficient)) {
                 errors.add(Err(" *** 10.A Lagrange coefficients failure for guardian ${guardian.guardianId}"))
             }
         }

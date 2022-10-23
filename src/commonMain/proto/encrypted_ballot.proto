@@ -46,5 +46,5 @@ message EncryptedBallotSelection {
 }
 
 message RangeChaumPedersenProofKnownNonce {
-  repeated GenericChaumPedersenProof proofs = 1;
+  repeated GenericChaumPedersenProof proofs = 1; // one for each in {0, limit}
 }

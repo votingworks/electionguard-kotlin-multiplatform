@@ -31,7 +31,7 @@ class ElectionRecordTest {
             assertNotNull(consumerIn)
             val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
             readElectionRecord(decryption)
-            validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTallyOrBallot)
+            validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally)
         }
     }
 
@@ -44,9 +44,9 @@ class ElectionRecordTest {
         assertEquals("Standard", config.constants.name)
         assertEquals("v0.95", config.manifest.specVersion)
         assertEquals("RunWorkflow", tallyResult.encryptedTally.tallyId)
-        assertEquals("RunWorkflow", decryption.decryptedTallyOrBallot.id)
-        assertNotNull(decryption.decryptedTallyOrBallot)
-        val contests = decryption.decryptedTallyOrBallot.contests
+        assertEquals("RunWorkflow", decryption.decryptedTally.id)
+        assertNotNull(decryption.decryptedTally)
+        val contests = decryption.decryptedTally.contests
         assertNotNull(contests)
         val contest = contests["contest24"]
         assertNotNull(contest)

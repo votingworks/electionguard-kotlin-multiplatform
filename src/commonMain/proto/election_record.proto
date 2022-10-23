@@ -67,12 +67,12 @@ message TallyResult {
 message DecryptionResult {
   TallyResult tally_result = 1;
   DecryptedTallyOrBallot decrypted_tally = 2;
-  repeated LagrangeCoefficient lagrange_coefficients = 3;
+  repeated LagrangeCoordinate lagrange_coordinates = 3;
   map<string, string> metadata = 4;
 }
 
-message LagrangeCoefficient {
+message LagrangeCoordinate {
   string guardian_id = 1;
   uint32 x_coordinate = 2; // x coordinate in the secret polynomial. must be > 0
-  ElementModQ lagrange_coefficient = 3;
+  ElementModQ lagrange_coefficient = 3; // wℓ
 }

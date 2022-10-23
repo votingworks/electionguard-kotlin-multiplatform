@@ -50,17 +50,6 @@ actual class Consumer actual constructor(
         return groupContext.readDecryptionResult(path.decryptionResultPath())
     }
 
-    // all plaintext ballots
-    actual fun iteratePlaintextBallots(
-        ballotDir: String,
-        filter: ((PlaintextBallot) -> Boolean)?
-    ): Iterable<PlaintextBallot> {
-        if (!Files.exists(Path.of(path.plaintextBallotPath(ballotDir)))) {
-            return emptyList()
-        }
-        return Iterable { PlaintextBallotIterator(groupContext, path.plaintextBallotPath(ballotDir), filter) }
-    }
-
     // all submitted ballots, cast or spoiled
     actual fun iterateEncryptedBallots(
         filter: ((EncryptedBallot) -> Boolean)?
@@ -98,7 +87,7 @@ actual class Consumer actual constructor(
         return Iterable { EncryptedBallotIterator(filename, groupContext, protoFilter, null) }
     }
 
-    // all tallies in the file
+    // all tallies in the SPOILED_BALLOT_FILE file
     actual fun iterateSpoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> {
         val filename = path.spoiledBallotPath()
         if (!Files.exists(Path.of(filename))) {
@@ -107,6 +96,18 @@ actual class Consumer actual constructor(
         return Iterable { SpoiledBallotTallyIterator(filename, groupContext) }
     }
 
+    // plaintext ballots in given directory, with filter
+    actual fun iteratePlaintextBallots(
+        ballotDir: String,
+        filter: ((PlaintextBallot) -> Boolean)?
+    ): Iterable<PlaintextBallot> {
+        if (!Files.exists(Path.of(path.plaintextBallotPath(ballotDir)))) {
+            return emptyList()
+        }
+        return Iterable { PlaintextBallotIterator(groupContext, path.plaintextBallotPath(ballotDir), filter) }
+    }
+
+    // trustee in given directory for given guardianId
     actual fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {
         val filename = path.decryptingTrusteePath(trusteeDir, guardianId)
         return groupContext.readTrustee(filename)

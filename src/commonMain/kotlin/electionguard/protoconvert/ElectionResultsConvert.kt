@@ -81,7 +81,7 @@ fun TallyResult.publishTallyResult(): electionguard.protogen.TallyResult {
 fun DecryptionResult.publishDecryptionResult(): electionguard.protogen.DecryptionResult {
     return electionguard.protogen.DecryptionResult(
         this.tallyResult.publishTallyResult(),
-        this.decryptedTallyOrBallot.publishDecryptedTallyOrBallot(),
+        this.decryptedTally.publishDecryptedTallyOrBallot(),
         this.lagrangeCoordinates.map { it.publishAvailableGuardian() },
         this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value)}
     )
@@ -91,6 +91,6 @@ private fun LagrangeCoordinate.publishAvailableGuardian(): electionguard.protoge
     return electionguard.protogen.LagrangeCoefficient(
         this.guardianId,
         this.xCoordinate,
-        this.lagrangeCoordinate.publishElementModQ(),
+        this.lagrangeCoefficient.publishElementModQ(),
     )
 }

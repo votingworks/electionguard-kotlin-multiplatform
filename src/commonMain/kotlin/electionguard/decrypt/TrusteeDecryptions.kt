@@ -19,7 +19,7 @@ data class ChallengeResponse(
 /** One decryption from the Decrypting Trustee */
 data class PartialDecryption(
     val guardianId: String,  // guardian i
-    val Mbari: ElementModP, // Mbar_i
+    val mbari: ElementModP, // Mbar_i
     val u: ElementModQ,
     val a: ElementModP,
     val b: ElementModP,

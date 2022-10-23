@@ -64,9 +64,10 @@ class RunDecryptBallotsTest {
         assertEquals(2, n)
     }
 
+    // decrypt all the ballots
     @Test
     fun testDecryptBallotsMainMultiThreaded() {
-        println("\ntestDecryptBallotsMain")
+        println("\ntestDecryptBallotsMainMultiThreaded")
         main(
             arrayOf(
                 "-in",
@@ -77,6 +78,24 @@ class RunDecryptBallotsTest {
                 "testOut/testDecryptingBallotsSome",
                 "-spoiled",
                 "all",
+                "-nthreads",
+                "6"
+            )
+        )
+    }
+
+    // decrypt the ballots marked spoiled
+    @Test
+    fun testDecryptBallotsMarkedSpoiled() {
+        println("\ntestDecryptBallotsMainDefault")
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowSomeAvailable",
+                "-trustees",
+                "src/commonTest/data/runWorkflowSomeAvailable/private_data/trustees",
+                "-out",
+                "testOut/testDecryptingBallotsSome",
                 "-nthreads",
                 "6"
             )
