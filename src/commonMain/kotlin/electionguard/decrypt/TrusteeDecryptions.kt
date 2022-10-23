@@ -9,7 +9,6 @@ data class ChallengeRequest(
     val id: String, // contest-selection id
     val challenge: ElementModQ,
     val nonce: ElementModQ,
-    val tm: ElementModQ,
 )
 
 data class ChallengeResponse(
@@ -24,7 +23,6 @@ data class PartialDecryption(
     val u: ElementModQ,
     val a: ElementModP,
     val b: ElementModP,
-    val tm: ElementModQ
 )
 
 class DecryptionResults(

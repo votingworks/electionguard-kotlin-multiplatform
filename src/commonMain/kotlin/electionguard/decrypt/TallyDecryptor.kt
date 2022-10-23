@@ -22,7 +22,7 @@ class TallyDecryptor(
     val guardians: List<Guardian>) {
 
     /**
-     * Called after gathering the shares for all available guardians.
+     * Called after gathering the shares for all available trustees.
      * Shares are in a Map keyed by "${contestId}#@${selectionId}"
      */
     fun decryptTally(tally: EncryptedTally, trusteeDecryptions: TrusteeDecryptions): DecryptedTallyOrBallot {

@@ -111,21 +111,21 @@ fun runDecryptBallots(
     val ballotIter: Iterable<EncryptedBallot> =
         when {
             (decryptSpoiledList == null) -> {
-                println("use all spoiled")
+                println(" use all spoiled")
                 consumerIn.iterateSpoiledBallots()
             }
             (decryptSpoiledList.trim().lowercase() == "all") -> {
-                println("use all")
+                println(" use all")
                 consumerIn.iterateEncryptedBallots { true }
             }
             fileExists(decryptSpoiledList) -> {
-                println("use ballots in file $decryptSpoiledList")
+                println(" use ballots in file $decryptSpoiledList")
                 val wanted: List<String> = fileReadLines(decryptSpoiledList)
                 val wantedTrim: List<String> = wanted.map { it.trim() }
                 consumerIn.iterateEncryptedBallots { wantedTrim.contains(it.ballotId) }
             }
             else -> {
-                println("use ballots in list ${decryptSpoiledList}")
+                println(" use ballots in list ${decryptSpoiledList}")
                 val wanted: List<String> = decryptSpoiledList.split(",")
                 consumerIn.iterateEncryptedBallots {
                     // println(" ballot ${it.ballotId}")
@@ -158,10 +158,11 @@ fun runDecryptBallots(
 
     val took = getSystemTimeInMillis() - starting
     val msecsPerBallot = (took.toDouble() / 1000 / count)
-    println("Decrypt ballots with nthreads = $nthreads took ${took / 1000} secs for $count ballots = $msecsPerBallot secs/ballot")
+    println(" decrypt ballots with nthreads = $nthreads took ${took / 1000} secs for $count ballots = $msecsPerBallot secs/ballot")
     return count
 }
 
+// parallelize over ballots
 // place the ballot reading into its own coroutine
 @OptIn(ExperimentalCoroutinesApi::class)
 private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> =
