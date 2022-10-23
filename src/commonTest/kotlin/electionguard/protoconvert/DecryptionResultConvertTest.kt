@@ -20,7 +20,7 @@ class DecryptionResultConvertTest {
         assertNotNull(roundtrip)
 
         assertEquals(roundtrip.tallyResult, electionRecord.tallyResult)
-        assertEquals(roundtrip.decryptedTallyOrBallot, electionRecord.decryptedTallyOrBallot)
+        assertEquals(roundtrip.decryptedTally, electionRecord.decryptedTally)
         assertEquals(roundtrip.lagrangeCoordinates, electionRecord.lagrangeCoordinates)
         assertEquals(roundtrip.metadata, electionRecord.metadata)
 

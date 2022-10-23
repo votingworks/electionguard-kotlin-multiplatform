@@ -143,7 +143,7 @@ fun testEncryptRecoveredDecrypt(group: GroupContext,
         )[0]
     }
 
-    val Mbar: ElementModP = with(group) { shares.map { it.Mbari}.multP() }
+    val Mbar: ElementModP = with(group) { shares.map { it.mbari}.multP() }
     val decryptedValue: ElementModP = evote.data / Mbar
     val dlogM: Int = publicKey.dLog(decryptedValue, 100) ?: throw RuntimeException("dlog failed")
     println("The answer is $dlogM")

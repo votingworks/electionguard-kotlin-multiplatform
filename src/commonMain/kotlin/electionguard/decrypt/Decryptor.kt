@@ -43,7 +43,7 @@ class Decryptor(
         for (decryptingTrustee in decryptingTrustees) {
             val available = lagrangeCoordinates[decryptingTrustee.id()]
                 ?: throw RuntimeException("missing available $decryptingTrustee.id()")
-            decryptingTrustee.setMissing(group, available.lagrangeCoordinate, missingTrustees)
+            decryptingTrustee.setMissing(group, available.lagrangeCoefficient, missingTrustees)
         }
     }
 
@@ -63,7 +63,7 @@ class Decryptor(
         for ((id, results) in trusteeDecryptions.shares) {
             // accumulate all of the shares calculated for the selection
             val shares = results.shares
-            val Mbar: ElementModP = with(group) { shares.values.map { it.Mbari }.multP() }
+            val Mbar: ElementModP = with(group) { shares.values.map { it.mbari }.multP() }
             // Calculate 𝑀 = 𝐵⁄(∏𝑀𝑖) mod 𝑝. (spec 1.52 section 3.5.2 eq 59)
             val M: ElementModP = results.ciphertext.data / Mbar
             // Now we know M, and since 𝑀 = K^t mod 𝑝, t = logK (M)
@@ -99,21 +99,20 @@ class Decryptor(
 
         // Get all the text that need to be decrypted in one call
         val texts: MutableList<ElementModP> = mutableListOf()
-        for (tallyContest in this.contests) {
-            for (selection in tallyContest.selections) {
+        for (contest in this.contests) {
+            for (selection in contest.selections) {
                 texts.add(selection.ciphertext.pad)
             }
         }
+
         // decrypt all of them at once
-        val results: List<PartialDecryption> =
-            trustee.decrypt(group, texts, null)
+        val results: List<PartialDecryption> = trustee.decrypt(group, texts, null)
 
         // Place the results into the TrusteeDecryptions
         var count = 0
         for (contest in this.contests) {
             for (selection in contest.selections) {
-                trusteeDecryptions.addDecryption(contest.contestId, selection.selectionId, selection.ciphertext, results[count])
-                count++
+                trusteeDecryptions.addDecryption(contest.contestId, selection.selectionId, selection.ciphertext, results[count++])
             }
         }
         return trusteeDecryptions
@@ -155,11 +154,20 @@ fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>)
 /** Convert an EncryptedBallot to an EncryptedTally, for processing spoiled ballots. */
 private fun EncryptedBallot.convertToTally(): EncryptedTally {
     val contests = this.contests.map { contest ->
-        // remove placeholders
         val selections = contest.selections.map {
-            EncryptedTally.Selection(it.selectionId, it.sequenceOrder, it.selectionHash, it.ciphertext)
+            EncryptedTally.Selection(
+                it.selectionId,
+                it.sequenceOrder,
+                it.selectionHash,
+                it.ciphertext)
         }
-        EncryptedTally.Contest(contest.contestId, contest.sequenceOrder, contest.contestHash, selections)
+        EncryptedTally.Contest(
+            contest.contestId,
+            contest.sequenceOrder,
+            contest.contestHash,
+            selections,
+            contest.contestData,
+        )
     }
     return EncryptedTally(this.ballotId, contests)
 }

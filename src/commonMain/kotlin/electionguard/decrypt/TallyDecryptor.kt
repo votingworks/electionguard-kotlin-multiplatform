@@ -99,14 +99,14 @@ class TallyDecryptor(
             val challenge = this.challenge!!.toElementModQ(group)
 
             val inner = innerFactor64(guardian.xCoordinate)
-            val middle = guardian.publicKey() * (inner powP lagrange.lagrangeCoordinate)
+            val middle = guardian.publicKey() * (inner powP lagrange.lagrangeCoefficient)
             val ap = group.gPowP(vi) * (middle powP challenge) // 64
             if (partialDecryption.a != ap) {
                 println("ayes dont match for ${guardian.guardianId}")
                 ok = false
             }
 
-            val bp = (this.ciphertext.pad powP vi)  * (partialDecryption.Mbari powP challenge) // 65
+            val bp = (this.ciphertext.pad powP vi)  * (partialDecryption.mbari powP challenge) // 65
             if (partialDecryption.b != bp) {
                 println("bees dont match for ${guardian.guardianId}")
                 ok = false

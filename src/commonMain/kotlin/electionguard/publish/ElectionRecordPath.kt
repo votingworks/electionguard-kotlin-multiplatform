@@ -4,41 +4,39 @@ data class ElectionRecordPath(val topDir : String) {
     private val electionRecordDir = topDir
 
     companion object {
-        const val PROTO_VERSION = "2.0.0"
-
         const val PROTO_SUFFIX = ".protobuf"
         const val DECRYPTING_TRUSTEE_PREFIX = "decryptingTrustee"
-        const val ELECTION_CONFIG_FILE_NAME = "electionConfig$PROTO_SUFFIX"
-        const val ELECTION_INITIALIZED_FILE_NAME = "electionInitialized$PROTO_SUFFIX"
-        const val TALLY_RESULT_NAME = "tallyResult$PROTO_SUFFIX"
-        const val DECRYPTION_RESULT_NAME = "decryptionResult$PROTO_SUFFIX"
-        const val PLAINTEXT_BALLOT_PROTO = "plaintextBallots$PROTO_SUFFIX"
-        const val ENCRYPTED_BALLOT_PROTO = "encryptedBallots$PROTO_SUFFIX"
+        const val ELECTION_CONFIG_FILE = "electionConfig$PROTO_SUFFIX"
+        const val ELECTION_INITIALIZED_FILE = "electionInitialized$PROTO_SUFFIX"
+        const val TALLY_RESULT_FILE = "tallyResult$PROTO_SUFFIX"
+        const val DECRYPTION_RESULT_FILE = "decryptionResult$PROTO_SUFFIX"
+        const val PLAINTEXT_BALLOT_FILE = "plaintextBallots$PROTO_SUFFIX"
+        const val ENCRYPTED_BALLOT_FILE = "encryptedBallots$PROTO_SUFFIX"
         const val SPOILED_BALLOT_FILE = "spoiledBallotTallies$PROTO_SUFFIX"
     }
 
     fun electionConfigPath(): String {
-        return "$electionRecordDir/$ELECTION_CONFIG_FILE_NAME"
+        return "$electionRecordDir/$ELECTION_CONFIG_FILE"
     }
 
     fun electionInitializedPath(): String {
-        return "$electionRecordDir/$ELECTION_INITIALIZED_FILE_NAME"
+        return "$electionRecordDir/$ELECTION_INITIALIZED_FILE"
     }
 
     fun tallyResultPath(): String {
-        return "$electionRecordDir/$TALLY_RESULT_NAME"
+        return "$electionRecordDir/$TALLY_RESULT_FILE"
     }
 
     fun decryptionResultPath(): String {
-        return "$electionRecordDir/$DECRYPTION_RESULT_NAME"
+        return "$electionRecordDir/$DECRYPTION_RESULT_FILE"
     }
 
     fun plaintextBallotPath(ballotDir: String): String {
-        return "$ballotDir/$PLAINTEXT_BALLOT_PROTO"
+        return "$ballotDir/$PLAINTEXT_BALLOT_FILE"
     }
 
     fun encryptedBallotPath(): String {
-        return "$electionRecordDir/$ENCRYPTED_BALLOT_PROTO"
+        return "$electionRecordDir/$ENCRYPTED_BALLOT_FILE"
     }
 
     fun spoiledBallotPath(): String {
