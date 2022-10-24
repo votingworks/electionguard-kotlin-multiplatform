@@ -39,6 +39,7 @@ class DecryptionWithEmbeddedNonces(val publicKey: ElGamalPublicKey) {
         if (errors.isNotEmpty()) {
             return Err(errors.joinToString("\n"))
         }
+
         return Ok(PlaintextBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,

@@ -4,9 +4,11 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.partition
+import electionguard.ballot.ContestDataStatus
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
+import electionguard.ballot.decryptWithNonceToContestData
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -15,6 +17,7 @@ import electionguard.core.UInt256
 import electionguard.core.decryptWithNonce
 import electionguard.core.get
 import electionguard.core.hashElements
+import electionguard.core.take
 import electionguard.core.toElementModQ
 
 /** Decryption of a EncryptedBallot using the master nonce. */
@@ -50,10 +53,9 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
     ): Result<PlaintextBallot.Contest, String> {
         val contestDescriptionHash = mcontest.cryptoHash
         val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
-        val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
-        val contestNonce = nonceSequence[0]
+        val (contestNonce, _, contestDataNonce) = Nonces(contestDescriptionHashQ, ballotNonce).take(3)
 
-        val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
+        val dSelections = mutableListOf<PlaintextBallot.Selection>()
         val errors = mutableListOf<String>()
         for (selection in contest.selections) {
             val mselection = mcontest.selections.find { it.selectionId == selection.selectionId }
@@ -61,20 +63,35 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
                 errors.add(" Cant find selection ${selection.selectionId} in contest ${mcontest.contestId}")
                 continue
             }
-            val plaintextSelection = decryptSelectionWithMasterNonce(mselection, contestNonce, selection)
-            if (plaintextSelection == null) {
+            val dSelection = decryptSelectionWithMasterNonce(mselection, contestNonce, selection)
+            if (dSelection == null) {
                 errors.add(" decryption with master nonce failed for contest: ${contest.contestId} selection: ${selection.selectionId}")
             } else {
-                plaintextSelections.add(plaintextSelection)
+                dSelections.add(dSelection)
             }
         }
         if (errors.isNotEmpty()) {
             return Err(errors.joinToString("\n"))
         }
+
+        // contest data
+        val contestData = contest.contestData.decryptWithNonceToContestData(publicKey, contestDataNonce)
+        // on overvote, modify selections to use original votes
+        val useSelections = if (contestData.status == ContestDataStatus.over_vote) {
+            // set the selections to the original
+            dSelections.map { dselection ->
+                if (contestData.overvotes.find { it == dselection.sequenceOrder } == null) dselection
+                else dselection.copy(vote = 1)
+            }
+        } else {
+            dSelections
+        }
+
         return Ok(PlaintextBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
-            plaintextSelections
+            useSelections,
+            contestData.writeIns,
         ))
     }
 

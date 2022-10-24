@@ -17,6 +17,8 @@ private const val maxDlog: Int = 1000
 
 /**
  * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustees.
+ * This is the only way that an EncryptedTally can be decrypted.
+ * An EncryptedBallot can also be decrypted if you know the master nonce.
  */
 class Decryptor(
     val group: GroupContext,

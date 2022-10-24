@@ -13,16 +13,11 @@ import electionguard.decrypt.PartialDecryption
  * @param contests The contests, keyed by contest.contestId.
  */
 data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Contest>) {
-    /**
-     * The decrypted counts of one contest in the election.
-     *
-     * @param contestId equals the Manifest.ContestDescription.contestId.
-     * @param selections The collection of selections in the contest, keyed by selection.selectionId.
-     */
+
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
         val selections: Map<String, Selection>, // LOOK why Map?
-        val decryptedContestData: DecryptedContestData?, // only for ballots
+        val decryptedContestData: DecryptedContestData? = null, // only for ballots
     ) {
         init {
             require(contestId.isNotEmpty())
@@ -30,12 +25,7 @@ data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Cont
         }
     }
 
-    /**
-     * The decrypted counts of one contest in the election.
-     *
-     * @param contestId equals the Manifest.ContestDescription.contestId.
-     * @param selections The collection of selections in the contest, keyed by selection.selectionId.
-     */
+    // used for validation; see spec 1.53, 4.10.2
     data class DecryptedContestData(
         val contestData: ContestData,
         val encryptedContestData : HashedElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
@@ -51,7 +41,7 @@ data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Cont
      *
      * @param selectionId equals the Manifest.SelectionDescription.selectionId.
      * @param tally     the decrypted vote count.
-     * @param value     g^tally or M in the spec.
+     * @param value     g^tally or M in the spec. used in verifier
      * @param message   The encrypted vote count = (A, B).
      * @param proof     Proof of correctness
      */
