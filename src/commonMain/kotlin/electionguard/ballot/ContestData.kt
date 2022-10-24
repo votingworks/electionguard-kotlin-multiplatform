@@ -3,9 +3,11 @@ package electionguard.ballot
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.HashedElGamalCiphertext
+import electionguard.core.decryptWithNonce
 import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.safeEnumValueOf
 import mu.KotlinLogging
+import pbandk.decodeFromByteArray
 import pbandk.encodeToByteArray
 import kotlin.math.max
 
@@ -18,6 +20,10 @@ enum class ContestDataStatus {
     normal, null_vote, over_vote, under_vote
 }
 
+/**
+ * This information consists of any text written into one or more write-in text fields, information about overvotes,
+ * undervotes, and null votes, and possibly other data about voter selections. spec 1.52 section 3.3.3
+ */
 data class ContestData(
     val overvotes: List<Int>,
     val writeIns: List<String>,
@@ -112,6 +118,41 @@ data class ContestData(
                else trialContestDataBA.hashedElGamalEncrypt(publicKey, contestDataNonce)
     }
 }
+
+// LOOK could be used in Encryptor
+fun makeContestData(
+    votesAllowed: Int,
+    selections: List<PlaintextBallot.Selection>,
+    writeIns: List<String>
+): ContestData {
+    val votedFor = mutableListOf<Int>()
+    for (selection in selections) {
+        if (selection.vote > 0) {
+            votedFor.add(selection.sequenceOrder)
+        }
+    }
+
+    val totalVotedFor = votedFor.size + writeIns.size
+    val status = if (totalVotedFor == 0) ContestDataStatus.null_vote
+    else if (totalVotedFor < votesAllowed)  ContestDataStatus.under_vote
+    else if (totalVotedFor > votesAllowed)  ContestDataStatus.over_vote
+    else ContestDataStatus.normal
+
+    return ContestData(
+        if (status == ContestDataStatus.over_vote) votedFor else emptyList(),
+        writeIns,
+        status
+    )
+}
+
+fun HashedElGamalCiphertext.decryptWithNonceToContestData(publicKey: ElGamalPublicKey, nonce: ElementModQ) : ContestData {
+    val ba: ByteArray? = this.decryptWithNonce(publicKey, nonce)
+    val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba!!)
+    return proto.import()
+}
+
+//////////////////////////////////////////////////////////////////
+// protoconvert
 
 fun electionguard.protogen.ContestData.import(): ContestData {
     return ContestData(
