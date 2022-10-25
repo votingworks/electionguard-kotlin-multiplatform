@@ -1,8 +1,10 @@
 package electionguard.ballot
 
 import electionguard.core.ElGamalPublicKey
+import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.HashedElGamalCiphertext
+import electionguard.core.decryptWithBeta
 import electionguard.core.decryptWithNonce
 import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.safeEnumValueOf
@@ -143,6 +145,12 @@ fun makeContestData(
         writeIns,
         status
     )
+}
+
+fun HashedElGamalCiphertext.decryptWithBetaToContestData(beta : ElementModP) : ContestData {
+    val ba: ByteArray? = this.decryptWithBeta(beta)
+    val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba!!)
+    return proto.import()
 }
 
 fun HashedElGamalCiphertext.decryptWithNonceToContestData(publicKey: ElGamalPublicKey, nonce: ElementModQ) : ContestData {

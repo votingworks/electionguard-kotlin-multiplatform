@@ -5,10 +5,10 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
+import electionguard.ballot.makeDecryptingTrustee
+import electionguard.ballot.makeGuardian
 import electionguard.core.Base16.toHex
-import electionguard.core.ElGamalKeypair
 import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
@@ -17,7 +17,6 @@ import electionguard.core.hashElements
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.keyceremony.makeGuardian
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
@@ -150,16 +149,5 @@ fun testEncryptRecoveredDecrypt(group: GroupContext,
     assertEquals(42, dlogM)
 }
 
-fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
-    return DecryptingTrustee(
-        ktrustee.id,
-        ktrustee.xCoordinate,
-        ElGamalKeypair(
-            ElGamalSecretKey(ktrustee.electionPrivateKey()),
-            ElGamalPublicKey(ktrustee.electionPublicKey())
-        ),
-        ktrustee.otherSharesForMe,
-    )
-}
 
 

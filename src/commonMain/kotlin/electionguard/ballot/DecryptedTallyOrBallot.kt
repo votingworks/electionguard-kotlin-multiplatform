@@ -29,12 +29,8 @@ data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Cont
     data class DecryptedContestData(
         val contestData: ContestData,
         val encryptedContestData : HashedElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
-        val partialDecryptions: List<PartialDecryption>, // one for each guardian
-    ) {
-        init {
-            require(partialDecryptions.isNotEmpty())
-        }
-    }
+        val proof: GenericChaumPedersenProof,
+    )
 
     /**
      * The decrypted count of one selection of one contest in the election.

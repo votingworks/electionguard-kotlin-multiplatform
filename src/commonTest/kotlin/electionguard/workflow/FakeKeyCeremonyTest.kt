@@ -5,10 +5,10 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
+import electionguard.ballot.makeDecryptingTrustee
+import electionguard.ballot.makeGuardian
 import electionguard.core.Base16.toHex
-import electionguard.core.ElGamalKeypair
 import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
@@ -19,7 +19,6 @@ import electionguard.core.randomElementModQ
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
-import electionguard.keyceremony.makeGuardian
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
@@ -128,23 +127,6 @@ fun runFakeKeyCeremony(
     testEncryptDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees)
 
     return init
-}
-
-fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
-    // val id : String,
-    //                             val xCoordinate: UInt,
-    //                             val electionKeypair: ElGamalKeypair,
-    //                             val guardianPublicKeys: Map<String, PublicKeys>,
-    //                             val guardianSecretKeyShares: Map<String, SecretKeyShare>
-    return DecryptingTrustee(
-        ktrustee.id,
-        ktrustee.xCoordinate,
-        ElGamalKeypair(
-            ElGamalSecretKey(ktrustee.electionPrivateKey()),
-            ElGamalPublicKey(ktrustee.electionPublicKey())
-        ),
-        ktrustee.otherSharesForMe,
-    )
 }
 
 // check that the public keys are good

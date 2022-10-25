@@ -32,9 +32,14 @@ class HashedElGamalTest {
                 assertNotNull(plaintext, "decrypt with secret key failed")
                 assertContentEquals(bytes, plaintext)
 
-                val alsoPlaintext = ciphertext.decryptWithNonce(kp, nonce)
-                assertNotNull(alsoPlaintext, "decrypt with nonce failed")
-                assertContentEquals(bytes, alsoPlaintext)
+                val noncePlaintext = ciphertext.decryptWithNonce(kp, nonce)
+                assertNotNull(noncePlaintext, "decrypt with nonce failed")
+                assertContentEquals(bytes, noncePlaintext)
+
+                val beta = kp.publicKey.key powP nonce
+                val betaPlaintext = ciphertext.decryptWithBeta(beta)
+                assertNotNull(betaPlaintext, "decrypt with beta failed")
+                assertContentEquals(bytes, betaPlaintext)
             }
         }
     }
