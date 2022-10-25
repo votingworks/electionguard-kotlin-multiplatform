@@ -29,4 +29,5 @@ message DecryptedContestData {
   ContestData contest_data = 1;
   HashedElGamalCiphertext encrypted_contest_data = 2; // see 3.3.4. matches EncryptedBallotContest
   GenericChaumPedersenProof proof = 3;
+  ElementModP beta = 4; //  β = C0^s mod p
 }

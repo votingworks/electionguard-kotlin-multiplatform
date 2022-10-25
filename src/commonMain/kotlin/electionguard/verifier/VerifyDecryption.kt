@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
 
 private const val debug = false
 
-/** Box 8, 9, 11, 12, 13 */
+/** Box 8, 9, 10, 11, 12, 13 */
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyDecryption(
     val group: GroupContext,
@@ -44,6 +44,10 @@ class VerifyDecryption(
             if (manifest.contestIdToLimit[contest.contestId] == null) {
                 results.add(Err("    9.C,13C Ballot contains contest not in manifest: '$where' "))
                 continue
+            }
+
+            if (contest.decryptedContestData != null) {
+                verifyContestData(where, contest.decryptedContestData)
             }
 
             var contestVotes = 0
@@ -101,6 +105,43 @@ class VerifyDecryption(
 
         return Stats(decrypted.id, results.merge(), ncontests, nselections)
     }
+
+    private fun verifyContestData(where: String, contestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
+        val proof = contestData.proof
+        val ciphertext = contestData.encryptedContestData
+        // a = g^v * K^c (10.1)
+        val a = group.gPowP(proof.r) * (jointPublicKey powP proof.c)
+
+        // b = C0^v * β^c (10.2) b = C
+        val beta = contestData.beta
+        val b = (ciphertext.c0 powP proof.r) * (beta powP proof.c)
+
+        val results = mutableListOf<Result<Boolean, String>>()
+
+        if (!proof.r.inBounds()) {
+            results.add(Err("     (10.A) The value v is not in the set Zq.: '$where'"))
+        }
+        //An election verifier must then confirm the following.
+        //(10.A) The given value v is in the set Zq.
+        //(10.B) The challenge value c satisfies c = H(Q, K, C0, C1, C2, a, b, β).
+        val challenge = hashElements(
+            qbar,
+            jointPublicKey,
+            ciphertext.c0,
+            // ciphertext.c1,
+            ciphertext.c2,
+            a,
+            b,
+            beta,
+        ) // eq 62
+        if (challenge != proof.c.toUInt256()) {
+            results.add(Err("     (10.B) The challenge value is wrong: '$where'"))
+        }
+        return results.merge()
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // coroutines
 
     fun verifySpoiledBallotTallies(
         ballots: Iterable<DecryptedTallyOrBallot>,

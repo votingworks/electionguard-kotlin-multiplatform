@@ -81,10 +81,10 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         println(" 8,9. verifyTallyDecryption $tallyStats")
         val tallyResult = tallyStats.result
 
-        // 11, 12, 13 spoiled ballots
+        // 10, 11, 12, 13 spoiled ballots
         val spoiledStats =
             verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, showTime)
-        println(" 11,12,13. verifySpoiledBallotTallies $spoiledStats")
+        println(" 10,11,12,13. verifySpoiledBallotTallies $spoiledStats")
         val spoiledResult = spoiledStats.result()
 
         // 14 contest data for spoiled ballots

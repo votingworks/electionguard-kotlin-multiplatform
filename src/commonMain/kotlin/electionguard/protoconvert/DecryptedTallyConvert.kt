@@ -8,6 +8,7 @@ import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.ballot.import
 import electionguard.core.GroupContext
 
 fun GroupContext.importDecryptedTallyOrBallot(tally: electionguard.protogen.DecryptedTallyOrBallot?):
@@ -43,8 +44,27 @@ private fun GroupContext.importContest(contest: electionguard.protogen.Decrypted
     return Ok(DecryptedTallyOrBallot.Contest(
         contest.contestId,
         selections.associateBy { it.selectionId },
-    null, // TODO
+        this.importContestData(contest.decryptedContestData),
     ))
+}
+
+private fun GroupContext.importContestData(dcontestData: electionguard.protogen.DecryptedContestData?):
+        DecryptedTallyOrBallot.DecryptedContestData? {
+
+    if (dcontestData == null) {
+        return null
+    }
+
+    if (dcontestData.contestData == null) {
+        return null
+    }
+
+    return DecryptedTallyOrBallot.DecryptedContestData(
+        dcontestData.contestData.import(),
+        this.importHashedCiphertext(dcontestData.encryptedContestData)!!,
+        this.importChaumPedersenProof(dcontestData.proof)!!,
+        this.importElementModP(dcontestData.beta)!!,
+    )
 }
 
 private fun GroupContext.importSelection(selection: electionguard.protogen.DecryptedSelection):
@@ -83,7 +103,11 @@ fun DecryptedTallyOrBallot.publishDecryptedTallyOrBallot(): electionguard.protog
 
 private fun DecryptedTallyOrBallot.Contest.publishContest(): electionguard.protogen.DecryptedContest {
     return electionguard.protogen
-        .DecryptedContest(this.contestId, this.selections.values.map { it.publishSelection() })
+        .DecryptedContest(
+            this.contestId,
+            this.selections.values.map { it.publishSelection() },
+            this.decryptedContestData?.publishDecryptedContestData()
+        )
 }
 
 private fun DecryptedTallyOrBallot.Selection.publishSelection():
@@ -96,4 +120,15 @@ private fun DecryptedTallyOrBallot.Selection.publishSelection():
             this.message.publishCiphertext(),
             this.proof.publishChaumPedersenProof()
         )
+}
+
+private fun DecryptedTallyOrBallot.DecryptedContestData.publishDecryptedContestData():
+        electionguard.protogen.DecryptedContestData {
+
+    return electionguard.protogen.DecryptedContestData(
+        this.contestData.publish(),
+        this.encryptedContestData.publishHashedCiphertext(),
+        this.proof.publishChaumPedersenProof(),
+        this.beta.publishElementModP(),
+    )
 }
