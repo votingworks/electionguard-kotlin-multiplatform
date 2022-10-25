@@ -140,12 +140,13 @@ AccumulateTally processed 100 ballots, took 1246 millisecs, 12 msecs per ballot
 This has access to all the trustees, so is only used for testing, or in a use case of trust.
 
 ````
-Usage: RunTrustedDecryption options_list
+Usage: RunTrustedTallyDecryption options_list
 Options: 
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
     --createdBy, -createdBy -> who created { String }
+    --npresent, -npresent -> number of guardians present { Int }
     --help, -h -> Usage info 
 ````
 

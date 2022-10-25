@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 10/21/2022
+draft 10/25/2022
 
 1. This is version 1.52 of Election Record, corresponding to spec v 1.52
 2. All fields must be present unless marked as optional.
@@ -242,10 +242,10 @@ draft 10/21/2022
 |-----------------------|-----------------------------|-------|
 | tally_result          | TallyResult                 |       |
 | decrypted_tally       | DecryptedTallyOrBallot      |       |
-| lagrange_coefficients | List\<LagrangeCoefficient\> |       |
+| lagrange_coefficients | List\<LagrangeCoordinate\>  |       |
 | metadata              | map<string, string>         |       |
 
-#### message LagrangeCoefficient
+#### message LagrangeCoordinate
 
 | Name                 | Type        | Notes                             |
 |----------------------|-------------|-----------------------------------|
@@ -273,7 +273,7 @@ draft 10/21/2022
 | contest_id     | string                           | ContestDescription.contest_id     |
 | sequence_order | uint32                           | ContestDescription.sequence_order |
 | selections     | List\<PlaintextBallotSelection\> |                                   |
-| extended_data  | string                           | optional, write-in candiate(s)    |
+| write_ins      | List\<string\>                   | optional                          |
 
 #### message PlaintextBallotSelection
 
@@ -303,15 +303,15 @@ draft 10/21/2022
 
 #### message EncryptedBallotContest
 
-| Name           | Type                             | Notes                             |
-|----------------|----------------------------------|-----------------------------------|
-| contest_id     | string                           | ContestDescription.contest_id     |
-| sequence_order | uint32                           | ContestDescription.sequence_order |
-| contest_hash   | UInt256                          | ContestDescription.crypto_hash    |                                                                     |
-| selections     | List\<EncryptedBallotSelection\> |                                   |
-| crypto_hash    | UInt256                          |                                   |
-| proof          | RangeProof                       | proof votes <= limit              |
-| contest_data   | HashedElGamalCiphertext          |                                   |
+| Name                   | Type                             | Notes                             |
+|------------------------|----------------------------------|-----------------------------------|
+| contest_id             | string                           | ContestDescription.contest_id     |
+| sequence_order         | uint32                           | ContestDescription.sequence_order |
+| contest_hash           | UInt256                          | ContestDescription.crypto_hash    |                                                                     |
+| selections             | List\<EncryptedBallotSelection\> |                                   |
+| crypto_hash            | UInt256                          |                                   |
+| proof                  | RangeProof                       | proof of votes <= limit           |
+| encrypted_contest_data | HashedElGamalCiphertext          |                                   |
 
 #### message EncryptedBallotSelection
 
@@ -329,7 +329,6 @@ draft 10/21/2022
 | Name      | Type                              | Notes |
 |-----------|-----------------------------------|-------|
 | proof     | List\<GenericChaumPedersenProof\> |       |
-| constant  | uint32                            |       | 
 
 
 ## encrypted_tally.proto
@@ -353,12 +352,12 @@ draft 10/21/2022
 
 #### message EncryptedTallySelection
 
-| Name                       | Type              | Notes                               |
-|----------------------------|-------------------|-------------------------------------|
-| selection_id               | string            | SelectionDescription.selection_id   |
-| sequence_order             | uint32            | SelectionDescription.sequence_order |
-| selection_description_hash | UInt256           | SelectionDescription.crypto_hash    |
-| ciphertext                 | ElGamalCiphertext |                                     |
+| Name                       | Type              | Notes                                                 |
+|----------------------------|-------------------|-------------------------------------------------------|
+| selection_id               | string            | SelectionDescription.selection_id                     |
+| sequence_order             | uint32            | SelectionDescription.sequence_order                   |
+| selection_description_hash | UInt256           | SelectionDescription.crypto_hash                      |
+| ciphertext                 | ElGamalCiphertext | accumulation over all cast ballots for this selection |
 
 
 ## decrypted_tally.proto
@@ -395,13 +394,6 @@ draft 10/21/2022
 |------------------------|---------------------------|-------------------------------------------|
 | contest_data           | ContestData               |                                           |
 | encrypted_contest_data | HashedElGamalCiphertext   | see 3.3.3. matches EncryptedBallotContest |
-| partial_decryptions    | List\<PartialDecryption\> | direct or recovered, n of them            |
+| proof                  | GenericChaumPedersenProof |                                           |
+| beta                   | ElementModP               |                                           |
 
-#### message PartialDecryption
-
-| Name            | Type                               | Notes                             |
-|-----------------|------------------------------------|-----------------------------------|
-| selection_id    | string                             | SelectionDescription.selection_id |
-| guardian_id     | string                             |                                   |
-| share           | ElementModP                        | M_i                               |
-| proof           | GenericChaumPedersenProof          |                                   |
