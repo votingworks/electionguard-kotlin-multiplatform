@@ -8,8 +8,8 @@ option java_outer_classname = "TrusteeProto";
 message DecryptingTrustee {
   string guardian_id = 1;
   uint32 guardian_x_coordinate = 2;     // the x coefficient (sequence_order), must be > 0
-  ElGamalKeypair election_keypair = 3;  // this guardian's private and public key
-  repeated SecretKeyShare secret_key_shares = 4; // Other guardians' shares of this guardian's secret key
+  ElGamalKeypair election_keypair = 3;  // Guardian's private and public key
+  repeated SecretKeyShare secret_key_shares = 4; // Guardian's "shares" of other guardians keys
 }
 
 message ElGamalKeypair {
@@ -18,7 +18,7 @@ message ElGamalKeypair {
 }
 
 message SecretKeyShare {
-  // The Id of the guardian that generated this (i).
+  // The Id of the guardian that generated this (i), aka "missing guardian"
   string generating_guardian_id = 1;
   // The Id of the guardian to receive this backup.
   string designated_guardian_id = 2;

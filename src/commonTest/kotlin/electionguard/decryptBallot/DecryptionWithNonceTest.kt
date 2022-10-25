@@ -171,7 +171,8 @@ class DecryptionWithNonceTest {
 
         var encryptTime = 0L
         var decryptTime = 0L
-        RandomBallotProvider(electionInit.manifest(), 100, true).ballots().forEach { ballot ->
+        val nb = 100
+        RandomBallotProvider(electionInit.manifest(), nb, true).ballots().forEach { ballot ->
             val codeSeed = group.randomElementModQ(minimum = 2)
             val masterNonce = group.randomElementModQ(minimum = 2)
             val startEncrypt = getSystemTimeInMillis()
@@ -214,8 +215,8 @@ class DecryptionWithNonceTest {
             }
         }
 
-        val encryptPerBallot = (encryptTime.toDouble() / nballots).roundToInt()
-        val decryptPerBallot = (decryptTime.toDouble() / nballots).roundToInt()
+        val encryptPerBallot = (encryptTime.toDouble() / nb).roundToInt()
+        val decryptPerBallot = (decryptTime.toDouble() / nb).roundToInt()
         println("testDecryptionWithMasterNonce for $nballots ballots took $encryptPerBallot encrypt, $decryptPerBallot decrypt msecs/ballot")
     }
 }

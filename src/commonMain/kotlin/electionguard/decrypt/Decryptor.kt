@@ -51,17 +51,18 @@ class Decryptor(
 
     fun decryptBallot(ballot: EncryptedBallot): DecryptedTallyOrBallot {
         // pretend a ballot is a tally
-        return ballot.convertToTally().decrypt()
+        return ballot.convertToTally().decrypt(true)
     }
 
-    fun EncryptedTally.decrypt(): DecryptedTallyOrBallot {
+    fun EncryptedTally.decrypt(isBallot : Boolean = false): DecryptedTallyOrBallot {
         val trusteeDecryptions = TrusteeDecryptions()
 
+        // we need the DecryptionResults from all trustees before we can do the challenges
         for (decryptingTrustee in decryptingTrustees) {
-            this.computeDecryptionShareForTrustee(decryptingTrustee, trusteeDecryptions)
+            this.computeDecryptionShareForTrustee(decryptingTrustee, trusteeDecryptions, isBallot)
         }
 
-        // we need all the results before we can do the challenges
+        // compute the challenges for each DecryptionResult
         for ((id, results) in trusteeDecryptions.shares) {
             // accumulate all of the shares calculated for the selection
             val shares = results.shares
@@ -77,7 +78,31 @@ class Decryptor(
             val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
             results.challenge = hashElements(qbar, jointPublicKey, results.ciphertext.pad, results.ciphertext.data, a, b, M) // eq 62
         }
+        // compute the challenges for each ContestDataResult
+        if (isBallot) {
+            for (results in trusteeDecryptions.contestData.values) {
+                // accumulate all of the shares calculated for the selection
+                val shares = results.shares
+                val beta: ElementModP = with(group) { shares.values.map { it.mbari }.multP() }
+                results.beta = beta
 
+                // collective proof (spec 1.52 section 3.5.3 eq 70)
+                val a: ElementModP = with(group) { shares.values.map { it.a }.multP() }
+                val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
+                results.challenge = hashElements(
+                    qbar,
+                    jointPublicKey,
+                    results.ciphertext.c0,
+                    // results.ciphertext.c1,
+                    results.ciphertext.c2,
+                    a,
+                    b,
+                    beta,
+                ) // eq 62
+            }
+        }
+
+        // send all challenges for both decryption and contestData, get results into the trusteeDecryptions
         for (decryptingTrustee in decryptingTrustees) {
             trusteeDecryptions.challengeTrustee(decryptingTrustee)
         }
@@ -97,11 +122,15 @@ class Decryptor(
     private fun EncryptedTally.computeDecryptionShareForTrustee(
         trustee: DecryptingTrusteeIF,
         trusteeDecryptions: TrusteeDecryptions,
+        isBallot: Boolean,
     ): TrusteeDecryptions {
 
-        // Get all the text that need to be decrypted in one call
+        // Get all the text that need to be decrypted in one call, including from ContestData
         val texts: MutableList<ElementModP> = mutableListOf()
         for (contest in this.contests) {
+            if (isBallot && contest.contestData != null) {
+                texts.add(contest.contestData.c0)
+            }
             for (selection in contest.selections) {
                 texts.add(selection.ciphertext.pad)
             }
@@ -113,6 +142,9 @@ class Decryptor(
         // Place the results into the TrusteeDecryptions
         var count = 0
         for (contest in this.contests) {
+            if (isBallot && contest.contestData != null) {
+                trusteeDecryptions.addContestDataResults(contest.contestId, contest.contestData, results[count++])
+            }
             for (selection in contest.selections) {
                 trusteeDecryptions.addDecryption(contest.contestId, selection.selectionId, selection.ciphertext, results[count++])
             }
@@ -120,12 +152,18 @@ class Decryptor(
         return trusteeDecryptions
     }
 
+    // challenges for one trustee
     fun TrusteeDecryptions.challengeTrustee(
         trustee: DecryptingTrusteeIF,
     ) {
-        // Get all the Ciphertext that need to be decrypted
+        // Get all the challenges from the shares
         val requests: MutableList<ChallengeRequest> = mutableListOf()
         for ((id, results) in this.shares) {
+            val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
+            requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u))
+        }
+        // Get all the challenges from the contestData
+        for ((id, results) in this.contestData) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
             requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u))
         }

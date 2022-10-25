@@ -2,10 +2,9 @@ package electionguard.keyceremony
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
-import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.Guardian
+import electionguard.ballot.makeGuardian
 import electionguard.ballot.makeManifest
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
@@ -78,13 +77,4 @@ class KeyCeremonyTest {
         assertEquals(expectedExtendedBaseHash.toElementModQ(group), init.cryptoExtendedBaseHash())
         assertEquals(config.numberOfGuardians, init.numberOfGuardians())
     }
-}
-
-fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
-    val publicKeys = trustee.sendPublicKeys().unwrap()
-    return Guardian(
-        trustee.id,
-        trustee.xCoordinate,
-        publicKeys.coefficientProofs,
-    )
 }

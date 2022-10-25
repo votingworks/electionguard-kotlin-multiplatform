@@ -83,17 +83,24 @@ fun ByteArray.hashedElGamalEncrypt(
 }
 
 /**
- * Attempts to decrypt the [HashedElGamalCiphertext] using the given keypair's secret key. Returns
- * `null` if the decryption fails, likely from an HMAC verification failure.
- */
-fun HashedElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = decrypt(keypair.secretKey)
-
-/**
- * Attempts to decrypt the [HashedElGamalCiphertext] using the given secret key. Returns `null` if
+ * Decrypt the [HashedElGamalCiphertext] using the given secret key. Returns `null` if
  * the decryption fails, likely from an HMAC verification failure.
  */
 fun HashedElGamalCiphertext.decrypt(secretKey: ElGamalSecretKey): ByteArray? =
     decryptAlphaBeta(c0, c0 powP secretKey.key)
+
+/**
+ * Decrypt the [HashedElGamalCiphertext] using the given β = K^R mod p.
+ * Returns `null` if the decryption fails, likely from an HMAC verification failure.
+ */
+fun HashedElGamalCiphertext.decryptWithBeta(beta: ElementModP): ByteArray? =
+    decryptAlphaBeta(c0, beta)
+
+/**
+ * Decrypt the [HashedElGamalCiphertext] using the given keypair's secret key. Returns
+ * `null` if the decryption fails, likely from an HMAC verification failure.
+ */
+fun HashedElGamalCiphertext.decrypt(keypair: ElGamalKeypair) = decrypt(keypair.secretKey)
 
 /**
  * Attempts to decrypt the [HashedElGamalCiphertext] using the nonce originally used to do the

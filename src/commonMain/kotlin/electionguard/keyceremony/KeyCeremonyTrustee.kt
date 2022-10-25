@@ -90,6 +90,7 @@ class KeyCeremonyTrustee(
         return result
     }
 
+    // El(Pj(ℓ)) = spec 1.52, section 3.2.2 "share encryption"
     private fun generateSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
         val other = guardianPublicKeys[otherGuardian]
             ?: return Err("Trustee '$id', does not have public key for '$otherGuardian'")

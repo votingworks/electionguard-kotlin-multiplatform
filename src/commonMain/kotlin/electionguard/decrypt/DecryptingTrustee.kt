@@ -19,7 +19,7 @@ data class DecryptingTrustee(
     val xCoordinate: Int,
     // This guardian's private and public key
     val electionKeypair: ElGamalKeypair,
-    // Other guardians' shares of this guardian's secret key, keyed by generating (missing) guardian id.
+    // Guardian's "shares" of other guardians keys, keyed by other (missing) guardian id.
     val secretKeyShares: Map<String, SecretKeyShare>,
 ) : DecryptingTrusteeIF {
 
@@ -52,7 +52,7 @@ data class DecryptingTrustee(
     }
 
     // decryption of key share of a missing guardian
-    // encrypted: El(Pj(ℓ)) = spec 1.52, section 3.2.2 eq 14
+    // encrypted: El(Pj(ℓ)) = spec 1.52, section 3.2.2 "share encryption"
     // decrypted = Pj(ℓ) = value of other's secret polynomial at my coordinate = "my share of other's secret key"
     private fun decryptKeyShare(group: GroupContext, missingGuardianId: String): ElementModQ {
         val secretKeyShare: SecretKeyShare = this.secretKeyShares[missingGuardianId]

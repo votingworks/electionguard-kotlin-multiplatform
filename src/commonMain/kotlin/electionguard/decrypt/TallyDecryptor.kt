@@ -4,6 +4,7 @@ import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.Guardian
 import electionguard.ballot.LagrangeCoordinate
+import electionguard.ballot.decryptWithBetaToContestData
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
@@ -38,6 +39,9 @@ class TallyDecryptor(
         contest: EncryptedTally.Contest,
         trusteeDecryptions: TrusteeDecryptions,
     ): DecryptedTallyOrBallot.Contest {
+        val results = trusteeDecryptions.contestData[contest.contestId]
+        val decryptedContestData = decryptContestData(results)
+
         val selections: MutableMap<String, DecryptedTallyOrBallot.Selection> = HashMap()
         for (tallySelection in contest.selections) {
             val id = "${contest.contestId}#@${tallySelection.selectionId}"
@@ -46,15 +50,31 @@ class TallyDecryptor(
             val decryptedSelection = decryptSelection(tallySelection, shares, contest.contestId)
             selections[tallySelection.selectionId] = decryptedSelection
         }
-        return DecryptedTallyOrBallot.Contest(contest.contestId, selections, null)
+        return DecryptedTallyOrBallot.Contest(contest.contestId, selections, decryptedContestData)
     }
+
+    private fun decryptContestData(
+        results: ContestDataResults?, // results for this selection
+    ): DecryptedTallyOrBallot.DecryptedContestData? {
+        return results?.let {
+            // response is the sum of the individual responses
+            val response: ElementModQ = with(group) { results.responses.values.map { it }.addQ() }
+            // finally we can create the proof
+            val proof = GenericChaumPedersenProof(results.challenge!!.toElementModQ(group), response)
+
+            DecryptedTallyOrBallot.DecryptedContestData(
+                results.ciphertext.decryptWithBetaToContestData(results.beta!!),
+                results.ciphertext,
+                proof)
+        }
+    }
+
 
     private fun decryptSelection(
         selection: EncryptedTally.Selection,
         results: DecryptionResults, // results for this selection
         contestId: String,
     ): DecryptedTallyOrBallot.Selection {
-
         // response is the sum of the individual responses
         val response: ElementModQ = with(group) { results.responses.values.map { it }.addQ() }
         // finally we can create the proof

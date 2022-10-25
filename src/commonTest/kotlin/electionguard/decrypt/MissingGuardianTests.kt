@@ -1,11 +1,11 @@
 package electionguard.decrypt
 
 import com.github.michaelbull.result.unwrap
+import electionguard.ballot.makeDecryptingTrustee
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.productionGroup
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.workflow.makeDecryptingTrustee
 import kotlin.test.Test
 
 /** Test decryption wiyh various combinations of missing guardinas. */
