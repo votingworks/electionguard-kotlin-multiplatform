@@ -123,7 +123,7 @@ a period, the IDE's autocomplete menu should offer you a variety of useful
 methods.
 
 ## Protobuf Serialization
-* [Protobuf serialization](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec2.md)
+* [Protobuf serialization 1.52](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec1.52.md)
 * [Election Record serialization for private classes](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationPrivate.md)
 * [Election Record protobuf directory and file layout](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ElectionRecord.md)
 * [Protobuf serialization (ver 1) and comparison with JSON](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec1.md)

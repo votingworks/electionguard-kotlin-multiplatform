@@ -1,6 +1,6 @@
 # 🗳 Election Record serialization for private classes
 
-draft 6/11/2022
+draft 10/25/2022
 
 1. This is version 2 of Election Record. It is not backwards compatible with version 1.
 2. All fields must be present unless marked as optional.
@@ -27,13 +27,6 @@ Only the secret_key is actually private. One could store that separately and sec
 |-------------------|---------------|--------|
 | secret_key        | ElementModQ   | secret |
 | public_key        | ElementModP   |        |
-
-#### message CommitmentSet
-
-| Name         | Type                 | Notes |
-|--------------|----------------------|-------|
-| guardian_id  | string               |       |
-| commitments  | List\<ElementModP\>  | K_ij  |
 
 #### message SecretKeyShare
 
