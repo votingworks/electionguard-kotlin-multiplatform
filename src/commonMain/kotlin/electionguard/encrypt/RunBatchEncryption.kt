@@ -18,6 +18,7 @@ import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
+import electionguard.decryptBallot.DecryptionWithEmbeddedNonces
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
 import electionguard.publish.Consumer
@@ -115,7 +116,7 @@ fun main(args: Array<String>) {
     )
 }
 
-enum class CheckType { None, Verify, EncryptTwice }
+enum class CheckType { None, Verify, EncryptTwice, DecryptNonce }
 
 // encrypt ballots in inputDir
 fun batchEncryption(
@@ -237,7 +238,7 @@ private class RunEncryption(
     val codeSeed: ElementModQ,
     val masterNonce: ElementModQ?,
     manifest: Manifest,
-    jointPublicKey: ElementModP,
+    val jointPublicKey: ElementModP,
     cryptoExtendedBaseHash: UInt256,
     val check: CheckType
 ) {
@@ -249,29 +250,36 @@ private class RunEncryption(
     }
 
     fun encrypt(ballot: PlaintextBallot): EncryptedBallot {
-        val encryptedBallot = if (masterNonce != null) // make result deterministic
+        val ciphertextBallot = if (masterNonce != null) // make result deterministic
             encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
         else
             encryptor.encrypt(ballot, codeSeed, group.randomElementModQ()) // each ballot has a random master nonce
 
         // experiments in testing the encryption
         if (check == CheckType.EncryptTwice) {
-            val encrypted2 = encryptor.encrypt(ballot, codeSeed, encryptedBallot.masterNonce, encryptedBallot.timestamp)
-            if (encrypted2.cryptoHash != encryptedBallot.cryptoHash) {
+            val encrypted2 = encryptor.encrypt(ballot, codeSeed, ciphertextBallot.masterNonce, ciphertextBallot.timestamp)
+            if (encrypted2.cryptoHash != ciphertextBallot.cryptoHash) {
                 logger.warn { "encrypted.cryptoHash doesnt match" }
             }
-            if (encrypted2 != encryptedBallot) {
+            if (encrypted2 != ciphertextBallot) {
                 logger.warn { "encrypted doesnt match" }
             }
         } else if (check == CheckType.Verify && verifier != null) {
             // VerifyEncryptedBallots may be doing more work than actually needed
-            val submitted = encryptedBallot.submit(EncryptedBallot.BallotState.CAST)
+            val submitted = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
             val verifyStats = verifier.verifyEncryptedBallot(submitted)
             if (verifyStats.result is Err) {
                 logger.warn { "encrypted doesnt verify = ${verifyStats.result}" }
             }
+        } else if (check == CheckType.DecryptNonce) {
+            // Decrypt with Nonce to ensure encryption worked
+            val decryptor = DecryptionWithEmbeddedNonces(ElGamalPublicKey(jointPublicKey))
+            val decryptResult = with (decryptor) { ciphertextBallot.decrypt() }
+            if (decryptResult is Err) {
+                logger.warn { "encrypted ballot fails decryption = $decryptResult" }
+            }
         }
-        return encryptedBallot.submit(EncryptedBallot.BallotState.CAST)
+        return ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
     }
 }
 
