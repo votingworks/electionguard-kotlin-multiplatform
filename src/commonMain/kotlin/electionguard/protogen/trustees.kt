@@ -119,53 +119,6 @@ public data class ElGamalKeypair(
 }
 
 @pbandk.Export
-public data class CommitmentSet(
-    val guardianId: String = "",
-    val commitments: List<electionguard.protogen.ElementModP> = emptyList(),
-    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-) : pbandk.Message {
-    override operator fun plus(other: pbandk.Message?): electionguard.protogen.CommitmentSet = protoMergeImpl(other)
-    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CommitmentSet> get() = Companion.descriptor
-    override val protoSize: Int by lazy { super.protoSize }
-    public companion object : pbandk.Message.Companion<electionguard.protogen.CommitmentSet> {
-        public val defaultInstance: electionguard.protogen.CommitmentSet by lazy { electionguard.protogen.CommitmentSet() }
-        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.CommitmentSet = electionguard.protogen.CommitmentSet.decodeWithImpl(u)
-
-        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.CommitmentSet> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.CommitmentSet, *>>(2)
-            fieldsList.apply {
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "guardian_id",
-                        number = 1,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "guardianId",
-                        value = electionguard.protogen.CommitmentSet::guardianId
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "commitments",
-                        number = 2,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElementModP>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion)),
-                        jsonName = "commitments",
-                        value = electionguard.protogen.CommitmentSet::commitments
-                    )
-                )
-            }
-            pbandk.MessageDescriptor(
-                fullName = "CommitmentSet",
-                messageClass = electionguard.protogen.CommitmentSet::class,
-                messageCompanion = this,
-                fields = fieldsList
-            )
-        }
-    }
-}
-
-@pbandk.Export
 public data class SecretKeyShare(
     val generatingGuardianId: String = "",
     val designatedGuardianId: String = "",
@@ -288,31 +241,6 @@ private fun ElGamalKeypair.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
         }
     }
     return ElGamalKeypair(secretKey, publicKey, unknownFields)
-}
-
-@pbandk.Export
-@pbandk.JsName("orDefaultForCommitmentSet")
-public fun CommitmentSet?.orDefault(): electionguard.protogen.CommitmentSet = this ?: CommitmentSet.defaultInstance
-
-private fun CommitmentSet.protoMergeImpl(plus: pbandk.Message?): CommitmentSet = (plus as? CommitmentSet)?.let {
-    it.copy(
-        commitments = commitments + plus.commitments,
-        unknownFields = unknownFields + plus.unknownFields
-    )
-} ?: this
-
-@Suppress("UNCHECKED_CAST")
-private fun CommitmentSet.Companion.decodeWithImpl(u: pbandk.MessageDecoder): CommitmentSet {
-    var guardianId = ""
-    var commitments: pbandk.ListWithSize.Builder<electionguard.protogen.ElementModP>? = null
-
-    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
-        when (_fieldNumber) {
-            1 -> guardianId = _fieldValue as String
-            2 -> commitments = (commitments ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElementModP> }
-        }
-    }
-    return CommitmentSet(guardianId, pbandk.ListWithSize.Builder.fixed(commitments), unknownFields)
 }
 
 @pbandk.Export

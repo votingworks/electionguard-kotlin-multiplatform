@@ -65,7 +65,9 @@ class TallyDecryptor(
             DecryptedTallyOrBallot.DecryptedContestData(
                 results.ciphertext.decryptWithBetaToContestData(results.beta!!),
                 results.ciphertext,
-                proof)
+                proof,
+                results.beta!!,
+            )
         }
     }
 

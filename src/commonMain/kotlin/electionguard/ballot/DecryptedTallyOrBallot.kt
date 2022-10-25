@@ -4,7 +4,6 @@ import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModP
 import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.HashedElGamalCiphertext
-import electionguard.decrypt.PartialDecryption
 
 /**
  * The decrypted counts of all contests in the election, for one ballot or a collection of ballots.
@@ -25,11 +24,12 @@ data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Cont
         }
     }
 
-    // used for validation; see spec 1.53, 4.10.2
+    // used for validation; see spec 1.52, section 3.5.4, 4.10.2
     data class DecryptedContestData(
         val contestData: ContestData,
         val encryptedContestData : HashedElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
         val proof: GenericChaumPedersenProof,
+        var beta: ElementModP,
     )
 
     /**
