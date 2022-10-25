@@ -88,6 +88,26 @@ class RunBatchEncryptionTest {
     }
 
     @Test
+    fun testRunBatchEncryptionVerifyDecrypt() {
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowAllAvailable",
+                "-ballots",
+                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "-out",
+                "testOut/testRunBatchEncryptionTest",
+                "-invalid",
+                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "-nthreads",
+                "1",
+                "-check",
+                "DecryptNonce",
+            )
+        )
+    }
+
+    @Test
     fun testInvalidBallot() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
