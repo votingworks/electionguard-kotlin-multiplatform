@@ -1,6 +1,9 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.Manifest
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger("ManifestToProto")
 
 fun Manifest.publishManifest(): electionguard.protogen.Manifest {
     return electionguard.protogen
@@ -79,17 +82,32 @@ private fun Manifest.ContestDescription.publishContestDescription():
 
 private fun Manifest.VoteVariationType.publishVoteVariationType():
     electionguard.protogen.ContestDescription.VoteVariationType {
-        return electionguard.protogen.ContestDescription.VoteVariationType.fromName(this.name)
+        return try {
+            electionguard.protogen.ContestDescription.VoteVariationType.fromName(this.name)
+        } catch (e: IllegalArgumentException) {
+            logger.error { "Manifest.VoteVariationType $this has missing or unknown name" }
+            electionguard.protogen.ContestDescription.VoteVariationType.UNKNOWN
+        }
     }
 
 private fun Manifest.ElectionType.publishElectionType():
     electionguard.protogen.Manifest.ElectionType {
-        return electionguard.protogen.Manifest.ElectionType.fromName(this.name)
+        return try {
+            electionguard.protogen.Manifest.ElectionType.fromName(this.name)
+        } catch (e: IllegalArgumentException) {
+            logger.error { "Manifest.ElectionType $this has missing or unknown name" }
+            electionguard.protogen.Manifest.ElectionType.UNKNOWN
+        }
     }
 
 private fun Manifest.ReportingUnitType.publishReportingUnitType():
     electionguard.protogen.GeopoliticalUnit.ReportingUnitType {
-        return electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromName(this.name)
+        return try {
+            electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromName(this.name)
+        } catch (e: IllegalArgumentException) {
+            logger.error { "Manifest.GeopoliticalUnit $this has missing or unknown name" }
+            electionguard.protogen.GeopoliticalUnit.ReportingUnitType.UNKNOWN
+        }
     }
 
 private fun Manifest.GeopoliticalUnit.publishGeopoliticalUnit():

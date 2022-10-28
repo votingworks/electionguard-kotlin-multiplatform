@@ -18,7 +18,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertFalse(problems.hasErrors())
     }
 
@@ -34,7 +34,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.A.1")
         assertContains(problems.toString(), "Manifest.A.5")
@@ -51,7 +51,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.A.2")
     }
@@ -68,7 +68,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.A.3")
         assertContains(problems.toString(), "Manifest.A.5")
@@ -85,7 +85,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.A.4")
     }
@@ -104,7 +104,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.B.1")
         assertContains(problems.toString(), "Manifest.B.6")
@@ -125,7 +125,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.B.2")
         assertContains(problems.toString(), "Manifest.B.4")
@@ -141,7 +141,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.B.6")
         assertContains(problems.toString(), "Manifest.B.3")
@@ -161,7 +161,7 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.B.6")
     }
@@ -176,10 +176,73 @@ class TestManifestInputValidation {
             .build()
         val validator = ManifestInputValidation(election)
         val problems : ValidationMessages = validator.validate()
-        println("Problems=%n$problems")
+        println("Problems=$problems")
         assertTrue(problems.hasErrors())
         assertContains(problems.toString(), "Manifest.B.5")
     }
 
-    // TODO C.1 - C.5
+    @Test
+    fun testUnusedVoteType() {
+        val ebuilder = ManifestInputBuilder("test_manifest")
+        val election: Manifest = ebuilder.addContest("contest_id")
+            .setVoteVariationType(Manifest.VoteVariationType.proportional, 1)
+            .addSelection("selection_id", "candidate_1")
+            .addSelection("selection_id2", "candidate_2")
+            .done()
+            .build()
+        val validator = ManifestInputValidation(election)
+        val problems : ValidationMessages = validator.validate()
+        println("Problems=$problems")
+        assertTrue(problems.hasErrors())
+        assertContains(problems.toString(), "Manifest.C.1")
+    }
+
+    @Test
+    fun testOneVoteAllowed() {
+        val ebuilder = ManifestInputBuilder("test_manifest")
+        val election: Manifest = ebuilder.addContest("contest_id")
+            .setVoteVariationType(Manifest.VoteVariationType.one_of_m, 3)
+            .addSelection("selection_id", "candidate_1")
+            .addSelection("selection_id2", "candidate_2")
+            .done()
+            .build()
+        val validator = ManifestInputValidation(election)
+        val problems : ValidationMessages = validator.validate()
+        println("Problems=$problems")
+        assertTrue(problems.hasErrors())
+        assertContains(problems.toString(), "Manifest.C.2")
+    }
+
+    @Test
+    fun testVotesAllowed() {
+        val ebuilder = ManifestInputBuilder("test_manifest")
+        val election: Manifest = ebuilder.addContest("contest_id")
+            .setVoteVariationType(Manifest.VoteVariationType.n_of_m, 3)
+            .addSelection("selection_id", "candidate_1")
+            .addSelection("selection_id2", "candidate_2")
+            .done()
+            .build()
+        val validator = ManifestInputValidation(election)
+        val problems : ValidationMessages = validator.validate()
+        println("Problems=$problems")
+        assertTrue(problems.hasErrors())
+        assertContains(problems.toString(), "Manifest.C.3")
+    }
+
+    @Test
+    fun testVotesApproval() {
+        val ebuilder = ManifestInputBuilder("test_manifest")
+        val election: Manifest = ebuilder.addContest("contest_id")
+            .setVoteVariationType(Manifest.VoteVariationType.approval, 7)
+            .addSelection("selection_id", "candidate_1")
+            .addSelection("selection_id2", "candidate_2")
+            .done()
+            .build()
+        val validator = ManifestInputValidation(election)
+        val problems : ValidationMessages = validator.validate()
+        println("Problems=$problems")
+        assertTrue(problems.hasErrors())
+        assertContains(problems.toString(), "Manifest.C.4")
+    }
+
 }

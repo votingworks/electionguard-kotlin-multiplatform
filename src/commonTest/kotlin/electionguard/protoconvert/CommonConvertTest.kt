@@ -10,8 +10,10 @@ class CommonConvertTest {
     @Test
     fun convertElementMod() {
         runTest {
-            checkAll(validElementsModP(productionGroup()), elementsModQ(productionGroup()),)
-                { fakeElementModP, fakeElementModQ ->
+            checkAll(
+                validElementsModP(productionGroup()),
+                elementsModQ(productionGroup()),
+            ) { fakeElementModP, fakeElementModQ ->
                     val context = productionGroup()
 
                     val protoP = fakeElementModP.publishElementModP()
@@ -28,8 +30,10 @@ class CommonConvertTest {
     @Test
     fun convertCiphertext() {
         runTest {
-            checkAll(validElementsModP(productionGroup()), validElementsModP(productionGroup()),)
-                { fakePad, fakeData ->
+            checkAll(
+                validElementsModP(productionGroup()),
+                validElementsModP(productionGroup()),
+            ) { fakePad, fakeData ->
                     val context = productionGroup()
                     val ciphertext = ElGamalCiphertext(fakePad, fakeData)
 
@@ -43,14 +47,17 @@ class CommonConvertTest {
     @Test
     fun convertChaumPedersenProof() {
         runTest {
-            checkAll(elementsModQ(productionGroup()), elementsModQ(productionGroup()),) { c, r ->
-                val context = productionGroup()
-                val proof = GenericChaumPedersenProof(c, r)
+            checkAll(
+                elementsModQ(productionGroup()),
+                elementsModQ(productionGroup()),
+            ) { c, r ->
+                    val context = productionGroup()
+                    val proof = GenericChaumPedersenProof(c, r)
 
-                val proto = proof.publishChaumPedersenProof()
-                val roundtrip = context.importChaumPedersenProof(proto)
-                assertEquals(roundtrip, proof)
-            }
+                    val proto = proof.publishChaumPedersenProof()
+                    val roundtrip = context.importChaumPedersenProof(proto)
+                    assertEquals(roundtrip, proof)
+                }
         }
     }
 
@@ -64,22 +71,10 @@ class CommonConvertTest {
             ) { k, c, r ->
                 val context = productionGroup()
                 val proof = SchnorrProof(k, c, r)
+
                 val proto = proof.publishSchnorrProof()
                 val roundtrip = context.importSchnorrProof(proto)
                 assertEquals(roundtrip, proof)
-            }
-        }
-    }
-
-    @Test
-    fun convertElGamalPublicKey() {
-        runTest {
-            checkAll(validElementsModP(productionGroup()),) { p ->
-                val context = productionGroup()
-                val publicKey = ElGamalPublicKey(p)
-                val proto = publicKey.publishElGamalPublicKey()
-                val roundtrip = context.importElGamalPublicKey(proto)
-                assertEquals(roundtrip, publicKey)
             }
         }
     }

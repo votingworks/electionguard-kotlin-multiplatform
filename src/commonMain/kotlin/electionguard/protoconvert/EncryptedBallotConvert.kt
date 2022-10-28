@@ -9,6 +9,9 @@ import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger("EncryptedBallotConvert")
 
 fun GroupContext.importEncryptedBallot(
     ballot: electionguard.protogen.EncryptedBallot
@@ -49,14 +52,9 @@ fun GroupContext.importEncryptedBallot(
 
 private fun electionguard.protogen.EncryptedBallot.BallotState.importBallotState(where: String):
         Result<EncryptedBallot.BallotState, String> {
-
-    val name = this.name ?: return Err("Failed to convert ballot state, missing name in $where\"")
-
-    return try {
-        Ok(EncryptedBallot.BallotState.valueOf(name))
-    } catch (e: IllegalArgumentException) {
-        Err("Failed to convert ballot state, unknown name $name in $where\"")
-    }
+    val state = safeEnumValueOf<EncryptedBallot.BallotState>(this.name) ?:
+        return Err("Failed to convert ballot state, missing or unknown name in $where\"")
+    return Ok(state)
 }
 
 private fun GroupContext.importContest(
@@ -151,7 +149,12 @@ fun EncryptedBallot.publishEncryptedBallot(): electionguard.protogen.EncryptedBa
 
 private fun EncryptedBallot.BallotState.publishBallotState():
         electionguard.protogen.EncryptedBallot.BallotState {
-    return electionguard.protogen.EncryptedBallot.BallotState.fromName(this.name)
+    return try {
+        electionguard.protogen.EncryptedBallot.BallotState.fromName(this.name)
+    } catch (e: IllegalArgumentException) {
+        logger.error { "BallotState $this has missing or unknown name" }
+        electionguard.protogen.EncryptedBallot.BallotState.UNKNOWN
+    }
 }
 
 private fun EncryptedBallot.Contest.publishContest():

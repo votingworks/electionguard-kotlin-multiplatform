@@ -112,21 +112,15 @@ class ManifestInputValidation(val manifest: Manifest) {
             }
         }
 
-        if (contest.numberElected != contest.votesAllowed) {
-            val msg = "Manifest.C.2 Contest's numberElected $contest.numberElected != $contest.votesAllowed votesAllowed"
-            contestMesses.add(msg)
-            logger.warn { msg }
-        }
-
         when (contest.voteVariation) {
             one_of_m -> if (contest.votesAllowed != 1) {
-                val msg = "Manifest.C.3 one_of_m Contest votesAllowed (${contest.votesAllowed}) must be 1"
+                val msg = "Manifest.C.2 one_of_m Contest votesAllowed (${contest.votesAllowed}) must be 1"
                 contestMesses.add(msg)
                 logger.warn { msg }
             }
             n_of_m -> {
                 if (contest.votesAllowed > contest.selections.size) {
-                    val msg = "Manifest.C.4 n_of_m Contest votesAllowed (${contest.votesAllowed}) must be <= selections" +
+                    val msg = "Manifest.C.3 n_of_m Contest votesAllowed (${contest.votesAllowed}) must be <= selections" +
                             " (${contest.selections.size})"
                     contestMesses.add(msg)
                     logger.warn { msg }
@@ -134,7 +128,7 @@ class ManifestInputValidation(val manifest: Manifest) {
             }
             approval -> {
                 if (contest.votesAllowed != contest.selections.size) {
-                    val msg = "Manifest.C.5 approval Contest votesAllowed (${contest.votesAllowed}) must equal " +
+                    val msg = "Manifest.C.4 approval Contest votesAllowed (${contest.votesAllowed}) must equal " +
                             "number of selections (${contest.selections.size})"
                     contestMesses.add(msg)
                     logger.warn { msg }
