@@ -1,5 +1,7 @@
 package electionguard.ballot
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.unwrap
 import electionguard.core.decrypt
 import electionguard.core.elGamalKeyPairFromRandom
 import electionguard.core.getSystemTimeInMillis
@@ -15,6 +17,7 @@ import io.kotest.property.checkAll
 import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 private const val debug = false
 
@@ -80,14 +83,15 @@ class ContestDataEncryptTest {
 
         // ContestData roundtrip
         val contestDataProtoRoundtrip = electionguard.protogen.ContestData.decodeFromByteArray(contestDataBArt)
-        val contestDataRoundtrip = contestDataProtoRoundtrip.import()
+        val contestDataRoundtrip = importContestData(contestDataProtoRoundtrip)
+        assertTrue( contestDataRoundtrip is Ok)
 
         if (isTruncated) {
             println("truncated $contestData")
             println("          $contestDataRoundtrip")
-            assertEquals(contestData.status, contestDataRoundtrip.status)
+            assertEquals(contestData.status, contestDataRoundtrip.unwrap().status)
         } else {
-            assertEquals(contestData, contestDataRoundtrip)
+            assertEquals(contestData, contestDataRoundtrip.unwrap())
         }
     }
 

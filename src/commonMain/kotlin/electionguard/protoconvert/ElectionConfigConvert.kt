@@ -26,45 +26,42 @@ fun importElectionConfig(config: electionguard.protogen.ElectionConfig?): Result
         manifest.unwrap(),
         config.numberOfGuardians,
         config.quorum,
-        config.metadata.associate {it.key to it.value}
+        config.metadata.associate { it.key to it.value }
     ))
 }
 
-private fun convertConstants(
-    constants: electionguard.protogen.ElectionConstants?
-): Result<ElectionConstants, String> {
+private fun convertConstants(constants: electionguard.protogen.ElectionConstants?): Result<ElectionConstants, String> {
     if (constants == null) {
         return Err("Null Constants")
     }
-    return Ok(ElectionConstants(
-        constants.name,
-        constants.largePrime.array,
-        constants.smallPrime.array,
-        constants.cofactor.array,
-        constants.generator.array,
-    ))
+    return Ok(
+        ElectionConstants(
+            constants.name,
+            constants.largePrime.array,
+            constants.smallPrime.array,
+            constants.cofactor.array,
+            constants.generator.array,
+        )
+    )
 }
 
 ////////////////////////////////////////////////////////
 
-fun ElectionConfig.publishElectionConfig(): electionguard.protogen.ElectionConfig {
-    return electionguard.protogen.ElectionConfig(
+fun ElectionConfig.publishElectionConfig() =
+    electionguard.protogen.ElectionConfig(
         protoVersion,
         constants.publishConstants(),
         manifest.publishManifest(),
         this.numberOfGuardians,
         this.quorum,
-        this.metadata.entries.map { electionguard.protogen.ElectionConfig.MetadataEntry(it.key, it.value)}
+        this.metadata.entries.map { electionguard.protogen.ElectionConfig.MetadataEntry(it.key, it.value) }
     )
-}
 
-private fun ElectionConstants.publishConstants(): electionguard.protogen.ElectionConstants {
-    return electionguard.protogen
-        .ElectionConstants(
-            this.name,
-            ByteArr(this.largePrime),
-            ByteArr(this.smallPrime),
-            ByteArr(this.cofactor),
-            ByteArr(this.generator),
-        )
-}
+private fun ElectionConstants.publishConstants() =
+    electionguard.protogen.ElectionConstants(
+        this.name,
+        ByteArr(this.largePrime),
+        ByteArr(this.smallPrime),
+        ByteArr(this.cofactor),
+        ByteArr(this.generator),
+    )

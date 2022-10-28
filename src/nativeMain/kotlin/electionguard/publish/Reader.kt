@@ -68,7 +68,6 @@ fun GroupContext.readDecryptionResult(filename: String): Result<DecryptionResult
 }
 
 class PlaintextBallotIterator(
-    private val group: GroupContext,
     private val filename: String,
     val filter : ((PlaintextBallot) -> Boolean)?,
 ) : AbstractIterator<PlaintextBallot>() {
@@ -84,7 +83,7 @@ class PlaintextBallotIterator(
             }
             val message = readFromFile(file, length.toULong(), filename)
             val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteArray(message)
-            val ballot = group.importPlaintextBallot(ballotProto)
+            val ballot = importPlaintextBallot(ballotProto)
             if (filter != null && !filter.invoke(ballot)) {
                 continue
             }

@@ -104,7 +104,7 @@ actual class Consumer actual constructor(
         if (!Files.exists(Path.of(path.plaintextBallotPath(ballotDir)))) {
             return emptyList()
         }
-        return Iterable { PlaintextBallotIterator(groupContext, path.plaintextBallotPath(ballotDir), filter) }
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotPath(ballotDir), filter) }
     }
 
     // trustee in given directory for given guardianId
