@@ -1,5 +1,7 @@
 package electionguard.decrypt
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.Guardian
@@ -13,6 +15,9 @@ import electionguard.core.GroupContext
 import electionguard.core.compatibleContextOrFail
 import electionguard.core.hashElements
 import electionguard.core.toElementModQ
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger("TallyDecryptor")
 
 /** Turn a EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(
@@ -40,7 +45,7 @@ class TallyDecryptor(
         trusteeDecryptions: TrusteeDecryptions,
     ): DecryptedTallyOrBallot.Contest {
         val results = trusteeDecryptions.contestData[contest.contestId]
-        val decryptedContestData = decryptContestData(results)
+        val decryptedContestData = decryptContestData(contest.contestId, results)
 
         val selections: MutableMap<String, DecryptedTallyOrBallot.Selection> = HashMap()
         for (tallySelection in contest.selections) {
@@ -54,16 +59,32 @@ class TallyDecryptor(
     }
 
     private fun decryptContestData(
+        where: String,
         results: ContestDataResults?, // results for this selection
     ): DecryptedTallyOrBallot.DecryptedContestData? {
         return results?.let {
             // response is the sum of the individual responses
             val response: ElementModQ = with(group) { results.responses.values.map { it }.addQ() }
+
             // finally we can create the proof
-            val proof = GenericChaumPedersenProof(results.challenge!!.toElementModQ(group), response)
+            if (results.challenge == null) {
+                logger.error { "$where: ContestDataResults missing challenge"}
+                return null
+            }
+            val challenge = results.challenge!!.toElementModQ(group)
+            val proof = GenericChaumPedersenProof(challenge, response)
+
+            if (results.beta == null) {
+                logger.error { "$where: ContestDataResults missing beta"}
+                return null
+            }
+            val contestData = results.ciphertext.decryptWithBetaToContestData(results.beta!!)
+            if (contestData is Err) {
+                return null
+            }
 
             DecryptedTallyOrBallot.DecryptedContestData(
-                results.ciphertext.decryptWithBetaToContestData(results.beta!!),
+                contestData.unwrap(),
                 results.ciphertext,
                 proof,
                 results.beta!!,

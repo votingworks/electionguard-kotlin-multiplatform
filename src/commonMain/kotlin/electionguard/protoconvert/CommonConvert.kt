@@ -36,43 +36,38 @@ fun GroupContext.importHashedCiphertext(
     if (ciphertext == null) return null
     val c0 = this.importElementModP(ciphertext.c0)
     val c2 = importUInt256(ciphertext.c2)
-    return if (c0 == null || c2 == null) null else HashedElGamalCiphertext(c0, ciphertext.c1.array, c2, ciphertext.numBytes)
+    return if (c0 == null || c2 == null) null else HashedElGamalCiphertext(
+        c0,
+        ciphertext.c1.array,
+        c2,
+        ciphertext.numBytes
+    )
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fun ElementModQ.publishElementModQ(): electionguard.protogen.ElementModQ {
-    return electionguard.protogen.ElementModQ(ByteArr(this.byteArray()))
-}
+fun ElementModQ.publishElementModQ() = electionguard.protogen.ElementModQ(ByteArr(this.byteArray()))
 
-fun UInt256.publishUInt256(): electionguard.protogen.UInt256 {
-    return electionguard.protogen.UInt256(ByteArr(this.bytes))
-}
+fun UInt256.publishUInt256() = electionguard.protogen.UInt256(ByteArr(this.bytes))
 
-fun ElementModP.publishElementModP(): electionguard.protogen.ElementModP {
-    return electionguard.protogen.ElementModP(ByteArr(this.byteArray()))
-}
+fun ElementModP.publishElementModP() = electionguard.protogen.ElementModP(ByteArr(this.byteArray()))
 
-fun ElGamalCiphertext.publishCiphertext(): electionguard.protogen.ElGamalCiphertext {
-    return electionguard.protogen
-        .ElGamalCiphertext(this.pad.publishElementModP(), this.data.publishElementModP())
-}
+fun ElGamalCiphertext.publishCiphertext() =
+    electionguard.protogen.ElGamalCiphertext(
+        this.pad.publishElementModP(),
+        this.data.publishElementModP(),
+    )
 
-fun GenericChaumPedersenProof.publishChaumPedersenProof():
-    electionguard.protogen.GenericChaumPedersenProof {
-        return electionguard.protogen
-            .GenericChaumPedersenProof(
-                this.c.publishElementModQ(),
-                this.r.publishElementModQ(),
-            )
-    }
+fun GenericChaumPedersenProof.publishChaumPedersenProof() =
+    electionguard.protogen.GenericChaumPedersenProof(
+        this.c.publishElementModQ(),
+        this.r.publishElementModQ(),
+    )
 
-fun HashedElGamalCiphertext.publishHashedCiphertext() :
-    electionguard.protogen.HashedElGamalCiphertext {
-    return electionguard.protogen.HashedElGamalCiphertext(
+fun HashedElGamalCiphertext.publishHashedCiphertext() =
+    electionguard.protogen.HashedElGamalCiphertext(
         this.c0.publishElementModP(),
         ByteArr(this.c1),
         this.c2.publishUInt256(),
         this.numBytes,
     )
-}

@@ -16,133 +16,124 @@ fun importManifest(manifest: electionguard.protogen.Manifest?):
         return Err("Null Manifest")
     }
 
-    return Ok(Manifest(
-        manifest.electionScopeId,
-        manifest.specVersion,
-        manifest.electionType.importElectionType() ?: Manifest.ElectionType.unknown,
-        manifest.startDate,
-        manifest.endDate,
-        manifest.geopoliticalUnits.map { it.importGeopoliticalUnit() },
-        manifest.parties.map { it.importParty() },
-        manifest.candidates.map { it.importCandidate() },
-        manifest.contests.map { it.importContestDescription() },
-        manifest.ballotStyles.map { it.importBallotStyle() },
-        manifest.name?.let { manifest.name.importInternationalizedText() },
-        manifest.contactInformation?.let { manifest.contactInformation.importContactInformation() },
-    ))
+    return Ok(
+        Manifest(
+            manifest.electionScopeId,
+            manifest.specVersion,
+            importElectionType(manifest.electionType) ?: Manifest.ElectionType.unknown,
+            manifest.startDate,
+            manifest.endDate,
+            manifest.geopoliticalUnits.map { importGeopoliticalUnit(it) },
+            manifest.parties.map { importParty(it) },
+            manifest.candidates.map { importCandidate(it) },
+            manifest.contests.map { importContestDescription(it) },
+            manifest.ballotStyles.map { importBallotStyle(it) },
+            manifest.name?.let { importInternationalizedText(manifest.name) },
+            manifest.contactInformation?.let { importContactInformation(manifest.contactInformation) },
+        )
+    )
 }
 
-private fun electionguard.protogen.AnnotatedString.importAnnotatedString():
+private fun importAnnotatedString(proto: electionguard.protogen.AnnotatedString):
         Manifest.AnnotatedString {
-    return Manifest.AnnotatedString(this.annotation, this.value)
+    return Manifest.AnnotatedString(proto.annotation, proto.value)
 }
 
-private fun electionguard.protogen.BallotStyle.importBallotStyle(): Manifest.BallotStyle {
-    return Manifest.BallotStyle(
-        this.ballotStyleId,
-        this.geopoliticalUnitIds,
-        this.partyIds,
-        this.imageUrl.ifEmpty { null },
+private fun importBallotStyle(proto: electionguard.protogen.BallotStyle) =
+    Manifest.BallotStyle(
+        proto.ballotStyleId,
+        proto.geopoliticalUnitIds,
+        proto.partyIds,
+        proto.imageUrl.ifEmpty { null },
     )
-}
 
-private fun electionguard.protogen.Candidate.importCandidate(): Manifest.Candidate {
-    return Manifest.Candidate(
-        this.candidateId,
-        if (this.name != null) this.name.importInternationalizedText() else internationalizedTextUnknown(),
-        this.partyId.ifEmpty { null },
-        this.imageUrl.ifEmpty { null },
-        this.isWriteIn
+private fun importCandidate(proto: electionguard.protogen.Candidate) =
+    Manifest.Candidate(
+        proto.candidateId,
+        if (proto.name != null) importInternationalizedText(proto.name) else internationalizedTextUnknown(),
+        proto.partyId.ifEmpty { null },
+        proto.imageUrl.ifEmpty { null },
+        proto.isWriteIn
     )
-}
 
-private fun electionguard.protogen.ContactInformation.importContactInformation():
-        Manifest.ContactInformation {
-    return Manifest.ContactInformation(
-        this.addressLine,
-        this.email.map { it.importAnnotatedString() },
-        this.phone.map { it.importAnnotatedString() },
-        this.name.ifEmpty { null },
+private fun importContactInformation(proto: electionguard.protogen.ContactInformation) =
+    Manifest.ContactInformation(
+        proto.addressLine,
+        proto.email.map { importAnnotatedString(it) },
+        proto.phone.map { importAnnotatedString(it) },
+        proto.name.ifEmpty { null },
     )
-}
 
-private fun electionguard.protogen.ContestDescription.importContestDescription():
-        Manifest.ContestDescription {
-    return Manifest.ContestDescription(
-        this.contestId,
-        this.sequenceOrder,
-        this.geopoliticalUnitId,
-        this.voteVariation.importVoteVariationType() ?: Manifest.VoteVariationType.other,
-        this.numberElected,
-        this.votesAllowed,
-        this.name,
-        this.selections.map { it.importSelectionDescription() },
-        this.ballotTitle?.let { this.ballotTitle.importInternationalizedText() },
-        this.ballotSubtitle?.let { this.ballotSubtitle.importInternationalizedText() },
-        this.primaryPartyIds
+private fun importContestDescription(proto: electionguard.protogen.ContestDescription) =
+    Manifest.ContestDescription(
+        proto.contestId,
+        proto.sequenceOrder,
+        proto.geopoliticalUnitId,
+        importVoteVariationType(proto.voteVariation) ?: Manifest.VoteVariationType.other,
+        proto.numberElected,
+        proto.votesAllowed,
+        proto.name,
+        proto.selections.map { importSelectionDescription(it) },
+        proto.ballotTitle?.let { importInternationalizedText(proto.ballotTitle) },
+        proto.ballotSubtitle?.let { importInternationalizedText(proto.ballotSubtitle) },
+        proto.primaryPartyIds
     )
-}
 
-private fun electionguard.protogen.ContestDescription.VoteVariationType.importVoteVariationType():
+private fun importVoteVariationType(proto: electionguard.protogen.ContestDescription.VoteVariationType):
         Manifest.VoteVariationType? {
-    val result = safeEnumValueOf<Manifest.VoteVariationType>(this.name)
+    val result = safeEnumValueOf<Manifest.VoteVariationType>(proto.name)
     if (result == null) {
-        logger.error { "Manifest.VoteVariationType $this has missing or unknown name" }
+        logger.error { "Manifest.VoteVariationType $proto has missing or unknown name" }
     }
     return result
 }
 
-private fun electionguard.protogen.Manifest.ElectionType.importElectionType():
+private fun importElectionType(proto: electionguard.protogen.Manifest.ElectionType):
         Manifest.ElectionType? {
-    val result = safeEnumValueOf<Manifest.ElectionType>(this.name)
+    val result = safeEnumValueOf<Manifest.ElectionType>(proto.name)
     if (result == null) {
-        logger.error { "Manifest.ElectionType $this has missing or unknown name" }
+        logger.error { "Manifest.ElectionType $proto has missing or unknown name" }
     }
     return result
 }
 
-private fun electionguard.protogen.GeopoliticalUnit.ReportingUnitType.importReportingUnitType():
+private fun importReportingUnitType(proto: electionguard.protogen.GeopoliticalUnit.ReportingUnitType):
         Manifest.ReportingUnitType? {
-    val result = safeEnumValueOf<Manifest.ReportingUnitType>(this.name)
+    val result = safeEnumValueOf<Manifest.ReportingUnitType>(proto.name)
     if (result == null) {
-        logger.error { "Manifest.ReportingUnitType $this has missing or unknown name" }
+        logger.error { "Manifest.ReportingUnitType $proto has missing or unknown name" }
     }
     return result
 }
 
-private fun electionguard.protogen.GeopoliticalUnit.importGeopoliticalUnit(): Manifest.GeopoliticalUnit {
-    return Manifest.GeopoliticalUnit(
-        this.geopoliticalUnitId,
-        this.name,
-        this.type.importReportingUnitType() ?: Manifest.ReportingUnitType.unknown,
-        this.contactInformation?.let { this.contactInformation.importContactInformation() },
+private fun importGeopoliticalUnit(proto: electionguard.protogen.GeopoliticalUnit) =
+    Manifest.GeopoliticalUnit(
+        proto.geopoliticalUnitId,
+        proto.name,
+        importReportingUnitType(proto.type) ?: Manifest.ReportingUnitType.unknown,
+        proto.contactInformation?.let { importContactInformation(proto.contactInformation) },
     )
-}
 
-private fun electionguard.protogen.InternationalizedText.importInternationalizedText():
-        Manifest.InternationalizedText {
-    return Manifest.InternationalizedText(this.text.map { it.importLanguage() })
-}
-
-private fun electionguard.protogen.Language.importLanguage(): Manifest.Language {
-    return Manifest.Language(this.value, this.language)
-}
-
-private fun electionguard.protogen.Party.importParty(): Manifest.Party {
-    return Manifest.Party(
-        this.partyId,
-        if (this.name != null) this.name.importInternationalizedText() else internationalizedTextUnknown(),
-        this.abbreviation.ifEmpty { null },
-        this.color.ifEmpty { null },
-        this.logoUri.ifEmpty { null },
+private fun importInternationalizedText(proto: electionguard.protogen.InternationalizedText) =
+    Manifest.InternationalizedText(
+        proto.text.map { importLanguage(it) }
     )
-}
 
-private fun electionguard.protogen.SelectionDescription.importSelectionDescription():
-        Manifest.SelectionDescription {
-    return Manifest.SelectionDescription(
-        this.selectionId,
-        this.sequenceOrder,
-        this.candidateId,
+private fun importLanguage(proto: electionguard.protogen.Language) =
+    Manifest.Language(proto.value, proto.language)
+
+private fun importParty(proto: electionguard.protogen.Party) =
+    Manifest.Party(
+        proto.partyId,
+        if (proto.name != null) importInternationalizedText(proto.name) else internationalizedTextUnknown(),
+        proto.abbreviation.ifEmpty { null },
+        proto.color.ifEmpty { null },
+        proto.logoUri.ifEmpty { null },
     )
-}
+
+private fun importSelectionDescription(proto: electionguard.protogen.SelectionDescription) =
+    Manifest.SelectionDescription(
+        proto.selectionId,
+        proto.sequenceOrder,
+        proto.candidateId,
+    )

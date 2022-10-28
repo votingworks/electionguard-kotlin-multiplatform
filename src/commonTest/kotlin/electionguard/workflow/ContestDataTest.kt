@@ -1,10 +1,12 @@
 package electionguard.workflow
 
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ContestDataStatus
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
-import electionguard.ballot.import
+import electionguard.ballot.importContestData
 import electionguard.core.decrypt
 import electionguard.core.elGamalKeyPairFromRandom
 import electionguard.core.productionGroup
@@ -17,6 +19,7 @@ import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class ContestDataTest {
     val input = "src/commonTest/data/runWorkflowAllAvailable"
@@ -76,7 +79,10 @@ class ContestDataTest {
 
                 val baRT = it.contestData.decrypt(keypair)!!
                 val protoRoundtrip = electionguard.protogen.ContestData.decodeFromByteArray(baRT)
-                val contestDataRoundtrip = protoRoundtrip.import()
+                val contestDataResult = importContestData(protoRoundtrip)
+                assertTrue( contestDataResult is Ok)
+                val contestDataRoundtrip = contestDataResult.unwrap()
+
                 println("  $contestDataRoundtrip")
                 if (idx == 0) {
                     assertEquals(ContestDataStatus.normal, contestDataRoundtrip.status)

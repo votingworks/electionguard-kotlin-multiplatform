@@ -1,7 +1,6 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.PlaintextBallot
-import electionguard.core.productionGroup
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,10 +9,9 @@ class PlaintextBallotConvertTest {
 
     @Test
     fun roundtripPlaintextBallot() {
-        val group = productionGroup()
         val ballot = generateFakeBallot()
         val proto = ballot.publishPlaintextBallot()
-        val roundtrip = group.importPlaintextBallot(proto)
+        val roundtrip = importPlaintextBallot(proto)
         assertEquals(roundtrip, ballot)
     }
 

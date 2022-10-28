@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.partition
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ContestDataStatus
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
@@ -75,7 +76,12 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
         }
 
         // contest data
-        val contestData = contest.contestData.decryptWithNonceToContestData(publicKey, contestDataNonce)
+        val contestDataResult = contest.contestData.decryptWithNonceToContestData(publicKey, contestDataNonce)
+        if (contestDataResult is Err) {
+            return contestDataResult
+        }
+        val contestData = contestDataResult.unwrap()
+
         // on overvote, modify selections to use original votes
         val useSelections = if (contestData.status == ContestDataStatus.over_vote) {
             // set the selections to the original

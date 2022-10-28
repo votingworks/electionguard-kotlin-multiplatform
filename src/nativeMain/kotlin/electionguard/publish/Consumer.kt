@@ -83,7 +83,7 @@ actual class Consumer actual constructor(
         ballotDir : String,
         filter : ((PlaintextBallot) -> Boolean)?
     ): Iterable<PlaintextBallot> {
-        return Iterable { PlaintextBallotIterator(groupContext, path.plaintextBallotPath(ballotDir), filter) }
+        return Iterable { PlaintextBallotIterator(path.plaintextBallotPath(ballotDir), filter) }
     }
 
     actual fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {

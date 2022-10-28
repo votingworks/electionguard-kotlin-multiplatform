@@ -9,7 +9,7 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 
-fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
+fun GroupContext.importTallyResult(tally: electionguard.protogen.TallyResult?):
         Result<TallyResult, String> {
 
     if (tally == null) {
@@ -29,12 +29,12 @@ fun GroupContext.importTallyResult(tally : electionguard.protogen.TallyResult?):
         encryptedTally.unwrap(),
         tally.ballotIds,
         tally.tallyIds,
-        tally.metadata.associate {it.key to it.value}
+        tally.metadata.associate { it.key to it.value }
     ))
 }
 
-fun GroupContext.importDecryptionResult(decrypt : electionguard.protogen.DecryptionResult):
-        Result<DecryptionResult, String>  {
+fun GroupContext.importDecryptionResult(decrypt: electionguard.protogen.DecryptionResult):
+        Result<DecryptionResult, String> {
     val tallyResult = this.importTallyResult(decrypt.tallyResult)
     val decryptedTally = this.importDecryptedTallyOrBallot(decrypt.decryptedTally)
 
@@ -50,47 +50,46 @@ fun GroupContext.importDecryptionResult(decrypt : electionguard.protogen.Decrypt
         tallyResult.unwrap(),
         decryptedTally.unwrap(),
         guardians,
-        decrypt.metadata.associate {it.key to it.value}
+        decrypt.metadata.associate { it.key to it.value }
     ))
 }
 
 private fun GroupContext.importLagrangeCoefficient(guardian: electionguard.protogen.LagrangeCoordinate):
         Result<LagrangeCoordinate, String> {
     val lagrangeCoefficient = this.importElementModQ(guardian.lagrangeCoefficient)
-        ?: return Err("Failed to translate AvailableGuardian from proto, missing lagrangeCoefficient")
+        ?: return Err("Failed to translate LagrangeCoordinate from proto, missing lagrangeCoefficient")
 
-    return Ok(LagrangeCoordinate(
-        guardian.guardianId,
-        guardian.xCoordinate,
-        lagrangeCoefficient,
-    ))
+    return Ok(
+        LagrangeCoordinate(
+            guardian.guardianId,
+            guardian.xCoordinate,
+            lagrangeCoefficient,
+        )
+    )
 }
 
 ////////////////////////////////////////////////////////
 
-fun TallyResult.publishTallyResult(): electionguard.protogen.TallyResult {
-    return electionguard.protogen.TallyResult(
+fun TallyResult.publishTallyResult() =
+    electionguard.protogen.TallyResult(
         this.electionInitialized.publishElectionInitialized(),
         this.encryptedTally.publishEncryptedTally(),
         this.ballotIds,
         this.tallyIds,
-        this.metadata.entries.map { electionguard.protogen.TallyResult.MetadataEntry(it.key, it.value)}
+        this.metadata.entries.map { electionguard.protogen.TallyResult.MetadataEntry(it.key, it.value) }
     )
-}
 
-fun DecryptionResult.publishDecryptionResult(): electionguard.protogen.DecryptionResult {
-    return electionguard.protogen.DecryptionResult(
+fun DecryptionResult.publishDecryptionResult() =
+    electionguard.protogen.DecryptionResult(
         this.tallyResult.publishTallyResult(),
         this.decryptedTally.publishDecryptedTallyOrBallot(),
-        this.lagrangeCoordinates.map { it.publishAvailableGuardian() },
-        this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value)}
+        this.lagrangeCoordinates.map { it.publishLagrangeCoordinate() },
+        this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value) }
     )
-}
 
-private fun LagrangeCoordinate.publishAvailableGuardian(): electionguard.protogen.LagrangeCoordinate {
-    return electionguard.protogen.LagrangeCoordinate(
+private fun LagrangeCoordinate.publishLagrangeCoordinate() =
+    electionguard.protogen.LagrangeCoordinate(
         this.guardianId,
         this.xCoordinate,
         this.lagrangeCoefficient.publishElementModQ(),
     )
-}

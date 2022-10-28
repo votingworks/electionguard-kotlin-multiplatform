@@ -1,5 +1,8 @@
 package electionguard.ballot
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
@@ -147,27 +150,42 @@ fun makeContestData(
     )
 }
 
-fun HashedElGamalCiphertext.decryptWithBetaToContestData(beta : ElementModP) : ContestData {
+fun HashedElGamalCiphertext.decryptWithBetaToContestData(beta : ElementModP) : Result<ContestData, String> {
     val ba: ByteArray? = this.decryptWithBeta(beta)
-    val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba!!)
-    return proto.import()
+    if (ba == null) {
+        return Err( "decryptWithNonceToContestData failed")
+    }
+    val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba)
+    return importContestData(proto)
 }
 
-fun HashedElGamalCiphertext.decryptWithNonceToContestData(publicKey: ElGamalPublicKey, nonce: ElementModQ) : ContestData {
+fun HashedElGamalCiphertext.decryptWithNonceToContestData(publicKey: ElGamalPublicKey, nonce: ElementModQ) : Result<ContestData, String> {
     val ba: ByteArray? = this.decryptWithNonce(publicKey, nonce)
-    val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba!!)
-    return proto.import()
+    if (ba == null) {
+        return Err( "decryptWithNonceToContestData failed")
+    }
+    val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba)
+    return importContestData(proto)
 }
 
 //////////////////////////////////////////////////////////////////
 // protoconvert
 
-fun electionguard.protogen.ContestData.import(): ContestData {
-    return ContestData(
-        this.overVotes,
-        this.writeIns,
-        this.status.importContestDataStatus()?: ContestDataStatus.normal,
-    )
+fun importContestData(proto : electionguard.protogen.ContestData?): Result<ContestData, String> {
+    if (proto == null) return Err( "ContestData is missing")
+    return Ok(ContestData(
+        proto.overVotes,
+        proto.writeIns,
+        importContestDataStatus(proto.status)?: ContestDataStatus.normal,
+    ))
+}
+
+private fun importContestDataStatus(proto: electionguard.protogen.ContestData.Status): ContestDataStatus? {
+    val result = safeEnumValueOf<ContestDataStatus>(proto.name)
+    if (result == null) {
+        logger.error { "ContestDataStatus $proto has missing or unknown name" }
+    }
+    return result
 }
 
 private fun ContestDataStatus.publishContestDataStatus(): electionguard.protogen.ContestData.Status {
@@ -179,10 +197,3 @@ private fun ContestDataStatus.publishContestDataStatus(): electionguard.protogen
     }
 }
 
-private fun electionguard.protogen.ContestData.Status.importContestDataStatus(): ContestDataStatus? {
-    val result = safeEnumValueOf<ContestDataStatus>(this.name)
-    if (result == null) {
-        logger.error { "ContestDataStatus $this has missing or unknown name" }
-    }
-    return result
-}
