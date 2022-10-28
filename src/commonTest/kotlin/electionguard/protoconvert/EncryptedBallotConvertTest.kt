@@ -74,4 +74,14 @@ class EncryptedBallotConvertTest {
             generateRangeChaumPedersenProofKnownNonce(context),
         )
     }
+
+    @Test
+    fun unknownBallotState() {
+        val context = productionGroup()
+        val ballot = generateEncryptedBallot(42, context).copy(state = EncryptedBallot.BallotState.UNKNOWN)
+        val proto = ballot.publishEncryptedBallot()
+        val roundtrip = context.importEncryptedBallot(proto)
+        assertTrue(roundtrip is Ok)
+        assertEquals(roundtrip.unwrap(), ballot)
+    }
 }

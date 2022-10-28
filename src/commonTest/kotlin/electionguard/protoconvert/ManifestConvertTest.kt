@@ -42,14 +42,14 @@ class ManifestConvertTest {
         assertEquals(roundtrip, manifest)
     }
 
-    fun compareAS(list1: List<Manifest.AnnotatedString>?, list2: List<Manifest.AnnotatedString>?) {
+    private fun compareAS(list1: List<Manifest.AnnotatedString>?, list2: List<Manifest.AnnotatedString>?) {
         assertEquals((list1 == null), (list2 == null))
         if ((list1 == null) || (list2 == null)) {
             return
         }
 
         assertEquals(list1.size, list2.size)
-        for (idx in 0 until list1.size) {
+        for (idx in list1.indices) {
             val as1 = list1[idx]
             val as2 = list1[idx]
             assertEquals(as1, as2)
@@ -57,8 +57,8 @@ class ManifestConvertTest {
     }
 
     companion object {
-        val ncontests = 11
-        val nselections = 5
+        private const val ncontests = 11
+        private const val nselections = 5
 
         fun generateFakeManifest(): Manifest {
             //     electionScopeId: String,
@@ -169,7 +169,7 @@ class ManifestConvertTest {
         //        val candidateId: String,
         //        val cryptoHash: ElementModQ
         private fun generateSelection(sseq: Int): Manifest.SelectionDescription {
-            return Manifest.SelectionDescription("selection$sseq", sseq, "candidate$sseq",)
+            return Manifest.SelectionDescription("selection$sseq", sseq, "candidate$sseq")
         }
 
         //         val ballotStyleId: String,
@@ -188,7 +188,7 @@ class ManifestConvertTest {
 
         // val text: List<Language>
         private fun generateInternationalizedText(): Manifest.InternationalizedText {
-            return Manifest.InternationalizedText(List(3) { generateLanguage(it) },)
+            return Manifest.InternationalizedText(List(3) { generateLanguage(it) })
         }
 
         //         val addressLine: List<String>,
@@ -207,12 +207,12 @@ class ManifestConvertTest {
 
         // val value: String, val language: String,
         private fun generateLanguage(seq: Int): Manifest.Language {
-            return Manifest.Language("text$seq", "language:$seq:$seq",)
+            return Manifest.Language("text$seq", "language:$seq:$seq")
         }
 
         // val annotation: String, val value: String,
         private fun generateAnnotatedString(seq: Int): Manifest.AnnotatedString {
-            return Manifest.AnnotatedString("annotate$seq", "value:$seq:$seq",)
+            return Manifest.AnnotatedString("annotate$seq", "value:$seq:$seq")
         }
     }
 }

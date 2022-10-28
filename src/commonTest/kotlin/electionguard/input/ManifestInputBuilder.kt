@@ -96,13 +96,15 @@ class ManifestInputBuilder(val manifestName: String) {
         private val selections = ArrayList<SelectionBuilder>()
         private var type: Manifest.VoteVariationType = Manifest.VoteVariationType.one_of_m
         private var allowed = 1
+        private var number_elected = 1
         private var district: String = districtDefault
         private val name = "name"
 
-        fun setVoteVariationType(type: Manifest.VoteVariationType, allowed: Int): ContestBuilder {
+        fun setVoteVariationType(type: Manifest.VoteVariationType, allowed: Int, number_elected: Int? = null): ContestBuilder {
             require(allowed > 0)
             this.type = type
-            this.allowed = if (type === Manifest.VoteVariationType.one_of_m) 1 else allowed
+            this.allowed = allowed
+            this.number_elected = number_elected?: allowed
             return this
         }
 
@@ -135,14 +137,6 @@ class ManifestInputBuilder(val manifestName: String) {
         }
 
         fun build(): Manifest.ContestDescription {
-            require(selections.size > 0)
-            if (type === Manifest.VoteVariationType.approval) {
-                allowed = selections.size
-            }
-            if (type === Manifest.VoteVariationType.n_of_m) {
-                require(allowed <= selections.size)
-            }
-
             // String contestId,
             //                              String electoral_district_id,
             //                              int sequence_order,
@@ -155,7 +149,7 @@ class ManifestInputBuilder(val manifestName: String) {
             //                              @Nullable InternationalizedText ballot_subtitle
             return Manifest.ContestDescription(
                 id, seq, district,
-                type, allowed, allowed, name,
+                type, allowed, number_elected, name,
                 selections.map { it.build() },
                 null, null, emptyList(),
             )

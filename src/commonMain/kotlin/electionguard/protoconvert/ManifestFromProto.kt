@@ -20,8 +20,8 @@ fun importManifest(manifest: electionguard.protogen.Manifest?):
         manifest.electionScopeId,
         manifest.specVersion,
         manifest.electionType.importElectionType() ?: Manifest.ElectionType.unknown,
-        manifest.startDate, // LocalDateTime.parse(this.startDate),
-        manifest.endDate, // LocalDateTime.parse(this.endDate),
+        manifest.startDate,
+        manifest.endDate,
         manifest.geopoliticalUnits.map { it.importGeopoliticalUnit() },
         manifest.parties.map { it.importParty() },
         manifest.candidates.map { it.importCandidate() },
@@ -87,7 +87,7 @@ private fun electionguard.protogen.ContestDescription.VoteVariationType.importVo
         Manifest.VoteVariationType? {
     val result = safeEnumValueOf<Manifest.VoteVariationType>(this.name)
     if (result == null) {
-        logger.error { "Vote variation type $this has missing or incorrect name" }
+        logger.error { "Manifest.VoteVariationType $this has missing or unknown name" }
     }
     return result
 }
@@ -96,7 +96,7 @@ private fun electionguard.protogen.Manifest.ElectionType.importElectionType():
         Manifest.ElectionType? {
     val result = safeEnumValueOf<Manifest.ElectionType>(this.name)
     if (result == null) {
-        logger.error { "Vote election type $this has missing or incorrect name" }
+        logger.error { "Manifest.ElectionType $this has missing or unknown name" }
     }
     return result
 }
@@ -105,7 +105,7 @@ private fun electionguard.protogen.GeopoliticalUnit.ReportingUnitType.importRepo
         Manifest.ReportingUnitType? {
     val result = safeEnumValueOf<Manifest.ReportingUnitType>(this.name)
     if (result == null) {
-        logger.error { "Reporting unit type $this has missing or incorrect name" }
+        logger.error { "Manifest.ReportingUnitType $this has missing or unknown name" }
     }
     return result
 }
@@ -114,7 +114,7 @@ private fun electionguard.protogen.GeopoliticalUnit.importGeopoliticalUnit(): Ma
     return Manifest.GeopoliticalUnit(
         this.geopoliticalUnitId,
         this.name,
-        this.type.importReportingUnitType() ?: Manifest.ReportingUnitType.unknown, // TODO ok?
+        this.type.importReportingUnitType() ?: Manifest.ReportingUnitType.unknown,
         this.contactInformation?.let { this.contactInformation.importContactInformation() },
     )
 }

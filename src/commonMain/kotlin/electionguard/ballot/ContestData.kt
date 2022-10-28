@@ -171,13 +171,18 @@ fun electionguard.protogen.ContestData.import(): ContestData {
 }
 
 private fun ContestDataStatus.publishContestDataStatus(): electionguard.protogen.ContestData.Status {
-    return electionguard.protogen.ContestData.Status.fromName(this.name)
+    return try {
+        electionguard.protogen.ContestData.Status.fromName(this.name)
+    }  catch (e: IllegalArgumentException) {
+        logger.error { "ContestDataStatus $this has missing or unknown name" }
+        electionguard.protogen.ContestData.Status.NORMAL
+    }
 }
 
 private fun electionguard.protogen.ContestData.Status.importContestDataStatus(): ContestDataStatus? {
     val result = safeEnumValueOf<ContestDataStatus>(this.name)
     if (result == null) {
-        logger.error { "Vote election type $this has missing or incorrect name" }
+        logger.error { "ContestDataStatus $this has missing or unknown name" }
     }
     return result
 }

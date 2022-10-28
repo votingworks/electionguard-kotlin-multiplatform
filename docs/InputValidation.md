@@ -1,5 +1,5 @@
 # 🗳 EKM Input Validation
-_last changed: Aug 10, 2022_
+_last changed: Oct 28, 2022_
 
 The election manifest and each input plaintext ballot are expected to be validated before being passed to the 
 EKM library. 
@@ -53,13 +53,11 @@ For additional safety, Manifest Validation may be run during other workflow step
 
 1. A ContestDescription has VoteVariationType = n_of_m, one_of_m, or approval.
 
-2. For all contests, votes_allowed == number_elected.
+2. A one_of_m contest has votes_allowed == 1.
 
-3. A one_of_m contest has votes_allowed == 1.
+3. A n_of_m contest has 0 < votes_allowed <= number of selections in the contest. 
 
-4. A n_of_m contest has 0 < votes_allowed <= number of selections in the contest. 
-
-5. An approval contest has votes_allowed == number of selections in the contest.
+4. An approval contest has votes_allowed == number of selections in the contest.
 
 
 ## Input Ballot
