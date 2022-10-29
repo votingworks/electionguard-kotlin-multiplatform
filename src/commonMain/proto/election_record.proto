@@ -50,12 +50,6 @@ message Guardian {
   repeated SchnorrProof coefficient_proofs = 4;  // size = quorum (k)
 }
 
-message SchnorrProof {
-  ElementModP public_key = 1; // K_ij in the spec
-  ElementModQ challenge = 2; // c_ij in the spec
-  ElementModQ response = 3; // v_ij in the spec
-}
-
 message TallyResult {
   ElectionInitialized election_init = 1;
   EncryptedTally encrypted_tally = 2;

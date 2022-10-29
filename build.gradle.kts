@@ -6,10 +6,10 @@ buildscript {
 }
 
 plugins {
-    kotlin("multiplatform") version "1.7.20-Beta"
+    kotlin("multiplatform") version "1.7.20"
 
     // cross-platform serialization support
-    kotlin("plugin.serialization") version "1.7.20-Beta"
+    kotlin("plugin.serialization") version "1.7.20"
 
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
@@ -22,9 +22,9 @@ plugins {
 }
 
 group = "electionguard-kotlin-multiplatform"
-version = "1.0-SNAPSHOT"
+version = "1.52-SNAPSHOT"
 
-val kotlinVersion by extra("1.7.20-Beta")
+val kotlinVersion by extra("1.7.20")
 val pbandkVersion by extra("0.14.1")
 
 repositories {
@@ -109,7 +109,7 @@ kotlin {
                     // Portable logging interface. On the JVM, we'll get "logback", which gives
                     // us lots of features. On Native, it ultimately just prints to stdout.
                     // On JS, it uses console.log, console.error, etc.
-                    implementation("io.github.microutils:kotlin-logging:2.1.23")
+                    implementation("io.github.microutils:kotlin-logging:3.0.2")
 
                     // A multiplatform Kotlin library for working with date and time.
                     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
@@ -148,7 +148,7 @@ kotlin {
                     // Logging implementation (used by "kotlin-logging"). Note that we need
                     // a bleeding-edge implementation to ensure we don't have vulnerabilities
                     // similar to (but not as bad) as the log4j issues.
-                    implementation("ch.qos.logback:logback-classic:1.3.0-alpha16")
+                    implementation("ch.qos.logback:logback-classic:1.3.4")
                 }
             }
         val jvmTest by

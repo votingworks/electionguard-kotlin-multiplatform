@@ -1,6 +1,5 @@
 package electionguard.decrypt
 
-import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -37,7 +36,7 @@ interface DecryptingTrusteeIF {
     fun decrypt(
         group: GroupContext,
         texts: List<ElementModP>,
-        nonce: ElementModQ?,
+        nonce: ElementModQ?, // LOOK do we need this?
     ): List<PartialDecryption>
 
     /**

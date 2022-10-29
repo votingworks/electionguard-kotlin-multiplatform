@@ -5,11 +5,11 @@ import electionguard.core.*
 fun manifestCryptoHash(
     electionScopeId: String,
     electionType: Manifest.ElectionType,
-    startDate: String, // LocalDateTime,
-    endDate: String, // LocalDateTime,
+    startDate: String,
+    endDate: String,
     geopoliticalUnits: List<Manifest.GeopoliticalUnit>,
     parties: List<Manifest.Party>,
-    candidates: List<Manifest.Candidate>,
+    // candidates: List<Manifest.Candidate>,
     contests: List<Manifest.ContestDescription>,
     ballotStyles: List<Manifest.BallotStyle>,
     name: Manifest.InternationalizedText?,
@@ -41,7 +41,7 @@ fun contestDescriptionCryptoHash(
     selections: List<Manifest.SelectionDescription>,
     ballotTitle: Manifest.InternationalizedText?,
     ballotSubtitle: Manifest.InternationalizedText?,
-    primaryPartyIds: List<String>
+    // primaryPartyIds: List<String>
 ) =
     hashElements(
         contestId,
@@ -96,7 +96,7 @@ data class Manifest(
             endDate,
             geopoliticalUnits,
             parties,
-            candidates,
+            // candidates,
             contests,
             ballotStyles,
             name,
@@ -524,7 +524,7 @@ data class Manifest(
                 selections,
                 ballotTitle,
                 ballotSubtitle,
-                primaryPartyIds,
+                // primaryPartyIds,
             ),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash

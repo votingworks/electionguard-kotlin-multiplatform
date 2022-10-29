@@ -77,7 +77,7 @@ class ManifestHashValidateTest {
             manifest.endDate,
             manifest.geopoliticalUnits,
             manifest.parties,
-            manifest.candidates,
+            // manifest.candidates,
             manifest.contests,
             manifest.ballotStyles,
             manifest.name,
@@ -102,7 +102,7 @@ class ManifestHashValidateTest {
             manifest.endDate,
             manifest.geopoliticalUnits,
             manifest.parties,
-            manifest.candidates,
+            // manifest.candidates,
             manifest.contests,
             manifest.ballotStyles,
             manifest.name,
@@ -126,7 +126,7 @@ class ManifestHashValidateTest {
             manifest.endDate,
             manifest.geopoliticalUnits,
             manifest.parties,
-            manifest.candidates,
+            // manifest.candidates,
             manifest.contests,
             manifest.ballotStyles,
             manifest.name,
@@ -157,7 +157,7 @@ class ManifestHashValidateTest {
                 contest.selections,
                 contest.ballotTitle,
                 contest.ballotSubtitle,
-                contest.primaryPartyIds,
+                // contest.primaryPartyIds,
             )
             // println("  Contest ${contest.contestId} crypto_hash: ${contest.cryptoHash}")
             // println("  Expected crypto_hash: $ccryptoHash")

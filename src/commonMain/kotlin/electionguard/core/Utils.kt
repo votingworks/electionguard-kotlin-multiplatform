@@ -171,7 +171,7 @@ inline fun <T> List<Result<T, String>>.mergeWithOkay(
  * ElectionGuard, merges together all the results. If they're all Ok, the result is
  * Ok. If any are Err, then the result is an Err with all the strings joined by newlines.
  */
-inline fun List<Result<Boolean, String>>.merge(): Result<Boolean, String> =
+fun List<Result<Boolean, String>>.merge(): Result<Boolean, String> =
     mergeWithOkay { true }
 
 // Note: making these merge() functions inline will have a non-trivial

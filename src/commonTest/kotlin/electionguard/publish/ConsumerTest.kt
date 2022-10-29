@@ -93,7 +93,6 @@ class ConsumerTest {
             val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
             init.guardians.forEach {
                 val trustee = consumerIn.readTrustee(trusteeDir, it.guardianId)
-                println("trustee = ${trustee}")
                 assertTrue(trustee.id().equals(it.guardianId))
             }
         }
