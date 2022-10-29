@@ -104,9 +104,6 @@ fun runEncryptDecryptBallot(
         trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
         val commitmentsHash = hashElements(commitments)
 
-        val consumerIn = Consumer(configDir, group)
-        val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
-
         val primes = config.constants
         val cryptoBaseHash: UInt256 = hashElements(
             primes.largePrime.toHex(),
@@ -119,7 +116,6 @@ fun runEncryptDecryptBallot(
 
         // spec 1.52, eq 17 and 3.B
         val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
-        val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
         val init = ElectionInitialized(
             config,
             jointPublicKey,

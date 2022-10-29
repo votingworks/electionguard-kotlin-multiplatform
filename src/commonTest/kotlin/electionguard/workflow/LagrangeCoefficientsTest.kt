@@ -27,7 +27,7 @@ class LagrangeCoefficientsTest {
         for (coord in coords) {
             val others: List<Int> = coords.filter { !it.equals(coord) }
             val coeff: Int = computeLagrangeCoefficientInt(coord, others)
-            val numer: Int = computeLagrangeNumerator(coord, others)
+            val numer: Int = computeLagrangeNumerator(others)
             val denom: Int = computeLagrangeDenominator(coord, others)
             val coeffQ = group.computeLagrangeCoefficient(coord, others.map { it})
             println("($coord) $coeff == ${numer} / ${denom} rem ${numer % denom} == $coeffQ")
@@ -48,7 +48,7 @@ fun computeLagrangeCoefficientInt(coordinate: Int, others: List<Int>): Int {
     return numerator / denominator
 }
 
-fun computeLagrangeNumerator(coordinate: Int, others: List<Int>): Int {
+fun computeLagrangeNumerator(others: List<Int>): Int {
     return others.reduce { a, b -> a * b }
 }
 

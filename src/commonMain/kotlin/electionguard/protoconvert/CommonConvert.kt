@@ -44,6 +44,16 @@ fun GroupContext.importHashedCiphertext(
     )
 }
 
+fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?): SchnorrProof? {
+    if (proof == null) return null
+    val publicKey = this.importElementModP(proof.publicKey)
+    val challenge = this.importElementModQ(proof.challenge)
+    val response = this.importElementModQ(proof.response)
+
+    return if (publicKey == null || challenge == null || response == null) null
+    else SchnorrProof(publicKey, challenge, response)
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun ElementModQ.publishElementModQ() = electionguard.protogen.ElementModQ(ByteArr(this.byteArray()))
@@ -70,4 +80,11 @@ fun HashedElGamalCiphertext.publishHashedCiphertext() =
         ByteArr(this.c1),
         this.c2.publishUInt256(),
         this.numBytes,
+    )
+
+fun SchnorrProof.publishSchnorrProof() =
+    electionguard.protogen.SchnorrProof(
+        this.publicKey.publishElementModP(),
+        this.challenge.publishElementModQ(),
+        this.response.publishElementModQ()
     )

@@ -191,7 +191,7 @@ class ContestDataEncryptTest {
                 Arb.int(min = 1, max = 50),
             ) { nover, writein, nwriteins ->
                 val contestData = ContestData(MutableList(nover) { it }, MutableList(nwriteins) { writein })
-                println("\ncontestData = $contestData")
+                if (debug) println("\ncontestData = $contestData")
 
                 val votes = 3
                 val target = contestData.encrypt(keypair.publicKey, votes, null)

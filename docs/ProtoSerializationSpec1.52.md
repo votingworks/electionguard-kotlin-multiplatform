@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 10/25/2022
+draft 10/29/2022
 
 1. This is version 1.52 of Election Record, corresponding to spec v 1.52
 2. All fields must be present unless marked as optional.
@@ -51,6 +51,14 @@ draft 10/25/2022
 | pad      | ElementModP | C_0   |
 | data     | bytes       | C_1   |
 | mac      | UInt256     | C_2   |
+
+#### message SchnorrProof
+
+| Name       | Type        | Notes |
+|------------|-------------|-------|
+| public_key | ElementModP | K_ij  |
+| challenge  | ElementModQ | c_ij  |
+| response   | ElementModQ | v_ij  |
 
 #### message UInt256
 
@@ -217,14 +225,6 @@ draft 10/25/2022
 | guardian_id             | string               |                                       |
 | x_coordinate            | uint32               | x_coordinate in the polynomial, ℓ = i |
 | coefficient_proofs      | List\<SchnorrProof\> | j = 0..k-1                            |
-
-#### message SchnorrProof
-
-| Name       | Type        | Notes |
-|------------|-------------|-------|
-| public_key | ElementModP | K_ij  |
-| challenge  | ElementModQ | c_ij  |
-| response   | ElementModQ | v_ij  |
 
 #### message TallyResult
 

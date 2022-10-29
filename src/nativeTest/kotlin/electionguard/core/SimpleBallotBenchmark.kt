@@ -36,10 +36,8 @@ class SimpleBallotBenchmark {
 
                             println("Running!")
 
-                            var results: List<SimpleEncryptedBallot>
-
                             val encryptionTimeMs = measureTimeMillis {
-                                results = (0 until numBallots).asIterable().toList()
+                                (0 until numBallots).asIterable().toList()
                                     .map { ballots[it].encrypt(context, keypair, nonces[it]) }
                             }
                             val encryptionTime = encryptionTimeMs / 1000.0

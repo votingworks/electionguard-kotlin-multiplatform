@@ -66,16 +66,6 @@ private fun GroupContext.importGuardian(guardian: electionguard.protogen.Guardia
     )
 }
 
-fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?): SchnorrProof? {
-    if (proof == null) return null
-    val publicKey = this.importElementModP(proof.publicKey)
-    val challenge = this.importElementModQ(proof.challenge)
-    val response = this.importElementModQ(proof.response)
-
-    return if (publicKey == null || challenge == null || response == null) null
-    else SchnorrProof(publicKey, challenge, response)
-}
-
 ////////////////////////////////////////////////////////
 
 fun ElectionInitialized.publishElectionInitialized() =
@@ -94,11 +84,4 @@ private fun Guardian.publishGuardian() =
         this.guardianId,
         this.xCoordinate,
         this.coefficientProofs.map { it.publishSchnorrProof() },
-    )
-
-fun SchnorrProof.publishSchnorrProof() =
-    electionguard.protogen.SchnorrProof(
-        this.publicKey.publishElementModP(),
-        this.challenge.publishElementModQ(),
-        this.response.publishElementModQ()
     )
