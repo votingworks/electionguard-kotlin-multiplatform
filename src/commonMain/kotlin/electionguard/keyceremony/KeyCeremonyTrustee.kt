@@ -8,6 +8,7 @@ import electionguard.core.ElGamalSecretKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.SchnorrProof
 import electionguard.core.decrypt
 import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.toElementModQ
@@ -48,6 +49,8 @@ class KeyCeremonyTrustee(
     override fun electionPublicKey(): ElementModP = polynomial.coefficientCommitments[0]
 
     override fun coefficientCommitments(): List<ElementModP> = polynomial.coefficientCommitments
+
+    override fun coefficientProofs(): List<SchnorrProof> = polynomial.coefficientProofs
 
     internal fun electionPrivateKey(): ElementModQ = polynomial.coefficients[0]
 
