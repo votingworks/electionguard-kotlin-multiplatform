@@ -24,7 +24,10 @@ plugins {
 group = "electionguard-kotlin-multiplatform"
 version = "1.52-SNAPSHOT"
 
+val coroutinesVersion by extra("1.6.4")
+val jsonSerializationVersion by extra("1.4.1")
 val kotlinVersion by extra("1.7.20")
+val ktorVersion by extra("2.1.3")
 val pbandkVersion by extra("0.14.1")
 
 repositories {
@@ -98,13 +101,13 @@ kotlin {
                     implementation(kotlin("stdlib", kotlinVersion))
 
                     // JSON serialization and DSL
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$jsonSerializationVersion")
 
                     // Coroutines
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
                     // Useful, portable routines
-                    implementation("io.ktor:ktor-utils:2.0.3")
+                    implementation("io.ktor:ktor-utils:$ktorVersion")
 
                     // Portable logging interface. On the JVM, we'll get "logback", which gives
                     // us lots of features. On Native, it ultimately just prints to stdout.
@@ -131,7 +134,7 @@ kotlin {
                     implementation(kotlin("test-annotations-common", kotlinVersion))
 
                     // runTest() for running suspend functions in tests
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
 
                     // Fancy property-based testing
                     implementation("io.kotest:kotest-property:5.4.0")
