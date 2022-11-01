@@ -1,10 +1,16 @@
-package electionguard.serialize
+package electionguard.json
 
 import electionguard.core.*
 import electionguard.core.Base16.fromHex
+import electionguard.serialize.import
+import electionguard.serialize.importElementModP
+import electionguard.serialize.importElementModQ
+import electionguard.serialize.publish
+import electionguard.serialize.publishJson
 import io.kotest.property.checkAll
 import kotlin.test.*
 import kotlinx.serialization.json.*
+
 
 inline fun <reified T> jsonRoundTripWithStringPrimitive(value: T): T {
     val jsonT: JsonElement = Json.encodeToJsonElement(value)
@@ -22,24 +28,24 @@ inline fun <reified T> jsonRoundTripWithStringPrimitive(value: T): T {
     return backToT
 }
 
-class ElementTest {
+class ElementsTest {
     @Test
-    fun importExportForProductionElements() {
+    fun testElementRoundtrip() {
         runTest {
             val context = productionGroup()
             checkAll(elementsModP(context), elementsModQ(context)) { p, q ->
-                // shorter round-trip from the core classes to JsonElement and back
-                assertEquals(p, context.importElementModP(p.publishJson()))
-                assertEquals(q, context.importElementModQ(q.publishJson()))
+                assertEquals(p, context.importModP(p.publishModP()))
+                assertEquals(q, context.importModQ(q.publishModQ()))
 
                 // longer round-trip through serialized JSON strings and back
-                assertEquals(p, context.import(jsonRoundTripWithStringPrimitive(p.publish())))
-                assertEquals(q, context.import(jsonRoundTripWithStringPrimitive(q.publish())))
+                assertEquals(p, context.importModP(jsonRoundTripWithStringPrimitive(p.publishModP())))
+                assertEquals(q, context.importModQ(jsonRoundTripWithStringPrimitive(q.publishModQ())))
             }
         }
     }
+
     @Test
-    fun importExportForTinyElements() {
+    fun importTinyElements() {
         runTest {
             val context = tinyGroup()
             checkAll(elementsModP(context), elementsModQ(context)) { p, q ->
@@ -48,8 +54,20 @@ class ElementTest {
                 assertEquals(q, context.importElementModQ(q.publishJson()))
 
                 // longer round-trip through serialized JSON strings and back
-                assertEquals(p, context.import(jsonRoundTripWithStringPrimitive(p.publish())))
-                assertEquals(q, context.import(jsonRoundTripWithStringPrimitive(q.publish())))
+                assertEquals(p, context.import(electionguard.serialize.jsonRoundTripWithStringPrimitive(p.publish())))
+                assertEquals(q, context.import(electionguard.serialize.jsonRoundTripWithStringPrimitive(q.publish())))
+            }
+        }
+    }
+
+    @Test
+    fun testUInt256Roundtrip() {
+        runTest {
+            val context = productionGroup()
+            checkAll(elementsModQ(context)) { q ->
+                val u : UInt256 = q.toUInt256()
+                assertEquals(u, u.publish().import())
+                assertEquals(u, jsonRoundTripWithStringPrimitive(u.publish()).import())
             }
         }
     }

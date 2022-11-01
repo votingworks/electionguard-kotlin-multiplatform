@@ -28,6 +28,7 @@ val coroutinesVersion by extra("1.6.4")
 val jsonSerializationVersion by extra("1.4.1")
 val kotlinVersion by extra("1.7.20")
 val ktorVersion by extra("2.1.3")
+val logback_version by extra("1.3.4")
 val pbandkVersion by extra("0.14.1")
 
 repositories {
