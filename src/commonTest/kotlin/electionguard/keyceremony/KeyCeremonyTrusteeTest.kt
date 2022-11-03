@@ -38,8 +38,6 @@ class KeyCeremonyTrusteeTest {
 
         val result1 = trustee1.receivePublicKeys(trustee2.sendPublicKeys().unwrap())
         assertTrue(result1 is Ok)
-        val rkeys1 = result1.unwrap()
-        assertEquals(trustee2.sendPublicKeys().unwrap(), rkeys1)
 
         /** Create trustee1 SecretKeyShare for trustee2. */
         val result2 = trustee1.sendSecretKeyShare(trustee2.id())
@@ -56,6 +54,5 @@ class KeyCeremonyTrusteeTest {
         trustee2.receivePublicKeys(trustee1.sendPublicKeys().unwrap())
         val result4 = trustee2.receiveSecretKeyShare(ss2)
         assertTrue(result4 is Ok)
-        assertEquals(ss2, result4.value)
     }
 }

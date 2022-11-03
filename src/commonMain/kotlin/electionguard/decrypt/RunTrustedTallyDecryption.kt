@@ -41,10 +41,10 @@ fun main(args: Array<String>) {
         shortName = "createdBy",
         description = "who created"
     )
-    val npresent by parser.option(
-        ArgType.Int,
-        shortName = "npresent",
-        description = "number of guardians present"
+    val missing by parser.option(
+        ArgType.String,
+        shortName = "missing",
+        description = "missing guardians' xcoord, comma separated, eg '2,4'"
     )
     parser.parse(args)
     println("RunTrustedTallyDecryption starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
@@ -54,16 +54,21 @@ fun main(args: Array<String>) {
         group,
         inputDir,
         outputDir,
-        readDecryptingTrustees(group, inputDir, trusteeDir, npresent),
+        readDecryptingTrustees(group, inputDir, trusteeDir, missing),
         createdBy)
 }
 
-fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String, npresent: Int? = null): List<DecryptingTrusteeIF> {
+fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String, missing: String? = null): List<DecryptingTrusteeIF> {
     val consumerIn = Consumer(inputDir, group)
     val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
     val consumer = Consumer(trusteeDir, group)
     val allGuardians = init.guardians.map { consumer.readTrustee(trusteeDir, it.guardianId) }
-    return if (npresent == null) allGuardians else allGuardians.subList(0, npresent)
+    if (missing.isNullOrEmpty()) {
+        return allGuardians
+    }
+    // remove missing guardians
+    val missingX = missing.split(",").map{ it.toInt() }
+    return allGuardians.filter { !missingX.contains( it.xCoordinate()) }
 }
 
 fun runDecryptTally(
@@ -77,7 +82,7 @@ fun runDecryptTally(
 
     val consumerIn = Consumer(inputDir, group)
     val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
-    val trusteeNames = decryptingTrustees.map { it.id()}.toSet()
+    val trusteeNames = decryptingTrustees.map { it.id() }.toSet()
     val missingGuardians =
         tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId)}.map { it.guardianId}
     println("runDecryptTally present = $trusteeNames missing = $missingGuardians")

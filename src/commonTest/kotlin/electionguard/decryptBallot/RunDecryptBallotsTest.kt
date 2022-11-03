@@ -41,7 +41,7 @@ class RunDecryptBallotsTest {
         val outputDir = "testOut/testDecryptingBallotsSome"
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
-            group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, 4),
+            group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
             "ballot-id-1262524738,ballot-id--156725705,ballot-id--224899575",
             1,
         )
@@ -57,7 +57,7 @@ class RunDecryptBallotsTest {
         val outputDir = "testOut/testDecryptingBallotsSome"
         println("\ntestDecryptBallotsSomeFromFile")
         val n = runDecryptBallots(
-            group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, 3),
+            group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "4,5"),
             wantBallots,
             1,
         )

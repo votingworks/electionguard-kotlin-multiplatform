@@ -12,14 +12,14 @@ import electionguard.keyceremony.SecretKeyShare
 
 /**
  * A Trustee that knows its own secret key, for the purpose of decryption.
- * DecryptingTrustee must stay private. DecryptingGuardian is its public info in the election record.
+ * DecryptingTrustee must stay private. Guardian is its public info in the election record.
  */
 data class DecryptingTrustee(
     val id: String,
     val xCoordinate: Int,
     // This guardian's private and public key
     val electionKeypair: ElGamalKeypair,
-    // Guardian's "shares" of other guardians keys, keyed by other (missing) guardian id.
+    // Guardian's "shares" of other guardians keys, keyed by other (missing) guardian's id.
     val secretKeyShares: Map<String, SecretKeyShare>,
 ) : DecryptingTrusteeIF {
 
@@ -31,13 +31,14 @@ data class DecryptingTrustee(
     override fun xCoordinate(): Int = xCoordinate
     override fun electionPublicKey(): ElementModP = electionKeypair.publicKey.key
 
+    // tm = wi * (Sum j∈V Pj(ℓ)) mod q
     private var tm: ElementModQ? = null
     private fun tm(): ElementModQ = this.tm ?: throw IllegalStateException()
 
     override fun setMissing(
         group: GroupContext,
-        lagrangeCoeff: ElementModQ,
-        missingGuardians: List<String>,
+        lagrangeCoeff: ElementModQ,     // wi for this trustee
+        missingGuardians: List<String>, // guardian ids
     ) : Boolean {
         if (this.tm != null) {
             return false // could test they are the same
@@ -58,7 +59,7 @@ data class DecryptingTrustee(
         val secretKeyShare: SecretKeyShare = this.secretKeyShares[missingGuardianId]
             ?: throw IllegalStateException("DecryptingTrustee $id missing SecretKeyShare for $missingGuardianId")
         val byteArray = secretKeyShare.encryptedCoordinate.decrypt(this.electionKeypair.secretKey)
-            ?: throw IllegalStateException("DecryptingTrustee $id couldnt decrypt SecretKeyShare for $missingGuardianId ")
+            ?: throw IllegalStateException("DecryptingTrustee $id couldnt decrypt SecretKeyShare for $missingGuardianId")
         return byteArray.toUInt256().toElementModQ(group)
     }
 

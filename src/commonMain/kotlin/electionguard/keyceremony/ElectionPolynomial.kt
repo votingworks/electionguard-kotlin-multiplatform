@@ -44,8 +44,8 @@ data class ElectionPolynomial(
 }
 
 /**
- * Calculate g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, quorum-1
- * Used in KeyCeremonyTrustee and DecryptingTrustee, public information.
+ * Calculate g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, quorum-1.
+ * Used to test secret key share by KeyCeremonyTrustee.
  */
 fun calculateGexpPiAtL(
     xcoord: Int,  // l

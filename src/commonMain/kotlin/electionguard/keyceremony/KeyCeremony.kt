@@ -17,7 +17,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremon
 
     // exchange PublicKeys
     val publicKeys: MutableList<PublicKeys> = mutableListOf()
-    val publicKeyResults: MutableList<Result<PublicKeys, String>> = mutableListOf()
+    val publicKeyResults: MutableList<Result<Boolean, String>> = mutableListOf()
     trustees.forEach { t1 ->
         val t1Result = t1.sendPublicKeys()
         if (t1Result is Err) {
@@ -37,14 +37,14 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremon
     }
 
     // exchange SecretKeyShares, and validate them
-    val secretKeyResults: MutableList<Result<SecretKeyShare, String>> = mutableListOf()
+    val secretKeyResults: MutableList<Result<Boolean, String>> = mutableListOf()
     trustees.forEach { t1 ->
         trustees.filter { it.id() != t1.id() }.forEach { t2 ->
             val sendSecretKeyShareResult = t1.sendSecretKeyShare(t2.id())
             if (sendSecretKeyShareResult is Ok) {
                 secretKeyResults.add(t2.receiveSecretKeyShare(sendSecretKeyShareResult.unwrap()))
             } else {
-                secretKeyResults.add(sendSecretKeyShareResult)
+                secretKeyResults.add(Err(sendSecretKeyShareResult.unwrapError()))
             }
         }
     }

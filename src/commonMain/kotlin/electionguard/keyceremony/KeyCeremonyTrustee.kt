@@ -62,8 +62,8 @@ class KeyCeremonyTrustee(
         ))
     }
 
-    /** Receive publicKeys from another guardian. Return error message or empty string on success.  */
-    override fun receivePublicKeys(publicKeys: PublicKeys): Result<PublicKeys, String> {
+    /** Receive publicKeys from another guardian.  */
+    override fun receivePublicKeys(publicKeys: PublicKeys): Result<Boolean, String> {
         if (publicKeys.guardianXCoordinate < 1) {
             return Err("${publicKeys.guardianId}: guardianXCoordinate must be >= 1")
         }
@@ -77,7 +77,7 @@ class KeyCeremonyTrustee(
 
         // println("$id receivePublicKeys from ${publicKeys.guardianId}")
         guardianPublicKeys[publicKeys.guardianId] = publicKeys
-        return Ok(publicKeys)
+        return Ok(true)
     }
 
     /** Create my SecretKeyShare for another guardian. */
@@ -113,27 +113,30 @@ class KeyCeremonyTrustee(
     }
 
     /** Receive and verify another guardian's SecretKeyShare for me. */
-    override fun receiveSecretKeyShare(share: SecretKeyShare): Result<SecretKeyShare, String> {
+    override fun receiveSecretKeyShare(share: SecretKeyShare): Result<Boolean, String> {
          if (share.designatedGuardianId != id) {
             return Err("Sent backup to wrong trustee ${this.id}, should be trustee ${share.designatedGuardianId}")
         }
 
-        // Is that value consistent with the generating guardian's commitments?
-        val generatingKeys = guardianPublicKeys[share.generatingGuardianId]
-            ?: return Err("Trustee $id does not have public keys for  ${share.generatingGuardianId}")
-
-        // verify spec 1.52, sec 3.2.2 eq 16
+        // decrypt Pi(l)
         val secretKey = ElGamalSecretKey(this.polynomial.coefficients[0])
-        val byteArray = share.encryptedCoordinate.decrypt(secretKey)
+        val byteArray = share.encryptedCoordinate.decrypt(secretKey) // LOOK return error message
             ?: throw IllegalStateException("Trustee $id backup for ${share.generatingGuardianId} couldnt decrypt encryptedCoordinate")
         val expected: ElementModQ = byteArray.toUInt256().toElementModQ(group)
-        if (group.gPowP(expected) != calculateGexpPiAtL(this.xCoordinate, generatingKeys.coefficientCommitments())) {
-            return Err("Trustee $id failed to verify backup from ${share.generatingGuardianId}")
+
+        // The Kij
+        val publicKeys = guardianPublicKeys[share.generatingGuardianId]
+            ?: return Err("Trustee $id does not have public keys for  ${share.generatingGuardianId}")
+
+        // Is that value consistent with the generating guardian's commitments?
+        // verify spec 1.52, sec 3.2.2 eq 16: g^Pi(ℓ) = Prod{ (Ki,j)^ℓ^j }, for j=0..k-1
+        if (group.gPowP(expected) != calculateGexpPiAtL(this.xCoordinate, publicKeys.coefficientCommitments())) {
+            return Err("Trustee $id failed to verify SecretKeyShare from ${share.generatingGuardianId}")
         }
 
         // println("$id receiveSecretKeyShare from ${share.generatingGuardianId}")
         otherSharesForMe[share.generatingGuardianId] = share
-        return Ok(share)
+        return Ok(true)
     }
 
 }
