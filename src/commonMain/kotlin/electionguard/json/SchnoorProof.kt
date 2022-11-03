@@ -1,7 +1,6 @@
 package electionguard.json
 
 import electionguard.core.*
-import electionguard.keyceremony.PublicKeys
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,7 +20,7 @@ fun SchnorrProof.publish() = SchnorrProofJson(
     this.response.publishModQ(),
 )
 
-/** Imports from a published [PublicKeys]. Returns `null` if it's malformed. */
+/** Imports from a published [SchnorrProof]. Returns `null` if it's malformed. */
 fun GroupContext.importSchnorrProof(proof: SchnorrProofJson): SchnorrProof? {
     val p = this.importModP(proof.public_key)
     val c = this.importModQ(proof.challenge)

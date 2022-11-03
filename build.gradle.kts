@@ -22,7 +22,7 @@ plugins {
 }
 
 group = "electionguard-kotlin-multiplatform"
-version = "1.52-SNAPSHOT"
+version = "1.52.6-SNAPSHOT"
 
 val coroutinesVersion by extra("1.6.4")
 val jsonSerializationVersion by extra("1.4.1")

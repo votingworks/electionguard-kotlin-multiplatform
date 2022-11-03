@@ -2,11 +2,6 @@ package electionguard.json
 
 import electionguard.core.*
 import electionguard.core.Base16.fromHex
-import electionguard.serialize.import
-import electionguard.serialize.importElementModP
-import electionguard.serialize.importElementModQ
-import electionguard.serialize.publish
-import electionguard.serialize.publishJson
 import io.kotest.property.checkAll
 import kotlin.test.*
 import kotlinx.serialization.json.*
@@ -50,12 +45,12 @@ class ElementsTest {
             val context = tinyGroup()
             checkAll(elementsModP(context), elementsModQ(context)) { p, q ->
                 // shorter round-trip from the core classes to JsonElement and back
-                assertEquals(p, context.importElementModP(p.publishJson()))
-                assertEquals(q, context.importElementModQ(q.publishJson()))
+                assertEquals(p, context.importModP(p.publishModP()))
+                assertEquals(q, context.importModQ(q.publishModQ()))
 
                 // longer round-trip through serialized JSON strings and back
-                assertEquals(p, context.import(electionguard.serialize.jsonRoundTripWithStringPrimitive(p.publish())))
-                assertEquals(q, context.import(electionguard.serialize.jsonRoundTripWithStringPrimitive(q.publish())))
+                assertEquals(p, context.importModP(jsonRoundTripWithStringPrimitive(p.publishModP())))
+                assertEquals(q, context.importModQ(jsonRoundTripWithStringPrimitive(q.publishModQ())))
             }
         }
     }

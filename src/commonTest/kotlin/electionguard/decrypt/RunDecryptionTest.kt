@@ -27,8 +27,8 @@ class RunDecryptionTest {
                 "testOut/testDecryptingMediatorSome",
                 "-createdBy",
                 "testDecryptingMediatorSome",
-                "-npresent",
-                "3"
+                "-missing",
+                "1,4"
             )
         )
     }
