@@ -35,7 +35,7 @@ class Encryptor(
 ) {
     private val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
 
-    /** Encrypt ballots in a chain with starting codeSeed, and random masterNonce */
+    /** Encrypt ballots in a chain with starting codeSeed, and random primaryNonce */
     fun encrypt(ballots: Iterable<PlaintextBallot>, codeSeed: ElementModQ): List<CiphertextBallot> {
         var previousTrackingHash = codeSeed
         val encryptedBallots = mutableListOf<CiphertextBallot>()
@@ -47,35 +47,37 @@ class Encryptor(
         return encryptedBallots
     }
 
-    /** Encrypt ballots with fixed codeSeed, masterNonce, and timestamp. */
+    /** Encrypt ballots with fixed codeSeed, primaryNonce, and timestamp. */
     fun encryptWithFixedNonces(
         ballots: Iterable<PlaintextBallot>,
         codeSeed: ElementModQ,
-        masterNonce: ElementModQ
+        primaryNonce: ElementModQ
     ): List<CiphertextBallot> {
         val encryptedBallots = mutableListOf<CiphertextBallot>()
         for (ballot in ballots) {
-            encryptedBallots.add(ballot.encryptBallot(codeSeed, masterNonce, 0))
+            encryptedBallots.add(ballot.encryptBallot(codeSeed, primaryNonce, 0))
         }
         return encryptedBallots
     }
 
-    /** Encrypt the ballot with the given codeSeed and master nonce and an optional timestamp override. */
+    /** Encrypt with this codeSeed and primary nonce and optional timestamp and confirmationCode overrides. */
     fun encrypt(
         ballot: PlaintextBallot,
-        codeSeed: ElementModQ,
-        masterNonce: ElementModQ,
-        timestampOverride: Long? = null // if null, use getSystemTimeInMillis()
+        codeSeed: ElementModQ, // should be UInt256
+        primaryNonce: ElementModQ, // should be UInt256
+        timestampOverride: Long? = null, // if null, use getSystemTimeInMillis()
+        confirmationCode: UInt256? = null // non-null for preencrypt; if null, calculate from spec
     ): CiphertextBallot {
-        return ballot.encryptBallot(codeSeed, masterNonce, timestampOverride)
+        return ballot.encryptBallot(codeSeed, primaryNonce, timestampOverride, confirmationCode)
     }
 
     private fun PlaintextBallot.encryptBallot(
         codeSeed: ElementModQ,
-        masterNonce: ElementModQ, // usually random
+        primaryNonce: ElementModQ, // usually random
         timestampOverride: Long? = null,
+        confirmationCode: UInt256? = null,
     ): CiphertextBallot {
-        val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, masterNonce)
+        val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, primaryNonce)
         val plaintextContests = this.contests.associateBy { it.contestId }
 
         val encryptedContests = mutableListOf<CiphertextBallot.Contest>()
@@ -85,11 +87,12 @@ class Encryptor(
             encryptedContests.add(pcontest.encryptContest(mcontest, ballotNonce))
         }
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
-
-        // see spec 1.52, section 3.3.6
-        val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
         val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), sortedContests) // B_i
-        val trackingCode = hashElements(codeSeed, timestamp, cryptoHash)
+
+        // LOOK make this simpler, need spec to be clearer.
+        val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
+        // see spec 1.52, section 3.3.6
+        val trackingCode = confirmationCode ?: hashElements(codeSeed, timestamp, cryptoHash)
 
         return CiphertextBallot(
             ballotId,
@@ -100,7 +103,8 @@ class Encryptor(
             sortedContests,
             timestamp,
             cryptoHash,
-            masterNonce,
+            primaryNonce,
+            confirmationCode != null, // LOOK lame
         )
     }
 

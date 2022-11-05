@@ -15,6 +15,7 @@ import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
 
 /**
+ * Experimental.
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
  * The zero encryptions of all Selections are precomputed.
  * A vote triggers the computation of the one encryption.
@@ -29,12 +30,12 @@ class SelectionPrecompute(
     val ballotId: String,
     val ballotStyleId: String,
     val codeSeed: ElementModQ,
-    masterNonce: ElementModQ?, // if null, use random
+    primaryNonce: ElementModQ?, // if null, use random
     private val timestampOverride: Long? = null, // if null, use time of encryption
 ) {
     val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
-    private val masterNonce: ElementModQ = masterNonce ?: group.randomElementModQ()
-    val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, masterNonce)
+    private val primaryNonce: ElementModQ = primaryNonce ?: group.randomElementModQ()
+    val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, primaryNonce)
     private val mcontests: List<Manifest.ContestDescription>
     val contests: List<Contest>
 
@@ -67,7 +68,7 @@ class SelectionPrecompute(
             encryptedContests,
             timestamp,
             cryptoHash,
-            masterNonce,
+            primaryNonce,
         )
     }
 

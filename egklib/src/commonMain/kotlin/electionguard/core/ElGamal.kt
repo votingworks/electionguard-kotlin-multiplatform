@@ -219,3 +219,13 @@ fun Iterable<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext =
             it.ifEmpty { throw ArithmeticException("Cannot sum an empty list of ciphertexts") }
                 .reduce { a, b -> a + b }
         }
+
+/** Add two lists by component-wise multiplication */
+fun List<ElGamalCiphertext>.add(other: List<ElGamalCiphertext>): List<ElGamalCiphertext> {
+    require(this.size == other.size)
+    val result = mutableListOf<ElGamalCiphertext>()
+    this.forEachIndexed { index, value ->
+        result.add(value + other[index])
+    }
+    return result
+}

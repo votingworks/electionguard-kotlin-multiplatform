@@ -16,6 +16,7 @@ data class EncryptedBallot(
     val timestamp: Long,
     val cryptoHash: UInt256,
     val state: BallotState,
+    val isPreencrypt: Boolean = false,
 ) {
     init {
         require(ballotId.isNotEmpty())
@@ -39,6 +40,8 @@ data class EncryptedBallot(
         val cryptoHash: UInt256,
         val proof: RangeChaumPedersenProofKnownNonce,
         val contestData: HashedElGamalCiphertext,
+        val preEncryption: PreEncryption? = null, // pre-encrypted ballots only
+
     )  : CryptoHashableUInt256 {
         init {
             require(contestId.isNotEmpty())
@@ -46,6 +49,19 @@ data class EncryptedBallot(
         }
         override fun cryptoHashUInt256() = cryptoHash
     }
+
+    data class PreEncryption(
+        val contestHash: UInt256,
+        val selectedVectors: List<PreEncryptionVector> = emptyList(), // size = limit, sorted numerically
+        // The pre-encryption hashes and associated short codes for every option on the ballot – sorted numerically
+        val allHashes: List<PreEncryptionVector> = emptyList(),
+    )
+
+    data class PreEncryptionVector(
+        val selectionHash: UInt256, // H(Vj)
+        val code: String,
+        val selectedVector: List<ElGamalCiphertext>, // Vj, size = nselections, in order by sequenceOrder
+    )
 
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId

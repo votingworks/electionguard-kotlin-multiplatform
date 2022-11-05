@@ -46,8 +46,8 @@ class EncryptionNonceTest {
         val starting = getSystemTimeInMillis()
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
             val codeSeed = group.randomElementModQ(minimum = 2)
-            val masterNonce = group.randomElementModQ(minimum = 2)
-            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+            val primaryNonce = group.randomElementModQ(minimum = 2)
+            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
 
             // decrypt with nonces
             val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey())
@@ -100,7 +100,7 @@ fun compareBallots(ballot: PlaintextBallot, decryptedBallot: PlaintextBallot) {
 class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
 
     fun CiphertextBallot.decrypt(): PlaintextBallot {
-        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, this.ballotId, this.masterNonce)
+        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, this.ballotId, this.primaryNonce)
 
         val plaintext_contests = mutableListOf<PlaintextBallot.Contest>()
         for (contest in this.contests) {
