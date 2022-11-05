@@ -1,6 +1,7 @@
 package electionguard.verifier
 
 import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
@@ -73,7 +74,11 @@ class VerifyEncryptedBallots(
     fun verifyEncryptedBallot(ballot: EncryptedBallot): Stats {
         val results = mutableListOf<Result<Boolean, String>>()
 
-        results.add(verifyTrackingCode(ballot))
+        if (ballot.isPreencrypt) {
+            results.add(verifyPreencryptedCode(ballot))
+        } else {
+            results.add(verifyTrackingCode(ballot))
+        }
 
         var ncontests = 0
         var nselections = 0
@@ -103,6 +108,10 @@ class VerifyEncryptedBallots(
             )
             if (cvalid is Err) {
                 results.add(Err("    5. ChaumPedersenProof failed for $where = ${cvalid.error} "))
+            }
+
+            if (ballot.isPreencrypt) {
+                results.add(verifyPreencryptedContest(ballot.ballotId, contest))
             }
         }
         if (debugBallots) println(" Ballot '${ballot.ballotId}' ncontests = $ncontests nselections = $nselections")
@@ -141,6 +150,44 @@ class VerifyEncryptedBallots(
             errors.add(Err("    6.A Test ballot.trackingCode failed for ${ballot.ballotId} "))
         }
         return errors.merge()
+    }
+
+    private fun verifyPreencryptedCode(ballot: EncryptedBallot): Result<Boolean, String> {
+        val errors = mutableListOf<String>()
+        val cryptoHashCalculated = hashElements(ballot.ballotId, manifest.cryptoHashUInt256(), ballot.contests) // B_i
+        if (cryptoHashCalculated != ballot.cryptoHash) {
+            errors.add("    6. Test ballot.cryptoHash failed for preencrypted '${ballot.ballotId}' ")
+        }
+
+        // check confirmation code against PreEncryptedBallot
+        val trackingCodeCalculated = hashElements(ballot.contests.map { it.contestHash })
+        if (trackingCodeCalculated != ballot.code) {
+            errors.add("    6.A Test ballot.trackingCode failed for preencrypted '${ballot.ballotId}'")
+        }
+
+        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+    }
+
+    private fun verifyPreencryptedContest(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
+        val errors = mutableListOf<String>()
+        // All short codes on the ballot are correctly computed from the pre-encrypted selections associated with each short code
+
+        // The encrypted selections match the product of the pre-encryptions associated with the short codes listed as selected.
+        println("allEncryptedSelections")
+        contest.selections.forEach { println(" ${it.ciphertext.cryptoHashUInt256().cryptoHashString()}") }
+        println("selectedVector")
+        contest.preEncryption!!.selectedVectors.forEach { println("  ${it.selectionHash.cryptoHashString()}") }
+
+        // LOOK need spec
+        /* The encrypted selections match the product of the pre-encryptions associated with the short codes listed as selected.
+        val allEncryptedSelections = contest.selections.filter { !it.isPlaceholderSelection }.map { it.ciphertext }
+        val allProduct = allEncryptedSelections.encryptedSum()
+        val selectedProduct = contest.selectedVector.encryptedSum()
+        if (allProduct != selectedProduct) {
+            errors.add("    P.2 selectedProduct doesnt equal encryptedSelections for '${ballotId}' contest '${contest.contestId}'")
+        } */
+
+        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
     }
 
 

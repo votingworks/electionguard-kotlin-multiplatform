@@ -43,8 +43,8 @@ class DecryptionWithNonceTest {
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
             val startEncrypt = getSystemTimeInMillis()
             val codeSeed = group.randomElementModQ(minimum = 2)
-            val masterNonce = group.randomElementModQ(minimum = 2)
-            val encryptedBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+            val primaryNonce = group.randomElementModQ(minimum = 2)
+            val encryptedBallot = encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
             encryptTime += getSystemTimeInMillis() - startEncrypt
 
             // decrypt with nonces and check
@@ -89,9 +89,9 @@ class DecryptionWithNonceTest {
         println("testDecryptionWithEmbeddedNonces for $nballots ballots took $encryptPerBallot encrypt, $decryptPerBallot decrypt msecs/ballot")
     }
 
-    /** test DecryptionWithMasterNonce: encrypt ballot, decrypt with master nonce, check match. */
+    /** test DecryptionWithPrimaryNonce: encrypt ballot, decrypt with master nonce, check match. */
     @Test
-    fun testDecryptionWithMasterNonce() {
+    fun testDecryptionWithPrimaryNonce() {
         val group = productionGroup()
         val consumerIn = Consumer(input, group)
         val electionInit: ElectionInitialized =
@@ -108,16 +108,16 @@ class DecryptionWithNonceTest {
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
             val startEncrypt = getSystemTimeInMillis()
             val codeSeed = group.randomElementModQ(minimum = 2)
-            val masterNonce = group.randomElementModQ(minimum = 2)
-            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+            val primaryNonce = group.randomElementModQ(minimum = 2)
+            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
             encryptTime += getSystemTimeInMillis() - startEncrypt
 
             // decrypt with master nonce
             val startDecrypt = getSystemTimeInMillis()
-            val decryptionWithMasterNonce = DecryptionWithMasterNonce(group, electionInit.manifest(), electionInit.jointPublicKey())
-            val decryptedBallotResult = with (decryptionWithMasterNonce) { encryptedBallot.decrypt(masterNonce) }
-            assertFalse(decryptedBallotResult is Err, "decryptionWithMasterNonce failed on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
+            val decryptionWithPrimaryNonce = DecryptionWithPrimaryNonce(group, electionInit.manifest(), electionInit.jointPublicKey())
+            val decryptedBallotResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(primaryNonce) }
+            assertFalse(decryptedBallotResult is Err, "decryptionWithPrimaryNonce failed on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
             val decryptedBallot = decryptedBallotResult.unwrap()
 
             // all non zero votes match
@@ -152,10 +152,10 @@ class DecryptionWithNonceTest {
 
         val encryptPerBallot = (encryptTime.toDouble() / nballots).roundToInt()
         val decryptPerBallot = (decryptTime.toDouble() / nballots).roundToInt()
-        println("testDecryptionWithMasterNonce for $nballots ballots took $encryptPerBallot encrypt, $decryptPerBallot decrypt msecs/ballot")
+        println("testDecryptionWithPrimaryNonce for $nballots ballots took $encryptPerBallot encrypt, $decryptPerBallot decrypt msecs/ballot")
     }
 
-    /** test DecryptionWithMasterNonce: encrypt ballot, decrypt with master nonce, check match. */
+    /** test DecryptionWithPrimaryNonce: encrypt ballot, decrypt with master nonce, check match. */
     @Test
     fun testDecryptionOfContestData() {
         val group = productionGroup()
@@ -174,17 +174,17 @@ class DecryptionWithNonceTest {
         val nb = 100
         RandomBallotProvider(electionInit.manifest(), nb, true).ballots().forEach { ballot ->
             val codeSeed = group.randomElementModQ(minimum = 2)
-            val masterNonce = group.randomElementModQ(minimum = 2)
+            val primaryNonce = group.randomElementModQ(minimum = 2)
             val startEncrypt = getSystemTimeInMillis()
-            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
             encryptTime += getSystemTimeInMillis() - startEncrypt
 
             // decrypt with master nonce
             val startDecrypt = getSystemTimeInMillis()
-            val decryptionWithMasterNonce = DecryptionWithMasterNonce(group, electionInit.manifest(), electionInit.jointPublicKey())
-            val decryptedBallotResult = with (decryptionWithMasterNonce) { encryptedBallot.decrypt(masterNonce) }
-            assertFalse(decryptedBallotResult is Err, "decryptionWithMasterNonce failed on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
+            val decryptionWithPrimaryNonce = DecryptionWithPrimaryNonce(group, electionInit.manifest(), electionInit.jointPublicKey())
+            val decryptedBallotResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(primaryNonce) }
+            assertFalse(decryptedBallotResult is Err, "decryptionWithPrimaryNonce failed on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
             val decryptedBallot = decryptedBallotResult.unwrap()
             decryptTime += getSystemTimeInMillis() - startDecrypt
 
@@ -217,6 +217,6 @@ class DecryptionWithNonceTest {
 
         val encryptPerBallot = (encryptTime.toDouble() / nb).roundToInt()
         val decryptPerBallot = (decryptTime.toDouble() / nb).roundToInt()
-        println("testDecryptionWithMasterNonce for $nballots ballots took $encryptPerBallot encrypt, $decryptPerBallot decrypt msecs/ballot")
+        println("testDecryptionWithPrimaryNonce for $nballots ballots took $encryptPerBallot encrypt, $decryptPerBallot decrypt msecs/ballot")
     }
 }

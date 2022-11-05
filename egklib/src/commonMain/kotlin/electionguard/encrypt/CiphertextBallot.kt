@@ -13,10 +13,11 @@ data class CiphertextBallot(
     val contests: List<Contest>,
     val timestamp: Long,
     val cryptoHash: UInt256,
-    val masterNonce: ElementModQ,
+    val primaryNonce: ElementModQ,
+    val isPreEncrypt: Boolean = false,
 ) {
     fun ballotNonce(): UInt256 {
-        return hashElements(this.manifestHash, this.ballotId, this.masterNonce)
+        return hashElements(this.manifestHash, this.ballotId, this.primaryNonce)
     }
 
     data class Contest(
@@ -46,6 +47,14 @@ data class CiphertextBallot(
     }
 }
 
+fun CiphertextBallot.cast(): EncryptedBallot {
+    return this.submit(EncryptedBallot.BallotState.CAST)
+}
+
+fun CiphertextBallot.spoil(): EncryptedBallot {
+    return this.submit(EncryptedBallot.BallotState.SPOILED)
+}
+
 fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot {
     return EncryptedBallot(
         this.ballotId,
@@ -57,6 +66,7 @@ fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot
         this.timestamp,
         this.cryptoHash,
         state,
+        this.isPreEncrypt,
     )
 }
 

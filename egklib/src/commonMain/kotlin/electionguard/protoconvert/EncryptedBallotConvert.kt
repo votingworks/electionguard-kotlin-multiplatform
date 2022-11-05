@@ -9,6 +9,9 @@ import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
+import electionguard.preencrypt.RecordedPreBallot
+import electionguard.preencrypt.RecordedPreContest
+import electionguard.preencrypt.RecordedSelectionVector
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("EncryptedBallotConvert")
@@ -84,8 +87,30 @@ private fun GroupContext.importContest(
             selections,
             cryptoHash.unwrap(),
             proof.unwrap(),
-            contestData.unwrap(),
+            this.importHashedCiphertext(contest.encryptedContestData)!!,
+            this.importPreEncryption(contest.preEncryption),
         )
+    )
+}
+
+private fun GroupContext.importPreEncryption(proto: electionguard.protogen.PreEncryption?):
+        EncryptedBallot.PreEncryption? {
+    if (proto === null) {
+        return null
+    }
+    return EncryptedBallot.PreEncryption(
+        importUInt256(proto.contestHash)!!,
+        proto.selectedVectors.map { this.importPreEncryptionVector(it) },
+        proto.allHashes.map { this.importPreEncryptionVector(it) },
+    )
+}
+
+private fun GroupContext.importPreEncryptionVector(proto: electionguard.protogen.PreEncryptionVector):
+        EncryptedBallot.PreEncryptionVector {
+    return EncryptedBallot.PreEncryptionVector(
+        importUInt256(proto.selectionHash)!!,
+        proto.code,
+        proto.selectedVector.map { importCiphertext(it)!! },
     )
 }
 
@@ -136,7 +161,64 @@ private fun GroupContext.importSelection(
     )
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+// preencrypt
+
+fun EncryptedBallot.publishEncryptedBallot(recordedPreBallot: RecordedPreBallot): electionguard.protogen.EncryptedBallot {
+    return electionguard.protogen
+        .EncryptedBallot(
+            this.ballotId,
+            this.ballotStyleId,
+            this.manifestHash.publishUInt256(),
+            this.code.publishUInt256(),
+            this.codeSeed.publishUInt256(),
+            this.contests.map { it.publishContest(recordedPreBallot) },
+            this.timestamp,
+            this.cryptoHash.publishUInt256(),
+            this.state.publishBallotState(),
+            this.isPreencrypt,
+        )
+}
+
+private fun EncryptedBallot.Contest.publishContest(recordedPreBallot: RecordedPreBallot):
+        electionguard.protogen.EncryptedBallotContest {
+
+    val rcontest = recordedPreBallot.contests.find { it -> it.contestId == this.contestId }
+        ?: throw IllegalArgumentException("Cant find ${this.contestId}")
+
+    return electionguard.protogen
+        .EncryptedBallotContest(
+            this.contestId,
+            this.sequenceOrder,
+            this.contestHash.publishUInt256(),
+            this.selections.map { it.publishSelection() },
+            this.cryptoHash.publishUInt256(),
+            this.proof.publishRangeProof(),
+            this.contestData.publishHashedCiphertext(),
+            rcontest.publish(),
+        )
+}
+
+private fun RecordedPreContest.publish():
+        electionguard.protogen.PreEncryption {
+    return electionguard.protogen.PreEncryption(
+        this.contestHash.publishUInt256(),
+        this.selectionVectors.map { it.publish() },
+    )
+}
+
+private fun RecordedSelectionVector.publish():
+        electionguard.protogen.PreEncryptionVector {
+    return electionguard.protogen
+        .PreEncryptionVector(
+            this.selectionHash.publishUInt256(),
+            this.code,
+            this.selectionVector.map { it.publishCiphertext() },
+        )
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
+// normal
 
 fun EncryptedBallot.publishEncryptedBallot() =
     electionguard.protogen.EncryptedBallot(
@@ -166,8 +248,8 @@ private fun EncryptedBallot.Contest.publishContest() =
         this.contestHash.publishUInt256(),
         this.selections.map { it.publishSelection() },
         this.cryptoHash.publishUInt256(),
-        this.proof.let { this.proof.publishRangeProof() },
-        this.contestData.let { this.contestData.publishHashedCiphertext() },
+        this.proof.publishRangeProof(),
+        this.contestData.publishHashedCiphertext(),
     )
 
 private fun EncryptedBallot.Selection.publishSelection() =
@@ -177,7 +259,7 @@ private fun EncryptedBallot.Selection.publishSelection() =
         this.selectionHash.publishUInt256(),
         this.ciphertext.publishCiphertext(),
         this.cryptoHash.publishUInt256(),
-        this.proof.let { this.proof.publishRangeProof() },
+        this.proof.publishRangeProof(),
     )
 
 fun RangeChaumPedersenProofKnownNonce.publishRangeProof() =

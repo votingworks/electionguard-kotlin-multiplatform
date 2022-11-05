@@ -325,6 +325,64 @@ public data class HashedElGamalCiphertext(
 }
 
 @pbandk.Export
+public data class SchnorrProof(
+    val publicKey: electionguard.protogen.ElementModP? = null,
+    val challenge: electionguard.protogen.ElementModQ? = null,
+    val response: electionguard.protogen.ElementModQ? = null,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.SchnorrProof = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.SchnorrProof> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<electionguard.protogen.SchnorrProof> {
+        public val defaultInstance: electionguard.protogen.SchnorrProof by lazy { electionguard.protogen.SchnorrProof() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.SchnorrProof = electionguard.protogen.SchnorrProof.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.SchnorrProof> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.SchnorrProof, *>>(3)
+            fieldsList.apply {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "public_key",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
+                        jsonName = "publicKey",
+                        value = electionguard.protogen.SchnorrProof::publicKey
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "challenge",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "challenge",
+                        value = electionguard.protogen.SchnorrProof::challenge
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "response",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "response",
+                        value = electionguard.protogen.SchnorrProof::response
+                    )
+                )
+            }
+            pbandk.MessageDescriptor(
+                fullName = "SchnorrProof",
+                messageClass = electionguard.protogen.SchnorrProof::class,
+                messageCompanion = this,
+                fields = fieldsList
+            )
+        }
+    }
+}
+
+@pbandk.Export
 public data class UInt256(
     val value: pbandk.ByteArr = pbandk.ByteArr.empty,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -514,6 +572,35 @@ private fun HashedElGamalCiphertext.Companion.decodeWithImpl(u: pbandk.MessageDe
         }
     }
     return HashedElGamalCiphertext(c0, c1, c2, numBytes, unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForSchnorrProof")
+public fun SchnorrProof?.orDefault(): electionguard.protogen.SchnorrProof = this ?: SchnorrProof.defaultInstance
+
+private fun SchnorrProof.protoMergeImpl(plus: pbandk.Message?): SchnorrProof = (plus as? SchnorrProof)?.let {
+    it.copy(
+        publicKey = publicKey?.plus(plus.publicKey) ?: plus.publicKey,
+        challenge = challenge?.plus(plus.challenge) ?: plus.challenge,
+        response = response?.plus(plus.response) ?: plus.response,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun SchnorrProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder): SchnorrProof {
+    var publicKey: electionguard.protogen.ElementModP? = null
+    var challenge: electionguard.protogen.ElementModQ? = null
+    var response: electionguard.protogen.ElementModQ? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> publicKey = _fieldValue as electionguard.protogen.ElementModP
+            2 -> challenge = _fieldValue as electionguard.protogen.ElementModQ
+            3 -> response = _fieldValue as electionguard.protogen.ElementModQ
+        }
+    }
+    return SchnorrProof(publicKey, challenge, response, unknownFields)
 }
 
 @pbandk.Export

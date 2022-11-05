@@ -15,13 +15,14 @@ message EncryptedBallot {
 
   string ballot_id = 1; // a unique Ballot ID created by the external system
   string ballot_style_id = 2; // The ballot_style_id of the BallotStyle in the Election Manifest
-  UInt256 manifest_hash = 3; // Matches Manifest.crypto_hash
+  UInt256 manifest_hash = 3; // Matches Manifest.crypto_hash LOOK check this when processing
   UInt256 code_seed = 4; // Previous ballot tracking hash or seed hash, aka code_seed
   UInt256 code = 5; // ballot tracking code, H_i
   repeated EncryptedBallotContest contests = 6;
   int64 timestamp = 7; // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
   UInt256 crypto_hash = 8;
   BallotState state = 9;
+  bool is_preencrypt = 10;
 }
 
 // Encrypted selections for a specific contest.
@@ -33,6 +34,21 @@ message EncryptedBallotContest {
   UInt256 crypto_hash = 5;
   RangeChaumPedersenProofKnownNonce proof = 6;  // The proof the sum of the selections does not exceed the maximum
   HashedElGamalCiphertext encrypted_contest_data = 7; // see 3.3.4
+  PreEncryption pre_encryption = 8; // only for pre-encryptions
+}
+
+message PreEncryption {
+  UInt256 contest_hash = 1;
+  repeated PreEncryptionVector selected_vectors = 2; // size = limit – sorted numerically
+  // The pre-encryption hashes and associated short codes for every option on the ballot – sorted numerically
+  repeated PreEncryptionVector all_hashes = 3;
+}
+
+message PreEncryptionVector {
+  UInt256 selection_hash = 1; // H(Vj)
+  string code = 2;
+  // present only for selected_vectors
+  repeated ElGamalCiphertext selected_vector = 3; // Vj, size = nselections, in order by sequence_order
 }
 
 // Encryption of a specific selection.

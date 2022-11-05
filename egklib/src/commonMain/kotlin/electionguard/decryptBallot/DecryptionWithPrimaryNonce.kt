@@ -22,17 +22,17 @@ import electionguard.core.take
 import electionguard.core.toElementModQ
 
 /** Decryption of a EncryptedBallot using the master nonce. */
-class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
+class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
 
-    fun EncryptedBallot.decrypt(masterNonce: ElementModQ): Result<PlaintextBallot, String> {
-        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, this.ballotId, masterNonce)
+    fun EncryptedBallot.decrypt(primaryNonce: ElementModQ): Result<PlaintextBallot, String> {
+        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, this.ballotId, primaryNonce)
 
         val (plaintextContests, cerrors) = this.contests.map {
             val mcontest = manifest.contests.find { tcontest -> it.contestId == tcontest.contestId}
             if (mcontest == null) {
                 Err("Cant find contest ${it.contestId} in manifest")
             } else {
-                decryptContestWithMasterNonce(mcontest, ballotNonce, it)
+                decryptContestWithPrimaryNonce(mcontest, ballotNonce, it)
             }
         }.partition()
 
@@ -47,7 +47,7 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
         ))
     }
 
-    private fun decryptContestWithMasterNonce(
+    private fun decryptContestWithPrimaryNonce(
         mcontest: Manifest.ContestDescription,
         ballotNonce: UInt256,
         contest: EncryptedBallot.Contest
@@ -64,7 +64,7 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
                 errors.add(" Cant find selection ${selection.selectionId} in contest ${mcontest.contestId}")
                 continue
             }
-            val dSelection = decryptSelectionWithMasterNonce(mselection, contestNonce, selection)
+            val dSelection = decryptSelectionWithPrimaryNonce(mselection, contestNonce, selection)
             if (dSelection == null) {
                 errors.add(" decryption with master nonce failed for contest: ${contest.contestId} selection: ${selection.selectionId}")
             } else {
@@ -101,7 +101,7 @@ class DecryptionWithMasterNonce(val group : GroupContext, val manifest: Manifest
         ))
     }
 
-    private fun decryptSelectionWithMasterNonce(
+    private fun decryptSelectionWithPrimaryNonce(
         mselection: Manifest.SelectionDescription,
         contestNonce: ElementModQ,
         selection: EncryptedBallot.Selection

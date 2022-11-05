@@ -176,14 +176,14 @@ fun batchEncryption(
     val starting = getSystemTimeInMillis() // start timing here
 
     val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
-    val masterNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow masterNonce to be passed in on command line?
+    val primaryNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow primaryNonce to be passed in on command line?
     val encryptor = Encryptor(
         group,
         electionInit.manifest(),
         ElGamalPublicKey(electionInit.jointPublicKey),
         electionInit.cryptoExtendedBaseHash
     )
-    val runEncryption = RunEncryption(group, encryptor, codeSeed, masterNonce, electionInit.manifest(),
+    val runEncryption = RunEncryption(group, encryptor, codeSeed, primaryNonce, electionInit.manifest(),
         electionInit.jointPublicKey, electionInit.cryptoExtendedBaseHash, check)
 
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
@@ -236,7 +236,7 @@ private class RunEncryption(
     val group: GroupContext,
     val encryptor: Encryptor,
     val codeSeed: ElementModQ,
-    val masterNonce: ElementModQ?,
+    val primaryNonce: ElementModQ?,
     manifest: Manifest,
     val jointPublicKey: ElementModP,
     cryptoExtendedBaseHash: UInt256,
@@ -250,14 +250,14 @@ private class RunEncryption(
     }
 
     fun encrypt(ballot: PlaintextBallot): EncryptedBallot {
-        val ciphertextBallot = if (masterNonce != null) // make result deterministic
-            encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+        val ciphertextBallot = if (primaryNonce != null) // make result deterministic
+            encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
         else
             encryptor.encrypt(ballot, codeSeed, group.randomElementModQ()) // each ballot has a random master nonce
 
         // experiments in testing the encryption
         if (check == CheckType.EncryptTwice) {
-            val encrypted2 = encryptor.encrypt(ballot, codeSeed, ciphertextBallot.masterNonce, ciphertextBallot.timestamp)
+            val encrypted2 = encryptor.encrypt(ballot, codeSeed, ciphertextBallot.primaryNonce, ciphertextBallot.timestamp)
             if (encrypted2.cryptoHash != ciphertextBallot.cryptoHash) {
                 logger.warn { "encrypted.cryptoHash doesnt match" }
             }
