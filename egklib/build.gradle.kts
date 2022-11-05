@@ -112,8 +112,8 @@ kotlin {
         val commonTest by
             getting {
                 dependencies {
-                    //implementation(kotlin("test-common", kotlinVersion))
-                    //implementation(kotlin("test-annotations-common", kotlinVersion))
+                    implementation(kotlin("test-common", kotlinVersion))
+                    implementation(kotlin("test-annotations-common", kotlinVersion))
 
                     // runTest() for running suspend functions in tests
                     implementation(libs.kotlinx.coroutines.test)
