@@ -5,11 +5,12 @@ buildscript {
     }
 }
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     kotlin("multiplatform") version "1.7.20"
 
     // cross-platform serialization support
-    kotlin("plugin.serialization") version "1.7.20"
+    alias(libs.plugins.serialization)
 
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
@@ -24,12 +25,7 @@ plugins {
 group = "electionguard-kotlin-multiplatform"
 version = "1.52.6-SNAPSHOT"
 
-val coroutinesVersion by extra("1.6.4")
-val jsonSerializationVersion by extra("1.4.1")
 val kotlinVersion by extra("1.7.20")
-val ktorVersion by extra("2.1.3")
-val logback_version by extra("1.3.4")
-val pbandkVersion by extra("0.14.1")
 
 repositories {
     google()
@@ -86,47 +82,44 @@ kotlin {
         val commonMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-common", kotlinVersion))
-                    implementation(kotlin("stdlib", kotlinVersion))
-
-                    // JSON serialization and DSL
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$jsonSerializationVersion")
+                    // JSON serialization
+                    implementation(libs.kotlinx.serialization.json)
 
                     // Coroutines
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                    implementation(libs.kotlinx.coroutines.core)
 
                     // Useful, portable routines
-                    implementation("io.ktor:ktor-utils:$ktorVersion")
+                    implementation(libs.ktor.utils)
 
                     // Portable logging interface. On the JVM, we'll get "logback", which gives
                     // us lots of features. On Native, it ultimately just prints to stdout.
                     // On JS, it uses console.log, console.error, etc.
-                    implementation("io.github.microutils:kotlin-logging:3.0.2")
+                    implementation(libs.bundles.logging)
 
                     // A multiplatform Kotlin library for working with date and time.
-                    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                    implementation(libs.kotlinx.datetime)
 
                     // A multiplatform Kotlin library for working with protobuf.
-                    implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
+                    implementation(libs.pbandk)
 
                     // A multiplatform Kotlin library for command-line parsing (could use enableEndorsedLibs instead)
-                    implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
+                    implementation(libs.kotlinx.cli)
 
                     // A multiplatform Kotlin library for Result monads
-                    implementation("com.michael-bull.kotlin-result:kotlin-result:1.1.16")
+                    implementation(libs.kotlin.result)
                 }
             }
         val commonTest by
             getting {
                 dependencies {
-                    implementation(kotlin("test-common", kotlinVersion))
-                    implementation(kotlin("test-annotations-common", kotlinVersion))
+                    //implementation(kotlin("test-common", kotlinVersion))
+                    //implementation(kotlin("test-annotations-common", kotlinVersion))
 
                     // runTest() for running suspend functions in tests
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                    implementation(libs.kotlinx.coroutines.test)
 
                     // Fancy property-based testing
-                    implementation("io.kotest:kotest-property:5.4.0")
+                    implementation(libs.kotest.property)
                 }
             }
         val jvmMain by
@@ -182,11 +175,13 @@ val compileProtobuf =
 
 tasks.withType<Test> { testLogging { showStandardStreams = true } }
 
-allprojects {
+// LOOK some kind of javascript security thing, but may be causing coupled projects
+// https://docs.gradle.org/current/userguide/multi_project_configuration_and_execution.html#sec:decoupled_projects
+// allprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask> {
         args += "--ignore-scripts"
     }
-}
+// }
 
 // Workaround the Gradle bug resolving multi-platform dependencies.
 // Fix courtesy of https://github.com/square/okio/issues/647
