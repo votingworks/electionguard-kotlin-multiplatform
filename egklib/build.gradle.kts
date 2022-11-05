@@ -69,18 +69,6 @@ kotlin {
         }
 
     nativeTarget.apply {
-        compilations.getByName("main") {
-            cinterops {
-                val libhacl by
-                    creating {
-                        defFile(project.file("src/nativeInterop/libhacl.def"))
-                        packageName("hacl")
-                        compilerOpts("-Ilibhacl/include")
-                        includeDirs.allHeaders("${System.getProperty("user.dir")}/libhacl/include")
-                    }
-            }
-        }
-
         binaries {
             executable("RunBatchEncryption") {
                 entryPoint = "electionguard.encrypt.main"
@@ -146,9 +134,6 @@ kotlin {
                 dependencies {
                     implementation(kotlin("stdlib-jdk8", kotlinVersion))
 
-                    // Progress bars
-                    implementation("me.tongfei:progressbar:0.9.3")
-
                     // Logging implementation (used by "kotlin-logging"). Note that we need
                     // a bleeding-edge implementation to ensure we don't have vulnerabilities
                     // similar to (but not as bad) as the log4j issues.
@@ -158,12 +143,17 @@ kotlin {
         val jvmTest by
             getting {
                 dependencies {
+                    // Progress bars
+                    implementation("me.tongfei:progressbar:0.9.3")
+
                     // Unclear if we really need all the extra features of JUnit5, but it would
                     // at least be handy if we could get its parallel test runner to work.
                     implementation(kotlin("test-junit5", kotlinVersion))
                 }
             }
-        val nativeMain by getting { dependencies {} }
+        val nativeMain by getting { dependencies {
+            implementation(project(":hacllib"))
+        } }
         val nativeTest by getting { dependencies {} }
     }
 }
@@ -189,27 +179,6 @@ val compileProtobuf =
             project.exec { commandLine = commandLineStr.split(" ") }
         }
     }
-
-tasks.register("libhaclBuild") {
-    doLast {
-        exec {
-            workingDir(".")
-            // -p flag will ignore errors if the directory already exists
-            commandLine("mkdir", "-p", "build")
-        }
-        exec {
-            workingDir("build")
-            commandLine("cmake", "-DCMAKE_BUILD_TYPE=Release", "..")
-        }
-        exec {
-            workingDir("build")
-            commandLine("make")
-        }
-    }
-}
-
-// hack to make sure that we've compiled the library prior to running cinterop on it
-tasks["cinteropLibhaclNative"].dependsOn("libhaclBuild")
 
 tasks.withType<Test> { testLogging { showStandardStreams = true } }
 
