@@ -39,7 +39,7 @@ class KeyCeremonyTrustee(
         require(xCoordinate > 0)
         require(quorum > 0)
         // doesnt really need to contain its own PublicKeys, but leaving it for now
-        guardianPublicKeys[id] = this.sendPublicKeys().unwrap()
+        guardianPublicKeys[id] = this.publicKeys().unwrap()
     }
 
     override fun id(): String = id
@@ -54,7 +54,7 @@ class KeyCeremonyTrustee(
 
     internal fun electionPrivateKey(): ElementModQ = polynomial.coefficients[0]
 
-    override fun sendPublicKeys(): Result<PublicKeys, String> {
+    override fun publicKeys(): Result<PublicKeys, String> {
         return Ok(PublicKeys(
             id,
             xCoordinate,
@@ -81,7 +81,7 @@ class KeyCeremonyTrustee(
     }
 
     /** Create my SecretKeyShare for another guardian. */
-    override fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
+    override fun secretKeyShareFor(otherGuardian: String): Result<SecretKeyShare, String> {
         if (mySharesForOther.containsKey(otherGuardian)) {
             return Ok(mySharesForOther[otherGuardian]!!)
         }

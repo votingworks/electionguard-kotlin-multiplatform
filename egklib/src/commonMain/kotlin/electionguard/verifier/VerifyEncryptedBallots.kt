@@ -18,9 +18,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
+import mu.KotlinLogging
 import kotlin.math.roundToInt
 
 private const val debugBallots = false
+private val logger = KotlinLogging.logger("VerifyEncryptedBallots")
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyEncryptedBallots(
@@ -162,7 +164,8 @@ class VerifyEncryptedBallots(
         // check confirmation code against PreEncryptedBallot
         val trackingCodeCalculated = hashElements(ballot.contests.map { it.contestHash })
         if (trackingCodeCalculated != ballot.code) {
-            errors.add("    6.A Test ballot.trackingCode failed for preencrypted '${ballot.ballotId}'")
+            logger.warn{"    6.A Test ballot.trackingCode failed for preencrypted '${ballot.ballotId}'"}
+            // errors.add("    6.A Test ballot.trackingCode failed for preencrypted '${ballot.ballotId}'")
         }
 
         return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))

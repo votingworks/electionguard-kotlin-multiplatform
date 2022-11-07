@@ -21,7 +21,7 @@ fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
 }
 
 fun makeGuardian(trustee: KeyCeremonyTrustee): Guardian {
-    val publicKeys = trustee.sendPublicKeys().unwrap()
+    val publicKeys = trustee.publicKeys().unwrap()
     return Guardian(
         trustee.id,
         trustee.xCoordinate,
