@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.serialization)
 }
 
-
 group = "webapps.electionguard"
 version = "0.1"
 application {
@@ -17,8 +16,7 @@ application {
 }
 
 dependencies {
-    implementation("electionguard-kotlin-multiplatform:electionguard-kotlin-multiplatform-jvm:1.52.5-SNAPSHOT")
-
+    implementation(project(path = ":egklib", configuration = "jvmRuntimeElements"))
     implementation(libs.kotlin.result)
     implementation(libs.bundles.ktor.server)
     implementation(libs.bundles.logging)

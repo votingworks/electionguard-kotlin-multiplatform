@@ -90,7 +90,7 @@ class DecryptingTrusteeProxy(
             }
             println("DecryptingTrusteeProxy challenge $id = ${response.status}")
             val challengeResponsesJson: ChallengeResponsesJson = response.body()
-            val challengeResponses = groupContext.importChallengeRequests(challengeResponsesJson) // importChallengeResponses
+            val challengeResponses = groupContext.importChallengeResponses(challengeResponsesJson) // importChallengeResponses
             challengeResponses.responses
         }
     }
