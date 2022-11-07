@@ -17,18 +17,18 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("RemoteGuardianJson")
 
 @Serializable
-data class RemoteGuardianJson(val id: String, val xCoordinate: Int, val quorum: Int) {
+data class RemoteKeyTrustee(val id: String, val xCoordinate: Int, val quorum: Int) {
     @Transient
     private val delegate = KeyCeremonyTrustee(productionGroup(), id, xCoordinate, quorum)
 
-    fun sendPublicKeys() = delegate.sendPublicKeys()
+    fun publicKeys() = delegate.publicKeys()
     fun receivePublicKeys(keys: PublicKeys) = delegate.receivePublicKeys(keys)
-    fun sendSecretKeyShare(forGuardian: String) = delegate.sendSecretKeyShare(forGuardian)
+    fun secretKeyShareFor(forGuardian: String) = delegate.secretKeyShareFor(forGuardian)
     fun receiveSecretKeyShare(share: SecretKeyShare) = delegate.receiveSecretKeyShare(share)
     fun saveState() = delegate.saveState()
 }
 
-val guardians = mutableListOf<RemoteGuardianJson>()
+val guardians = mutableListOf<RemoteKeyTrustee>()
 
 // LOOK pass this in on command line
 val trusteeDir = "/home/snake/tmp/electionguard/RunRemoteKeyCeremonyTest/private_data/trustees"

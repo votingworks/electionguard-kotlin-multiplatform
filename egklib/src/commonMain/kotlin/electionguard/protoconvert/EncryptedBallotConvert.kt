@@ -48,6 +48,7 @@ fun GroupContext.importEncryptedBallot(ballot: electionguard.protogen.EncryptedB
             ballot.timestamp,
             cryptoHash.unwrap(),
             ballotState.unwrap(),
+            ballot.isPreencrypt,
         )
     )
 }

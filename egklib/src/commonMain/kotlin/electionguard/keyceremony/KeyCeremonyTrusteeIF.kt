@@ -12,11 +12,11 @@ interface KeyCeremonyTrusteeIF {
     fun coefficientProofs(): List<SchnorrProof>
 
     /** Send my PublicKeys. */
-    fun sendPublicKeys(): Result<PublicKeys, String>
+    fun publicKeys(): Result<PublicKeys, String>
     /** Receive the PublicKeys from another guardian. */
     fun receivePublicKeys(publicKeys: PublicKeys): Result<Boolean, String>
     /** Create my SecretKeyShare for another guardian. */
-    fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String>
+    fun secretKeyShareFor(otherGuardian: String): Result<SecretKeyShare, String>
     /** Receive and verify another guardian's SecretKeyShare for me. */
     fun receiveSecretKeyShare(share: SecretKeyShare): Result<Boolean, String>
 }

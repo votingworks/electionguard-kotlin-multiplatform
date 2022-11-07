@@ -18,7 +18,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import webapps.electionguard.groupContext
 
-class RemoteGuardianProxy(
+class RemoteKeyTrusteeProxy(
     val client: HttpClient,
     val remoteURL: String,
     val id: String,
@@ -29,7 +29,7 @@ class RemoteGuardianProxy(
 
     init {
         runBlocking {
-            val url = "$remoteURL/guardian"
+            val url = "$remoteURL/ktrustee"
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
@@ -46,9 +46,9 @@ class RemoteGuardianProxy(
         }
     }
 
-    override fun sendPublicKeys(): Result<PublicKeys, String> {
+    override fun publicKeys(): Result<PublicKeys, String> {
         return runBlocking {
-            val url = "$remoteURL/guardian/$xcoord/sendPublicKeys"
+            val url = "$remoteURL/ktrustee/$xcoord/publicKeys"
             val response: HttpResponse = client.get(url) {
                 headers {
                     append(HttpHeaders.Accept, "application/json")
@@ -56,14 +56,14 @@ class RemoteGuardianProxy(
             }
             val publicKeysJson: PublicKeysJson = response.body()
             publicKeys = groupContext.importPublicKeys(publicKeysJson)
-            println("$id sendPublicKeys = ${response.status}")
+            println("$id publicKeys = ${response.status}")
             if (publicKeys == null) Err("failed") else Ok(publicKeys!!)
         }
     }
 
     override fun receivePublicKeys(publicKeys: PublicKeys): Result<Boolean, String> {
         return runBlocking {
-            val url = "$remoteURL/guardian/$xcoord/receivePublicKeys"
+            val url = "$remoteURL/ktrustee/$xcoord/receivePublicKeys"
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
@@ -75,9 +75,9 @@ class RemoteGuardianProxy(
         }
     }
 
-    override fun sendSecretKeyShare(otherGuardian: String): Result<SecretKeyShare, String> {
+    override fun secretKeyShareFor(otherGuardian: String): Result<SecretKeyShare, String> {
         return runBlocking {
-            val url = "$remoteURL/guardian/$xcoord/$otherGuardian/sendSecretKeyShare"
+            val url = "$remoteURL/ktrustee/$xcoord/$otherGuardian/secretKeyShareFor"
             val response: HttpResponse = client.get(url) {
                 headers {
                     append(HttpHeaders.Accept, "application/json")
@@ -85,14 +85,14 @@ class RemoteGuardianProxy(
             }
             val secretKeyShareJson: SecretKeyShareJson = response.body()
             val secretKeyShare: SecretKeyShare? = groupContext.importSecretKeyShare(secretKeyShareJson)
-            println("$id sendSecretKeyShare for ${secretKeyShare?.designatedGuardianId} = ${response.status}")
+            println("$id secretKeyShareFor ${secretKeyShare?.designatedGuardianId} = ${response.status}")
             if (secretKeyShare == null) Err("SecretKeyShare") else Ok(secretKeyShare)
         }
     }
 
     override fun receiveSecretKeyShare(share: SecretKeyShare): Result<Boolean, String> {
         return runBlocking {
-            val url = "$remoteURL/guardian/$xcoord/receiveSecretKeyShare"
+            val url = "$remoteURL/ktrustee/$xcoord/receiveSecretKeyShare"
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
@@ -106,7 +106,7 @@ class RemoteGuardianProxy(
 
     fun saveState(): Result<Boolean, String> {
         return runBlocking {
-            val url = "$remoteURL/guardian/$xcoord/saveState"
+            val url = "$remoteURL/ktrustee/$xcoord/saveState"
             val response: HttpResponse = client.get(url)
             println("$id saveState from = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())

@@ -21,7 +21,7 @@ class KeyCeremonyTrusteeTest {
         assertNotNull(trustee.electionPrivateKey())
         assertEquals(4, trustee.coefficientCommitments().size)
         assertEquals(trustee.electionPublicKey(), trustee.coefficientCommitments()[0])
-        val result = trustee.sendPublicKeys()
+        val result = trustee.publicKeys()
         assertTrue(result is Ok)
         val keys = result.unwrap()
         assertEquals(trustee.id(), keys.guardianId)
@@ -36,11 +36,11 @@ class KeyCeremonyTrusteeTest {
         val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
         val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 4)
 
-        val result1 = trustee1.receivePublicKeys(trustee2.sendPublicKeys().unwrap())
+        val result1 = trustee1.receivePublicKeys(trustee2.publicKeys().unwrap())
         assertTrue(result1 is Ok)
 
         /** Create trustee1 SecretKeyShare for trustee2. */
-        val result2 = trustee1.sendSecretKeyShare(trustee2.id())
+        val result2 = trustee1.secretKeyShareFor(trustee2.id())
         assertTrue(result2 is Ok)
         val ss2 = result2.unwrap()
         assertEquals(trustee1.id(), ss2.generatingGuardianId)
@@ -51,7 +51,7 @@ class KeyCeremonyTrusteeTest {
         assertTrue(result3 is Err)
         assertEquals("Trustee id2 does not have public keys for  id1", result3.error)
 
-        trustee2.receivePublicKeys(trustee1.sendPublicKeys().unwrap())
+        trustee2.receivePublicKeys(trustee1.publicKeys().unwrap())
         val result4 = trustee2.receiveSecretKeyShare(ss2)
         assertTrue(result4 is Ok)
     }

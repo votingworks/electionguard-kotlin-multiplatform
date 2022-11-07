@@ -57,14 +57,14 @@ fun runRecoveredDecryption52(
     // exchange PublicKeys
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            t1.receivePublicKeys(t2.sendPublicKeys().unwrap())
+            t1.receivePublicKeys(t2.publicKeys().unwrap())
         }
     }
 
     // exchange SecretKeyShares
     trustees.forEach { t1 ->
         trustees.forEach { t2 ->
-            t2.receiveSecretKeyShare(t1.sendSecretKeyShare(t2.id).unwrap())
+            t2.receiveSecretKeyShare(t1.secretKeyShareFor(t2.id).unwrap())
         }
     }
 

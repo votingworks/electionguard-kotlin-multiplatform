@@ -12,8 +12,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.guardianRouting() {
-    route("/guardian") {
+fun Route.trusteeRouting() {
+    route("/ktrustee") {
         get {
             if (guardians.isNotEmpty()) {
                 call.respond(guardians)
@@ -23,28 +23,28 @@ fun Route.guardianRouting() {
         }
 
         post {
-            val rguardian = call.receive<RemoteGuardianJson>()
+            val rguardian = call.receive<RemoteKeyTrustee>()
             guardians.add(rguardian)
-            call.respondText("RemoteGuardian ${rguardian.id} stored correctly", status = HttpStatusCode.Created)
+            call.respondText("RemoteKeyTrustee ${rguardian.id} stored correctly", status = HttpStatusCode.Created)
         }
 
-        get("{id?}/sendPublicKeys") {
+        get("{id?}/publicKeys") {
             val id = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id",
                 status = HttpStatusCode.BadRequest
             )
             val rguardian =
                 guardians.find { it.xCoordinate == id.toInt() } ?: return@get call.respondText(
-                    "No guardian with id $id",
+                    "No RemoteKeyTrustee with id $id",
                     status = HttpStatusCode.NotFound
                 )
-            val result = rguardian.sendPublicKeys()
+            val result = rguardian.publicKeys()
             if (result is Ok) {
                 val pk = result.unwrap()
                 call.respond(pk.publish())
             } else {
                 call.respondText(
-                    "RemoteGuardian ${rguardian.id} sendPublicKeys failed ${result.unwrapError()}",
+                    "RemoteKeyTrustee ${rguardian.id} publicKeys failed ${result.unwrapError()}",
                     status = HttpStatusCode.InternalServerError
                 )
             }
@@ -57,7 +57,7 @@ fun Route.guardianRouting() {
             )
             val rguardian =
                 guardians.find { it.xCoordinate == id.toInt() } ?: return@post call.respondText(
-                    "No guardian with id $id",
+                    "No RemoteKeyTrustee with id $id",
                     status = HttpStatusCode.NotFound
                 )
             val publicKeysJson = call.receive<PublicKeysJson>()
@@ -68,35 +68,35 @@ fun Route.guardianRouting() {
                 )
             val result = rguardian.receivePublicKeys(publicKeys)
             if (result is Ok) {
-                call.respondText("RemoteGuardian ${rguardian.id} receivePublicKeys from ${publicKeys.guardianId} correctly", status = HttpStatusCode.OK)
+                call.respondText("RemoteKeyTrustee ${rguardian.id} receivePublicKeys from ${publicKeys.guardianId} correctly", status = HttpStatusCode.OK)
             } else {
                 call.respondText(
-                    "RemoteGuardian ${rguardian.id} receivePublicKeys from ${publicKeys.guardianId} failed ${result.unwrapError()}",
+                    "RemoteKeyTrustee ${rguardian.id} receivePublicKeys from ${publicKeys.guardianId} failed ${result.unwrapError()}",
                     status = HttpStatusCode.InternalServerError
                 )
             }
         }
 
-        get("{id?}/{from?}/sendSecretKeyShare") {
+        get("{id?}/{from?}/secretKeyShareFor") {
             val id = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id",
                 status = HttpStatusCode.BadRequest
             )
             val rguardian =
                 guardians.find { it.xCoordinate == id.toInt() } ?: return@get call.respondText(
-                    "No guardian with id $id",
+                    "No RemoteKeyTrustee with id $id",
                     status = HttpStatusCode.NotFound
                 )
             val from = call.parameters["from"] ?: return@get call.respondText(
                 "Missing from id",
                 status = HttpStatusCode.BadRequest
             )
-            val result = rguardian.sendSecretKeyShare(from)
+            val result = rguardian.secretKeyShareFor(from)
             if (result is Ok) {
                 call.respond(result.unwrap().publish())
             } else {
                 call.respondText(
-                    "RemoteGuardian ${rguardian.id} sendSecretKeyShare from ${from} failed ${result.unwrapError()}",
+                    "RemoteKeyTrustee ${rguardian.id} sendSecretKeyShare from ${from} failed ${result.unwrapError()}",
                     status = HttpStatusCode.BadRequest
                 )
             }
@@ -109,16 +109,16 @@ fun Route.guardianRouting() {
             )
             val rguardian =
                 guardians.find { it.xCoordinate == id.toInt() } ?: return@post call.respondText(
-                    "No guardian with id $id",
+                    "No RemoteKeyTrustee with id $id",
                     status = HttpStatusCode.NotFound
                 )
             val secretShare = call.receive<SecretKeyShareJson>()
             val result = rguardian.receiveSecretKeyShare(groupContext.importSecretKeyShare(secretShare)!!)
             if (result is Ok) {
-                call.respondText("RemoteGuardian ${rguardian.id} receiveSecretKeyShare correctly", status = HttpStatusCode.OK)
+                call.respondText("RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare correctly", status = HttpStatusCode.OK)
             } else {
                 call.respondText(
-                    "RemoteGuardian ${rguardian.id} receiveSecretKeyShare failed ${result.unwrapError()}",
+                    "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare failed ${result.unwrapError()}",
                     status = HttpStatusCode.BadRequest
                 )
             }
@@ -131,18 +131,18 @@ fun Route.guardianRouting() {
             )
             val rguardian =
                 guardians.find { it.xCoordinate == id.toInt() } ?: return@get call.respondText(
-                    "No guardian with id $id",
+                    "No RemoteKeyTrustee with id $id",
                     status = HttpStatusCode.NotFound
                 )
             val result = rguardian.saveState()
             if (result is Ok) {
                 call.respondText(
-                    "RemoteGuardian ${rguardian.id} saveState succeeded",
+                    "RemoteKeyTrustee ${rguardian.id} saveState succeeded",
                     status = HttpStatusCode.OK
                 )
             } else {
                 call.respondText(
-                    "RemoteGuardian ${rguardian.id} saveState failed ${result.unwrapError()}",
+                    "RemoteKeyTrustee ${rguardian.id} saveState failed ${result.unwrapError()}",
                     status = HttpStatusCode.InternalServerError
                 )
             }
