@@ -37,7 +37,7 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val missingReqJson = call.receive<SetMissingRequestJson>()
-            val missingReq = groupContext.importDecryptRequest(missingReqJson) // importSetMissingRequest
+            val missingReq = groupContext.importSetMissingRequest(missingReqJson) // importSetMissingRequest
             val ok = trustee.setMissing(missingReq.lagrangeCoeff, missingReq.missing)
             println("RemoteDecryptingTrustee ${trustee.id()} setMissing $ok")
             call.respondText("RemoteDecryptingTrustee $id setMissing $ok",

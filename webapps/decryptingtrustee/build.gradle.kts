@@ -1,11 +1,10 @@
 @Suppress("DSL_SCOPE_VIOLATION")
 // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
+    id("electionguard.webapps-conventions")
     kotlin("jvm") version "1.7.20"
     alias(libs.plugins.ktor)
     alias(libs.plugins.serialization)
-    java
-    application
 }
 
 group = "webapps.electionguard"
@@ -16,19 +15,8 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/danwallach/electionguard-kotlin-multiplatform")
-        credentials {
-            username = project.findProperty("github.user") as String? ?: System.getenv("USERNAME")
-            password = project.findProperty("github.key") as String? ?: System.getenv("TOKEN")
-        }
-    }
-    mavenCentral()
-}
-
 dependencies {
-    implementation("electionguard-kotlin-multiplatform:electionguard-kotlin-multiplatform-jvm:1.52.5-SNAPSHOT")
+    implementation(project(path = ":egklib", configuration = "jvmRuntimeElements"))
 
     implementation(libs.kotlin.result)
     implementation(libs.bundles.ktor.server)
