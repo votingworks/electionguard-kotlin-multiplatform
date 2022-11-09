@@ -7,8 +7,9 @@ import electionguard.core.ElementModP
 import electionguard.core.SchnorrProof
 import electionguard.json.*
 import electionguard.keyceremony.KeyCeremonyTrusteeIF
+import electionguard.keyceremony.KeyShare
 import electionguard.keyceremony.PublicKeys
-import electionguard.keyceremony.SecretKeyShare
+import electionguard.keyceremony.EncryptedKeyShare
 
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -75,7 +76,7 @@ class RemoteKeyTrusteeProxy(
         }
     }
 
-    override fun secretKeyShareFor(otherGuardian: String): Result<SecretKeyShare, String> {
+    override fun secretKeyShareFor(otherGuardian: String): Result<EncryptedKeyShare, String> {
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/$otherGuardian/secretKeyShareFor"
             val response: HttpResponse = client.get(url) {
@@ -83,14 +84,14 @@ class RemoteKeyTrusteeProxy(
                     append(HttpHeaders.Accept, "application/json")
                 }
             }
-            val secretKeyShareJson: SecretKeyShareJson = response.body()
-            val secretKeyShare: SecretKeyShare? = groupContext.importSecretKeyShare(secretKeyShareJson)
-            println("$id secretKeyShareFor ${secretKeyShare?.designatedGuardianId} = ${response.status}")
-            if (secretKeyShare == null) Err("SecretKeyShare") else Ok(secretKeyShare)
+            val encryptedKeyShareJson: EncryptedKeyShareJson = response.body()
+            val encryptedKeyShare: EncryptedKeyShare? = groupContext.importSecretKeyShare(encryptedKeyShareJson)
+            println("$id secretKeyShareFor ${encryptedKeyShare?.availableGuardianId} = ${response.status}")
+            if (encryptedKeyShare == null) Err("SecretKeyShare") else Ok(encryptedKeyShare)
         }
     }
 
-    override fun receiveSecretKeyShare(share: SecretKeyShare): Result<Boolean, String> {
+    override fun receiveSecretKeyShare(share: EncryptedKeyShare): Result<Boolean, String> {
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/receiveSecretKeyShare"
             val response: HttpResponse = client.post(url) {
@@ -99,7 +100,36 @@ class RemoteKeyTrusteeProxy(
                 }
                 setBody(share.publish())
             }
-            println("$id receiveSecretKeyShare from ${share.generatingGuardianId} = ${response.status}")
+            println("$id receiveSecretKeyShare from ${share.missingGuardianId} = ${response.status}")
+            if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
+        }
+    }
+
+    override fun keyShareFor(otherGuardian: String): Result<KeyShare, String> {
+        return runBlocking {
+            val url = "$remoteURL/ktrustee/$xcoord/$otherGuardian/keyShareFor"
+            val response: HttpResponse = client.get(url) {
+                headers {
+                    append(HttpHeaders.Accept, "application/json")
+                }
+            }
+            val keyShareJson: KeyShareJson = response.body()
+            val keyShare: KeyShare? = groupContext.importKeyShare(keyShareJson)
+            println("$id secretKeyShareFor ${keyShare?.availableGuardianId} = ${response.status}")
+            if (keyShare == null) Err("SecretKeyShare") else Ok(keyShare)
+        }
+    }
+
+    override fun receiveKeyShare(keyShare: KeyShare): Result<Boolean, String> {
+        return runBlocking {
+            val url = "$remoteURL/ktrustee/$xcoord/receiveKeyShare"
+            val response: HttpResponse = client.post(url) {
+                headers {
+                    append(HttpHeaders.ContentType, "application/json")
+                }
+                setBody(keyShare.publish())
+            }
+            println("$id receiveKeyShare from ${keyShare.missingGuardianId} = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
         }
     }

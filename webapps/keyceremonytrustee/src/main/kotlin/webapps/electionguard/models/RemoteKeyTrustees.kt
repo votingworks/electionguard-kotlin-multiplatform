@@ -7,7 +7,8 @@ import com.github.michaelbull.result.Result
 import electionguard.core.productionGroup
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.PublicKeys
-import electionguard.keyceremony.SecretKeyShare
+import electionguard.keyceremony.EncryptedKeyShare
+import electionguard.keyceremony.KeyShare
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
 import kotlinx.serialization.Serializable
@@ -24,11 +25,13 @@ data class RemoteKeyTrustee(val id: String, val xCoordinate: Int, val quorum: In
     fun publicKeys() = delegate.publicKeys()
     fun receivePublicKeys(keys: PublicKeys) = delegate.receivePublicKeys(keys)
     fun secretKeyShareFor(forGuardian: String) = delegate.secretKeyShareFor(forGuardian)
-    fun receiveSecretKeyShare(share: SecretKeyShare) = delegate.receiveSecretKeyShare(share)
+    fun receiveSecretKeyShare(share: EncryptedKeyShare) = delegate.receiveSecretKeyShare(share)
+    fun keyShareFor(otherGuardian: String): Result<KeyShare, String> = delegate.keyShareFor(otherGuardian)
+    fun receiveKeyShare(keyShare: KeyShare): Result<Boolean, String> = delegate.receiveKeyShare(keyShare)
     fun saveState() = delegate.saveState()
 }
 
-val guardians = mutableListOf<RemoteKeyTrustee>()
+val remoteKeyTrustees = mutableListOf<RemoteKeyTrustee>()
 
 // LOOK pass this in on command line
 val trusteeDir = "/home/snake/tmp/electionguard/RunRemoteKeyCeremonyTest/private_data/trustees"

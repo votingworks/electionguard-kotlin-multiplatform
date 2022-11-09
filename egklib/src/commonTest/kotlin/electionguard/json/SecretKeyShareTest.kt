@@ -8,7 +8,7 @@ import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.productionGroup
 import electionguard.core.propTestFastConfig
 import electionguard.core.runTest
-import electionguard.keyceremony.SecretKeyShare
+import electionguard.keyceremony.EncryptedKeyShare
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.byte
 import io.kotest.property.arbitrary.byteArray
@@ -34,13 +34,12 @@ class SecretKeyShareTest {
                 propTestFastConfig,
                 Arb.string(minSize = 3),
                 Arb.string(minSize = 3),
-                Arb.int(min = 1, max = 5),
                 Arb.byteArray(Arb.int(min = 1, max = 5).map { it * 32 }, Arb.byte()),
                 elGamalKeypairs(group),
                 elementsModQ(group, minimum = 2)
-            ) { g1, g2, x, bytes, kp, nonce ->
+            ) { g1, g2, bytes, kp, nonce ->
                 val ciphertext = bytes.hashedElGamalEncrypt(kp, nonce)
-                val sks = SecretKeyShare(g1, g2, x, ciphertext)
+                val sks = EncryptedKeyShare(g1, g2, ciphertext)
 
                 assertEquals(sks, group.importSecretKeyShare(sks.publish()))
                 assertEquals(sks, group.importSecretKeyShare(jsonRoundTrip(sks.publish())))

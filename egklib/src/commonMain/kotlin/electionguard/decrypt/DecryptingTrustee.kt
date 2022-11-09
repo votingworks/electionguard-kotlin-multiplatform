@@ -8,7 +8,7 @@ import electionguard.core.decrypt
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
-import electionguard.keyceremony.SecretKeyShare
+import electionguard.keyceremony.EncryptedKeyShare
 
 /**
  * A Trustee that knows its own secret key, for the purpose of decryption.
@@ -20,7 +20,7 @@ data class DecryptingTrustee(
     // This guardian's private and public key
     val electionKeypair: ElGamalKeypair,
     // Guardian's "shares" of other guardians keys, keyed by other (missing) guardian's id.
-    val secretKeyShares: Map<String, SecretKeyShare>,
+    val encryptedKeyShares: Map<String, EncryptedKeyShare>,
 ) : DecryptingTrusteeIF {
 
     init {
@@ -56,9 +56,9 @@ data class DecryptingTrustee(
     // encrypted: El(Pj(ℓ)) = spec 1.52, section 3.2.2 "share encryption"
     // decrypted = Pj(ℓ) = value of other's secret polynomial at my coordinate = "my share of other's secret key"
     private fun decryptKeyShare(group: GroupContext, missingGuardianId: String): ElementModQ {
-        val secretKeyShare: SecretKeyShare = this.secretKeyShares[missingGuardianId]
+        val encryptedKeyShare: EncryptedKeyShare = this.encryptedKeyShares[missingGuardianId]
             ?: throw IllegalStateException("DecryptingTrustee $id missing SecretKeyShare for $missingGuardianId")
-        val byteArray = secretKeyShare.encryptedCoordinate.decrypt(this.electionKeypair.secretKey)
+        val byteArray = encryptedKeyShare.encryptedCoordinate.decrypt(this.electionKeypair.secretKey)
             ?: throw IllegalStateException("DecryptingTrustee $id couldnt decrypt SecretKeyShare for $missingGuardianId")
         return byteArray.toUInt256().toElementModQ(group)
     }

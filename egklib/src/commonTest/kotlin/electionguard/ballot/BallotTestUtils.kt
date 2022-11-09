@@ -16,7 +16,7 @@ fun makeDecryptingTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrustee {
             ElGamalSecretKey(ktrustee.electionPrivateKey()),
             ElGamalPublicKey(ktrustee.electionPublicKey())
         ),
-        ktrustee.otherSharesForMe,
+        ktrustee.myShareOfOthers,
     )
 }
 
