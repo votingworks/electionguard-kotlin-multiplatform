@@ -26,7 +26,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /** Run a fake KeyCeremony to generate an ElectionInitialized for workflow testing. */
-// LOOK can we call RunKeyCeremony instead?
 class RunFakeKeyCeremonyTest {
 
     @Test
@@ -75,9 +74,8 @@ fun runFakeKeyCeremony(
 
     // check they are complete
     trustees.forEach {
-        assertEquals(nguardians, it.guardianPublicKeys.size)
-        assertEquals(nguardians - 1, it.otherSharesForMe.size)
-        assertEquals(nguardians - 1, it.mySharesForOther.size)
+        assertEquals(nguardians - 1, it.otherPublicKeys.size)
+        assertEquals(nguardians - 1, it.myShareOfOthers.size)
     }
 
     val commitments: MutableList<ElementModP> = mutableListOf()

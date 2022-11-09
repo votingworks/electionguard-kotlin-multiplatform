@@ -13,7 +13,7 @@ import electionguard.core.ElGamalSecretKey
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.keyceremony.SecretKeyShare
+import electionguard.keyceremony.EncryptedKeyShare
 
 // DecryptingTrustee must stay private. DecryptingGuardian is its public info.
 fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.DecryptingTrustee):
@@ -32,7 +32,7 @@ fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.Decryptin
         proto.guardianId,
         proto.guardianXCoordinate,
         electionKeyPair.unwrap(),
-        shares.associateBy { it.generatingGuardianId },
+        shares.associateBy { it.missingGuardianId },
     )
 
     return Ok(result)
@@ -60,8 +60,8 @@ private fun GroupContext.importElGamalKeypair(id: String, keypair: electionguard
     )
 }
 
-private fun GroupContext.importSecretKeyShare(id: String, keyShare: electionguard.protogen.SecretKeyShare?):
-        Result<SecretKeyShare, String> {
+private fun GroupContext.importSecretKeyShare(id: String, keyShare: electionguard.protogen.EncryptedKeyShare?):
+        Result<EncryptedKeyShare, String> {
     if (keyShare == null) {
         return Err("DecryptingTrustee $id missing keypair")
     }
@@ -73,10 +73,9 @@ private fun GroupContext.importSecretKeyShare(id: String, keyShare: electionguar
         return encryptedCoordinate
     }
     return Ok(
-        SecretKeyShare(
+        EncryptedKeyShare(
             keyShare.generatingGuardianId,
             keyShare.designatedGuardianId,
-            keyShare.designatedGuardianXCoordinate,
             encryptedCoordinate.unwrap(),
         )
     )
@@ -93,7 +92,7 @@ fun KeyCeremonyTrustee.publishDecryptingTrustee() =
             ElGamalSecretKey(this.electionPrivateKey()),
             ElGamalPublicKey(this.electionPublicKey())
         ).publishElGamalKeyPair(),
-        this.otherSharesForMe.values.map { it.publishSecretKeyShare() },
+        this.myShareOfOthers.values.map { it.publishEncryptedKeyShare() },
     )
 
 private fun ElGamalKeypair.publishElGamalKeyPair() =
@@ -102,10 +101,9 @@ private fun ElGamalKeypair.publishElGamalKeyPair() =
         this.publicKey.key.publishElementModP(),
     )
 
-private fun SecretKeyShare.publishSecretKeyShare() =
-    electionguard.protogen.SecretKeyShare(
-        this.generatingGuardianId,
-        this.designatedGuardianId,
-        this.designatedGuardianXCoordinate,
+private fun EncryptedKeyShare.publishEncryptedKeyShare() =
+    electionguard.protogen.EncryptedKeyShare(
+        this.missingGuardianId,
+        this.availableGuardianId,
         this.encryptedCoordinate.publishHashedCiphertext(),
     )

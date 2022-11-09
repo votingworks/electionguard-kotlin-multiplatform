@@ -9,7 +9,7 @@ message DecryptingTrustee {
   string guardian_id = 1;
   uint32 guardian_x_coordinate = 2;     // the x coefficient (sequence_order), must be > 0
   ElGamalKeypair election_keypair = 3;  // Guardian's private and public key
-  repeated SecretKeyShare secret_key_shares = 4; // Guardian's "shares" of other guardians keys
+  repeated EncryptedKeyShare secret_key_shares = 4; // Guardian's "shares" of other guardians keys
 }
 
 message ElGamalKeypair {
@@ -17,14 +17,12 @@ message ElGamalKeypair {
   ElementModP public_key = 2;
 }
 
-message SecretKeyShare {
+message EncryptedKeyShare {
   // The Id of the guardian that generated this (i), aka "missing guardian"
   string generating_guardian_id = 1;
   // The Id of the guardian to receive this backup.
   string designated_guardian_id = 2;
-  // The x coefficient of the designated guardian (l).
-  uint32 designated_guardian_x_coordinate = 3;
   // Pi(ℓ)= The generatingGuardian's polynomial value at designatedGuardianXCoordinate
-  // This is the encryption of that = Eℓ (Pi(ℓ)), see spec 1.52 eq 14.
+  // This is the encryption = Eℓ (Pi(ℓ)), see spec 1.52 eq 14.
   HashedElGamalCiphertext encrypted_coordinate = 5;
 }
