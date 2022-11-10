@@ -15,7 +15,6 @@ import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.EncryptedKeyShare
 
-// DecryptingTrustee must stay private. DecryptingGuardian is its public info.
 fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.DecryptingTrustee):
         Result<DecryptingTrustee, String> {
 

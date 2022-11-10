@@ -121,6 +121,9 @@ kotlin {
 
                     // Fancy property-based testing
                     implementation(libs.kotest.property)
+
+                    // mocking
+                    implementation("io.mockk:mockk:1.13.2")
                 }
             }
         val jvmMain by

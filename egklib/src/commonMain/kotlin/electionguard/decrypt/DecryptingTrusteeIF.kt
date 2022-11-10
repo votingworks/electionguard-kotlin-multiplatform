@@ -27,7 +27,7 @@ interface DecryptingTrusteeIF {
     ) : Boolean
 
     /**
-     * Compute partial decryption(s) of elgamal encryption(s), using spec 1.52 eq 58 and 59.
+     * Compute partial decryptions of elgamal encryptions, using spec 1.52 eq 58 and 59.
      *
      * @param texts            list of ElementModP that will be partially decrypted
      * @param nonce            an optional nonce to generate the proof

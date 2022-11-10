@@ -1,5 +1,6 @@
 package electionguard.keyceremony
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
 import electionguard.ballot.ElectionConfig
@@ -76,4 +77,47 @@ class KeyCeremonyTest {
         assertEquals(expectedExtendedBaseHash.toElementModQ(group), init.cryptoExtendedBaseHash())
         assertEquals(config.numberOfGuardians, init.numberOfGuardians())
     }
+
+    @Test
+    fun testKeyCeremonyFailQuorum() {
+        val group = productionGroup()
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 2)
+        val trustees = listOf(trustee1, trustee2, trustee3)
+
+        val result = keyCeremonyExchange(trustees)
+        println("result = ${result.getError()}")
+        assertTrue(result is Err, result.getError())
+        assertTrue(result.toString().contains("keyCeremonyExchange trustees have different quorums"))
+    }
+
+    @Test
+    fun testKeyCeremonyFailTrusteeIdDuplicate() {
+        val group = productionGroup()
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id1", 2, 3)
+        val trustees = listOf(trustee1, trustee2, trustee3)
+
+        val result = keyCeremonyExchange(trustees)
+        println("result = ${result.getError()}")
+        assertTrue(result is Err, result.getError())
+        assertTrue(result.toString().contains("keyCeremonyExchange trustees have non-unique ids"))
+    }
+
+    @Test
+    fun testKeyCeremonyFailTrusteeCoordDuplicate() {
+        val group = productionGroup()
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 3, 3)
+        val trustees = listOf(trustee1, trustee2, trustee3)
+
+        val result = keyCeremonyExchange(trustees)
+        println("result = ${result.getError()}")
+        assertTrue(result is Err, result.getError())
+        assertTrue(result.toString().contains("keyCeremonyExchange trustees have non-unique xcoordinates"))
+    }
+
 }

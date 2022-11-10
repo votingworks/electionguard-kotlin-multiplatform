@@ -76,7 +76,7 @@ class RemoteKeyTrusteeProxy(
         }
     }
 
-    override fun secretKeyShareFor(otherGuardian: String): Result<EncryptedKeyShare, String> {
+    override fun encryptedKeyShareFor(otherGuardian: String): Result<EncryptedKeyShare, String> {
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/$otherGuardian/secretKeyShareFor"
             val response: HttpResponse = client.get(url) {
@@ -91,7 +91,7 @@ class RemoteKeyTrusteeProxy(
         }
     }
 
-    override fun receiveSecretKeyShare(share: EncryptedKeyShare): Result<Boolean, String> {
+    override fun receiveEncryptedKeyShare(share: EncryptedKeyShare): Result<Boolean, String> {
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/receiveSecretKeyShare"
             val response: HttpResponse = client.post(url) {

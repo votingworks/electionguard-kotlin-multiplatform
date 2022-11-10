@@ -17,9 +17,9 @@ import electionguard.keyceremony.EncryptedKeyShare
 data class DecryptingTrustee(
     val id: String,
     val xCoordinate: Int,
-    // This guardian's private and public key
+    // My private and public key
     val electionKeypair: ElGamalKeypair,
-    // Guardian's "shares" of other guardians keys, keyed by other (missing) guardian's id.
+    // My share of other's key, keyed by other guardian id.
     val encryptedKeyShares: Map<String, EncryptedKeyShare>,
 ) : DecryptingTrusteeIF {
 

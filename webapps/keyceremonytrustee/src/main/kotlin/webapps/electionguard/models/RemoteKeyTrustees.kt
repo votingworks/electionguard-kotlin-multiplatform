@@ -24,8 +24,8 @@ data class RemoteKeyTrustee(val id: String, val xCoordinate: Int, val quorum: In
 
     fun publicKeys() = delegate.publicKeys()
     fun receivePublicKeys(keys: PublicKeys) = delegate.receivePublicKeys(keys)
-    fun secretKeyShareFor(forGuardian: String) = delegate.secretKeyShareFor(forGuardian)
-    fun receiveSecretKeyShare(share: EncryptedKeyShare) = delegate.receiveSecretKeyShare(share)
+    fun secretKeyShareFor(forGuardian: String) = delegate.encryptedKeyShareFor(forGuardian)
+    fun receiveSecretKeyShare(share: EncryptedKeyShare) = delegate.receiveEncryptedKeyShare(share)
     fun keyShareFor(otherGuardian: String): Result<KeyShare, String> = delegate.keyShareFor(otherGuardian)
     fun receiveKeyShare(keyShare: KeyShare): Result<Boolean, String> = delegate.receiveKeyShare(keyShare)
     fun saveState() = delegate.saveState()
