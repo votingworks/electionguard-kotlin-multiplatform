@@ -1,6 +1,8 @@
 package electionguard.keyceremony
 
 import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
@@ -44,7 +46,8 @@ fun main(args: Array<String>) {
     println("RunTrustedKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
-    runKeyCeremony(group, inputDir, outputDir, trusteeDir, createdBy)
+    val result = runKeyCeremony(group, inputDir, outputDir, trusteeDir, createdBy)
+    println("runKeyCeremony result = $result")
 }
 
 fun runKeyCeremony(
@@ -53,7 +56,7 @@ fun runKeyCeremony(
     outputDir: String,
     trusteeDir: String,
     createdBy: String?
-): Boolean {
+): Result<Boolean, String> {
     val starting = getSystemTimeInMillis()
 
     val consumerIn = Consumer(configDir, group)
@@ -67,8 +70,7 @@ fun runKeyCeremony(
 
     val exchangeResult = keyCeremonyExchange(trustees)
     if (exchangeResult is Err) {
-        println(exchangeResult.error)
-        return false
+        return exchangeResult
     }
     val keyCeremonyResults = exchangeResult.unwrap()
     val electionInitialized = keyCeremonyResults.makeElectionInitialized(
@@ -88,5 +90,5 @@ fun runKeyCeremony(
 
     val took = getSystemTimeInMillis() - starting
     println("RunTrustedKeyCeremony took $took millisecs")
-    return true
+    return Ok(true)
 }

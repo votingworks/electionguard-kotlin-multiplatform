@@ -80,7 +80,7 @@ fun runEncryptDecryptBallot(
     }
     trustees.forEach { t1 ->
         trustees.filter { it.id != t1.id }.forEach { t2 ->
-            t2.receiveSecretKeyShare(t1.secretKeyShareFor(t2.id).unwrap())
+            t2.receiveEncryptedKeyShare(t1.encryptedKeyShareFor(t2.id).unwrap())
         }
     }
     val dTrustees: List<DecryptingTrustee> = trustees.map { makeDecryptingTrustee(it) }

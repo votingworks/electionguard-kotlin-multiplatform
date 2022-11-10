@@ -49,7 +49,7 @@ data class ElectionPolynomial(
  */
 fun calculateGexpPiAtL(
     xcoord: Int,  // l
-    coefficientCommitments: List<ElementModP>  // the committments to Pi
+    coefficientCommitments: List<ElementModP>  // K_i,j
 ): ElementModP {
     val group = compatibleContextOrFail(*coefficientCommitments.toTypedArray())
     val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())

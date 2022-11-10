@@ -3,7 +3,6 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.ElectionConfig
@@ -15,7 +14,29 @@ import electionguard.core.Base16.toHex
 private const val debug = true
 
 /** Exchange publicKeys and secretShares among the trustees */
-fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremonyResults, String> {
+fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFailure : Boolean = true): Result<KeyCeremonyResults, String> {
+    // make sure trustee ids are all different
+    val uniqueIds = trustees.map{it.id()}.toSet()
+    if (uniqueIds.size != trustees.size) {
+        return Err("keyCeremonyExchange trustees have non-unique ids = ${trustees.map{it.id()}}")
+    }
+
+    // make sure trustee xcoords are all different
+    val uniqueCoords = trustees.map{it.xCoordinate()}.toSet()
+    if (uniqueCoords.size != trustees.size) {
+        return Err("keyCeremonyExchange trustees have non-unique xcoordinates = ${trustees.map{it.xCoordinate()}}")
+    }
+
+    // make sure trustee quorum are all the same
+    val uniqueQuorum = trustees.map{it.coefficientCommitments().size}.toSet()
+    if (uniqueQuorum.size != 1) {
+        return Err("keyCeremonyExchange trustees have different quorums = ${trustees.map{it.coefficientCommitments().size}}")
+    }
+
+    // LOOK if the trustees are not trusted, we could do other verification tests here.
+    //  are the public keys valid?
+    //  are the encrypted shares valid?
+    //  are the unencrypted shares valid?
 
     // exchange PublicKeys
     val publicKeys: MutableList<PublicKeys> = mutableListOf()
@@ -35,47 +56,66 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>): Result<KeyCeremon
         }
     }
 
-    var errors = publicKeyResults.getAllErrors()
-    if (errors.isNotEmpty()) {
-        return Err("keyCeremonyExchange failed exchanging public keys: ${errors.joinToString("\n")}")
+    val errors = publicKeyResults.merge()
+    if (errors is Err) {
+        return Err("keyCeremonyExchange failed exchanging public keys:\n ${errors.error}")
     }
 
     // exchange SecretKeyShares, and validate them
     val keyShareFailures: MutableList<KeyShareFailed> = mutableListOf()
-    val secretKeyResults: MutableList<Result<Boolean, String>> = mutableListOf()
+    val encryptedKeyResults: MutableList<Result<Boolean, String>> = mutableListOf()
     trustees.forEach { missing ->
         trustees.filter { it.id() != missing.id() }.forEach { avail ->
-            if (debug) println(" ${missing.id()} secretKeyShareFor() ${avail.id()}")
-            val secretKeyShareResult = missing.secretKeyShareFor(avail.id())
-            if (secretKeyShareResult is Ok) {
-                val secretKeyShare = secretKeyShareResult.unwrap()
-                if (debug) println("  ${avail.id()} receiveSecretKeyShare() for ${missing.id()} " +
-                        "(missing ${secretKeyShare.missingGuardianId} avail ${secretKeyShare.availableGuardianId})")
-                secretKeyResults.add(avail.receiveSecretKeyShare(secretKeyShare))
-            } else {
-                // secretKeyShare fails to validate
-                secretKeyResults.add(Err(secretKeyShareResult.unwrapError()))
+            if (debug) println(" ${missing.id()} encryptedKeyShareFor() ${avail.id()}")
+            val encryptedKeyShareResult = missing.encryptedKeyShareFor(avail.id())
+            if (encryptedKeyShareResult is Err) {
+                encryptedKeyResults.add(Err(encryptedKeyShareResult.unwrapError()))
                 keyShareFailures.add(KeyShareFailed(missing, avail))
+            } else {
+                val secretKeyShare = encryptedKeyShareResult.unwrap()
+                if (debug) println(
+                    "  ${avail.id()} receiveEncryptedKeyShare() for ${missing.id()} " +
+                            "(missing ${secretKeyShare.missingGuardianId} avail ${secretKeyShare.availableGuardianId})"
+                )
+                val receiveEncryptedKeyShareResult = avail.receiveEncryptedKeyShare(secretKeyShare)
+                if (receiveEncryptedKeyShareResult is Err) {
+                    encryptedKeyResults.add(receiveEncryptedKeyShareResult)
+                    keyShareFailures.add(KeyShareFailed(missing, avail))
+                }
             }
         }
     }
 
-    // Phase Two if any secretKeyShares fail to validate, send KeyShares
+    // Phase Two: if any secretKeyShares fail to validate, send and validate KeyShares
+    val keyResults: MutableList<Result<Boolean, String>> = mutableListOf()
     keyShareFailures.forEach { it ->
+        if (debug) println(" ${it.missingGuardian.id()} keyShareFor() ${it.availableGuardian.id()}")
         val keyShareResult = it.missingGuardian.keyShareFor(it.availableGuardian.id())
         if (keyShareResult is Ok) {
-            secretKeyResults.add(it.availableGuardian.receiveKeyShare(keyShareResult.unwrap()))
+            val keyShare = keyShareResult.unwrap()
+            if (debug) println(" ${it.availableGuardian.id()} receiveKeyShare() ${keyShare.missingGuardianId}")
+            keyResults.add(it.availableGuardian.receiveKeyShare(keyShare))
         } else {
-            secretKeyResults.add(Err(keyShareResult.unwrapError()))
+            keyResults.add(Err(keyShareResult.unwrapError()))
         }
     }
 
-    errors = secretKeyResults.getAllErrors()
-    if (errors.isNotEmpty()) {
-        return Err("keyCeremonyExchange failed exchanging secret key shares: ${errors.joinToString("\n")}")
+    if (allowEncryptedFailure) {
+        val keyResultAll = keyResults.merge()
+        return if (keyResultAll is Ok) {
+            Ok(KeyCeremonyResults(publicKeys))
+        } else {
+            val all = (keyResults + encryptedKeyResults).merge()
+            Err("keyCeremonyExchange failed exchanging shares: ${all.unwrapError()}")
+        }
+    } else {
+        val all = (keyResults + encryptedKeyResults).merge()
+        return if (all is Ok) {
+            Ok(KeyCeremonyResults(publicKeys))
+        } else {
+            Err("keyCeremonyExchange failed exchanging shares:\n ${all.unwrapError()}")
+        }
     }
-
-    return Ok(KeyCeremonyResults(publicKeys))
 }
 
 private data class KeyShareFailed(

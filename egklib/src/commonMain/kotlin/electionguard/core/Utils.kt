@@ -162,7 +162,7 @@ inline fun <T> List<Result<T, String>>.mergeWithOkay(
             else
                 ""
         Err(errHeaderWithNewline +
-                errors.joinToString("\n") { it.error })
+                errors.joinToString("\n ") { it.error })
     }
 }
 
