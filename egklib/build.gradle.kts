@@ -121,9 +121,6 @@ kotlin {
 
                     // Fancy property-based testing
                     implementation(libs.kotest.property)
-
-                    // mocking
-                    implementation("io.mockk:mockk:1.13.2")
                 }
             }
         val jvmMain by
@@ -146,6 +143,9 @@ kotlin {
                     // Unclear if we really need all the extra features of JUnit5, but it would
                     // at least be handy if we could get its parallel test runner to work.
                     implementation(kotlin("test-junit5", kotlinVersion))
+
+                    // mocking only available on jvm
+                    implementation("io.mockk:mockk:1.13.2")
                 }
             }
         val nativeMain by getting { dependencies {
