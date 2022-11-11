@@ -6,6 +6,11 @@ import electionguard.core.PowRadixOption
 import electionguard.core.ProductionMode
 import electionguard.core.productionGroup
 
+
+// LOOK pass this in on command line
+//val trusteeDir = "/home/snake/tmp/electionguard/RunRemoteKeyCeremonyTest/private_data/trustees"
+val trusteeDir = "/home/snake/tmp/electionguard/MockRemoteKeyCeremonyTest/private_data/trustees"
+
 val groupContext = productionGroup(PowRadixOption.HIGH_MEMORY_USE, ProductionMode.Mode4096)
 
 fun main(args: Array<String>): Unit =

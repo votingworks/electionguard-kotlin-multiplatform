@@ -53,7 +53,7 @@ class KeyCeremonyMockTest {
         val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
-            trustee3.encryptedKeyShareFor(trustee1.id())
+            trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
             // bad EncryptedShare
             Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
         }
@@ -71,7 +71,7 @@ class KeyCeremonyMockTest {
         val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
-            trustee3.encryptedKeyShareFor(trustee1.id())
+            trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
             // bad EncryptedShare
             Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
         }
@@ -90,7 +90,7 @@ class KeyCeremonyMockTest {
         val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
-            trustee3.encryptedKeyShareFor(trustee1.id())
+            trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
             // bad EncryptedShare
             Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
         }
@@ -114,7 +114,7 @@ class KeyCeremonyMockTest {
         val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
-            trustee3.encryptedKeyShareFor(trustee1.id())
+            trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
             // bad EncryptedShare
             Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
         }

@@ -63,9 +63,11 @@ dependencyResolutionManagement {
 
             // testing
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin-version")
+            library("kotlin-test-junit5", "org.jetbrains.kotlin", "kotlin-test-junit5").versionRef("kotlin-version")
             library("kotlinx-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").versionRef("coroutines-version")
             library("ktor-server-tests-jvm", "io.ktor", "ktor-server-tests-jvm").versionRef("ktor-version")
             library("kotest-property", "io.kotest", "kotest-property").version("5.4.0")
+            library("mockk", "io.mockk", "mockk").version("1.13.2")
         }
     }
 }

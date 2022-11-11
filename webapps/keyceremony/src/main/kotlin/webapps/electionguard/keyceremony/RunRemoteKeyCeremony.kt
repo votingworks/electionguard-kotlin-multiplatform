@@ -21,8 +21,8 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 
 /**
- * Run KeyCeremony CLI.
- * This has access to all the trustees, so is only used for testing, or in a use case of trust.
+ * Run Remote KeyCeremony CLI.
+ * The keyceremonytrustee webapp must already be running. See webapps/electionguard/Application.kt.
  */
 fun main(args: Array<String>) {
     val parser = ArgParser("RunRemoteKeyCeremony")
@@ -67,7 +67,6 @@ fun runKeyCeremony(
     createdBy: String?
 ): Boolean {
     val starting = getSystemTimeInMillis()
-
     val consumerIn = Consumer(configDir, group)
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 

@@ -48,6 +48,9 @@ class RemoteKeyTrusteeProxy(
     }
 
     override fun publicKeys(): Result<PublicKeys, String> {
+        if (this.publicKeys != null) {
+            return Ok(this.publicKeys!!)
+        }
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/publicKeys"
             val response: HttpResponse = client.get(url) {
@@ -78,7 +81,7 @@ class RemoteKeyTrusteeProxy(
 
     override fun encryptedKeyShareFor(otherGuardian: String): Result<EncryptedKeyShare, String> {
         return runBlocking {
-            val url = "$remoteURL/ktrustee/$xcoord/$otherGuardian/secretKeyShareFor"
+            val url = "$remoteURL/ktrustee/$xcoord/$otherGuardian/encryptedKeyShareFor"
             val response: HttpResponse = client.get(url) {
                 headers {
                     append(HttpHeaders.Accept, "application/json")
@@ -86,21 +89,21 @@ class RemoteKeyTrusteeProxy(
             }
             val encryptedKeyShareJson: EncryptedKeyShareJson = response.body()
             val encryptedKeyShare: EncryptedKeyShare? = groupContext.importSecretKeyShare(encryptedKeyShareJson)
-            println("$id secretKeyShareFor ${encryptedKeyShare?.availableGuardianId} = ${response.status}")
-            if (encryptedKeyShare == null) Err("SecretKeyShare") else Ok(encryptedKeyShare)
+            println("$id encryptedKeyShareFor ${encryptedKeyShare?.availableGuardianId} = ${response.status}")
+            if (encryptedKeyShare == null) Err("EncryptedKeyShare") else Ok(encryptedKeyShare)
         }
     }
 
     override fun receiveEncryptedKeyShare(share: EncryptedKeyShare): Result<Boolean, String> {
         return runBlocking {
-            val url = "$remoteURL/ktrustee/$xcoord/receiveSecretKeyShare"
+            val url = "$remoteURL/ktrustee/$xcoord/receiveEncryptedKeyShare"
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
                 }
                 setBody(share.publish())
             }
-            println("$id receiveSecretKeyShare from ${share.missingGuardianId} = ${response.status}")
+            println("$id receiveEncryptedKeyShare from ${share.missingGuardianId} = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
         }
     }
@@ -148,14 +151,17 @@ class RemoteKeyTrusteeProxy(
     }
 
     override fun coefficientCommitments(): List<ElementModP> {
+        publicKeys()
         return publicKeys?.coefficientCommitments() ?: throw IllegalStateException()
     }
 
     override fun coefficientProofs(): List<SchnorrProof> {
+        publicKeys()
         return publicKeys?.coefficientProofs ?: throw IllegalStateException()
     }
 
     override fun electionPublicKey(): ElementModP {
+        publicKeys()
         return publicKeys?.publicKey()?.key ?: throw IllegalStateException()
     }
 

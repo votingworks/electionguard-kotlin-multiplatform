@@ -26,4 +26,7 @@ dependencies {
 
     testImplementation(libs.ktor.server.tests.jvm)
     testImplementation(libs.kotlin.test.junit)
+
+    // mocking only available on jvm
+    testImplementation(libs.mockk)
 }
