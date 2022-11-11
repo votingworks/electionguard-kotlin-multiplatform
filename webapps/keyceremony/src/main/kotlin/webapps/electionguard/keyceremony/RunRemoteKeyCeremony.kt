@@ -67,7 +67,6 @@ fun runKeyCeremony(
     createdBy: String?
 ): Boolean {
     val starting = getSystemTimeInMillis()
-
     val consumerIn = Consumer(configDir, group)
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 

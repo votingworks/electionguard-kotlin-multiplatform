@@ -36,7 +36,7 @@ fun Route.trusteeRouting() {
             )
             val rguardian =
                 remoteKeyTrustees.find { it.xCoordinate == id.toInt() } ?: return@get call.respondText(
-                    "No RemoteKeyTrustee with id $id",
+                    "No RemoteKeyTrustee with xCoordinate $id",
                     status = HttpStatusCode.NotFound
                 )
             val result = rguardian.publicKeys()
@@ -58,7 +58,7 @@ fun Route.trusteeRouting() {
             )
             val rguardian =
                 remoteKeyTrustees.find { it.xCoordinate == id.toInt() } ?: return@post call.respondText(
-                    "No RemoteKeyTrustee with id $id",
+                    "No RemoteKeyTrustee with xCoordinate $id",
                     status = HttpStatusCode.NotFound
                 )
             val publicKeysJson = call.receive<PublicKeysJson>()
@@ -78,21 +78,21 @@ fun Route.trusteeRouting() {
             }
         }
 
-        get("{id?}/{from?}/secretKeyShareFor") {
+        get("{id?}/{from?}/encryptedKeyShareFor") {
             val id = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id",
                 status = HttpStatusCode.BadRequest
             )
             val rguardian =
                 remoteKeyTrustees.find { it.xCoordinate == id.toInt() } ?: return@get call.respondText(
-                    "No RemoteKeyTrustee with id $id",
+                    "No RemoteKeyTrustee with xCoordinate $id",
                     status = HttpStatusCode.NotFound
                 )
             val from = call.parameters["from"] ?: return@get call.respondText(
                 "Missing from id",
                 status = HttpStatusCode.BadRequest
             )
-            val result = rguardian.secretKeyShareFor(from)
+            val result = rguardian.encryptedKeyShareFor(from)
             if (result is Ok) {
                 call.respond(result.unwrap().publish())
             } else {
@@ -103,23 +103,23 @@ fun Route.trusteeRouting() {
             }
         }
 
-        post("{id?}/receiveSecretKeyShare") {
+        post("{id?}/receiveEncryptedKeyShare") {
             val id = call.parameters["id"] ?: return@post call.respondText(
                 "Missing id",
                 status = HttpStatusCode.BadRequest
             )
             val rguardian =
                 remoteKeyTrustees.find { it.xCoordinate == id.toInt() } ?: return@post call.respondText(
-                    "No RemoteKeyTrustee with id $id",
+                    "No RemoteKeyTrustee with xCoordinate $id",
                     status = HttpStatusCode.NotFound
                 )
             val secretShare = call.receive<EncryptedKeyShareJson>()
-            val result = rguardian.receiveSecretKeyShare(groupContext.importSecretKeyShare(secretShare))
+            val result = rguardian.receiveEncryptedKeyShare(groupContext.importSecretKeyShare(secretShare))
             if (result is Ok) {
-                call.respondText("RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare correctly", status = HttpStatusCode.OK)
+                call.respondText("RemoteKeyTrustee ${rguardian.id} receiveEncryptedKeyShare correctly", status = HttpStatusCode.OK)
             } else {
                 call.respondText(
-                    "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare failed ${result.unwrapError()}",
+                    "RemoteKeyTrustee ${rguardian.id} receiveEncryptedKeyShare failed ${result.unwrapError()}",
                     status = HttpStatusCode.BadRequest
                 )
             }
@@ -133,7 +133,7 @@ fun Route.trusteeRouting() {
             )
             val rguardian =
                 remoteKeyTrustees.find { it.xCoordinate == id.toInt() } ?: return@get call.respondText(
-                    "No RemoteKeyTrustee with id $id",
+                    "No RemoteKeyTrustee with xCoordinate $id",
                     status = HttpStatusCode.NotFound
                 )
             val from = call.parameters["from"] ?: return@get call.respondText(
@@ -158,7 +158,7 @@ fun Route.trusteeRouting() {
             )
             val rguardian =
                 remoteKeyTrustees.find { it.xCoordinate == id.toInt() } ?: return@post call.respondText(
-                    "No RemoteKeyTrustee with id $id",
+                    "No RemoteKeyTrustee with xCoordinate $id",
                     status = HttpStatusCode.NotFound
                 )
             val secretShare = call.receive<KeyShareJson>()
@@ -180,7 +180,7 @@ fun Route.trusteeRouting() {
             )
             val rguardian =
                 remoteKeyTrustees.find { it.xCoordinate == id.toInt() } ?: return@get call.respondText(
-                    "No RemoteKeyTrustee with id $id",
+                    "No RemoteKeyTrustee with xCoordinate $id",
                     status = HttpStatusCode.NotFound
                 )
             val result = rguardian.saveState(trusteeDir)

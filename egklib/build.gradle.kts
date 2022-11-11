@@ -142,10 +142,10 @@ kotlin {
 
                     // Unclear if we really need all the extra features of JUnit5, but it would
                     // at least be handy if we could get its parallel test runner to work.
-                    implementation(kotlin("test-junit5", kotlinVersion))
+                    implementation(libs.kotlin.test.junit5)
 
                     // mocking only available on jvm
-                    implementation("io.mockk:mockk:1.13.2")
+                    implementation(libs.mockk)
                 }
             }
         val nativeMain by getting { dependencies {
