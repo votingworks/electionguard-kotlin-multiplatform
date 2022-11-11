@@ -28,14 +28,12 @@ data class RemoteKeyTrustee(val id: String, val xCoordinate: Int, val quorum: In
     fun receiveSecretKeyShare(share: EncryptedKeyShare) = delegate.receiveEncryptedKeyShare(share)
     fun keyShareFor(otherGuardian: String): Result<KeyShare, String> = delegate.keyShareFor(otherGuardian)
     fun receiveKeyShare(keyShare: KeyShare): Result<Boolean, String> = delegate.receiveKeyShare(keyShare)
-    fun saveState() = delegate.saveState()
+    fun saveState(trusteeDir : String) = delegate.saveState(trusteeDir)
 }
 
 val remoteKeyTrustees = mutableListOf<RemoteKeyTrustee>()
 
-// LOOK pass this in on command line
-val trusteeDir = "/home/snake/tmp/electionguard/RunRemoteKeyCeremonyTest/private_data/trustees"
-fun KeyCeremonyTrustee.saveState() : Result<Boolean, String> {
+fun KeyCeremonyTrustee.saveState(trusteeDir : String) : Result<Boolean, String> {
     // store the trustees in some private place.
     val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
     try {

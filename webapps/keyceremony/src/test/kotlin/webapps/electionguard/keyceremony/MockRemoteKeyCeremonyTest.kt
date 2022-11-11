@@ -11,51 +11,22 @@ import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.publish.Consumer
 import electionguard.publish.Publisher
 import electionguard.publish.PublisherMode
-import kotlinx.cli.ArgParser
-import kotlinx.cli.ArgType
-import kotlinx.cli.required
 
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
+import org.junit.Test
 
-/**
- * Run Remote KeyCeremony CLI.
- * The keyceremonytrustee webapp must already be running. See webapps/electionguard/Application.kt.
- */
-fun main(args: Array<String>) {
-    val parser = ArgParser("RunRemoteKeyCeremony")
-    val inputDir by parser.option(
-        ArgType.String,
-        shortName = "in",
-        description = "Directory containing input ElectionConfig record"
-    ).required()
-    val trusteeDir by parser.option(
-        ArgType.String,
-        shortName = "trustees",
-        description = "Directory to write private trustees"
-    ).required()
-    val outputDir by parser.option(
-        ArgType.String,
-        shortName = "out",
-        description = "Directory to write output ElectionInitialized record"
-    ).required()
-    val remoteUrl by parser.option(
-        ArgType.String,
-        shortName = "remoteUrl",
-        description = "URL of keyceremony trustee app "
-    ).required()
-    val createdBy by parser.option(
-        ArgType.String,
-        shortName = "createdBy",
-        description = "who created"
-    )
-    parser.parse(args)
-    println("RunRemoteKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
+@Test
+fun testRemoteKeyCeremonyMain() {
+    val inputDir = "/home/snake/tmp/electionguard/kickstart/start"
+    val trusteeDir = "/home/snake/tmp/electionguard/MockRemoteKeyCeremonyTest/private_data/trustees"
+    val outputDir = "/home/snake/tmp/electionguard/MockRemoteKeyCeremonyTest"
+    val remoteUrl = "http://0.0.0.0:11180"
 
     val group = productionGroup()
-    runKeyCeremony(group, remoteUrl, inputDir, outputDir, trusteeDir, createdBy)
+    runKeyCeremony(group, remoteUrl, inputDir, outputDir, trusteeDir, "mockRemoteKeyCeremonyTest")
 }
 
 fun runKeyCeremony(

@@ -11,6 +11,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import webapps.electionguard.trusteeDir
 
 fun Route.trusteeRouting() {
     route("/ktrustee") {
@@ -182,7 +183,7 @@ fun Route.trusteeRouting() {
                     "No RemoteKeyTrustee with id $id",
                     status = HttpStatusCode.NotFound
                 )
-            val result = rguardian.saveState()
+            val result = rguardian.saveState(trusteeDir)
             if (result is Ok) {
                 call.respondText(
                     "RemoteKeyTrustee ${rguardian.id} saveState succeeded",

@@ -48,6 +48,9 @@ class RemoteKeyTrusteeProxy(
     }
 
     override fun publicKeys(): Result<PublicKeys, String> {
+        if (this.publicKeys != null) {
+            return Ok(this.publicKeys!!)
+        }
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/publicKeys"
             val response: HttpResponse = client.get(url) {
@@ -148,14 +151,17 @@ class RemoteKeyTrusteeProxy(
     }
 
     override fun coefficientCommitments(): List<ElementModP> {
+        publicKeys()
         return publicKeys?.coefficientCommitments() ?: throw IllegalStateException()
     }
 
     override fun coefficientProofs(): List<SchnorrProof> {
+        publicKeys()
         return publicKeys?.coefficientProofs ?: throw IllegalStateException()
     }
 
     override fun electionPublicKey(): ElementModP {
+        publicKeys()
         return publicKeys?.publicKey()?.key ?: throw IllegalStateException()
     }
 
