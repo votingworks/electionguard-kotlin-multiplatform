@@ -7,14 +7,7 @@ import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.Guardian
 import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.decryptWithBetaToContestData
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GenericChaumPedersenProof
-import electionguard.core.GroupContext
-import electionguard.core.compatibleContextOrFail
-import electionguard.core.hashElements
-import electionguard.core.toElementModQ
+import electionguard.core.*
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
@@ -25,16 +18,22 @@ class TallyDecryptor(
     val qbar: ElementModQ,
     val jointPublicKey: ElGamalPublicKey,
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>,
-    val guardians: List<Guardian>) {
-
+    val guardians: Map<String, Guardian>,
+    val missingTrustees: List<String>, // ids of the missing trustees
+) {
     /**
      * Called after gathering the shares for all available trustees.
      * Shares are in a Map keyed by "${contestId}#@${selectionId}"
      */
-    fun decryptTally(tally: EncryptedTally, trusteeDecryptions: TrusteeDecryptions): DecryptedTallyOrBallot {
+    fun decryptTally(
+        tally: EncryptedTally,
+        decryptions: Decryptions,
+        stats: Stats,
+    ): DecryptedTallyOrBallot {
         val contests: MutableMap<String, DecryptedTallyOrBallot.Contest> = HashMap()
+        // LOOK could parallelize contests
         for (tallyContest in tally.contests) {
-            val decryptedContest = decryptContest(tallyContest, trusteeDecryptions)
+            val decryptedContest = decryptContest(tallyContest, decryptions, stats)
             contests[tallyContest.contestId] = decryptedContest
         }
         return DecryptedTallyOrBallot(tally.tallyId, contests)
@@ -42,17 +41,18 @@ class TallyDecryptor(
 
     private fun decryptContest(
         contest: EncryptedTally.Contest,
-        trusteeDecryptions: TrusteeDecryptions,
+        decryptions: Decryptions,
+        stats: Stats,
     ): DecryptedTallyOrBallot.Contest {
-        val results = trusteeDecryptions.contestData[contest.contestId]
+        val results = decryptions.contestData[contest.contestId]
         val decryptedContestData = decryptContestData(contest.contestId, results)
 
         val selections: MutableMap<String, DecryptedTallyOrBallot.Selection> = HashMap()
         for (tallySelection in contest.selections) {
             val id = "${contest.contestId}#@${tallySelection.selectionId}"
-            val shares = trusteeDecryptions.shares[id]
+            val shares = decryptions.shares[id]
                 ?: throw IllegalStateException("*** $id share not found") // TODO something better?
-            val decryptedSelection = decryptSelection(tallySelection, shares, contest.contestId)
+            val decryptedSelection = decryptSelection(tallySelection, shares, contest.contestId, stats)
             selections[tallySelection.selectionId] = decryptedSelection
         }
         return DecryptedTallyOrBallot.Contest(contest.contestId, selections, decryptedContestData)
@@ -60,34 +60,34 @@ class TallyDecryptor(
 
     private fun decryptContestData(
         where: String,
-        results: ContestDataResults?, // results for this selection
+        contestDataDecryptions: ContestDataResults?, // results for this selection
     ): DecryptedTallyOrBallot.DecryptedContestData? {
-        return results?.let {
+        return contestDataDecryptions?.let {
             // response is the sum of the individual responses
-            val response: ElementModQ = with(group) { results.responses.values.map { it }.addQ() }
+            val response: ElementModQ = with(group) { contestDataDecryptions.responses.values.map { it }.addQ() }
 
             // finally we can create the proof
-            if (results.challenge == null) {
+            if (contestDataDecryptions.challenge == null) {
                 logger.error { "$where: ContestDataResults missing challenge"}
                 return null
             }
-            val challenge = results.challenge!!.toElementModQ(group)
+            val challenge = contestDataDecryptions.challenge!!.toElementModQ(group)
             val proof = GenericChaumPedersenProof(challenge, response)
 
-            if (results.beta == null) {
+            if (contestDataDecryptions.beta == null) {
                 logger.error { "$where: ContestDataResults missing beta"}
                 return null
             }
-            val contestData = results.ciphertext.decryptWithBetaToContestData(results.beta!!)
+            val contestData = contestDataDecryptions.ciphertext.decryptWithBetaToContestData(contestDataDecryptions.beta!!)
             if (contestData is Err) {
                 return null
             }
 
             DecryptedTallyOrBallot.DecryptedContestData(
                 contestData.unwrap(),
-                results.ciphertext,
+                contestDataDecryptions.ciphertext,
                 proof,
-                results.beta!!,
+                contestDataDecryptions.beta!!,
             )
         }
     }
@@ -95,31 +95,43 @@ class TallyDecryptor(
 
     private fun decryptSelection(
         selection: EncryptedTally.Selection,
-        results: DecryptionResults, // results for this selection
+        selectionDecryptions: DecryptionResults, // results for this selection
         contestId: String,
+        stats: Stats,
     ): DecryptedTallyOrBallot.Selection {
         // response is the sum of the individual responses
-        val response: ElementModQ = with(group) { results.responses.values.map { it }.addQ() }
+        val response: ElementModQ = with(group) { selectionDecryptions.responses.values.map { it }.addQ() }
         // finally we can create the proof
-        val proof = GenericChaumPedersenProof(results.challenge!!.toElementModQ(group), response)
+        val proof = GenericChaumPedersenProof(selectionDecryptions.challenge!!.toElementModQ(group), response)
 
-        val result = DecryptedTallyOrBallot.Selection(
+        val decrypytedSelection = DecryptedTallyOrBallot.Selection(
             selection.selectionId,
-            results.dlogM!!,
-            results.M!!,
+            selectionDecryptions.dlogM!!,
+            selectionDecryptions.M!!,
             selection.ciphertext,
             proof
         )
-        if (!result.verifySelection()) {
+
+        val startVerify = getSystemTimeInMillis()
+        if (!decrypytedSelection.verifySelection()) {
             println("verifySelection failed for  $contestId and ${selection.selectionId}")
         }
-        if (!results.detailedVerify()) {
+        stats.of("verifySelection", "selection", "selections").accum(getSystemTimeInMillis() - startVerify, 1)
+        val startVerifyDetailed = getSystemTimeInMillis()
+        if (!selectionDecryptions.detailedVerify()) {
             println("detailedVerify failed for  $contestId and ${selection.selectionId}")
         }
-        return result
+        stats.of("detailedVerify", "selection", "selections").accum(getSystemTimeInMillis() - startVerifyDetailed, 1)
+        val startVerifyGuardians = getSystemTimeInMillis()
+        if (!selectionDecryptions.guardianVerify()) {
+            println("guardianVerify failed for  $contestId and ${selection.selectionId}")
+        }
+        stats.of("guardianVerify", "guardians", "selections").accum(getSystemTimeInMillis() - startVerifyGuardians, selectionDecryptions.shares.size)
+
+        return decrypytedSelection
     }
 
-    // this is the verifier proof.
+    // this is the verifier proof (box 8)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
         val Mbar: ElementModP = this.message.data / this.value
         val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.1
@@ -129,11 +141,59 @@ class TallyDecryptor(
         return (challenge.toElementModQ(group) == this.proof.c)
     }
 
+    // verify each guardian results (modified box 8)
+    // version 1.03
+    //  (8.A) The given value vi is in the set Zq.
+    //  (8.B) The given values ai and bi are both in the set Zr.
+    //  (8.C) Use c = challenge value from new spec.
+    //  (8.D) The equation g^vi mod p = (ai / Ki^c) mod p
+    //  (8.E) The equation A^vi mod p = (bi / Mi^c) mod p
+    //
+    // version 1.52, 9.D
+    //
+    //   ti = si + wi * (SumV (Pj(i)), Sum over missing guardians in V
+    //  vil = uil - cil * ti
+    //      = uil - cil * (si + wi * (SumV (Pj(i)))
+    //
+    // g^vil = g^uil / g^(cil * (si + wi * (SumV (Pj(i))))
+    //       = ail / (g^si * Prod(g^Pj(i))^wi)^cil
+    //       = ail / (Ki * Prod(g^Pj(i))^wi)^cil
+    private fun DecryptionResults.guardianVerify(): Boolean {
+        var ok = true
+        this.shares.forEach { (guardianId, share) ->
+            val guardian = guardians[guardianId] ?: throw IllegalStateException("*** guardian ${guardianId} not found")
+            val lagrange = lagrangeCoordinates[guardianId] ?: throw IllegalStateException("*** lagrangeCoordinates for ${guardianId} not found")
+            val vi = this.responses[guardianId] ?: throw IllegalStateException("*** response for ${guardianId} not found")
+            val c = this.challenge!!.toElementModQ(group)
+
+            val extKi = if (missingTrustees.isEmpty()) guardian.publicKey() else {
+                // List(g^Pj(i))
+                val gpils: Iterable<ElementModP> = missingTrustees.map {
+                    val missing = guardians[it] ?: throw IllegalStateException("*** missing guardian ${it} not found")
+                    calculateGexpPiAtL(guardian.xCoordinate, missing.coefficientCommitments())
+                }
+                val prod = with(group) { gpils.multP() } // Prod(g^Pj(i))
+                val prodExpW = prod powP lagrange.lagrangeCoefficient // Prod(g^Pj(i))^wi
+                guardian.publicKey() * prodExpW // Ki * Prod(g^Pj(i))^wi
+            }
+
+            if (group.gPowP(vi) != share.a / (extKi powP c)) { // 9.D
+                println("9D failed for ${guardianId}")
+                ok = false
+            }
+            if ((this.ciphertext.pad powP vi) != (share.b / (share.mbari powP c))) { // 8.E
+                println("9E failed for ${guardianId}")
+                ok = false
+            }
+        }
+        return ok
+    }
+
     // Verify with eq 64 and 65
     private fun DecryptionResults.detailedVerify(): Boolean {
         var ok = true
         for (partialDecryption in this.shares.values) {
-            val guardian = guardians.find { it.guardianId == partialDecryption.guardianId }
+            val guardian = guardians[partialDecryption.guardianId]
                 ?: throw IllegalStateException("*** guardian ${partialDecryption.guardianId} not found")
             val lagrange = lagrangeCoordinates[guardian.guardianId]
                 ?: throw IllegalStateException("*** lagrange not found for ${guardian.guardianId}")
@@ -161,7 +221,7 @@ class TallyDecryptor(
     // the innermost factor of eq 64
     private fun innerFactor64(xcoord: Int): ElementModP {
         val trusteeNames = lagrangeCoordinates.values.map { it.guardianId }.toSet()
-        val missingGuardians = guardians.filter { !trusteeNames.contains(it.guardianId) }
+        val missingGuardians = guardians.values.filter { !trusteeNames.contains(it.guardianId) }
         return if (missingGuardians.isEmpty()) {
             group.ONE_MOD_P
         } else {

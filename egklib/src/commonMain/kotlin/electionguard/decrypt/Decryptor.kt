@@ -5,12 +5,7 @@ import electionguard.ballot.EncryptedTally
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.Guardian
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.hashElements
-import electionguard.core.toElementModQ
+import electionguard.core.*
 
 // TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
 private const val maxDlog: Int = 1000
@@ -24,11 +19,13 @@ class Decryptor(
     val group: GroupContext,
     val qbar: ElementModQ,
     val jointPublicKey: ElGamalPublicKey,
-    val guardians: List<Guardian>,
+    guardians: List<Guardian>,
     private val decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
-    missingTrustees: List<String>, // ids of the missing trustees
+    val missingTrustees: List<String>, // ids of the missing trustees
 ) {
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>
+    val guardianMap = guardians.associateBy { it.guardianId }
+    val stats = Stats()
 
     init {
         // build the lagrangeCoordinates, needed for output
@@ -42,10 +39,10 @@ class Decryptor(
         this.lagrangeCoordinates = dguardians.associate { it.guardianId to it }
 
         // configure the DecryptingTrustees
-        for (decryptingTrustee in decryptingTrustees) {
-            val available = lagrangeCoordinates[decryptingTrustee.id()]
-                ?: throw RuntimeException("missing available $decryptingTrustee.id()")
-            decryptingTrustee.setMissing(group, available.lagrangeCoefficient, missingTrustees)
+        for (trustee in decryptingTrustees) {
+            val available = lagrangeCoordinates[trustee.id()]
+                ?: throw RuntimeException("missing available ${trustee.id()}")
+            trustee.setMissing(group, available.lagrangeCoefficient, missingTrustees)
         }
     }
 
@@ -55,15 +52,23 @@ class Decryptor(
     }
 
     fun EncryptedTally.decrypt(isBallot : Boolean = false): DecryptedTallyOrBallot {
-        val trusteeDecryptions = TrusteeDecryptions()
-
         // we need the DecryptionResults from all trustees before we can do the challenges
+        // LOOK we could parallelize this, really just for remote case
+        val startDecrypt = getSystemTimeInMillis()
+        val trusteeDecryptions = mutableListOf<TrusteeDecryptions>()
         for (decryptingTrustee in decryptingTrustees) {
-            this.computeDecryptionShareForTrustee(decryptingTrustee, trusteeDecryptions, isBallot)
+            trusteeDecryptions.add( this.computeDecryptionShareForTrustee(decryptingTrustee, isBallot))
         }
+        val decryptions = Decryptions()
+        trusteeDecryptions.forEach { decryptions.addTrusteeDecryptions(it)}
 
-        // compute the challenges for each DecryptionResult
-        for ((id, results) in trusteeDecryptions.shares) {
+        val ndecrypt = decryptions.shares.size + decryptions.contestData.size
+        stats.of("computeShares").accum(getSystemTimeInMillis() - startDecrypt, ndecrypt)
+
+        val startChallengeTotal = getSystemTimeInMillis()
+
+        // compute the challenges for each DecryptionResults over all the guardians
+        for ((id, results) in decryptions.shares) {
             // accumulate all of the shares calculated for the selection
             val shares = results.shares
             val Mbar: ElementModP = with(group) { shares.values.map { it.mbari }.multP() }
@@ -78,17 +83,18 @@ class Decryptor(
             val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
             results.challenge = hashElements(qbar, jointPublicKey, results.ciphertext.pad, results.ciphertext.data, a, b, M) // eq 62
         }
+
         // compute the challenges for each ContestDataResult
         if (isBallot) {
-            for (results in trusteeDecryptions.contestData.values) {
-                // accumulate all of the shares calculated for the selection
+            for (results in decryptions.contestData.values) {
+                // accumulate all of the shares calculated for the selection, eq 69
                 val shares = results.shares
                 val beta: ElementModP = with(group) { shares.values.map { it.mbari }.multP() }
                 results.beta = beta
-
-                // collective proof (spec 1.52 section 3.5.3 eq 70)
                 val a: ElementModP = with(group) { shares.values.map { it.a }.multP() }
                 val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
+
+                // collective challenge (spec 1.52 section 3.5.3 eq 70)
                 results.challenge = hashElements(
                     qbar,
                     jointPublicKey,
@@ -102,28 +108,43 @@ class Decryptor(
             }
         }
 
-        // send all challenges for both decryption and contestData, get results into the trusteeDecryptions
-        for (decryptingTrustee in decryptingTrustees) {
-            trusteeDecryptions.challengeTrustee(decryptingTrustee)
+        // send all challenges for both decryption and contestData, get results into the decryptions
+        // LOOK we could parallelize this, really just for remote case
+        val startChallengeCalls = getSystemTimeInMillis()
+        val trusteeChallengeResponses = mutableListOf<TrusteeChallengeResponses>()
+        for (trustee in decryptingTrustees) {
+            trusteeChallengeResponses.add(decryptions.challengeTrustee(trustee))
+        }
+        trusteeChallengeResponses.forEach { cr ->
+            cr.results.forEach {
+                decryptions.addChallengeResponse(cr.id, it)
+            }
         }
 
+        stats.of("challengeCalls").accum(getSystemTimeInMillis() - startChallengeCalls, ndecrypt)
+        stats.of("challengesTotal").accum(getSystemTimeInMillis() - startChallengeTotal, ndecrypt)
+
+        val startTally = getSystemTimeInMillis()
         // After gathering the challenge responses from the available trustees, we can verify and publish.
-        val decryptor = TallyDecryptor(group, qbar, jointPublicKey, lagrangeCoordinates, guardians)
-        return decryptor.decryptTally(this, trusteeDecryptions)
+        val decryptor = TallyDecryptor(group, qbar, jointPublicKey, lagrangeCoordinates, guardianMap, missingTrustees)
+        val result = decryptor.decryptTally(this, decryptions, stats)
+
+        stats.of("decryptTally").accum(getSystemTimeInMillis() - startTally, ndecrypt)
+
+        return result
     }
 
     /**
-     * Compute a guardian's share of a decryption, aka a 'partial decryption', for all selections of
+     * Compute one guardian's share of a decryption, aka a 'partial decryption', for all selections of
      *  this tally/ballot.
      * @param trustee: The trustee who will partially decrypt the tally
-     * @param lagrangeCoordinate: The trustee's lagrange Coordinate
-     * @return a DecryptionShare for this trustee
+     * @param isBallot: if a ballot or a tally, ie if it may have contest data to decrypt.
+     * @return results for this trustee
      */
     private fun EncryptedTally.computeDecryptionShareForTrustee(
         trustee: DecryptingTrusteeIF,
-        trusteeDecryptions: TrusteeDecryptions,
         isBallot: Boolean,
-    ): TrusteeDecryptions {
+    ) : TrusteeDecryptions {
 
         // Get all the text that need to be decrypted in one call, including from ContestData
         val texts: MutableList<ElementModP> = mutableListOf()
@@ -140,6 +161,7 @@ class Decryptor(
         val results: List<PartialDecryption> = trustee.decrypt(group, texts, null)
 
         // Place the results into the TrusteeDecryptions
+        val trusteeDecryptions = TrusteeDecryptions(trustee.id())
         var count = 0
         for (contest in this.contests) {
             if (isBallot && contest.contestData != null) {
@@ -153,10 +175,10 @@ class Decryptor(
     }
 
     // challenges for one trustee
-    fun TrusteeDecryptions.challengeTrustee(
+    fun Decryptions.challengeTrustee(
         trustee: DecryptingTrusteeIF,
-    ) {
-        // Get all the challenges from the shares
+    ) : TrusteeChallengeResponses {
+        // Get all the challenges from the shares for this trustee
         val requests: MutableList<ChallengeRequest> = mutableListOf()
         for ((id, results) in this.shares) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
@@ -170,9 +192,7 @@ class Decryptor(
 
         // ask for all of them at once
         val results: List<ChallengeResponse> = trustee.challenge(group, requests)
-
-        // Place the results into the TrusteeDecryptions
-        results.forEach { this.addChallengeResponse(trustee.id(), it) }
+        return TrusteeChallengeResponses(trustee.id(), results)
     }
 }
 

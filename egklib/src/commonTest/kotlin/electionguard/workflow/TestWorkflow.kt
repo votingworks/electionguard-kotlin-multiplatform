@@ -31,7 +31,8 @@ import kotlin.test.assertTrue
  */
 class TestWorkflow {
     private val configDir = "src/commonTest/data/start"
-    private val nballots = 11
+    private val nballots = 100
+    private val nthreads = 25
 
     @Test
     fun runWorkflowAllAvailable() {
@@ -58,7 +59,7 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
@@ -102,7 +103,7 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, 11, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")

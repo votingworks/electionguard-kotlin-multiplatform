@@ -19,7 +19,7 @@ data class DecryptingTrustee(
     val xCoordinate: Int,
     // My private and public key
     val electionKeypair: ElGamalKeypair,
-    // My share of other's key, keyed by other guardian id.
+    // My share of other's key, keyed by missing guardian id = Pj(ℓ)
     val encryptedKeyShares: Map<String, EncryptedKeyShare>,
 ) : DecryptingTrusteeIF {
 
@@ -31,20 +31,20 @@ data class DecryptingTrustee(
     override fun xCoordinate(): Int = xCoordinate
     override fun electionPublicKey(): ElementModP = electionKeypair.publicKey.key
 
-    // tm = wi * (Sum j∈V Pj(ℓ)) mod q
+    // tm = wℓ * (Sum j∈V Pj(ℓ)) mod q, V = missing guardians
     private var tm: ElementModQ? = null
     private fun tm(): ElementModQ = this.tm ?: throw IllegalStateException()
 
     override fun setMissing(
         group: GroupContext,
-        lagrangeCoeff: ElementModQ,     // wi for this trustee
+        lagrangeCoeff: ElementModQ,     // wℓ for this trustee
         missingGuardians: List<String>, // guardian ids
     ) : Boolean {
         if (this.tm != null) {
             return false // could test they are the same
         }
         this.tm = if (missingGuardians.isEmpty()) group.ZERO_MOD_Q else {
-            // compute tm = wi * (Sum j∈V Pj(ℓ)) mod q
+            // compute tm = wℓ * (Sum j∈V Pj(ℓ)) mod q, V = missing guardians
             val pjls = missingGuardians.map { decryptKeyShare(group, it) }
             val sumPjls = with(group) { pjls.addQ() }
             lagrangeCoeff * sumPjls
@@ -66,7 +66,7 @@ data class DecryptingTrustee(
     override fun decrypt(
         group: GroupContext,
         texts: List<ElementModP>,
-        nonce: ElementModQ?
+        nonce: ElementModQ? // LOOK needed? testing only?
     ): List<PartialDecryption> {
         val results: MutableList<PartialDecryption> = mutableListOf()
         for (text: ElementModP in texts) {
@@ -75,8 +75,8 @@ data class DecryptingTrustee(
             val b = text powP u
             // ti = (si + wi * Sum(Pj(i))j∈V) (spec 1.52, eg 58)
             val ti = this.electionKeypair.secretKey.key + tm()
-            val mbari = text powP ti // Mbar_i = A ^ t_i
-            results.add(PartialDecryption(id, mbari, u, a, b))
+            val mbari = text powP ti // Mbar_i = A ^ (si + tm)
+            results.add(PartialDecryption(id, mbari, u, a, b)) // controversial to send u, could cache it here.
         }
         return results
     }
