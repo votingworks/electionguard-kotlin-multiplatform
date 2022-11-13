@@ -59,7 +59,7 @@ class RunDecryptBallotsTest {
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "4,5"),
             wantBallots,
-            1,
+            6,
         )
         assertEquals(2, n)
     }
@@ -79,7 +79,7 @@ class RunDecryptBallotsTest {
                 "-spoiled",
                 "all",
                 "-nthreads",
-                "6"
+                "11"
             )
         )
     }

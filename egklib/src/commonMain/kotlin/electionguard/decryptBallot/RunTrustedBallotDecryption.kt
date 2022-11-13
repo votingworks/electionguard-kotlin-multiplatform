@@ -89,8 +89,9 @@ fun runDecryptBallots(
     decryptSpoiledList: String?,
     nthreads: Int,
 ): Int {
+    println(" runDecryptBallots on ballots in ${inputDir} with nthreads = $nthreads")
+    val starting = getSystemTimeInMillis() // wall clock
     count = 0
-    val starting = getSystemTimeInMillis()
 
     val consumerIn = Consumer(inputDir, group)
     val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
@@ -156,9 +157,12 @@ fun runDecryptBallots(
     }
     sink.close()
 
+    decryptor.stats.show()
+
     val took = getSystemTimeInMillis() - starting
     val msecsPerBallot = (took.toDouble() / 1000 / count)
-    println(" decrypt ballots with nthreads = $nthreads took ${took / 1000} secs for $count ballots = $msecsPerBallot secs/ballot")
+    println(" decrypt ballots took ${took / 1000} wallclock secs for $count ballots = $msecsPerBallot secs/ballot")
+
     return count
 }
 

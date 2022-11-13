@@ -48,8 +48,8 @@ data class ElectionPolynomial(
  * Used to test secret key share by KeyCeremonyTrustee.
  */
 fun calculateGexpPiAtL(
-    xcoord: Int,  // l
-    coefficientCommitments: List<ElementModP>  // K_i,j
+    xcoord: Int,  // evaluated at xcoord of available guardian (l)
+    coefficientCommitments: List<ElementModP>  // Kij for missing guardian i
 ): ElementModP {
     val group = compatibleContextOrFail(*coefficientCommitments.toTypedArray())
     val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())
