@@ -1,5 +1,6 @@
 package electionguard.verifier
 
+import electionguard.core.Stats
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.publish.Consumer
@@ -17,7 +18,7 @@ class VerifyJvmRecordTest {
             val group = productionGroup()
             val electionRecord = electionRecordFromConsumer(Consumer(jvmDir, group))
             val verifier = Verifier(electionRecord)
-            val ok = verifier.verify()
+            val ok = verifier.verify(Stats())
             assertTrue(ok)
         }
     }
