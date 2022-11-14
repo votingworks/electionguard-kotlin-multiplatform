@@ -62,10 +62,9 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             return true
         }
 
-        // tally accumulation
+        // tally accumulation, box 7 and 9F
         val verifyAggregation = VerifyAggregation(group, verifyBallots.aggregator)
-        val encryptedTally = record.encryptedTally()!!
-        val aggResult = verifyAggregation.verify(encryptedTally, showTime)
+        val aggResult = verifyAggregation.verify(record.encryptedTally()!!, showTime)
         println(" 7. verifyBallotAggregation $aggResult")
 
         if (record.stage() < ElectionRecord.Stage.DECRYPTED) {
@@ -74,17 +73,15 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         }
 
         // tally decryption
-        val decryptedTally = record.decryptedTally()!!
         val verifyTally = VerifyDecryption(group, manifest, jointPublicKey, qbar)
-        val tallyResults = verifyTally.verify(decryptedTally, isBallot = false, stats)
+        val tallyResults = verifyTally.verify(record.decryptedTally()!!, isBallot = false, stats)
         println(" 8,9. verifyTallyDecryption $tallyResults")
 
-        // 10, 11, 12, 13 spoiled ballots
+        // 10, 11, 12, 13, 14 spoiled ballots
         val spoiledResults =
             verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, stats, showTime)
-        println(" 10,11,12,13. verifySpoiledBallotTallies $spoiledResults")
+        println(" 10,11,12,13,14. verifySpoiledBallotTallies $spoiledResults")
 
-        // 14 contest data for spoiled ballots
         val allOk = (guardiansOk is Ok) && (publicKeyOk is Ok) && (aggResult is Ok) &&
                 (ballotResult is Ok) && (aggResult is Ok) && (tallyResults is Ok) && (spoiledResults is Ok)
         println("verify allOK = $allOk\n")

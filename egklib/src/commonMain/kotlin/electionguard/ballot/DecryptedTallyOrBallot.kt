@@ -43,9 +43,9 @@ data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Cont
      */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
-        val tally: Int,
-        val value: ElementModP,
-        val message: ElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
+        val tally: Int, // logK(M)
+        val value: ElementModP, // M
+        val message: ElGamalCiphertext, // (A, B) same as EncryptedTally.Selection.ciphertext
         val proof: GenericChaumPedersenProof,
     ) {
         init {

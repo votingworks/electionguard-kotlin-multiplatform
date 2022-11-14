@@ -119,11 +119,10 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
     // (a1, a2, a3) x (b1, b2, b3) ==> (a1, b1, a2, b2, a3, b3, ...)
     val hashMe = aList.zip(bList).flatMap { listOf(it.first, it.second) }
 
-    // Spec, page 22, equation 50; we need to have this very
-    // specific ordering of inputs for computing c.
-    val c = hashElements(qbar, alpha, beta, *(hashMe.toTypedArray())).toElementModQ(context)
+    // Spec 1.52, equation 47; we need to have this very specific ordering of inputs for computing c.
+    val c = hashElements(qbar, publicKey, alpha, beta, *(hashMe.toTypedArray())).toElementModQ(context)
 
-    // Spec, page 22, equation 51. (c_l)
+    // Spec 1.52, equation 48. (c_l)
     val cl = c -
             cList.filterIndexed { j, _ -> j != plaintext }
                 .fold(context.ZERO_MOD_Q) { a, b -> a + b }
@@ -145,8 +144,8 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
 }
 
 /**
- * Validates a range proof against an ElGamal ciphertext for the
- * range [0, limit], inclusive.
+ * Validates a range proof against an ElGamal ciphertext for the range [0, limit], inclusive.
+ * Validates 4.A, 4.B, 4.C, 5.B, 5.C
  *
  * @param ciphertext An ElGamal ciphertext
  * @param publicKey The public key of the election
@@ -197,7 +196,7 @@ fun RangeChaumPedersenProofKnownNonce.validate(
 
     // sum of the proof.c
     val abList = expandedProofs.flatMap { listOf(it.a, it.b) }.toTypedArray()
-    val c = hashElements(qbar, alpha, beta, *abList).toElementModQ(context)
+    val c = hashElements(qbar, publicKey, alpha, beta, *abList).toElementModQ(context) // 4.5, 5.3
     val cSum = this.proofs.fold(context.ZERO_MOD_Q) { a, b -> a + b.c }
     results.add(
         if (cSum == c) Ok(true) else Err("    4.C,5.C challenge sum is invalid")

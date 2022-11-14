@@ -35,7 +35,7 @@ class VerifyAggregation(
                 val key: String = contest.contestId + "." + selection.selectionId
 
                 // Already did the accumulation, just have to verify it.
-                val accum = aggregator.get(key)
+                val accum = aggregator.getAggregateFor(key)
                 if (accum != null) {
                     if (selection.ciphertext.pad != accum.pad) {
                         errors.add(Err("  7.A  Ballot Aggregation does not match: $key"))
@@ -52,9 +52,11 @@ class VerifyAggregation(
             }
         }
 
-        aggregator.contestSet.forEach { ballotContest ->
-            if (null == encryptedTally.contests.find { it.contestId == ballotContest}) {
-                errors.add(Err("   9.F Contest '$ballotContest' in ballots not in tally"))
+        // (9.F) For each contest text label that occurs in at least one submitted ballot, that contest text
+        // label occurs in the list of contests in the corresponding tally..
+        aggregator.contestIdSet.forEach { contestId ->
+            if (null == encryptedTally.contests.find { it.contestId == contestId}) {
+                errors.add(Err("   9.F Contest '$contestId' found in cast ballots not found in tally"))
             }
         }
 
@@ -66,18 +68,19 @@ class VerifyAggregation(
 }
 
 // while we are traversing the ballots, also accumulate ElGamalCiphertext in order to test the EncryptedTally
+// this is bounded by total unique "contestId.selectionId", does not grow by number of ballots
 class SelectionAggregator {
-    var selectionEncryptions = mutableMapOf<String, ElGamalCiphertext>()
-    var contestSet = mutableSetOf<String>()
+    var selectionEncryptions = mutableMapOf<String, ElGamalCiphertext>() // key "contestId.selectionId"
+    var contestIdSet = mutableSetOf<String>()
     var nballotsCast = 0
 
     fun add(ballot: EncryptedBallot) {
         if (ballot.state == EncryptedBallot.BallotState.CAST) {
             nballotsCast++
             for (contest in ballot.contests) {
-                contestSet.add(contest.contestId)
+                contestIdSet.add(contest.contestId)
                 for (selection in contest.selections) {
-                    val key: String = contest.contestId + "." + selection.selectionId
+                    val key = "${contest.contestId}.${selection.selectionId}"
                     val total = selectionEncryptions[key]
                     if (total != null) {
                         selectionEncryptions[key] = total + selection.ciphertext
@@ -89,7 +92,8 @@ class SelectionAggregator {
         }
     }
 
-    fun get(key: String): ElGamalCiphertext? {
+    // key "contestId.selectionId"
+    fun getAggregateFor(key: String): ElGamalCiphertext? {
         return selectionEncryptions[key]
     }
 }
