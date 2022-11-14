@@ -53,7 +53,7 @@ class Decryptor(
 
     fun EncryptedTally.decrypt(isBallot : Boolean = false): DecryptedTallyOrBallot {
         // we need the DecryptionResults from all trustees before we can do the challenges
-        // LOOK we could parallelize this, really just for remote case
+        // LOOK we could parallelize this, maybe needed for remote case?
         val startDecrypt = getSystemTimeInMillis()
         val trusteeDecryptions = mutableListOf<TrusteeDecryptions>()
         for (decryptingTrustee in decryptingTrustees) {
@@ -99,7 +99,7 @@ class Decryptor(
                     qbar,
                     jointPublicKey,
                     results.ciphertext.c0,
-                    // results.ciphertext.c1,
+                    // results.ciphertext.c1, // LOOK how to hash byte array ?
                     results.ciphertext.c2,
                     a,
                     b,
@@ -109,7 +109,7 @@ class Decryptor(
         }
 
         // send all challenges for both decryption and contestData, get results into the decryptions
-        // LOOK we could parallelize this, really just for remote case
+        // LOOK we could parallelize this, maybe needed for remote case?
         val startChallengeCalls = getSystemTimeInMillis()
         val trusteeChallengeResponses = mutableListOf<TrusteeChallengeResponses>()
         for (trustee in decryptingTrustees) {

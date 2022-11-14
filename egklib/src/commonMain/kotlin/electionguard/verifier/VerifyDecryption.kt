@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
 
 private const val debug = false
 
-/** Box 8, 9, 10, 11, 12, 13 */
+/** Box 8, 9, 10, 11, 12, 13, 14 */
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyDecryption(
     val group: GroupContext,
@@ -41,8 +41,9 @@ class VerifyDecryption(
         for (contest in decrypted.contests.values) {
             ncontests++
             val where = "${decrypted.id}/${contest.contestId}"
+            // (9.C) The contest text label occurs as a contest label in the list of contests in the election manifest.
             if (manifest.contestIdToLimit[contest.contestId] == null) {
-                results.add(Err("    9.C,13C Ballot contains contest not in manifest: '$where' "))
+                results.add(Err("    9.C,13.C Ballot contains contest not in manifest: '$where' "))
                 continue
             }
 
@@ -57,8 +58,10 @@ class VerifyDecryption(
                 val where2 = "$${decrypted.id}/$here"
                 ballotSelectionSet.add(here)
 
+                // (9.D) For each option in the contest, the option text label occurs as an option label for the contest
+                // in the election manifest.
                 if (!manifest.contestAndSelectionSet.contains(here)) {
-                    results.add(Err("    9.D,13D Ballot contains selection not in manifest: '$where2' "))
+                    results.add(Err("    9.D,13.D Ballot contains selection not in manifest: '$where2' "))
                     continue
                 }
 
@@ -66,11 +69,12 @@ class VerifyDecryption(
                     results.add(Err("    8.A,11.A response out of bounds: '$where2' "))
                 }
 
-                // LOOK should be proof.validate(), but current GenericChaumPedersen is too awkward.
+                // LOOK could be done in proof.validate(), but current GenericChaumPedersen is too awkward.
+                // LOOK we calculate Mbar = B / M, so cant independently verify 9.A, 12.A
                 val Mbar: ElementModP = selection.message.data / selection.value
                 val a = group.gPowP(selection.proof.r) * (jointPublicKey powP selection.proof.c) // 8.1
                 val b = (selection.message.pad powP selection.proof.r) * (Mbar powP selection.proof.c) // 8.2
-                val challenge = hashElements(qbar, jointPublicKey, selection.message.pad, selection.message.data, a, b, selection.value) // 8.B
+                val challenge = hashElements(qbar, jointPublicKey, selection.message.pad, selection.message.data, a, b, selection.value) // 8.B,11.B
                 if (challenge.toElementModQ(group) != selection.proof.c) {
                     results.add(Err("    8.B,11.B Challenge does not match: '$where2' "))
                 }
@@ -89,14 +93,18 @@ class VerifyDecryption(
             if (isBallot) {
                 val limit = manifest.contestIdToLimit[contest.contestId]!!
                 if (contestVotes !in (0..limit)) {
-                    results.add(Err("     13.B sum of votes ${contestVotes} in contest must be le than $limit: '$where'"))
+                    results.add(Err("     13.B sum of votes ${contestVotes} in contest must be less than $limit: '$where'"))
                 }
             }
         }
 
+        // (9.E) For each option text label listed for this contest in the election manifest, the option label
+        //occurs for a option in the decrypted tally contest.
+        // (13.E) For each option text label listed for this contest in the election manifest, the option label
+        //occurs for a option in the decrypted spoiled ballot.
         manifest.contestAndSelectionSet.forEach {
             if (!ballotSelectionSet.contains(it)) {
-                results.add(Err("    9.E Manifest contains selection not in ballot: '$it' "))
+                results.add(Err("    9.E,13.E Manifest contains selection not in ballot: '$it' "))
             }
         }
 
@@ -107,33 +115,31 @@ class VerifyDecryption(
     private fun verifyContestData(where: String, contestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
         val proof = contestData.proof
         val ciphertext = contestData.encryptedContestData
-        // a = g^v * K^c (10.1)
+        // a = g^v * K^c  (10.1,14.1)
         val a = group.gPowP(proof.r) * (jointPublicKey powP proof.c)
 
-        // b = C0^v * β^c (10.2) b = C
-        val beta = contestData.beta
-        val b = (ciphertext.c0 powP proof.r) * (beta powP proof.c)
+        // b = C0^v * β^c (10.2,14.2)
+        val b = (ciphertext.c0 powP proof.r) * (contestData.beta powP proof.c)
 
         val results = mutableListOf<Result<Boolean, String>>()
 
+        // (10.A,14.A) The given value v is in the set Zq.
         if (!proof.r.inBounds()) {
-            results.add(Err("     (10.A) The value v is not in the set Zq.: '$where'"))
+            results.add(Err("     (10.A,14.A) The value v is not in the set Zq.: '$where'"))
         }
-        //An election verifier must then confirm the following.
-        //(10.A) The given value v is in the set Zq.
-        //(10.B) The challenge value c satisfies c = H(Q, K, C0, C1, C2, a, b, β).
+        //(10.B,14.B) The challenge value c satisfies c = H(Q, K, C0, C1, C2, a, b, β).
         val challenge = hashElements(
             qbar,
             jointPublicKey,
             ciphertext.c0,
-            // ciphertext.c1,
+            // ciphertext.c1, LOOK how to hash a byte array?
             ciphertext.c2,
             a,
             b,
-            beta,
+            contestData.beta,
         ) // eq 62
         if (challenge != proof.c.toUInt256()) {
-            results.add(Err("     (10.B) The challenge value is wrong: '$where'"))
+            results.add(Err("     (10.B,14.B) The challenge value is wrong: '$where'"))
         }
         return results.merge()
     }

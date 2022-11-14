@@ -11,7 +11,7 @@ import electionguard.ballot.Guardian
 import electionguard.core.*
 import electionguard.core.Base16.toHex
 
-private const val debug = true
+private const val debug = false
 
 /** Exchange publicKeys and secretShares among the trustees */
 fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFailure : Boolean = true): Result<KeyCeremonyResults, String> {
