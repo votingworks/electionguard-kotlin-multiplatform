@@ -9,6 +9,7 @@ import electionguard.core.fileExists
 import electionguard.core.fileReadLines
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
+import electionguard.core.sigfig
 import electionguard.decrypt.Decryptor
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
@@ -157,10 +158,10 @@ fun runDecryptBallots(
     }
     sink.close()
 
-    decryptor.stats.show()
+    decryptor.stats.show(5)
 
     val took = getSystemTimeInMillis() - starting
-    val msecsPerBallot = (took.toDouble() / 1000 / count)
+    val msecsPerBallot = (took.toDouble() / 1000 / count).sigfig()
     println(" decrypt ballots took ${took / 1000} wallclock secs for $count ballots = $msecsPerBallot secs/ballot")
 
     return count

@@ -2,11 +2,11 @@ package electionguard.verifier
 
 import com.github.michaelbull.result.Err
 import electionguard.ballot.EncryptedBallot
+import electionguard.core.Stats
 import electionguard.core.productionGroup
 import electionguard.publish.Consumer
 import electionguard.publish.electionRecordFromConsumer
 import kotlin.test.Test
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class DuplicateTrackingCodesTest {
@@ -33,7 +33,7 @@ class DuplicateTrackingCodesTest {
 
         println("verify duplicate ballots fail")
         val verifier = Verifier(electionRecord)
-        val stats = verifier.verifyEncryptedBallots(mungedBallots)
-        assertTrue(stats.result() is Err)
+        val results = verifier.verifyEncryptedBallots(mungedBallots, Stats())
+        assertTrue(results is Err)
     }
 }

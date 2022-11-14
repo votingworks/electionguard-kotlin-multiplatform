@@ -1,8 +1,10 @@
 package electionguard.verifier
 
 import electionguard.core.GroupContext
+import electionguard.core.Stats
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
+import electionguard.core.sigfig
 import electionguard.publish.Consumer
 import electionguard.publish.electionRecordFromConsumer
 import kotlinx.cli.ArgParser
@@ -42,7 +44,11 @@ fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime :
 
     val electionRecord = electionRecordFromConsumer(Consumer(inputDir, group))
     val verifier = Verifier( electionRecord, nthreads)
-    val allOk = verifier.verify(showTime)
+    val stats = Stats()
+    val allOk = verifier.verify(stats, showTime)
+    if (showTime) {
+        stats.show()
+    }
 
     val tookAll = (getSystemTimeInMillis() - starting)
     println("RunVerifier = $allOk took $tookAll msecs alloK = ${allOk}")
@@ -54,23 +60,27 @@ fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int)
     val electionRecord = electionRecordFromConsumer(Consumer(inputDir, group))
     val verifier = Verifier(electionRecord, nthreads)
 
-    val allOk = verifier.verifyEncryptedBallots()
+    val stats = Stats()
+    val allOk = verifier.verifyEncryptedBallots(stats)
+    stats.show()
 
-    val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
+    val took = ((getSystemTimeInMillis() - starting) / 1000.0).sigfig()
     println("VerifyEncryptedBallots $allOk took $took seconds")
 }
 
-fun verify(group: GroupContext, inputDir: String) {
+fun verifyDecryptedTally(group: GroupContext, inputDir: String) {
     val starting = getSystemTimeInMillis()
 
     val electionRecord = electionRecordFromConsumer(Consumer(inputDir, group))
     val verifier = Verifier(electionRecord, 1)
 
     val decryptedTally = electionRecord.decryptedTally() ?: throw IllegalStateException("no decryptedTally ")
-    val allOk = verifier.verifyDecryptedTally(decryptedTally)
+    val stats = Stats()
+    val allOk = verifier.verifyDecryptedTally(decryptedTally, stats)
+    stats.show()
 
     val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
-    println("verifyDecryptedTally $allOk took $took seconds")
+    println("verifyDecryptedTally $allOk took $took seconds wallclock")
 }
 
 fun verifyRecoveredShares(group: GroupContext, inputDir: String) {
@@ -91,8 +101,10 @@ fun verifySpoiledBallotTallies(group: GroupContext, inputDir: String) {
     val electionRecord = electionRecordFromConsumer(Consumer(inputDir, group))
     val verifier = Verifier(electionRecord, 1)
 
-    val allOk = verifier.verifySpoiledBallotTallies()
+    val stats = Stats()
+    val allOk = verifier.verifySpoiledBallotTallies(stats)
+    stats.show()
 
     val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
-    println("verifyRecoveredShares $allOk took $took seconds")
+    println("verifyRecoveredShares $allOk took $took seconds wallclock")
 }

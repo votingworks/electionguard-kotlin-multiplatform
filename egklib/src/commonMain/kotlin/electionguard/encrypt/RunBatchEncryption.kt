@@ -12,6 +12,7 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.Stats
 import electionguard.core.UInt256
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
@@ -267,9 +268,9 @@ private class RunEncryption(
         } else if (check == CheckType.Verify && verifier != null) {
             // VerifyEncryptedBallots may be doing more work than actually needed
             val submitted = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
-            val verifyStats = verifier.verifyEncryptedBallot(submitted)
-            if (verifyStats.result is Err) {
-                logger.warn { "encrypted doesnt verify = ${verifyStats.result}" }
+            val verifyResults = verifier.verifyEncryptedBallot(submitted, Stats())
+            if (verifyResults is Err) {
+                logger.warn { "encrypted doesnt verify = ${verifyResults}" }
             }
         } else if (check == CheckType.DecryptNonce) {
             // Decrypt with Nonce to ensure encryption worked

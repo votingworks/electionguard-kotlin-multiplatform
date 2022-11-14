@@ -3,6 +3,7 @@ package electionguard.workflow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.GroupContext
+import electionguard.core.Stats
 import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.runDecryptTally
@@ -71,7 +72,9 @@ class TestWorkflow {
         println("\nRun Verifier")
         val record = electionRecordFromConsumer(Consumer(workingDir, group))
         val verifier = Verifier(record)
-        val ok = verifier.verify()
+        val stats = Stats()
+        val ok = verifier.verify(stats)
+        stats.show()
         println("Verify is $ok")
         assertTrue(ok)
     }
@@ -115,7 +118,9 @@ class TestWorkflow {
         println("\nRun Verifier")
         val record = electionRecordFromConsumer(Consumer(workingDir, group))
         val verifier = Verifier(record)
-        val ok = verifier.verify()
+        val stats = Stats()
+        val ok = verifier.verify(stats)
+        stats.show()
         println("Verify is $ok")
         assertTrue(ok)
     }
