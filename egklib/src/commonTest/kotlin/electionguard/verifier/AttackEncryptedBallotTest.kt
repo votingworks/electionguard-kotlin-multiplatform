@@ -9,6 +9,7 @@ import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
+import electionguard.core.Stats
 import electionguard.core.hashElements
 import electionguard.decrypt.Decryptor
 import electionguard.decrypt.DecryptingTrusteeIF
@@ -77,9 +78,11 @@ class AttackEncryptedBallotTest {
         // verification still passes
         println("verify munged ballots ")
         val verifier = Verifier(electionRecord)
-        val stats = verifier.verifyEncryptedBallots(mungedBallots)
-        println("verify = ${stats}")
-        assertTrue(stats.result() is Ok)
+        val stats = Stats()
+        val results = verifier.verifyEncryptedBallots(mungedBallots, stats)
+        println("verify = ${results}")
+        stats.show()
+        assertTrue(results is Ok)
     }
 
     private fun mungeBallot(ballot: EncryptedBallot, publicKey: ElGamalPublicKey): EncryptedBallot {

@@ -19,7 +19,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
 import mu.KotlinLogging
-import kotlin.math.roundToInt
 
 private const val debugBallots = false
 private val logger = KotlinLogging.logger("VerifyEncryptedBallots")
@@ -34,7 +33,7 @@ class VerifyEncryptedBallots(
 ) {
     val aggregator = SelectionAggregator() // for box 7
 
-    fun verify(ballots: Iterable<EncryptedBallot>, showTime: Boolean = false): StatsAccum {
+    fun verify(ballots: Iterable<EncryptedBallot>, stats: Stats, showTime: Boolean = false): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
         runBlocking {
@@ -46,7 +45,7 @@ class VerifyEncryptedBallots(
                         it,
                         ballotProducer,
                         aggregator
-                    ) { ballot -> verifyEncryptedBallot(ballot) })
+                    ) { ballot -> verifyEncryptedBallot(ballot, stats) })
             }
 
             // wait for all verifications to be done, then close everything
@@ -55,25 +54,24 @@ class VerifyEncryptedBallots(
 
         // check duplicate confirmation codes (6.B)
         // LOOK what about checking for duplicate ballot ids?
-        val results = mutableListOf<Result<Boolean, String>>()
         val checkDuplicates = mutableMapOf<UInt256, String>()
         confirmationCodes.forEach {
             if (checkDuplicates[it.code] != null) {
-                results.add(Err("    6.B. Duplicate tracking code for ballot ${it.ballotId} and ${checkDuplicates[it.code]}"))
+                allResults.add(Err("    6.B. Duplicate tracking code for ballot ${it.ballotId} and ${checkDuplicates[it.code]}"))
             }
             checkDuplicates[it.code] = it.ballotId
         }
-        accumStats.add(results.merge())
 
         if (showTime) {
             val took = getSystemTimeInMillis() - starting
-            val perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-            println("   VerifyEncryptedBallots with $nthreads threads took $took millisecs for $count ballots = $perBallot msecs/ballot")
+            val perBallot = if (count == 0) 0 else (took.toDouble() / count).sigfig()
+            println("   VerifyEncryptedBallots with $nthreads threads took $took millisecs wallclock for $count ballots = $perBallot msecs/ballot")
         }
-        return accumStats
+        return allResults.merge()
     }
 
-    fun verifyEncryptedBallot(ballot: EncryptedBallot): Stats {
+    fun verifyEncryptedBallot(ballot: EncryptedBallot, stats: Stats): Result<Boolean, String> {
+        val starting = getSystemTimeInMillis()
         val results = mutableListOf<Result<Boolean, String>>()
 
         if (ballot.isPreencrypt) {
@@ -116,8 +114,9 @@ class VerifyEncryptedBallots(
                 results.add(verifyPreencryptedContest(ballot.ballotId, contest))
             }
         }
+        stats.of("verifyEncryptedBallot", "selections").accum(getSystemTimeInMillis() - starting, nselections)
         if (debugBallots) println(" Ballot '${ballot.ballotId}' ncontests = $ncontests nselections = $nselections")
-        return Stats(ballot.ballotId, results.merge(), ncontests, nselections)
+        return results.merge()
     }
 
     // Box 4
@@ -196,8 +195,7 @@ class VerifyEncryptedBallots(
 
     //////////////////////////////////////////////////////////////
     // coroutines
-
-    private val accumStats = StatsAccum()
+    private val allResults = mutableListOf<Result<Boolean, String>>()
     private var count = 0
     private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> =
         produce {
@@ -216,15 +214,15 @@ class VerifyEncryptedBallots(
         id: Int,
         input: ReceiveChannel<EncryptedBallot>,
         agg: SelectionAggregator,
-        verify: (EncryptedBallot) -> Stats,
+        verify: (EncryptedBallot) -> Result<Boolean, String>,
     ) = launch(Dispatchers.Default) {
         for (ballot in input) {
             if (debugBallots) println("$id channel working on ${ballot.ballotId}")
-            val stat = verify(ballot)
+            val result = verify(ballot)
             mutex.withLock {
                 agg.add(ballot) // this slows down the ballot parallelism: nselections * (2 (modP multiplication))
                 confirmationCodes.add(ConfirmationCode(ballot.ballotId, ballot.code))
-                accumStats.add(stat)
+                allResults.add(result)
             }
             yield()
         }

@@ -6,6 +6,7 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.core.ElGamalPublicKey
+import electionguard.core.Stats
 import electionguard.core.UInt256
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
@@ -165,10 +166,12 @@ internal class PreEncryptorTest {
         // combines the recordedBallot
         val fullEncryptedBallot = group.importEncryptedBallot(proto).unwrap()
 
+        val stats = Stats()
         val verifier = VerifyEncryptedBallots(group, manifest, publicKey, qbar.toElementModQ(group), 1)
-        val stats = verifier.verifyEncryptedBallot(fullEncryptedBallot)
-        println("VerifyEncryptedBallots $stats")
-        assertTrue(stats.result is Ok)
+        val results = verifier.verifyEncryptedBallot(fullEncryptedBallot, stats)
+        println("VerifyEncryptedBallots $results")
+        stats.show()
+        assertTrue(results is Ok)
     }
 
     fun markBallotChooseOne(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {

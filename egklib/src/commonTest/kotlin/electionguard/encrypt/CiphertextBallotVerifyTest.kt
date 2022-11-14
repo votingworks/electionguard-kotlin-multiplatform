@@ -9,7 +9,6 @@ import electionguard.ballot.Manifest
 import electionguard.core.*
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.Consumer
-import electionguard.verifier.Stats
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -48,9 +47,9 @@ class CiphertextBallotVerifyTest {
             val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
 
             // verify
-            val stats = verifier.verify(ciphertextBallot)
-            println(stats)
-            assertTrue(stats.result is Ok)
+            val results = verifier.verify(ciphertextBallot)
+            println(results)
+            assertTrue(results is Ok)
 
             // decrypt and verify embedded nonces
             val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey())
@@ -73,7 +72,7 @@ private class VerifyCiphertextBallot(
     val jointPublicKey: ElGamalPublicKey,
     val cryptoExtendedBaseHash: ElementModQ) {
 
-    fun verify(ballot: CiphertextBallot): Stats {
+    fun verify(ballot: CiphertextBallot): Result<Boolean, String> {
         var ncontests = 0
         var nselections = 0
         val errors = mutableListOf<Result<Boolean,String>>()
@@ -106,7 +105,7 @@ private class VerifyCiphertextBallot(
 
             errors.add(verifySelections(ballot.ballotId, contest))
         }
-        return Stats(ballot.ballotId, errors.merge(), ncontests, nselections)
+        return errors.merge()
     }
 
     // 6.A

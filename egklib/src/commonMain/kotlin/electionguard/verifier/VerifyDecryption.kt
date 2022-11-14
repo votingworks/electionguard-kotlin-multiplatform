@@ -30,7 +30,7 @@ class VerifyDecryption(
     val qbar: ElementModQ,
 ) {
 
-    fun verify(decrypted: DecryptedTallyOrBallot, isBallot: Boolean, showTime : Boolean = false): Stats {
+    fun verify(decrypted: DecryptedTallyOrBallot, isBallot: Boolean, stats: Stats): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
         var ncontests = 0
@@ -100,10 +100,8 @@ class VerifyDecryption(
             }
         }
 
-        val took = getSystemTimeInMillis() - starting
-        if (showTime) println("   verifyDecryptedTally took $took millisecs")
-
-        return Stats(decrypted.id, results.merge(), ncontests, nselections)
+        stats.of("verifyDecryption", "selections").accum(getSystemTimeInMillis() - starting, nselections)
+        return results.merge()
     }
 
     private fun verifyContestData(where: String, contestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
@@ -146,15 +144,16 @@ class VerifyDecryption(
     fun verifySpoiledBallotTallies(
         ballots: Iterable<DecryptedTallyOrBallot>,
         nthreads: Int,
-        showTime: Boolean = false
-    ): StatsAccum {
+        stats: Stats,
+        showTime: Boolean,
+    ): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
         runBlocking {
             val verifierJobs = mutableListOf<Job>()
             val ballotProducer = produceTallies(ballots)
             repeat(nthreads) {
-                verifierJobs.add(launchVerifier(it, ballotProducer) { ballot -> verify(ballot, isBallot = true) })
+                verifierJobs.add(launchVerifier(it, ballotProducer) { ballot -> verify(ballot, isBallot = true, stats) })
             }
 
             // wait for all encryptions to be done, then close everything
@@ -163,11 +162,11 @@ class VerifyDecryption(
 
         val took = getSystemTimeInMillis() - starting
         val perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-        if (showTime) println("   verifySpoiledBallotTallies took $took millisecs for $count ballots = $perBallot msecs/ballot")
-        return globalStat
+        if (showTime) println("   verifySpoiledBallotTallies took $took millisecs for $count ballots = $perBallot msecs/ballot wallclock")
+        return globalResults.merge()
     }
 
-    private val globalStat = StatsAccum()
+    private val globalResults = mutableListOf<Result<Boolean, String>>()
     private var count = 0
     private fun CoroutineScope.produceTallies(producer: Iterable<DecryptedTallyOrBallot>): ReceiveChannel<DecryptedTallyOrBallot> =
         produce {
@@ -184,13 +183,13 @@ class VerifyDecryption(
     private fun CoroutineScope.launchVerifier(
         id: Int,
         input: ReceiveChannel<DecryptedTallyOrBallot>,
-        verify: (DecryptedTallyOrBallot) -> Stats,
+        verify: (DecryptedTallyOrBallot) -> Result<Boolean, String>,
     ) = launch(Dispatchers.Default) {
         for (tally in input) {
             if (debug) println("$id channel working on ${tally.id}")
             val stat = verify(tally)
             mutex.withLock {
-                globalStat.add(stat)
+                globalResults.add(stat)
             }
             yield()
         }

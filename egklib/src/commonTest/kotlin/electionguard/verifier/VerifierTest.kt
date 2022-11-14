@@ -29,7 +29,7 @@ class VerifierTest {
 
     @Test
     fun verifyDecryptedTallyWithRecoveredShares() {
-        verify(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
+        verifyDecryptedTally(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
     }
 
     @Test
