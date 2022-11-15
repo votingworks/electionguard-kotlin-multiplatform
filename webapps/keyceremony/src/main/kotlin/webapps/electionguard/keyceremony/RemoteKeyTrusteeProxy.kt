@@ -94,7 +94,10 @@ class RemoteKeyTrusteeProxy(
         }
     }
 
-    override fun receiveEncryptedKeyShare(share: EncryptedKeyShare): Result<Boolean, String> {
+    override fun receiveEncryptedKeyShare(share: EncryptedKeyShare?): Result<Boolean, String> {
+        if (share == null) {
+            return Err("$id receiveEncryptedKeyShare sent null share")
+        }
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/receiveEncryptedKeyShare"
             val response: HttpResponse = client.post(url) {

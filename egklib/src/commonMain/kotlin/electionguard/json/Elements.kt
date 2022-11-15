@@ -96,5 +96,5 @@ fun GroupContext.importModP(element: ElementModPJson): ElementModP? = binaryToEl
 fun GroupContext.importModQ(element: ElementModQJson): ElementModQ? = binaryToElementModQ(element.value)
 
 /** Imports from a published UInt256. Returns `null` if it's out of bounds. */
-fun UInt256Json.import(): UInt256 = UInt256(this.bytes)
+fun UInt256Json.import(): UInt256? = UInt256(this.bytes)
 

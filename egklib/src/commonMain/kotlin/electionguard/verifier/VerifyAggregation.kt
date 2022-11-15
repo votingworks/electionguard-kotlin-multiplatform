@@ -26,10 +26,8 @@ class VerifyAggregation(
         val starting = getSystemTimeInMillis()
 
         val errors = mutableListOf<Result<Boolean, String>>()
-        var ncontests = 0
         var nselections = 0
         for (contest in encryptedTally.contests) {
-            ncontests++
             for (selection in contest.selections) {
                 nselections++
                 val key: String = contest.contestId + "." + selection.selectionId

@@ -132,7 +132,7 @@ data class Manifest(
     /** Set of "contestId/selectionId" to detect existence. */
     val contestAndSelectionSet : Set<String> by
     lazy {
-        contests.map { contest -> contest.selections.map { it -> "${contest.contestId}/${it.selectionId}" }}.flatten().toSet()
+        contests.map { contest -> contest.selections.map { "${contest.contestId}/${it.selectionId}" }}.flatten().toSet()
     }
 
     /**

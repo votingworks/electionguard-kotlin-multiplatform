@@ -88,7 +88,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
 
     // Phase Two: if any secretKeyShares fail to validate, send and validate KeyShares
     val keyResults: MutableList<Result<Boolean, String>> = mutableListOf()
-    keyShareFailures.forEach { it ->
+    keyShareFailures.forEach {
         if (debug) println(" ${it.missingGuardian.id()} keyShareFor() ${it.availableGuardian.id()}")
         val keyShareResult = it.missingGuardian.keyShareFor(it.availableGuardian.id())
         if (keyShareResult is Ok) {

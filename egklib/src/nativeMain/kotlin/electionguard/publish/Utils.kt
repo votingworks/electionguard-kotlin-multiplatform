@@ -80,7 +80,7 @@ fun createDirectories(dir: String): Boolean {
         if (!exists(have)) {
             println("create directory = '$have'")
             if (!createDirectory(have)) {
-                return false;
+                return false
             }
         }
         have += "/"
@@ -144,12 +144,10 @@ fun openDir(dirpath: String): List<String> {
         // : kotlinx.cinterop.CPointer<platform.posix.dirent>? { /* compiled code */ }
         val result = ArrayList<String>()
         while (true) {
-            val ddir: CPointer<dirent>? = readdir(dir)
-            if (ddir == null) {
-                // this happens when no more files to be read
+            val ddir: CPointer<dirent> = readdir(dir)
+                ?: // this happens when no more files to be read
                 break
-            }
-            val dirent: platform.posix.dirent = ddir.get(0)
+            val dirent = ddir[0]
             val filenamep: CArrayPointer<ByteVar> = dirent.d_name
             val filename = filenamep.toKString()
             if (filename.endsWith(".protobuf")) {
@@ -194,7 +192,7 @@ fun fgetsFile(filename: String): List<String> {
             result.add(ks)
         }
 
-        fclose(file);
+        fclose(file)
     }
     return result
 }

@@ -24,10 +24,13 @@ fun HashedElGamalCiphertext.publish() = HashedElGamalCiphertextJson(
 
 /** Imports from a published [HashedElGamalCiphertext]. Returns `null` if it's malformed. */
 fun GroupContext.importHashedElGamalCiphertext(pub: HashedElGamalCiphertextJson): HashedElGamalCiphertext? {
-    return HashedElGamalCiphertext(
-        this.importModP(pub.pad)!!,
-        pub.data,
-        pub.mac.import(),
-        pub.numBytes,
-    )
+    val mac = pub.mac.import()
+
+    return if (mac != null)
+        HashedElGamalCiphertext(
+            this.importModP(pub.pad)!!,
+            pub.data,
+            mac,
+            pub.numBytes,
+        ) else null
 }

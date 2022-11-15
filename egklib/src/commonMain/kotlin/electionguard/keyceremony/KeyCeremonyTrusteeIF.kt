@@ -19,7 +19,7 @@ interface KeyCeremonyTrusteeIF {
     /** Create another guardians share of my key, encrypted. */
     fun encryptedKeyShareFor(otherGuardian: String): Result<EncryptedKeyShare, String>
     /** Receive and verify an encrypted key share. */
-    fun receiveEncryptedKeyShare(share: EncryptedKeyShare): Result<Boolean, String>
+    fun receiveEncryptedKeyShare(share: EncryptedKeyShare?): Result<Boolean, String>
 
     /** Create another guardians share of my key, not encrypted. */
     fun keyShareFor(otherGuardian: String): Result<KeyShare, String>

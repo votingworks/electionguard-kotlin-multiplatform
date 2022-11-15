@@ -57,7 +57,7 @@ fun GroupContext.importDecryptionResult(decrypt: electionguard.protogen.Decrypti
 private fun GroupContext.importLagrangeCoefficient(guardian: electionguard.protogen.LagrangeCoordinate):
         Result<LagrangeCoordinate, String> {
     val lagrangeCoefficient = this.importElementModQ(guardian.lagrangeCoefficient)
-        ?: return Err("Failed to translate LagrangeCoordinate from proto, missing lagrangeCoefficient")
+        ?: return Err("Failed to translate LagrangeCoordinate from proto")
 
     return Ok(
         LagrangeCoordinate(

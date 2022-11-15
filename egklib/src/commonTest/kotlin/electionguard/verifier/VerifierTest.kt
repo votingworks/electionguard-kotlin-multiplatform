@@ -16,7 +16,7 @@ class VerifierTest {
                 "-in",
                 "src/commonTest/data/runWorkflowSomeAvailable",
                 "-nthreads",
-                "11",
+                "25",
                 "--showTime",
             )
         )
@@ -30,11 +30,6 @@ class VerifierTest {
     @Test
     fun verifyDecryptedTallyWithRecoveredShares() {
         verifyDecryptedTally(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
-    }
-
-    @Test
-    fun verifyRecoveredShareResults() {
-        verifyRecoveredShares(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
     }
 
     @Test

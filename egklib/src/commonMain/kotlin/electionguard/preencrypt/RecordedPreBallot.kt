@@ -41,7 +41,7 @@ data class RecordedSelectionVector(
 internal fun makeRecordedPreBallot(marked: MarkedPreEncryptedBallot, preInternal: PreBallotInternal): RecordedPreBallot {
     val contests = mutableListOf<RecordedPreContest>()
     preInternal.contests.forEach { preContest ->
-        val mcontest = marked.contests.find { it -> it.contestId == preContest.contestId }
+        val mcontest = marked.contests.find { it.contestId == preContest.contestId }
             ?: throw IllegalArgumentException("Cant find ${preContest.contestId}")
 
         // LOOK all the noneVector are the same. must be wrong.

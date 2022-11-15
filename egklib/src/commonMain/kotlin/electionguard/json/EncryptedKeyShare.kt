@@ -24,7 +24,7 @@ fun EncryptedKeyShare.publish() = EncryptedKeyShareJson(
 )
 
 /** Imports from a published [PublicKeys]. Returns `null` if it's malformed. */
-fun GroupContext.importSecretKeyShare(json: EncryptedKeyShareJson): EncryptedKeyShare {
+fun GroupContext.importSecretKeyShare(json: EncryptedKeyShareJson): EncryptedKeyShare? {
     return EncryptedKeyShare(
         json.missingGuardianId,
         json.availableGuardianId,

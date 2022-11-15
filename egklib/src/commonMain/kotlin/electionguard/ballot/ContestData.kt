@@ -151,19 +151,13 @@ fun makeContestData(
 }
 
 fun HashedElGamalCiphertext.decryptWithBetaToContestData(beta : ElementModP) : Result<ContestData, String> {
-    val ba: ByteArray? = this.decryptWithBeta(beta)
-    if (ba == null) {
-        return Err( "decryptWithNonceToContestData failed")
-    }
+    val ba: ByteArray = this.decryptWithBeta(beta) ?: return Err( "decryptWithNonceToContestData failed")
     val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba)
     return importContestData(proto)
 }
 
 fun HashedElGamalCiphertext.decryptWithNonceToContestData(publicKey: ElGamalPublicKey, nonce: ElementModQ) : Result<ContestData, String> {
-    val ba: ByteArray? = this.decryptWithNonce(publicKey, nonce)
-    if (ba == null) {
-        return Err( "decryptWithNonceToContestData failed")
-    }
+    val ba: ByteArray = this.decryptWithNonce(publicKey, nonce) ?: return Err( "decryptWithNonceToContestData failed")
     val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba)
     return importContestData(proto)
 }

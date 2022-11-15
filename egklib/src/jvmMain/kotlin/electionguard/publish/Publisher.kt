@@ -150,7 +150,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     }
 
     actual fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
-        if (!plaintextBallots.isEmpty()) {
+        if (plaintextBallots.isNotEmpty()) {
             val fileout = path.plaintextBallotPath(outputDir)
             FileOutputStream(fileout).use { out ->
                 for (ballot in plaintextBallots) {

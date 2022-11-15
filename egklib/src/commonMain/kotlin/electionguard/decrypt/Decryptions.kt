@@ -84,7 +84,7 @@ class ContestDataResults(
 )
 
 /** All decryptions from all the Decrypting Trustees for one ballot. */
-class Decryptions() {
+class Decryptions {
     val shares: MutableMap<String, DecryptionResults> = mutableMapOf() // key "contestId#@selectionId"
     val contestData: MutableMap<String, ContestDataResults> = mutableMapOf() // key contestId
 

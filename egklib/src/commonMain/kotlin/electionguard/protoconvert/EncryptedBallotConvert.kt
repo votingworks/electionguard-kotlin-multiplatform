@@ -184,7 +184,7 @@ fun EncryptedBallot.publishEncryptedBallot(recordedPreBallot: RecordedPreBallot)
 private fun EncryptedBallot.Contest.publishContest(recordedPreBallot: RecordedPreBallot):
         electionguard.protogen.EncryptedBallotContest {
 
-    val rcontest = recordedPreBallot.contests.find { it -> it.contestId == this.contestId }
+    val rcontest = recordedPreBallot.contests.find { it.contestId == this.contestId }
         ?: throw IllegalArgumentException("Cant find ${this.contestId}")
 
     return electionguard.protogen
