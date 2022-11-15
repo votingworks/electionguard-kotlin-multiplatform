@@ -12,7 +12,6 @@ import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.SchnorrProof
 import electionguard.core.context
 import electionguard.core.decrypt
-import electionguard.core.decryptWithNonce
 import electionguard.core.hashedElGamalEncrypt
 import electionguard.core.merge
 import electionguard.core.randomElementModQ
@@ -117,9 +116,12 @@ class KeyCeremonyTrustee(
     }
 
     /** Receive and verify a secret key share. */
-    override fun receiveEncryptedKeyShare(share: EncryptedKeyShare): Result<Boolean, String> {
+    override fun receiveEncryptedKeyShare(share: EncryptedKeyShare?): Result<Boolean, String> {
+        if (share == null) {
+            return Err("ReceiveEncryptedKeyShare '${this.id}' sent a null share")
+        }
          if (share.availableGuardianId != id) {
-            return Err("Sent EncryptedKeyShare to wrong trustee '${this.id}', should be availableGuardianId '${share.availableGuardianId}'")
+            return Err("ReceiveEncryptedKeyShare '${this.id}' sent share to wrong trustee '${this.id}', should be availableGuardianId '${share.availableGuardianId}'")
         }
 
         // decrypt Pi(l)

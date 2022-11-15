@@ -3,6 +3,9 @@ package electionguard.protoconvert
 import electionguard.core.*
 import pbandk.ByteArr
 
+// Note that importXXX() return T?, while publishXXX() return electionguard.protogen.T
+// Its up to the calling routines to turn that into Result<Boolean, String>
+
 fun GroupContext.importElementModQ(modQ: electionguard.protogen.ElementModQ?): ElementModQ? =
     modQ?.let { this.binaryToElementModQ(modQ.value.array) }
 

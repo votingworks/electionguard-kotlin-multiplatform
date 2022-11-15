@@ -3,7 +3,7 @@ package electionguard.core
 import kotlin.math.min
 
 /* Keep track of timing stats. Thread-safe */
-class Stats() {
+class Stats {
     private val stats = mutableMapOf<String, Stat>() // LOOK need thread safe collection
 
     fun of(who: String, thing: String = "decryption", what: String = "ballot"): Stat =
@@ -178,8 +178,8 @@ fun Double.sigfig(minSigfigs: Int = 5): String {
     if (numFigs == 0 || number.toString() == "0" && fracFigs > 0) {
         numFigs = 0
         number = StringBuilder()
-        for (i in 0 until fraction.length) {
-            if (fraction[i] != '0') {
+        for (element in fraction) {
+            if (element != '0') {
                 break
             }
             --fracFigs

@@ -15,7 +15,7 @@ fun GenericChaumPedersenProof.publish() = GenericChaumPedersenProofJson(
     this.r.publishModQ()
 )
 
-/** Imports from a published [DisjunctiveChaumPedersen]. Returns `null` if it's malformed. */
+/** Imports from a published [GenericChaumPedersenProof]. Returns `null` if it's malformed. */
 fun GroupContext.importCP(proof: GenericChaumPedersenProofJson): GenericChaumPedersenProof? {
     val c = this.importModQ(proof.challenge)
     val r = this.importModQ(proof.response)
@@ -38,6 +38,6 @@ fun RangeChaumPedersenProofKnownNonce.publish() = RangeChaumPedersenProofKnownNo
 )
 
 /** Imports from a published [RangeChaumPedersenProofKnownNonceJson]. Returns `null` if it's malformed. */
-fun GroupContext.importRangeCP(proofPub: RangeChaumPedersenProofKnownNonceJson): RangeChaumPedersenProofKnownNonce? {
+fun GroupContext.importRangeCP(proofPub: RangeChaumPedersenProofKnownNonceJson): RangeChaumPedersenProofKnownNonce {
     return RangeChaumPedersenProofKnownNonce(proofPub.proofs.map { this.importCP(it)!! })
 }

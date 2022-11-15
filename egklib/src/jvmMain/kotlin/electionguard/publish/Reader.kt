@@ -33,44 +33,44 @@ import java.util.function.Predicate
 // The low level reading functions
 
 fun readElectionConfig(filename: String): Result<ElectionConfig, String> {
-    try {
+    return try {
         var proto: electionguard.protogen.ElectionConfig
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionConfig.decodeFromStream(inp) }
-        return importElectionConfig(proto)
+        importElectionConfig(proto)
     } catch (e: Exception) {
-        return Err(e.message ?: "readElectionConfig $filename failed")
+        Err(e.message ?: "readElectionConfig $filename failed")
     }
 }
 
 fun GroupContext.readElectionInitialized(filename: String): Result<ElectionInitialized, String> {
-    try {
+    return try {
         var proto: electionguard.protogen.ElectionInitialized
         FileInputStream(filename).use { inp ->
             proto = electionguard.protogen.ElectionInitialized.decodeFromStream(inp)
         }
-        return this.importElectionInitialized(proto)
+        this.importElectionInitialized(proto)
     } catch (e: Exception) {
-        return Err(e.message ?: "readElectionInitialized $filename failed")
+        Err(e.message ?: "readElectionInitialized $filename failed")
     }
 }
 
 fun GroupContext.readTallyResult(filename: String): Result<TallyResult, String> {
-    try {
+    return try {
         var proto: electionguard.protogen.TallyResult
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.TallyResult.decodeFromStream(inp) }
-        return this.importTallyResult(proto)
+        this.importTallyResult(proto)
     } catch (e: Exception) {
-        return Err(e.message ?: "readTallyResult $filename failed")
+        Err(e.message ?: "readTallyResult $filename failed")
     }
 }
 
 fun GroupContext.readDecryptionResult(filename: String): Result<DecryptionResult, String> {
-    try {
+    return try {
         var proto: electionguard.protogen.DecryptionResult
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptionResult.decodeFromStream(inp) }
-        return this.importDecryptionResult(proto)
+        this.importDecryptionResult(proto)
     } catch (e: Exception) {
-        return Err(e.message ?: "readDecryptionResult $filename failed")
+        Err(e.message ?: "readDecryptionResult $filename failed")
     }
 }
 

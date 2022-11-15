@@ -74,16 +74,16 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
 
         // tally decryption
         val verifyTally = VerifyDecryption(group, manifest, jointPublicKey, qbar)
-        val tallyResults = verifyTally.verify(record.decryptedTally()!!, isBallot = false, stats)
-        println(" 8,9. verifyTallyDecryption $tallyResults")
+        val tallyResult = verifyTally.verify(record.decryptedTally()!!, isBallot = false, stats)
+        println(" 8,9. verifyTallyDecryption $tallyResult")
 
         // 10, 11, 12, 13, 14 spoiled ballots
-        val spoiledResults =
+        val spoiledResult =
             verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, stats, showTime)
-        println(" 10,11,12,13,14. verifySpoiledBallotTallies $spoiledResults")
+        println(" 10,11,12,13,14. verifySpoiledBallotTallies $spoiledResult")
 
-        val allOk = (guardiansOk is Ok) && (publicKeyOk is Ok) && (aggResult is Ok) &&
-                (ballotResult is Ok) && (aggResult is Ok) && (tallyResults is Ok) && (spoiledResults is Ok)
+        val allOk = (parametersOk is Ok) && (guardiansOk is Ok) && (publicKeyOk is Ok) &&
+                (ballotResult is Ok) && (aggResult is Ok) && (tallyResult is Ok) && (spoiledResult is Ok)
         println("verify allOK = $allOk\n")
         return allOk
     }
@@ -137,7 +137,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments()) }
         // spec 1.52, eq 17 and 3.B
         val computedQbar: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitments)
-        if (!qbar.equals(computedQbar.toElementModQ(group))) {
+        if (qbar != computedQbar.toElementModQ(group)) {
             errors.add(Err("  3.B qbar does not match computed = H(Q, K, {K_ij})"))
             println("qbar $qbar != computed $computedQbar")
         }
@@ -160,58 +160,9 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         return verifyTally.verify(tally, false, stats)
     }
 
-    fun verifyRecoveredShares(): Result<Boolean, String> {
-        val verifier = VerifyRecoveredShares(group, record)
-        return verifier.verify()
-    }
-
     fun verifySpoiledBallotTallies(stats: Stats): Result<Boolean, String> {
         val verifyTally = VerifyDecryption(group, manifest, jointPublicKey, qbar)
         return verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, stats, true)
     }
 
 }
-
-/*
-class Stats(
-    val forWho: String,
-    val result: Result<Boolean, String>,
-    val ncontests: Int,
-    val nselections: Int,
-) {
-    override fun toString(): String {
-        val errors = if (result is Err) result.unwrapError() else ""
-        return "allOk=${result is Ok}, ncontests=$ncontests, nselections=$nselections, errors=$errors"
-    }
-}
-
-class StatsAccum {
-    var n: Int = 0
-    val results= mutableListOf<Result<Boolean, String>>()
-
-    private var ncontests: Int = 0
-    private var nselections: Int = 0
-
-    fun add(stat: Stats) {
-        n++
-        ncontests += stat.ncontests
-        nselections += stat.nselections
-        results.add(stat.result)
-    }
-
-    fun add(result: Result<Boolean, String>) {
-        results.add(result)
-    }
-
-    fun result() = results.merge()
-
-    override fun toString(): String {
-        val result = result()
-        val errors = if (result is Err) result.unwrapError() else ""
-        return "allOk=${result is Ok}, n=$n, ncontests=$ncontests, nselections=$nselections, errors=$errors"
-    }
-}
-
- */
-
-

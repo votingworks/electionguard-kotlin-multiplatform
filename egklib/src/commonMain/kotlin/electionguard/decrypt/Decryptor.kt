@@ -36,7 +36,7 @@ class Decryptor(
             val coeff: ElementModQ = group.computeLagrangeCoefficient(trustee.xCoordinate(), present)
             dguardians.add(LagrangeCoordinate(trustee.id(), trustee.xCoordinate(), coeff))
         }
-        this.lagrangeCoordinates = dguardians.associate { it.guardianId to it }
+        this.lagrangeCoordinates = dguardians.associateBy { it.guardianId }
 
         // configure the DecryptingTrustees
         for (trustee in decryptingTrustees) {

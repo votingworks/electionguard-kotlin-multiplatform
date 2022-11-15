@@ -86,7 +86,7 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
     fun pow(e: ElementModQ): ElementModP {
         basis.context.assertCompatible(e.context)
 
-        if (acceleration.numBits == 0) return basis powP e else {
+        return if (acceleration.numBits == 0) basis powP e else {
             val slices = e.byteArray().kBitsPerSlice(acceleration, tableLength)
             var y = montgomeryOne
             for (i in 0 until tableLength) {
@@ -94,7 +94,7 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
                 val nextProd = table[i][eSlice]
                 y *= nextProd
             }
-            return y.toElementModP()
+            y.toElementModP()
         }
     }
 }

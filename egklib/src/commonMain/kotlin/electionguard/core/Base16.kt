@@ -44,7 +44,7 @@ object Base16 {
         // is going to run pretty quickly. This code is in the path for computing
         // cryptographic hashes, so performance matters here.
 
-        if (size == 0) return "" // hopefully won't happen
+        if (isEmpty()) return "" // hopefully won't happen
 
         val result =
             CharArray(2 * this.size) {
@@ -70,7 +70,7 @@ object Base16 {
         // and possibly untrusted input. Correctness is important here, because this
         // is part of the attack surface.
 
-        if (length == 0) return ByteArray(0) // hopefully won't happen
+        if (isEmpty()) return ByteArray(0) // hopefully won't happen
 
         // ensure we have an even number of characters
         val input = (if (this.length and 1 == 1) "0" else "") + this

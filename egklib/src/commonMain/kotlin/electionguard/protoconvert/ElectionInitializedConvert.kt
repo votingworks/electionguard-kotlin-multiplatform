@@ -9,7 +9,6 @@ import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.GroupContext
-import electionguard.core.SchnorrProof
 
 fun GroupContext.importElectionInitialized(init: electionguard.protogen.ElectionInitialized?):
         Result<ElectionInitialized, String> {

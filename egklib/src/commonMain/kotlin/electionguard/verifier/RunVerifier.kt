@@ -83,18 +83,6 @@ fun verifyDecryptedTally(group: GroupContext, inputDir: String) {
     println("verifyDecryptedTally $allOk took $took seconds wallclock")
 }
 
-fun verifyRecoveredShares(group: GroupContext, inputDir: String) {
-    val starting = getSystemTimeInMillis()
-
-    val electionRecord = electionRecordFromConsumer(Consumer(inputDir, group))
-    val verifier = Verifier(electionRecord, 1)
-
-    val allOk = verifier.verifyRecoveredShares()
-
-    val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
-    println("verifyRecoveredShares $allOk took $took seconds")
-}
-
 fun verifySpoiledBallotTallies(group: GroupContext, inputDir: String) {
     val starting = getSystemTimeInMillis()
 

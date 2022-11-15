@@ -33,13 +33,11 @@ class VerifyDecryption(
     fun verify(decrypted: DecryptedTallyOrBallot, isBallot: Boolean, stats: Stats): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
-        var ncontests = 0
         var nselections = 0
         val results = mutableListOf<Result<Boolean, String>>()
         val ballotSelectionSet = mutableSetOf<String>()
 
         for (contest in decrypted.contests.values) {
-            ncontests++
             val where = "${decrypted.id}/${contest.contestId}"
             // (9.C) The contest text label occurs as a contest label in the list of contests in the election manifest.
             if (manifest.contestIdToLimit[contest.contestId] == null) {
