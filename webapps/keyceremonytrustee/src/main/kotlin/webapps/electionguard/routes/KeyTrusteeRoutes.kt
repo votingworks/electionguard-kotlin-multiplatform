@@ -177,16 +177,14 @@ fun Route.trusteeRouting() {
                         status = HttpStatusCode.OK
                     )
                 } else {
-                    call.respondText(
-                        "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare failed ${result.unwrapError()}",
-                        status = HttpStatusCode.BadRequest
-                    )
+                    val msg = "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare failed ${result.unwrapError()}"
+                    call.application.environment.log.error(msg)
+                    call.respondText(msg, status = HttpStatusCode.BadRequest)
                 }
             } else {
-                call.respondText(
-                    "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare importKeyShare failed}",
-                    status = HttpStatusCode.BadRequest
-                )
+                val msg = "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare importKeyShare failed"
+                call.application.environment.log.error(msg)
+                call.respondText(msg, status = HttpStatusCode.BadRequest)
             }
         }
 

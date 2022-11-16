@@ -51,12 +51,30 @@ dependencyResolutionManagement {
             )
 
             // logging
-            library("kotlin-logging", "io.github.microutils:kotlin-logging:3.0.2")
             library("logback-classic", "ch.qos.logback:logback-classic:1.3.4")
+            library("kotlin-server-logging", "io.ktor", "ktor-server-call-logging").versionRef("ktor-version")
+            bundle(
+                "logging-server",
+                listOf(
+                    "kotlin-server-logging",
+                    "logback-classic",
+                )
+            )
+
+            library("kotlin-client-logging", "io.ktor", "ktor-client-logging").versionRef("ktor-version")
+            bundle(
+                "logging-client",
+                listOf(
+                    "kotlin-client-logging",
+                    "logback-classic",
+                )
+            )
+
+            library("microutils-logging", "io.github.microutils:kotlin-logging:3.0.2")
             bundle(
                 "logging",
                 listOf(
-                    "kotlin-logging",
+                    "microutils-logging",
                     "logback-classic",
                 )
             )
