@@ -73,6 +73,9 @@ object ElGamalSecretKeyAsStringSerializer : KSerializer<ElGamalSecretKeyJson> {
     }
 }
 
+// Note that importXXX() return T?, while publishXXX() return T(Json)
+// Its up to the calling routines to turn that into Result<Boolean, String>
+
 /** Publishes an [ElGamalPublicKey] to its external, serializable form. */
 fun ElGamalPublicKey.publish(): ElGamalPublicKeyJson = ElGamalPublicKeyJson(this.key.publishModP())
 
@@ -99,14 +102,12 @@ fun GroupContext.importSecretKey(org: ElGamalSecretKeyJson): ElGamalSecretKey? =
 fun GroupContext.importKeyPair(keypair: ElGamalKeypairJson): ElGamalKeypair? {
     val secretKey = this.importSecretKey(keypair.secret_key)
     val publicKey = this.importPublicKey(keypair.public_key)
-    if (secretKey == null || publicKey == null) return null
-    return ElGamalKeypair(secretKey, publicKey)
+    return if (secretKey == null || publicKey == null) null else  ElGamalKeypair(secretKey, publicKey)
 }
 
 /** Imports from a published [ElGamalCiphertext]. Returns `null` if it's malformed. */
 fun GroupContext.importElGamalCiphertext(ciphertext: ElGamalCiphertextJson): ElGamalCiphertext? {
     val pad = this.importModP(ciphertext.pad)
     val data = this.importModP(ciphertext.data)
-    if (pad == null || data == null) return null
-    return ElGamalCiphertext(pad, data)
+    return if (pad == null || data == null) null else ElGamalCiphertext(pad, data)
 }

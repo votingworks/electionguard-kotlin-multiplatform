@@ -1,21 +1,22 @@
 package electionguard.json
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.core.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** External representation of an GenericChaumPedersenProof */
+/** External representation of a GenericChaumPedersenProof */
 @Serializable
 @SerialName("GenericChaumPedersen")
 data class GenericChaumPedersenProofJson(val challenge: ElementModQJson, val response: ElementModQJson)
 
-/** Publishes a [GenericChaumPedersenProof] to its external, serializable form. */
 fun GenericChaumPedersenProof.publish() = GenericChaumPedersenProofJson(
     this.c.publishModQ(),
     this.r.publishModQ()
 )
 
-/** Imports from a published [GenericChaumPedersenProof]. Returns `null` if it's malformed. */
 fun GroupContext.importCP(proof: GenericChaumPedersenProofJson): GenericChaumPedersenProof? {
     val c = this.importModQ(proof.challenge)
     val r = this.importModQ(proof.response)
@@ -25,19 +26,21 @@ fun GroupContext.importCP(proof: GenericChaumPedersenProofJson): GenericChaumPed
 
 /////////////////////////
 
-/** External representation of an RangeChaumPedersenProofKnownNonce */
+/** External representation of a RangeChaumPedersenProofKnownNonce */
 @Serializable
 @SerialName("RangeChaumPedersenProofKnownNoncePub")
 data class RangeChaumPedersenProofKnownNonceJson(
     val proofs: List<GenericChaumPedersenProofJson>,
 )
 
-/** Publishes a [RangeChaumPedersenProofKnownNonce] to its external, serializable form. */
 fun RangeChaumPedersenProofKnownNonce.publish() = RangeChaumPedersenProofKnownNonceJson(
     this.proofs.map { it.publish() },
 )
 
-/** Imports from a published [RangeChaumPedersenProofKnownNonceJson]. Returns `null` if it's malformed. */
-fun GroupContext.importRangeCP(proofPub: RangeChaumPedersenProofKnownNonceJson): RangeChaumPedersenProofKnownNonce {
-    return RangeChaumPedersenProofKnownNonce(proofPub.proofs.map { this.importCP(it)!! })
+fun GroupContext.importRangeCP(range: RangeChaumPedersenProofKnownNonceJson): Result<RangeChaumPedersenProofKnownNonce, String> {
+    val proofs = range.proofs.map { this.importCP(it) }
+    val allgood = proofs.map { it != null }.reduce { a, b -> a && b }
+
+    return if (allgood) Ok(RangeChaumPedersenProofKnownNonce(proofs.map { it!!} ))
+    else Err("importChaumPedersenProof failed")
 }

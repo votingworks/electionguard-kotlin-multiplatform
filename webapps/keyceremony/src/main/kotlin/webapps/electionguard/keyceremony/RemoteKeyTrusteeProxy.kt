@@ -3,6 +3,8 @@ package webapps.electionguard.keyceremony
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.unwrapError
 import electionguard.core.ElementModP
 import electionguard.core.SchnorrProof
 import electionguard.json.*
@@ -59,9 +61,13 @@ class RemoteKeyTrusteeProxy(
                 }
             }
             val publicKeysJson: PublicKeysJson = response.body()
-            publicKeys = groupContext.importPublicKeys(publicKeysJson)
-            println("$id publicKeys = ${response.status}")
-            if (publicKeys == null) Err("failed") else Ok(publicKeys!!)
+            val publicKeyResult = groupContext.importPublicKeys(publicKeysJson)
+            if (publicKeyResult is Ok) {
+                publicKeys = publicKeyResult.unwrap()
+            } else {
+                println("$id publicKeys = ${response.status} err = ${publicKeyResult.unwrapError()}")
+            }
+            publicKeyResult
         }
     }
 
@@ -88,7 +94,7 @@ class RemoteKeyTrusteeProxy(
                 }
             }
             val encryptedKeyShareJson: EncryptedKeyShareJson = response.body()
-            val encryptedKeyShare: EncryptedKeyShare? = groupContext.importSecretKeyShare(encryptedKeyShareJson)
+            val encryptedKeyShare: EncryptedKeyShare? = groupContext.importEncryptedKeyShare(encryptedKeyShareJson)
             println("$id encryptedKeyShareFor ${encryptedKeyShare?.availableGuardianId} = ${response.status}")
             if (encryptedKeyShare == null) Err("EncryptedKeyShare") else Ok(encryptedKeyShare)
         }

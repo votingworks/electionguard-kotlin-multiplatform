@@ -1,5 +1,6 @@
 package electionguard.json
 
+import com.github.michaelbull.result.unwrap
 import electionguard.core.*
 import electionguard.core.schnorrProof
 import electionguard.keyceremony.PublicKeys
@@ -29,8 +30,8 @@ class PublicKeysTest {
                     proofs.add(kp.schnorrProof(nonce))
                 }
                 val publicKey = PublicKeys(id, xcoord, proofs)
-                assertEquals(publicKey, context.importPublicKeys(publicKey.publish()))
-                assertEquals(publicKey, context.importPublicKeys(jsonRoundTrip(publicKey.publish())))
+                assertEquals(publicKey, context.importPublicKeys(publicKey.publish()).unwrap())
+                assertEquals(publicKey, context.importPublicKeys(jsonRoundTrip(publicKey.publish())).unwrap())
             }
         }
     }

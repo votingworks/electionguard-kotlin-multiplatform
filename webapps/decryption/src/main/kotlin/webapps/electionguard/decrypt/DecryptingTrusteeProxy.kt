@@ -1,5 +1,8 @@
 package webapps.electionguard.decrypt
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.unwrapError
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
@@ -70,9 +73,13 @@ class DecryptingTrusteeProxy(
                 setBody(DecryptRequest(texts).publish())
             }
             val decryptResponseJson: DecryptResponseJson = response.body()
-            val decryptResponse = groupContext.importDecryptResponse(decryptResponseJson)
-            println("DecryptingTrusteeProxy decrypt $id = ${response.status}")
-            decryptResponse.shares
+            val decryptResponses = groupContext.importDecryptResponse(decryptResponseJson)
+            if (decryptResponses is Ok) {
+                decryptResponses.unwrap().shares
+            } else {
+                println("$id decrypt = ${response.status} err = ${decryptResponses.unwrapError()}")
+                emptyList()
+            }
         }
     }
 
@@ -90,8 +97,13 @@ class DecryptingTrusteeProxy(
             }
             println("DecryptingTrusteeProxy challenge $id = ${response.status}")
             val challengeResponsesJson: ChallengeResponsesJson = response.body()
-            val challengeResponses = groupContext.importChallengeResponses(challengeResponsesJson) // importChallengeResponses
-            challengeResponses.responses
+            val challengeResponses = groupContext.importChallengeResponses(challengeResponsesJson)
+            if (challengeResponses is Ok) {
+                challengeResponses.unwrap().responses
+            } else {
+                println("$id challenge = ${response.status} err = ${challengeResponses.unwrapError()}")
+                emptyList()
+            }
         }
     }
 

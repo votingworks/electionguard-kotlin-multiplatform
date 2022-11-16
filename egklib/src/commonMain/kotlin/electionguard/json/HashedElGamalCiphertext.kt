@@ -16,21 +16,21 @@ data class HashedElGamalCiphertextJson(
 
 /** Publishes a [HashedElGamalCiphertext] to its external, serializable form. */
 fun HashedElGamalCiphertext.publish() = HashedElGamalCiphertextJson(
-    this.c0.publishModP(),
-    this.c1,
-    this.c2.publish(),
-    this.numBytes,
-)
+        this.c0.publishModP(),
+        this.c1,
+        this.c2.publish(),
+        this.numBytes,
+    )
 
 /** Imports from a published [HashedElGamalCiphertext]. Returns `null` if it's malformed. */
 fun GroupContext.importHashedElGamalCiphertext(pub: HashedElGamalCiphertextJson): HashedElGamalCiphertext? {
     val mac = pub.mac.import()
 
-    return if (mac != null)
+    return if (mac == null) null else
         HashedElGamalCiphertext(
             this.importModP(pub.pad)!!,
             pub.data,
             mac,
             pub.numBytes,
-        ) else null
+        )
 }

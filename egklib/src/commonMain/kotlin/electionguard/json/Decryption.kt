@@ -1,5 +1,8 @@
 package electionguard.json
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.core.*
 import electionguard.decrypt.ChallengeRequest
 import electionguard.decrypt.ChallengeResponse
@@ -11,7 +14,7 @@ import kotlinx.serialization.Serializable
 data class SetMissingRequestJson(
     val lagrange_coeff: ElementModQJson,
     val missing: List<String>
-    )
+)
 
 data class SetMissingRequest(
     val lagrangeCoeff: ElementModQ,
@@ -23,10 +26,14 @@ fun SetMissingRequest.publish() = SetMissingRequestJson(
     this.missing
 )
 
-fun GroupContext.importSetMissingRequest(request: SetMissingRequestJson) = SetMissingRequest(
-        this.importModQ(request.lagrange_coeff)!!,
-        request.missing
-    )
+fun GroupContext.importSetMissingRequest(json: SetMissingRequestJson): SetMissingRequest? {
+    val coeff = this.importModQ(json.lagrange_coeff)
+    return if (coeff == null) null else
+        SetMissingRequest(
+            coeff,
+            json.missing
+        )
+}
 
 ///////////////////////////////////////////
 
@@ -44,9 +51,13 @@ fun DecryptRequest.publish() = DecryptRequestJson(
     this.texts.map { it.publishModP() }
 )
 
-fun GroupContext.importDecryptRequest(request: DecryptRequestJson) = DecryptRequest(
-        request.texts.map { this.importModP(it)!! },
-    )
+fun GroupContext.importDecryptRequest(json: DecryptRequestJson): Result<DecryptRequest, String> {
+    val texts = json.texts.map { this.importModP(it) }
+    val allgood = texts.map { it != null }.reduce { a, b -> a && b }
+
+    return if (allgood) Ok(DecryptRequest(texts.map { it!! }))
+    else Err("importModP failed")
+}
 
 ///////////////////////////////////////////
 
@@ -64,9 +75,13 @@ fun DecryptResponse.publish() = DecryptResponseJson(
     this.shares.map { it.publish() }
 )
 
-fun GroupContext.importDecryptResponse(request: DecryptResponseJson) = DecryptResponse(
-        request.shares.map { this.importPartialDecryption(it) },
-    )
+fun GroupContext.importDecryptResponse(json: DecryptResponseJson): Result<DecryptResponse, String> {
+    val shares = json.shares.map { this.importPartialDecryption(it) }
+    val allgood = shares.map { it != null }.reduce { a, b -> a && b }
+
+    return if (allgood) Ok(DecryptResponse(shares.map { it!! }))
+    else Err("importPartialDecryption failed")
+}
 
 ///////////////////////////////////////////
 
@@ -88,13 +103,14 @@ fun PartialDecryption.publish() = PartialDecryptionJson(
     this.b.publishModP(),
 )
 
-fun GroupContext.importPartialDecryption(share: PartialDecryptionJson) = PartialDecryption(
-        share.guardian_id,
-        this.importModP(share.mbari)!!,
-        this.importModQ(share.u)!!,
-        this.importModP(share.a)!!,
-        this.importModP(share.b)!!,
-    )
+fun GroupContext.importPartialDecryption(json: PartialDecryptionJson): PartialDecryption? {
+    val mbari = this.importModP(json.mbari)
+    val u = this.importModQ(json.u)
+    val a = this.importModP(json.a)
+    val b = this.importModP(json.b)
+    return if (mbari == null || u == null || a == null || b == null) null
+    else PartialDecryption(json.guardian_id, mbari, u, a, b)
+}
 
 ///////////////////////////////////////////
 
@@ -112,9 +128,13 @@ fun ChallengeRequests.publish() = ChallengeRequestsJson(
     this.challenges.map { it.publish() }
 )
 
-fun GroupContext.importChallengeRequests(request: ChallengeRequestsJson) = ChallengeRequests(
-    request.challenges.map { this.importChallengeRequest(it) },
-)
+fun GroupContext.importChallengeRequests(json: ChallengeRequestsJson) : Result<ChallengeRequests, String> {
+    val challenges = json.challenges.map { this.importChallengeRequest(it) }
+    val allgood = challenges.map { it != null }.reduce { a, b -> a && b }
+
+    return if (allgood) Ok(ChallengeRequests(challenges.map { it!! }))
+    else Err("importChallengeRequest failed")
+}
 
 ///////////////////////////////////////////
 
@@ -126,19 +146,18 @@ data class ChallengeRequestJson(
     val nonce: ElementModQJson,
 )
 
-/** Publishes a [ChallengeRequest] to its external, serializable form. */
 fun ChallengeRequest.publish() = ChallengeRequestJson(
     this.id,
     this.challenge.publishModQ(),
     this.nonce.publishModQ(),
 )
 
-/** Imports from a published [DecryptResponse]. Returns `null` if it's malformed. */
-fun GroupContext.importChallengeRequest(request: ChallengeRequestJson) = ChallengeRequest(
-        request.id,
-        this.importModQ(request.challenge)!!,
-        this.importModQ(request.nonce)!!,
-    )
+fun GroupContext.importChallengeRequest(json: ChallengeRequestJson) : ChallengeRequest? {
+    val challenge = this.importModQ(json.challenge)
+    val nonce = this.importModQ(json.nonce)
+    return if (challenge == null || nonce == null) null
+    else ChallengeRequest(json.id, challenge, nonce)
+}
 
 ///////////////////////////////////////////
 
@@ -156,9 +175,13 @@ fun ChallengeResponses.publish() = ChallengeResponsesJson(
     this.responses.map { it.publish() }
 )
 
-fun GroupContext.importChallengeResponses(org: ChallengeResponsesJson) = ChallengeResponses(
-    org.responses.map { this.importChallengeResponse(it) },
-)
+fun GroupContext.importChallengeResponses(json: ChallengeResponsesJson): Result<ChallengeResponses, String> {
+    val responses = json.responses.map { this.importChallengeResponse(it) }
+    val allgood = responses.map { it != null }.reduce { a, b -> a && b }
+
+    return if (allgood) Ok(ChallengeResponses(responses.map { it!! }))
+    else Err("importChallengeResponse failed")
+}
 
 ///////////////////////////////////////////
 
@@ -174,7 +197,11 @@ fun ChallengeResponse.publish() = ChallengeResponseJson(
     this.response.publishModQ(),
 )
 
-fun GroupContext.importChallengeResponse(request: ChallengeResponseJson) = ChallengeResponse(
-        request.id,
-        this.importModQ(request.response)!!,
-    )
+fun GroupContext.importChallengeResponse(json: ChallengeResponseJson): ChallengeResponse? {
+    val response = this.importModQ(json.response)
+    return if (response == null) null else
+        ChallengeResponse(
+            json.id,
+            response,
+        )
+}

@@ -74,7 +74,7 @@ internal class PreEncryptorTest {
 
             val recorder = Recorder(group, manifest, electionInit.jointPublicKey(), electionInit.cryptoExtendedBaseHash)
 
-            val ciphertextBallot = with(recorder) {
+            with(recorder) {
                 mballot.record(UInt256.TWO, primaryNonce, codeLen)
             }
         }

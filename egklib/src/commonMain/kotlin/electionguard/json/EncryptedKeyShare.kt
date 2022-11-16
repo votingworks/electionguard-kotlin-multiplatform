@@ -1,7 +1,6 @@
 package electionguard.json
 
 import electionguard.core.*
-import electionguard.keyceremony.PublicKeys
 import electionguard.keyceremony.EncryptedKeyShare
 import electionguard.keyceremony.KeyShare
 import kotlinx.serialization.SerialName
@@ -16,23 +15,23 @@ data class EncryptedKeyShareJson(
     val encryptedCoordinate: HashedElGamalCiphertextJson,
 )
 
-/** Publishes a [PublicKeys] to its external, serializable form. */
 fun EncryptedKeyShare.publish() = EncryptedKeyShareJson(
-    this.missingGuardianId,
-    this.availableGuardianId,
-    this.encryptedCoordinate.publish(),
-)
-
-/** Imports from a published [PublicKeys]. Returns `null` if it's malformed. */
-fun GroupContext.importSecretKeyShare(json: EncryptedKeyShareJson): EncryptedKeyShare? {
-    return EncryptedKeyShare(
-        json.missingGuardianId,
-        json.availableGuardianId,
-        this.importHashedElGamalCiphertext(json.encryptedCoordinate)!!,
+        this.missingGuardianId,
+        this.availableGuardianId,
+        this.encryptedCoordinate.publish(),
     )
+
+fun GroupContext.importEncryptedKeyShare(json: EncryptedKeyShareJson): EncryptedKeyShare? {
+    val encryptedCoordinate = this.importHashedElGamalCiphertext(json.encryptedCoordinate)
+    return if (encryptedCoordinate == null) null else
+        EncryptedKeyShare(
+            json.missingGuardianId,
+            json.availableGuardianId,
+            encryptedCoordinate,
+        )
 }
 
-/** External representation of an KeyShare */
+/** External representation of a KeyShare */
 @Serializable
 @SerialName("KeyShare")
 data class KeyShareJson(
@@ -42,20 +41,21 @@ data class KeyShareJson(
     val nonce: ElementModQJson,
 )
 
-/** Publishes a [PublicKeys] to its external, serializable form. */
 fun KeyShare.publish() = KeyShareJson(
-    this.missingGuardianId,
-    this.availableGuardianId,
-    this.coordinate.publishModQ(),
-    this.nonce.publishModQ(),
-)
-
-/** Imports from a published [PublicKeys]. Returns `null` if it's malformed. */
-fun GroupContext.importKeyShare(json: KeyShareJson): KeyShare {
-    return KeyShare(
-        json.missingGuardianId,
-        json.availableGuardianId,
-        this.importModQ(json.coordinate)!!,
-        this.importModQ(json.nonce)!!,
+        this.missingGuardianId,
+        this.availableGuardianId,
+        this.coordinate.publishModQ(),
+        this.nonce.publishModQ(),
     )
+
+fun GroupContext.importKeyShare(json: KeyShareJson): KeyShare? {
+    val coordinate = this.importModQ(json.coordinate)
+    val nonce = this.importModQ(json.nonce)
+    return if (coordinate == null || nonce == null) null else
+        KeyShare(
+            json.missingGuardianId,
+            json.availableGuardianId,
+            coordinate,
+            nonce,
+        )
 }
