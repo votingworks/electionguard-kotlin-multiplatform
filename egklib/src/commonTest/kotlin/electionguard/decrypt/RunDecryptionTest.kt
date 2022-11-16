@@ -12,6 +12,7 @@ class RunDecryptionTest {
         val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
         val outputDir = "testOut/testDecryptingMediatorAll"
+        println("testDecryptionAll input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
         runDecryptTally(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir), "createdBy")
     }
 

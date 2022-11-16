@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.bundles.ktor.client)
     implementation(libs.bundles.ktor.server)
 
-    implementation(libs.bundles.logging)
+    implementation(libs.bundles.logging.client)
 
     testImplementation(libs.ktor.server.tests.jvm)
     testImplementation(libs.kotlin.test.junit)

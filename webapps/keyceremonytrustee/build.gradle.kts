@@ -19,7 +19,7 @@ dependencies {
     implementation(project(path = ":egklib", configuration = "jvmRuntimeElements"))
     implementation(libs.kotlin.result)
     implementation(libs.bundles.ktor.server)
-    implementation(libs.bundles.logging)
+    implementation(libs.bundles.logging.server)
 
     testImplementation(libs.ktor.server.tests.jvm)
     testImplementation(libs.kotlin.test.junit)

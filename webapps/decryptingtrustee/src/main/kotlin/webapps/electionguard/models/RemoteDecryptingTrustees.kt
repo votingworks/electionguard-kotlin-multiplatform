@@ -9,26 +9,24 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import mu.KotlinLogging
 import webapps.electionguard.groupContext
-import webapps.electionguard.trusteeDir
 
 private val logger = KotlinLogging.logger("DecryptingTrusteeJson")
+private val nonce : ElementModQ? = groupContext.TWO_MOD_Q // null
 
 @Serializable
-data class RemoteDecryptingTrusteeJson(val guardian_id: String) {
+data class RemoteDecryptingTrusteeJson(val trustee_dir: String, val guardian_id: String) {
     @Transient
-    private val delegate = readState(guardian_id)
+    private val delegate = readState(trustee_dir, guardian_id)
 
     fun id() = guardian_id
     fun xCoordinate() = delegate.xCoordinate()
 
     fun setMissing(coeff : ElementModQ, missingGuardians: List<String>) = delegate.setMissing(groupContext, coeff, missingGuardians)
-    fun decrypt(texts: List<ElementModP>) = delegate.decrypt(groupContext, texts, null)
+    fun decrypt(texts: List<ElementModP>) = delegate.decrypt(groupContext, texts, nonce)
     fun challenge(challenges: List<ChallengeRequest>) = delegate.challenge(groupContext, challenges)
 }
 
-val trustees = mutableListOf<RemoteDecryptingTrusteeJson>()
-
-fun readState(guardianId: String) : DecryptingTrusteeIF {
+fun readState(trusteeDir : String, guardianId: String) : DecryptingTrusteeIF {
     val consumer = Consumer(trusteeDir, groupContext)
     try {
         return consumer.readTrustee(trusteeDir, guardianId)

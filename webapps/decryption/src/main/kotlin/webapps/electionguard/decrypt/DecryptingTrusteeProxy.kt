@@ -23,6 +23,7 @@ import webapps.electionguard.groupContext
 class DecryptingTrusteeProxy(
     val client: HttpClient,
     val remoteURL: String,
+    val trusteeDir: String,
     val id: String,
     val xcoord: Int,
     val publicKey: ElementModP,
@@ -30,13 +31,14 @@ class DecryptingTrusteeProxy(
 
     init {
         runBlocking {
-            val url = "$remoteURL/trustee"
+            val url = "$remoteURL/dtrustee"
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
                 }
                 setBody(
                     """{
+                      "trustee_dir": "$trusteeDir"
                       "guardian_id": "$id"
                     }"""
                 )
@@ -47,7 +49,7 @@ class DecryptingTrusteeProxy(
 
     override fun setMissing(group: GroupContext, lagrangeCoeff: ElementModQ, missingGuardians: List<String>): Boolean {
         return runBlocking {
-            val url = "$remoteURL/trustee/$xcoord/setMissing"
+            val url = "$remoteURL/dtrustee/$xcoord/setMissing"
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
@@ -65,7 +67,7 @@ class DecryptingTrusteeProxy(
         nonce: ElementModQ?, // LOOK do we need this?
     ): List<PartialDecryption> {
         return runBlocking {
-            val url = "$remoteURL/trustee/$xcoord/decrypt"
+            val url = "$remoteURL/dtrustee/$xcoord/decrypt"
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
@@ -88,7 +90,7 @@ class DecryptingTrusteeProxy(
         challenges: List<ChallengeRequest>,
     ): List<ChallengeResponse> {
         return runBlocking {
-            val url = "$remoteURL/trustee/$xcoord/challenge"
+            val url = "$remoteURL/dtrustee/$xcoord/challenge"
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")

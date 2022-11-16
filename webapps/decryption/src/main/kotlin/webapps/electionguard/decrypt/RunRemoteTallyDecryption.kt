@@ -14,10 +14,15 @@ import electionguard.publish.PublisherMode
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 
 /**
@@ -64,6 +69,7 @@ fun main(args: Array<String>) {
     runRemoteDecrypt(
         group,
         inputDir,
+        trusteeDir,
         outputDir,
         remoteUrl,
         missing,
@@ -75,6 +81,7 @@ private val logger = KotlinLogging.logger("runRemoteDecrypt")
 fun runRemoteDecrypt(
     group: GroupContext,
     inputDir: String,
+    trusteeDir: String,
     outputDir: String,
     remoteUrl: String,
     missing: String?,
@@ -99,17 +106,20 @@ fun runRemoteDecrypt(
         logger.atError().log("number of guardians present ${presentGuardianIds.size} < quorum ${electionInitialized.config.quorum}")
         throw IllegalStateException("number of guardians present ${presentGuardianIds.size} < quorum ${electionInitialized.config.quorum}")
     }
-
     println("runRemoteDecrypt present = $presentGuardianIds missing = $missingGuardianIds")
 
     val client = HttpClient(Java) {
+        install(Logging)
         install(ContentNegotiation) {
             json()
         }
     }
+    reset(client, remoteUrl)
 
+    // LOOK not too happy about sending the "secret" trustee location from here.
+    //   but this helps testing; do something else for production
     val trustees = presentGuardians.map {
-        DecryptingTrusteeProxy(client, remoteUrl, it.guardianId, it.xCoordinate, it.publicKey())
+        DecryptingTrusteeProxy(client, remoteUrl, trusteeDir, it.guardianId, it.xCoordinate, it.publicKey())
     }
 
     val decryptor = Decryptor(group,
@@ -135,4 +145,12 @@ fun runRemoteDecrypt(
 
     val took = getSystemTimeInMillis() - starting
     println("runRemoteDecrypt took $took millisecs")
+}
+
+fun reset(client : HttpClient, remoteUrl : String) {
+        runBlocking {
+            val url = "$remoteUrl/dtrustee/reset"
+            val response: HttpResponse = client.post(url)
+            println("runRemoteDecrypt reset ${response.status}")
+        }
 }

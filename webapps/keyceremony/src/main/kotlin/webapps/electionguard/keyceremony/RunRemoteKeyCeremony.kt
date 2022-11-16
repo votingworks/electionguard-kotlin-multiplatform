@@ -18,6 +18,7 @@ import kotlinx.cli.required
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 
 /**
@@ -71,6 +72,11 @@ fun runKeyCeremony(
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
     val client = HttpClient(Java) {
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = LogLevel.INFO
+            // level = LogLevel.ALL
+        }
         install(ContentNegotiation) {
             json()
         }
