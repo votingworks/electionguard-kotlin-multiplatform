@@ -22,7 +22,7 @@ import io.ktor.serialization.kotlinx.json.*
 
 /**
  * Run Remote KeyCeremony CLI.
- * The keyceremonytrustee webapp must already be running. See webapps/electionguard/Application.kt.
+ * The keyceremonytrustee webapp must already be running.
  */
 fun main(args: Array<String>) {
     val parser = ArgParser("RunRemoteKeyCeremony")
@@ -99,7 +99,7 @@ fun runKeyCeremony(
     val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
     publisher.writeElectionInitialized(electionInitialized)
 
-    // tell the trustees to save their sate in some private place.
+    // tell the trustees to save their state in some private place.
     trustees.forEach { it.saveState() }
 
     val took = getSystemTimeInMillis() - starting

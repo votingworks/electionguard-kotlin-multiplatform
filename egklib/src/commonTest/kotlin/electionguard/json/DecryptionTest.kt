@@ -1,5 +1,7 @@
 package electionguard.json
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.unwrap
 import electionguard.core.PowRadixOption
 import electionguard.core.ProductionMode
 import electionguard.core.elementsModP
@@ -17,6 +19,7 @@ import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class DecryptionTest {
 
@@ -58,8 +61,9 @@ class DecryptionTest {
             ) {  nrequests ->
                 val qList = List(nrequests) { elementsModP(group, minimum = 2).single() }
                 val org = DecryptRequest(qList)
-
-                assertEquals(org, group.importDecryptRequest(org.publish()))
+                val request = group.importDecryptRequest(org.publish())
+                assertTrue(request is Ok)
+                assertEquals(org, request.unwrap())
             }
         }
     }
@@ -88,8 +92,9 @@ class DecryptionTest {
                     )
                 }
                 val org = DecryptResponse(partials)
-
-                assertEquals(org, group.importDecryptResponse(org.publish()))
+                val response = group.importDecryptResponse(org.publish())
+                assertTrue(response is Ok)
+                assertEquals(org, response.unwrap())
             }
         }
     }
@@ -116,8 +121,9 @@ class DecryptionTest {
                     )
                 }
                 val org = ChallengeRequests(crs)
-
-                assertEquals(org, group.importChallengeRequests(org.publish()))
+                val challenges = group.importChallengeRequests(org.publish())
+                assertTrue(challenges is Ok)
+                assertEquals(org, challenges.unwrap())
             }
         }
     }
@@ -144,8 +150,9 @@ class DecryptionTest {
                     )
                 }
                 val org = ChallengeResponses(crs)
-
-                assertEquals(org, group.importChallengeResponses(org.publish()))
+                val responses = group.importChallengeResponses(org.publish())
+                assertTrue(responses is Ok)
+                assertEquals(org, responses.unwrap())
             }
         }
     }

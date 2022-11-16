@@ -96,7 +96,7 @@ class KeyCeremonyTrusteeTest {
 
         val result5 = trustee1.receiveEncryptedKeyShare(ss2)
         assertTrue(result5 is Err)
-        assertEquals("Sent EncryptedKeyShare to wrong trustee 'id1', should be availableGuardianId 'id2'", result5.error)
+        assertEquals("ReceiveEncryptedKeyShare 'id1' sent share to wrong trustee 'id1', should be availableGuardianId 'id2'", result5.error)
     }
 
     @Test

@@ -19,7 +19,7 @@ import io.kotest.property.checkAll
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class SecretKeyShareTest {
+class EncryptedKeyShareTest {
 
     @Test
     fun testRoundtrip() {
@@ -41,8 +41,8 @@ class SecretKeyShareTest {
                 val ciphertext = bytes.hashedElGamalEncrypt(kp, nonce)
                 val sks = EncryptedKeyShare(g1, g2, ciphertext)
 
-                assertEquals(sks, group.importSecretKeyShare(sks.publish()))
-                assertEquals(sks, group.importSecretKeyShare(jsonRoundTrip(sks.publish())))
+                assertEquals(sks, group.importEncryptedKeyShare(sks.publish()))
+                assertEquals(sks, group.importEncryptedKeyShare(jsonRoundTrip(sks.publish())))
             }
         }
     }

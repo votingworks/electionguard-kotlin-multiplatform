@@ -62,17 +62,24 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val publicKeysJson = call.receive<PublicKeysJson>()
-            val publicKeys = groupContext.importPublicKeys(publicKeysJson)
-                ?: return@post call.respondText(
-                    "Bad Public Keys",
-                    status = HttpStatusCode.BadRequest
-                )
-            val result = rguardian.receivePublicKeys(publicKeys)
-            if (result is Ok) {
-                call.respondText("RemoteKeyTrustee ${rguardian.id} receivePublicKeys from ${publicKeys.guardianId} correctly", status = HttpStatusCode.OK)
+            val publicKeysResult = groupContext.importPublicKeys(publicKeysJson)
+            if (publicKeysResult is Ok) {
+                val publicKeys = publicKeysResult.unwrap()
+                val result = rguardian.receivePublicKeys(publicKeys)
+                if (result is Ok) {
+                    call.respondText(
+                        "RemoteKeyTrustee ${rguardian.id} receivePublicKeys from ${publicKeys.guardianId} correctly",
+                        status = HttpStatusCode.OK
+                    )
+                } else {
+                    call.respondText(
+                        "RemoteKeyTrustee ${rguardian.id} receivePublicKeys from ${publicKeys.guardianId} failed ${result.unwrapError()}",
+                        status = HttpStatusCode.InternalServerError
+                    )
+                }
             } else {
                 call.respondText(
-                    "RemoteKeyTrustee ${rguardian.id} receivePublicKeys from ${publicKeys.guardianId} failed ${result.unwrapError()}",
+                    "RemoteKeyTrustee ${rguardian.id} receivePublicKeys importPublicKeys failed ${publicKeysResult.unwrapError()}",
                     status = HttpStatusCode.InternalServerError
                 )
             }
@@ -114,7 +121,7 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val secretShare = call.receive<EncryptedKeyShareJson>()
-            val result = rguardian.receiveEncryptedKeyShare(groupContext.importSecretKeyShare(secretShare))
+            val result = rguardian.receiveEncryptedKeyShare(groupContext.importEncryptedKeyShare(secretShare))
             if (result is Ok) {
                 call.respondText("RemoteKeyTrustee ${rguardian.id} receiveEncryptedKeyShare correctly", status = HttpStatusCode.OK)
             } else {
@@ -124,7 +131,6 @@ fun Route.trusteeRouting() {
                 )
             }
         }
-
 
         get("{id?}/{from?}/keyShareFor") {
             val id = call.parameters["id"] ?: return@get call.respondText(
@@ -161,13 +167,24 @@ fun Route.trusteeRouting() {
                     "No RemoteKeyTrustee with xCoordinate $id",
                     status = HttpStatusCode.NotFound
                 )
-            val secretShare = call.receive<KeyShareJson>()
-            val result = rguardian.receiveKeyShare(groupContext.importKeyShare(secretShare))
-            if (result is Ok) {
-                call.respondText("RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare correctly", status = HttpStatusCode.OK)
+            val secretShareJson = call.receive<KeyShareJson>()
+            val secretShare = groupContext.importKeyShare(secretShareJson)
+            if (secretShare != null) {
+                val result = rguardian.receiveKeyShare(secretShare)
+                if (result is Ok) {
+                    call.respondText(
+                        "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare correctly",
+                        status = HttpStatusCode.OK
+                    )
+                } else {
+                    call.respondText(
+                        "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare failed ${result.unwrapError()}",
+                        status = HttpStatusCode.BadRequest
+                    )
+                }
             } else {
                 call.respondText(
-                    "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare failed ${result.unwrapError()}",
+                    "RemoteKeyTrustee ${rguardian.id} receiveSecretKeyShare importKeyShare failed}",
                     status = HttpStatusCode.BadRequest
                 )
             }

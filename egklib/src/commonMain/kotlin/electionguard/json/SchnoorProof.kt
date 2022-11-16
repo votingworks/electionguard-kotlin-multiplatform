@@ -25,6 +25,5 @@ fun GroupContext.importSchnorrProof(proof: SchnorrProofJson): SchnorrProof? {
     val p = this.importModP(proof.public_key)
     val c = this.importModQ(proof.challenge)
     val r = this.importModQ(proof.response)
-    if (p == null || c == null || r == null) return null
-    return SchnorrProof(p, c, r)
+    return if (p == null || c == null || r == null) null else SchnorrProof(p, c, r)
 }

@@ -1,5 +1,7 @@
 package webapps.electionguard.routes
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.unwrap
 import webapps.electionguard.groupContext
 import webapps.electionguard.models.*
 import electionguard.json.*
@@ -37,11 +39,17 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val missingReqJson = call.receive<SetMissingRequestJson>()
-            val missingReq = groupContext.importSetMissingRequest(missingReqJson) // importSetMissingRequest
-            val ok = trustee.setMissing(missingReq.lagrangeCoeff, missingReq.missing)
-            println("RemoteDecryptingTrustee ${trustee.id()} setMissing $ok")
-            call.respondText("RemoteDecryptingTrustee $id setMissing $ok",
-                status = if (ok) HttpStatusCode.OK else HttpStatusCode.InternalServerError)
+            val missingReq = groupContext.importSetMissingRequest(missingReqJson)
+            if (missingReq != null) {
+                val ok = trustee.setMissing(missingReq.lagrangeCoeff, missingReq.missing)
+                println("RemoteDecryptingTrustee ${trustee.id()} setMissing $ok")
+                call.respondText(
+                    "RemoteDecryptingTrustee $id setMissing $ok",
+                    status = if (ok) HttpStatusCode.OK else HttpStatusCode.InternalServerError
+                )
+            } else {
+                call.respondText("RemoteDecryptingTrustee $id setMissing failed", status = HttpStatusCode.InternalServerError)
+            }
         }
 
         post("{id?}/decrypt") {
@@ -56,10 +64,14 @@ fun Route.trusteeRouting() {
                 )
             val decryptRequestJson = call.receive<DecryptRequestJson>()
             val decryptRequest = groupContext.importDecryptRequest(decryptRequestJson)
-            val decryptions = trustee.decrypt(decryptRequest.texts)
-            val response = DecryptResponse(decryptions)
-            println("RemoteDecryptingTrustee ${trustee.id()} decrypt")
-            call.respond(response.publish())
+            if (decryptRequest is Ok) {
+                val decryptions = trustee.decrypt(decryptRequest.unwrap().texts)
+                val response = DecryptResponse(decryptions)
+                println("RemoteDecryptingTrustee ${trustee.id()} decrypt")
+                call.respond(response.publish())
+            } else {
+                call.respondText("RemoteDecryptingTrustee $id decrypt failed", status = HttpStatusCode.InternalServerError)
+            }
         }
 
         post("{id?}/challenge") {
@@ -74,10 +86,14 @@ fun Route.trusteeRouting() {
                 )
             val requestsJson = call.receive<ChallengeRequestsJson>()
             val requests = groupContext.importChallengeRequests(requestsJson)
-            val responses = trustee.challenge(requests.challenges)
-            val response = ChallengeResponses(responses)
-            println("RemoteDecryptingTrustee ${trustee.id()} challenge")
-            call.respond(response.publish())
+            if (requests is Ok) {
+                val responses = trustee.challenge(requests.unwrap().challenges)
+                val response = ChallengeResponses(responses)
+                println("RemoteDecryptingTrustee ${trustee.id()} challenge")
+                call.respond(response.publish())
+            } else {
+                call.respondText("RemoteDecryptingTrustee $id challenge failed", status = HttpStatusCode.InternalServerError)
+            }
         }
 
     }
