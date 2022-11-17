@@ -6,18 +6,27 @@ import webapps.electionguard.plugins.*
 import electionguard.core.PowRadixOption
 import electionguard.core.ProductionMode
 import electionguard.core.productionGroup
+import io.ktor.server.engine.*
 import io.ktor.server.request.*
 import org.slf4j.event.Level
 
-
-// LOOK pass this in on command line
-//val trusteeDir = "/home/snake/tmp/electionguard/RunRemoteKeyCeremonyTest/private_data/trustees"
-const val trusteeDir = "/home/snake/tmp/electionguard/MockRemoteKeyCeremonyTest/private_data/trustees"
+var trusteeDir = ""
 
 val groupContext = productionGroup(PowRadixOption.HIGH_MEMORY_USE, ProductionMode.Mode4096)
 
-fun main(args: Array<String>): Unit =
+fun main(args: Array<String>) {
+    val argumentsPairs = args.mapNotNull { it.splitPair('=') }.toMap()
+    trusteeDir = argumentsPairs["-trusteeDir"] ?: throw RuntimeException("missing argument -trusteeDir=trustee output directory")
+    println("trusteeDir = '$trusteeDir'")
     io.ktor.server.netty.EngineMain.main(args)
+}
+
+internal fun String.splitPair(ch: Char): Pair<String, String>? = indexOf(ch).let { idx ->
+    when (idx) {
+        -1 -> null
+        else -> Pair(take(idx), drop(idx + 1))
+    }
+}
 
 @Suppress("unused") // application.conf references the main function. This annotation prevents the IDE from marking it as unused.
 fun Application.module() {

@@ -1,98 +1,66 @@
 package electionguard.encrypt
 
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.EncryptedBallot
 import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
+import electionguard.core.Stats
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.core.runTest
-import electionguard.core.toElementModQ
+import electionguard.core.randomElementModQ
 import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
-import electionguard.publish.EncryptedBallotSinkIF
-import kotlin.math.roundToInt
+import electionguard.verifier.VerifyEncryptedBallots
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
-private val revotes = 0
-
-/*
-Relative timings:
-BallotPrecompute with 0 revotes per ballot
-   Precompute took 8774 millisecs for 11 ballots = 798 msecs/ballot
-   Encrypt 482 millisecs for 11 ballots = 44 msecs/ballot
-
-BallotPrecompute with 10 revotes per ballot
-   Precompute took 9145 millisecs for 11 ballots = 831 msecs/ballot
-   Encrypt 458 millisecs for 11 ballots = 42 msecs/ballot
-
-BallotPrecompute with 20 revotes per ballot
-   Precompute took 9601 millisecs for 11 ballots = 873 msecs/ballot
-   Encrypt 457 millisecs for 11 ballots = 42 msecs/ballotot
-
-ContestPrecompute with 0 revotes per ballot
-   Precompute took 8168 millisecs for 11 ballots = 743 msecs/ballot
-   Encrypt 1 millisecs for 11 ballots = 0 msecs/ballot
-
-ContestPrecompute with 10 revotes per ballot
-   Precompute took 10620 millisecs for 11 ballots = 965 msecs/ballot
-   Encrypt 1 millisecs for 11 ballots = 0 msecs/ballot
-
-ContestPrecompute with 20 revotes per ballot
-   Precompute took 12789 millisecs for 11 ballots = 1163 msecs/ballot
-   Encrypt 1 millisecs for 11 ballots = 0 msecs/ballot
- */
 class ContestPrecomputeTest {
     val electionRecordDir = "src/commonTest/data/runWorkflowAllAvailable"
     val ballotDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/input/"
-    val outputDir = "testOut/precompute/contestPrecomputeTest"
 
     @Test
     fun testContestPrecompute() {
-        runTest {
-            val group = productionGroup()
-            val consumerIn = Consumer(electionRecordDir, group)
-            val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
-            val ballots = consumerIn.iteratePlaintextBallots(ballotDir) { true }
+        val group = productionGroup()
+        val consumerIn = Consumer(electionRecordDir, group)
+        val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+        val ballots = consumerIn.iteratePlaintextBallots(ballotDir) { true }
+        val verifier = VerifyEncryptedBallots(group, electionInit.manifest(), electionInit.jointPublicKey(), electionInit.cryptoExtendedBaseHash(), 25)
 
-            var starting = getSystemTimeInMillis()
-            var count = 0
+        // warm up the cache, ignore results
+        val ballot = ballots.iterator().next()
+        val pballot = precomputeContest(group, Stats(), 0, electionInit, ballot)
+        pballot.encrypt()
+        val nselections = pballot.contests.map { it.selections.size }.sum()
+        println("\nContestPrecomputeTest $nselections selections/ballot")
+
+        for (revotes in 0..60 step 20) {
+            println("\nTest $revotes revotes/ballot")
+            val stats = Stats()
             val pballots = ballots.map {
-                count++
-                precomputeContest(group, electionInit, it)
+                precomputeContest(group, stats, revotes, electionInit, it)
             }
-            var took = getSystemTimeInMillis() - starting
-            var perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-            println("ContestPrecompute with $revotes revotes per ballot")
-            println("   Precompute took $took millisecs for ${count} ballots = $perBallot msecs/ballot")
 
-            starting = getSystemTimeInMillis()
+            val starting = getSystemTimeInMillis()
             val eballots = pballots.map {
                 it.encrypt()
             }
-            took = getSystemTimeInMillis() - starting
-            perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-            println("   Encrypt $took millisecs for ${count} ballots = $perBallot msecs/ballot")
+            stats.of("latency", "ballot", "").accum(getSystemTimeInMillis() - starting, eballots.size)
+            stats.show()
 
-            val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
-            val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
-            eballots.forEach { sink.writeEncryptedBallot(it.submit(EncryptedBallot.BallotState.CAST)) }
-            sink.close()
-            println("done")
+            val verifyResult = verifier.verify(eballots.map { it.cast() }, stats)
+            assertTrue(verifyResult is Ok)
         }
+        println("done")
+
     }
 }
 
-fun precomputeContest(group: GroupContext, electionInit: ElectionInitialized, ballot: PlaintextBallot): ContestPrecompute {
+fun precomputeContest(group: GroupContext, stats: Stats, revotes: Int, electionInit: ElectionInitialized, ballot: PlaintextBallot): ContestPrecompute {
     val manifest: Manifest = electionInit.manifest()
-    val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
-    val masterNonce = group.TWO_MOD_Q
 
+    var starting = getSystemTimeInMillis()
     val pballot = ContestPrecompute(
         group,
         manifest,
@@ -100,20 +68,24 @@ fun precomputeContest(group: GroupContext, electionInit: ElectionInitialized, ba
         electionInit.cryptoExtendedBaseHash,
         ballot.ballotId,
         ballot.ballotStyleId,
-        codeSeed,
-        masterNonce,
-        0,
+        group.randomElementModQ(2),
+        null,
+        null,
     )
+    val nselections = pballot.contests.map { it.selections.size }.sum()
 
     // now vote in each contest by picking the first selection
     ballot.contests.forEach { contest ->
         val selection = contest.selections[0]
         pballot.vote(contest.contestId, selection.selectionId, 1)
     }
+    stats.of("precompute", "selection").accum(getSystemTimeInMillis() - starting, nselections)
 
     // simulate revotes in some contests
-    for (i in 0 until revotes) {
-        val pcontest = pballot.contests[i]
+    starting = getSystemTimeInMillis()
+    val ncontests = ballot.contests.size
+    for (count in 0 until revotes) {
+        val pcontest = pballot.contests[count % ncontests]
         for (selection in pcontest.selections) {
             if (selection.vote == 0) {
                 pcontest.vote(selection.mselection.selectionId, 1)
@@ -121,5 +93,7 @@ fun precomputeContest(group: GroupContext, electionInit: ElectionInitialized, ba
             }
         }
     }
+    stats.of("revotes", "revote").accum(getSystemTimeInMillis() - starting, revotes)
+
     return pballot
 }
