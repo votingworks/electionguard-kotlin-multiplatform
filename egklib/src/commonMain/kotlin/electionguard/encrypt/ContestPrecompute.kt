@@ -18,8 +18,7 @@ import electionguard.core.toUInt256
  * Experimental.
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
  * A vote triggers the computation of that contest.
- * So most of the work is already done when encrypt() is called,
- *   for low latency when the ballot is finished.
+ * So most of the work is already done when encrypt() is called, for low latency when the ballot is finished.
  * See ContestPrecomputeTest to get timings.
  */
 class ContestPrecompute(
@@ -168,7 +167,7 @@ class ContestPrecompute(
         init {
             val nonceSequence = Nonces(mselection.cryptoHash.toElementModQ(group), contestNonce)
             disjunctiveChaumPedersenNonce = nonceSequence[0]
-            selectionNonce = nonceSequence[mselection.sequenceOrder]
+            selectionNonce = nonceSequence[1]
         }
 
         fun encryptedSelection(): CiphertextBallot.Selection {

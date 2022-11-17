@@ -1,8 +1,8 @@
 
 plugins {
-    `kotlin-dsl` // <1>
+    `kotlin-dsl`
 }
 
 repositories {
-    gradlePluginPortal() // <2>
+    gradlePluginPortal()
 }
