@@ -1,6 +1,10 @@
 rootProject.name = "electionguard-kotlin-multiplatform"
 
 dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
     versionCatalogs {
         create("libs") {
             version("kotlin-version", "1.7.20")

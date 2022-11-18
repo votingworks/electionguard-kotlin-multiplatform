@@ -16,7 +16,7 @@ plugins {
 
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
-    alias(libs.plugins.formatter)
+    // alias(libs.plugins.formatter)
 
     id("maven-publish")
 }
@@ -24,11 +24,6 @@ plugins {
 group = "electionguard-kotlin-multiplatform"
 version = "1.52.6-SNAPSHOT"
 val kotlinVersion by extra("1.7.20")
-
-repositories {
-    google()
-    mavenCentral()
-}
 
 kotlin {
     jvm {

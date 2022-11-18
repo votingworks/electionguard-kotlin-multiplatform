@@ -4,7 +4,3 @@
 plugins {
     application
 }
-
-repositories {
-    mavenCentral()
-}

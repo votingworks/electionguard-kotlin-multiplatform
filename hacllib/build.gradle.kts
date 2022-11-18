@@ -5,13 +5,9 @@ plugins {
 
     // for some reason we need these, else get error
     // "Cannot add task 'commonizeNativeDistribution' as a task with that name already exists."
+    // maybe related to bug in configuration caching to be fixed in kotlin 1.8.0
     alias(libs.plugins.serialization)
-    alias(libs.plugins.formatter)
-}
-
-repositories {
-    google()
-    mavenCentral()
+    // alias(libs.plugins.formatter)
 }
 
 // create build/libs/native/main/hacllib-cinterop-libhacl.klib
