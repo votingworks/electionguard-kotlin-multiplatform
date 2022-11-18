@@ -157,7 +157,7 @@ class ProductionGroupContext(
         ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
 
     override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
-        if(minimum < 0) {
+        if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
@@ -165,13 +165,12 @@ class ProductionGroupContext(
 
         val mv = minimum.toBigInteger()
         val tmp2 = if (tmp < mv) tmp + mv else tmp
-        val result = ProductionElementModP(tmp2, this)
 
-        return result
+        return ProductionElementModP(tmp2, this)
     }
 
     override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
-        if(minimum < 0) {
+        if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
 
@@ -179,9 +178,8 @@ class ProductionGroupContext(
 
         val mv = minimum.toBigInteger()
         val tmp2 = if (tmp < mv) tmp + mv else tmp
-        val result = ProductionElementModQ(tmp2, this)
 
-        return result
+        return ProductionElementModQ(tmp2, this)
     }
 
     override fun binaryToElementModP(b: ByteArray): ElementModP? {

@@ -152,11 +152,11 @@ private fun HashedElGamalCiphertext.decryptAlphaBeta(alpha: ElementModP, beta: E
  * section 5.1.
  *
  *  - The [key] must be 32 bytes long, suitable for use in HMAC-SHA256.
- *  - The [label] is a string that identifies the purpose for the derived keying material.
+ *  @param label is a string that identifies the purpose for the derived keying material.
  *  - The [context] is a string containing the information related to the derived keying material.
  *    It may include identities of parties who are deriving and/or using the derived keying
  *    material.
- *  - The [length] specifies the length of the encrypted message in *bits*, not bytes.
+ *  @param length specifies the length of the encrypted message in *bits*, not bytes.
  */
 class KDF(val key: UInt256, label: String, context: String, length: Int) {
     // we're going to convert the strings as UTF-8

@@ -11,14 +11,13 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-// LOOK maybe better to allow multiple
 private var trustees = mutableListOf<RemoteDecryptingTrusteeJson>()
 
 fun Route.trusteeRouting() {
     route("/dtrustee") {
         get {
             if (trustees.isNotEmpty()) {
-                call.respondText(trustees.map { it.id() }.joinToString(","), status = HttpStatusCode.OK)
+                call.respondText(trustees.joinToString(",") { it.id() }, status = HttpStatusCode.OK)
             } else {
                 call.respondText("No trustees found", status = HttpStatusCode.OK)
             }

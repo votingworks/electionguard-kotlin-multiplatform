@@ -9,6 +9,7 @@ dependencyResolutionManagement {
 
             plugin("ktor", "io.ktor.plugin").versionRef("ktor-version")
             plugin("serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin-version")
+            plugin("formatter", "tech.formatter-kt.formatter").version("0.7.9")
 
             library("kotlin-result", "com.michael-bull.kotlin-result:kotlin-result:1.1.16")
             library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
@@ -50,8 +51,10 @@ dependencyResolutionManagement {
                 )
             )
 
-            // logging
+            //// logging
+            library("microutils-logging", "io.github.microutils:kotlin-logging:3.0.2")
             library("logback-classic", "ch.qos.logback:logback-classic:1.3.4")
+
             library("kotlin-server-logging", "io.ktor", "ktor-server-call-logging").versionRef("ktor-version")
             bundle(
                 "logging-server",
@@ -70,16 +73,7 @@ dependencyResolutionManagement {
                 )
             )
 
-            library("microutils-logging", "io.github.microutils:kotlin-logging:3.0.2")
-            bundle(
-                "logging",
-                listOf(
-                    "microutils-logging",
-                    "logback-classic",
-                )
-            )
-
-            // testing
+            //// testing
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin-version")
             library("kotlin-test-junit5", "org.jetbrains.kotlin", "kotlin-test-junit5").versionRef("kotlin-version")
             library("kotlinx-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").versionRef("coroutines-version")
