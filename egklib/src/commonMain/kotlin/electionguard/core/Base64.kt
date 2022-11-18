@@ -367,9 +367,8 @@ object Base64 {
         }
 
         private fun outLength(src: ByteArray, spx: Int, sl: Int): Int {
-            val sp = spx
             var paddings = 0
-            val len = sl - sp
+            val len = sl - spx
             if (len == 0) return 0
             if (len < 2) {
                 throw IllegalArgumentException(

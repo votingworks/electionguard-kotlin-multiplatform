@@ -9,29 +9,21 @@ buildscript {
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     kotlin("multiplatform") version "1.7.20"
+    id("electionguard.common-conventions")
 
     // cross-platform serialization support
     alias(libs.plugins.serialization)
 
     // https://github.com/hovinen/kotlin-auto-formatter
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
-    id("tech.formatter-kt.formatter") version "0.7.9"
+    // alias(libs.plugins.formatter)
 
     id("maven-publish")
-
-    java
-    application
 }
 
 group = "electionguard-kotlin-multiplatform"
 version = "1.52.6-SNAPSHOT"
-
 val kotlinVersion by extra("1.7.20")
-
-repositories {
-    google()
-    mavenCentral()
-}
 
 kotlin {
     jvm {
@@ -92,10 +84,8 @@ kotlin {
                     // Useful, portable routines
                     implementation(libs.ktor.utils)
 
-                    // Portable logging interface. On the JVM, we'll get "logback", which gives
-                    // us lots of features. On Native, it ultimately just prints to stdout.
-                    // On JS, it uses console.log, console.error, etc.
-                    implementation(libs.bundles.logging)
+                    // Portable logging interface.
+                    implementation(libs.microutils.logging)
 
                     // A multiplatform Kotlin library for working with date and time.
                     implementation(libs.kotlinx.datetime)
@@ -131,7 +121,7 @@ kotlin {
                     // Logging implementation (used by "kotlin-logging"). Note that we need
                     // a bleeding-edge implementation to ensure we don't have vulnerabilities
                     // similar to (but not as bad) as the log4j issues.
-                    implementation("ch.qos.logback:logback-classic:1.3.4")
+                    // implementation("ch.qos.logback:logback-classic:1.3.4")
                 }
             }
         val jvmTest by
@@ -144,13 +134,18 @@ kotlin {
                     // at least be handy if we could get its parallel test runner to work.
                     implementation(libs.kotlin.test.junit5)
 
+                    // logger implementation
+                    implementation(libs.logback.classic)
+
                     // mocking only available on jvm
                     implementation(libs.mockk)
                 }
             }
-        val nativeMain by getting { dependencies {
-            implementation(project(":hacllib"))
-        } }
+        val nativeMain by getting {
+            dependencies {
+                implementation(project(":hacllib"))
+            }
+        }
         val nativeTest by getting { dependencies {} }
     }
 }
