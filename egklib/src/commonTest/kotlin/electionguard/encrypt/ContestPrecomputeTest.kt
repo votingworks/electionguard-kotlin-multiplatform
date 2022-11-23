@@ -35,7 +35,7 @@ class ContestPrecomputeTest {
         val nselections = pballot.contests.map { it.selections.size }.sum()
         println("\nContestPrecomputeTest $nselections selections/ballot")
 
-        for (revotes in 0..60 step 20) {
+        for (revotes in 0..60 step 60) {
             println("\nTest $revotes revotes/ballot")
             val stats = Stats()
             val pballots = ballots.map {
