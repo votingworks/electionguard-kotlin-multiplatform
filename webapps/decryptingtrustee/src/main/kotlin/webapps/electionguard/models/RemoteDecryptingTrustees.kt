@@ -11,7 +11,7 @@ import mu.KotlinLogging
 import webapps.electionguard.groupContext
 
 private val logger = KotlinLogging.logger("DecryptingTrusteeJson")
-private val nonce : ElementModQ? = groupContext.TWO_MOD_Q // null
+private val nonce : ElementModQ? = null
 
 @Serializable
 data class RemoteDecryptingTrusteeJson(val trustee_dir: String, val guardian_id: String) {

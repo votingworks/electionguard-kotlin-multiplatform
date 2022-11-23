@@ -1,15 +1,13 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     kotlin("multiplatform") version "1.7.20"
+    id("electionguard.common-conventions")
 
     // for some reason we need these, else get error
     // "Cannot add task 'commonizeNativeDistribution' as a task with that name already exists."
-    kotlin("plugin.serialization") version "1.7.20"
-    id("tech.formatter-kt.formatter") version "0.7.9"
-}
-
-repositories {
-    google()
-    mavenCentral()
+    // maybe related to bug in configuration caching to be fixed in kotlin 1.8.0
+    alias(libs.plugins.serialization)
+    // alias(libs.plugins.formatter)
 }
 
 // create build/libs/native/main/hacllib-cinterop-libhacl.klib
