@@ -92,7 +92,6 @@ fun runDecryptBallots(
 ): Int {
     println(" runDecryptBallots on ballots in ${inputDir} with nthreads = $nthreads")
     val starting = getSystemTimeInMillis() // wall clock
-    count = 0
 
     val consumerIn = Consumer(inputDir, group)
     val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
@@ -159,6 +158,7 @@ fun runDecryptBallots(
     sink.close()
 
     decryptor.stats.show(5)
+    val count = decryptor.stats.count()
 
     val took = getSystemTimeInMillis() - starting
     val msecsPerBallot = (took.toDouble() / 1000 / count).sigfig()
@@ -197,13 +197,10 @@ private fun CoroutineScope.launchDecryptor(
 }
 
 // place the output writing into its own coroutine
-private var count = 0
 private fun CoroutineScope.launchSink(
     input: Channel<DecryptedTallyOrBallot>, sink: DecryptedTallyOrBallotSinkIF,
 ) = launch {
     for (tally in input) {
         sink.writeDecryptedTallyOrBallot(tally)
-        logger.debug { " Sink wrote $count ballot ${tally.id}" }
-        count++
     }
 }

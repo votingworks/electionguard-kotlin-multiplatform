@@ -38,16 +38,23 @@ import kotlin.test.assertNotNull
 
 /** Test KeyCeremony Trustee generation and recovered decryption. */
 class EncryptDecryptBallotTest {
+    val group = productionGroup()
+    val configDir = "src/commonTest/data/start"
+    val outputDir = "testOut/RecoveredDecryptionTest"
+    val trusteeDir = "testOut/RecoveredDecryptionTest/private_data"
 
     @Test
-    fun testEncryptDecrypt() {
-        val group = productionGroup()
-        val configDir = "src/commonTest/data/start"
-        val outputDir = "testOut/RecoveredDecryptionTest"
-        val trusteeDir = "testOut/RecoveredDecryptionTest/private_data"
-
+    fun testAllPresent() {
         runEncryptDecryptBallot(group, configDir, outputDir, trusteeDir, listOf(1, 2, 3, 4, 5)) // all
+    }
+
+    @Test
+    fun testQuotaPresent() {
         runEncryptDecryptBallot(group, configDir, outputDir, trusteeDir, listOf(2, 3, 4)) // quota
+    }
+
+    @Test
+    fun testSomePresent() {
         runEncryptDecryptBallot(group, configDir, outputDir, trusteeDir, listOf(1, 2, 3, 4)) // between
     }
 }

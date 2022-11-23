@@ -47,7 +47,7 @@ kotlin {
                 // Make tests run in parallel
                 // More info: https://www.jvt.me/posts/2021/03/11/gradle-speed-parallel/
                 systemProperties["junit.jupiter.execution.parallel.enabled"] = "true"
-                systemProperties["junit.jupiter.execution.parallel.mode.default"] = "same_thread"
+                systemProperties["junit.jupiter.execution.parallel.mode.default"] = "concurrent"
                 systemProperties["junit.jupiter.execution.parallel.mode.classes.default"] =
                     "concurrent"
             }
@@ -132,6 +132,9 @@ kotlin {
                     // a bleeding-edge implementation to ensure we don't have vulnerabilities
                     // similar to (but not as bad) as the log4j issues.
                     implementation("ch.qos.logback:logback-classic:1.3.4")
+
+                    // try to use advanced features
+                    implementation("org.junit.jupiter:junit-jupiter-params:5.1.0")
                 }
             }
         val jvmTest by

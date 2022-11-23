@@ -13,6 +13,10 @@ class Stats {
         showLines(len).forEach { println(it) }
     }
 
+    fun count() : Int {
+        return if (stats.size > 0) stats.values.first().count() else 0
+    }
+
     fun showLines(len: Int = 3): List<String> {
         val result = mutableListOf<String>()
         if (stats.isEmpty()) {

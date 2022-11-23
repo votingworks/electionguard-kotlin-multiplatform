@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 
 class RunBatchEncryptionTest {
+    val nthreads = 25
 
     @Test
     fun testRunBatchEncryptionNonces() {
@@ -24,7 +25,7 @@ class RunBatchEncryptionTest {
                 "testOut/testRunBatchEncryptionNoncesTest/invalid_ballots",
                 "-fixed",
                 "-nthreads",
-                "1",
+                "$nthreads",
             )
         )
     }
@@ -42,7 +43,7 @@ class RunBatchEncryptionTest {
                 "-invalid",
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-nthreads",
-                "25",
+                "$nthreads",
             )
         )
     }
@@ -60,7 +61,7 @@ class RunBatchEncryptionTest {
                 "-invalid",
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-nthreads",
-                "1",
+                "$nthreads",
                 "-check",
                 "EncryptTwice"
             )
@@ -80,7 +81,7 @@ class RunBatchEncryptionTest {
                 "-invalid",
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-nthreads",
-                "1",
+                "$nthreads",
                 "-check",
                 "Verify",
             )
@@ -100,7 +101,7 @@ class RunBatchEncryptionTest {
                 "-invalid",
                 "testOut/testRunBatchEncryptionTest/invalid_ballots",
                 "-nthreads",
-                "1",
+                "$nthreads",
                 "-check",
                 "DecryptNonce",
             )
