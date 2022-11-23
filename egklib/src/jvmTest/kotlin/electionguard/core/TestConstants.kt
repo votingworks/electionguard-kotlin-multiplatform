@@ -1,9 +1,9 @@
 package electionguard.core
 
-import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.Test
 
 import electionguard.core.Base64.fromSafeBase64
 import electionguard.core.Base64.toBase64

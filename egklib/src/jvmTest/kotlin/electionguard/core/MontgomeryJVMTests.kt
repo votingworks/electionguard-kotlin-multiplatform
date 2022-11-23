@@ -1,9 +1,9 @@
 package electionguard.core
 
 import io.kotest.property.checkAll
-import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals
+import kotlin.test.Test
 
 // Unlike the "normal" group tests, these ones need to look inside at the internal
 // data structures (e.g., BigInteger for Java), so we put these tests in the JVM-only

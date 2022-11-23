@@ -116,16 +116,7 @@ kotlin {
         val jvmMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-
-                    // Logging implementation (used by "kotlin-logging"). Note that we need
-                    // a bleeding-edge implementation to ensure we don't have vulnerabilities
-                    // similar to (but not as bad) as the log4j issues.
-                    implementation("ch.qos.logback:logback-classic:1.3.4")
-
-                    // try to use advanced features
-                    implementation("org.junit.jupiter:junit-jupiter-params:5.1.0")
-                }
+                    implementation(kotlin("stdlib-jdk8", kotlinVersion)) }
             }
         val jvmTest by
             getting {
@@ -133,15 +124,14 @@ kotlin {
                     // Progress bars
                     implementation("me.tongfei:progressbar:0.9.3")
 
-                    // Unclear if we really need all the extra features of JUnit5, but it would
-                    // at least be handy if we could get its parallel test runner to work.
+                    // junit5 only available on jvm
                     implementation(libs.kotlin.test.junit5)
-
-                    // logger implementation
-                    implementation(libs.logback.classic)
 
                     // mocking only available on jvm
                     implementation(libs.mockk)
+
+                    // logger implementation
+                    implementation(libs.logback.classic)
                 }
             }
         val nativeMain by getting {

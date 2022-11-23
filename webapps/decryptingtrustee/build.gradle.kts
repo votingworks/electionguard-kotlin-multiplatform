@@ -23,5 +23,5 @@ dependencies {
     implementation(libs.bundles.logging.server)
 
     testImplementation(libs.ktor.server.tests.jvm)
-    testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.kotlin.test.junit5)
 }
