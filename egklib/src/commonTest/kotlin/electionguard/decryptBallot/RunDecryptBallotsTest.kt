@@ -15,8 +15,10 @@ import kotlin.test.assertEquals
  *   3. modify testDecryptBallotsSome() and add 3 valid ballot ids to the command line argument
  */
 class RunDecryptBallotsTest {
+    val nthreads = 25
+
     @Test
-    fun testDecryptBallotsAllSingleThreaded() {
+    fun testDecryptBallotsAll() {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
         val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
@@ -28,7 +30,7 @@ class RunDecryptBallotsTest {
             outputDir,
             readDecryptingTrustees(group, inputDir, trusteeDir),
             "ALL",
-            1,
+            nthreads,
         )
         assertEquals(25, n)
     }
@@ -42,8 +44,7 @@ class RunDecryptBallotsTest {
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
-            "ballot-id-1796664818,ballot-id-311998330,ballot-id--622464817",
-            1,
+            "ballot-id-1796664818,ballot-id-311998330,ballot-id--622464817", 3,
         )
         assertEquals(3, n)
     }
@@ -59,7 +60,7 @@ class RunDecryptBallotsTest {
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "4,5"),
             wantBallots,
-            6,
+            2,
         )
         assertEquals(2, n)
     }
@@ -79,7 +80,7 @@ class RunDecryptBallotsTest {
                 "-spoiled",
                 "all",
                 "-nthreads",
-                "11"
+                "$nthreads"
             )
         )
     }
@@ -97,7 +98,7 @@ class RunDecryptBallotsTest {
                 "-out",
                 "testOut/testDecryptingBallotsSome",
                 "-nthreads",
-                "6"
+                "1"
             )
         )
     }
