@@ -15,14 +15,12 @@ dependencyResolutionManagement {
             plugin("serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin-version")
             plugin("formatter", "tech.formatter-kt.formatter").version("0.7.9")
 
-            library("kotlin-result", "com.michael-bull.kotlin-result:kotlin-result:1.1.16")
             library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
             library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             library("kotlinx-coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines-version")
             library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-            library("ktor-utils", "io.ktor", "ktor-utils").versionRef("ktor-version")
-            library("pbandk", "pro.streem.pbandk:pbandk-runtime:0.14.1")
 
+            library("ktor-utils", "io.ktor", "ktor-utils").versionRef("ktor-version")
             library("ktor-client-java", "io.ktor", "ktor-client-java").versionRef("ktor-version")
             library("ktor-client-content-negotiation", "io.ktor", "ktor-client-content-negotiation").versionRef("ktor-version")
             library("ktor-serialization-kotlinx-json", "io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor-version")
@@ -55,8 +53,13 @@ dependencyResolutionManagement {
                 )
             )
 
+            // depends on kotlin-stdlib-common:1.6.20 -> 1.7.20
+            library("kotlin-result", "com.michael-bull.kotlin-result:kotlin-result:1.1.16")
+            // depends on kotlin 1.5.32 -> 1.7.20, coroutines 1.5.2, protoc 3.19.1
+            library("pbandk", "pro.streem.pbandk:pbandk-runtime:0.14.1")
+
             //// logging
-            library("microutils-logging", "io.github.microutils:kotlin-logging:3.0.2")
+            library("microutils-logging", "io.github.microutils:kotlin-logging:3.0.4")
             library("logback-classic", "ch.qos.logback:logback-classic:1.3.4")
 
             library("kotlin-server-logging", "io.ktor", "ktor-server-call-logging").versionRef("ktor-version")
@@ -77,13 +80,22 @@ dependencyResolutionManagement {
                 )
             )
 
+            //implementation(kotlin("test-common", kotlinVersion))
+            //implementation(kotlin("test-annotations-common", kotlinVersion))
+
             //// testing
-            library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin-version")
-            library("kotlin-test-junit5", "org.jetbrains.kotlin", "kotlin-test-junit5").versionRef("kotlin-version")
+            library("kotlin-test-common", "org.jetbrains.kotlin", "test-common").versionRef("kotlin-version")
+            library("kotlin-test-annotations-common", "org.jetbrains.kotlin", "test-annotations-common").versionRef("kotlin-version")
+
             library("kotlinx-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").versionRef("coroutines-version")
             library("ktor-server-tests-jvm", "io.ktor", "ktor-server-tests-jvm").versionRef("ktor-version")
-            library("kotest-property", "io.kotest", "kotest-property").version("5.4.0")
+            library("kotest-property", "io.kotest", "kotest-property").version("5.5.4")
+
+            //// jvm only
+            // uses junit:junit:4.13.2
             library("mockk", "io.mockk", "mockk").version("1.13.2")
+            library("kotlin-test-junit5", "org.jetbrains.kotlin", "kotlin-test-junit5").versionRef("kotlin-version")
+            library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin-version")
         }
     }
 }

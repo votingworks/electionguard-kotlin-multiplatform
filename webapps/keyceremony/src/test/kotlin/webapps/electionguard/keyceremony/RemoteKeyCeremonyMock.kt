@@ -16,9 +16,9 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import io.mockk.every
 import io.mockk.spyk
-import org.junit.Test
 import kotlin.test.assertTrue
 import kotlin.text.toByteArray
+import kotlin.test.Test
 
 private val remoteUrl = "http://0.0.0.0:11180"
 private val group = productionGroup()

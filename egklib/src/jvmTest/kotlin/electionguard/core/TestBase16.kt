@@ -8,10 +8,10 @@ import io.kotest.property.arbitrary.byteArray
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.positiveLong
 import io.kotest.property.checkAll
-import org.junit.jupiter.api.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.Test
 
 class TestBase16 {
     @Test
