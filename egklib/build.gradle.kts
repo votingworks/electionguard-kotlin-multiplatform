@@ -132,6 +132,9 @@ kotlin {
 
                     // logger implementation
                     implementation(libs.logback.classic)
+
+                    // use ParameterizedTest feature
+                    implementation("org.junit.jupiter:junit-jupiter-params:5.1.0")
                 }
             }
         val nativeMain by getting {
