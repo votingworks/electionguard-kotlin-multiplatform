@@ -9,17 +9,20 @@ import kotlinx.serialization.Serializable
 
 /** External representation of a GenericChaumPedersenProof */
 @Serializable
-@SerialName("GenericChaumPedersen")
-data class GenericChaumPedersenProofJson(val challenge: ElementModQJson, val response: ElementModQJson)
+@SerialName("ChaumPedersenProof")
+data class ChaumPedersenProofJson(
+    val challenge: ElementModQJson,
+    val response: ElementModQJson
+    )
 
-fun GenericChaumPedersenProof.publish() = GenericChaumPedersenProofJson(
-    this.c.publishModQ(),
-    this.r.publishModQ()
+fun GenericChaumPedersenProof.publish() = ChaumPedersenProofJson(
+    this.c.publish(),
+    this.r.publish()
 )
 
-fun GroupContext.importCP(proof: GenericChaumPedersenProofJson): GenericChaumPedersenProof? {
-    val c = this.importModQ(proof.challenge)
-    val r = this.importModQ(proof.response)
+fun ChaumPedersenProofJson.import(group: GroupContext): GenericChaumPedersenProof? {
+    val c = this.challenge.import(group)
+    val r = this.response.import(group)
     if (c == null || r == null) return null
     return GenericChaumPedersenProof(c, r)
 }
@@ -28,17 +31,17 @@ fun GroupContext.importCP(proof: GenericChaumPedersenProofJson): GenericChaumPed
 
 /** External representation of a RangeChaumPedersenProofKnownNonce */
 @Serializable
-@SerialName("RangeChaumPedersenProofKnownNoncePub")
-data class RangeChaumPedersenProofKnownNonceJson(
-    val proofs: List<GenericChaumPedersenProofJson>,
+@SerialName("RangeProofJson")
+data class RangeProofJson(
+    val proofs: List<ChaumPedersenProofJson>,
 )
 
-fun RangeChaumPedersenProofKnownNonce.publish() = RangeChaumPedersenProofKnownNonceJson(
+fun RangeChaumPedersenProofKnownNonce.publish() = RangeProofJson(
     this.proofs.map { it.publish() },
 )
 
-fun GroupContext.importRangeCP(range: RangeChaumPedersenProofKnownNonceJson): Result<RangeChaumPedersenProofKnownNonce, String> {
-    val proofs = range.proofs.map { this.importCP(it) }
+fun RangeProofJson.import(group: GroupContext): Result<RangeChaumPedersenProofKnownNonce, String> {
+    val proofs = this.proofs.map { it.import(group) }
     val allgood = proofs.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(RangeChaumPedersenProofKnownNonce(proofs.map { it!!} ))

@@ -41,8 +41,8 @@ class EncryptedKeyShareTest {
                 val ciphertext = bytes.hashedElGamalEncrypt(kp, nonce)
                 val sks = EncryptedKeyShare(g1, g2, ciphertext)
 
-                assertEquals(sks, group.importEncryptedKeyShare(sks.publish()))
-                assertEquals(sks, group.importEncryptedKeyShare(jsonRoundTrip(sks.publish())))
+                assertEquals(sks, sks.publish().import(group))
+                assertEquals(sks, jsonRoundTrip(sks.publish()).import(group))
             }
         }
     }

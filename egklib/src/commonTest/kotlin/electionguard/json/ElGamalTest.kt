@@ -19,31 +19,31 @@ class ElGamalTest {
     @Test
     fun importExportForElGamal() {
         runTest {
-            val context = productionGroup()
+            val group = productionGroup()
             checkAll(
                 iterations = 33,
-                elGamalKeypairs(context),
+                elGamalKeypairs(group),
                 Arb.int(0..100),
-                elementsModQNoZero(context)) { kp, v, r ->
+                elementsModQNoZero(group)) { kp, v, r ->
                     // first, we'll check that the keys serialize down to basic hex-strings
                     // rather than any fancier structure
                     assertEquals(
                         kp.publicKey,
-                        context.importPublicKey(jsonRoundTripWithStringPrimitive(kp.publicKey.publish()))
+                        jsonRoundTripWithStringPrimitive(kp.publicKey.publish()).import(group)
                     )
 
                     assertEquals(
                         kp.secretKey,
-                        context.importSecretKey(jsonRoundTripWithStringPrimitive(kp.secretKey.publish()))
+                        jsonRoundTripWithStringPrimitive(kp.secretKey.publish()).import(group)
                     )
 
                     // then, we'll check that the broader structure also does a successful
                     // roundtrip from JSON and back again
-                    val kpAgain = context.importKeyPair(jsonRoundTrip(kp.publish()))
+                    val kpAgain = jsonRoundTrip(kp.publish()).import(group)
                     assertEquals(kp, kpAgain)
 
                     val ciphertext = v.encrypt(keypair = kp, nonce = r)
-                    val ciphertextAgain = context.importElGamalCiphertext(jsonRoundTrip(ciphertext.publish()))
+                    val ciphertextAgain = jsonRoundTrip(ciphertext.publish()).import(group)
                     assertEquals(ciphertext, ciphertextAgain)
                 }
         }

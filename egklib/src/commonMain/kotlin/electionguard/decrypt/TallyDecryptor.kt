@@ -12,7 +12,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
 
-/** Turn a EncryptedTally into a DecryptedTallyOrBallot. */
+/** Turn an EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(
     val group: GroupContext,
     val qbar: ElementModQ,
@@ -30,12 +30,8 @@ class TallyDecryptor(
         decryptions: Decryptions,
         stats: Stats,
     ): DecryptedTallyOrBallot {
-        val contests: MutableMap<String, DecryptedTallyOrBallot.Contest> = HashMap()
         // LOOK could parallelize contests
-        for (tallyContest in tally.contests) {
-            val decryptedContest = decryptContest(tallyContest, decryptions, stats)
-            contests[tallyContest.contestId] = decryptedContest
-        }
+        val contests = tally.contests.map { decryptContest(it, decryptions, stats) }
         return DecryptedTallyOrBallot(tally.tallyId, contests)
     }
 
@@ -47,13 +43,11 @@ class TallyDecryptor(
         val results = decryptions.contestData[contest.contestId]
         val decryptedContestData = decryptContestData(contest.contestId, results)
 
-        val selections: MutableMap<String, DecryptedTallyOrBallot.Selection> = HashMap()
-        for (tallySelection in contest.selections) {
-            val id = "${contest.contestId}#@${tallySelection.selectionId}"
+        val selections = contest.selections.map {
+            val id = "${contest.contestId}#@${it.selectionId}"
             val shares = decryptions.shares[id]
                 ?: throw IllegalStateException("*** $id share not found") // TODO something better?
-            val decryptedSelection = decryptSelection(tallySelection, shares, contest.contestId, stats)
-            selections[tallySelection.selectionId] = decryptedSelection
+            decryptSelection(it, shares, contest.contestId, stats)
         }
         return DecryptedTallyOrBallot.Contest(contest.contestId, selections, decryptedContestData)
     }
@@ -91,7 +85,6 @@ class TallyDecryptor(
             )
         }
     }
-
 
     private fun decryptSelection(
         selection: EncryptedTally.Selection,

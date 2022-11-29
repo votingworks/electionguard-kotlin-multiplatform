@@ -4,7 +4,6 @@ import electionguard.core.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** External representation of an SecretKeyShare */
 @Serializable
 @SerialName("HashedElGamalCiphertext")
 data class HashedElGamalCiphertextJson(
@@ -14,23 +13,21 @@ data class HashedElGamalCiphertextJson(
     val numBytes: Int
 )
 
-/** Publishes a [HashedElGamalCiphertext] to its external, serializable form. */
 fun HashedElGamalCiphertext.publish() = HashedElGamalCiphertextJson(
-        this.c0.publishModP(),
+        this.c0.publish(),
         this.c1,
         this.c2.publish(),
         this.numBytes,
     )
 
-/** Imports from a published [HashedElGamalCiphertext]. Returns `null` if it's malformed. */
-fun GroupContext.importHashedElGamalCiphertext(pub: HashedElGamalCiphertextJson): HashedElGamalCiphertext? {
-    val mac = pub.mac.import()
+fun HashedElGamalCiphertextJson.import(group: GroupContext): HashedElGamalCiphertext? {
+    val mac = this.mac.import()
 
     return if (mac == null) null else
         HashedElGamalCiphertext(
-            this.importModP(pub.pad)!!,
-            pub.data,
+            this.pad.import(group)!!,
+            this.data,
             mac,
-            pub.numBytes,
+            this.numBytes,
         )
 }

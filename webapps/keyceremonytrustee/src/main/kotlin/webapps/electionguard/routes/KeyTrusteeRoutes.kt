@@ -62,7 +62,7 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val publicKeysJson = call.receive<PublicKeysJson>()
-            val publicKeysResult = groupContext.importPublicKeys(publicKeysJson)
+            val publicKeysResult = publicKeysJson.import(groupContext)
             if (publicKeysResult is Ok) {
                 val publicKeys = publicKeysResult.unwrap()
                 val result = rguardian.receivePublicKeys(publicKeys)
@@ -121,7 +121,7 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val secretShare = call.receive<EncryptedKeyShareJson>()
-            val result = rguardian.receiveEncryptedKeyShare(groupContext.importEncryptedKeyShare(secretShare))
+            val result = rguardian.receiveEncryptedKeyShare(secretShare.import(groupContext))
             if (result is Ok) {
                 call.respondText("RemoteKeyTrustee ${rguardian.id} receiveEncryptedKeyShare correctly", status = HttpStatusCode.OK)
             } else {
@@ -168,7 +168,7 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val secretShareJson = call.receive<KeyShareJson>()
-            val secretShare = groupContext.importKeyShare(secretShareJson)
+            val secretShare = secretShareJson.import(groupContext)
             if (secretShare != null) {
                 val result = rguardian.receiveKeyShare(secretShare)
                 if (result is Ok) {

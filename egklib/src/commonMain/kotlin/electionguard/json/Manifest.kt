@@ -224,7 +224,7 @@ fun TextJson.import() =
 /////////////////////////
 
 @Serializable
-@SerialName("Contest")
+@SerialName("ManifestContest")
 data class ContestJson(
     val object_id: String,
     val sequence_order: Int,
@@ -271,7 +271,7 @@ fun ContestJson.import() : Manifest.ContestDescription {
 /////////////////////////
 
 @Serializable
-@SerialName("BallotSelection")
+@SerialName("ManifestSelection")
 data class BallotSelectionJson(
     val object_id: String,
     val sequence_order: Int,

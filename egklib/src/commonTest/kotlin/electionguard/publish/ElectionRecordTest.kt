@@ -50,7 +50,7 @@ class ElectionRecordTest {
         assertNotNull(decryption.decryptedTally)
         val contests = decryption.decryptedTally.contests
         assertNotNull(contests)
-        val contest = contests["contest19"]
+        val contest = contests.find { it.contestId =="contest19"}
         assertNotNull(contest)
 
         assertEquals(init.guardians.size, config.numberOfGuardians)
@@ -62,8 +62,8 @@ class ElectionRecordTest {
     }
 
     fun validateTally(jointKey: ElGamalPublicKey, tally: DecryptedTallyOrBallot) {
-        for (contest in tally.contests.values) {
-            for (selection in contest.selections.values) {
+        for (contest in tally.contests) {
+            for (selection in contest.selections) {
                 val actual : Int? = jointKey.dLog(selection.value, 100)
                 assertEquals(selection.tally, actual)
             }

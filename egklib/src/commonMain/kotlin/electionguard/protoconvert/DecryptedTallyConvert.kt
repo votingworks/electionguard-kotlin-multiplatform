@@ -26,7 +26,7 @@ fun GroupContext.importDecryptedTallyOrBallot(tally: electionguard.protogen.Decr
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(DecryptedTallyOrBallot(tally.id, contests.associateBy { it.contestId }))
+    return Ok(DecryptedTallyOrBallot(tally.id, contests))
 }
 
 private fun GroupContext.importContest(contest: electionguard.protogen.DecryptedContest):
@@ -54,7 +54,7 @@ private fun GroupContext.importContest(contest: electionguard.protogen.Decrypted
     return Ok(
         DecryptedTallyOrBallot.Contest(
             contest.contestId,
-            selections.associateBy { it.selectionId },
+            selections,
             decryptedContestData,
         )
     )
@@ -117,13 +117,13 @@ private fun GroupContext.importSelection(selection: electionguard.protogen.Decry
 fun DecryptedTallyOrBallot.publishDecryptedTallyOrBallot() =
     electionguard.protogen.DecryptedTallyOrBallot(
         this.id,
-        this.contests.values.map { it.publishContest() },
+        this.contests.map { it.publishContest() },
     )
 
 private fun DecryptedTallyOrBallot.Contest.publishContest() =
     electionguard.protogen.DecryptedContest(
         this.contestId,
-        this.selections.values.map { it.publishSelection() },
+        this.selections.map { it.publishSelection() },
         this.decryptedContestData?.publishDecryptedContestData()
     )
 

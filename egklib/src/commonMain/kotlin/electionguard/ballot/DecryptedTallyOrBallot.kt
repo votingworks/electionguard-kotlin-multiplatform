@@ -9,13 +9,13 @@ import electionguard.core.HashedElGamalCiphertext
  * The decrypted counts of all contests in the election, for one ballot or a collection of ballots.
  *
  * @param id matches the tallyId, or th ballotId if its a ballot decryption.
- * @param contests The contests, keyed by contest.contestId.
+ * @param contests The contests
  */
-data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Contest>) {
+data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
 
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
-        val selections: Map<String, Selection>, // LOOK why Map?
+        val selections: List<Selection>,
         val decryptedContestData: DecryptedContestData? = null, // only for ballots
     ) {
         init {
@@ -57,9 +57,9 @@ data class DecryptedTallyOrBallot(val id: String, val contests: Map<String, Cont
     fun showTally(): String {
         val builder = StringBuilder(5000)
         builder.appendLine(" DecryptedTallyOrBallot $id")
-        contests.values.sortedBy { it.contestId }.forEach { contest ->
+        contests.sortedBy { it.contestId }.forEach { contest ->
             builder.appendLine("  Contest ${contest.contestId}")
-            contest.selections.values.sortedBy { it.selectionId }.forEach {
+            contest.selections.sortedBy { it.selectionId }.forEach {
                 builder.appendLine("   Selection ${it.selectionId} = ${it.tally}")
             }
         }

@@ -36,8 +36,8 @@ class HashedElGamalTest {
             ) { bytes, kp, nonce ->
                 val ciphertext = bytes.hashedElGamalEncrypt(kp, nonce)
 
-                assertEquals(ciphertext, group.importHashedElGamalCiphertext(ciphertext.publish()))
-                assertEquals(ciphertext, group.importHashedElGamalCiphertext(jsonRoundTrip(ciphertext.publish())))
+                assertEquals(ciphertext, ciphertext.publish().import(group))
+                assertEquals(ciphertext, jsonRoundTrip(ciphertext.publish()).import(group))
             }
         }
     }

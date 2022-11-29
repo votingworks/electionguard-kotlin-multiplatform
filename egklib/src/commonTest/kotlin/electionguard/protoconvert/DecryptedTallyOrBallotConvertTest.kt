@@ -17,16 +17,15 @@ class DecryptedTallyOrBallotConvertTest {
         val proto = tally.publishDecryptedTallyOrBallot()
         val roundtrip = context.importDecryptedTallyOrBallot(proto).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
-        for (entry in roundtrip.contests) {
-            val contest =
-                tally.contests.get(entry.key)
-                    ?: throw RuntimeException("Cant find contest $entry.key")
-            val rcontest = entry.value
-            for (entry2 in rcontest.selections) {
-                val selection = contest.selections.get(entry2.key)
-                        ?: throw RuntimeException("Cant find selection $entry2.key")
-                val rselection = entry2.value
-                assertEquals(selection, rselection)
+        val tallyContestMap = tally.contests.associateBy { it.contestId }
+        for (rtContest in roundtrip.contests) {
+            val contest = tallyContestMap.get(rtContest.contestId)
+                    ?: throw RuntimeException("Cant find contest ${rtContest.contestId}")
+            val tallySelectionMap = contest.selections.associateBy { it.selectionId }
+            for (rtSelection in rtContest.selections) {
+                val selection = tallySelectionMap.get(rtSelection.selectionId)
+                        ?: throw RuntimeException("Cant find selection ${rtSelection.selectionId}")
+                assertEquals(selection, rtSelection)
             }
         }
         assertEquals(roundtrip, tally)
@@ -36,14 +35,14 @@ class DecryptedTallyOrBallotConvertTest {
 
         fun generateFakeTally(seq: Int, context: GroupContext): DecryptedTallyOrBallot {
             val contests = List(7) { generateFakeContest(it, context) }
-            return DecryptedTallyOrBallot("tallyId$seq", contests.associate { it.contestId to it })
+            return DecryptedTallyOrBallot("tallyId$seq", contests)
         }
 
         private fun generateFakeContest(cseq: Int, context: GroupContext): DecryptedTallyOrBallot.Contest {
             val selections = List(11) { generateFakeSelection(it, context) }
             return DecryptedTallyOrBallot.Contest(
                 "contest$cseq",
-                selections.associate { it.selectionId to it },
+                selections,
                 null, // TODO
             )
         }

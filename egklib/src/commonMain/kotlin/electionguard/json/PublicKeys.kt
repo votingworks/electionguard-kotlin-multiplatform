@@ -23,10 +23,10 @@ fun PublicKeys.publish() = PublicKeysJson(
         this.coefficientProofs.map { it.publish() }
     )
 
-fun GroupContext.importPublicKeys(proof: PublicKeysJson): Result<PublicKeys, String> {
-    val proofs = proof.coefficientProofs.map { this.importSchnorrProof(it) }
+fun PublicKeysJson.import(group: GroupContext): Result<PublicKeys, String> {
+    val proofs = this.coefficientProofs.map { it.import(group) }
     val allgood = proofs.map { it != null }.reduce { a, b -> a && b }
 
-    return if (allgood) Ok(PublicKeys(proof.guardianId, proof.guardianXCoordinate, proofs.map {it!!}))
+    return if (allgood) Ok(PublicKeys(this.guardianId, this.guardianXCoordinate, proofs.map {it!!}))
     else Err("importSchnorrProof failed")
 }

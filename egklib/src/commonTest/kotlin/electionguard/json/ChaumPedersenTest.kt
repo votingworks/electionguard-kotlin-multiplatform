@@ -12,15 +12,15 @@ class ChaumPedersenTest {
     @Test
     fun testRoundtrip() {
         runTest {
-            val context = productionGroup()
+            val group = productionGroup()
             checkAll(
                 iterations = 33,
-                elementsModQ(context),
-                elementsModQ(context),
+                elementsModQ(group),
+                elementsModQ(group),
             ) { challenge, response ->
                 val goodProof = GenericChaumPedersenProof(challenge, response)
-                assertEquals(goodProof, context.importCP(goodProof.publish()))
-                assertEquals(goodProof, context.importCP(jsonRoundTrip(goodProof.publish())))
+                assertEquals(goodProof, goodProof.publish().import(group))
+                assertEquals(goodProof, jsonRoundTrip(goodProof.publish()).import(group))
             }
         }
     }
