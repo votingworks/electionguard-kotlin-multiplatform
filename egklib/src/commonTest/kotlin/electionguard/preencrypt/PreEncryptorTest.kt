@@ -15,7 +15,7 @@ import electionguard.core.runTest
 import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
 import electionguard.encrypt.cast
-import electionguard.input.ManifestInputBuilder
+import electionguard.input.ManifestBuilder
 import electionguard.protoconvert.importEncryptedBallot
 import electionguard.protoconvert.publishEncryptedBallot
 import electionguard.publish.Consumer
@@ -84,7 +84,7 @@ internal class PreEncryptorTest {
     @Test
     fun testSingleLimit() {
         runTest {
-            val ebuilder = ManifestInputBuilder("testSingleLimit")
+            val ebuilder = ManifestBuilder("testSingleLimit")
             val manifest: Manifest = ebuilder.addContest("onlyContest")
                 .addSelection("selection1", "candidate1")
                 .addSelection("selection2", "candidate2")
@@ -99,7 +99,7 @@ internal class PreEncryptorTest {
     @Test
     fun testMultipleSelections() {
         runTest {
-            val ebuilder = ManifestInputBuilder("testMultipleSelections")
+            val ebuilder = ManifestBuilder("testMultipleSelections")
             val manifest: Manifest = ebuilder.addContest("onlyContest")
                 .setVoteVariationType(Manifest.VoteVariationType.n_of_m, 2)
                 .addSelection("selection1", "candidate1")

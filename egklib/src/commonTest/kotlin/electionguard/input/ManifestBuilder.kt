@@ -1,8 +1,12 @@
 package electionguard.input
 
 import electionguard.ballot.Manifest
+const val electionScopeId = "StandardManifest"
+const val protoVersion = "1.53"
+const val specVersion = "1.53"
 
-class ManifestInputBuilder(val manifestName: String) {
+/** Build test Manifests */
+class ManifestBuilder(private val manifestName: String = electionScopeId) {
     val districtDefault = "district"
     val styleDefault = "styling"
 
@@ -12,17 +16,17 @@ class ManifestInputBuilder(val manifestName: String) {
     var districts = ArrayList<Manifest.GeopoliticalUnit>()
     var ballotStyles = ArrayList<Manifest.BallotStyle>()
 
-    fun addGpunit(gpunitName: String): ManifestInputBuilder {
+    fun addGpunit(gpunitName: String): ManifestBuilder {
         districts.add(Manifest.GeopoliticalUnit(gpunitName, "name", Manifest.ReportingUnitType.congressional, null))
         return this
     }
 
-    fun setDefaultStyle(style: String): ManifestInputBuilder {
+    fun setDefaultStyle(style: String): ManifestBuilder {
         this.style = style
         return this
     }
 
-    fun addStyle(style: String, vararg gpunits: String): ManifestInputBuilder {
+    fun addStyle(style: String, vararg gpunits: String): ManifestBuilder {
         for (gpunit in gpunits) {
             districts.add(Manifest.GeopoliticalUnit(gpunit, "name", Manifest.ReportingUnitType.congressional, null))
         }
@@ -30,13 +34,13 @@ class ManifestInputBuilder(val manifestName: String) {
         return this
     }
 
-    fun addCandidateAndParty(candidate_id: String, party: String?): ManifestInputBuilder {
-        val c = Manifest.Candidate(candidate_id, Manifest.InternationalizedText(), party, null, false)
+    fun addCandidateAndParty(candidate_id: String, party: String?): ManifestBuilder {
+        val c = Manifest.Candidate(candidate_id, null, party, null, false)
         candidates[candidate_id] = c
         return this
     }
 
-    fun addBallotStyle(ballotStyle: Manifest.BallotStyle): ManifestInputBuilder {
+    fun addBallotStyle(ballotStyle: Manifest.BallotStyle): ManifestBuilder {
         ballotStyles.add(ballotStyle)
         return this
     }
@@ -53,13 +57,12 @@ class ManifestInputBuilder(val manifestName: String) {
         return c
     }
 
-
     fun addCandidate(candidate_id: String) {
         val c = Manifest.Candidate(candidate_id)
         candidates[candidate_id] = c
     }
 
-    fun removeCandidate(candidate_id: String): ManifestInputBuilder {
+    fun removeCandidate(candidate_id: String): ManifestBuilder {
         candidates.remove(candidate_id)
         return this
     }
@@ -69,8 +72,8 @@ class ManifestInputBuilder(val manifestName: String) {
             districts.add(
                 Manifest.GeopoliticalUnit(
                     districtDefault,
-                    "name",
-                    Manifest.ReportingUnitType.congressional,
+                    "districtName",
+                    Manifest.ReportingUnitType.precinct,
                     null
                 )
             )
@@ -80,11 +83,18 @@ class ManifestInputBuilder(val manifestName: String) {
         }
         val parties: List<Manifest.Party> = listOf(Manifest.Party("dog"), Manifest.Party("cat"))
         return Manifest(
-            manifestName, "2.0.0", Manifest.ElectionType.general,
-            "start", "end",
-            districts, parties, candidates.values.toList(),
+            manifestName,
+            specVersion,
+            Manifest.ElectionType.general,
+            "start",
+            "end",
+            districts,
+            parties,
+            candidates.values.toList(),
             contests.map { it.build() },
-            ballotStyles, null, null
+            ballotStyles,
+            emptyList(),
+            Manifest.ContactInformation("contact", emptyList(), null, "911"),
         )
     }
 
@@ -98,13 +108,13 @@ class ManifestInputBuilder(val manifestName: String) {
         private var allowed = 1
         private var number_elected = 1
         private var district: String = districtDefault
-        private val name = "name"
+        private val name = "contestName"
 
-        fun setVoteVariationType(type: Manifest.VoteVariationType, allowed: Int, number_elected: Int? = null): ContestBuilder {
+        fun setVoteVariationType(type: Manifest.VoteVariationType, allowed: Int, numberElected: Int? = null): ContestBuilder {
             require(allowed > 0)
             this.type = type
             this.allowed = allowed
-            this.number_elected = number_elected?: allowed
+            this.number_elected = numberElected?: allowed
             return this
         }
 
@@ -118,22 +128,22 @@ class ManifestInputBuilder(val manifestName: String) {
             return this
         }
 
-        fun addSelection(id: String, candidate_id: String): ContestBuilder {
-            val s  = SelectionBuilder(id, candidate_id)
+        fun addSelection(id: String, candidateId: String): ContestBuilder {
+            val s  = SelectionBuilder(id, candidateId)
             selections.add(s)
-            addCandidate(candidate_id)
+            addCandidate(candidateId)
             return this
         }
 
-        fun addSelection(id: String, candidate_id: String, seq: Int): ContestBuilder {
-            val s: SelectionBuilder = SelectionBuilder(id, candidate_id).setSequence(seq)
+        fun addSelection(id: String, candidateId: String, seq: Int): ContestBuilder {
+            val s: SelectionBuilder = SelectionBuilder(id, candidateId).setSequence(seq)
             selections.add(s)
-            addCandidate(candidate_id)
+            addCandidate(candidateId)
             return this
         }
 
-        fun done(): ManifestInputBuilder {
-            return this@ManifestInputBuilder
+        fun done(): ManifestBuilder {
+            return this@ManifestBuilder
         }
 
         fun build(): Manifest.ContestDescription {
@@ -151,7 +161,7 @@ class ManifestInputBuilder(val manifestName: String) {
                 id, seq, district,
                 type, allowed, number_elected, name,
                 selections.map { it.build() },
-                null, null, emptyList(),
+                null, "subtitle",
             )
         }
 
@@ -167,4 +177,18 @@ class ManifestInputBuilder(val manifestName: String) {
             }
         }
     }
+}
+
+fun buildStandardManifest(ncontests: Int, nselections: Int) : Manifest {
+    val builder = ManifestBuilder("StandardManifest")
+    var count = 0
+    List(ncontests) {
+        val contestBuilder = builder.addContest("contest$it")
+        List(nselections) {
+            contestBuilder.addSelection("selection$count", "candidate$count")
+            count++
+        }
+        contestBuilder.done()
+    }
+    return builder.build()
 }

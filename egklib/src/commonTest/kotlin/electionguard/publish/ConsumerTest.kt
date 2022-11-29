@@ -4,6 +4,9 @@ import com.github.michaelbull.result.*
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.input.electionScopeId
+import electionguard.input.protoVersion
+import electionguard.input.specVersion
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -20,10 +23,10 @@ class ConsumerTest {
             val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val config = init.config
             println("electionRecord.protoVersion = ${config.protoVersion}")
-            assertEquals("2.0.0", config.protoVersion)
+            assertEquals(protoVersion, config.protoVersion)
             println("electionRecord.manifest.specVersion = ${config.manifest.specVersion}")
-            assertEquals("election_scope_id", config.manifest.electionScopeId)
-            assertEquals("v0.95", config.manifest.specVersion)
+            assertEquals(electionScopeId, config.manifest.electionScopeId)
+            assertEquals(specVersion, config.manifest.specVersion)
         }
     }
 

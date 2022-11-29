@@ -5,8 +5,8 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
+import electionguard.ballot.Manifest
 import electionguard.ballot.makeGuardian
-import electionguard.ballot.makeManifest
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.UInt256
@@ -45,7 +45,7 @@ class KeyCeremonyTest {
 
         // makeElectionInitialized
         val manifestHash: UInt256 = 42U.toUInt256()
-        val fakeManifest = makeManifest(manifestHash)
+        val fakeManifest = makeFakeManifest(manifestHash)
         val config = ElectionConfig(
             "protoVersion",
             group.constants,
@@ -120,4 +120,15 @@ class KeyCeremonyTest {
         assertTrue(result.toString().contains("keyCeremonyExchange trustees have non-unique xcoordinates"))
     }
 
+}
+
+fun makeFakeManifest(cryptoHash: UInt256): Manifest {
+    return Manifest(
+        "electionScopeId",
+        "specVersion",
+        Manifest.ElectionType.general,
+        "startDate", "endDate",
+        emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), null,
+        cryptoHash
+    )
 }

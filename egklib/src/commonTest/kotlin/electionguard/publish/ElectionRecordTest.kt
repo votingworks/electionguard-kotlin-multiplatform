@@ -3,6 +3,8 @@ package electionguard.publish
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.*
+import electionguard.input.protoVersion
+import electionguard.input.specVersion
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -40,15 +42,15 @@ class ElectionRecordTest {
         val init = tallyResult.electionInitialized
         val config = init.config
 
-        assertEquals("2.0.0", config.protoVersion)
-        assertEquals("Standard", config.constants.name)
-        assertEquals("v0.95", config.manifest.specVersion)
+        assertEquals(protoVersion, config.protoVersion)
+        assertEquals("production group, low memory use, 4096 bits", config.constants.name)
+        assertEquals(specVersion, config.manifest.specVersion)
         assertEquals("RunWorkflow", tallyResult.encryptedTally.tallyId)
         assertEquals("RunWorkflow", decryption.decryptedTally.id)
         assertNotNull(decryption.decryptedTally)
         val contests = decryption.decryptedTally.contests
         assertNotNull(contests)
-        val contest = contests["contest24"]
+        val contest = contests["contest19"]
         assertNotNull(contest)
 
         assertEquals(init.guardians.size, config.numberOfGuardians)
