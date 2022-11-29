@@ -84,20 +84,17 @@ object UInt256AsStringSerializer : KSerializer<UInt256Json> {
 // Its up to the calling routines to turn that into Result<Boolean, String>
 
 /** Publishes an ElementModP to its external, serializable form. */
-fun ElementModP.publishModP(): ElementModPJson = ElementModPJson(this.byteArray())
+fun ElementModP.publish(): ElementModPJson = ElementModPJson(this.byteArray())
 
 /** Publishes an ElementModQ to its external, serializable form. */
-fun ElementModQ.publishModQ(): ElementModQJson = ElementModQJson(this.byteArray())
+fun ElementModQ.publish(): ElementModQJson = ElementModQJson(this.byteArray())
 
 /** Publishes an UInt256 to its external, serializable form. */
 fun UInt256.publish(): UInt256Json = UInt256Json(this.bytes)
 
-/** Imports from a published ElementModP. Returns `null` if its invalid. */
-fun GroupContext.importModP(element: ElementModPJson): ElementModP? = binaryToElementModP(element.value)
+fun ElementModPJson.import(group: GroupContext): ElementModP? = group.binaryToElementModP(this.value)
 
-/** Imports from a published ElementModQ. Returns `null` if its invalid. */
-fun GroupContext.importModQ(element: ElementModQJson): ElementModQ? = binaryToElementModQ(element.value)
+fun ElementModQJson.import(group: GroupContext): ElementModQ? = group.binaryToElementModQ(this.value)
 
-/** Imports from a published UInt256. Returns `null` if its invalid. */
 fun UInt256Json.import(): UInt256? = if (this.bytes.size == 32)  UInt256(this.bytes) else null
 

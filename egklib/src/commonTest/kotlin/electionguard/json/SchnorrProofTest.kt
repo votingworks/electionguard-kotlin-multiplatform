@@ -15,17 +15,17 @@ class SchnorrProofTest {
     @Test
     fun testRoundtrip() {
         runTest {
-            val context = productionGroup()
+            val group = productionGroup()
             checkAll(
                 iterations = 33,
-                elGamalKeypairs(context),
-                elementsModQ(context),
+                elGamalKeypairs(group),
+                elementsModQ(group),
             ) { kp, nonce ->
                 val goodProof = kp.schnorrProof(nonce)
                 assertTrue(goodProof.validate() is Ok)
 
-                assertEquals(goodProof, context.importSchnorrProof(goodProof.publish()))
-                assertEquals(goodProof, context.importSchnorrProof(jsonRoundTrip(goodProof.publish())))
+                assertEquals(goodProof, goodProof.publish().import(group))
+                assertEquals(goodProof, jsonRoundTrip(goodProof.publish()).import(group))
             }
         }
     }

@@ -191,12 +191,14 @@ fun compareTallies(
     diffOnly: Boolean,
 ) {
     println("Compare  ${tally1.id} to ${tally2.id}")
-    tally1.contests.values.sortedBy { it.contestId }.forEach { contest1 ->
+    val tally2ContestMap = tally2.contests.associateBy { it.contestId }
+    tally1.contests.sortedBy { it.contestId }.forEach { contest1 ->
         if (!diffOnly) println(" Contest ${contest1.contestId}")
-        val contest2 = tally2.contests[contest1.contestId] ?:
+        val contest2 = tally2ContestMap[contest1.contestId] ?:
             throw IllegalStateException("Cant find contest ${contest1.contestId}")
-        contest1.selections.values.sortedBy { it.selectionId }.forEach { selection1 ->
-            val selection2 = contest2.selections[selection1.selectionId] ?:
+        val tally2SelectionMap = contest2.selections.associateBy { it.selectionId }
+        contest1.selections.sortedBy { it.selectionId }.forEach { selection1 ->
+            val selection2 = tally2SelectionMap[selection1.selectionId] ?:
                 throw IllegalStateException("Cant find selection ${selection1.selectionId}")
             val same = selection1.tally == selection2.tally
             if (!diffOnly) {

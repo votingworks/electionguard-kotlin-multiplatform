@@ -41,7 +41,7 @@ class DecryptionTest {
                 val miss = List(nmissing) { name + it }
                 val org = SetMissingRequest(lc, miss)
 
-                assertEquals(org, group.importSetMissingRequest(org.publish()))
+                assertEquals(org, org.publish().import(group))
             }
         }
     }
@@ -61,7 +61,7 @@ class DecryptionTest {
             ) {  nrequests ->
                 val qList = List(nrequests) { elementsModP(group, minimum = 2).single() }
                 val org = DecryptRequest(qList)
-                val request = group.importDecryptRequest(org.publish())
+                val request = org.publish().import(group)
                 assertTrue(request is Ok)
                 assertEquals(org, request.unwrap())
             }
@@ -92,7 +92,7 @@ class DecryptionTest {
                     )
                 }
                 val org = DecryptResponse(partials)
-                val response = group.importDecryptResponse(org.publish())
+                val response = org.publish().import(group)
                 assertTrue(response is Ok)
                 assertEquals(org, response.unwrap())
             }
@@ -121,7 +121,7 @@ class DecryptionTest {
                     )
                 }
                 val org = ChallengeRequests(crs)
-                val challenges = group.importChallengeRequests(org.publish())
+                val challenges = org.publish().import(group)
                 assertTrue(challenges is Ok)
                 assertEquals(org, challenges.unwrap())
             }
@@ -150,7 +150,7 @@ class DecryptionTest {
                     )
                 }
                 val org = ChallengeResponses(crs)
-                val responses = group.importChallengeResponses(org.publish())
+                val responses = org.publish().import(group)
                 assertTrue(responses is Ok)
                 assertEquals(org, responses.unwrap())
             }

@@ -22,16 +22,16 @@ data class SetMissingRequest(
 )
 
 fun SetMissingRequest.publish() = SetMissingRequestJson(
-    this.lagrangeCoeff.publishModQ(),
+    this.lagrangeCoeff.publish(),
     this.missing
 )
 
-fun GroupContext.importSetMissingRequest(json: SetMissingRequestJson): SetMissingRequest? {
-    val coeff = this.importModQ(json.lagrange_coeff)
+fun SetMissingRequestJson.import(group: GroupContext): SetMissingRequest? {
+    val coeff = this.lagrange_coeff.import(group)
     return if (coeff == null) null else
         SetMissingRequest(
             coeff,
-            json.missing
+            this.missing
         )
 }
 
@@ -48,11 +48,11 @@ data class DecryptRequest(
 )
 
 fun DecryptRequest.publish() = DecryptRequestJson(
-    this.texts.map { it.publishModP() }
+    this.texts.map { it.publish() }
 )
 
-fun GroupContext.importDecryptRequest(json: DecryptRequestJson): Result<DecryptRequest, String> {
-    val texts = json.texts.map { this.importModP(it) }
+fun DecryptRequestJson.import(group: GroupContext): Result<DecryptRequest, String> {
+    val texts = this.texts.map { it.import(group) }
     val allgood = texts.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(DecryptRequest(texts.map { it!! }))
@@ -75,8 +75,8 @@ fun DecryptResponse.publish() = DecryptResponseJson(
     this.shares.map { it.publish() }
 )
 
-fun GroupContext.importDecryptResponse(json: DecryptResponseJson): Result<DecryptResponse, String> {
-    val shares = json.shares.map { this.importPartialDecryption(it) }
+fun DecryptResponseJson.import(group: GroupContext): Result<DecryptResponse, String> {
+    val shares = this.shares.map { it.import(group) }
     val allgood = shares.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(DecryptResponse(shares.map { it!! }))
@@ -97,19 +97,19 @@ data class PartialDecryptionJson(
 
 fun PartialDecryption.publish() = PartialDecryptionJson(
     this.guardianId,
-    this.mbari.publishModP(),
-    this.u.publishModQ(),
-    this.a.publishModP(),
-    this.b.publishModP(),
+    this.mbari.publish(),
+    this.u.publish(),
+    this.a.publish(),
+    this.b.publish(),
 )
 
-fun GroupContext.importPartialDecryption(json: PartialDecryptionJson): PartialDecryption? {
-    val mbari = this.importModP(json.mbari)
-    val u = this.importModQ(json.u)
-    val a = this.importModP(json.a)
-    val b = this.importModP(json.b)
+fun PartialDecryptionJson.import(group: GroupContext): PartialDecryption? {
+    val mbari = this.mbari.import(group)
+    val u = this.u.import(group)
+    val a = this.a.import(group)
+    val b = this.b.import(group)
     return if (mbari == null || u == null || a == null || b == null) null
-    else PartialDecryption(json.guardian_id, mbari, u, a, b)
+    else PartialDecryption(this.guardian_id, mbari, u, a, b)
 }
 
 ///////////////////////////////////////////
@@ -128,8 +128,8 @@ fun ChallengeRequests.publish() = ChallengeRequestsJson(
     this.challenges.map { it.publish() }
 )
 
-fun GroupContext.importChallengeRequests(json: ChallengeRequestsJson) : Result<ChallengeRequests, String> {
-    val challenges = json.challenges.map { this.importChallengeRequest(it) }
+fun ChallengeRequestsJson.import(group: GroupContext) : Result<ChallengeRequests, String> {
+    val challenges = this.challenges.map { it.import(group) }
     val allgood = challenges.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(ChallengeRequests(challenges.map { it!! }))
@@ -148,15 +148,15 @@ data class ChallengeRequestJson(
 
 fun ChallengeRequest.publish() = ChallengeRequestJson(
     this.id,
-    this.challenge.publishModQ(),
-    this.nonce.publishModQ(),
+    this.challenge.publish(),
+    this.nonce.publish(),
 )
 
-fun GroupContext.importChallengeRequest(json: ChallengeRequestJson) : ChallengeRequest? {
-    val challenge = this.importModQ(json.challenge)
-    val nonce = this.importModQ(json.nonce)
+fun ChallengeRequestJson.import(group: GroupContext) : ChallengeRequest? {
+    val challenge = this.challenge.import(group)
+    val nonce = this.nonce.import(group)
     return if (challenge == null || nonce == null) null
-    else ChallengeRequest(json.id, challenge, nonce)
+    else ChallengeRequest(this.id, challenge, nonce)
 }
 
 ///////////////////////////////////////////
@@ -175,8 +175,8 @@ fun ChallengeResponses.publish() = ChallengeResponsesJson(
     this.responses.map { it.publish() }
 )
 
-fun GroupContext.importChallengeResponses(json: ChallengeResponsesJson): Result<ChallengeResponses, String> {
-    val responses = json.responses.map { this.importChallengeResponse(it) }
+fun ChallengeResponsesJson.import(group: GroupContext): Result<ChallengeResponses, String> {
+    val responses = this.responses.map { it.import(group) }
     val allgood = responses.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(ChallengeResponses(responses.map { it!! }))
@@ -194,14 +194,14 @@ data class ChallengeResponseJson(
 
 fun ChallengeResponse.publish() = ChallengeResponseJson(
     this.id,
-    this.response.publishModQ(),
+    this.response.publish(),
 )
 
-fun GroupContext.importChallengeResponse(json: ChallengeResponseJson): ChallengeResponse? {
-    val response = this.importModQ(json.response)
+fun ChallengeResponseJson.import(group: GroupContext): ChallengeResponse? {
+    val response = this.response.import(group)
     return if (response == null) null else
         ChallengeResponse(
-            json.id,
+            this.id,
             response,
         )
 }

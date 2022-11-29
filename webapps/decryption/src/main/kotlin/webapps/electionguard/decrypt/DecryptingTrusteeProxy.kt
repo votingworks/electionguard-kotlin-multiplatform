@@ -75,7 +75,7 @@ class DecryptingTrusteeProxy(
                 setBody(DecryptRequest(texts).publish())
             }
             val decryptResponseJson: DecryptResponseJson = response.body()
-            val decryptResponses = groupContext.importDecryptResponse(decryptResponseJson)
+            val decryptResponses = decryptResponseJson.import(groupContext)
             if (decryptResponses is Ok) {
                 decryptResponses.unwrap().shares
             } else {
@@ -99,7 +99,7 @@ class DecryptingTrusteeProxy(
             }
             println("DecryptingTrusteeProxy challenge $id = ${response.status}")
             val challengeResponsesJson: ChallengeResponsesJson = response.body()
-            val challengeResponses = groupContext.importChallengeResponses(challengeResponsesJson)
+            val challengeResponses = challengeResponsesJson.import(group)
             if (challengeResponses is Ok) {
                 challengeResponses.unwrap().responses
             } else {

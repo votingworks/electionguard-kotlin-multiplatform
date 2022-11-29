@@ -15,7 +15,7 @@ class PublicKeysTest {
     @Test
     fun testRoundtrip() {
         runTest {
-            val context = productionGroup()
+            val group = productionGroup()
             checkAll(
                 iterations = 33,
                 Arb.string(minSize = 3),
@@ -25,13 +25,14 @@ class PublicKeysTest {
 
                 val proofs = mutableListOf<SchnorrProof>()
                 repeat(quota) {
-                    val kp = elGamalKeypairs(context).single()
-                    val nonce = elementsModQ(context).single()
+                    val kp = elGamalKeypairs(group).single()
+                    val nonce = elementsModQ(group).single()
                     proofs.add(kp.schnorrProof(nonce))
                 }
                 val publicKey = PublicKeys(id, xcoord, proofs)
-                assertEquals(publicKey, context.importPublicKeys(publicKey.publish()).unwrap())
-                assertEquals(publicKey, context.importPublicKeys(jsonRoundTrip(publicKey.publish())).unwrap())
+                assertEquals(publicKey, publicKey.publish().import(group).unwrap())
+                assertEquals(publicKey, jsonRoundTrip(publicKey.publish()).import(group).unwrap())
+
             }
         }
     }

@@ -27,14 +27,14 @@ class ElementsTest {
     @Test
     fun testElementRoundtrip() {
         runTest {
-            val context = productionGroup()
-            checkAll(elementsModP(context), elementsModQ(context)) { p, q ->
-                assertEquals(p, context.importModP(p.publishModP()))
-                assertEquals(q, context.importModQ(q.publishModQ()))
+            val group = productionGroup()
+            checkAll(elementsModP(group), elementsModQ(group)) { p, q ->
+                assertEquals(p, p.publish().import(group))
+                assertEquals(q, q.publish().import(group))
 
                 // longer round-trip through serialized JSON strings and back
-                assertEquals(p, context.importModP(jsonRoundTripWithStringPrimitive(p.publishModP())))
-                assertEquals(q, context.importModQ(jsonRoundTripWithStringPrimitive(q.publishModQ())))
+                assertEquals(p, jsonRoundTripWithStringPrimitive(p.publish()).import(group))
+                assertEquals(q, jsonRoundTripWithStringPrimitive(q.publish()).import(group))
             }
         }
     }
@@ -42,15 +42,15 @@ class ElementsTest {
     @Test
     fun importTinyElements() {
         runTest {
-            val context = tinyGroup()
-            checkAll(elementsModP(context), elementsModQ(context)) { p, q ->
+            val group = tinyGroup()
+            checkAll(elementsModP(group), elementsModQ(group)) { p, q ->
                 // shorter round-trip from the core classes to JsonElement and back
-                assertEquals(p, context.importModP(p.publishModP()))
-                assertEquals(q, context.importModQ(q.publishModQ()))
+                assertEquals(p, p.publish().import(group))
+                assertEquals(q, q.publish().import(group))
 
                 // longer round-trip through serialized JSON strings and back
-                assertEquals(p, context.importModP(jsonRoundTripWithStringPrimitive(p.publishModP())))
-                assertEquals(q, context.importModQ(jsonRoundTripWithStringPrimitive(q.publishModQ())))
+                assertEquals(p, jsonRoundTripWithStringPrimitive(p.publish()).import(group))
+                assertEquals(q, jsonRoundTripWithStringPrimitive(q.publish()).import(group))
             }
         }
     }

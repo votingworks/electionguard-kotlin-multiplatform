@@ -21,12 +21,12 @@ fun EncryptedKeyShare.publish() = EncryptedKeyShareJson(
         this.encryptedCoordinate.publish(),
     )
 
-fun GroupContext.importEncryptedKeyShare(json: EncryptedKeyShareJson): EncryptedKeyShare? {
-    val encryptedCoordinate = this.importHashedElGamalCiphertext(json.encryptedCoordinate)
+fun EncryptedKeyShareJson.import(group: GroupContext): EncryptedKeyShare? {
+    val encryptedCoordinate = this.encryptedCoordinate.import(group)
     return if (encryptedCoordinate == null) null else
         EncryptedKeyShare(
-            json.missingGuardianId,
-            json.availableGuardianId,
+            this.missingGuardianId,
+            this.availableGuardianId,
             encryptedCoordinate,
         )
 }
@@ -44,17 +44,17 @@ data class KeyShareJson(
 fun KeyShare.publish() = KeyShareJson(
         this.missingGuardianId,
         this.availableGuardianId,
-        this.coordinate.publishModQ(),
-        this.nonce.publishModQ(),
+        this.coordinate.publish(),
+        this.nonce.publish(),
     )
 
-fun GroupContext.importKeyShare(json: KeyShareJson): KeyShare? {
-    val coordinate = this.importModQ(json.coordinate)
-    val nonce = this.importModQ(json.nonce)
+fun KeyShareJson.import(group: GroupContext): KeyShare? {
+    val coordinate = this.coordinate.import(group)
+    val nonce = this.nonce.import(group)
     return if (coordinate == null || nonce == null) null else
         KeyShare(
-            json.missingGuardianId,
-            json.availableGuardianId,
+            this.missingGuardianId,
+            this.availableGuardianId,
             coordinate,
             nonce,
         )

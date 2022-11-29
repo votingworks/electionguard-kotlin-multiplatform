@@ -37,7 +37,7 @@ class VerifyDecryption(
         val results = mutableListOf<Result<Boolean, String>>()
         val ballotSelectionSet = mutableSetOf<String>()
 
-        for (contest in decrypted.contests.values) {
+        for (contest in decrypted.contests) {
             val where = "${decrypted.id}/${contest.contestId}"
             // (9.C) The contest text label occurs as a contest label in the list of contests in the election manifest.
             if (manifest.contestIdToLimit[contest.contestId] == null) {
@@ -50,7 +50,7 @@ class VerifyDecryption(
             }
 
             var contestVotes = 0
-            for (selection in contest.selections.values) {
+            for (selection in contest.selections) {
                 nselections++
                 val here = "${contest.contestId}/${selection.selectionId}"
                 val where2 = "$${decrypted.id}/$here"

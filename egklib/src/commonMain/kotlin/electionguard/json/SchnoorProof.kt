@@ -4,7 +4,7 @@ import electionguard.core.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** External representation of an SchnorrProof */
+/** External representation of a SchnorrProof */
 @Serializable
 @SerialName("SchnorrProof")
 data class SchnorrProofJson(
@@ -15,15 +15,14 @@ data class SchnorrProofJson(
 
 /** Publishes a [SchnorrProof] to its external, serializable form. */
 fun SchnorrProof.publish() = SchnorrProofJson(
-    this.publicKey.publishModP(),
-    this.challenge.publishModQ(),
-    this.response.publishModQ(),
+    this.publicKey.publish(),
+    this.challenge.publish(),
+    this.response.publish(),
 )
 
-/** Imports from a published [SchnorrProof]. Returns `null` if it's malformed. */
-fun GroupContext.importSchnorrProof(proof: SchnorrProofJson): SchnorrProof? {
-    val p = this.importModP(proof.public_key)
-    val c = this.importModQ(proof.challenge)
-    val r = this.importModQ(proof.response)
+fun SchnorrProofJson.import(group: GroupContext): SchnorrProof? {
+    val p = this.public_key.import(group)
+    val c = this.challenge.import(group)
+    val r = this.response.import(group)
     return if (p == null || c == null || r == null) null else SchnorrProof(p, c, r)
 }

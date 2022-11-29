@@ -76,38 +76,30 @@ object ElGamalSecretKeyAsStringSerializer : KSerializer<ElGamalSecretKeyJson> {
 // Note that importXXX() return T?, while publishXXX() return T(Json)
 // Its up to the calling routines to turn that into Result<Boolean, String>
 
-/** Publishes an [ElGamalPublicKey] to its external, serializable form. */
-fun ElGamalPublicKey.publish(): ElGamalPublicKeyJson = ElGamalPublicKeyJson(this.key.publishModP())
+fun ElGamalPublicKey.publish(): ElGamalPublicKeyJson = ElGamalPublicKeyJson(this.key.publish())
 
-/** Publishes an [ElGamalSecretKey] to its external, serializable form. */
-fun ElGamalSecretKey.publish(): ElGamalSecretKeyJson = ElGamalSecretKeyJson(this.key.publishModQ())
+fun ElGamalSecretKey.publish(): ElGamalSecretKeyJson = ElGamalSecretKeyJson(this.key.publish())
 
-/** Publishes an [ElGamalKeypair] to its external, serializable form. */
 fun ElGamalKeypair.publish(): ElGamalKeypairJson =
     ElGamalKeypairJson(secretKey.publish(), publicKey.publish())
 
-/** Publishes an [ElGamalCiphertext] to its external, serializable form. */
 fun ElGamalCiphertext.publish(): ElGamalCiphertextJson =
-    ElGamalCiphertextJson(pad.publishModP(), data.publishModP())
+    ElGamalCiphertextJson(pad.publish(), data.publish())
 
-/** Imports from a published [ElGamalPublicKey]. Returns `null` if it's malformed. */
-fun GroupContext.importPublicKey(org: ElGamalPublicKeyJson): ElGamalPublicKey? =
-    this.importModP(org.key)?.let { ElGamalPublicKey(it) }
+fun ElGamalPublicKeyJson.import(group: GroupContext): ElGamalPublicKey? =
+    this.key.import(group)?.let { ElGamalPublicKey(it) }
 
-/** Imports from a published [ElGamalSecretKey]. Returns `null` if it's malformed. */
-fun GroupContext.importSecretKey(org: ElGamalSecretKeyJson): ElGamalSecretKey? =
-    this.importModQ(org.key)?.let { ElGamalSecretKey(it) }
+fun ElGamalSecretKeyJson.import(group: GroupContext): ElGamalSecretKey? =
+    this.key.import(group)?.let { ElGamalSecretKey(it) }
 
-/** Imports from a published [ElGamalKeypair]. Returns `null` if it's malformed. */
-fun GroupContext.importKeyPair(keypair: ElGamalKeypairJson): ElGamalKeypair? {
-    val secretKey = this.importSecretKey(keypair.secret_key)
-    val publicKey = this.importPublicKey(keypair.public_key)
+fun ElGamalKeypairJson.import(group: GroupContext): ElGamalKeypair? {
+    val secretKey = this.secret_key.import(group)
+    val publicKey = this.public_key.import(group)
     return if (secretKey == null || publicKey == null) null else  ElGamalKeypair(secretKey, publicKey)
 }
 
-/** Imports from a published [ElGamalCiphertext]. Returns `null` if it's malformed. */
-fun GroupContext.importElGamalCiphertext(ciphertext: ElGamalCiphertextJson): ElGamalCiphertext? {
-    val pad = this.importModP(ciphertext.pad)
-    val data = this.importModP(ciphertext.data)
+fun ElGamalCiphertextJson.import(group: GroupContext): ElGamalCiphertext? {
+    val pad = this.pad.import(group)
+    val data = this.data.import(group)
     return if (pad == null || data == null) null else ElGamalCiphertext(pad, data)
 }

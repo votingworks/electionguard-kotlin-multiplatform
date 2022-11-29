@@ -176,7 +176,7 @@ fun testDecryptor(
             val mcontest = manifest.contests.find { it.contestId == orgContest.contestId }!!
             val orgContestData = makeContestData(mcontest.votesAllowed, orgContest.selections, orgContest.writeIns)
 
-            val dcontest = decryptedBallot.contests.values.find { it.contestId == orgContest.contestId }
+            val dcontest = decryptedBallot.contests.find { it.contestId == orgContest.contestId }
             assertNotNull(dcontest)
             assertNotNull(dcontest.decryptedContestData)
             assertEquals(dcontest.decryptedContestData!!.contestData.writeIns, orgContestData.writeIns)
@@ -187,7 +187,7 @@ fun testDecryptor(
 
             // check if selection votes match
             orgContest.selections.forEach { selection ->
-                val dselection = dcontest.selections.values.find { it.selectionId == selection.selectionId }
+                val dselection = dcontest.selections.find { it.selectionId == selection.selectionId }
 
                 if (status == ContestDataStatus.over_vote) {
                     // check if overvote was correctly recorded

@@ -48,7 +48,7 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val missingReqJson = call.receive<SetMissingRequestJson>()
-            val missingReq = groupContext.importSetMissingRequest(missingReqJson)
+            val missingReq = missingReqJson.import(groupContext)
             if (missingReq != null) {
                 val ok = trustee.setMissing(missingReq.lagrangeCoeff, missingReq.missing)
                 println("RemoteDecryptingTrustee ${trustee.id()} setMissing $ok")
@@ -72,7 +72,7 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val decryptRequestJson = call.receive<DecryptRequestJson>()
-            val decryptRequest = groupContext.importDecryptRequest(decryptRequestJson)
+            val decryptRequest = decryptRequestJson.import(groupContext)
             if (decryptRequest is Ok) {
                 val decryptions = trustee.decrypt(decryptRequest.unwrap().texts)
                 val response = DecryptResponse(decryptions)
@@ -94,7 +94,7 @@ fun Route.trusteeRouting() {
                     status = HttpStatusCode.NotFound
                 )
             val requestsJson = call.receive<ChallengeRequestsJson>()
-            val requests = groupContext.importChallengeRequests(requestsJson)
+            val requests = requestsJson.import(groupContext)
             if (requests is Ok) {
                 val responses = trustee.challenge(requests.unwrap().challenges)
                 val response = ChallengeResponses(responses)

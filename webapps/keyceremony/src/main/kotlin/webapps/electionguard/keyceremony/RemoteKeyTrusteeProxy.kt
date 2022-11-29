@@ -61,7 +61,7 @@ class RemoteKeyTrusteeProxy(
                 }
             }
             val publicKeysJson: PublicKeysJson = response.body()
-            val publicKeyResult = groupContext.importPublicKeys(publicKeysJson)
+            val publicKeyResult = publicKeysJson.import(groupContext)
             if (publicKeyResult is Ok) {
                 publicKeys = publicKeyResult.unwrap()
             } else {
@@ -94,7 +94,7 @@ class RemoteKeyTrusteeProxy(
                 }
             }
             val encryptedKeyShareJson: EncryptedKeyShareJson = response.body()
-            val encryptedKeyShare: EncryptedKeyShare? = groupContext.importEncryptedKeyShare(encryptedKeyShareJson)
+            val encryptedKeyShare: EncryptedKeyShare? = encryptedKeyShareJson.import(groupContext)
             println("$id encryptedKeyShareFor ${encryptedKeyShare?.availableGuardianId} = ${response.status}")
             if (encryptedKeyShare == null) Err("EncryptedKeyShare") else Ok(encryptedKeyShare)
         }
@@ -126,7 +126,7 @@ class RemoteKeyTrusteeProxy(
                 }
             }
             val keyShareJson: KeyShareJson = response.body()
-            val keyShare: KeyShare? = groupContext.importKeyShare(keyShareJson)
+            val keyShare: KeyShare? = keyShareJson.import(groupContext)
             println("$id secretKeyShareFor ${keyShare?.availableGuardianId} = ${response.status}")
             if (keyShare == null) Err("SecretKeyShare") else Ok(keyShare)
         }
