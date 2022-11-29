@@ -24,15 +24,6 @@ class ManifestConvertTest {
             val gpu = manifest.geopoliticalUnits[idx]
             assertEquals(rgpu.name, gpu.name)
             assertEquals(rgpu.geopoliticalUnitId, gpu.geopoliticalUnitId)
-            assertEquals(rgpu.contactInformation?.addressLine, gpu.contactInformation?.addressLine)
-            compareAS(rgpu.contactInformation?.email, gpu.contactInformation?.email)
-            compareAS(rgpu.contactInformation?.phone, gpu.contactInformation?.phone)
-            assertEquals(rgpu.contactInformation?.name, gpu.contactInformation?.name)
-            assertEquals(
-                rgpu.contactInformation?.cryptoHashUInt256(),
-                gpu.contactInformation?.cryptoHashUInt256()
-            )
-            assertEquals(rgpu.contactInformation?.cryptoHash, gpu.contactInformation?.cryptoHash)
             assertEquals(rgpu.contactInformation, gpu.contactInformation)
             assertEquals(rgpu.type, gpu.type)
             assertEquals(rgpu.cryptoHashUInt256(), gpu.cryptoHashUInt256())
@@ -42,22 +33,8 @@ class ManifestConvertTest {
         assertEquals(roundtrip, manifest)
     }
 
-    private fun compareAS(list1: List<Manifest.AnnotatedString>?, list2: List<Manifest.AnnotatedString>?) {
-        assertEquals((list1 == null), (list2 == null))
-        if ((list1 == null) || (list2 == null)) {
-            return
-        }
-
-        assertEquals(list1.size, list2.size)
-        for (idx in list1.indices) {
-            val as1 = list1[idx]
-            val as2 = list1[idx]
-            assertEquals(as1, as2)
-        }
-    }
-
     companion object {
-        private const val ncontests = 11
+        private const val ncontests = 20
         private const val nselections = 5
 
         fun generateFakeManifest(): Manifest {
@@ -99,7 +76,7 @@ class ManifestConvertTest {
                 "geode$cseq",
                 "name$cseq",
                 Manifest.ReportingUnitType.city,
-                generateContactInformation(),
+                "contact",
             )
         }
 
@@ -112,7 +89,7 @@ class ManifestConvertTest {
         private fun generateParty(cseq: Int): Manifest.Party {
             return Manifest.Party(
                 "party$cseq",
-                generateInternationalizedText(),
+                "name",
                 "aggrieved",
                 "color",
                 "red",
@@ -129,7 +106,7 @@ class ManifestConvertTest {
             val partyId = cseq % 3
             return Manifest.Candidate(
                 "candidate$cseq",
-                generateInternationalizedText(),
+                "name",
                 "party$partyId",
                 "imageUri",
                 false,
@@ -158,9 +135,8 @@ class ManifestConvertTest {
                 1,
                 "contest name",
                 List(nselections) { generateSelection(nselections * cseq + it) },
-                generateInternationalizedText(),
-                generateInternationalizedText(),
-                List(11) { "party$it" },
+                "ballot",
+                "subballot",
             )
         }
 
@@ -172,7 +148,7 @@ class ManifestConvertTest {
             return Manifest.SelectionDescription("selection$sseq", sseq, "candidate$sseq")
         }
 
-        //         val ballotStyleId: String,
+        //        val ballotStyleId: String,
         //        val geopoliticalUnitIds: List<String>,
         //        val partyIds: List<String>,
         //        val imageUri: String?,
@@ -187,8 +163,8 @@ class ManifestConvertTest {
         }
 
         // val text: List<Language>
-        private fun generateInternationalizedText(): Manifest.InternationalizedText {
-            return Manifest.InternationalizedText(List(3) { generateLanguage(it) })
+        private fun generateInternationalizedText(): List<Manifest.Language> {
+            return List(3) { generateLanguage(it) }
         }
 
         //         val addressLine: List<String>,
@@ -198,21 +174,16 @@ class ManifestConvertTest {
         //        val cryptoHash: ElementModQ
         private fun generateContactInformation(): Manifest.ContactInformation {
             return Manifest.ContactInformation(
-                List(3) { "addressLine$it" },
-                List(3) { generateAnnotatedString(it) },
-                List(3) { generateAnnotatedString(it) },
                 "name",
+                List(3) { "addressLine$it" },
+                "email",
+                "phone",
             )
         }
 
         // val value: String, val language: String,
         private fun generateLanguage(seq: Int): Manifest.Language {
             return Manifest.Language("text$seq", "language:$seq:$seq")
-        }
-
-        // val annotation: String, val value: String,
-        private fun generateAnnotatedString(seq: Int): Manifest.AnnotatedString {
-            return Manifest.AnnotatedString("annotate$seq", "value:$seq:$seq")
         }
     }
 }

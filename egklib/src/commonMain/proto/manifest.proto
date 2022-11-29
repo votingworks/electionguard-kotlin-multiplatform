@@ -16,6 +16,7 @@ message Manifest {
     primary = 4;
     runoff = 5;
     special = 6;
+    other = 7;
   }
 
   string election_scope_id = 1;
@@ -28,14 +29,9 @@ message Manifest {
   repeated Candidate candidates = 8;
   repeated ContestDescription contests = 9;
   repeated BallotStyle ballot_styles = 10;
-  InternationalizedText name = 11;
+  repeated Language name = 11;
   ContactInformation contact_information = 12;
   UInt256 crypto_hash = 13;
-}
-
-message AnnotatedString {
-  string annotation = 1;
-  string value = 2;
 }
 
 message BallotStyle {
@@ -47,7 +43,7 @@ message BallotStyle {
 
 message Candidate {
   string candidate_id = 1;
-  InternationalizedText name = 2;
+  string name = 2;
   string party_id = 3;
   string image_url = 4;
   bool is_write_in = 5; // default false
@@ -56,8 +52,8 @@ message Candidate {
 message ContactInformation {
   string name = 1;
   repeated string address_line = 2;
-  repeated AnnotatedString email = 3;
-  repeated AnnotatedString phone = 4;
+  string email = 3;
+  string phone = 4;
 }
 
 message GeopoliticalUnit {
@@ -97,11 +93,7 @@ message GeopoliticalUnit {
   string geopolitical_unit_id = 1;
   string name = 2;
   ReportingUnitType type = 3;
-  ContactInformation contact_information = 4;
-}
-
-message InternationalizedText {
-  repeated Language text = 1;
+  string contact_information = 4;
 }
 
 message Language {
@@ -111,7 +103,7 @@ message Language {
 
 message Party {
   string party_id = 1;
-  InternationalizedText name = 2;
+  string name = 2;
   string abbreviation = 3;
   string color = 4;
   string logo_uri = 5;
@@ -142,9 +134,8 @@ message ContestDescription {
   uint32 votes_allowed = 6;
   string name = 7;
   repeated SelectionDescription selections = 8;
-  InternationalizedText ballot_title = 9;
-  InternationalizedText ballot_subtitle = 10;
-  repeated string primary_party_ids = 11;
+  string ballot_title = 9;
+  string ballot_subtitle = 10;
   UInt256 crypto_hash = 12;
 }
 

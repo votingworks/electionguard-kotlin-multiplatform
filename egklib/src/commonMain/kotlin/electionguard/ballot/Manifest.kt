@@ -9,10 +9,9 @@ fun manifestCryptoHash(
     endDate: String,
     geopoliticalUnits: List<Manifest.GeopoliticalUnit>,
     parties: List<Manifest.Party>,
-    // candidates: List<Manifest.Candidate>,
     contests: List<Manifest.ContestDescription>,
     ballotStyles: List<Manifest.BallotStyle>,
-    name: Manifest.InternationalizedText?,
+    name: List<Manifest.Language>,
     contactInformation: Manifest.ContactInformation?
 ) =
     hashElements(
@@ -25,7 +24,6 @@ fun manifestCryptoHash(
         contactInformation,
         geopoliticalUnits,
         parties,
-        // candidates,
         contests,
         ballotStyles,
     )
@@ -39,9 +37,8 @@ fun contestDescriptionCryptoHash(
     votesAllowed: Int,
     name: String,
     selections: List<Manifest.SelectionDescription>,
-    ballotTitle: Manifest.InternationalizedText?,
-    ballotSubtitle: Manifest.InternationalizedText?,
-    // primaryPartyIds: List<String>
+    ballotTitle: String?,
+    ballotSubtitle: String?,
 ) =
     hashElements(
         contestId,
@@ -54,7 +51,6 @@ fun contestDescriptionCryptoHash(
         numberElected,
         votesAllowed,
         selections,
-        // primaryPartyIds,
     )
 
 fun selectionDescriptionCryptoHash(
@@ -62,11 +58,6 @@ fun selectionDescriptionCryptoHash(
     sequenceOrder: Int,
     candidateId: String,
 ) = hashElements(selectionId, sequenceOrder, candidateId)
-
-fun internationalizedTextUnknown(): Manifest.InternationalizedText {
-    val text = listOf(Manifest.Language("unknown", "en"))
-    return Manifest.InternationalizedText(text, hashElements(text))
-}
 
 /**
  * The Election Manifest: defines the candidates, contests, and associated information for a
@@ -86,7 +77,7 @@ data class Manifest(
     val candidates: List<Candidate>,
     val contests: List<ContestDescription>,
     val ballotStyles: List<BallotStyle>,
-    val name: InternationalizedText?,
+    val name: List<Language>,
     val contactInformation: ContactInformation?,
     val cryptoHash: UInt256 =
         manifestCryptoHash(
@@ -96,7 +87,6 @@ data class Manifest(
             endDate,
             geopoliticalUnits,
             parties,
-            // candidates,
             contests,
             ballotStyles,
             name,
@@ -363,20 +353,6 @@ data class Manifest(
         other
     }
 
-    /**
-     * An annotated character string.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/annotated-string)
-     */
-    data class AnnotatedString(
-        val annotation: String,
-        val value: String,
-        val cryptoHash: UInt256 = hashElements(annotation, value),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-    }
-
     /** Classifies a set of contests by their set of parties and geopolitical units */
     data class BallotStyle(
         val ballotStyleId: String,
@@ -400,7 +376,7 @@ data class Manifest(
      */
     data class Candidate(
         val candidateId: String,
-        val name: InternationalizedText,
+        val name: String?,
         val partyId: String?,
         val imageUri: String?,
         val isWriteIn: Boolean,
@@ -408,7 +384,7 @@ data class Manifest(
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
         constructor(candidateId: String) :
-                this(candidateId, InternationalizedText(), null, null, false)
+                this(candidateId, null, null, null, false)
     }
 
     /**
@@ -418,10 +394,10 @@ data class Manifest(
      *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
      */
     data class ContactInformation(
-        val addressLine: List<String>,
-        val email: List<AnnotatedString>,
-        val phone: List<AnnotatedString>,
         val name: String?,
+        val addressLine: List<String>,
+        val email: String?,
+        val phone: String?,
         val cryptoHash: UInt256 = hashElements(name, addressLine, email, phone),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
@@ -439,26 +415,11 @@ data class Manifest(
         val geopoliticalUnitId: String,
         val name: String,
         val type: ReportingUnitType,
-        val contactInformation: ContactInformation?,
+        val contactInformation: String?,
         val cryptoHash: UInt256 =
             hashElements(geopoliticalUnitId, name, type.name, contactInformation),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash
-    }
-
-    /**
-     * Text that may have translations in multiple languages.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/internationalized-text)
-     */
-    data class InternationalizedText(
-        val text: List<Language>,
-        val cryptoHash: UInt256 = hashElements(text)
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-
-        constructor() : this(emptyList())
     }
 
     /**
@@ -482,7 +443,7 @@ data class Manifest(
      */
     data class Party(
         val partyId: String,
-        val name: InternationalizedText,
+        val name: String,
         val abbreviation: String?,
         val color: String?,
         val logoUri: String?,
@@ -491,7 +452,7 @@ data class Manifest(
         override fun cryptoHashUInt256() = cryptoHash
 
         constructor(partyId: String) :
-            this(partyId, InternationalizedText(), null, null, null)
+            this(partyId,"",null, null, null)
     }
 
     /**
@@ -509,9 +470,8 @@ data class Manifest(
         val votesAllowed: Int,
         val name: String,
         val selections: List<SelectionDescription>,
-        val ballotTitle: InternationalizedText?,
-        val ballotSubtitle: InternationalizedText?,
-        val primaryPartyIds: List<String>,
+        val ballotTitle: String?,
+        val ballotSubtitle: String?,
         val cryptoHash: UInt256 =
             contestDescriptionCryptoHash(
                 contestId,
@@ -524,7 +484,6 @@ data class Manifest(
                 selections,
                 ballotTitle,
                 ballotSubtitle,
-                // primaryPartyIds,
             ),
     ) : CryptoHashableUInt256 {
         override fun cryptoHashUInt256() = cryptoHash

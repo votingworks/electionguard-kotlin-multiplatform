@@ -113,25 +113,25 @@ class AttackEncryptedBallotTest {
     }
 
     private fun mungeContest(contest: EncryptedBallot.Contest, publicKey: ElGamalPublicKey, ): EncryptedBallot.Contest {
-        var idx44 = -1
-        var idx45 = -1
+        var idx55 = -1
+        var idx56 = -1
         contest.selections.forEach {
-            if (it.selectionId == "selection44") {
-                idx44 = contest.selections.indexOf(it)
+            if (it.selectionId == "selection55") {
+                idx55 = contest.selections.indexOf(it)
             }
-            if (it.selectionId == "selection45") {
-                idx45 = contest.selections.indexOf(it)
+            if (it.selectionId == "selection56") {
+                idx56 = contest.selections.indexOf(it)
             }
         }
 
         // switch ben and john vote
-        val sel44: EncryptedBallot.Selection = contest.selections[idx44]
-        val sel45: EncryptedBallot.Selection = contest.selections[idx45]
+        val sel44: EncryptedBallot.Selection = contest.selections[idx55]
+        val sel45: EncryptedBallot.Selection = contest.selections[idx56]
         val switch44: EncryptedBallot.Selection = switchVote(sel44, sel45)
         val switch45: EncryptedBallot.Selection = switchVote(sel45, sel44)
         val selections2 = mutableListOf(*contest.selections.toTypedArray())
-        selections2[idx44] = switch44
-        selections2[idx45] = switch45
+        selections2[idx55] = switch44
+        selections2[idx56] = switch45
 
         val changeCrypto = hashElements(contest.contestId, contest.cryptoHash, selections2)
         val contestData = ContestData(emptyList(), emptyList())

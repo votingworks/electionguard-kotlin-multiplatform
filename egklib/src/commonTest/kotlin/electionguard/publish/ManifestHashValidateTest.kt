@@ -32,7 +32,7 @@ class ManifestHashValidateTest {
         println("***manifest.electionType '${manifest.electionType}' ")
         println("***manifest.startDate '${manifest.startDate}' ")
         println("***manifest.endDate '${manifest.endDate}' ")
-        println("***manifest.name '${manifest.name}' = ${manifest.name?.cryptoHash} ")
+        println("***manifest.name '${manifest.name}'")
         println("***manifest.contactInformation '${manifest.contactInformation}'")
 
         println("***manifest.geopoliticalUnits")

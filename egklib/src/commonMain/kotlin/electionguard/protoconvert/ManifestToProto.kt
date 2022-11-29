@@ -17,13 +17,10 @@ fun Manifest.publishManifest() =
             this.candidates.map { it.publishCandidate() },
             this.contests.map { it.publishContestDescription() },
             this.ballotStyles.map { it.publishBallotStyle() },
-            this.name?.let { this.name.publishInternationalizedText() },
+            this.name.map { it.publishLanguage() },
             this.contactInformation?.let { this.contactInformation.publishContactInformation() },
             this.cryptoHash.publishUInt256(),
         )
-
-private fun Manifest.AnnotatedString.publishAnnotatedString() =
-    electionguard.protogen.AnnotatedString(this.annotation, this.value)
 
 private fun Manifest.BallotStyle.publishBallotStyle() =
     electionguard.protogen.BallotStyle(
@@ -36,7 +33,7 @@ private fun Manifest.BallotStyle.publishBallotStyle() =
 private fun Manifest.Candidate.publishCandidate() =
     electionguard.protogen.Candidate(
             this.candidateId,
-            this.name.publishInternationalizedText(),
+            this.name ?: "",
             this.partyId ?: "",
             this.imageUri ?: "",
             this.isWriteIn
@@ -46,8 +43,8 @@ private fun Manifest.ContactInformation.publishContactInformation() =
     electionguard.protogen.ContactInformation(
             this.name ?: "",
             this.addressLine,
-            this.email.map { it.publishAnnotatedString() },
-            this.phone.map { it.publishAnnotatedString() },
+            this.email ?: "",
+            this.phone ?: "",
         )
 
 private fun Manifest.ContestDescription.publishContestDescription() =
@@ -60,20 +57,40 @@ private fun Manifest.ContestDescription.publishContestDescription() =
             this.votesAllowed,
             this.name,
             this.selections.map { it.publishSelectionDescription() },
-            this.ballotTitle?.let { this.ballotTitle.publishInternationalizedText() },
-            this.ballotSubtitle?.let { this.ballotSubtitle.publishInternationalizedText() },
-            this.primaryPartyIds,
+            this.ballotTitle?: "",
+            this.ballotSubtitle?: "",
             this.cryptoHash.publishUInt256(),
         )
 
+private fun Manifest.GeopoliticalUnit.publishGeopoliticalUnit() =
+    electionguard.protogen.GeopoliticalUnit(
+            this.geopoliticalUnitId,
+            this.name,
+            this.type.publishReportingUnitType(),
+            this.contactInformation ?: "",
+        )
 
-private fun Manifest.VoteVariationType.publishVoteVariationType() =
-    try {
-        electionguard.protogen.ContestDescription.VoteVariationType.fromName(this.name)
-    } catch (e: IllegalArgumentException) {
-        logger.error { "Manifest.VoteVariationType $this has missing or unknown name" }
-        electionguard.protogen.ContestDescription.VoteVariationType.UNKNOWN
-    }
+private fun Manifest.Language.publishLanguage() =
+    electionguard.protogen.Language(this.value, this.language)
+
+private fun Manifest.Party.publishParty() =
+    electionguard.protogen.Party(
+        this.partyId,
+        this.name,
+        this.abbreviation ?: "",
+        this.color ?: "",
+        this.logoUri ?: ""
+    )
+
+private fun Manifest.SelectionDescription.publishSelectionDescription() =
+    electionguard.protogen.SelectionDescription(
+            this.selectionId,
+            this.sequenceOrder,
+            this.candidateId,
+            this.cryptoHash.publishUInt256(),
+        )
+
+//// enums
 
 private fun Manifest.ElectionType.publishElectionType() =
     try {
@@ -91,33 +108,10 @@ private fun Manifest.ReportingUnitType.publishReportingUnitType() =
         electionguard.protogen.GeopoliticalUnit.ReportingUnitType.UNKNOWN
     }
 
-private fun Manifest.GeopoliticalUnit.publishGeopoliticalUnit() =
-    electionguard.protogen.GeopoliticalUnit(
-            this.geopoliticalUnitId,
-            this.name,
-            this.type.publishReportingUnitType(),
-            this.contactInformation?.let { this.contactInformation.publishContactInformation() }
-        )
-
-private fun Manifest.InternationalizedText.publishInternationalizedText() =
-    electionguard.protogen.InternationalizedText(this.text.map { it.publishLanguage() })
-
-private fun Manifest.Language.publishLanguage() =
-    electionguard.protogen.Language(this.value, this.language)
-
-private fun Manifest.Party.publishParty() =
-    electionguard.protogen.Party(
-        this.partyId,
-        this.name.publishInternationalizedText(),
-        this.abbreviation ?: "",
-        this.color ?: "",
-        this.logoUri ?: ""
-    )
-
-private fun Manifest.SelectionDescription.publishSelectionDescription() =
-    electionguard.protogen.SelectionDescription(
-            this.selectionId,
-            this.sequenceOrder,
-            this.candidateId,
-            this.cryptoHash.publishUInt256(),
-        )
+private fun Manifest.VoteVariationType.publishVoteVariationType() =
+    try {
+        electionguard.protogen.ContestDescription.VoteVariationType.fromName(this.name)
+    } catch (e: IllegalArgumentException) {
+        logger.error { "Manifest.VoteVariationType $this has missing or unknown name" }
+        electionguard.protogen.ContestDescription.VoteVariationType.UNKNOWN
+    }
