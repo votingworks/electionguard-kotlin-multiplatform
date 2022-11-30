@@ -10,23 +10,20 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 
-fun GroupContext.importElectionInitialized(init: electionguard.protogen.ElectionInitialized?):
+fun electionguard.protogen.ElectionInitialized.import(group: GroupContext):
         Result<ElectionInitialized, String> {
-    if (init == null) {
-        return Err("Null ElectionInitialized")
-    }
 
-    val electionConfig = importElectionConfig(init.config)
-    val jointPublicKey = this.importElementModP(init.jointPublicKey)
+    val electionConfig = this.config?.import() ?: Err("Null ElectionConfig")
+    val jointPublicKey = group.importElementModP(this.jointPublicKey)
         .toResultOr { "ElectionInitialized jointPublicKey was malformed or missing" }
-    val manifestHash = importUInt256(init.manifestHash)
+    val manifestHash = importUInt256(this.manifestHash)
         .toResultOr { "ElectionInitialized manifestHash was malformed or missing" }
-    val cryptoBaseHash = importUInt256(init.cryptoBaseHash)
+    val cryptoBaseHash = importUInt256(this.cryptoBaseHash)
         .toResultOr { "ElectionInitialized cryptoBaseHash was malformed or missing" }
-    val cryptoExtendedBaseHash = importUInt256(init.cryptoExtendedBaseHash)
+    val cryptoExtendedBaseHash = importUInt256(this.cryptoExtendedBaseHash)
         .toResultOr { "ElectionInitialized cryptoExtendedBaseHash was malformed or missing" }
 
-    val (guardians, gerrors) = init.guardians.map { this.importGuardian(it) }.partition()
+    val (guardians, gerrors) = this.guardians.map { it.import(group) }.partition()
 
     val errors = getAllErrors(electionConfig, jointPublicKey, manifestHash, cryptoExtendedBaseHash) + gerrors
     if (errors.isNotEmpty()) {
@@ -40,16 +37,16 @@ fun GroupContext.importElectionInitialized(init: electionguard.protogen.Election
         cryptoBaseHash.unwrap(),
         cryptoExtendedBaseHash.unwrap(),
         guardians,
-        init.metadata.associate { it.key to it.value }
+        this.metadata.associate { it.key to it.value }
     ))
 }
 
-private fun GroupContext.importGuardian(guardian: electionguard.protogen.Guardian):
+private fun electionguard.protogen.Guardian.import(group: GroupContext):
         Result<Guardian, String> {
     val (coefficientProofs, perrors) =
-        guardian.coefficientProofs.map {
-            this.importSchnorrProof(it)
-                .toResultOr { "Guardian ${guardian.guardianId} coefficientProof was malformed or missing" }
+        this.coefficientProofs.map {
+            group.importSchnorrProof(it)
+                 .toResultOr { "Guardian ${this.guardianId} coefficientProof was malformed or missing" }
         }.partition()
 
     if (perrors.isNotEmpty()) {
@@ -58,8 +55,8 @@ private fun GroupContext.importGuardian(guardian: electionguard.protogen.Guardia
 
     return Ok(
         Guardian(
-            guardian.guardianId,
-            guardian.xCoordinate,
+            this.guardianId,
+            this.xCoordinate,
             coefficientProofs,
         )
     )
@@ -67,20 +64,20 @@ private fun GroupContext.importGuardian(guardian: electionguard.protogen.Guardia
 
 ////////////////////////////////////////////////////////
 
-fun ElectionInitialized.publishElectionInitialized() =
+fun ElectionInitialized.publishProto() =
     electionguard.protogen.ElectionInitialized(
-        this.config.publishElectionConfig(),
-        this.jointPublicKey.publishElementModP(),
-        this.manifestHash.publishUInt256(),
-        this.cryptoBaseHash.publishUInt256(),
-        this.cryptoExtendedBaseHash.publishUInt256(),
-        this.guardians.map { it.publishGuardian() },
+        this.config.publishProto(),
+        this.jointPublicKey.publishProto(),
+        this.manifestHash.publishProto(),
+        this.cryptoBaseHash.publishProto(),
+        this.cryptoExtendedBaseHash.publishProto(),
+        this.guardians.map { it.publishProto() },
         this.metadata.entries.map { electionguard.protogen.ElectionInitialized.MetadataEntry(it.key, it.value) }
     )
 
-private fun Guardian.publishGuardian() =
+private fun Guardian.publishProto() =
     electionguard.protogen.Guardian(
         this.guardianId,
         this.xCoordinate,
-        this.coefficientProofs.map { it.publishSchnorrProof() },
+        this.coefficientProofs.map { it.publishProto() },
     )

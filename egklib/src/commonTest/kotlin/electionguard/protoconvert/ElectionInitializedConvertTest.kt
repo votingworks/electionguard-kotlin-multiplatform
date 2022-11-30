@@ -15,8 +15,8 @@ class ElectionInitializedConvertTest {
     fun roundtripElectionInitialized() {
         val context = tinyGroup()
         val electionRecord = generateElectionInitialized(context)
-        val proto = electionRecord.publishElectionInitialized()
-        val roundtrip = context.importElectionInitialized(proto).getOrThrow { IllegalStateException(it) }
+        val proto = electionRecord.publishProto()
+        val roundtrip = proto.import(context).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
         //     val config: ElectionConfig,
         //    /** The joint public key (K) in the ElectionGuard Spec. */

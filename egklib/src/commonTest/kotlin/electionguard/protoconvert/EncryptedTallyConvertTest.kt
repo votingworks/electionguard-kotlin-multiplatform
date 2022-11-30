@@ -15,8 +15,8 @@ class EncryptedTallyConvertTest {
     fun roundtripCiphertextTally() {
         val context = tinyGroup()
         val tally = generateFakeTally(context)
-        val proto: electionguard.protogen.EncryptedTally = tally.publishEncryptedTally()
-        val roundtrip = context.importEncryptedTally(proto)
+        val proto: electionguard.protogen.EncryptedTally = tally.publishProto()
+        val roundtrip = proto.import(context)
         assertTrue(roundtrip is Ok)
         assertEquals(roundtrip.unwrap(), tally)
     }

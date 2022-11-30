@@ -10,8 +10,8 @@ class PlaintextBallotConvertTest {
     @Test
     fun roundtripPlaintextBallot() {
         val ballot = generateFakeBallot()
-        val proto = ballot.publishPlaintextBallot()
-        val roundtrip = importPlaintextBallot(proto)
+        val proto = ballot.publishProto()
+        val roundtrip = proto.import()
         assertEquals(roundtrip, ballot)
     }
 

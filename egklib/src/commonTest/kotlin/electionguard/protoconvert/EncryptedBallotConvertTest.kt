@@ -14,8 +14,8 @@ class EncryptedBallotConvertTest {
     fun roundtripEncryptedBallot() {
         val context = productionGroup()
         val ballot = generateEncryptedBallot(42, context)
-        val proto = ballot.publishEncryptedBallot()
-        val roundtrip = context.importEncryptedBallot(proto)
+        val proto = ballot.publishProto()
+        val roundtrip = proto.import(context)
         assertTrue(roundtrip is Ok)
         assertEquals(roundtrip.unwrap(), ballot)
     }
@@ -24,8 +24,8 @@ class EncryptedBallotConvertTest {
     fun roundtripEncryptedBallotTiny() {
         val context = tinyGroup()
         val ballot = generateEncryptedBallot(42, context)
-        val proto = ballot.publishEncryptedBallot()
-        val roundtrip = context.importEncryptedBallot(proto)
+        val proto = ballot.publishProto()
+        val roundtrip = proto.import(context)
         assertTrue(roundtrip is Ok)
         assertEquals(roundtrip.unwrap(), ballot)
     }
@@ -79,8 +79,8 @@ class EncryptedBallotConvertTest {
     fun unknownBallotState() {
         val context = productionGroup()
         val ballot = generateEncryptedBallot(42, context).copy(state = EncryptedBallot.BallotState.UNKNOWN)
-        val proto = ballot.publishEncryptedBallot()
-        val roundtrip = context.importEncryptedBallot(proto)
+        val proto = ballot.publishProto()
+        val roundtrip = proto.import(context)
         assertTrue(roundtrip is Ok)
         assertEquals(roundtrip.unwrap(), ballot)
     }

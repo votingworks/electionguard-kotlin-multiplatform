@@ -5,8 +5,8 @@ import electionguard.ballot.Manifest
 import electionguard.core.*
 import electionguard.input.ManifestBuilder
 import electionguard.protoconvert.ManifestConvertTest.Companion.generateFakeManifest
-import electionguard.protoconvert.importManifest
-import electionguard.protoconvert.publishManifest
+import electionguard.protoconvert.import
+import electionguard.protoconvert.publishProto
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.string
@@ -183,8 +183,8 @@ class ManifestTest {
                 compareManifestHash(obj, rt)
                 assertEquals(obj, jsonRoundTrip(obj.publish()).import())
 
-                val proto : electionguard.protogen.Manifest = obj.publishManifest()
-                val rtProto = importManifest(proto).getOrThrow { IllegalStateException(it) }
+                val proto : electionguard.protogen.Manifest = obj.publishProto()
+                val rtProto = proto.import().getOrThrow { IllegalStateException(it) }
                 compareManifestHash(obj, rtProto)
                 assertEquals(obj, rtProto)
 

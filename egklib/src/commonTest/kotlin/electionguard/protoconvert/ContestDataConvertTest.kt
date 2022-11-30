@@ -22,7 +22,7 @@ class ContestDataConvertTest {
                 val target = HashedElGamalCiphertext(p, c1, u, 21)
                 assertEquals(target.numBytes, target.c1.size)
 
-                val proto = target.publishHashedCiphertext()
+                val proto = target.publishProto()
                 val roundtrip = context.importHashedCiphertext(proto)
                 assertEquals(target, roundtrip)
             }

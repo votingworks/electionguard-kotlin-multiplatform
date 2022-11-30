@@ -31,7 +31,7 @@ fun ChaumPedersenProofJson.import(group: GroupContext): GenericChaumPedersenProo
 
 /** External representation of a RangeChaumPedersenProofKnownNonce */
 @Serializable
-@SerialName("RangeProofJson")
+@SerialName("RangeProof")
 data class RangeProofJson(
     val proofs: List<ChaumPedersenProofJson>,
 )

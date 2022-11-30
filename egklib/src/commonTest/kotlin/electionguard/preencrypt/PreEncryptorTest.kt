@@ -16,8 +16,8 @@ import electionguard.core.toElementModQ
 import electionguard.core.toUInt256
 import electionguard.encrypt.cast
 import electionguard.input.ManifestBuilder
-import electionguard.protoconvert.importEncryptedBallot
-import electionguard.protoconvert.publishEncryptedBallot
+import electionguard.protoconvert.import
+import electionguard.protoconvert.publishProto
 import electionguard.publish.Consumer
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlin.random.Random
@@ -162,9 +162,9 @@ internal class PreEncryptorTest {
         val encryptedBallot = ciphertextBallot.cast()
 
         // roundtrip
-        val proto = encryptedBallot.publishEncryptedBallot(recordedBallot)
+        val proto = encryptedBallot.publishProto(recordedBallot)
         // combines the recordedBallot
-        val fullEncryptedBallot = group.importEncryptedBallot(proto).unwrap()
+        val fullEncryptedBallot = proto.import(group).unwrap()
 
         val stats = Stats()
         val verifier = VerifyEncryptedBallots(group, manifest, publicKey, qbar.toElementModQ(group), 1)

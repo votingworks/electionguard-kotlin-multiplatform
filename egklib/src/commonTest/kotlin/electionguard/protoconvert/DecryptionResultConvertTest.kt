@@ -15,8 +15,8 @@ class DecryptionResultConvertTest {
     fun roundtripDecryptionResult() {
         val context = tinyGroup()
         val electionRecord = generateDecryptionResult(context)
-        val proto = electionRecord.publishDecryptionResult()
-        val roundtrip = context.importDecryptionResult(proto).getOrThrow { IllegalStateException(it) }
+        val proto = electionRecord.publishProto()
+        val roundtrip = proto.import(context).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
 
         assertEquals(roundtrip.tallyResult, electionRecord.tallyResult)

@@ -5,24 +5,24 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestToProto")
 
-fun Manifest.publishManifest() =
+fun Manifest.publishProto() =
     electionguard.protogen.Manifest(
             this.electionScopeId,
             this.specVersion,
-            this.electionType.publishElectionType(),
+            this.electionType.publishProto(),
             this.startDate,
             this.endDate,
-            this.geopoliticalUnits.map { it.publishGeopoliticalUnit() },
-            this.parties.map { it.publishParty() },
-            this.candidates.map { it.publishCandidate() },
-            this.contests.map { it.publishContestDescription() },
-            this.ballotStyles.map { it.publishBallotStyle() },
-            this.name.map { it.publishLanguage() },
-            this.contactInformation?.let { this.contactInformation.publishContactInformation() },
-            this.cryptoHash.publishUInt256(),
+            this.geopoliticalUnits.map { it.publishProto() },
+            this.parties.map { it.publishProto() },
+            this.candidates.map { it.publishProto() },
+            this.contests.map { it.publishProto() },
+            this.ballotStyles.map { it.publishProto() },
+            this.name.map { it.publishProto() },
+            this.contactInformation?.let { this.contactInformation.publishProto() },
+            this.cryptoHash.publishProto(),
         )
 
-private fun Manifest.BallotStyle.publishBallotStyle() =
+private fun Manifest.BallotStyle.publishProto() =
     electionguard.protogen.BallotStyle(
             this.ballotStyleId,
             this.geopoliticalUnitIds,
@@ -30,7 +30,7 @@ private fun Manifest.BallotStyle.publishBallotStyle() =
             this.imageUri ?: ""
         )
 
-private fun Manifest.Candidate.publishCandidate() =
+private fun Manifest.Candidate.publishProto() =
     electionguard.protogen.Candidate(
             this.candidateId,
             this.name ?: "",
@@ -39,7 +39,7 @@ private fun Manifest.Candidate.publishCandidate() =
             this.isWriteIn
         )
 
-private fun Manifest.ContactInformation.publishContactInformation() =
+private fun Manifest.ContactInformation.publishProto() =
     electionguard.protogen.ContactInformation(
             this.name ?: "",
             this.addressLine,
@@ -47,33 +47,33 @@ private fun Manifest.ContactInformation.publishContactInformation() =
             this.phone ?: "",
         )
 
-private fun Manifest.ContestDescription.publishContestDescription() =
+private fun Manifest.ContestDescription.publishProto() =
     electionguard.protogen.ContestDescription(
             this.contestId,
             this.sequenceOrder,
             this.geopoliticalUnitId,
-            this.voteVariation.publishVoteVariationType(),
+            this.voteVariation.publishProto(),
             this.numberElected,
             this.votesAllowed,
             this.name,
-            this.selections.map { it.publishSelectionDescription() },
+            this.selections.map { it.publishProto() },
             this.ballotTitle?: "",
             this.ballotSubtitle?: "",
-            this.cryptoHash.publishUInt256(),
+            this.cryptoHash.publishProto(),
         )
 
-private fun Manifest.GeopoliticalUnit.publishGeopoliticalUnit() =
+private fun Manifest.GeopoliticalUnit.publishProto() =
     electionguard.protogen.GeopoliticalUnit(
             this.geopoliticalUnitId,
             this.name,
-            this.type.publishReportingUnitType(),
+            this.type.publishProto(),
             this.contactInformation ?: "",
         )
 
-private fun Manifest.Language.publishLanguage() =
+private fun Manifest.Language.publishProto() =
     electionguard.protogen.Language(this.value, this.language)
 
-private fun Manifest.Party.publishParty() =
+private fun Manifest.Party.publishProto() =
     electionguard.protogen.Party(
         this.partyId,
         this.name,
@@ -82,17 +82,17 @@ private fun Manifest.Party.publishParty() =
         this.logoUri ?: ""
     )
 
-private fun Manifest.SelectionDescription.publishSelectionDescription() =
+private fun Manifest.SelectionDescription.publishProto() =
     electionguard.protogen.SelectionDescription(
             this.selectionId,
             this.sequenceOrder,
             this.candidateId,
-            this.cryptoHash.publishUInt256(),
+            this.cryptoHash.publishProto(),
         )
 
 //// enums
 
-private fun Manifest.ElectionType.publishElectionType() =
+private fun Manifest.ElectionType.publishProto() =
     try {
         electionguard.protogen.Manifest.ElectionType.fromName(this.name)
     } catch (e: IllegalArgumentException) {
@@ -100,7 +100,7 @@ private fun Manifest.ElectionType.publishElectionType() =
         electionguard.protogen.Manifest.ElectionType.UNKNOWN
     }
 
-private fun Manifest.ReportingUnitType.publishReportingUnitType() =
+private fun Manifest.ReportingUnitType.publishProto() =
     try {
         electionguard.protogen.GeopoliticalUnit.ReportingUnitType.fromName(this.name)
     } catch (e: IllegalArgumentException) {
@@ -108,7 +108,7 @@ private fun Manifest.ReportingUnitType.publishReportingUnitType() =
         electionguard.protogen.GeopoliticalUnit.ReportingUnitType.UNKNOWN
     }
 
-private fun Manifest.VoteVariationType.publishVoteVariationType() =
+private fun Manifest.VoteVariationType.publishProto() =
     try {
         electionguard.protogen.ContestDescription.VoteVariationType.fromName(this.name)
     } catch (e: IllegalArgumentException) {

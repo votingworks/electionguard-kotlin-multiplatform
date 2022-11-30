@@ -7,7 +7,6 @@ import electionguard.core.tinyGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class TallyResultConvertTest {
 
@@ -15,16 +14,14 @@ class TallyResultConvertTest {
     fun roundtripTallyResult() {
         val context = tinyGroup()
         val electionRecord = generateTallyResult(context)
-        val proto = electionRecord.publishTallyResult()
-        val roundtrip = context.importTallyResult(proto).getOrThrow { IllegalStateException(it) }
+        val proto = electionRecord.publishProto()
+        val roundtrip = proto.import(context).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
 
         assertEquals(roundtrip.group, electionRecord.group)
         assertEquals(roundtrip.electionInitialized, electionRecord.electionInitialized)
         assertEquals(roundtrip.encryptedTally, electionRecord.encryptedTally)
         assertEquals(roundtrip.tallyIds, electionRecord.tallyIds)
-
-        assertTrue(roundtrip.equals(electionRecord))
         assertEquals(roundtrip, electionRecord)
     }
 }
