@@ -22,8 +22,8 @@ class ElectionConfigConvertTest {
     @Test
     fun roundtripElectionConfig() {
         val electionConfig = generateElectionConfig(6, 4)
-        val proto = electionConfig.publishElectionConfig()
-        val roundtrip = importElectionConfig(proto).getOrThrow { IllegalStateException(it) }
+        val proto = electionConfig.publishProto()
+        val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
         assertEquals(roundtrip.protoVersion, electionConfig.protoVersion)
         assertEquals(roundtrip.constants, electionConfig.constants)

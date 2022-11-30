@@ -2,14 +2,8 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.protoconvert.publishDecryptingTrustee
-import electionguard.protoconvert.publishDecryptionResult
-import electionguard.protoconvert.publishElectionConfig
-import electionguard.protoconvert.publishElectionInitialized
-import electionguard.protoconvert.publishPlaintextBallot
-import electionguard.protoconvert.publishDecryptedTallyOrBallot
-import electionguard.protoconvert.publishEncryptedBallot
-import electionguard.protoconvert.publishTallyResult
+import electionguard.protoconvert.publishDecryptingTrusteeProto
+import electionguard.protoconvert.publishProto
 import electionguard.publish.ElectionRecordPath.Companion.DECRYPTION_RESULT_FILE
 import electionguard.publish.ElectionRecordPath.Companion.ELECTION_CONFIG_FILE
 import electionguard.publish.ElectionRecordPath.Companion.ELECTION_INITIALIZED_FILE
@@ -108,7 +102,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     }
 
     actual fun writeElectionConfig(config: ElectionConfig) {
-        val proto = config.publishElectionConfig()
+        val proto = config.publishProto()
         FileOutputStream(electionConfigPath().toFile()).use { out ->
             proto.encodeToStream(out)
             out.close()
@@ -116,7 +110,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     }
 
     actual fun writeElectionInitialized(init: ElectionInitialized) {
-        val proto = init.publishElectionInitialized()
+        val proto = init.publishProto()
         FileOutputStream(electionInitializedPath().toFile()).use { out ->
             proto.encodeToStream(out)
             out.close()
@@ -134,7 +128,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     }
 
     actual fun writeTallyResult(tally: TallyResult) {
-        val proto = tally.publishTallyResult()
+        val proto = tally.publishProto()
         FileOutputStream(tallyResultPath().toFile()).use { out ->
             proto.encodeToStream(out)
             out.close()
@@ -142,7 +136,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     }
 
     actual fun writeDecryptionResult(decryption: DecryptionResult) {
-        val proto = decryption.publishDecryptionResult()
+        val proto = decryption.publishProto()
         FileOutputStream(decryptionResultPath().toFile()).use { out ->
             proto.encodeToStream(out)
             out.close()
@@ -154,7 +148,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
             val fileout = path.plaintextBallotPath(outputDir)
             FileOutputStream(fileout).use { out ->
                 for (ballot in plaintextBallots) {
-                    val ballotProto = ballot.publishPlaintextBallot()
+                    val ballotProto = ballot.publishProto()
                     writeDelimitedTo(ballotProto, out)
                 }
                 out.close()
@@ -163,7 +157,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
     }
 
     actual fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
-        val proto = trustee.publishDecryptingTrustee()
+        val proto = trustee.publishDecryptingTrusteeProto()
         val fileout = path.decryptingTrusteePath(trusteeDir, trustee.id)
         FileOutputStream(fileout).use { out ->
             proto.encodeToStream(out)
@@ -178,7 +172,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         val out: FileOutputStream = FileOutputStream(path)
 
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
-            val ballotProto: pbandk.Message = ballot.publishEncryptedBallot()
+            val ballotProto: pbandk.Message = ballot.publishProto()
             writeDelimitedTo(ballotProto, out)
         }
 
@@ -194,7 +188,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         val out: FileOutputStream = FileOutputStream(path)
 
         override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot){
-            val ballotProto: pbandk.Message = tally.publishDecryptedTallyOrBallot()
+            val ballotProto: pbandk.Message = tally.publishProto()
             writeDelimitedTo(ballotProto, out)
         }
 

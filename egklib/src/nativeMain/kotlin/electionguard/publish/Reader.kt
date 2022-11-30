@@ -14,14 +14,7 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.protoconvert.importDecryptingTrustee
-import electionguard.protoconvert.importDecryptionResult
-import electionguard.protoconvert.importElectionConfig
-import electionguard.protoconvert.importElectionInitialized
-import electionguard.protoconvert.importPlaintextBallot
-import electionguard.protoconvert.importDecryptedTallyOrBallot
-import electionguard.protoconvert.importEncryptedBallot
-import electionguard.protoconvert.importTallyResult
+import electionguard.protoconvert.import
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CArrayPointer
@@ -46,25 +39,25 @@ internal val logger = KotlinLogging.logger("nativeReader")
 fun readElectionConfig(filename: String): Result<ElectionConfig, String> {
     val buffer = gulp(filename)
     val proto = electionguard.protogen.ElectionConfig.decodeFromByteArray(buffer)
-    return importElectionConfig(proto)
+    return proto.import()
 }
 
 fun GroupContext.readElectionInitialized(filename: String): Result<ElectionInitialized, String> {
     val buffer = gulp(filename)
     val proto = electionguard.protogen.ElectionInitialized.decodeFromByteArray(buffer)
-    return importElectionInitialized(proto)
+    return proto.import(this)
 }
 
 fun GroupContext.readTallyResult(filename: String): Result<TallyResult, String> {
     val buffer = gulp(filename)
     val proto = electionguard.protogen.TallyResult.decodeFromByteArray(buffer)
-    return importTallyResult(proto)
+    return proto.import(this)
 }
 
 fun GroupContext.readDecryptionResult(filename: String): Result<DecryptionResult, String> {
     val buffer = gulp(filename)
     val proto = electionguard.protogen.DecryptionResult.decodeFromByteArray(buffer)
-    return importDecryptionResult(proto)
+    return proto.import(this)
 }
 
 class PlaintextBallotIterator(
@@ -83,7 +76,7 @@ class PlaintextBallotIterator(
             }
             val message = readFromFile(file, length.toULong(), filename)
             val ballotProto = electionguard.protogen.PlaintextBallot.decodeFromByteArray(message)
-            val ballot = importPlaintextBallot(ballotProto)
+            val ballot = ballotProto.import()
             if (filter != null && !filter.invoke(ballot)) {
                 continue
             }
@@ -114,7 +107,7 @@ class EncryptedBallotIterator(
             if (protoFilter?.invoke(ballotProto) == false) {
                 continue // skip it
             }
-            val ballotResult = groupContext.importEncryptedBallot(ballotProto)
+            val ballotResult = ballotProto.import(groupContext)
             if (ballotResult is Ok) {
                 if (filter?.invoke(ballotResult.unwrap()) == false) {
                     continue // skip it
@@ -130,7 +123,7 @@ class EncryptedBallotIterator(
 }
 
 class SpoiledBallotTallyIterator(
-    private val groupContext: GroupContext,
+    private val group: GroupContext,
     private val filename: String,
 ) : AbstractIterator<DecryptedTallyOrBallot>() {
 
@@ -144,7 +137,7 @@ class SpoiledBallotTallyIterator(
         }
         val message = readFromFile(file, length.toULong(), filename)
         val tallyProto = electionguard.protogen.DecryptedTallyOrBallot.decodeFromByteArray(message)
-        val tally = groupContext.importDecryptedTallyOrBallot(tallyProto)
+        val tally = tallyProto.import(group)
         setNext(tally.getOrElse { throw RuntimeException("DecryptedTallyOrBallot failed to parse") })
     }
 }
@@ -152,7 +145,7 @@ class SpoiledBallotTallyIterator(
 fun GroupContext.readTrustee(filename: String): DecryptingTrusteeIF {
     val buffer = gulp(filename)
     val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
-    return this.importDecryptingTrustee(trusteeProto).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
+    return trusteeProto.import(this).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
 }
 
 /** Read everything in the file and return as a ByteArray. */

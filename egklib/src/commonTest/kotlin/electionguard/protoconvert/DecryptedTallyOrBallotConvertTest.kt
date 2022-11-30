@@ -12,10 +12,10 @@ class DecryptedTallyOrBallotConvertTest {
 
     @Test
     fun roundtripDecryptedTallyOrBallot() {
-        val context = tinyGroup()
-        val tally = generateFakeTally(1, context)
-        val proto = tally.publishDecryptedTallyOrBallot()
-        val roundtrip = context.importDecryptedTallyOrBallot(proto).getOrThrow { IllegalStateException(it) }
+        val group = tinyGroup()
+        val tally = generateFakeTally(1, group)
+        val proto = tally.publishProto()
+        val roundtrip = proto.import(group).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
         val tallyContestMap = tally.contests.associateBy { it.contestId }
         for (rtContest in roundtrip.contests) {

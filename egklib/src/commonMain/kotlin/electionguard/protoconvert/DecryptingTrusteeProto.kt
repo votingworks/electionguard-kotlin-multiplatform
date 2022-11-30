@@ -15,12 +15,12 @@ import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.EncryptedKeyShare
 
-fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.DecryptingTrustee):
+fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext):
         Result<DecryptingTrustee, String> {
 
-    val id = proto.guardianId
-    val electionKeyPair = this.importElGamalKeypair(id, proto.electionKeypair)
-    val (shares, serrors) = proto.secretKeyShares.map { this.importSecretKeyShare(id, it) }.partition()
+    val id = this.guardianId
+    val electionKeyPair = this.electionKeypair?.import(id, group) ?: Err("DecryptingTrustee $id missing keypair")
+    val (shares, serrors) = this.secretKeyShares.map { it.import(id, group) }.partition()
 
     val errors = getAllErrors(electionKeyPair) + serrors
     if (errors.isNotEmpty()) {
@@ -28,8 +28,8 @@ fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.Decryptin
     }
 
     val result = DecryptingTrustee(
-        proto.guardianId,
-        proto.guardianXCoordinate,
+        this.guardianId,
+        this.guardianXCoordinate,
         electionKeyPair.unwrap(),
         shares.associateBy { it.missingGuardianId },
     )
@@ -37,14 +37,12 @@ fun GroupContext.importDecryptingTrustee(proto: electionguard.protogen.Decryptin
     return Ok(result)
 }
 
-private fun GroupContext.importElGamalKeypair(id: String, keypair: electionguard.protogen.ElGamalKeypair?):
+private fun electionguard.protogen.ElGamalKeypair.import(id: String, group: GroupContext):
         Result<ElGamalKeypair, String> {
-    if (keypair == null) {
-        return Err("DecryptingTrustee $id missing keypair")
-    }
-    val secretKey = this.importElementModQ(keypair.secretKey)
+
+    val secretKey = group.importElementModQ(this.secretKey)
         .toResultOr { "DecryptingTrustee $id secretKey was malformed or missing" }
-    val publicKey = this.importElementModP(keypair.publicKey)
+    val publicKey = group.importElementModP(this.publicKey)
         .toResultOr { "DecryptingTrustee $id publicKey was malformed or missing" }
 
     val errors = getAllErrors(secretKey, publicKey)
@@ -59,13 +57,10 @@ private fun GroupContext.importElGamalKeypair(id: String, keypair: electionguard
     )
 }
 
-private fun GroupContext.importSecretKeyShare(id: String, keyShare: electionguard.protogen.EncryptedKeyShare?):
+private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: GroupContext):
         Result<EncryptedKeyShare, String> {
-    if (keyShare == null) {
-        return Err("DecryptingTrustee $id missing keypair")
-    }
 
-    val encryptedCoordinate = this.importHashedCiphertext(keyShare.encryptedCoordinate)
+    val encryptedCoordinate = group.importHashedCiphertext(this.encryptedCoordinate)
         .toResultOr { "DecryptingTrustee $id secretKey was malformed or missing" }
 
     if (encryptedCoordinate is Err) {
@@ -73,36 +68,35 @@ private fun GroupContext.importSecretKeyShare(id: String, keyShare: electionguar
     }
     return Ok(
         EncryptedKeyShare(
-            keyShare.generatingGuardianId,
-            keyShare.designatedGuardianId,
+            this.generatingGuardianId,
+            this.designatedGuardianId,
             encryptedCoordinate.unwrap(),
         )
     )
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
-fun KeyCeremonyTrustee.publishDecryptingTrustee() =
+fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
     electionguard.protogen.DecryptingTrustee(
         this.id(),
         this.xCoordinate(),
         ElGamalKeypair(
             ElGamalSecretKey(this.electionPrivateKey()),
             ElGamalPublicKey(this.electionPublicKey())
-        ).publishElGamalKeyPair(),
-        this.myShareOfOthers.values.map { it.publishEncryptedKeyShare() },
+        ).publishProto(),
+        this.myShareOfOthers.values.map { it.publishProto() },
     )
 
-private fun ElGamalKeypair.publishElGamalKeyPair() =
+private fun ElGamalKeypair.publishProto() =
     electionguard.protogen.ElGamalKeypair(
-        this.secretKey.key.publishElementModQ(),
-        this.publicKey.key.publishElementModP(),
+        this.secretKey.key.publishProto(),
+        this.publicKey.key.publishProto(),
     )
 
-private fun EncryptedKeyShare.publishEncryptedKeyShare() =
+private fun EncryptedKeyShare.publishProto() =
     electionguard.protogen.EncryptedKeyShare(
         this.missingGuardianId,
         this.availableGuardianId,
-        this.encryptedCoordinate.publishHashedCiphertext(),
+        this.encryptedCoordinate.publishProto(),
     )

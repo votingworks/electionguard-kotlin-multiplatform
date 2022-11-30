@@ -3,7 +3,7 @@ package electionguard.protoconvert
 import electionguard.core.*
 import pbandk.ByteArr
 
-// Note that importXXX() return T?, while publishXXX() return electionguard.protogen.T
+// Note that importXXX(protogen.T?) return T?, while T.publishProto() return protogen.T
 // Its up to the calling routines to turn that into Result<Boolean, String>
 
 fun GroupContext.importElementModQ(modQ: electionguard.protogen.ElementModQ?): ElementModQ? =
@@ -59,35 +59,35 @@ fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fun ElementModQ.publishElementModQ() = electionguard.protogen.ElementModQ(ByteArr(this.byteArray()))
+fun ElementModQ.publishProto() = electionguard.protogen.ElementModQ(ByteArr(this.byteArray()))
 
-fun UInt256.publishUInt256() = electionguard.protogen.UInt256(ByteArr(this.bytes))
+fun UInt256.publishProto() = electionguard.protogen.UInt256(ByteArr(this.bytes))
 
-fun ElementModP.publishElementModP() = electionguard.protogen.ElementModP(ByteArr(this.byteArray()))
+fun ElementModP.publishProto() = electionguard.protogen.ElementModP(ByteArr(this.byteArray()))
 
-fun ElGamalCiphertext.publishCiphertext() =
+fun ElGamalCiphertext.publishProto() =
     electionguard.protogen.ElGamalCiphertext(
-        this.pad.publishElementModP(),
-        this.data.publishElementModP(),
+        this.pad.publishProto(),
+        this.data.publishProto(),
     )
 
-fun GenericChaumPedersenProof.publishChaumPedersenProof() =
+fun GenericChaumPedersenProof.publishProto() =
     electionguard.protogen.GenericChaumPedersenProof(
-        this.c.publishElementModQ(),
-        this.r.publishElementModQ(),
+        this.c.publishProto(),
+        this.r.publishProto(),
     )
 
-fun HashedElGamalCiphertext.publishHashedCiphertext() =
+fun HashedElGamalCiphertext.publishProto() =
     electionguard.protogen.HashedElGamalCiphertext(
-        this.c0.publishElementModP(),
+        this.c0.publishProto(),
         ByteArr(this.c1),
-        this.c2.publishUInt256(),
+        this.c2.publishProto(),
         this.numBytes,
     )
 
-fun SchnorrProof.publishSchnorrProof() =
+fun SchnorrProof.publishProto() =
     electionguard.protogen.SchnorrProof(
-        this.publicKey.publishElementModP(),
-        this.challenge.publishElementModQ(),
-        this.response.publishElementModQ()
+        this.publicKey.publishProto(),
+        this.challenge.publishProto(),
+        this.response.publishProto()
     )

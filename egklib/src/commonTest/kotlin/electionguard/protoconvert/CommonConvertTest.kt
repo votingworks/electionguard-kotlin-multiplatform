@@ -16,11 +16,11 @@ class CommonConvertTest {
             ) { fakeElementModP, fakeElementModQ ->
                     val context = productionGroup()
 
-                    val protoP = fakeElementModP.publishElementModP()
+                    val protoP = fakeElementModP.publishProto()
                     val roundtripP = context.importElementModP(protoP)
                     assertEquals(roundtripP, fakeElementModP)
 
-                    val protoQ = fakeElementModQ.publishElementModQ()
+                    val protoQ = fakeElementModQ.publishProto()
                     val roundtripQ = context.importElementModQ(protoQ)
                     assertEquals(roundtripQ, fakeElementModQ)
                 }
@@ -37,7 +37,7 @@ class CommonConvertTest {
                     val context = productionGroup()
                     val ciphertext = ElGamalCiphertext(fakePad, fakeData)
 
-                    val proto = ciphertext.publishCiphertext()
+                    val proto = ciphertext.publishProto()
                     val roundtrip = context.importCiphertext(proto)
                     assertEquals(roundtrip, ciphertext)
                 }
@@ -54,7 +54,7 @@ class CommonConvertTest {
                     val context = productionGroup()
                     val proof = GenericChaumPedersenProof(c, r)
 
-                    val proto = proof.publishChaumPedersenProof()
+                    val proto = proof.publishProto()
                     val roundtrip = context.importChaumPedersenProof(proto)
                     assertEquals(roundtrip, proof)
                 }
@@ -72,7 +72,7 @@ class CommonConvertTest {
                 val context = productionGroup()
                 val proof = SchnorrProof(k, c, r)
 
-                val proto = proof.publishSchnorrProof()
+                val proto = proof.publishProto()
                 val roundtrip = context.importSchnorrProof(proto)
                 assertEquals(roundtrip, proof)
             }
@@ -91,7 +91,7 @@ class CommonConvertTest {
                 val target = HashedElGamalCiphertext(p, c1, u, 21)
                 assertEquals(target.numBytes, target.c1.size)
 
-                val proto = target.publishHashedCiphertext()
+                val proto = target.publishProto()
                 val roundtrip = context.importHashedCiphertext(proto)
                 assertEquals(target, roundtrip)
             }

@@ -2,14 +2,8 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.protoconvert.publishDecryptingTrustee
-import electionguard.protoconvert.publishDecryptionResult
-import electionguard.protoconvert.publishElectionConfig
-import electionguard.protoconvert.publishElectionInitialized
-import electionguard.protoconvert.publishPlaintextBallot
-import electionguard.protoconvert.publishDecryptedTallyOrBallot
-import electionguard.protoconvert.publishEncryptedBallot
-import electionguard.protoconvert.publishTallyResult
+import electionguard.protoconvert.publishDecryptingTrusteeProto
+import electionguard.protoconvert.publishProto
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CArrayPointer
@@ -43,7 +37,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     actual fun writeElectionConfig(config: ElectionConfig) {
-        val proto = config.publishElectionConfig()
+        val proto = config.publishProto()
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.electionConfigPath()
@@ -57,7 +51,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     actual fun writeElectionInitialized(init: ElectionInitialized) {
-        val proto = init.publishElectionInitialized()
+        val proto = init.publishProto()
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.electionInitializedPath()
@@ -81,7 +75,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     actual fun writeTallyResult(tally: TallyResult) {
-        val proto = tally.publishTallyResult()
+        val proto = tally.publishProto()
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.tallyResultPath()
@@ -95,7 +89,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     actual fun writeDecryptionResult(decryption: DecryptionResult) {
-        val proto = decryption.publishDecryptionResult()
+        val proto = decryption.publishProto()
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.decryptionResultPath()
@@ -114,7 +108,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             spoiledBallots.forEach {
-                val proto = it.publishDecryptedTallyOrBallot()
+                val proto = it.publishProto()
                 val buffer = proto.encodeToByteArray()
 
                 val length = writeVlen(file, fileout, buffer.size)
@@ -137,7 +131,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
             val file: CPointer<FILE> = openFile(fileout, "wb")
             try {
                 plaintextBallots.forEach {
-                    val proto = it.publishPlaintextBallot()
+                    val proto = it.publishProto()
                     val buffer = proto.encodeToByteArray()
                     val length = writeVlen(file, fileout, buffer.size)
                     if (length <= 0) {
@@ -153,7 +147,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
     }
 
     actual fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
-        val proto = trustee.publishDecryptingTrustee()
+        val proto = trustee.publishDecryptingTrusteeProto()
         val buffer = proto.encodeToByteArray()
 
         val fileout = path.decryptingTrusteePath(trusteeDir, trustee.id)
@@ -173,7 +167,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         val file: CPointer<FILE> = openFile(fileout, "wb")
 
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
-            val ballotProto: pbandk.Message = ballot.publishEncryptedBallot()
+            val ballotProto: pbandk.Message = ballot.publishProto()
             val buffer = ballotProto.encodeToByteArray()
 
             val length = writeVlen(file, fileout, buffer.size)
@@ -196,7 +190,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         val file: CPointer<FILE> = openFile(fileout, "wb")
 
         override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot) {
-            val ballotProto: pbandk.Message = tally.publishDecryptedTallyOrBallot()
+            val ballotProto: pbandk.Message = tally.publishProto()
             val buffer = ballotProto.encodeToByteArray()
 
             val length = writeVlen(file, fileout, buffer.size)

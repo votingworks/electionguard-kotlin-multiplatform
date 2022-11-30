@@ -16,21 +16,21 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("EncryptedBallotConvert")
 
-fun GroupContext.importEncryptedBallot(ballot: electionguard.protogen.EncryptedBallot):
+fun electionguard.protogen.EncryptedBallot.import(group: GroupContext):
         Result<EncryptedBallot, String> {
-    val here = ballot.ballotId
+    val here = this.ballotId
 
-    val manifestHash = importUInt256(ballot.manifestHash)
+    val manifestHash = importUInt256(this.manifestHash)
         .toResultOr { "EncryptedBallot $here manifestHash was malformed or missing" }
-    val trackingHash = importUInt256(ballot.code)
+    val trackingHash = importUInt256(this.code)
         .toResultOr { "EncryptedBallot $here trackingHash was malformed or missing" }
-    val previousTrackingHash = importUInt256(ballot.codeSeed)
+    val previousTrackingHash = importUInt256(this.codeSeed)
         .toResultOr { "EncryptedBallot $here previousTrackingHash was malformed or missing" }
-    val cryptoHash = importUInt256(ballot.cryptoHash)
+    val cryptoHash = importUInt256(this.cryptoHash)
         .toResultOr { "EncryptedBallot $here cryptoHash was malformed or missing" }
-    val ballotState = importBallotState(ballot.ballotId, ballot.state)
+    val ballotState = this.state.import(here)
 
-    val (contests, cerrors) = ballot.contests.map { this.importContest(ballot.ballotId, it) }.partition()
+    val (contests, cerrors) = this.contests.map { it.import(here, group) }.partition()
 
     val errors = getAllErrors(manifestHash, trackingHash, previousTrackingHash, cryptoHash, ballotState) + cerrors
     if (errors.isNotEmpty()) {
@@ -39,41 +39,41 @@ fun GroupContext.importEncryptedBallot(ballot: electionguard.protogen.EncryptedB
 
     return Ok(
         EncryptedBallot(
-            ballot.ballotId,
-            ballot.ballotStyleId,
+            this.ballotId,
+            this.ballotStyleId,
             manifestHash.unwrap(),
             trackingHash.unwrap(),
             previousTrackingHash.unwrap(),
             contests,
-            ballot.timestamp,
+            this.timestamp,
             cryptoHash.unwrap(),
             ballotState.unwrap(),
-            ballot.isPreencrypt,
+            this.isPreencrypt,
         )
     )
 }
 
-private fun importBallotState(where: String, proto: electionguard.protogen.EncryptedBallot.BallotState):
+private fun electionguard.protogen.EncryptedBallot.BallotState.import(where: String):
         Result<EncryptedBallot.BallotState, String> {
-    val state = safeEnumValueOf<EncryptedBallot.BallotState>(proto.name)
+    val state = safeEnumValueOf<EncryptedBallot.BallotState>(this.name)
         ?: return Err("Failed to convert ballot state, missing or unknown name in $where\"")
     return Ok(state)
 }
 
-private fun GroupContext.importContest(
+private fun electionguard.protogen.EncryptedBallotContest.import(
     where: String,
-    contest: electionguard.protogen.EncryptedBallotContest,
+    group: GroupContext
 ): Result<EncryptedBallot.Contest, String> {
-    val here = "$where ${contest.contestId}"
+    val here = "$where ${this.contestId}"
 
-    val contestHash = importUInt256(contest.contestHash)
+    val contestHash = importUInt256(this.contestHash)
         .toResultOr { "CiphertextBallotContest $here contestHash was malformed or missing" }
-    val cryptoHash = importUInt256(contest.cryptoHash)
+    val cryptoHash = importUInt256(this.cryptoHash)
         .toResultOr { "CiphertextBallotContest $here cryptoHash was malformed or missing" }
-    val proof = this.importRangeProof(here, contest.proof)
-    val contestData = this.importHashedCiphertext(contest.encryptedContestData).toResultOr { "No contestData found" }
+    val proof = group.importRangeProof(here, this.proof)
+    val contestData = group.importHashedCiphertext(this.encryptedContestData).toResultOr { "No contestData found" }
 
-    val (selections, serrors) = contest.selections.map { this.importSelection(here, it) }.partition()
+    val (selections, serrors) = this.selections.map { it.import(here, group) }.partition()
 
     val errors = getAllErrors(contestHash, cryptoHash, proof, contestData) + serrors
     if (errors.isNotEmpty()) {
@@ -82,14 +82,14 @@ private fun GroupContext.importContest(
 
     return Ok(
         EncryptedBallot.Contest(
-            contest.contestId,
-            contest.sequenceOrder,
+            this.contestId,
+            this.sequenceOrder,
             contestHash.unwrap(),
             selections,
             cryptoHash.unwrap(),
             proof.unwrap(),
-            this.importHashedCiphertext(contest.encryptedContestData)!!,
-            this.importPreEncryption(contest.preEncryption),
+            group.importHashedCiphertext(this.encryptedContestData)!!,
+            group.importPreEncryption(this.preEncryption),
         )
     )
 }
@@ -101,17 +101,17 @@ private fun GroupContext.importPreEncryption(proto: electionguard.protogen.PreEn
     }
     return EncryptedBallot.PreEncryption(
         importUInt256(proto.contestHash)!!,
-        proto.selectedVectors.map { this.importPreEncryptionVector(it) },
-        proto.allHashes.map { this.importPreEncryptionVector(it) },
+        proto.selectedVectors.map { it.import(this) },
+        proto.allHashes.map { it.import(this) },
     )
 }
 
-private fun GroupContext.importPreEncryptionVector(proto: electionguard.protogen.PreEncryptionVector):
+private fun electionguard.protogen.PreEncryptionVector.import(group: GroupContext):
         EncryptedBallot.PreEncryptionVector {
     return EncryptedBallot.PreEncryptionVector(
-        importUInt256(proto.selectionHash)!!,
-        proto.code,
-        proto.selectedVector.map { importCiphertext(it)!! },
+        importUInt256(this.selectionHash)!!,
+        this.code,
+        this.selectedVector.map { group.importCiphertext(it)!! }, // LOOK make Result
     )
 }
 
@@ -129,20 +129,20 @@ private fun GroupContext.importRangeProof(
     else Err("importChaumPedersenProof failed $where")
 }
 
-private fun GroupContext.importSelection(
+private fun electionguard.protogen.EncryptedBallotSelection.import(
     where: String,
-    selection: electionguard.protogen.EncryptedBallotSelection
+    group: GroupContext,
 ):
         Result<EncryptedBallot.Selection, String> {
-    val here = "$where ${selection.selectionId}"
+    val here = "$where ${this.selectionId}"
 
-    val selectionHash = importUInt256(selection.selectionHash)
+    val selectionHash = importUInt256(this.selectionHash)
         .toResultOr { "CiphertextBallotSelection $here selectionHash was malformed or missing" }
-    val ciphertext = this.importCiphertext(selection.ciphertext)
+    val ciphertext = group.importCiphertext(this.ciphertext)
         .toResultOr { "CiphertextBallotSelection $here ciphertext was malformed or missing" }
-    val cryptoHash = importUInt256(selection.cryptoHash)
+    val cryptoHash = importUInt256(this.cryptoHash)
         .toResultOr { "CiphertextBallotSelection $here cryptoHash was malformed or missing" }
-    val proof = this.importRangeProof(here, selection.proof)
+    val proof = group.importRangeProof(here, this.proof)
 
     val errors = getAllErrors(proof, selectionHash, ciphertext, cryptoHash)
     if (errors.isNotEmpty()) {
@@ -151,8 +151,8 @@ private fun GroupContext.importSelection(
 
     return Ok(
         EncryptedBallot.Selection(
-            selection.selectionId,
-            selection.sequenceOrder,
+            this.selectionId,
+            this.sequenceOrder,
             selectionHash.unwrap(),
             ciphertext.unwrap(),
             cryptoHash.unwrap(),
@@ -164,23 +164,20 @@ private fun GroupContext.importSelection(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // preencrypt
 
-fun EncryptedBallot.publishEncryptedBallot(recordedPreBallot: RecordedPreBallot): electionguard.protogen.EncryptedBallot {
-    return electionguard.protogen
-        .EncryptedBallot(
+fun EncryptedBallot.publishProto(recordedPreBallot: RecordedPreBallot) = electionguard.protogen.EncryptedBallot(
             this.ballotId,
             this.ballotStyleId,
-            this.manifestHash.publishUInt256(),
-            this.code.publishUInt256(),
-            this.codeSeed.publishUInt256(),
-            this.contests.map { it.publishContest(recordedPreBallot) },
+            this.manifestHash.publishProto(),
+            this.code.publishProto(),
+            this.codeSeed.publishProto(),
+            this.contests.map { it.publishProto(recordedPreBallot) },
             this.timestamp,
-            this.cryptoHash.publishUInt256(),
-            this.state.publishBallotState(),
+            this.cryptoHash.publishProto(),
+            this.state.publishProto(),
             this.isPreencrypt,
         )
-}
 
-private fun EncryptedBallot.Contest.publishContest(recordedPreBallot: RecordedPreBallot):
+private fun EncryptedBallot.Contest.publishProto(recordedPreBallot: RecordedPreBallot):
         electionguard.protogen.EncryptedBallotContest {
 
     val rcontest = recordedPreBallot.contests.find { it.contestId == this.contestId }
@@ -190,50 +187,50 @@ private fun EncryptedBallot.Contest.publishContest(recordedPreBallot: RecordedPr
         .EncryptedBallotContest(
             this.contestId,
             this.sequenceOrder,
-            this.contestHash.publishUInt256(),
-            this.selections.map { it.publishSelection() },
-            this.cryptoHash.publishUInt256(),
-            this.proof.publishRangeProof(),
-            this.contestData.publishHashedCiphertext(),
-            rcontest.publish(),
+            this.contestHash.publishProto(),
+            this.selections.map { it.publishProto() },
+            this.cryptoHash.publishProto(),
+            this.proof.publishProto(),
+            this.contestData.publishProto(),
+            rcontest.publishProto(),
         )
 }
 
-private fun RecordedPreContest.publish():
+private fun RecordedPreContest.publishProto():
         electionguard.protogen.PreEncryption {
     return electionguard.protogen.PreEncryption(
-        this.contestHash.publishUInt256(),
-        this.selectionVectors.map { it.publish() },
+        this.contestHash.publishProto(),
+        this.selectionVectors.map { it.publishProto() },
     )
 }
 
-private fun RecordedSelectionVector.publish():
+private fun RecordedSelectionVector.publishProto():
         electionguard.protogen.PreEncryptionVector {
     return electionguard.protogen
         .PreEncryptionVector(
-            this.selectionHash.publishUInt256(),
+            this.selectionHash.publishProto(),
             this.code,
-            this.selectionVector.map { it.publishCiphertext() },
+            this.selectionVector.map { it.publishProto() },
         )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // normal
 
-fun EncryptedBallot.publishEncryptedBallot() =
+fun EncryptedBallot.publishProto() =
     electionguard.protogen.EncryptedBallot(
         this.ballotId,
         this.ballotStyleId,
-        this.manifestHash.publishUInt256(),
-        this.code.publishUInt256(),
-        this.codeSeed.publishUInt256(),
-        this.contests.map { it.publishContest() },
+        this.manifestHash.publishProto(),
+        this.code.publishProto(),
+        this.codeSeed.publishProto(),
+        this.contests.map { it.publishProto() },
         this.timestamp,
-        this.cryptoHash.publishUInt256(),
-        this.state.publishBallotState()
+        this.cryptoHash.publishProto(),
+        this.state.publishProto()
     )
 
-private fun EncryptedBallot.BallotState.publishBallotState() =
+private fun EncryptedBallot.BallotState.publishProto() =
     try {
         electionguard.protogen.EncryptedBallot.BallotState.fromName(this.name)
     } catch (e: IllegalArgumentException) {
@@ -241,28 +238,28 @@ private fun EncryptedBallot.BallotState.publishBallotState() =
         electionguard.protogen.EncryptedBallot.BallotState.UNKNOWN
     }
 
-private fun EncryptedBallot.Contest.publishContest() =
+private fun EncryptedBallot.Contest.publishProto() =
     electionguard.protogen.EncryptedBallotContest(
         this.contestId,
         this.sequenceOrder,
-        this.contestHash.publishUInt256(),
-        this.selections.map { it.publishSelection() },
-        this.cryptoHash.publishUInt256(),
-        this.proof.publishRangeProof(),
-        this.contestData.publishHashedCiphertext(),
+        this.contestHash.publishProto(),
+        this.selections.map { it.publishProto() },
+        this.cryptoHash.publishProto(),
+        this.proof.publishProto(),
+        this.contestData.publishProto(),
     )
 
-private fun EncryptedBallot.Selection.publishSelection() =
+private fun EncryptedBallot.Selection.publishProto() =
     electionguard.protogen.EncryptedBallotSelection(
         this.selectionId,
         this.sequenceOrder,
-        this.selectionHash.publishUInt256(),
-        this.ciphertext.publishCiphertext(),
-        this.cryptoHash.publishUInt256(),
-        this.proof.publishRangeProof(),
+        this.selectionHash.publishProto(),
+        this.ciphertext.publishProto(),
+        this.cryptoHash.publishProto(),
+        this.proof.publishProto(),
     )
 
-fun RangeChaumPedersenProofKnownNonce.publishRangeProof() =
+fun RangeChaumPedersenProofKnownNonce.publishProto() =
     electionguard.protogen.RangeChaumPedersenProofKnownNonce(
-        this.proofs.map { it.publishChaumPedersenProof() },
+        this.proofs.map { it.publishProto() },
     )

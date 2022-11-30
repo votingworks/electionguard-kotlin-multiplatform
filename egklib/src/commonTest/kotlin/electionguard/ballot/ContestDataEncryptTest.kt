@@ -9,7 +9,7 @@ import electionguard.core.propTestSlowConfig
 import electionguard.core.runTest
 import electionguard.core.tinyGroup
 import electionguard.protoconvert.importHashedCiphertext
-import electionguard.protoconvert.publishHashedCiphertext
+import electionguard.protoconvert.publishProto
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.string
@@ -71,7 +71,7 @@ class ContestDataEncryptTest {
         var took = getSystemTimeInMillis() - starting
         println(" contestData.encrypt took $took millisecs")
 
-        val hashProto = target.publishHashedCiphertext()
+        val hashProto = target.publishProto()
         val hashRoundtrip = context.importHashedCiphertext(hashProto)
         assertEquals(target, hashRoundtrip)
 

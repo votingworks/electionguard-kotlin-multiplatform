@@ -8,12 +8,9 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import pbandk.ByteArr
 
-fun importElectionConfig(config: electionguard.protogen.ElectionConfig?): Result<ElectionConfig, String> {
-    if (config == null) {
-        return Err("Null ElectionConfig")
-    }
-    val electionConstants = convertConstants(config.constants)
-    val manifest = importManifest(config.manifest)
+fun electionguard.protogen.ElectionConfig.import(): Result<ElectionConfig, String> {
+    val electionConstants = this.constants?.import() ?: Err("Null ElectionConstants")
+    val manifest = this.manifest?.import() ?: Err("Null Manifest")
 
     val errors = getAllErrors(electionConstants, manifest)
     if (errors.isNotEmpty()) {
@@ -21,43 +18,40 @@ fun importElectionConfig(config: electionguard.protogen.ElectionConfig?): Result
     }
 
     return Ok(ElectionConfig(
-        config.protoVersion,
+        this.protoVersion,
         electionConstants.unwrap(),
         manifest.unwrap(),
-        config.numberOfGuardians,
-        config.quorum,
-        config.metadata.associate { it.key to it.value }
+        this.numberOfGuardians,
+        this.quorum,
+        this.metadata.associate { it.key to it.value }
     ))
 }
 
-private fun convertConstants(constants: electionguard.protogen.ElectionConstants?): Result<ElectionConstants, String> {
-    if (constants == null) {
-        return Err("Null Constants")
-    }
+private fun electionguard.protogen.ElectionConstants.import(): Result<ElectionConstants, String> {
     return Ok(
         ElectionConstants(
-            constants.name,
-            constants.largePrime.array,
-            constants.smallPrime.array,
-            constants.cofactor.array,
-            constants.generator.array,
+            this.name,
+            this.largePrime.array,
+            this.smallPrime.array,
+            this.cofactor.array,
+            this.generator.array,
         )
     )
 }
 
 ////////////////////////////////////////////////////////
 
-fun ElectionConfig.publishElectionConfig() =
+fun ElectionConfig.publishProto() =
     electionguard.protogen.ElectionConfig(
         protoVersion,
-        constants.publishConstants(),
-        manifest.publishManifest(),
+        constants.publishProto(),
+        manifest.publishProto(),
         this.numberOfGuardians,
         this.quorum,
         this.metadata.entries.map { electionguard.protogen.ElectionConfig.MetadataEntry(it.key, it.value) }
     )
 
-private fun ElectionConstants.publishConstants() =
+private fun ElectionConstants.publishProto() =
     electionguard.protogen.ElectionConstants(
         this.name,
         ByteArr(this.largePrime),
