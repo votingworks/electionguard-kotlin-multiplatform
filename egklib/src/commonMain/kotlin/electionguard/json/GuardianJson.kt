@@ -22,7 +22,7 @@ fun Guardian.publish() = GuardianJson(
     this.guardianId,
     this.xCoordinate,
     this.publicKey().publish(),
-    this.coefficientCommitments().map { it.publish()},
+    this.coefficientCommitments().map { it.publish() },
     this.coefficientProofs.map { it.publish() }
 )
 
@@ -30,10 +30,12 @@ fun GuardianJson.import(group: GroupContext): Result<Guardian, String> {
     val proofs = this.election_proofs.map { it.import(group) }
     val allgood = proofs.map { it != null }.reduce { a, b -> a && b }
 
-    return if (allgood) Ok(Guardian(
-        this.guardian_id,
-        this.sequence_order,
-        proofs.map {it!!}))
-    else
-        Err("importSchnorrProof failed")
+    return if (!allgood) {
+        Err("Guardian ${this.guardian_id} import proofs failed")
+    } else
+        Ok(Guardian(
+            this.guardian_id,
+            this.sequence_order,
+            proofs.map { it!! }
+        ))
 }

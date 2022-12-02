@@ -79,6 +79,6 @@ class BallotInputBuilder internal constructor(val manifest: Manifest, val id: St
     }
 
     companion object {
-        private const val styleDef = "styling"
+        const val styleDef = "ballotStyle"
     }
 }

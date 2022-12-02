@@ -9,8 +9,7 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.PublicKeys
 import electionguard.keyceremony.EncryptedKeyShare
 import electionguard.keyceremony.KeyShare
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makePublisher
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -35,7 +34,7 @@ val remoteKeyTrustees = mutableListOf<RemoteKeyTrustee>()
 
 fun KeyCeremonyTrustee.saveState(trusteeDir : String) : Result<Boolean, String> {
     // store the trustees in some private place.
-    val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
+    val trusteePublisher = makePublisher(trusteeDir)
     return try {
         trusteePublisher.writeTrustee(trusteeDir, this)
         Ok(true)

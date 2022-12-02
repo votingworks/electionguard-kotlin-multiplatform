@@ -18,25 +18,22 @@ import platform.posix.fflush
 import platform.posix.fwrite
 
 /** Write the Election Record as protobuf files.  */
-actual class Publisher actual constructor(private val topDir: String, publisherMode: PublisherMode) {
-    private val createPublisherMode: PublisherMode = publisherMode
-    private var path = ElectionRecordPath(topDir)
+actual class PublisherProto actual constructor(private val topDir: String, createNew: Boolean) : Publisher {
+    private var path = ElectionRecordProtoPaths(topDir)
 
     init {
-        if (createPublisherMode == PublisherMode.createNew) {
-            if (!exists(topDir)) {
-                createDirectories(topDir)
-            }
-        } else if (createPublisherMode == PublisherMode.createIfMissing) {
+        if (createNew) {
             if (!exists(topDir)) {
                 createDirectories(topDir)
             }
         } else {
-            check(exists(topDir)) { "Non existing election directory $topDir" }
+            if (!exists(topDir)) {
+                createDirectories(topDir)
+            }
         }
     }
 
-    actual fun writeElectionConfig(config: ElectionConfig) {
+    actual override fun writeElectionConfig(config: ElectionConfig) {
         val proto = config.publishProto()
         val buffer = proto.encodeToByteArray()
 
@@ -50,7 +47,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun writeElectionInitialized(init: ElectionInitialized) {
+    actual override fun writeElectionInitialized(init: ElectionInitialized) {
         val proto = init.publishProto()
         val buffer = proto.encodeToByteArray()
 
@@ -64,7 +61,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun writeEncryptions(
+    actual override fun writeEncryptions(
         init: ElectionInitialized,
         ballots: Iterable<EncryptedBallot>
     ) {
@@ -74,7 +71,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         sink.close()
     }
 
-    actual fun writeTallyResult(tally: TallyResult) {
+    actual override fun writeTallyResult(tally: TallyResult) {
         val proto = tally.publishProto()
         val buffer = proto.encodeToByteArray()
 
@@ -88,7 +85,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun writeDecryptionResult(decryption: DecryptionResult) {
+    actual override fun writeDecryptionResult(decryption: DecryptionResult) {
         val proto = decryption.publishProto()
         val buffer = proto.encodeToByteArray()
 
@@ -124,8 +121,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         return true
     }
 
-    @Throws(IOException::class)
-    actual fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
+    actual override fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
         if (plaintextBallots.isNotEmpty()) {
             val fileout = path.plaintextBallotPath(outputDir)
             val file: CPointer<FILE> = openFile(fileout, "wb")
@@ -146,7 +142,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
+    actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
         val proto = trustee.publishDecryptingTrusteeProto()
         val buffer = proto.encodeToByteArray()
 
@@ -160,7 +156,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun encryptedBallotSink(): EncryptedBallotSinkIF =
+    actual override fun encryptedBallotSink(): EncryptedBallotSinkIF =
         EncryptedBallotSink(path.encryptedBallotPath())
 
     private inner class EncryptedBallotSink(val fileout: String) : EncryptedBallotSinkIF {
@@ -183,7 +179,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
         }
     }
 
-    actual fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF =
+    actual override fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF =
         DecryptedTallyOrBallotSink(path.spoiledBallotPath())
 
     private inner class DecryptedTallyOrBallotSink(val fileout: String) : DecryptedTallyOrBallotSinkIF {
@@ -208,7 +204,7 @@ actual class Publisher actual constructor(private val topDir: String, publisherM
 }
 
 @Throws(IOException::class)
-private fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArray) {
+fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArray) {
     memScoped {
         val bytePtr: CArrayPointer<ByteVar> = allocArray(buffer.size)
         // TODO avoid copy
@@ -231,7 +227,7 @@ private fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArra
 }
 
 @Throws(IOException::class)
-private fun writeVlen(file: CPointer<FILE>, filename: String, length: Int): Int {
+fun writeVlen(file: CPointer<FILE>, filename: String, length: Int): Int {
     var value = length
     var count = 0
 

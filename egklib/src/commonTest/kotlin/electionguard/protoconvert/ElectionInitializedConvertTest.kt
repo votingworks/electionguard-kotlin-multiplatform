@@ -61,7 +61,7 @@ fun generateElectionInitialized(context: GroupContext): ElectionInitialized {
 //    val electionPublicKey: ElementModP,
 //    val coefficientCommitments: List<ElementModP>,
 //    val coefficientProofs: List<SchnorrProof>
-private fun generateGuardian(seq: Int, context: GroupContext): Guardian {
+fun generateGuardian(seq: Int, context: GroupContext): Guardian {
     return Guardian(
         "guardian $seq",
         (seq + 1),

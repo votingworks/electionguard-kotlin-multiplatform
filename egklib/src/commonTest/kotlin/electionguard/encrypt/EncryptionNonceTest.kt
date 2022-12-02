@@ -17,7 +17,7 @@ import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.input.RandomBallotProvider
-import electionguard.publish.Consumer
+import electionguard.publish.makeConsumer
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,7 +31,7 @@ class EncryptionNonceTest {
     @Test
     fun testEncryptionNonces() {
         val group = productionGroup()
-        val consumerIn = Consumer(input, group)
+        val consumerIn = makeConsumer(input, group)
         val electionInit: ElectionInitialized =
             consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
 

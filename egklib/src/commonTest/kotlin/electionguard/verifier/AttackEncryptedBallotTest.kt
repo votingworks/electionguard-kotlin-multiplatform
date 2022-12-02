@@ -14,8 +14,8 @@ import electionguard.core.hashElements
 import electionguard.decrypt.Decryptor
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
-import electionguard.publish.Consumer
 import electionguard.publish.electionRecordFromConsumer
+import electionguard.publish.makeConsumer
 import electionguard.tally.AccumulateTally
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
@@ -45,7 +45,7 @@ class AttackEncryptedBallotTest {
     @Test
     fun attackEncryptedBallots() {
         val context = productionGroup()
-        val electionRecord = electionRecordFromConsumer(Consumer(inputDir, context))
+        val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, context))
         val mungedBallots = mutableListOf<EncryptedBallot>()
 
         for (ballot in electionRecord.encryptedBallots { true }) {

@@ -4,9 +4,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.productionGroup
 import electionguard.input.buildStandardManifest
-import electionguard.input.protoVersion
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makePublisher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -25,7 +23,6 @@ class ElectionConfigConvertTest {
         val proto = electionConfig.publishProto()
         val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
-        assertEquals(roundtrip.protoVersion, electionConfig.protoVersion)
         assertEquals(roundtrip.constants, electionConfig.constants)
         assertEquals(roundtrip.manifest, electionConfig.manifest)
         assertEquals(roundtrip.numberOfGuardians, electionConfig.numberOfGuardians)
@@ -37,7 +34,7 @@ class ElectionConfigConvertTest {
 
         if (writeout) {
             val output = "testOut/ElectionConfigConvertTest"
-            val publisher = Publisher(output, PublisherMode.createNew)
+            val publisher = makePublisher(output, true)
             publisher.writeElectionConfig(electionConfig)
             println("Wrote to $output")
         }
@@ -46,9 +43,9 @@ class ElectionConfigConvertTest {
 
 fun generateElectionConfig(nguardians: Int, quorum: Int): ElectionConfig {
     return ElectionConfig(
-        protoVersion,
         productionGroup().constants,
         buildStandardManifest(ncontests, nselections),
-        nguardians, quorum
+        nguardians,
+        quorum
     )
 }

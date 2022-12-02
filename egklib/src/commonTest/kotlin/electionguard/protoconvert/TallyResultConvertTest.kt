@@ -18,7 +18,6 @@ class TallyResultConvertTest {
         val roundtrip = proto.import(context).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
 
-        assertEquals(roundtrip.group, electionRecord.group)
         assertEquals(roundtrip.electionInitialized, electionRecord.electionInitialized)
         assertEquals(roundtrip.encryptedTally, electionRecord.encryptedTally)
         assertEquals(roundtrip.tallyIds, electionRecord.tallyIds)
@@ -28,7 +27,6 @@ class TallyResultConvertTest {
 
 fun generateTallyResult(context: GroupContext): TallyResult {
     return TallyResult(
-        context,
         generateElectionInitialized(context),
         EncryptedTallyConvertTest.generateFakeTally(context),
         listOf("ballotID1", "ballotsId42"),

@@ -47,7 +47,6 @@ class KeyCeremonyTest {
         val manifestHash: UInt256 = 42U.toUInt256()
         val fakeManifest = makeFakeManifest(manifestHash)
         val config = ElectionConfig(
-            "protoVersion",
             group.constants,
             fakeManifest,
             3,

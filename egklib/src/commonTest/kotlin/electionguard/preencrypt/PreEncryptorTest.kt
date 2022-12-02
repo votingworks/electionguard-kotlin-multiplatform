@@ -18,7 +18,7 @@ import electionguard.encrypt.cast
 import electionguard.input.ManifestBuilder
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
-import electionguard.publish.Consumer
+import electionguard.publish.makeConsumer
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlin.random.Random
 import kotlin.test.Test
@@ -35,7 +35,7 @@ internal class PreEncryptorTest {
     fun testPreencrypt() {
         runTest {
             val group = productionGroup()
-            val consumerIn = Consumer(input, group)
+            val consumerIn = makeConsumer(input, group)
             val electionInit: ElectionInitialized =
                 consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val manifest = electionInit.manifest()
@@ -45,7 +45,7 @@ internal class PreEncryptorTest {
 
             manifest.ballotStyles.forEach { println(it) }
 
-            val pballot = preEncryptor.preencrypt("testPreencrypt_ballot_id", "styling", 11U.toUInt256())
+            val pballot = preEncryptor.preencrypt("testPreencrypt_ballot_id", "ballotStyle", 11U.toUInt256())
             pballot.show()
         }
     }
@@ -55,7 +55,7 @@ internal class PreEncryptorTest {
     fun testRecord() {
         runTest {
             val group = productionGroup()
-            val consumerIn = Consumer(input, group)
+            val consumerIn = makeConsumer(input, group)
             val electionInit: ElectionInitialized =
                 consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val manifest = electionInit.manifest()
@@ -66,7 +66,7 @@ internal class PreEncryptorTest {
             manifest.ballotStyles.forEach { println(it) }
 
             val primaryNonce = 42U.toUInt256()
-            val pballot = preEncryptor.preencrypt("testDecrypt_ballot_id", "styling", primaryNonce)
+            val pballot = preEncryptor.preencrypt("testDecrypt_ballot_id", "ballotStyle", primaryNonce)
             pballot.show()
 
             val mballot = markBallotChooseOne(manifest, pballot)
@@ -128,7 +128,7 @@ internal class PreEncryptorTest {
         val preEncryptor =
             PreEncryptor(group, manifest, publicKey)
         val primaryNonce = 42U.toUInt256()
-        val pballot = preEncryptor.preencrypt(ballot_id, "styling", primaryNonce)
+        val pballot = preEncryptor.preencrypt(ballot_id, "ballotStyle", primaryNonce)
 
         // vote
         val mballot = markBallot(manifest, pballot)

@@ -4,12 +4,12 @@ import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.protoconvert.publishDecryptingTrusteeProto
 import electionguard.protoconvert.publishProto
-import electionguard.publish.ElectionRecordPath.Companion.DECRYPTION_RESULT_FILE
-import electionguard.publish.ElectionRecordPath.Companion.ELECTION_CONFIG_FILE
-import electionguard.publish.ElectionRecordPath.Companion.ELECTION_INITIALIZED_FILE
-import electionguard.publish.ElectionRecordPath.Companion.SPOILED_BALLOT_FILE
-import electionguard.publish.ElectionRecordPath.Companion.ENCRYPTED_BALLOT_FILE
-import electionguard.publish.ElectionRecordPath.Companion.TALLY_RESULT_FILE
+import electionguard.publish.ElectionRecordProtoPaths.Companion.DECRYPTION_RESULT_FILE
+import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_CONFIG_FILE
+import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_INITIALIZED_FILE
+import electionguard.publish.ElectionRecordProtoPaths.Companion.SPOILED_BALLOT_FILE
+import electionguard.publish.ElectionRecordProtoPaths.Companion.ENCRYPTED_BALLOT_FILE
+import electionguard.publish.ElectionRecordProtoPaths.Companion.TALLY_RESULT_FILE
 import pbandk.encodeToStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -17,61 +17,26 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 
-/** Publishes the Manifest Record to Json or protobuf files.  */
-actual class Publisher actual constructor(topDir: String, publisherMode: PublisherMode) {
-    private val createPublisherMode: PublisherMode = publisherMode
+/** Publishes the Manifest Record to protobuf files.  */
+actual class PublisherProto actual constructor(topDir: String, createNew: Boolean) : Publisher {
     private val electionRecordDir = Path.of(topDir)
-    private var path: ElectionRecordPath = ElectionRecordPath(topDir)
+    private var path: ElectionRecordProtoPaths = ElectionRecordProtoPaths(topDir)
 
     init {
-        if (createPublisherMode == PublisherMode.createNew) {
+        if (createNew) {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
             } else {
                 removeAllFiles(electionRecordDir)
             }
-        } else if (createPublisherMode == PublisherMode.createIfMissing) {
+        } else {
             if (!Files.exists(electionRecordDir)) {
                 Files.createDirectories(electionRecordDir)
             }
-        } else {
-            check(Files.exists(electionRecordDir)) { "Non existing election directory $electionRecordDir" }
         }
-    }
-
-    /** Delete everything in the given directory, but leave that directory.  */
-    private fun removeAllFiles(path: Path) {
-        if (!path.toFile().exists()) {
-            return
-        }
-        Files.walk(path)
-            .filter { p: Path -> p != path }
-            .map { obj: Path -> obj.toFile() }
-            .sorted { o1: File, o2: File? -> -o1.compareTo(o2) }
-            .forEach { f: File -> f.delete() }
-    }
-
-
-    /** Make sure output dir exists and is writeable.  */
-    fun validateOutputDir(error: java.util.Formatter): Boolean {
-        if (!Files.exists(electionRecordDir)) {
-            error.format(" Output directory '%s' does not exist%n", electionRecordDir)
-            return false
-        }
-        if (!Files.isDirectory(electionRecordDir)) {
-            error.format(" Output directory '%s' is not a directory%n", electionRecordDir)
-            return false
-        }
-        if (!Files.isWritable(electionRecordDir)) {
-            error.format(" Output directory '%s' is not writeable%n", electionRecordDir)
-            return false
-        }
-        if (!Files.isExecutable(electionRecordDir)) {
-            error.format(" Output directory '%s' is not executable%n", electionRecordDir)
-            return false
-        }
-        return true
+        validateOutputDir(electionRecordDir, Formatter())
     }
 
     ////////////////////
@@ -101,7 +66,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         return electionRecordDir.resolve(TALLY_RESULT_FILE).toAbsolutePath()
     }
 
-    actual fun writeElectionConfig(config: ElectionConfig) {
+    actual override fun writeElectionConfig(config: ElectionConfig) {
         val proto = config.publishProto()
         FileOutputStream(electionConfigPath().toFile()).use { out ->
             proto.encodeToStream(out)
@@ -109,7 +74,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun writeElectionInitialized(init: ElectionInitialized) {
+    actual override fun writeElectionInitialized(init: ElectionInitialized) {
         val proto = init.publishProto()
         FileOutputStream(electionInitializedPath().toFile()).use { out ->
             proto.encodeToStream(out)
@@ -117,7 +82,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun writeEncryptions(
+    actual override fun writeEncryptions(
         init: ElectionInitialized,
         ballots: Iterable<EncryptedBallot>
     ) {
@@ -127,7 +92,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         sink.close()
     }
 
-    actual fun writeTallyResult(tally: TallyResult) {
+    actual override fun writeTallyResult(tally: TallyResult) {
         val proto = tally.publishProto()
         FileOutputStream(tallyResultPath().toFile()).use { out ->
             proto.encodeToStream(out)
@@ -135,7 +100,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun writeDecryptionResult(decryption: DecryptionResult) {
+    actual override fun writeDecryptionResult(decryption: DecryptionResult) {
         val proto = decryption.publishProto()
         FileOutputStream(decryptionResultPath().toFile()).use { out ->
             proto.encodeToStream(out)
@@ -143,7 +108,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
+    actual override fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
         if (plaintextBallots.isNotEmpty()) {
             val fileout = path.plaintextBallotPath(outputDir)
             FileOutputStream(fileout).use { out ->
@@ -156,7 +121,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
+    actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
         val proto = trustee.publishDecryptingTrusteeProto()
         val fileout = path.decryptingTrusteePath(trusteeDir, trustee.id)
         FileOutputStream(fileout).use { out ->
@@ -165,7 +130,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun encryptedBallotSink(): EncryptedBallotSinkIF =
+    actual override fun encryptedBallotSink(): EncryptedBallotSinkIF =
         EncryptedBallotSink(encryptedBallotPath().toString())
 
     inner class EncryptedBallotSink(path: String) : EncryptedBallotSinkIF {
@@ -181,7 +146,7 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
         }
     }
 
-    actual fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF =
+    actual override fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF =
         DecryptedTallyOrBallotSink(spoiledBallotPath().toString())
 
     inner class DecryptedTallyOrBallotSink(path: String) : DecryptedTallyOrBallotSinkIF {
@@ -216,4 +181,36 @@ actual class Publisher actual constructor(topDir: String, publisherMode: Publish
             }
         }
     }
+}
+
+/** Delete everything in the given directory, but leave that directory.  */
+fun removeAllFiles(path: Path) {
+    if (!path.toFile().exists()) {
+        return
+    }
+    Files.walk(path)
+        .filter { p: Path -> p != path }
+        .map { obj: Path -> obj.toFile() }
+        .sorted { o1: File, o2: File? -> -o1.compareTo(o2) }
+        .forEach { f: File -> f.delete() }
+}
+
+/** Make sure output dir exists and is writeable.  */
+fun validateOutputDir(path: Path, error: java.util.Formatter): Boolean {
+    if (!Files.exists(path)) {
+        Files.createDirectories(path)
+    }
+    if (!Files.isDirectory(path)) {
+        error.format(" Output directory '%s' is not a directory%n", path)
+        return false
+    }
+    if (!Files.isWritable(path)) {
+        error.format(" Output directory '%s' is not writeable%n", path)
+        return false
+    }
+    if (!Files.isExecutable(path)) {
+        error.format(" Output directory '%s' is not executable%n", path)
+        return false
+    }
+    return true
 }

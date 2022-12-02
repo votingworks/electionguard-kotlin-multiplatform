@@ -1,14 +1,15 @@
 package electionguard.input
 
 import electionguard.ballot.Manifest
+import electionguard.input.BallotInputBuilder.Companion.styleDef
+
 const val electionScopeId = "StandardManifest"
-const val protoVersion = "1.53"
 const val specVersion = "1.53"
 
 /** Build test Manifests */
 class ManifestBuilder(private val manifestName: String = electionScopeId) {
-    val districtDefault = "district"
-    val styleDefault = "styling"
+    val districtDefault = "district9"
+    val styleDefault = styleDef
 
     private val contests = ArrayList<ContestBuilder>()
     private val candidates = HashMap<String, Manifest.Candidate>()
@@ -108,7 +109,6 @@ class ManifestBuilder(private val manifestName: String = electionScopeId) {
         private var allowed = 1
         private var number_elected = 1
         private var district: String = districtDefault
-        private val name = "contestName"
 
         fun setVoteVariationType(type: Manifest.VoteVariationType, allowed: Int, numberElected: Int? = null): ContestBuilder {
             require(allowed > 0)
@@ -159,9 +159,9 @@ class ManifestBuilder(private val manifestName: String = electionScopeId) {
             //                              @Nullable InternationalizedText ballot_subtitle
             return Manifest.ContestDescription(
                 id, seq, district,
-                type, allowed, number_elected, name,
+                type, allowed, number_elected, id,
                 selections.map { it.build() },
-                null, "subtitle",
+                "title", "subtitle",
             )
         }
 

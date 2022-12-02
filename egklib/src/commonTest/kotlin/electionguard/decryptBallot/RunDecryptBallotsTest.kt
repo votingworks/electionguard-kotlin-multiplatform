@@ -2,7 +2,7 @@ package electionguard.decryptBallot
 
 import electionguard.core.productionGroup
 import electionguard.decrypt.readDecryptingTrustees
-import electionguard.publish.Consumer
+import electionguard.publish.makeConsumer
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -108,7 +108,7 @@ class RunDecryptBallotsTest {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/runWorkflowSomeAvailable"
         val ballotDir = "src/commonTest/data/runWorkflowSomeAvailable/private_data/input/"
-        val consumerIn = Consumer(inputDir, group)
+        val consumerIn = makeConsumer(inputDir, group)
 
         consumerIn.iteratePlaintextBallots(ballotDir, null).forEach {
             println(it.ballotId)

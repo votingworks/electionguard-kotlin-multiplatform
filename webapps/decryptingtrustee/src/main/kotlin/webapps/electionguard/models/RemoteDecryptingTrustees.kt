@@ -4,7 +4,7 @@ import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.decrypt.ChallengeRequest
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.publish.Consumer
+import electionguard.publish.makeConsumer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import mu.KotlinLogging
@@ -27,7 +27,7 @@ data class RemoteDecryptingTrusteeJson(val trustee_dir: String, val guardian_id:
 }
 
 fun readState(trusteeDir : String, guardianId: String) : DecryptingTrusteeIF {
-    val consumer = Consumer(trusteeDir, groupContext)
+    val consumer = makeConsumer(trusteeDir, groupContext)
     try {
         return consumer.readTrustee(trusteeDir, guardianId)
     } catch (t: Throwable) {

@@ -21,7 +21,6 @@ interface ElectionRecord {
     fun stage() : Stage
     fun topdir() : String
 
-    fun protoVersion(): String
     fun constants(): ElectionConstants
     fun manifest(): Manifest
     /** The number of guardians necessary to generate the public key. */

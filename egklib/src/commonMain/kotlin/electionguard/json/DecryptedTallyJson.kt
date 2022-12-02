@@ -29,7 +29,7 @@ fun DecryptedTallyJson.import(group: GroupContext) : Result<DecryptedTallyOrBall
     }
     return Ok(DecryptedTallyOrBallot(
         this.object_id,
-        contests,
+        contests.sortedBy { it.contestId },
     ))
 }
 
@@ -54,7 +54,7 @@ fun DecryptedTallyContestJson.import(group: GroupContext) : Result<DecryptedTall
     }
     return Ok(DecryptedTallyOrBallot.Contest(
         this.object_id,
-        selections,
+        selections.sortedBy { it.selectionId },
     ))
 }
 

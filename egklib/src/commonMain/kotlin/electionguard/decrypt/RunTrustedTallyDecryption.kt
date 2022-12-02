@@ -7,9 +7,8 @@ import electionguard.core.GroupContext
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -59,9 +58,9 @@ fun main(args: Array<String>) {
 }
 
 fun readDecryptingTrustees(group: GroupContext, inputDir: String, trusteeDir: String, missing: String? = null): List<DecryptingTrusteeIF> {
-    val consumerIn = Consumer(inputDir, group)
+    val consumerIn = makeConsumer(inputDir, group)
     val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-    val consumer = Consumer(trusteeDir, group)
+    val consumer = makeConsumer(trusteeDir, group)
     val allGuardians = init.guardians.map { consumer.readTrustee(trusteeDir, it.guardianId) }
     if (missing.isNullOrEmpty()) {
         return allGuardians
@@ -80,7 +79,7 @@ fun runDecryptTally(
 ) {
     val starting = getSystemTimeInMillis()
 
-    val consumerIn = Consumer(inputDir, group)
+    val consumerIn = makeConsumer(inputDir, group)
     val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
     val trusteeNames = decryptingTrustees.map { it.id() }.toSet()
     val missingGuardians =
@@ -95,7 +94,7 @@ fun runDecryptTally(
         missingGuardians)
     val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt() }
 
-    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    val publisher = makePublisher(outputDir)
     publisher.writeDecryptionResult(
         DecryptionResult(
             tallyResult,

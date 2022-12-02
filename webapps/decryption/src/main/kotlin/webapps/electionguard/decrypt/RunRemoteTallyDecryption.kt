@@ -8,9 +8,8 @@ import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.decrypt.Decryptor
-import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -88,7 +87,7 @@ fun runRemoteDecrypt(
 ) {
     val starting = getSystemTimeInMillis()
 
-    val consumerIn = Consumer(inputDir, group)
+    val consumerIn = makeConsumer(inputDir, group)
     val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
     val electionInitialized = tallyResult.electionInitialized
 
@@ -129,7 +128,7 @@ fun runRemoteDecrypt(
         missingGuardianIds)
     val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt() }
 
-    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    val publisher = makePublisher(outputDir)
     publisher.writeDecryptionResult(
         DecryptionResult(
             tallyResult,

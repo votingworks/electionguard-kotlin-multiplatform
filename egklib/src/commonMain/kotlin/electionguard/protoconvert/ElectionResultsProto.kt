@@ -20,7 +20,6 @@ fun electionguard.protogen.TallyResult.import(group: GroupContext): Result<Tally
     }
 
     return Ok(TallyResult(
-        group,
         electionInitialized.unwrap(),
         encryptedTally.unwrap(),
         this.ballotIds,

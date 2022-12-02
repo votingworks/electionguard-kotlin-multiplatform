@@ -28,9 +28,8 @@ import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
 import electionguard.input.RandomBallotProvider
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -72,7 +71,7 @@ fun runEncryptDecryptBallot(
     trusteeDir: String,
     present: List<Int>,
 ) {
-    val consumerIn = Consumer(configDir, group)
+    val consumerIn = makeConsumer(configDir, group)
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
     //// simulate key ceremony
@@ -131,10 +130,10 @@ fun runEncryptDecryptBallot(
             cryptoExtendedBaseHash,
             guardians,
         )
-        val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+        val publisher = makePublisher(outputDir)
         publisher.writeElectionInitialized(init)
 
-        val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
+        val trusteePublisher = makePublisher(trusteeDir)
         trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
     }
 }

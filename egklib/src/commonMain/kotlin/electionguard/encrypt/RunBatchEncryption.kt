@@ -22,10 +22,9 @@ import electionguard.core.toElementModQ
 import electionguard.decryptBallot.DecryptionWithEmbeddedNonces
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
-import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
 import electionguard.publish.EncryptedBallotSinkIF
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -124,7 +123,7 @@ fun batchEncryption(
     group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
     invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None
 ) {
-    val consumerIn = Consumer(inputDir, group)
+    val consumerIn = makeConsumer(inputDir, group)
     return batchEncryption(group, inputDir, outputDir, consumerIn.iteratePlaintextBallots(ballotDir, null),
         invalidDir, fixedNonces, nthreads, createdBy, check)
 }
@@ -141,7 +140,7 @@ fun batchEncryption(
     createdBy: String?,
     check: CheckType = CheckType.None
 ) {
-    val consumerIn = Consumer(inputDir, group)
+    val consumerIn = makeConsumer(inputDir, group)
     val electionInit: ElectionInitialized =
         consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
 
@@ -187,7 +186,7 @@ fun batchEncryption(
     val runEncryption = RunEncryption(group, encryptor, codeSeed, primaryNonce, electionInit.manifest(),
         electionInit.jointPublicKey, electionInit.cryptoExtendedBaseHash, check)
 
-    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    val publisher = makePublisher(outputDir)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
 
     runBlocking {

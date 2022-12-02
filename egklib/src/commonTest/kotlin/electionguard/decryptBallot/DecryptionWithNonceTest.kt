@@ -13,7 +13,7 @@ import electionguard.core.randomElementModQ
 import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
 import electionguard.input.RandomBallotProvider
-import electionguard.publish.Consumer
+import electionguard.publish.makeConsumer
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,7 +28,7 @@ class DecryptionWithNonceTest {
     @Test
     fun testDecryptionWithEmbeddedNonces() {
         val group = productionGroup()
-        val consumerIn = Consumer(input, group)
+        val consumerIn = makeConsumer(input, group)
         val electionInit: ElectionInitialized =
             consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
         val encryptor = Encryptor(
@@ -93,7 +93,7 @@ class DecryptionWithNonceTest {
     @Test
     fun testDecryptionWithPrimaryNonce() {
         val group = productionGroup()
-        val consumerIn = Consumer(input, group)
+        val consumerIn = makeConsumer(input, group)
         val electionInit: ElectionInitialized =
             consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
         val encryptor = Encryptor(
@@ -159,7 +159,7 @@ class DecryptionWithNonceTest {
     @Test
     fun testDecryptionOfContestData() {
         val group = productionGroup()
-        val consumerIn = Consumer(input, group)
+        val consumerIn = makeConsumer(input, group)
         val electionInit: ElectionInitialized =
             consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
         val encryptor = Encryptor(
