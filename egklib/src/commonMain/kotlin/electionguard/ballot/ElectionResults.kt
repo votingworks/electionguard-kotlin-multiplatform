@@ -6,7 +6,6 @@ import electionguard.core.GroupContext
 import electionguard.core.UInt256
 
 data class TallyResult(
-    val group: GroupContext,
     val electionInitialized: ElectionInitialized,
     val encryptedTally: EncryptedTally,
     val ballotIds: List<String>,

@@ -10,7 +10,7 @@ option java_outer_classname = "ElectionRecordProto";
 
 // Election Configuration, before the KeyCeremony
 message ElectionConfig {
-  string proto_version = 1; // protobuf serialization version
+  // string proto_version = 1; // protobuf serialization version
   ElectionConstants constants = 2;
   Manifest manifest = 3;
   uint32 number_of_guardians = 4; // n, the number of guardians necessary to generate the public key

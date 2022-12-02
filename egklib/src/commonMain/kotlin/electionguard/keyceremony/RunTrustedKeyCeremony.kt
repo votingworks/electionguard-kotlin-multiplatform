@@ -9,9 +9,8 @@ import electionguard.ballot.ElectionConfig
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -59,7 +58,7 @@ fun runKeyCeremony(
 ): Result<Boolean, String> {
     val starting = getSystemTimeInMillis()
 
-    val consumerIn = Consumer(configDir, group)
+    val consumerIn = makeConsumer(configDir, group)
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
     // Generate the KeyCeremonyTrustees here, which means this is a trusted situation.
@@ -81,11 +80,11 @@ fun runKeyCeremony(
         )
     )
 
-    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    val publisher = makePublisher(outputDir)
     publisher.writeElectionInitialized(electionInitialized)
 
     // store the trustees in some private place.
-    val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
+    val trusteePublisher = makePublisher(trusteeDir)
     trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
 
     val took = getSystemTimeInMillis() - starting

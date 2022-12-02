@@ -9,10 +9,9 @@ import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.runDecryptTally
 import electionguard.encrypt.batchEncryption
 import electionguard.input.RandomBallotProvider
-import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makePublisher
 import electionguard.publish.electionRecordFromConsumer
+import electionguard.publish.makeConsumer
 import electionguard.tally.runAccumulateBallots
 import electionguard.verifier.Verifier
 import kotlin.test.Test
@@ -56,7 +55,7 @@ class TestWorkflow {
         // create fake ballots
         val ballotProvider = RandomBallotProvider(init.config.manifest, nballots)
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
-        val publisher = Publisher(ballotsDir, PublisherMode.createIfMissing)
+        val publisher = makePublisher(ballotsDir)
         publisher.writePlaintextBallot(ballotsDir, ballots)
         println("RandomBallotProvider created ${ballots.size} ballots")
 
@@ -71,7 +70,7 @@ class TestWorkflow {
 
         // verify
         println("\nRun Verifier")
-        val record = electionRecordFromConsumer(Consumer(workingDir, group))
+        val record = electionRecordFromConsumer(makeConsumer(workingDir, group))
         val verifier = Verifier(record)
         val stats = Stats()
         val ok = verifier.verify(stats)
@@ -102,7 +101,7 @@ class TestWorkflow {
         // create fake ballots
         val ballotProvider = RandomBallotProvider(init.config.manifest, nballots)
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
-        val publisher = Publisher(ballotsDir, PublisherMode.createIfMissing)
+        val publisher = makePublisher(ballotsDir)
         publisher.writePlaintextBallot(ballotsDir, ballots)
         println("RandomBallotProvider created ${ballots.size} ballots")
 
@@ -117,7 +116,7 @@ class TestWorkflow {
 
         // verify
         println("\nRun Verifier")
-        val record = electionRecordFromConsumer(Consumer(workingDir, group))
+        val record = electionRecordFromConsumer(makeConsumer(workingDir, group))
         val verifier = Verifier(record)
         val stats = Stats()
         val ok = verifier.verify(stats)
@@ -133,6 +132,6 @@ fun readDecryptingTrustees(
     init: ElectionInitialized,
     present: List<Int>,
 ): List<DecryptingTrusteeIF> {
-    val consumer = Consumer(trusteeDir, group)
+    val consumer = makeConsumer(trusteeDir, group)
     return init.guardians.filter { present.contains(it.xCoordinate)}.map { consumer.readTrustee(trusteeDir, it.guardianId) }
 }

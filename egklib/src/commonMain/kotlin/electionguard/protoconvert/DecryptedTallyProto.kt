@@ -23,7 +23,10 @@ fun electionguard.protogen.DecryptedTallyOrBallot.import(group: GroupContext):
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(DecryptedTallyOrBallot(this.id, contests))
+    return Ok(DecryptedTallyOrBallot(
+        this.id,
+        contests.sortedBy { it.contestId }
+    ))
 }
 
 private fun electionguard.protogen.DecryptedContest.import(group: GroupContext):
@@ -50,7 +53,7 @@ private fun electionguard.protogen.DecryptedContest.import(group: GroupContext):
     return Ok(
         DecryptedTallyOrBallot.Contest(
             this.contestId,
-            selections,
+            selections.sortedBy { it.selectionId },
             decryptedContestData,
         )
     )

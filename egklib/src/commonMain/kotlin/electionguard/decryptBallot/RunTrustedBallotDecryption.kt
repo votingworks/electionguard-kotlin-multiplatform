@@ -13,10 +13,9 @@ import electionguard.core.sigfig
 import electionguard.decrypt.Decryptor
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.readDecryptingTrustees
-import electionguard.publish.Consumer
 import electionguard.publish.DecryptedTallyOrBallotSinkIF
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -93,7 +92,7 @@ fun runDecryptBallots(
     println(" runDecryptBallots on ballots in ${inputDir} with nthreads = $nthreads")
     val starting = getSystemTimeInMillis() // wall clock
 
-    val consumerIn = Consumer(inputDir, group)
+    val consumerIn = makeConsumer(inputDir, group)
     val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
     val trusteeNames = decryptingTrustees.map { it.id() }.toSet()
     val missingGuardians =
@@ -106,7 +105,7 @@ fun runDecryptBallots(
         decryptingTrustees,
         missingGuardians)
 
-    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    val publisher = makePublisher(outputDir)
     val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
 
     val ballotIter: Iterable<EncryptedBallot> =

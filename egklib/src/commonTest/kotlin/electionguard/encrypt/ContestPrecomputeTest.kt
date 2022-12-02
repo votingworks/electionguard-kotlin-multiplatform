@@ -11,7 +11,7 @@ import electionguard.core.Stats
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
-import electionguard.publish.Consumer
+import electionguard.publish.makeConsumer
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -23,7 +23,7 @@ class ContestPrecomputeTest {
     @Test
     fun testContestPrecompute() {
         val group = productionGroup()
-        val consumerIn = Consumer(electionRecordDir, group)
+        val consumerIn = makeConsumer(electionRecordDir, group)
         val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
         val ballots = consumerIn.iteratePlaintextBallots(ballotDir) { true }
         val verifier = VerifyEncryptedBallots(group, electionInit.manifest(), electionInit.jointPublicKey(), electionInit.cryptoExtendedBaseHash(), 25)

@@ -1,8 +1,9 @@
 package electionguard.ballot
 
+import electionguard.core.Base16.toHex
+
 /** Configuration for KeyCeremony. */
 data class ElectionConfig(
-    val protoVersion: String,
     val constants: ElectionConstants,
     val manifest: Manifest,
     /** The number of guardians necessary to generate the public key. */
@@ -13,8 +14,8 @@ data class ElectionConfig(
     val metadata: Map<String, String> = emptyMap(),
 ) {
     init {
-        require(numberOfGuardians > 0)
-        require(numberOfGuardians >= quorum)
+        require(numberOfGuardians > 0)  { "numberOfGuardians ${numberOfGuardians} <= 0" }
+        require(numberOfGuardians >= quorum) { "numberOfGuardians ${numberOfGuardians} != $quorum" }
     }
 }
 
@@ -55,5 +56,13 @@ data class ElectionConstants(
         result = 31 * result + cofactor.contentHashCode()
         result = 31 * result + generator.contentHashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "name = ${this.name}\n" +
+                "largePrime = ${this.largePrime.toHex()}\n" +
+                "smallPrime = ${this.smallPrime.toHex()}\n" +
+                "  cofactor = ${this.cofactor.toHex()}\n" +
+                " generator = ${this.generator.toHex()}\n"
     }
 }

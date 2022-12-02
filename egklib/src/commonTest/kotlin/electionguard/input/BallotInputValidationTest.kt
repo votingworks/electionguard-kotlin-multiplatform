@@ -73,7 +73,7 @@ class TestBallotInputValidation {
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
-            .setGpunit(if (listed) "orphan" else "parented")
+            .setGpunit(if (listed) "orphan" else "district9")
             .done()
             .build()
         assertEquals(validateManifest(election), listed)
@@ -94,7 +94,7 @@ class TestBallotInputValidation {
     fun testGpunitNotListed() {
         testValidate(
             testGpunitListed(false),
-            "Ballot.A.3 Contest's geopoliticalUnitId 'parented' not listed in BallotStyle 'styling' geopoliticalUnitIds"
+            "Ballot.A.3 Contest's geopoliticalUnitId 'district9' not listed in BallotStyle 'styling' geopoliticalUnitIds"
         )
     }
 
@@ -314,6 +314,7 @@ class TestBallotInputValidation {
             assertTrue(problems.hasErrors())
             assertContains(problems.toString(), expectMessage)
         } else {
+            println(problems)
             assertFalse(problems.hasErrors())
         }
     }

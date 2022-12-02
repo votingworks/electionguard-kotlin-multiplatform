@@ -18,7 +18,6 @@ fun electionguard.protogen.ElectionConfig.import(): Result<ElectionConfig, Strin
     }
 
     return Ok(ElectionConfig(
-        this.protoVersion,
         electionConstants.unwrap(),
         manifest.unwrap(),
         this.numberOfGuardians,
@@ -43,7 +42,6 @@ private fun electionguard.protogen.ElectionConstants.import(): Result<ElectionCo
 
 fun ElectionConfig.publishProto() =
     electionguard.protogen.ElectionConfig(
-        protoVersion,
         constants.publishProto(),
         manifest.publishProto(),
         this.numberOfGuardians,

@@ -14,9 +14,9 @@ data class ElectionInitialized(
     val metadata: Map<String, String> = emptyMap(),
 ) {
     init {
-        require(guardians.isNotEmpty())
-        require(guardians.size == this.config.numberOfGuardians)
-        require(config.manifest.cryptoHash == manifestHash)
+        require(guardians.isNotEmpty()) { "empty guardians" }
+        require(guardians.size == this.config.numberOfGuardians) { "nguardians ${guardians.size} != ${this.config.numberOfGuardians}" }
+        require(config.manifest.cryptoHash == manifestHash) { "bad manifest hash" }
     }
 
     fun manifest(): Manifest {

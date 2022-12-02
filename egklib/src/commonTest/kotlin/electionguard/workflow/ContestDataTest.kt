@@ -14,7 +14,7 @@ import electionguard.core.randomElementModQ
 import electionguard.core.runTest
 import electionguard.encrypt.Encryptor
 import electionguard.input.BallotInputBuilder
-import electionguard.publish.Consumer
+import electionguard.publish.makeConsumer
 import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,7 +29,7 @@ class ContestDataTest {
     @Test
     fun testEncryptionWithWriteIn() {
         runTest {
-            val consumerIn = Consumer(input, context)
+            val consumerIn = makeConsumer(input, context)
             val electionInit: ElectionInitialized =
                 consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val manifest: Manifest = electionInit.manifest()

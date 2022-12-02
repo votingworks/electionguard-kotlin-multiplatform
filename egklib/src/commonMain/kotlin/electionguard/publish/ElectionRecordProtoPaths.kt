@@ -1,6 +1,6 @@
 package electionguard.publish
 
-data class ElectionRecordPath(val topDir : String) {
+data class ElectionRecordProtoPaths(val topDir : String) {
     private val electionRecordDir = topDir
 
     companion object {

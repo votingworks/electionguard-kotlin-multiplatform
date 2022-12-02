@@ -35,14 +35,14 @@ class DecryptedTallyOrBallotConvertTest {
 
         fun generateFakeTally(seq: Int, context: GroupContext): DecryptedTallyOrBallot {
             val contests = List(7) { generateFakeContest(it, context) }
-            return DecryptedTallyOrBallot("tallyId$seq", contests)
+            return DecryptedTallyOrBallot("tallyId$seq", contests.sortedBy { it.contestId })
         }
 
         private fun generateFakeContest(cseq: Int, context: GroupContext): DecryptedTallyOrBallot.Contest {
             val selections = List(11) { generateFakeSelection(it, context) }
             return DecryptedTallyOrBallot.Contest(
                 "contest$cseq",
-                selections,
+                selections.sortedBy { it.selectionId },
                 null, // TODO
             )
         }

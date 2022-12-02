@@ -77,10 +77,6 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return consumer.topdir()
     }
 
-    override fun protoVersion(): String {
-        return config.protoVersion
-    }
-
     override fun constants(): ElectionConstants {
         return config.constants
     }
@@ -142,7 +138,7 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
     }
 
     override fun spoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> {
-        return consumer.iterateSpoiledBallotTallies()
+        return consumer.iterateDecryptedBallots()
     }
 
     override fun decryptionResult(): DecryptionResult? {

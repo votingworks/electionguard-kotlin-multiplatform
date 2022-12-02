@@ -17,9 +17,8 @@ import electionguard.core.hashElements
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -81,7 +80,7 @@ fun runRecoveredDecryption52(
         trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
         val commitmentsHash = hashElements(commitments)
 
-        val consumerIn = Consumer(configDir, group)
+        val consumerIn = makeConsumer(configDir, group)
         val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
         val primes = config.constants
@@ -105,10 +104,10 @@ fun runRecoveredDecryption52(
             cryptoExtendedBaseHash,
             guardians,
         )
-        val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+        val publisher = makePublisher(outputDir)
         publisher.writeElectionInitialized(init)
 
-        val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
+        val trusteePublisher = makePublisher(trusteeDir)
         trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
     }
 }

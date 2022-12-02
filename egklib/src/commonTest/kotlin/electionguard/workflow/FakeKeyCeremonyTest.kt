@@ -19,9 +19,8 @@ import electionguard.core.randomElementModQ
 import electionguard.decrypt.DecryptingTrustee
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
-import electionguard.publish.Consumer
-import electionguard.publish.Publisher
-import electionguard.publish.PublisherMode
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -58,7 +57,7 @@ fun runFakeKeyCeremony(
     quorum: Int,
 ): ElectionInitialized {
     // just need the manifest
-    val consumerIn = Consumer(configDir, group)
+    val consumerIn = makeConsumer(configDir, group)
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
@@ -98,7 +97,6 @@ fun runFakeKeyCeremony(
     val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitments)
 
     val newConfig = ElectionConfig(
-        config.protoVersion,
         config.constants,
         config.manifest,
         nguardians,
@@ -115,11 +113,11 @@ fun runFakeKeyCeremony(
         cryptoExtendedBaseHash,
         guardians,
     )
-    val publisher = Publisher(outputDir, PublisherMode.createIfMissing)
+    val publisher = makePublisher(outputDir)
     publisher.writeElectionInitialized(init)
 
     val decryptingTrustees: List<DecryptingTrustee> = trustees.map { makeDecryptingTrustee(it) }
-    val trusteePublisher = Publisher(trusteeDir, PublisherMode.createIfMissing)
+    val trusteePublisher = makePublisher(trusteeDir)
     trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
 
     testEncryptDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees)

@@ -12,10 +12,7 @@ import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 
 /** public API to read from the election record */
-expect class Consumer(
-    topDir: String,
-    groupContext: GroupContext,
-) {
+interface Consumer {
     fun topdir() : String
     fun hasEncryptedBallots() : Boolean
 
@@ -25,16 +22,22 @@ expect class Consumer(
     fun readDecryptionResult(): Result<DecryptionResult, String>
 
     //// Use iterators, so that we never have to read in all objects at once.
-    // all ballots in the ENCRYPTED_BALLOT_FILE, with filter
     fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
-    fun iterateCastBallots(): Iterable<EncryptedBallot>  // state = CAST
-    fun iterateSpoiledBallots(): Iterable<EncryptedBallot> // state = Spoiled
-    // all tallies in the SPOILED_BALLOT_FILE
-    fun iterateSpoiledBallotTallies(): Iterable<DecryptedTallyOrBallot>
+    fun iterateCastBallots(): Iterable<EncryptedBallot>  // encrypted ballots that are CAST
+    fun iterateSpoiledBallots(): Iterable<EncryptedBallot> // encrypted ballots that are SPOILED
+    fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
 
     //// not part of the election record, private data
-    // plaintext ballots in given directory, with filter
+    // read plaintext ballots in given directory, with filter
     fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
     // trustee in given directory for given guardianId
     fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF
+}
+
+fun makeConsumer(
+    topDir: String,
+    group: GroupContext, // false = create directories if not already exist, true = create clean directories,
+    jsonSerialization: Boolean = false, // false = protobuf, true = json
+): Consumer {
+    return if (jsonSerialization) ConsumerJson(topDir, group) else ConsumerProto(topDir, group)
 }

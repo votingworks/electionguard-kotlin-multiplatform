@@ -3,8 +3,8 @@ package electionguard.publish
 import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 
-/** Read/write the Election Record as protobuf files. */
-expect class Publisher(topDir: String, publisherMode: PublisherMode) {
+/** Write the Election Record as protobuf or json files. */
+interface Publisher {
     fun writeElectionConfig(config: ElectionConfig)
     fun writeElectionInitialized(init: ElectionInitialized)
     fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<EncryptedBallot>)
@@ -28,9 +28,10 @@ interface DecryptedTallyOrBallotSinkIF {
     fun close()
 }
 
-enum class PublisherMode {
-    readonly, // read files only
-    writeonly, // write new files, but do not create directories
-    createIfMissing, // create directories if not already exist
-    createNew // create clean directories
+fun makePublisher(
+    topDir: String,
+    createNew: Boolean = false, // false = create directories if not already exist, true = create clean directories,
+    jsonSerialization: Boolean = false, // false = protobuf, true = json
+): Publisher {
+    return if (jsonSerialization) PublisherJson(topDir, createNew) else PublisherProto(topDir, createNew)
 }

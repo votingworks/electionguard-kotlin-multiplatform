@@ -3,7 +3,6 @@ package electionguard.publish
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.*
-import electionguard.input.protoVersion
 import electionguard.input.specVersion
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,7 +28,7 @@ class ElectionRecordTest {
     fun readElectionRecordAndValidate(topdir : String) {
         runTest {
             val group = productionGroup()
-            val consumerIn = Consumer(topdir, group)
+            val consumerIn = makeConsumer(topdir, group)
             assertNotNull(consumerIn)
             val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
             readElectionRecord(decryption)
@@ -42,7 +41,6 @@ class ElectionRecordTest {
         val init = tallyResult.electionInitialized
         val config = init.config
 
-        assertEquals(protoVersion, config.protoVersion)
         assertEquals("production group, low memory use, 4096 bits", config.constants.name)
         assertEquals(specVersion, config.manifest.specVersion)
         assertEquals("RunWorkflow", tallyResult.encryptedTally.tallyId)

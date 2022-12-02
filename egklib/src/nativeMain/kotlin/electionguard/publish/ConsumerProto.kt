@@ -11,11 +11,8 @@ import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 // implements the public API
-actual class Consumer actual constructor(
-    private val topDir: String,
-    private val groupContext: GroupContext,
-) {
-    private val path = ElectionRecordPath(topDir)
+actual class ConsumerProto actual constructor(private val topDir: String, private val groupContext: GroupContext) : Consumer {
+    private val path = ElectionRecordProtoPaths(topDir)
 
     init {
         if (!exists(topDir)) {
@@ -23,38 +20,38 @@ actual class Consumer actual constructor(
         }
     }
 
-    actual fun topdir(): String {
+    actual override fun topdir(): String {
         return this.topDir
     }
 
-    actual fun readElectionConfig(): Result<ElectionConfig, String> {
+    actual override fun readElectionConfig(): Result<ElectionConfig, String> {
         return readElectionConfig(path.electionConfigPath())
     }
 
-    actual fun readElectionInitialized(): Result<ElectionInitialized, String> {
+    actual override fun readElectionInitialized(): Result<ElectionInitialized, String> {
         return groupContext.readElectionInitialized(path.electionInitializedPath())
     }
 
-    actual fun readTallyResult(): Result<TallyResult, String> {
+    actual override fun readTallyResult(): Result<TallyResult, String> {
         return groupContext.readTallyResult(path.tallyResultPath())
     }
 
-    actual fun readDecryptionResult(): Result<DecryptionResult, String> {
+    actual override fun readDecryptionResult(): Result<DecryptionResult, String> {
         return groupContext.readDecryptionResult(path.decryptionResultPath())
     }
 
-    actual fun hasEncryptedBallots(): Boolean {
+    actual override fun hasEncryptedBallots(): Boolean {
         return exists(path.encryptedBallotPath())
     }
 
-    actual fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
+    actual override fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
         if (!exists(path.encryptedBallotPath())) {
             return emptyList()
         }
         return Iterable { EncryptedBallotIterator(groupContext, path.encryptedBallotPath(), null, filter) }
     }
 
-    actual fun iterateCastBallots(): Iterable<EncryptedBallot> {
+    actual override fun iterateCastBallots(): Iterable<EncryptedBallot> {
         if (!exists(path.encryptedBallotPath())) {
             return emptyList()
         }
@@ -63,7 +60,7 @@ actual class Consumer actual constructor(
         }
     }
 
-    actual fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
+    actual override fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
         if (!exists(path.encryptedBallotPath())) {
             return emptyList()
         }
@@ -72,21 +69,21 @@ actual class Consumer actual constructor(
         }
     }
 
-    actual fun iterateSpoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> {
+    actual override fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot> {
         if (!exists(path.spoiledBallotPath())) {
             return emptyList()
         }
         return Iterable { SpoiledBallotTallyIterator(groupContext, path.spoiledBallotPath())}
     }
 
-    actual fun iteratePlaintextBallots(
+    actual override fun iteratePlaintextBallots(
         ballotDir : String,
         filter : ((PlaintextBallot) -> Boolean)?
     ): Iterable<PlaintextBallot> {
         return Iterable { PlaintextBallotIterator(path.plaintextBallotPath(ballotDir), filter) }
     }
 
-    actual fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {
+    actual override fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {
         val filename = path.decryptingTrusteePath(trusteeDir, guardianId)
         return groupContext.readTrustee(filename)
     }
