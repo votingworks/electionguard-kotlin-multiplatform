@@ -44,7 +44,8 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val tally: Int, // logK(M)
-        val value: ElementModP, // M
+        val value: ElementModP, // M = K^tally = B/Mbar  // equals 1 when tally = 0; is this needed? 8.B, 11.B.
+                                // seems like could compute M and Mbar from B and t, then the challenge in 8 is enough
         val message: ElGamalCiphertext, // (A, B) same as EncryptedTally.Selection.ciphertext
         val proof: GenericChaumPedersenProof,
     ) {

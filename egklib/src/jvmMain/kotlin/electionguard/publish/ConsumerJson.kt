@@ -43,6 +43,8 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return this.topDir
     }
 
+    actual override fun isJson() = true
+
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
         return readElectionConfig(jsonPaths.electionConstantsPath(), jsonPaths.manifestPath())
     }

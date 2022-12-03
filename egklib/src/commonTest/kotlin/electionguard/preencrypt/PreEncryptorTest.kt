@@ -45,7 +45,7 @@ internal class PreEncryptorTest {
 
             manifest.ballotStyles.forEach { println(it) }
 
-            val pballot = preEncryptor.preencrypt("testPreencrypt_ballot_id", "ballotStyle", 11U.toUInt256())
+            val pballot = preEncryptor.preencrypt("testPreencrypt_ballot_id", "styling", 11U.toUInt256())
             pballot.show()
         }
     }
@@ -66,7 +66,7 @@ internal class PreEncryptorTest {
             manifest.ballotStyles.forEach { println(it) }
 
             val primaryNonce = 42U.toUInt256()
-            val pballot = preEncryptor.preencrypt("testDecrypt_ballot_id", "ballotStyle", primaryNonce)
+            val pballot = preEncryptor.preencrypt("testDecrypt_ballot_id", "styling", primaryNonce)
             pballot.show()
 
             val mballot = markBallotChooseOne(manifest, pballot)

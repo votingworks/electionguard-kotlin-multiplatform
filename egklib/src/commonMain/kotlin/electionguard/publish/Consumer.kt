@@ -9,12 +9,13 @@ import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
+import electionguard.core.fileExists
 import electionguard.decrypt.DecryptingTrusteeIF
 
 /** public API to read from the election record */
 interface Consumer {
     fun topdir() : String
-    fun hasEncryptedBallots() : Boolean
+    fun isJson() : Boolean
 
     fun readElectionConfig(): Result<ElectionConfig, String>
     fun readElectionInitialized(): Result<ElectionInitialized, String>
@@ -22,6 +23,7 @@ interface Consumer {
     fun readDecryptionResult(): Result<DecryptionResult, String>
 
     //// Use iterators, so that we never have to read in all objects at once.
+    fun hasEncryptedBallots() : Boolean
     fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     fun iterateCastBallots(): Iterable<EncryptedBallot>  // encrypted ballots that are CAST
     fun iterateSpoiledBallots(): Iterable<EncryptedBallot> // encrypted ballots that are SPOILED
@@ -37,7 +39,8 @@ interface Consumer {
 fun makeConsumer(
     topDir: String,
     group: GroupContext, // false = create directories if not already exist, true = create clean directories,
-    jsonSerialization: Boolean = false, // false = protobuf, true = json
+    isJson: Boolean? = null, // false = protobuf, true = json; default check if manifest.json file exists
 ): Consumer {
+    val jsonSerialization = isJson?: fileExists("$topDir/${ElectionRecordJsonPaths.MANIFEST_FILE}")
     return if (jsonSerialization) ConsumerJson(topDir, group) else ConsumerProto(topDir, group)
 }
