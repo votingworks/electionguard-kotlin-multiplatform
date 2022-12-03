@@ -63,7 +63,7 @@ fun generateElectionInitialized(context: GroupContext): ElectionInitialized {
 //    val coefficientProofs: List<SchnorrProof>
 fun generateGuardian(seq: Int, context: GroupContext): Guardian {
     return Guardian(
-        "guardian $seq",
+        "guardian$seq",
         (seq + 1),
         List(3) { generateSchnorrProof(context) },
     )

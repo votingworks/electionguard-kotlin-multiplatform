@@ -69,7 +69,7 @@ class TestBallotInputValidation {
 
     fun testGpunitListed(listed: Boolean): ElectionAndBallot {
         val ebuilder = ManifestBuilder("ballot_id")
-            .addStyle("styling", "orphan", "annie")
+            .addStyle("ballotStyle", "orphan", "annie")
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -94,7 +94,7 @@ class TestBallotInputValidation {
     fun testGpunitNotListed() {
         testValidate(
             testGpunitListed(false),
-            "Ballot.A.3 Contest's geopoliticalUnitId 'district9' not listed in BallotStyle 'styling' geopoliticalUnitIds"
+            "Ballot.A.3 Contest's geopoliticalUnitId 'district9' not listed in BallotStyle 'ballotStyle' geopoliticalUnitIds"
         )
     }
 

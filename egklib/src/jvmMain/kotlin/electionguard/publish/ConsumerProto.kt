@@ -42,6 +42,8 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         return this.topDir
     }
 
+    actual override fun isJson() = false
+
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
         return readElectionConfig(path.electionConfigPath())
     }

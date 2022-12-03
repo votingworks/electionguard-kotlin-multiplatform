@@ -13,13 +13,14 @@ import electionguard.decrypt.DecryptingTrusteeIF
 
 expect class ConsumerJson (topDir: String, group: GroupContext) : Consumer {
     override fun topdir() : String
-    override fun hasEncryptedBallots() : Boolean
+    override fun isJson() : Boolean
 
     override fun readElectionConfig(): Result<ElectionConfig, String>
     override fun readElectionInitialized(): Result<ElectionInitialized, String>
     override fun readTallyResult(): Result<TallyResult, String>
     override fun readDecryptionResult(): Result<DecryptionResult, String>
 
+    override fun hasEncryptedBallots() : Boolean
     override fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     override fun iterateCastBallots(): Iterable<EncryptedBallot>
     override fun iterateSpoiledBallots(): Iterable<EncryptedBallot>

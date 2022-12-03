@@ -24,6 +24,8 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
         return this.topDir
     }
 
+    actual override fun isJson() = true
+
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
         return readElectionConfig(path.electionConfigPath())
     }
