@@ -137,7 +137,7 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return decryptionResult?.lagrangeCoordinates ?: emptyList()
     }
 
-    override fun spoiledBallotTallies(): Iterable<DecryptedTallyOrBallot> {
+    override fun decryptedBallots(): Iterable<DecryptedTallyOrBallot> {
         return consumer.iterateDecryptedBallots()
     }
 

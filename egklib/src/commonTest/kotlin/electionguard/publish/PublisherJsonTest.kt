@@ -1,7 +1,9 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.*
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.ElectionInitialized
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.productionGroup
 import electionguard.input.ManifestInputValidation
 import electionguard.protoconvert.generateElectionConfig
@@ -80,17 +82,7 @@ class PublisherJsonTest {
         assertTrue(roundtripResult is Ok)
         val roundtrip = roundtripResult.unwrap()
 
-        assertEquals(init.config.constants, roundtrip.config.constants)
-        assertEquals(init.config.manifest, roundtrip.config.manifest)
-        assertEquals(init.config.numberOfGuardians, roundtrip.config.numberOfGuardians)
-        assertEquals(init.config.quorum, roundtrip.config.quorum)
-        assertEquals(init.config, roundtrip.config)
-
-        assertEquals(init.jointPublicKey, roundtrip.jointPublicKey)
-        assertEquals(init.cryptoBaseHash, roundtrip.cryptoBaseHash)
-        assertEquals(init.cryptoExtendedBaseHash, roundtrip.cryptoExtendedBaseHash)
-        assertEquals(init.guardians, roundtrip.guardians)
-        assertEquals(init, roundtrip)
+        assertTrue(roundtrip.approxEquals(init))
     }
 
     @Test
@@ -112,23 +104,9 @@ class PublisherJsonTest {
         assertTrue(rtResult is Ok)
         val roundtrip = rtResult.unwrap()
 
-        assertEquals(init.config.constants, roundtrip.config.constants)
-        assertEquals(init.config.manifest, roundtrip.config.manifest)
-        assertEquals(init.config.numberOfGuardians, roundtrip.config.numberOfGuardians)
-        assertEquals(init.config.quorum, roundtrip.config.quorum)
-        // cant store metadata in json, so init not equal
+        assertTrue(roundtrip.approxEquals(init))
 
-        assertEquals(init.jointPublicKey, roundtrip.jointPublicKey)
-        assertEquals(init.cryptoBaseHash, roundtrip.cryptoBaseHash)
-        assertEquals(init.cryptoExtendedBaseHash, roundtrip.cryptoExtendedBaseHash)
-        assertEquals(init.guardians, roundtrip.guardians)
-
-        val inBallots = consumerIn.iterateEncryptedBallots { true }.associateBy { it.ballotId }
-        consumerOut.iterateEncryptedBallots { true }.forEach {
-            val inBallot = inBallots[it.ballotId] ?: throw RuntimeException("Cant find ${it.ballotId}")
-            assertEquals(it, inBallot)
-            println(" Ballot ${it.ballotId} OK")
-        }
+        assertTrue(consumerOut.iterateEncryptedBallots { true }.approxEqualsEncryptedBallots(consumerIn.iterateEncryptedBallots { true }))
     }
 
     @Test
@@ -143,27 +121,103 @@ class PublisherJsonTest {
         }
         sink.close()
 
-        val inBallots = consumerIn.iterateDecryptedBallots().associateBy { it.id }
-        consumerOut.iterateDecryptedBallots().forEach {
-            val inBallot = inBallots[it.id] ?: throw RuntimeException("Cant find ${it.id}")
-            it.contests.forEach {
-                val inContest = inBallot.contests.find { c -> it.contestId == c.contestId }
-                    ?: throw RuntimeException("Cant find ${it.contestId}")
-                it.selections.forEach {
-                    val inSelection = inContest.selections.find { s -> it.selectionId == s.selectionId }
-                        ?: throw RuntimeException("Cant find ${it.selectionId}")
-                    assertEquals(inSelection.selectionId, it.selectionId)
-                    assertEquals(inSelection.tally, it.tally)
-                    assertEquals(inSelection.value, it.value)
-                    assertEquals(inSelection.message, it.message)
-                    assertEquals(inSelection.proof, it.proof)
-                    assertEquals(inSelection, it)
-                }
-                // decryptedContestData not yet done
-            }
-            println(" Spoiled Ballot ${it.id} OK")
-        }
+        assertTrue(consumerOut.iterateDecryptedBallots().approxEqualsDecryptedBallots(consumerIn.iterateDecryptedBallots()))
     }
 
+    @Test
+    fun testWriteTallyResults() {
+        val output5 = output + "5"
+        val publisher = makePublisher(output5, true, true)
+        val consumerOut = makeConsumer(output5, group, true)
 
+        val tallyResult = consumerIn.readTallyResult()
+        if (tallyResult is Err) {
+            println("readTallyResult from in = $tallyResult")
+        }
+        assertTrue(tallyResult is Ok)
+        val tally = tallyResult.unwrap()
+
+        publisher.writeTallyResult(tally)
+        val rtResult = consumerOut.readTallyResult()
+        if (rtResult is Err) {
+            println("readTallyResult from out = $rtResult")
+        }
+        assertTrue(rtResult is Ok)
+        val roundtrip = rtResult.unwrap()
+
+        assertEquals(tally.encryptedTally, roundtrip.encryptedTally)
+    }
+
+    @Test
+    fun testWriteDecryptionResults() {
+        val output6 = output + "6"
+        val publisher = makePublisher(output6, true, true)
+        val consumerOut = makeConsumer(output6, group, true)
+
+        val tallyResult = consumerIn.readDecryptionResult()
+        if (tallyResult is Err) {
+            println("readTallyResult from in = $tallyResult")
+        }
+        assertTrue(tallyResult is Ok)
+        val tally = tallyResult.unwrap()
+
+        publisher.writeDecryptionResult(tally)
+        val rtResult = consumerOut.readDecryptionResult()
+        if (rtResult is Err) {
+            println("readTallyResult from out = $rtResult")
+        }
+        assertTrue(rtResult is Ok)
+        val roundtrip = rtResult.unwrap()
+
+        assertEquals(tally.decryptedTally, roundtrip.decryptedTally)
+    }
+}
+
+
+// cant store metadata in json, so init not equal
+fun ElectionInitialized.approxEquals(expected: ElectionInitialized) : Boolean {
+    assertEquals(expected.config.constants, this.config.constants)
+    assertEquals(expected.config.manifest, this.config.manifest)
+    assertEquals(expected.config.numberOfGuardians, this.config.numberOfGuardians)
+    assertEquals(expected.config.quorum, this.config.quorum)
+
+    assertEquals(expected.jointPublicKey, this.jointPublicKey)
+    assertEquals(expected.cryptoBaseHash, this.cryptoBaseHash)
+    assertEquals(expected.cryptoExtendedBaseHash, this.cryptoExtendedBaseHash)
+    assertEquals(expected.guardians, this.guardians)
+    return true
+}
+
+fun Iterable<EncryptedBallot>.approxEqualsEncryptedBallots(expected: Iterable<EncryptedBallot>) : Boolean {
+    val inBallots = expected.associateBy { it.ballotId }
+    this.forEach {
+        val inBallot = inBallots[it.ballotId] ?: throw RuntimeException("Cant find ${it.ballotId}")
+        assertEquals(it, inBallot)
+        println(" Ballot ${it.ballotId} OK")
+    }
+    return true
+}
+
+fun Iterable<DecryptedTallyOrBallot>.approxEqualsDecryptedBallots(expected: Iterable<DecryptedTallyOrBallot>) : Boolean {
+    val inBallots = expected.associateBy { it.id }
+    this.forEach {
+        val inBallot = inBallots[it.id] ?: throw RuntimeException("Cant find ${it.id}")
+        it.contests.forEach {
+            val inContest = inBallot.contests.find { c -> it.contestId == c.contestId }
+                ?: throw RuntimeException("Cant find ${it.contestId}")
+            it.selections.forEach {
+                val inSelection = inContest.selections.find { s -> it.selectionId == s.selectionId }
+                    ?: throw RuntimeException("Cant find ${it.selectionId}")
+                assertEquals(inSelection.selectionId, it.selectionId)
+                assertEquals(inSelection.tally, it.tally)
+                assertEquals(inSelection.value, it.value)
+                assertEquals(inSelection.message, it.message)
+                assertEquals(inSelection.proof, it.proof)
+                assertEquals(inSelection, it)
+            }
+            // decryptedContestData not yet done
+        }
+        println(" Spoiled Ballot ${it.id} OK")
+    }
+    return true
 }

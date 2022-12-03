@@ -79,7 +79,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
 
         // 10, 11, 12, 13, 14 spoiled ballots
         val spoiledResult =
-            verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, stats, showTime)
+            verifyTally.verifySpoiledBallotTallies(record.decryptedBallots(), nthreads, stats, showTime)
         println(" 10,11,12,13,14. verifySpoiledBallotTallies $spoiledResult")
 
         val allOk = (parametersOk is Ok) && (guardiansOk is Ok) && (publicKeyOk is Ok) &&
@@ -162,7 +162,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
 
     fun verifySpoiledBallotTallies(stats: Stats): Result<Boolean, String> {
         val verifyTally = VerifyDecryption(group, manifest, jointPublicKey, qbar)
-        return verifyTally.verifySpoiledBallotTallies(record.spoiledBallotTallies(), nthreads, stats, true)
+        return verifyTally.verifySpoiledBallotTallies(record.decryptedBallots(), nthreads, stats, true)
     }
 
 }

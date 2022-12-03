@@ -70,6 +70,8 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeTallyResult(tally: TallyResult) {
+        writeElectionInitialized(tally.electionInitialized)
+
         val encryptedTallyJson = tally.encryptedTally.publish()
         FileOutputStream(jsonPaths.encryptedTallyPath()).use { out ->
             jsonFormat.encodeToStream(encryptedTallyJson, out)
@@ -78,6 +80,8 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeDecryptionResult(decryption: DecryptionResult) {
+        writeTallyResult(decryption.tallyResult)
+
         // all the coefficients in a map in one file
         val coefficientsJson = decryption.lagrangeCoordinates.publish()
         FileOutputStream(jsonPaths.lagrangePath()).use { out ->
