@@ -66,7 +66,7 @@ data class DecryptedTallySelectionJson(
     val object_id: String,
     val tally: Int,
     val value: ElementModPJson,
-    val ciphertext: ElGamalCiphertextJson,
+    val message: ElGamalCiphertextJson,
     val proof: ChaumPedersenProofJson,
 )
 
@@ -80,7 +80,7 @@ fun DecryptedTallyOrBallot.Selection.publish() = DecryptedTallySelectionJson(
 
 fun DecryptedTallySelectionJson.import(group: GroupContext) : Result<DecryptedTallyOrBallot.Selection, String> {
     val value = this.value.import(group)
-    val ciphertext = this.ciphertext.import(group)
+    val ciphertext = this.message.import(group)
     val proof = this.proof.import(group)
     if (value == null || ciphertext == null || proof == null) {
         return Err("Failed to import selection ${this.object_id}")
