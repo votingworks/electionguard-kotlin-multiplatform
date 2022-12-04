@@ -3,9 +3,6 @@ package electionguard.core
 import electionguard.core.Base16.fromSafeHex
 import electionguard.core.Base16.toHex
 import electionguard.core.Base64.fromSafeBase64
-import electionguard.json.import
-import electionguard.json.jsonRoundTrip
-import electionguard.json.publish
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import kotlin.test.Test
@@ -53,12 +50,7 @@ class ConstantsTest {
 
         println("smallPrime size= ${constants.smallPrime.size}")
         println("smallPrime     = ${constants.smallPrime.toHex()}")
-
-        println("largePrime size= ${constants.largePrime.size}")
-        println("largePrime     = ${constants.largePrime.toHex()}")
-
-        println("qnormal              = ${constants.smallPrime.normalize(32).toHex()}")
-        println("pnormal              = ${constants.largePrime.normalize(512).toHex()}")
+        println("qnormal        = ${constants.smallPrime.normalize(32).toHex()}")
 
         val q64 = "AP////////////////////////////////////////9D"
         val q64Bytes = q64.fromSafeBase64()
@@ -70,6 +62,11 @@ class ConstantsTest {
         println("q16 size= ${q16Bytes.size}")
         println("q16     = ${q16Bytes.toHex()}")
 
+        println("\n====================\n")
+        println("largePrime size= ${constants.largePrime.size}")
+        println("largePrime     = ${constants.largePrime.toHex()}")
+        println("pnormal        = ${constants.largePrime.normalize(512).toHex()}")
+
         val p64 = "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3fFy0NYjQhf8wAN/GLk+9TiRMLemYeXCblQhQGi7yv6jKmeBi9MHWtH1x+nMPRc3+ygXG6+E27ZhK3iBwaSOQ5zQOpK/UiJaKzjmVC6fcivOFaOBtXU+qEJ2M4HMroNRKzBRGzLl6NgDYhSa0DCqul86V5i7Iqp+wbbQ8XkD9OIthAc0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWav//////////////////////////////////////////"
         val p64Bytes = p64.fromSafeBase64()
         println("q64 size= ${p64Bytes.size}")
@@ -80,5 +77,7 @@ class ConstantsTest {
         println("p16 size= ${p16Bytes.size}")
         println("p16     = ${p16Bytes.toHex()}")
 
+        assertEquals(32, constants.smallPrime.size)
+        assertEquals(512, constants.largePrime.size)
     }
 }
