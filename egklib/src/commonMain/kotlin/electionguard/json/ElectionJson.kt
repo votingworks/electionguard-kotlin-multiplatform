@@ -9,12 +9,13 @@ import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.core.normalize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("ElectionConstants")
-class ConstantsJson(
+data class ConstantsJson(
     val name: String,
     val large_prime: String,
     val small_prime: String,
@@ -24,10 +25,10 @@ class ConstantsJson(
 
 fun ElectionConstants.publish() = ConstantsJson(
     this.name,
-    this.largePrime.toHex(),
-    this.smallPrime.toHex(),
-    this.cofactor.toHex(),
-    this.generator.toHex(),
+    this.largePrime.toHex(), // .normalize(512).toHex(),
+    this.smallPrime.toHex(), // .normalize(32).toHex(),
+    this.cofactor.normalize(481).toHex(),
+    this.generator.normalize(512).toHex(),
 )
 
 fun ConstantsJson.import() = ElectionConstants(
@@ -42,7 +43,7 @@ fun ConstantsJson.import() = ElectionConstants(
 
 @Serializable
 @SerialName("ElectionContext")
-class ContextJson(
+data class ContextJson(
     val number_of_guardians: Int,
     val quorum: Int,
     val elgamal_public_key: ElementModPJson,
@@ -77,7 +78,7 @@ fun ContextJson.import(group: GroupContext, electionConfig: ElectionConfig, guar
 
 @Serializable
 @SerialName("LagrangeCoordinate")
-class LagrangeCoordinateJson(
+data class LagrangeCoordinateJson(
     val guardian_id: String,
     val x_coordinate: Int,
     val lagrange_coefficient: ElementModQJson,
@@ -99,7 +100,7 @@ fun LagrangeCoordinateJson.import(group: GroupContext) = LagrangeCoordinate(
 
 @Serializable
 @SerialName("Coefficients")
-class CoefficientsJson(
+data class CoefficientsJson(
     val coefficients: Map<String, LagrangeCoordinateJson>,
 )
 

@@ -334,28 +334,28 @@ fun GroupContext.addQ(vararg elements: ElementModQ) = elements.asIterable().addQ
 fun GroupContext.multP(vararg elements: ElementModP) = elements.asIterable().multP()
 
 /**
- * Converts a base-16 (hexidecimal) string to an [ElementModP]. Returns null if the number is out of
+ * Converts a base-16 (hexadecimal) string to an [ElementModP]. Returns null if the number is out of
  * bounds or the string is malformed.
  */
 fun GroupContext.base16ToElementModP(s: String): ElementModP? =
     s.fromHex()?.let { binaryToElementModP(it) }
 
 /**
- * Converts a base-16 (hexidecimal) string to an [ElementModQ]. Returns null if the number is out of
+ * Converts a base-16 (hexadecimal) string to an [ElementModQ]. Returns null if the number is out of
  * bounds or the string is malformed.
  */
 fun GroupContext.base16ToElementModQ(s: String): ElementModQ? =
     s.fromHex()?.let { binaryToElementModQ(it) }
 
 /**
- * Converts a base-16 (hexidecimal) string to an [ElementModP]. Guarantees the result is in [0, P),
+ * Converts a base-16 (hexadecimal) string to an [ElementModP]. Guarantees the result is in [0, P),
  * by computing the result mod P.
  */
 fun GroupContext.safeBase16ToElementModP(s: String): ElementModP =
     s.fromHex()?.let { safeBinaryToElementModP(it) } ?: ZERO_MOD_P
 
 /**
- * Converts a base-16 (hexidecimal) string to an [ElementModQ]. Guarantees the result is in [0, Q),
+ * Converts a base-16 (hexadecimal) string to an [ElementModQ]. Guarantees the result is in [0, Q),
  * by computing the result mod Q.
  */
 fun GroupContext.safeBase16ToElementModQ(s: String): ElementModQ =
