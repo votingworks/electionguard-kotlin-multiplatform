@@ -48,7 +48,6 @@ class PublisherJsonTest {
         }
         assertTrue(roundtripResult is Ok)
         val roundtrip = roundtripResult.unwrap()
-
         assertEquals(config.constants, roundtrip.constants)
         assertEquals(config.manifest, roundtrip.manifest)
         // no way to store nguardians, quorum in json, so cant compare config
@@ -78,6 +77,8 @@ class PublisherJsonTest {
         assertNotNull(roundtripResult)
         if (roundtripResult is Err) {
             println("readElectionInitialized = $roundtripResult")
+        } else {
+            println("readElectionInitialized Ok")
         }
         assertTrue(roundtripResult is Ok)
         val roundtrip = roundtripResult.unwrap()

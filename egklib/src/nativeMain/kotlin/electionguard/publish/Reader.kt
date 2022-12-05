@@ -36,6 +36,8 @@ import platform.posix.stat
 
 internal val logger = KotlinLogging.logger("nativeReader")
 
+//// Used by native ConsumerProto
+
 fun readElectionConfig(filename: String): Result<ElectionConfig, String> {
     val buffer = gulp(filename)
     val proto = electionguard.protogen.ElectionConfig.decodeFromByteArray(buffer)
@@ -95,6 +97,10 @@ class EncryptedBallotIterator(
 
     private val file = openFile(filename, "rb")
 
+    init {
+        println("EncryptedBallotIterator open $filename $file")
+    }
+
     override fun computeNext() {
         while (true) {
             val length = readVlen(file, filename)
@@ -148,48 +154,6 @@ fun GroupContext.readTrustee(filename: String): DecryptingTrusteeIF {
     return trusteeProto.import(this).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
 }
 
-/** Read everything in the file and return as a ByteArray. */
-@Throws(IOException::class)
-private fun gulp(filename: String): ByteArray {
-    return memScoped {
-        val stat = alloc<stat>()
-        // lstat(@kotlinx.cinterop.internal.CCall.CString __file: kotlin.String?,
-        //   __buf: kotlinx.cinterop.CValuesRef<platform.posix.stat>?)
-        // : kotlin.Int { /* compiled code */ }
-        if (lstat(filename, stat.ptr) != 0) {
-            checkErrno {mess -> throw IOException("Fail lstat $mess on $filename")}
-        }
-        val size = stat.st_size.toULong()
-        val file = openFile(filename, "rb")
-        val ba = readFromFile(file, size, filename)
-        fclose(file)
-
-        return@memScoped ba
-    }
-}
-
-@Throws(IOException::class)
-private fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String): ByteArray {
-    return memScoped {
-        val bytePtr: CArrayPointer<ByteVar> = allocArray(nbytes.toInt())
-
-        // fread(
-        //   __ptr: kotlinx.cinterop.CValuesRef<*>?,
-        //   __size: platform.posix.size_t /* = kotlin.ULong */,
-        //   __n: platform.posix.size_t /* = kotlin.ULong */,
-        //   __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
-        //   : kotlin.ULong { /* compiled code */ }
-        val nread = fread(bytePtr, 1, nbytes, file)
-        if (nread < 0u) {
-            checkErrno { mess -> throw IOException("Fail read $mess on $filename") }
-        }
-        if (nread != nbytes) {
-            throw IOException("Fail read $nread != $nbytes  on $filename")
-        }
-        return@memScoped bytePtr.readBytes(nread.toInt())
-    }
-}
-
 /** read variable length (base 128) integer from a stream and return as an Int */
 @Throws(IOException::class)
 private fun readVlen(input: CPointer<FILE>, filename: String): Int {
@@ -222,5 +186,50 @@ private fun readByte(file: CPointer<FILE>, filename: String): Int {
             checkErrno { mess -> throw IOException("Fail readByte $mess on $filename") }
         }
         return@memScoped intPtr.value
+    }
+}
+
+
+//// Used by native ConsumerProto and ConsumerJson
+
+/** Read everything in the file and return as a ByteArray. */
+@Throws(IOException::class)
+fun gulp(filename: String): ByteArray {
+    return memScoped {
+        val stat = alloc<stat>()
+        // lstat(@kotlinx.cinterop.internal.CCall.CString __file: kotlin.String?,
+        //   __buf: kotlinx.cinterop.CValuesRef<platform.posix.stat>?)
+        // : kotlin.Int { /* compiled code */ }
+        if (lstat(filename, stat.ptr) != 0) {
+            checkErrno {mess -> throw IOException("Fail lstat $mess on $filename")}
+        }
+        val size = stat.st_size.toULong()
+        val file = openFile(filename, "rb")
+        val ba = readFromFile(file, size, filename)
+        fclose(file)
+
+        return@memScoped ba
+    }
+}
+
+@Throws(IOException::class)
+fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String): ByteArray {
+    return memScoped {
+        val bytePtr: CArrayPointer<ByteVar> = allocArray(nbytes.toInt())
+
+        // fread(
+        //   __ptr: kotlinx.cinterop.CValuesRef<*>?,
+        //   __size: platform.posix.size_t /* = kotlin.ULong */,
+        //   __n: platform.posix.size_t /* = kotlin.ULong */,
+        //   __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
+        //   : kotlin.ULong { /* compiled code */ }
+        val nread = fread(bytePtr, 1, nbytes, file)
+        if (nread < 0u) {
+            checkErrno { mess -> throw IOException("Fail read $mess on $filename") }
+        }
+        if (nread != nbytes) {
+            throw IOException("Fail read $nread != $nbytes on $filename")
+        }
+        return@memScoped bytePtr.readBytes(nread.toInt())
     }
 }

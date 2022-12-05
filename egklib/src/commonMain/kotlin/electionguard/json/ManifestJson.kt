@@ -6,8 +6,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("ElectionManifest")
-data class ElectionManifestJson(
+@SerialName("Manifest")
+data class ManifestJson(
     val election_scope_id: String,
     val spec_version: String,
     val type: String,
@@ -22,10 +22,10 @@ data class ElectionManifestJson(
     val contact_information: ContactJson?,
 )
 
-fun Manifest.publish() : ElectionManifestJson {
+fun Manifest.publish() : ManifestJson {
     val names = this.name.map { TextJson(it.value, it.language)}
 
-    return ElectionManifestJson(
+    return ManifestJson(
         this.electionScopeId,
         this.specVersion,
         this.electionType.name,
@@ -41,7 +41,7 @@ fun Manifest.publish() : ElectionManifestJson {
     )
 }
 
-fun ElectionManifestJson.import(): Manifest {
+fun ManifestJson.import(): Manifest {
     val type = safeEnumValueOf(this.type) ?: Manifest.ElectionType.unknown
     val names = this.name.map { entry -> Manifest.Language(entry.value.value, entry.value.language)}
     return Manifest(

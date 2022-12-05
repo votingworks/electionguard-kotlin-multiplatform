@@ -2,7 +2,6 @@ package electionguard.publish
 
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
-import electionguard.core.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import mu.KotlinLogging
@@ -10,25 +9,26 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
-    private val kotlinDir = "src/commonTest/data/runWorkflowSomeAvailable"
+    // private val kotlinDir = "src/commonTest/data/runWorkflowSomeAvailable"
+    private val kotlinDir = "testOut/RunElectionRecordConvertProto"
 
     @Test
     fun readBallotsWrittenByKotlin() {
-        runTest {
-            val context = productionGroup()
+        println("readBallotsWrittenByKotlin $kotlinDir")
+        val context = productionGroup()
             readBallots(context, kotlinDir, 25)
             readCastBallots(context, kotlinDir, 25)
             readSpoiledBallots(context, kotlinDir, 0)
             readSpoiledBallotTallies(context, kotlinDir, 2)
-        }
     }
 
     fun readBallots(context: GroupContext, topdir: String, expected: Int) {
+        println("readBallots $topdir")
         val consumerIn = makeConsumer(topdir, context)
-        val iterator = consumerIn.iterateEncryptedBallots { true} .iterator()
+        val iterator = consumerIn.iterateEncryptedBallots { true } .iterator()
         var count = 0
         for (ballot in iterator) {
-            logger.debug { "  $count readBallots ${ballot.ballotId} ${ballot.state}" }
+            println("  $count iterateEncryptedBallots ${ballot.ballotId} ${ballot.state}")
             count++
         }
         assertEquals(expected, count)

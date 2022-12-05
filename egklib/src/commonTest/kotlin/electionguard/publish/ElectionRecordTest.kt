@@ -4,6 +4,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.input.specVersion
+import electionguard.verifier.runVerifier
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -13,30 +14,37 @@ import kotlin.test.assertTrue
 class ElectionRecordTest {
     @Test
     fun readElectionRecordAllAvailable() {
-        runTest {
-            readElectionRecordAndValidate("src/commonTest/data/runWorkflowAllAvailable")
-        }
+        readElectionRecordAndValidate("src/commonTest/data/runWorkflowAllAvailable")
     }
 
     @Test
     fun readElectionRecordSomeAvailable() {
-        runTest {
-            readElectionRecordAndValidate("src/commonTest/data/runWorkflowSomeAvailable")
-        }
+        readElectionRecordAndValidate("src/commonTest/data/runWorkflowSomeAvailable")
     }
 
-    fun readElectionRecordAndValidate(topdir : String) {
-        runTest {
-            val group = productionGroup()
-            val consumerIn = makeConsumer(topdir, group)
-            assertNotNull(consumerIn)
-            val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
-            readElectionRecord(decryption)
-            validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally)
-        }
+    @Test
+    fun readElectionRecordJson() {
+        readElectionRecordAndValidate("src/commonTest/data/testElectionRecord/convertJson")
     }
 
-    fun readElectionRecord(decryption: DecryptionResult) {
+    @Test
+    fun readElectionRecordRoundtrip() {
+        readElectionRecordAndValidate("src/commonTest/data/testElectionRecord/roundtripProto")
+    }
+
+    fun readElectionRecordAndValidate(topdir: String) {
+        val group = productionGroup()
+        val consumerIn = makeConsumer(topdir, group)
+        assertNotNull(consumerIn)
+        val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
+        readDecryption(decryption)
+        validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally)
+
+        //
+        assertTrue(runVerifier(group, topdir, 11, true))
+    }
+
+    fun readDecryption(decryption: DecryptionResult) {
         val tallyResult = decryption.tallyResult
         val init = tallyResult.electionInitialized
         val config = init.config
@@ -48,7 +56,7 @@ class ElectionRecordTest {
         assertNotNull(decryption.decryptedTally)
         val contests = decryption.decryptedTally.contests
         assertNotNull(contests)
-        val contest = contests.find { it.contestId =="contest19"}
+        val contest = contests.find { it.contestId == "contest19" }
         assertNotNull(contest)
 
         assertEquals(init.guardians.size, config.numberOfGuardians)
@@ -62,7 +70,7 @@ class ElectionRecordTest {
     fun validateTally(jointKey: ElGamalPublicKey, tally: DecryptedTallyOrBallot) {
         for (contest in tally.contests) {
             for (selection in contest.selections) {
-                val actual : Int? = jointKey.dLog(selection.value, 100)
+                val actual: Int? = jointKey.dLog(selection.value, 100)
                 assertEquals(selection.tally, actual)
             }
         }
