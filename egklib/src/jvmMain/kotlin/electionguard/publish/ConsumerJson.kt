@@ -12,7 +12,7 @@ import electionguard.json.ConstantsJson
 import electionguard.json.ContextJson
 import electionguard.json.DecryptedTallyJson
 import electionguard.json.DecryptingTrusteeJson
-import electionguard.json.ElectionManifestJson
+import electionguard.json.ManifestJson
 import electionguard.json.EncryptedTallyJson
 import electionguard.json.GuardianJson
 import electionguard.json.PlaintextBallotJson
@@ -74,6 +74,10 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return readDecryptionResult(jsonPaths.decryptedTallyPath(), tally.unwrap())
     }
 
+    actual override fun hasEncryptedBallots(): Boolean {
+        return Files.exists(Path.of(jsonPaths.encryptedBallotDir()))
+    }
+
     // all submitted ballots, with filter
     actual override fun iterateEncryptedBallots(
         filter: ((EncryptedBallot) -> Boolean)?
@@ -83,10 +87,6 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             return emptyList()
         }
         return Iterable { EncryptedBallotIterator(dirname, group, filter) }
-    }
-
-    actual override fun hasEncryptedBallots(): Boolean {
-        return Files.exists(Path.of(jsonPaths.encryptedBallotDir()))
     }
 
     // only EncryptedBallot that are CAST
@@ -147,7 +147,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
             var manifest: Manifest
             FileInputStream(manifestFile).use { inp ->
-                val json = Json.decodeFromStream<ElectionManifestJson>(inp)
+                val json = Json.decodeFromStream<ManifestJson>(inp)
                 manifest = json.import()
             }
 

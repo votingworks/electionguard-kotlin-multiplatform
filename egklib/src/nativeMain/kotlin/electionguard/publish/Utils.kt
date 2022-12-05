@@ -4,7 +4,7 @@ import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
-private const val debug = true
+private const val debug = false
 
 fun absPath(filename: String): String {
     memScoped {
@@ -128,7 +128,7 @@ fun convertOctalToDecimal(octal: Int): UInt {
 }
 
 @Throws(IOException::class)
-fun openDir(dirpath: String): List<String> {
+fun openDir(dirpath: String, suffix: String = ".json"): List<String> {
     memScoped {
         // opendir(
         //    @kotlinx.cinterop.internal.CCall.CString __name: kotlin.String?)
@@ -142,7 +142,7 @@ fun openDir(dirpath: String): List<String> {
         // readdir(
         //    __dirp: kotlinx.cinterop.CValuesRef<platform.posix.DIR /* = cnames.structs.__dirstream */>?)
         // : kotlinx.cinterop.CPointer<platform.posix.dirent>? { /* compiled code */ }
-        val result = ArrayList<String>()
+        val result = mutableListOf<String>()
         while (true) {
             val ddir: CPointer<dirent> = readdir(dir)
                 ?: // this happens when no more files to be read
@@ -150,7 +150,7 @@ fun openDir(dirpath: String): List<String> {
             val dirent = ddir[0]
             val filenamep: CArrayPointer<ByteVar> = dirent.d_name
             val filename = filenamep.toKString()
-            if (filename.endsWith(".protobuf")) {
+            if (filename.endsWith(suffix)) {
                 result.add(filename)
                 if (debug) println(" success readdir filename= ${filenamep.toKString()}")
             }

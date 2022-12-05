@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
     runVerifier(productionGroup(), inputDir, nthreads?: 11, showTime)
 }
 
-fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime : Boolean = false) {
+fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime : Boolean = false): Boolean{
     val starting = getSystemTimeInMillis()
 
     val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, group))
@@ -52,6 +52,7 @@ fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime :
 
     val tookAll = (getSystemTimeInMillis() - starting)
     println("RunVerifier = $allOk took $tookAll msecs alloK = ${allOk}")
+    return allOk
 }
 
 fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int) {
