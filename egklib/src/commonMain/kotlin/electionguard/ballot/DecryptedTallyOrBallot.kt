@@ -54,16 +54,4 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
             require(tally >= 0)
         }
     }
-
-    fun showTally(): String {
-        val builder = StringBuilder(5000)
-        builder.appendLine(" DecryptedTallyOrBallot $id")
-        contests.sortedBy { it.contestId }.forEach { contest ->
-            builder.appendLine("  Contest ${contest.contestId}")
-            contest.selections.sortedBy { it.selectionId }.forEach {
-                builder.appendLine("   Selection ${it.selectionId} = ${it.tally}")
-            }
-        }
-        return builder.toString()
-    }
 }

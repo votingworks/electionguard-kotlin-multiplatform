@@ -42,7 +42,7 @@ data class ElectionInitialized(
 data class Guardian(
     val guardianId: String,
     val xCoordinate: Int, // use sequential numbering starting at 1; = i of T_i, K_i
-    val coefficientProofs: List<SchnorrProof>
+    val coefficientProofs: List<SchnorrProof> // assume order is the same as coordinates
 ) {
     init {
         require(guardianId.isNotEmpty())
