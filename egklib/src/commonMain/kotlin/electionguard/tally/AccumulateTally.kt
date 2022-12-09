@@ -10,6 +10,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("AccumulateTally")
 
+/** Accumulate the votes of EncryptedBallot's, and return a EncryptedTally. */
 class AccumulateTally(val group : GroupContext, val manifest : Manifest, val name : String) {
     private val contests = manifest.contests.associate { it.contestId to Contest(it)}
     private val castIds = mutableSetOf<String>()

@@ -8,7 +8,7 @@ data class ElectionConfig(
     val manifest: Manifest,
     /** The number of guardians necessary to generate the public key. */
     val numberOfGuardians: Int,
-    /** The quorum of guardians necessary to decrypt an election. Must be <= number_of_guardians. */
+    /** The quorum of guardians necessary to decrypt an election. Must be <= numberOfGuardians. */
     val quorum: Int,
     /** arbitrary key/value metadata. */
     val metadata: Map<String, String> = emptyMap(),

@@ -48,7 +48,7 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("RunBatchEncryption")
 
 /**
- * Run ballot encryption in batch mode.
+ * Run ballot encryption in batch mode CLI.
  * Read ElectionConfig from inputDir, write electionInit to outputDir.
  * Read plaintext ballots from ballotDir.
  * All ballots will be cast.

@@ -23,6 +23,7 @@ import mu.KotlinLogging
 private const val debugBallots = false
 private val logger = KotlinLogging.logger("VerifyEncryptedBallots")
 
+/** Box 4,5,6. Can be multithreaded. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyEncryptedBallots(
     val group: GroupContext,

@@ -166,9 +166,10 @@ data class PublicKeys(
 data class EncryptedKeyShare(
     val missingGuardianId: String, // guardian j (owns the polynomial Pj)
     val availableGuardianId: String, // guardian l with coordinate ℓ
-    val encryptedCoordinate: HashedElGamalCiphertext, // El(Pj_(ℓ))
+    val encryptedCoordinate: HashedElGamalCiphertext, // El(Pj_(ℓ)), spec 1.52, eq 14
 )
 
+/** Unencrypted version of EncryptedKeyShare. */
 data class KeyShare(
     val missingGuardianId: String, // guardian j (owns the polynomial Pj)
     val availableGuardianId: String, // guardian l with coordinate ℓ
@@ -176,6 +177,7 @@ data class KeyShare(
     val nonce: ElementModQ, // nonce that was used to encrypt El(Pj_(ℓ))
 )
 
+/** An internal result class used during the key ceremony. */
 data class KeyCeremonyResults(
     val publicKeys: List<PublicKeys>,
 ) {

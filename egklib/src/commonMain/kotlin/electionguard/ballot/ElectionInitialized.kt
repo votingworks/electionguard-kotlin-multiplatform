@@ -2,13 +2,13 @@ package electionguard.ballot
 
 import electionguard.core.*
 
-/** Results of KeyCeremony, for Encryption. */
+/** Results of KeyCeremony, used for all the rest of the election processing. */
 data class ElectionInitialized(
     val config: ElectionConfig,
     /** The joint public key (K) in the ElectionGuard Spec. */
-    val jointPublicKey: ElementModP, // maybe ElGamalPublicKey?
+    val jointPublicKey: ElementModP,
     val manifestHash: UInt256, // matches Manifest.cryptoHash
-    val cryptoBaseHash: UInt256, // aka q
+    val cryptoBaseHash: UInt256,  // aka q
     val cryptoExtendedBaseHash: UInt256, // aka qbar
     val guardians: List<Guardian>,
     val metadata: Map<String, String> = emptyMap(),
@@ -42,7 +42,7 @@ data class ElectionInitialized(
 data class Guardian(
     val guardianId: String,
     val xCoordinate: Int, // use sequential numbering starting at 1; = i of T_i, K_i
-    val coefficientProofs: List<SchnorrProof> // assume order is the same as coordinates
+    val coefficientProofs: List<SchnorrProof> // the order is the same as coordinates
 ) {
     init {
         require(guardianId.isNotEmpty())

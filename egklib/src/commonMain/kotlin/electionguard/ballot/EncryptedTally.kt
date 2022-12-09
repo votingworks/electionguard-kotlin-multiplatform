@@ -13,16 +13,12 @@ data class EncryptedTally(
         require(contests.isNotEmpty())
     }
 
-    /**
-     * The encrypted selections for a specific contest. The contestId is the
-     * Manifest.ContestDescription.contestId.
-     */
     data class Contest(
-        val contestId: String,
-        val sequenceOrder: Int,
+        val contestId: String,              // matches ContestDescription.contestId
+        val sequenceOrder: Int,             // matches ContestDescription.sequenceOrder
         val contestDescriptionHash: UInt256, // matches ContestDescription.cryptoHash
         val selections: List<Selection>,
-        val contestData: HashedElGamalCiphertext? = null, // only used when decrypting ballots
+        val contestData: HashedElGamalCiphertext? = null, // only used when decrypting ballots, not tallies
     ) {
         init {
             require(contestId.isNotEmpty())
@@ -30,16 +26,11 @@ data class EncryptedTally(
         }
     }
 
-    /**
-     * The homomorphic accumulation of all of the CiphertextBallot.Selection for a specific
-     * selection and contest. The selectionId is the Manifest.SelectionDescription.object_id.
-     * @param ciphertext The encrypted vote count = (A, B).
-     */
     data class Selection(
-        val selectionId: String,
-        val sequenceOrder: Int,
-        val selectionDescriptionHash: UInt256, // matches SelectionDescription.cryptoHash
-        val ciphertext: ElGamalCiphertext,
+        val selectionId: String,                // matches SelectionDescription.selectionId
+        val sequenceOrder: Int,                 // matches SelectionDescription.sequenceOrder
+        val selectionDescriptionHash: UInt256,  // matches SelectionDescription.cryptoHash
+        val ciphertext: ElGamalCiphertext,      // accumulation over all ballots in the tally
     ) {
         init {
             require(selectionId.isNotEmpty())

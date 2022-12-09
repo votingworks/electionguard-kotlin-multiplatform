@@ -8,6 +8,7 @@ import electionguard.ballot.Guardian
 import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.decryptWithBetaToContestData
 import electionguard.core.*
+import electionguard.keyceremony.calculateGexpPiAtL
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
@@ -223,27 +224,4 @@ class TallyDecryptor(
             }
         }
     }
-
-    /**
-     * Calculate g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, quorum-1
-     * Used in KeyCeremonyTrustee and DecryptingTrustee, public information.
-     * use the one in ElectionPolynomial
-     */
-    fun calculateGexpPiAtL(
-        xcoord: Int,  // l
-        coefficientCommitments: List<ElementModP>  // the committments to Pi
-    ): ElementModP {
-        val group = compatibleContextOrFail(*coefficientCommitments.toTypedArray())
-        val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())
-        var result: ElementModP = group.ONE_MOD_P
-        var xcoordPower: ElementModQ = group.ONE_MOD_Q // ℓ^j
-
-        for (commitment in coefficientCommitments) {
-            val term = commitment powP xcoordPower // (K_i,j)^ℓ^j
-            result *= term
-            xcoordPower *= xcoordQ
-        }
-        return result
-    }
-
 }

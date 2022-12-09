@@ -5,6 +5,7 @@ import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
 
+/** Results of tallying some collection of ballots, namely an EncryptedTally. */
 data class TallyResult(
     val electionInitialized: ElectionInitialized,
     val encryptedTally: EncryptedTally,
@@ -26,6 +27,7 @@ data class TallyResult(
     }
 }
 
+/** Results of decrypting an EncryptedTally, namely a DecryptedTallyOrBallot. */
 data class DecryptionResult(
     val tallyResult: TallyResult,
     val decryptedTally: DecryptedTallyOrBallot,
@@ -47,7 +49,7 @@ data class DecryptionResult(
 data class LagrangeCoordinate(
     var guardianId: String,
     var xCoordinate: Int,
-    var lagrangeCoefficient: ElementModQ, // wℓ
+    var lagrangeCoefficient: ElementModQ, // wℓ, spec 1.52 eq 55
 ) {
     init {
         require(guardianId.isNotEmpty())

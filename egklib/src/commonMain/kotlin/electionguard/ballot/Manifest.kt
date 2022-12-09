@@ -60,11 +60,7 @@ fun selectionDescriptionCryptoHash(
 ) = hashElements(selectionId, sequenceOrder, candidateId)
 
 /**
- * The Election Manifest: defines the candidates, contests, and associated information for a
- * specific election.
- *
- * @see
- *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election)
+ * The Election Manifest: defines the candidates, contests, and associated information for a specific election.
  */
 data class Manifest(
     val electionScopeId: String,
@@ -125,7 +121,7 @@ data class Manifest(
         contests.map { contest -> contest.selections.map { "${contest.contestId}/${it.selectionId}" } }.flatten().toSet()
     }
 
-    /** Map "contestId/selectionId" to candidateId. */
+    /** Map "$contestId/$selectionId" to candidateId. */
     val selectionCandidate : Map<String, String> by
     lazy {
         contests.map { contest -> contest.selections.map { "${contest.contestId}/${it.selectionId}" to it.candidateId } }.flatten().toMap()
@@ -133,9 +129,7 @@ data class Manifest(
 
     /**
      * The type of election.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election-type)
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/election-type)
      */
     enum class ElectionType {
         unknown,
@@ -179,9 +173,7 @@ data class Manifest(
 
     /**
      * The type of geopolitical unit.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/reporting-unit-type)
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/reporting-unit-type)
      */
     enum class ReportingUnitType {
         unknown,
@@ -296,9 +288,7 @@ data class Manifest(
 
     /**
      * Enumeration for contest algorithm or rules in the contest.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/vote-variation)
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/vote-variation)
      */
     enum class VoteVariationType {
         /** Each voter can select up to one option. */
@@ -371,15 +361,7 @@ data class Manifest(
         override fun cryptoHashUInt256() = cryptoHash
     }
 
-    /**
-     * A candidate in a contest. Note: The ElectionGuard Data Spec deviates from the NIST model in
-     * that selections for any contest type are considered a "candidate". for instance, on a yes-no
-     * referendum contest, two `candidate` objects would be included in the model to represent the
-     * `affirmative` and `negative` selections for the contest.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/candidate)
-     */
+    /** A candidate in a contest. */
     data class Candidate(
         val candidateId: String,
         val name: String?,
@@ -395,10 +377,7 @@ data class Manifest(
 
     /**
      * Contact information about persons, boards of authorities, organizations, etc.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contact-information)
-     */
+      */
     data class ContactInformation(
         val name: String?,
         val addressLine: List<String>,
@@ -413,9 +392,7 @@ data class Manifest(
      * A physical or virtual unit of representation or vote/seat aggregation. Use this entity to
      * define geopolitical units such as cities, districts, jurisdictions, or precincts to associate
      * contests, offices, vote counts, or other information with those geographies.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/gp-unit)
      */
     data class GeopoliticalUnit(
         val geopoliticalUnitId: String,
@@ -443,9 +420,7 @@ data class Manifest(
 
     /**
      * A political party.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/party)
      */
     data class Party(
         val partyId: String,
@@ -462,10 +437,8 @@ data class Manifest(
     }
 
     /**
-     * The metadata that describes the structure and type of one contest in the election.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
+     * The structure and type of one contest in the election.
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
      */
     data class ContestDescription(
         val contestId: String,
@@ -497,9 +470,7 @@ data class Manifest(
 
     /**
      * A ballot selection for a specific candidate in a contest.
-     *
-     * @see
-     *     [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
+     * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
      */
     data class SelectionDescription(
         val selectionId: String,

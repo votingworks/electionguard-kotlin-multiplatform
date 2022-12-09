@@ -16,7 +16,7 @@ import kotlinx.cli.required
 import kotlin.math.roundToInt
 
 /**
- * Run tally accumulation.
+ * Run tally accumulation CLI.
  * Read election record from inputDir, write to outputDir.
  */
 fun main(args: Array<String>) {

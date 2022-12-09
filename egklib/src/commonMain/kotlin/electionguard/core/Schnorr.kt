@@ -6,9 +6,10 @@ private val logger = KotlinLogging.logger("SchnorrProof")
 
 /**
  * Proof that the prover knows the private key corresponding to the public key.
+ * Spec 1.52, section 3.2.2, NIZK Proof (non-interactive zero knowledge proof).
  */
 data class SchnorrProof(
-    val publicKey: ElementModP, // K_ij
+    val publicKey: ElementModP, // K_ij, public commitment to the jth coefficient, spec 1.52, eq 6.
     val challenge: ElementModQ,
     val response: ElementModQ) {
 

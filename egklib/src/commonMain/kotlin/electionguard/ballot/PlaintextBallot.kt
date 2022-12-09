@@ -21,7 +21,7 @@ data class PlaintextBallot(
     /** The plaintext representation of a voter's selections for one contest. */
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
-        val sequenceOrder: Int,
+        val sequenceOrder: Int, // validate Ballot.A.2.1
         val selections: List<Selection>,
         val writeIns: List<String> = emptyList(),
     ) {
@@ -33,7 +33,7 @@ data class PlaintextBallot(
     /** The plaintext representation of one selection for a particular contest. */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
-        val sequenceOrder: Int,
+        val sequenceOrder: Int, // validate Ballot.A.4.1
         val vote: Int,
     )  {
         init {

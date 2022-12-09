@@ -163,7 +163,7 @@ fun HashedElGamalCiphertext.decryptWithNonceToContestData(publicKey: ElGamalPubl
 }
 
 //////////////////////////////////////////////////////////////////
-// protoconvert
+// LOOK move to protoconvert
 
 fun importContestData(proto : electionguard.protogen.ContestData?): Result<ContestData, String> {
     if (proto == null) return Err( "ContestData is missing")
