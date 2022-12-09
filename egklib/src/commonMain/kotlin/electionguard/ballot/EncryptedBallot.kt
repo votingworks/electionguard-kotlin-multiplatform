@@ -8,7 +8,7 @@ import electionguard.core.*
  */
 data class EncryptedBallot(
     val ballotId: String,
-    val ballotStyleId: String,
+    val ballotStyleId: String,  // matches a Manifest.BallotStyle
     val manifestHash: UInt256,  // matches Manifest.cryptoHash
     val codeSeed: UInt256,
     val code: UInt256,          // confirmation code, aka tracking code
@@ -28,7 +28,7 @@ data class EncryptedBallot(
         CAST,
         /** A ballot that has been explicitly spoiled */
         SPOILED,
-        /** A ballot whose state is unknown to ElectionGuard and will not be included in results. */
+        /** A ballot whose state is unknown to ElectionGuard. */
         UNKNOWN
     }
 

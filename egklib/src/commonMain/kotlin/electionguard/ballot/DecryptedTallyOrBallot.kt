@@ -6,9 +6,11 @@ import electionguard.core.GenericChaumPedersenProof
 import electionguard.core.HashedElGamalCiphertext
 
 /**
- * The decrypted counts of all contests in the election, for one ballot or a collection of ballots.
+ * The decryption of one encrypted ballot or encrypted tally.
+ * The only difference between a decrypted tally and a decrypted ballot is that only a ballot
+ * has decryptedContestData.
  *
- * @param id matches the tallyId, or th ballotId if its a ballot decryption.
+ * @param id matches the tallyId, or the ballotId if its a ballot decryption.
  * @param contests The contests
  */
 data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
@@ -43,7 +45,7 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
      */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
-        val tally: Int, // logK(M)
+        val tally: Int,         // logK(M)
         val value: ElementModP, // M = K^tally = B/Mbar  // equals 1 when tally = 0; is this needed? 8.B, 11.B.
                                 // seems like could compute M and Mbar from B and t, then the challenge in 8 is enough
         val message: ElGamalCiphertext, // (A, B) same as EncryptedTally.Selection.ciphertext

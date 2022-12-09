@@ -14,7 +14,7 @@ import kotlinx.cli.required
 import kotlin.math.roundToInt
 
 /**
- * Run election record verification.
+ * Run election record verification CLI.
  */
 fun main(args: Array<String>) {
     val parser = ArgParser("RunVerifier")

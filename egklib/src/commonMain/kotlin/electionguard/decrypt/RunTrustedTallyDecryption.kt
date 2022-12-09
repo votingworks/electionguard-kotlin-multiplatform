@@ -17,6 +17,7 @@ import kotlinx.cli.required
  * Run Trusted Tally Decryption CLI.
  * Read election record from inputDir, write to outputDir.
  * This has access to all the trustees, so is only used for testing, or in a use case of trust.
+ * A version of this where each Trustee is in its own process space is implemented in the webapps modules.
  */
 fun main(args: Array<String>) {
     val parser = ArgParser("RunTrustedTallyDecryption")

@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
 
 private const val debug = false
 
-/** Box 8, 9, 10, 11, 12, 13, 14 */
+/** Box 8, 9, 10, 11, 12, 13, 14. verifySpoiledBallotTallies can be multithreaded. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyDecryption(
     val group: GroupContext,

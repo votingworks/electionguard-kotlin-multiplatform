@@ -17,7 +17,7 @@ import kotlinx.cli.ArgType
 import kotlinx.cli.required
 
 /**
- * Convert election record in inputDir, to opposite type, writing to outputDir.
+ * Show the election record in inputDir.
  */
 fun main(args: Array<String>) {
     val parser = ArgParser("RunElectionRecordShow")

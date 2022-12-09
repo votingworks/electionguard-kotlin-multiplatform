@@ -7,7 +7,7 @@ import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.*
 import electionguard.publish.ElectionRecord
 
-// since there's no verification spec 2.0, this is approximate
+// since there's no verification spec 2.0 yet, this is approximate
 class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
     val group: GroupContext
     val manifest: Manifest
