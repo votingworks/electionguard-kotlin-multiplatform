@@ -30,13 +30,11 @@ interface DecryptingTrusteeIF {
      * Compute partial decryptions of elgamal encryptions, using spec 1.52 eq 58 and 59.
      *
      * @param texts            list of ElementModP that will be partially decrypted
-     * @param nonce            an optional nonce to generate the proof
      * @return a list of partial decryptions, in the same order as the texts
      */
     fun decrypt(
         group: GroupContext,
         texts: List<ElementModP>,
-        nonce: ElementModQ?, // LOOK do we need this?
     ): List<PartialDecryption>
 
     /**

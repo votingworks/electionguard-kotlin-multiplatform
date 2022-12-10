@@ -64,7 +64,6 @@ class DecryptingTrusteeProxy(
     override fun decrypt(
         group: GroupContext,
         texts: List<ElementModP>,
-        nonce: ElementModQ?, // LOOK do we need this?
     ): List<PartialDecryption> {
         return runBlocking {
             val url = "$remoteURL/dtrustee/$xcoord/decrypt"

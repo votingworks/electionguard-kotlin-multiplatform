@@ -11,7 +11,6 @@ import mu.KotlinLogging
 import webapps.electionguard.groupContext
 
 private val logger = KotlinLogging.logger("DecryptingTrusteeJson")
-private val nonce : ElementModQ? = null
 
 @Serializable
 data class RemoteDecryptingTrusteeJson(val trustee_dir: String, val guardian_id: String) {
@@ -22,7 +21,7 @@ data class RemoteDecryptingTrusteeJson(val trustee_dir: String, val guardian_id:
     fun xCoordinate() = delegate.xCoordinate()
 
     fun setMissing(coeff : ElementModQ, missingGuardians: List<String>) = delegate.setMissing(groupContext, coeff, missingGuardians)
-    fun decrypt(texts: List<ElementModP>) = delegate.decrypt(groupContext, texts, nonce)
+    fun decrypt(texts: List<ElementModP>) = delegate.decrypt(groupContext, texts)
     fun challenge(challenges: List<ChallengeRequest>) = delegate.challenge(groupContext, challenges)
 }
 
