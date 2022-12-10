@@ -208,18 +208,18 @@ class KeyCeremonyTrusteeTest {
         assertTrue(resultBadId is Err)
         assertTrue(resultBadId.error.contains("Trustee 'id2', does not have public key for missingGuardianId 'badId'"))
 
-        /* Give it a bad nonce LOOK this is disabled in receiveKeyShare()
-        val keyShareBadNonce = keyShare12.copy(nonce = group.TWO_MOD_Q)
-        val resultBadNonce = trustee2.receiveKeyShare(keyShareBadNonce)
-        assertTrue(resultBadNonce is Err)
-        assertEquals("Trustee 'id2' couldnt decrypt encryptedKeyShare for missingGuardianId 'id1'", resultBadNonce.error)
-         */
-
         // Give it a bad coordinate
         val keyShareBadCoordinate = keyShare12.copy(coordinate = group.TWO_MOD_Q)
         val resultBadCoordinate = trustee2.receiveKeyShare(keyShareBadCoordinate)
         assertTrue(resultBadCoordinate is Err)
         println("result = $resultBadCoordinate")
         assertTrue(resultBadCoordinate.error.contains("Trustee 'id2' failed to validate KeyShare for missingGuardianId 'id1'"))
+
+        /* Give it a bad nonce LOOK this is disabled in KeyCeremonyTrustee.receiveKeyShare(), see notes there
+        val keyShareBadNonce = keyShare12.copy(nonce = group.TWO_MOD_Q)
+        val resultBadNonce = trustee2.receiveKeyShare(keyShareBadNonce)
+        assertTrue(resultBadNonce is Err)
+        assertEquals("Trustee 'id2' couldnt decrypt encryptedKeyShare for missingGuardianId 'id1'", resultBadNonce.error)
+         */
     }
 }

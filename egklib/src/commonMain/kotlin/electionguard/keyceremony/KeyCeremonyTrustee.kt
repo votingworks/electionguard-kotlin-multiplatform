@@ -160,6 +160,28 @@ class KeyCeremonyTrustee(
             return Err("Sent KeyShare to wrong trustee '${this.id}', should be availableGuardianId '${keyShare.availableGuardianId}'")
         }
 
+        /* spec 1.52 says:
+        If the recipient guardian Tℓ reports not receiving a suitable value Pi (ℓ), it becomes incumbent on the
+        sending guardian Ti to publish this Pi (ℓ) together with the nonce Ri,ℓ it used to encrypt Pi (ℓ)
+        under the public key Kℓ of recipient guardian Tℓ . If guardian Ti fails to produce a suitable Pi (ℓ)
+        and nonce Ri,ℓ that match both the published encryption and the above equation, it should be
+        excluded from the election and the key generation process should be restarted with an alternate
+        guardian. If, however, the published Pi (ℓ) and Ri,ℓ satisfy both the published encryption and the
+        equation above, the claim of malfeasance is dismissed, and the key generation process continues
+        undeterred.19
+
+        But in discussions with Josh 11/9/22, he says:
+
+        As, I’m seeing things, the nonces aren’t relevant and never need to be supplied.  Guardian  is supposed to send
+        Guardian  the share value  by encrypting it as  and handing it off.  If Guardian  claims to have not received a
+        satisfactory , Guardian  is supposed to simply publish  so that anyone can check its validity directly.
+        The verification is against the previously committed versions of coefficients  instead of against the
+        transmitted encryption.  This prevents observers from needing to adjudicate whether or not Guardian
+        sent a correct value initially.
+
+        So im disabling the nonce exchange, and wait for spec 2 before continuing this.
+         */
+
         /*
         val encryptedKeyShare = myShareOfOthers[keyShare.missingGuardianId] // what they sent us before
         if (encryptedKeyShare == null) {
