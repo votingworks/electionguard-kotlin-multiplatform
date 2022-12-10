@@ -4,6 +4,7 @@ import com.github.michaelbull.result.*
 import electionguard.ballot.Manifest
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.*
+import electionguard.core.Base16.toHex
 import kotlin.collections.mutableSetOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -125,12 +126,12 @@ class VerifyDecryption(
         if (!proof.r.inBounds()) {
             results.add(Err("     (10.A,14.A) The value v is not in the set Zq.: '$where'"))
         }
-        //(10.B,14.B) The challenge value c satisfies c = H(Q, K, C0, C1, C2, a, b, β).
+        // (10.B,14.B) The challenge value c satisfies c = H(Q, K, C0, C1, C2, a, b, β).
         val challenge = hashElements(
             qbar,
             jointPublicKey,
             ciphertext.c0,
-            // ciphertext.c1, LOOK how to hash a byte array?
+            ciphertext.c1.toHex(),
             ciphertext.c2,
             a,
             b,

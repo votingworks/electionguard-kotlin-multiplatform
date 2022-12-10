@@ -6,6 +6,7 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.Guardian
 import electionguard.core.*
+import electionguard.core.Base16.toHex
 
 // TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
 private const val maxDlog: Int = 1000
@@ -100,7 +101,7 @@ class Decryptor(
                     qbar,
                     jointPublicKey,
                     results.ciphertext.c0,
-                    // results.ciphertext.c1, // TODO how to hash byte array ?
+                    results.ciphertext.c1.toHex(),
                     results.ciphertext.c2,
                     a,
                     b,
