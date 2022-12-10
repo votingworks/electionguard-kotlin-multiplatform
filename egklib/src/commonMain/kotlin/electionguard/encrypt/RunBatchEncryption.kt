@@ -231,7 +231,7 @@ fun batchEncryption(
 }
 
 // orchestrates the encryption
-// LOOK: codeSeed is constant, not trying to do chaining
+// TODO: codeSeed is constant, not trying to do chaining
 private class RunEncryption(
     val group: GroupContext,
     val encryptor: Encryptor,
@@ -295,7 +295,7 @@ private fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): 
     }
 
 // coroutines allow parallel encryption at the ballot level
-// TODO not possible to do ballot chaining, since the order is indeterminate?
+// LOOK not possible to do ballot chaining, since the order is indeterminate?
 //    or do we just have to work harder??
 private fun CoroutineScope.launchEncryptor(
     id: Int,

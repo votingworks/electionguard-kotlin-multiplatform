@@ -213,7 +213,6 @@ class KeyCeremonyTrusteeTest {
         val resultBadNonce = trustee2.receiveKeyShare(keyShareBadNonce)
         assertTrue(resultBadNonce is Err)
         assertEquals("Trustee 'id2' couldnt decrypt encryptedKeyShare for missingGuardianId 'id1'", resultBadNonce.error)
-
          */
 
         // Give it a bad coordinate

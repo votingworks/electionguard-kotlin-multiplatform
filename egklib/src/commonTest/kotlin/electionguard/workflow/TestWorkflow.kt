@@ -79,8 +79,6 @@ class TestWorkflow {
         assertTrue(ok)
     }
 
-// LOOK do a test where there are 4 available in a 3 of 5
-
     @Test
     fun runWorkflowSomeAvailable() {
         val workingDir =  "testOut/runWorkflowSomeAvailable"

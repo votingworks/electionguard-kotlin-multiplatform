@@ -47,7 +47,7 @@ data class ContextJson(
     val number_of_guardians: Int,
     val quorum: Int,
     val elgamal_public_key: ElementModPJson,
-    val commitment_hash: UInt256Json, // LOOK what is this?
+    val commitment_hash: UInt256Json, // TODO what is this?
     val manifest_hash: UInt256Json,
     val crypto_base_hash: UInt256Json,
     val crypto_extended_base_hash: UInt256Json,
@@ -57,7 +57,7 @@ fun ElectionInitialized.publish() = ContextJson(
     this.config.numberOfGuardians,
     this.config.quorum,
     this.jointPublicKey.publish(),
-    UInt256.ONE.publish(), // LOOK WRONG
+    UInt256.ONE.publish(), // TODO WRONG
     this.manifestHash.publish(),
     this.cryptoBaseHash.publish(),
     this.cryptoExtendedBaseHash.publish(),

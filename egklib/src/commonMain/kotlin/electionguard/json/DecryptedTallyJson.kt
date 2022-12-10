@@ -9,7 +9,7 @@ import electionguard.core.GroupContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// LOOK maybe can also be used for DecryptedBallot. Only difference is Contest.decryptedContestData
+// LOOK can also be used for DecryptedBallot. Only difference is Contest.decryptedContestData
 @Serializable
 @SerialName("DecryptedTally")
 data class DecryptedTallyJson(
