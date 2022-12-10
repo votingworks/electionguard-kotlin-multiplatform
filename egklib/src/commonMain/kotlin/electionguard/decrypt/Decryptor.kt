@@ -27,7 +27,6 @@ class Decryptor(
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>
     val guardianMap = guardians.associateBy { it.guardianId }
     val stats = Stats()
-    private val nonce : ElementModQ? = null
 
     init {
         // build the lagrangeCoordinates, needed for output
@@ -160,7 +159,7 @@ class Decryptor(
         }
 
         // decrypt all of them at once
-        val results: List<PartialDecryption> = trustee.decrypt(group, texts, nonce)
+        val results: List<PartialDecryption> = trustee.decrypt(group, texts)
 
         // Place the results into the TrusteeDecryptions
         val trusteeDecryptions = TrusteeDecryptions(trustee.id())

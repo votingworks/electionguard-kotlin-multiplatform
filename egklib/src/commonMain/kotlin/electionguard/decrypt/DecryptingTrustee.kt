@@ -66,11 +66,10 @@ data class DecryptingTrustee(
     override fun decrypt(
         group: GroupContext,
         texts: List<ElementModP>,
-        nonce: ElementModQ? // LOOK needed? testing only?
     ): List<PartialDecryption> {
         val results: MutableList<PartialDecryption> = mutableListOf()
         for (text: ElementModP in texts) {
-            val u = nonce?: group.randomElementModQ(2)
+            val u = group.randomElementModQ(2)
             val a = group.gPowP(u)
             val b = text powP u
             // ti = (si + wi * Sum(Pj(i))j∈V) (spec 1.52, eg 58)

@@ -137,7 +137,6 @@ fun testEncryptRecoveredDecrypt(group: GroupContext,
         it.decrypt(
             group,
             listOf(evote.pad),
-            null,
         )[0]
     }
 
