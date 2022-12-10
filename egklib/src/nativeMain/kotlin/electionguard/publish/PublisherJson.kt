@@ -152,7 +152,7 @@ fun removeAllFiles(path: String) {
     if (!fileExists(path)) {
         return
     }
-    // LOOK not done
+    // TODO not done
 }
 
 /** Make sure output dir exists and is writeable.  */

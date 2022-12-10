@@ -32,7 +32,7 @@ message ElectionInitialized {
   ElectionConfig config = 1;
 
   ElementModP joint_public_key = 2; // K
-  UInt256 manifest_hash = 3;        // Manifest.crypto_hash; LOOK why store again?
+  UInt256 manifest_hash = 3;        // Manifest.crypto_hash;
   UInt256 crypto_base_hash = 7;     // the base hash code, 𝑄
   UInt256 crypto_extended_base_hash = 4; // the extended base hash code 𝑄' = H(𝑄, K), aka Qbar
 

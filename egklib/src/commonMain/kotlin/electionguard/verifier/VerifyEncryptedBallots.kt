@@ -95,7 +95,8 @@ class VerifyEncryptedBallots(
             }
 
             // Box 5
-            // calculate ciphertextAccumulation (A, B), LOOK 5.A unneeded because we dont keep (A,B) in election record
+            // calculate ciphertextAccumulation (A, B)
+            // LOOK 5.A unneeded because we dont keep (A,B) in election record
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
 

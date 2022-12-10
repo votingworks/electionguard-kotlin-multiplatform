@@ -115,7 +115,7 @@ fun runRemoteDecrypt(
     reset(client, remoteUrl)
 
     // LOOK not too happy about sending the "secret" trustee location from here.
-    //   but this helps testing; do something else for production
+    //   but this helps testing; do something else for production?
     val trustees = presentGuardians.map {
         DecryptingTrusteeProxy(client, remoteUrl, trusteeDir, it.guardianId, it.xCoordinate, it.publicKey())
     }

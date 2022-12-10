@@ -178,7 +178,6 @@ class KeyCeremonyTrustee(
                 }
             }
         }
-
          */
 
         val otherKeys = otherPublicKeys[keyShare.missingGuardianId]

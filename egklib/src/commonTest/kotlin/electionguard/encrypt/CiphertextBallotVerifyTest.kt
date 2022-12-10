@@ -100,9 +100,8 @@ private class VerifyCiphertextBallot(
                 errors.add(Err("    5. ConstantChaumPedersenProofKnownNonce failed for $where = ${cvalid.error} "))
             }
 
-            // TODO I think 5.F and 5.G are not needed because we have simplified proofs.
-            //   review when 2.0 verification spec is out
-
+            // TODO review when 2.0 verification spec is out
+            //  I think 5.F and 5.G are not needed because we have simplified proofs.
             errors.add(verifySelections(ballot.ballotId, contest))
         }
         return errors.merge()
@@ -112,7 +111,7 @@ private class VerifyCiphertextBallot(
     private fun verifyTrackingCode(ballot: CiphertextBallot): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
 
-        // LOOK check contest.cryptoHash??
+        // LOOK also check contest.cryptoHash??
         val cryptoHashCalculated = hashElements(ballot.ballotId, manifest.cryptoHashUInt256(), ballot.contests) // B_i
         if (cryptoHashCalculated != ballot.cryptoHash) {
             errors.add(Err("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} "))
@@ -143,8 +142,8 @@ private class VerifyCiphertextBallot(
                 errors.add(Err("    4. DisjunctiveChaumPedersenProofKnownNonce failed for $where/${selection.selectionId} = ${svalid.error} "))
             }
 
-            // TODO I think 4.E, 4.F, 4.G, 4.H are not needed because we have simplified proofs.
-            //   review when 2.0 verification spec is out
+            // TODO review when 2.0 verification spec is out
+            //  I think 4.E, 4.F, 4.G, 4.H are not needed because we have simplified proofs.
         }
 
         /* 5.A verify the placeholder numbers match the maximum votes allowed

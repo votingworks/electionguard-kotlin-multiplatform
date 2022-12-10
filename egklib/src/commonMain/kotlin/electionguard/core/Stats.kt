@@ -56,7 +56,7 @@ fun Int.pad(len: Int): String = "$this".padStart(len, ' ')
 fun Long.pad(len: Int): String = "$this".padStart(len, ' ')
 
 
-// LOOK println("SimpleBallot %.2f encryptions / sec".format(numBallots / encryptionTime))
+// LOOK can use println("SimpleBallot %.2f encryptions / sec".format(numBallots / encryptionTime)) instead of dfrac
 
 /**
  * Format a double value to have a fixed number of decimal places.

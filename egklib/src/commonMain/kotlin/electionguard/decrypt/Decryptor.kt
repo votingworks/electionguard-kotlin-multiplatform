@@ -100,7 +100,7 @@ class Decryptor(
                     qbar,
                     jointPublicKey,
                     results.ciphertext.c0,
-                    // results.ciphertext.c1, // LOOK how to hash byte array ?
+                    // results.ciphertext.c1, // TODO how to hash byte array ?
                     results.ciphertext.c2,
                     a,
                     b,

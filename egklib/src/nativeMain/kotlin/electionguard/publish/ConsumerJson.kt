@@ -77,7 +77,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
     }
 
     actual override fun hasEncryptedBallots(): Boolean {
-        return exists(jsonPaths.encryptedBallotDir()) // LOOK is it empty?
+        return exists(jsonPaths.encryptedBallotDir()) // LOOK check if its empty?
     }
 
     actual override fun iterateEncryptedBallots(filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
@@ -147,8 +147,8 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
                 ElectionConfig(
                     electionConstants,
                     manifest,
-                    1, // LOOK we dont know
-                    1, // LOOK we dont know
+                    1, // LOOK not in JSON
+                    1, // LOOK not in JSON
                 )
             )
         } catch (e: Exception) {

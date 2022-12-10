@@ -15,7 +15,7 @@ message EncryptedBallot {
 
   string ballot_id = 1; // a unique Ballot ID created by the external system
   string ballot_style_id = 2; // The ballot_style_id of the BallotStyle in the Election Manifest
-  UInt256 manifest_hash = 3; // Matches Manifest.crypto_hash LOOK check this when processing
+  UInt256 manifest_hash = 3; // Matches Manifest.crypto_hash
   UInt256 code_seed = 4; // Previous ballot tracking hash or seed hash, aka code_seed
   UInt256 code = 5; // ballot tracking code, H_i
   repeated EncryptedBallotContest contests = 6;

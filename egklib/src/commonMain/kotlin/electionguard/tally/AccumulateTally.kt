@@ -17,10 +17,15 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
 
     fun addCastBallot(ballot: EncryptedBallot): Boolean {
         if (ballot.state != EncryptedBallot.BallotState.CAST) {
+            logger.warn { "Ballot ${ballot.ballotId} does not have state CAST"}
             return false
         }
         if (!this.castIds.add(ballot.ballotId)) {
             logger.warn { "Ballot ${ballot.ballotId} is duplicate"}
+            return false
+        }
+        if (manifest.cryptoHash != ballot.manifestHash) {
+            logger.warn { "Ballot ${ballot.ballotId} manifestHash does not match manifest ${manifest.electionScopeId}"}
             return false
         }
 
