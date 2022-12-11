@@ -90,7 +90,7 @@ class ConsumerTest {
             val initDir = "src/commonTest/data/runWorkflowAllAvailable"
             val consumerIn = makeConsumer(initDir, context)
             val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-            val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
+            val trusteeDir = "$topdir/private_data/trustees"
             init.guardians.forEach {
                 val trustee = consumerIn.readTrustee(trusteeDir, it.guardianId)
                 assertTrue(trustee.id().equals(it.guardianId))
@@ -102,7 +102,7 @@ class ConsumerTest {
     fun readBadTrustee() {
         runTest {
             val context = productionGroup()
-            val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
+            val trusteeDir = "$topdir/private_data/trustees"
             val consumerIn = makeConsumer(trusteeDir, context)
             val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
                 consumerIn.readTrustee(trusteeDir, "badId")

@@ -36,7 +36,7 @@ fun Manifest.publish() : ManifestJson {
         this.candidates.map { it.publish() },
         this.contests.map { it.publish() },
         this.ballotStyles.map { it.publish() },
-        names.associateBy { it.language }, // LOOK remove Map
+        names.associateBy { it.language }, // LOOK consider removing Map
         this.contactInformation?.publish(),
     )
 }

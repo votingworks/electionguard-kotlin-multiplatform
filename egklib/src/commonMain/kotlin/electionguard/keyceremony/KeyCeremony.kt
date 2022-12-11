@@ -195,7 +195,7 @@ data class KeyCeremonyResults(
         // prime modulus (p), subgroup order (q), generator (g), number of guardians (n), decryption quorum
         // threshold value (k), date, and jurisdictional information to form a base hash code (Q) which will
         // be incorporated into every subsequent hash computation in the election.
-        // TODO: add date, and jurisdictional information ??
+        // LOOK: add date, and jurisdictional information ??
         val primes = config.constants
         val cryptoBaseHash: UInt256 = hashElements(
             primes.largePrime.toHex(),
