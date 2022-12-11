@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalSerializationApi::class, ExperimentalSerializationApi::class)
+@file:OptIn(ExperimentalSerializationApi::class)
 
 package electionguard.publish
 
@@ -12,9 +12,9 @@ import electionguard.json.ConstantsJson
 import electionguard.json.ContextJson
 import electionguard.json.DecryptedTallyJson
 import electionguard.json.DecryptingTrusteeJson
-import electionguard.json.ManifestJson
 import electionguard.json.EncryptedTallyJson
 import electionguard.json.GuardianJson
+import electionguard.json.ManifestJson
 import electionguard.json.PlaintextBallotJson
 import electionguard.json.SubmittedBallotJson
 import electionguard.json.import
@@ -22,20 +22,28 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
-import java.io.File
-import java.io.FileInputStream
+import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Predicate
 
 private val logger = KotlinLogging.logger("ConsumerJson")
 
-actual class ConsumerJson actual constructor(val topDir: String, val group: GroupContext): Consumer {
-    private val jsonPaths = ElectionRecordJsonPaths(topDir)
+/** Can read both zipped and unzipped election record */
+actual class ConsumerJson actual constructor(val topDir: String, val group: GroupContext) : Consumer {
+    var fileSystem = FileSystems.getDefault()
+    var fileSystemProvider = fileSystem.provider()
+    var jsonPaths = ElectionRecordJsonPaths(topDir)
 
     init {
         if (!Files.exists(Path.of(topDir))) {
             throw RuntimeException("Not existent directory $topDir")
+        }
+        if (topDir.endsWith(".zip")) {
+            val filePath = Path.of(topDir)
+            fileSystem = FileSystems.newFileSystem(filePath, emptyMap<String, String>())
+            fileSystemProvider = fileSystem.provider()
+            jsonPaths = ElectionRecordJsonPaths("")
         }
     }
 
@@ -46,7 +54,10 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     actual override fun isJson() = true
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
-        return readElectionConfig(jsonPaths.electionConstantsPath(), jsonPaths.manifestPath())
+        return readElectionConfig(
+            fileSystem.getPath(jsonPaths.electionConstantsPath()),
+            fileSystem.getPath(jsonPaths.manifestPath()),
+        )
     }
 
     actual override fun readElectionInitialized(): Result<ElectionInitialized, String> {
@@ -54,7 +65,10 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         if (config is Err) {
             return Err(config.error)
         }
-        return readElectionInitialized(jsonPaths.electionContextPath(), config.unwrap())
+        return readElectionInitialized(
+            fileSystem.getPath(jsonPaths.electionContextPath()),
+            config.unwrap(),
+        )
     }
 
     actual override fun readTallyResult(): Result<TallyResult, String> {
@@ -62,7 +76,10 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         if (init is Err) {
             return Err(init.error)
         }
-        return readTallyResult(jsonPaths.encryptedTallyPath(), init.unwrap())
+        return readTallyResult(
+            fileSystem.getPath(jsonPaths.encryptedTallyPath()),
+            init.unwrap(),
+        )
     }
 
     actual override fun readDecryptionResult(): Result<DecryptionResult, String> {
@@ -71,51 +88,45 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             return Err(tally.error)
         }
 
-        return readDecryptionResult(jsonPaths.decryptedTallyPath(), tally.unwrap())
+        return readDecryptionResult(
+            fileSystem.getPath(jsonPaths.lagrangePath()),
+            fileSystem.getPath(jsonPaths.decryptedTallyPath()),
+            tally.unwrap()
+        )
     }
 
     actual override fun hasEncryptedBallots(): Boolean {
-        return Files.exists(Path.of(jsonPaths.encryptedBallotDir()))
+        return Files.exists(fileSystem.getPath(jsonPaths.encryptedBallotDir()))
     }
 
     // all submitted ballots, with filter
     actual override fun iterateEncryptedBallots(
         filter: ((EncryptedBallot) -> Boolean)?
     ): Iterable<EncryptedBallot> {
-        val dirname = jsonPaths.encryptedBallotDir()
-        if (!Files.exists(Path.of(dirname))) {
+        val dirPath = fileSystem.getPath(jsonPaths.encryptedBallotDir())
+        if (!Files.exists(dirPath)) {
             return emptyList()
         }
-        return Iterable { EncryptedBallotIterator(dirname, group, filter) }
+        return Iterable { EncryptedBallotIterator(dirPath, group, filter) }
     }
 
     // only EncryptedBallot that are CAST
     actual override fun iterateCastBallots(): Iterable<EncryptedBallot> {
-        val dirname = jsonPaths.encryptedBallotDir()
-        if (!Files.exists(Path.of(dirname))) {
-            return emptyList()
-        }
-        val filter = Predicate<EncryptedBallot> { it.state == EncryptedBallot.BallotState.CAST }
-        return Iterable { EncryptedBallotIterator(dirname, group, filter) }
+        return iterateEncryptedBallots { it.state == EncryptedBallot.BallotState.CAST }
     }
 
     // only EncryptedBallot that are SPOILED
     actual override fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
-        val dirname = jsonPaths.encryptedBallotDir()
-        if (!Files.exists(Path.of(dirname))) {
-            return emptyList()
-        }
-        val filter = Predicate<EncryptedBallot> { it.state == EncryptedBallot.BallotState.SPOILED }
-        return Iterable { EncryptedBallotIterator(dirname, group, filter) }
+        return iterateEncryptedBallots { it.state == EncryptedBallot.BallotState.SPOILED }
     }
 
     // decrypted spoiled ballots
     actual override fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot> {
-        val dirname = jsonPaths.decryptedBallotDir()
-        if (!Files.exists(Path.of(dirname))) {
+        val dirPath = fileSystem.getPath(jsonPaths.decryptedBallotDir())
+        if (!Files.exists(dirPath)) {
             return emptyList()
         }
-        return Iterable { SpoiledBallotTallyIterator(dirname, group) }
+        return Iterable { SpoiledBallotTallyIterator(dirPath, group) }
     }
 
     // plaintext ballots in given directory, with filter
@@ -123,53 +134,60 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         ballotDir: String,
         filter: ((PlaintextBallot) -> Boolean)?
     ): Iterable<PlaintextBallot> {
-        if (!Files.exists(Path.of(ballotDir))) {
+        val dirPath = fileSystem.getPath(ballotDir)
+        if (!Files.exists(dirPath)) {
             return emptyList()
         }
-        return Iterable { PlaintextBallotIterator(ballotDir, filter) }
+        return Iterable { PlaintextBallotIterator(dirPath, filter) }
     }
 
     // trustee in given directory for given guardianId
     actual override fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {
         val filename = jsonPaths.decryptingTrusteePath(trusteeDir, guardianId)
-        return readTrustee(filename).unwrap()
+        return readTrustee(fileSystem.getPath(filename)).unwrap()
     }
 
     //////// The low level reading functions for protobuf
 
-    private fun readElectionConfig(constantsFile: String, manifestFile: String): Result<ElectionConfig, String> {
+    private fun readElectionConfig(constantsFile: Path, manifestFile: Path): Result<ElectionConfig, String> {
         return try {
             var constants: ElectionConstants
-            FileInputStream(constantsFile).use { inp ->
+            fileSystemProvider.newInputStream(constantsFile).use { inp ->
                 val json = Json.decodeFromStream<ConstantsJson>(inp)
                 constants = json.import()
             }
 
             var manifest: Manifest
-            FileInputStream(manifestFile).use { inp ->
+            fileSystemProvider.newInputStream(manifestFile).use { inp ->
                 val json = Json.decodeFromStream<ManifestJson>(inp)
                 manifest = json.import()
             }
 
-            Ok(ElectionConfig(
-                constants,
-                manifest,
-                1, // LOOK these are not in JSON, can we pass them in?
-                1, // LOOK not in JSON
-            ))
+            Ok(
+                ElectionConfig(
+                    constants,
+                    manifest,
+                    1, // LOOK these are not in JSON, can we pass them in?
+                    1, // LOOK not in JSON
+                )
+            )
         } catch (e: Exception) {
             Err(e.message ?: "readElectionConfig $constantsFile failed")
         }
     }
 
-    private fun readElectionInitialized(contextFile: String, config: ElectionConfig): Result<ElectionInitialized, String> {
+    private fun readElectionInitialized(
+        contextFile: Path,
+        config: ElectionConfig
+    ): Result<ElectionInitialized, String> {
         return try {
-            val (guardians, errors) = readGuardians().partition()
+            val guardiansPath = fileSystem.getPath(jsonPaths.guardianDir())
+            val (guardians, errors) = readGuardians(guardiansPath).partition()
             if (errors.isNotEmpty()) {
                 return Err(errors.joinToString("\n"))
             } else {
                 var context: ElectionInitialized
-                FileInputStream(contextFile).use { inp ->
+                fileSystemProvider.newInputStream(contextFile).use { inp ->
                     val json = Json.decodeFromStream<ContextJson>(inp)
                     context = json.import(group, config, guardians)
                 }
@@ -180,19 +198,19 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
     }
 
-    private fun readGuardians(): List<Result<Guardian, String>> {
-        val dir = File(jsonPaths.guardianDir())
-        return dir.listFiles().map {
-            FileInputStream(it).use { inp ->
+    private fun readGuardians(guardianDir: Path): List<Result<Guardian, String>> {
+        val result = guardianDir.pathList().map {
+            fileSystemProvider.newInputStream(it).use { inp ->
                 val json = Json.decodeFromStream<GuardianJson>(inp)
                 json.import(group)
             }
         }
+        return result
     }
 
-    private fun readTallyResult(filename: String, init: ElectionInitialized): Result<TallyResult, String> {
+    private fun readTallyResult(filename: Path, init: ElectionInitialized): Result<TallyResult, String> {
         return try {
-            FileInputStream(filename).use { inp ->
+            fileSystemProvider.newInputStream(filename).use { inp ->
                 val json = Json.decodeFromStream<EncryptedTallyJson>(inp)
                 val tallyResult = json.import(group)
                 if (tallyResult is Err)
@@ -205,16 +223,20 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
     }
 
-    private fun readDecryptionResult(filename: String, tallyResult: TallyResult): Result<DecryptionResult, String> {
+    private fun readDecryptionResult(
+        lagrangePath: Path,
+        decryptedTallyPath: Path,
+        tallyResult: TallyResult
+    ): Result<DecryptionResult, String> {
         // all the coefficients in a map in one file
-        var lagrangeCoordinates : List<LagrangeCoordinate>
-        FileInputStream(jsonPaths.lagrangePath()).use { inp ->
+        var lagrangeCoordinates: List<LagrangeCoordinate>
+        fileSystemProvider.newInputStream(lagrangePath).use { inp ->
             val json = Json.decodeFromStream<CoefficientsJson>(inp)
             lagrangeCoordinates = json.import(group)
         }
 
         return try {
-            FileInputStream(filename).use { inp ->
+            fileSystemProvider.newInputStream(decryptedTallyPath).use { inp ->
                 val json = Json.decodeFromStream<DecryptedTallyJson>(inp)
                 val dtallyResult = json.import(group)
                 if (dtallyResult is Err)
@@ -223,21 +245,21 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                     Ok(DecryptionResult(tallyResult, dtallyResult.unwrap(), lagrangeCoordinates))
             }
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $filename failed")
+            Err(e.message ?: "readDecryptionResult $decryptedTallyPath failed")
         }
     }
 
-    private class PlaintextBallotIterator(
-        dirname: String,
+    private inner class PlaintextBallotIterator(
+        ballotDir: Path,
         private val filter: Predicate<PlaintextBallot>?
     ) : AbstractIterator<PlaintextBallot>() {
-        val fileList = File(dirname).listFiles() ?: throw RuntimeException()
+        val pathList = ballotDir.pathList()
         var idx = 0
 
         override fun computeNext() {
-            while (idx < fileList.size) {
-                val file = fileList[idx++]
-                FileInputStream(file).use { inp ->
+            while (idx < pathList.size) {
+                val file = pathList[idx++]
+                fileSystemProvider.newInputStream(file).use { inp ->
                     val json = Json.decodeFromStream<PlaintextBallotJson>(inp)
                     val ballotResult = json.import()
                     if (ballotResult is Err) {
@@ -255,18 +277,18 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
     }
 
-    private class EncryptedBallotIterator(
-        dirname: String,
+    private inner class EncryptedBallotIterator(
+        ballotDir: Path,
         private val group: GroupContext,
         private val filter: Predicate<EncryptedBallot>?,
     ) : AbstractIterator<EncryptedBallot>() {
-        val fileList = File(dirname).listFiles() ?: throw RuntimeException()
+        val pathList = ballotDir.pathList()
         var idx = 0
 
         override fun computeNext() {
-            while (idx < fileList.size) {
-                val file = fileList[idx++]
-                FileInputStream(file).use { inp ->
+            while (idx < pathList.size) {
+                val file = pathList[idx++]
+                fileSystemProvider.newInputStream(file).use { inp ->
                     val json = Json.decodeFromStream<SubmittedBallotJson>(inp)
                     val ballotResult = json.import(group)
                     if (ballotResult is Err) {
@@ -284,17 +306,17 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
     }
 
-    private class SpoiledBallotTallyIterator(
-        dirname: String,
+    private inner class SpoiledBallotTallyIterator(
+        ballotDir: Path,
         private val group: GroupContext,
     ) : AbstractIterator<DecryptedTallyOrBallot>() {
-        val fileList = File(dirname).listFiles() ?: throw RuntimeException()
+        val pathList = ballotDir.pathList()
         var idx = 0
 
         override fun computeNext() {
-            while (idx < fileList.size) {
-                val file = fileList[idx++]
-                FileInputStream(file).use { inp ->
+            while (idx < pathList.size) {
+                val file = pathList[idx++]
+                fileSystemProvider.newInputStream(file).use { inp ->
                     val json = Json.decodeFromStream<DecryptedTallyJson>(inp)
                     val tallyResult = json.import(group)
                     if (tallyResult is Err) {
@@ -309,9 +331,9 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
     }
 
-    private fun readTrustee(filename: String): Result<DecryptingTrustee, String> {
+    private fun readTrustee(filePath: Path): Result<DecryptingTrustee, String> {
         return try {
-            FileInputStream(filename).use { inp ->
+            fileSystemProvider.newInputStream(filePath).use { inp ->
                 val json = Json.decodeFromStream<DecryptingTrusteeJson>(inp)
                 val trusteeResult = json.import(group)
                 if (trusteeResult is Err)
@@ -320,7 +342,13 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                     Ok(trusteeResult.unwrap())
             }
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $filename failed")
+            Err(e.message ?: "readDecryptionResult $filePath failed")
+        }
+    }
+
+    private fun Path.pathList(): List<Path> {
+        return Files.walk(this, 1).use { fileStream ->
+            fileStream.filter { it != this }.toList()
         }
     }
 }

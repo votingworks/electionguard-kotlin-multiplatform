@@ -47,7 +47,7 @@ data class ContextJson(
     val number_of_guardians: Int,
     val quorum: Int,
     val elgamal_public_key: ElementModPJson,
-    val commitment_hash: UInt256Json, // TODO what is this?
+    val commitment_hash: UInt256Json, // LOOK where is this used?
     val manifest_hash: UInt256Json,
     val crypto_base_hash: UInt256Json,
     val crypto_extended_base_hash: UInt256Json,

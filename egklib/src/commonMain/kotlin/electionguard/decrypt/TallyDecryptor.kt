@@ -46,8 +46,7 @@ class TallyDecryptor(
 
         val selections = contest.selections.map {
             val id = "${contest.contestId}#@${it.selectionId}"
-            val shares = decryptions.shares[id]
-                ?: throw IllegalStateException("*** $id share not found") // TODO something better?
+            val shares = decryptions.shares[id] ?: throw IllegalStateException("*** $id share not found")
             decryptSelection(it, shares, contest.contestId, stats)
         }
         return DecryptedTallyOrBallot.Contest(contest.contestId, selections, decryptedContestData)

@@ -6,7 +6,7 @@ import electionguard.core.hashElements
 
 /**
  * The result of RecordPreBallot.record(), for use by the "Recording Tool" processing a marked pre-encrypted ballot.
- * LOOK unfinished
+ * TODO unfinished
  */
 data class RecordedPreBallot(
     val ballotId: String,

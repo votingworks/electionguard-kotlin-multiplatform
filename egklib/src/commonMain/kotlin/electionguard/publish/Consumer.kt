@@ -41,6 +41,8 @@ fun makeConsumer(
     group: GroupContext, // false = create directories if not already exist, true = create clean directories,
     isJson: Boolean? = null, // false = protobuf, true = json; default check if manifest.json file exists
 ): Consumer {
-    val jsonSerialization = isJson?: fileExists("$topDir/${ElectionRecordJsonPaths.MANIFEST_FILE}")
+    val jsonSerialization = isJson?:
+        fileExists("$topDir/${ElectionRecordJsonPaths.MANIFEST_FILE}") || topDir.endsWith(".zip")
+
     return if (jsonSerialization) ConsumerJson(topDir, group) else ConsumerProto(topDir, group)
 }
