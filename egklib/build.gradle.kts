@@ -22,7 +22,7 @@ plugins {
 }
 
 group = "electionguard-kotlin-multiplatform"
-version = "1.52.6-SNAPSHOT"
+version = "1.52.6"
 val kotlinVersion by extra("1.7.20")
 
 kotlin {
