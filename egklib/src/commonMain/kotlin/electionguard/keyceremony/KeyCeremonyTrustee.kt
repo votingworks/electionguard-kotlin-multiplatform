@@ -35,7 +35,7 @@ class KeyCeremonyTrustee(
     internal val otherPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
 
     // My share of other's key, keyed by other guardian id. Serialized and used by DecryptingTrustee.
-    internal val myShareOfOthers: MutableMap<String, EncryptedKeyShare> = mutableMapOf()
+    private val myShareOfOthers: MutableMap<String, PrivateKeyShare> = mutableMapOf()
 
     // Other guardians share of my key, keyed by other guardian id. Only used in KeyCeremony
     private val othersShareOfMyKey: MutableMap<String, PrivateKeyShare> = mutableMapOf()
@@ -56,6 +56,7 @@ class KeyCeremonyTrustee(
 
     override fun coefficientProofs(): List<SchnorrProof> = polynomial.coefficientProofs
 
+    // debugging
     internal fun electionPrivateKey(): ElementModQ = polynomial.coefficients[0]
 
     override fun publicKeys(): Result<PublicKeys, String> {
@@ -64,6 +65,17 @@ class KeyCeremonyTrustee(
             xCoordinate,
             polynomial.coefficientProofs,
         ))
+    }
+
+    //  temp debug
+    internal fun valueAt(group: GroupContext, xcoord: Int) : ElementModQ {
+        return polynomial.valueAt(group, xcoord)
+    }
+
+    fun keyShare(): ElementModQ {
+        var result: ElementModQ = polynomial.valueAt(group, xCoordinate)
+        myShareOfOthers.values.forEach{ result += it.yCoordinate }
+        return result
     }
 
     /** Receive publicKeys from another guardian.  */
@@ -107,7 +119,6 @@ class KeyCeremonyTrustee(
                 other.guardianId,
                 EPil,
                 Pil,
-                nonce,
             )
             othersShareOfMyKey[other.guardianId] = pkeyShare
         }
@@ -120,27 +131,32 @@ class KeyCeremonyTrustee(
         if (share == null) {
             return Err("ReceiveEncryptedKeyShare '${this.id}' sent a null share")
         }
-         if (share.availableGuardianId != id) {
-            return Err("ReceiveEncryptedKeyShare '${this.id}' sent share to wrong trustee '${this.id}', should be availableGuardianId '${share.availableGuardianId}'")
+         if (share.secretShareFor != id) {
+            return Err("ReceiveEncryptedKeyShare '${this.id}' sent share to wrong trustee '${this.id}', should be availableGuardianId '${share.secretShareFor}'")
         }
 
         // decrypt Pi(l)
         val secretKey = ElGamalSecretKey(this.electionPrivateKey())
         val byteArray = share.encryptedCoordinate.decrypt(secretKey)
-            ?: return Err("Trustee '$id' couldnt decrypt EncryptedKeyShare for missingGuardianId '${share.missingGuardianId}'")
+            ?: return Err("Trustee '$id' couldnt decrypt EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
         val expected: ElementModQ = byteArray.toUInt256().toElementModQ(group) // Pi(ℓ)
 
         // The other's Kij
-        val publicKeys = otherPublicKeys[share.missingGuardianId]
-            ?: return Err("Trustee '$id' does not have public keys for missingGuardianId '${share.missingGuardianId}'")
+        val publicKeys = otherPublicKeys[share.polynomialOwner]
+            ?: return Err("Trustee '$id' does not have public keys for missingGuardianId '${share.polynomialOwner}'")
 
         // Is that value consistent with the missing guardian's commitments?
         // verify spec 1.52, sec 3.2.2 eq 16: g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1
         if (group.gPowP(expected) != calculateGexpPiAtL(this.xCoordinate, publicKeys.coefficientCommitments())) {
-            return Err("Trustee '$id' failed to validate EncryptedKeyShare for missingGuardianId '${share.missingGuardianId}'")
+            return Err("Trustee '$id' failed to validate EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
         }
 
-        myShareOfOthers[share.missingGuardianId] = share
+        myShareOfOthers[share.polynomialOwner] = PrivateKeyShare(
+            share.polynomialOwner,
+            this.id,
+            share.encryptedCoordinate,
+            expected,
+        )
         return Ok(true)
     }
 
@@ -156,8 +172,8 @@ class KeyCeremonyTrustee(
         val errors = mutableListOf<Result<Boolean, String>>()
         val myPublicKey = ElGamalPublicKey(this.electionPublicKey())
 
-        if (keyShare.availableGuardianId != id) {
-            return Err("Sent KeyShare to wrong trustee '${this.id}', should be availableGuardianId '${keyShare.availableGuardianId}'")
+        if (keyShare.secretShareFor != id) {
+            return Err("Sent KeyShare to wrong trustee '${this.id}', should be availableGuardianId '${keyShare.secretShareFor}'")
         }
 
         /* spec 1.52 says:
@@ -202,21 +218,22 @@ class KeyCeremonyTrustee(
         }
          */
 
-        val otherKeys = otherPublicKeys[keyShare.missingGuardianId]
+        val otherKeys = otherPublicKeys[keyShare.polynomialOwner]
         if (otherKeys == null) {
-            errors.add(Err("Trustee '$id', does not have public key for missingGuardianId '${keyShare.missingGuardianId}'"))
+            errors.add(Err("Trustee '$id', does not have public key for missingGuardianId '${keyShare.polynomialOwner}'"))
         } else {
             // check if the Pi(ℓ) that was sent satisfies eq 16.
             // verify spec 1.52, sec 3.2.2 eq 16: g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1
-            if (group.gPowP(keyShare.coordinate) != calculateGexpPiAtL(this.xCoordinate, otherKeys.coefficientCommitments())) {
-                errors.add(Err("Trustee '$id' failed to validate KeyShare for missingGuardianId '${keyShare.missingGuardianId}'"))
+            if (group.gPowP(keyShare.yCoordinate) != calculateGexpPiAtL(this.xCoordinate, otherKeys.coefficientCommitments())) {
+                errors.add(Err("Trustee '$id' failed to validate KeyShare for missingGuardianId '${keyShare.polynomialOwner}'"))
             } else {
                 // ok use it, but encrypt it ourself, dont use passed value, and use a new nonce
-                val EPil = keyShare.coordinate.byteArray().hashedElGamalEncrypt(myPublicKey)
-                myShareOfOthers[keyShare.missingGuardianId] = EncryptedKeyShare(
-                    keyShare.missingGuardianId,
-                    keyShare.availableGuardianId,
+                val EPil = keyShare.yCoordinate.byteArray().hashedElGamalEncrypt(myPublicKey)
+                myShareOfOthers[keyShare.polynomialOwner] = PrivateKeyShare(
+                    keyShare.polynomialOwner,
+                    keyShare.secretShareFor,
                     EPil,
+                    keyShare.yCoordinate,
                 )
             }
         }
@@ -225,28 +242,27 @@ class KeyCeremonyTrustee(
     }
 }
 
+// internal use only
 private data class PrivateKeyShare(
-    val missingGuardianId: String, // guardian j (owns the polynomial Pj)
-    val availableGuardianId: String, // guardian l with coordinate ℓ
+    val polynomialOwner: String, // guardian j (owns the polynomial Pj)
+    val secretShareFor: String, // guardian l with coordinate ℓ
     val encryptedCoordinate: HashedElGamalCiphertext, // El(Pj_(ℓ))
-    val coordinate: ElementModQ, // Pj_(ℓ)
-    val nonce: ElementModQ, // nonce used to encrypt El(Pj_(ℓ))
+    val yCoordinate: ElementModQ, // Pj_(ℓ), trustee ℓ's share of trustee j's secret
 ) {
     init {
-        require(missingGuardianId.isNotEmpty())
-        require(availableGuardianId.isNotEmpty())
+        require(polynomialOwner.isNotEmpty())
+        require(secretShareFor.isNotEmpty())
     }
 
     fun makeEncryptedKeyShare() = EncryptedKeyShare(
-        missingGuardianId,
-        availableGuardianId,
+        polynomialOwner,
+        secretShareFor,
         encryptedCoordinate,
     )
 
     fun makeKeyShare() = KeyShare(
-        missingGuardianId,
-        availableGuardianId,
-        coordinate,
-        nonce,
+        polynomialOwner,
+        secretShareFor,
+        yCoordinate,
     )
 }

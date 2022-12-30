@@ -15,7 +15,7 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Guardian
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
-import electionguard.decrypt.DecryptingTrustee
+import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.json.CoefficientsJson
 import electionguard.json.ConstantsJson
@@ -284,7 +284,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
         }
     }
 
-    private fun readTrustee(filename: String): Result<DecryptingTrustee, String> {
+    private fun readTrustee(filename: String): Result<DecryptingTrusteeDoerre, String> {
         return try {
             val json = jsonFormat.decodeFromString<DecryptingTrusteeJson>(gulp(filename).toKString())
             val trusteeResult = json.import(group)

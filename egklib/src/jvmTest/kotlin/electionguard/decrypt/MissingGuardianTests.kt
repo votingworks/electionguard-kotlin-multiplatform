@@ -1,7 +1,7 @@
 package electionguard.decrypt
 
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.makeDecryptingTrustee
+import electionguard.ballot.makeDoerreTrustee
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.productionGroup
@@ -58,12 +58,12 @@ class MissingGuardianTests {
             }
         }
 
-        val dTrustees: List<DecryptingTrustee> = trustees.map { makeDecryptingTrustee(it) }
+        val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
 
         val jointPublicKey: ElementModP =
             dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
-        testEncryptRecoveredDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
+        testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
     }
 
 }

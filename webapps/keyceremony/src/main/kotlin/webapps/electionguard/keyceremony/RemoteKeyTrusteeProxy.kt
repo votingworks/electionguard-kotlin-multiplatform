@@ -95,7 +95,7 @@ class RemoteKeyTrusteeProxy(
             }
             val encryptedKeyShareJson: EncryptedKeyShareJson = response.body()
             val encryptedKeyShare: EncryptedKeyShare? = encryptedKeyShareJson.import(groupContext)
-            println("$id encryptedKeyShareFor ${encryptedKeyShare?.availableGuardianId} = ${response.status}")
+            println("$id encryptedKeyShareFor ${encryptedKeyShare?.secretShareFor} = ${response.status}")
             if (encryptedKeyShare == null) Err("EncryptedKeyShare") else Ok(encryptedKeyShare)
         }
     }
@@ -112,7 +112,7 @@ class RemoteKeyTrusteeProxy(
                 }
                 setBody(share.publish())
             }
-            println("$id receiveEncryptedKeyShare from ${share.missingGuardianId} = ${response.status}")
+            println("$id receiveEncryptedKeyShare from ${share.polynomialOwner} = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
         }
     }
@@ -127,7 +127,7 @@ class RemoteKeyTrusteeProxy(
             }
             val keyShareJson: KeyShareJson = response.body()
             val keyShare: KeyShare? = keyShareJson.import(groupContext)
-            println("$id secretKeyShareFor ${keyShare?.availableGuardianId} = ${response.status}")
+            println("$id secretKeyShareFor ${keyShare?.secretShareFor} = ${response.status}")
             if (keyShare == null) Err("SecretKeyShare") else Ok(keyShare)
         }
     }
@@ -141,7 +141,7 @@ class RemoteKeyTrusteeProxy(
                 }
                 setBody(keyShare.publish())
             }
-            println("$id receiveKeyShare from ${keyShare.missingGuardianId} = ${response.status}")
+            println("$id receiveKeyShare from ${keyShare.polynomialOwner} = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
         }
     }

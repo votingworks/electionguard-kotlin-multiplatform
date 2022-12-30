@@ -7,7 +7,7 @@ import electionguard.core.GroupContext
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.decrypt.Decryptor
+import electionguard.decrypt.DecryptorDoerre
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
 import io.ktor.client.*
@@ -120,12 +120,12 @@ fun runRemoteDecrypt(
         DecryptingTrusteeProxy(client, remoteUrl, trusteeDir, it.guardianId, it.xCoordinate, it.publicKey())
     }
 
-    val decryptor = Decryptor(group,
+    val decryptor = DecryptorDoerre(group,
         tallyResult.electionInitialized.cryptoExtendedBaseHash(),
         tallyResult.electionInitialized.jointPublicKey(),
         tallyResult.electionInitialized.guardians,
         trustees,
-        missingGuardianIds)
+        )
     val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt() }
 
     val publisher = makePublisher(outputDir)

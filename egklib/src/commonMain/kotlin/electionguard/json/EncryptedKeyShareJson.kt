@@ -10,52 +10,48 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("EncryptedKeyShare")
 data class EncryptedKeyShareJson(
-    val missingGuardianId: String, // guardian j (owns the polynomial Pj)
-    val availableGuardianId: String, // guardian l
-    val encryptedCoordinate: HashedElGamalCiphertextJson,
+    val polynomial_owner: String, // guardian j (owns the polynomial Pj)
+    val secret_share_for: String, // guardian l
+    val encrypted_coordinate: HashedElGamalCiphertextJson,
 )
 
 fun EncryptedKeyShare.publish() = EncryptedKeyShareJson(
-        this.missingGuardianId,
-        this.availableGuardianId,
+        this.polynomialOwner,
+        this.secretShareFor,
         this.encryptedCoordinate.publish(),
     )
 
 fun EncryptedKeyShareJson.import(group: GroupContext): EncryptedKeyShare? {
-    val encryptedCoordinate = this.encryptedCoordinate.import(group)
+    val encryptedCoordinate = this.encrypted_coordinate.import(group)
     return if (encryptedCoordinate == null) null else
         EncryptedKeyShare(
-            this.missingGuardianId,
-            this.availableGuardianId,
+            this.polynomial_owner,
+            this.secret_share_for,
             encryptedCoordinate,
         )
 }
 
-/** External representation of a KeyShare */
+/** External representation of a KeyShare LOOK */
 @Serializable
 @SerialName("KeyShare")
 data class KeyShareJson(
-    val missingGuardianId: String, // guardian j (owns the polynomial Pj)
-    val availableGuardianId: String, // guardian l
+    val polynomial_owner: String, // guardian j (owns the polynomial Pj)
+    val secret_share_for: String, // guardian l
     val coordinate: ElementModQJson,
-    val nonce: ElementModQJson,
 )
 
 fun KeyShare.publish() = KeyShareJson(
-        this.missingGuardianId,
-        this.availableGuardianId,
-        this.coordinate.publish(),
-        this.nonce.publish(),
+        this.polynomialOwner,
+        this.secretShareFor,
+        this.yCoordinate.publish(),
     )
 
 fun KeyShareJson.import(group: GroupContext): KeyShare? {
     val coordinate = this.coordinate.import(group)
-    val nonce = this.nonce.import(group)
-    return if (coordinate == null || nonce == null) null else
+    return if (coordinate == null) null else
         KeyShare(
-            this.missingGuardianId,
-            this.availableGuardianId,
+            this.polynomial_owner,
+            this.secret_share_for,
             coordinate,
-            nonce,
         )
 }

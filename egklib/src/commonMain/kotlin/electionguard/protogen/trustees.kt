@@ -6,8 +6,8 @@ package electionguard.protogen
 public data class DecryptingTrustee(
     val guardianId: String = "",
     val guardianXCoordinate: Int = 0,
-    val electionKeypair: electionguard.protogen.ElGamalKeypair? = null,
-    val secretKeyShares: List<electionguard.protogen.EncryptedKeyShare> = emptyList(),
+    val publicKey: electionguard.protogen.ElementModP? = null,
+    val keyShare: electionguard.protogen.ElementModQ? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.DecryptingTrustee = protoMergeImpl(other)
@@ -43,21 +43,21 @@ public data class DecryptingTrustee(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "election_keypair",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElGamalKeypair.Companion),
-                        jsonName = "electionKeypair",
-                        value = electionguard.protogen.DecryptingTrustee::electionKeypair
+                        name = "public_key",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
+                        jsonName = "publicKey",
+                        value = electionguard.protogen.DecryptingTrustee::publicKey
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "secret_key_shares",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptedKeyShare>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedKeyShare.Companion)),
-                        jsonName = "secretKeyShares",
-                        value = electionguard.protogen.DecryptingTrustee::secretKeyShares
+                        name = "key_share",
+                        number = 6,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
+                        jsonName = "keyShare",
+                        value = electionguard.protogen.DecryptingTrustee::keyShare
                     )
                 )
             }
@@ -120,8 +120,8 @@ public data class ElGamalKeypair(
 
 @pbandk.Export
 public data class EncryptedKeyShare(
-    val generatingGuardianId: String = "",
-    val designatedGuardianId: String = "",
+    val polynomialOwner: String = "",
+    val secretShareFor: String = "",
     val encryptedCoordinate: electionguard.protogen.HashedElGamalCiphertext? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -138,21 +138,21 @@ public data class EncryptedKeyShare(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "generating_guardian_id",
+                        name = "polynomial_owner",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "generatingGuardianId",
-                        value = electionguard.protogen.EncryptedKeyShare::generatingGuardianId
+                        jsonName = "polynomialOwner",
+                        value = electionguard.protogen.EncryptedKeyShare::polynomialOwner
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "designated_guardian_id",
+                        name = "secret_share_for",
                         number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "designatedGuardianId",
-                        value = electionguard.protogen.EncryptedKeyShare::designatedGuardianId
+                        jsonName = "secretShareFor",
+                        value = electionguard.protogen.EncryptedKeyShare::secretShareFor
                     )
                 )
                 add(
@@ -182,8 +182,8 @@ public fun DecryptingTrustee?.orDefault(): electionguard.protogen.DecryptingTrus
 
 private fun DecryptingTrustee.protoMergeImpl(plus: pbandk.Message?): DecryptingTrustee = (plus as? DecryptingTrustee)?.let {
     it.copy(
-        electionKeypair = electionKeypair?.plus(plus.electionKeypair) ?: plus.electionKeypair,
-        secretKeyShares = secretKeyShares + plus.secretKeyShares,
+        publicKey = publicKey?.plus(plus.publicKey) ?: plus.publicKey,
+        keyShare = keyShare?.plus(plus.keyShare) ?: plus.keyShare,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -192,18 +192,18 @@ private fun DecryptingTrustee.protoMergeImpl(plus: pbandk.Message?): DecryptingT
 private fun DecryptingTrustee.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptingTrustee {
     var guardianId = ""
     var guardianXCoordinate = 0
-    var electionKeypair: electionguard.protogen.ElGamalKeypair? = null
-    var secretKeyShares: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptedKeyShare>? = null
+    var publicKey: electionguard.protogen.ElementModP? = null
+    var keyShare: electionguard.protogen.ElementModQ? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> guardianXCoordinate = _fieldValue as Int
-            3 -> electionKeypair = _fieldValue as electionguard.protogen.ElGamalKeypair
-            4 -> secretKeyShares = (secretKeyShares ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.EncryptedKeyShare> }
+            5 -> publicKey = _fieldValue as electionguard.protogen.ElementModP
+            6 -> keyShare = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
-    return DecryptingTrustee(guardianId, guardianXCoordinate, electionKeypair, pbandk.ListWithSize.Builder.fixed(secretKeyShares), unknownFields)
+    return DecryptingTrustee(guardianId, guardianXCoordinate, publicKey, keyShare, unknownFields)
 }
 
 @pbandk.Export
@@ -245,16 +245,16 @@ private fun EncryptedKeyShare.protoMergeImpl(plus: pbandk.Message?): EncryptedKe
 
 @Suppress("UNCHECKED_CAST")
 private fun EncryptedKeyShare.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedKeyShare {
-    var generatingGuardianId = ""
-    var designatedGuardianId = ""
+    var polynomialOwner = ""
+    var secretShareFor = ""
     var encryptedCoordinate: electionguard.protogen.HashedElGamalCiphertext? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> generatingGuardianId = _fieldValue as String
-            2 -> designatedGuardianId = _fieldValue as String
+            1 -> polynomialOwner = _fieldValue as String
+            2 -> secretShareFor = _fieldValue as String
             5 -> encryptedCoordinate = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
         }
     }
-    return EncryptedKeyShare(generatingGuardianId, designatedGuardianId, encryptedCoordinate, unknownFields)
+    return EncryptedKeyShare(polynomialOwner, secretShareFor, encryptedCoordinate, unknownFields)
 }

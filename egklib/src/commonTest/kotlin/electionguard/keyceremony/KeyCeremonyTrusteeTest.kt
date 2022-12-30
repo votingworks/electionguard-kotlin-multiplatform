@@ -83,8 +83,8 @@ class KeyCeremonyTrusteeTest {
         val result2 = trustee1.encryptedKeyShareFor(trustee2.id())
         assertTrue(result2 is Ok, result2.toString())
         val ss2 = result2.unwrap()
-        assertEquals(trustee1.id(), ss2.missingGuardianId)
-        assertEquals(trustee2.id(), ss2.availableGuardianId)
+        assertEquals(trustee1.id(), ss2.polynomialOwner)
+        assertEquals(trustee2.id(), ss2.secretShareFor)
 
         val result3 = trustee2.receiveEncryptedKeyShare(ss2)
         assertTrue(result3 is Err)
@@ -132,7 +132,7 @@ class KeyCeremonyTrusteeTest {
         val trustee3 = KeyCeremonyTrustee(group, "id3", 43, 4)
         assertTrue(trustee1.receivePublicKeys(trustee3.publicKeys().unwrap()) is Ok)
         // give it the wrong generatingGuardianId
-        val ss2v1 = ss21.copy(missingGuardianId = "id3")
+        val ss2v1 = ss21.copy(polynomialOwner = "id3")
         val result7 = trustee1.receiveEncryptedKeyShare(ss2v1)
         assertTrue(result7 is Err)
         assertEquals("Trustee 'id1' failed to validate EncryptedKeyShare for missingGuardianId 'id3'", result7.error)
@@ -203,13 +203,13 @@ class KeyCeremonyTrusteeTest {
         assertEquals("Sent KeyShare to wrong trustee 'id1', should be availableGuardianId 'id2'", resultWrongTrustee.error)
 
         // Give it a bad guardian id
-        val keyShareBadId = keyShare12.copy(missingGuardianId = "badId")
+        val keyShareBadId = keyShare12.copy(polynomialOwner = "badId")
         val resultBadId = trustee2.receiveKeyShare(keyShareBadId)
         assertTrue(resultBadId is Err)
         assertTrue(resultBadId.error.contains("Trustee 'id2', does not have public key for missingGuardianId 'badId'"))
 
         // Give it a bad coordinate
-        val keyShareBadCoordinate = keyShare12.copy(coordinate = group.TWO_MOD_Q)
+        val keyShareBadCoordinate = keyShare12.copy(yCoordinate = group.TWO_MOD_Q)
         val resultBadCoordinate = trustee2.receiveKeyShare(keyShareBadCoordinate)
         assertTrue(resultBadCoordinate is Err)
         println("result = $resultBadCoordinate")

@@ -64,23 +64,23 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
     // exchange SecretKeyShares, and validate them
     val keyShareFailures: MutableList<KeyShareFailed> = mutableListOf()
     val encryptedKeyResults: MutableList<Result<Boolean, String>> = mutableListOf()
-    trustees.forEach { missing ->
-        trustees.filter { it.id() != missing.id() }.forEach { avail ->
-            if (debug) println(" ${missing.id()} encryptedKeyShareFor() ${avail.id()}")
-            val encryptedKeyShareResult = missing.encryptedKeyShareFor(avail.id())
+    trustees.forEach { owner ->
+        trustees.filter { it.id() != owner.id() }.forEach { shareFor ->
+            if (debug) println(" ${owner.id()} encryptedKeyShareFor() ${shareFor.id()}")
+            val encryptedKeyShareResult = owner.encryptedKeyShareFor(shareFor.id())
             if (encryptedKeyShareResult is Err) {
                 encryptedKeyResults.add(Err(encryptedKeyShareResult.unwrapError()))
-                keyShareFailures.add(KeyShareFailed(missing, avail))
+                keyShareFailures.add(KeyShareFailed(owner, shareFor))
             } else {
                 val secretKeyShare = encryptedKeyShareResult.unwrap()
                 if (debug) println(
-                    "  ${avail.id()} receiveEncryptedKeyShare() for ${missing.id()} " +
-                            "(missing ${secretKeyShare.missingGuardianId} avail ${secretKeyShare.availableGuardianId})"
+                    "  ${shareFor.id()} encryptedKeyShareFor() for ${owner.id()} " +
+                            "(polynomialOwner ${secretKeyShare.polynomialOwner} secretShareFor ${secretKeyShare.secretShareFor})"
                 )
-                val receiveEncryptedKeyShareResult = avail.receiveEncryptedKeyShare(secretKeyShare)
+                val receiveEncryptedKeyShareResult = shareFor.receiveEncryptedKeyShare(secretKeyShare)
                 if (receiveEncryptedKeyShareResult is Err) {
                     encryptedKeyResults.add(receiveEncryptedKeyShareResult)
-                    keyShareFailures.add(KeyShareFailed(missing, avail))
+                    keyShareFailures.add(KeyShareFailed(owner, shareFor))
                 }
             }
         }
@@ -89,12 +89,12 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
     // Phase Two: if any secretKeyShares fail to validate, send and validate KeyShares
     val keyResults: MutableList<Result<Boolean, String>> = mutableListOf()
     keyShareFailures.forEach {
-        if (debug) println(" ${it.missingGuardian.id()} keyShareFor() ${it.availableGuardian.id()}")
-        val keyShareResult = it.missingGuardian.keyShareFor(it.availableGuardian.id())
+        if (debug) println(" ${it.polynomialOwner.id()} secretShareFor ${it.secretShareFor.id()}")
+        val keyShareResult = it.polynomialOwner.keyShareFor(it.secretShareFor.id())
         if (keyShareResult is Ok) {
             val keyShare = keyShareResult.unwrap()
-            if (debug) println(" ${it.availableGuardian.id()} receiveKeyShare() ${keyShare.missingGuardianId}")
-            keyResults.add(it.availableGuardian.receiveKeyShare(keyShare))
+            if (debug) println(" ${it.secretShareFor.id()} keyShareFor() ${keyShare.polynomialOwner}")
+            keyResults.add(it.secretShareFor.receiveKeyShare(keyShare))
         } else {
             keyResults.add(Err(keyShareResult.unwrapError()))
         }
@@ -119,62 +119,8 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
 }
 
 private data class KeyShareFailed(
-    val missingGuardian: KeyCeremonyTrusteeIF, // guardian j (owns the polynomial Pj)
-    val availableGuardian: KeyCeremonyTrusteeIF, // guardian l with coordinate ℓ
-)
-
-data class PublicKeys(
-    val guardianId: String,
-    val guardianXCoordinate: Int,
-    val coefficientProofs: List<SchnorrProof>,
-) {
-    init {
-        require(guardianId.isNotEmpty())
-        require(guardianXCoordinate > 0)
-        require(coefficientProofs.isNotEmpty())
-    }
-
-    fun publicKey(): ElGamalPublicKey {
-        return ElGamalPublicKey(coefficientProofs[0].publicKey)
-    }
-
-    fun coefficientCommitments(): List<ElementModP> {
-        return coefficientProofs.map { it.publicKey }
-    }
-
-    fun validate(): Result<Boolean, String> {
-        val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
-        for ((idx, proof) in this.coefficientProofs.withIndex()) {
-            val result = proof.validate()
-            if (result is Err) {
-                checkProofs.add(Err("  Guardian $guardianId has invalid proof for coefficient $idx " +
-                                result.unwrapError()
-                    )
-                )
-            }
-        }
-        return checkProofs.merge()
-    }
-}
-
-/**
- * A point on a secret polynomial, and commitments to verify this point for a designated guardian.
- * @param missingGuardianId The Id of the guardian that owns the polynomial (j)
- * @param availableGuardianId The Id of the guardian to receive this, matches the DecryptingTrustee.id (l)
- * @param encryptedCoordinate Encryption of missingGuardianId's polynomial value at availableGuardian's xcoordinate, El(Pj_(ℓ))
- */
-data class EncryptedKeyShare(
-    val missingGuardianId: String, // guardian j (owns the polynomial Pj)
-    val availableGuardianId: String, // guardian l with coordinate ℓ
-    val encryptedCoordinate: HashedElGamalCiphertext, // El(Pj_(ℓ)), spec 1.52, eq 14
-)
-
-/** Unencrypted version of EncryptedKeyShare. */
-data class KeyShare(
-    val missingGuardianId: String, // guardian j (owns the polynomial Pj)
-    val availableGuardianId: String, // guardian l with coordinate ℓ
-    val coordinate: ElementModQ, // Pj_(ℓ)
-    val nonce: ElementModQ, // nonce that was used to encrypt El(Pj_(ℓ))
+    val polynomialOwner: KeyCeremonyTrusteeIF, // guardian j (owns the polynomial Pj)
+    val secretShareFor: KeyCeremonyTrusteeIF, // guardian l with coordinate ℓ
 )
 
 /** An internal result class used during the key ceremony. */

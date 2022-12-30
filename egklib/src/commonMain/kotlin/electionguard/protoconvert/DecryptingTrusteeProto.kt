@@ -4,37 +4,34 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
-import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.core.ElGamalKeypair
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElGamalSecretKey
 import electionguard.core.GroupContext
-import electionguard.decrypt.DecryptingTrustee
+import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.EncryptedKeyShare
 
 fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext):
-        Result<DecryptingTrustee, String> {
+        Result<DecryptingTrusteeDoerre, String> {
 
     val id = this.guardianId
-    val electionKeyPair = this.electionKeypair?.import(id, group) ?: Err("DecryptingTrustee $id missing keypair")
-    val (shares, serrors) = this.secretKeyShares.map { it.import(id, group) }.partition()
+    val publicKey = group.importElementModP(this.publicKey) .toResultOr { "DecryptingTrustee $id publicKey was malformed or missing" }
+    val keyShare = group.importElementModQ(this.keyShare) .toResultOr { "DecryptingTrustee $id keyShare was malformed or missing" }
 
-    val errors = getAllErrors(electionKeyPair) + serrors
+    val errors = getAllErrors(publicKey, keyShare)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
 
-    val result = DecryptingTrustee(
+    return Ok(DecryptingTrusteeDoerre(
         this.guardianId,
         this.guardianXCoordinate,
-        electionKeyPair.unwrap(),
-        shares.associateBy { it.missingGuardianId },
-    )
-
-    return Ok(result)
+        publicKey.unwrap(),
+        keyShare.unwrap(),
+    ))
 }
 
 private fun electionguard.protogen.ElGamalKeypair.import(id: String, group: GroupContext):
@@ -68,8 +65,8 @@ private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: G
     }
     return Ok(
         EncryptedKeyShare(
-            this.generatingGuardianId,
-            this.designatedGuardianId,
+            this.polynomialOwner,
+            this.secretShareFor,
             encryptedCoordinate.unwrap(),
         )
     )
@@ -81,11 +78,8 @@ fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
     electionguard.protogen.DecryptingTrustee(
         this.id(),
         this.xCoordinate(),
-        ElGamalKeypair(
-            ElGamalSecretKey(this.electionPrivateKey()),
-            ElGamalPublicKey(this.electionPublicKey())
-        ).publishProto(),
-        this.myShareOfOthers.values.map { it.publishProto() },
+        this.electionPublicKey().publishProto(),
+        this.keyShare().publishProto(),
     )
 
 private fun ElGamalKeypair.publishProto() =
@@ -96,7 +90,7 @@ private fun ElGamalKeypair.publishProto() =
 
 private fun EncryptedKeyShare.publishProto() =
     electionguard.protogen.EncryptedKeyShare(
-        this.missingGuardianId,
-        this.availableGuardianId,
+        this.polynomialOwner,
+        this.secretShareFor,
         this.encryptedCoordinate.publishProto(),
     )

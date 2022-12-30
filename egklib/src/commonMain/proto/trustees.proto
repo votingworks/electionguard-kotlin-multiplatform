@@ -8,8 +8,8 @@ option java_outer_classname = "TrusteeProto";
 message DecryptingTrustee {
   string guardian_id = 1;
   uint32 guardian_x_coordinate = 2;     // the x coefficient (sequence_order), must be > 0
-  ElGamalKeypair election_keypair = 3;  // Guardian's private and public key
-  repeated EncryptedKeyShare secret_key_shares = 4; // Guardian's "shares" of other guardians keys
+  ElementModP public_key = 5;  // Guardian's private and public key
+  ElementModQ key_share = 6;  // My share of the election key, P(i)
 }
 
 message ElGamalKeypair {
@@ -18,10 +18,8 @@ message ElGamalKeypair {
 }
 
 message EncryptedKeyShare {
-  // The Id of the guardian that generated this (i), aka "missing guardian"
-  string generating_guardian_id = 1;
-  // The Id of the guardian to receive this backup.
-  string designated_guardian_id = 2;
+  string polynomial_owner = 1; // guardian j (owns the polynomial Pj)
+  string secret_share_for = 2; // The Id of the guardian to receive this (ℓ)
   // Pi(ℓ)= The generatingGuardian's polynomial value at designatedGuardianXCoordinate
   // This is the encryption = Eℓ (Pi(ℓ)), see spec 1.52 eq 14.
   HashedElGamalCiphertext encrypted_coordinate = 5;

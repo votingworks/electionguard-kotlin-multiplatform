@@ -9,7 +9,7 @@ import electionguard.core.UInt256
 /** One decryption from one Decrypting Trustee */
 data class PartialDecryption(
     val guardianId: String,  // guardian i
-    val mbari: ElementModP, // Mbar_i = A ^ si
+    val mbari: ElementModP, // M_i = A ^ P(i)
     val u: ElementModQ,
     val a: ElementModP,
     val b: ElementModP,
@@ -68,7 +68,7 @@ class DecryptionResults(
     val ciphertext: ElGamalCiphertext, // A
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var dlogM: Int? = null,
-    var M: ElementModP? = null,
+    var mbar: ElementModP? = null, // mbar = prod(Mi)
     var challenge: UInt256? = null,
     var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // guardianId, v_i
 )
