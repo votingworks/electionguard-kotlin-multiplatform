@@ -4,7 +4,6 @@ import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.Guardian
 import electionguard.core.*
 import electionguard.core.Base16.toHex
 
@@ -20,11 +19,10 @@ class DecryptorDoerre(
     val group: GroupContext,
     val qbar: ElementModQ,
     val jointPublicKey: ElGamalPublicKey,
-    guardians: List<Guardian>, // all guardians
+    val guardians: Guardians, // all guardians
     private val decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
 ) {
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>
-    val guardianMap = guardians.associateBy { it.guardianId }
     val stats = Stats()
 
     init {
@@ -63,12 +61,11 @@ class DecryptorDoerre(
 
         // compute M for each DecryptionResults over all the shares from available guardians
         for ((id, dresults) in decryptions.shares) {
-            // accumulate all of the shares calculated for the selection
-            val shares = dresults.shares
+            // lagrange weighted product of the shares
             val weightedProduct = with(group) {
                 dresults.shares.map { (key, value) ->
                     val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
-                     value.mbari powP coeff.lagrangeCoefficient
+                    value.mbari powP coeff.lagrangeCoefficient
                 }.multP() // eq 7
             }
 
@@ -78,12 +75,12 @@ class DecryptorDoerre(
             dresults.mbar = weightedProduct
 
             // collective proof, eq 10, 11
-            val a: ElementModP = with(group) { shares.values.map { it.a }.multP() }
-            val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
+            val a: ElementModP = with(group) { dresults.shares.values.map { it.a }.multP() }
+            val b: ElementModP = with(group) { dresults.shares.values.map { it.b }.multP() }
             // LOOK 06 ??
             dresults.challenge = hashElements(qbar, jointPublicKey, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct) // eq 11
 
-            if (first) {
+            if (first) { // temp debug, a,b dont validate
                 println(" qbar = $qbar")
                 println(" jointPublicKey = $jointPublicKey")
                 println(" message.pad = ${dresults.ciphertext.pad}")
@@ -97,24 +94,29 @@ class DecryptorDoerre(
 
         // compute the challenges for each ContestDataResult
         if (isBallot) {
-            for (results in decryptions.contestData.values) {
-                // accumulate all of the shares calculated for the selection, eq 69
-                val shares = results.shares
-                val beta: ElementModP = with(group) { shares.values.map { it.mbari }.multP() }
-                results.beta = beta
-                val a: ElementModP = with(group) { shares.values.map { it.a }.multP() }
-                val b: ElementModP = with(group) { shares.values.map { it.b }.multP() }
+            for (cresults in decryptions.contestData.values) {
+                // lagrange weighted product of the shares
+                val weightedProduct = with(group) {
+                    cresults.shares.map { (key, value) ->
+                        val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
+                        value.mbari powP coeff.lagrangeCoefficient
+                    }.multP() // eq 7
+                }
+                cresults.beta = weightedProduct
+
+                val a: ElementModP = with(group) { cresults.shares.values.map { it.a }.multP() }
+                val b: ElementModP = with(group) { cresults.shares.values.map { it.b }.multP() }
 
                 // collective challenge (spec 1.52 section 3.5.3 eq 70)
-                results.challenge = hashElements(
+                cresults.challenge = hashElements(
                     qbar,
                     jointPublicKey,
-                    results.ciphertext.c0,
-                    results.ciphertext.c1.toHex(),
-                    results.ciphertext.c2,
+                    cresults.ciphertext.c0,
+                    cresults.ciphertext.c1.toHex(),
+                    cresults.ciphertext.c2,
                     a,
                     b,
-                    beta,
+                    weightedProduct,
                 ) // eq 62
             }
         }
@@ -126,9 +128,9 @@ class DecryptorDoerre(
         for (trustee in decryptingTrustees) {
             trusteeChallengeResponses.add(decryptions.challengeTrustee(trustee))
         }
-        trusteeChallengeResponses.forEach { cr ->
-            cr.results.forEach {
-                decryptions.addChallengeResponse(cr.id, it)
+        trusteeChallengeResponses.forEach { challengeResponses ->
+            challengeResponses.results.forEach {
+                decryptions.addChallengeResponse(challengeResponses.id, it)
             }
         }
 
@@ -137,8 +139,8 @@ class DecryptorDoerre(
 
         val startTally = getSystemTimeInMillis()
         // After gathering the challenge responses from the available trustees, we can verify and publish.
-        val decryptor = TallyDecryptor(group, qbar, jointPublicKey, lagrangeCoordinates, guardianMap)
-        val result = decryptor.decryptTally(this, decryptions, stats)
+        val tallyDecryptor = TallyDecryptor(group, qbar, jointPublicKey, lagrangeCoordinates, guardians)
+        val result = tallyDecryptor.decryptTally(this, decryptions, stats)
 
         stats.of("decryptTally").accum(getSystemTimeInMillis() - startTally, ndecrypt)
 

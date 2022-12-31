@@ -18,7 +18,7 @@ data class PartialDecryption(
 /** One decryption with info from all the Decrypting Trustees. */
 data class DecryptionResult(
     val id: String,     // "contestId#@selectionId"
-    val ciphertext: ElGamalCiphertext, // A
+    val ciphertext: ElGamalCiphertext, // (A, B)
     val share: PartialDecryption,
 )
 
@@ -45,18 +45,18 @@ class TrusteeDecryptions(val id : String) {
 }
 
 data class ChallengeRequest(
-    val id: String, // contest-selection id
+    val id: String, // "contestId#@selectionId"
     val challenge: ElementModQ,
     val nonce: ElementModQ,
 )
 
 data class ChallengeResponse(
-    val id: String, // contest-selection id
+    val id: String, // "contestId#@selectionId"
     val response: ElementModQ,
 )
 
 data class TrusteeChallengeResponses(
-    val id: String,
+    val id: String, // "contestId#@selectionId"
     val results: List<ChallengeResponse>,
 )
 
@@ -68,7 +68,7 @@ class DecryptionResults(
     val ciphertext: ElGamalCiphertext, // A
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var dlogM: Int? = null,
-    var mbar: ElementModP? = null, // mbar = prod(Mi)
+    var mbar: ElementModP? = null, // mbar = prod(Mi), LOOK could be K^t to save an extra divide
     var challenge: UInt256? = null,
     var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // guardianId, v_i
 )

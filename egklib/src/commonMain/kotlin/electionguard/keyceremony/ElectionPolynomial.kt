@@ -56,7 +56,7 @@ fun calculateGexpPiAtL(
     val group = compatibleContextOrFail(*coefficientCommitments.toTypedArray())
     val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())
     var result: ElementModP = group.ONE_MOD_P
-    var xcoordPower: ElementModQ = group.ONE_MOD_Q // ℓ^j
+    var xcoordPower: ElementModQ = group.ONE_MOD_Q // xcoord^j
 
     for (commitment in coefficientCommitments) {
         val term = commitment powP xcoordPower // (K_i,j)^ℓ^j

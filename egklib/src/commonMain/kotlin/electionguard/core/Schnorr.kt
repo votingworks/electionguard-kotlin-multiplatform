@@ -45,7 +45,7 @@ data class SchnorrProof(
 
 /**
  * Given an ElGamal keypair (public and private key), generate a ZNP (zero knowledge proof)
- * that the author of the proof knew the private key, without revealing it.
+ * that the author of the proof knows the private key, without revealing it.
  */
 fun ElGamalKeypair.schnorrProof(
     nonce: ElementModQ = context.randomElementModQ()

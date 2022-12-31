@@ -11,7 +11,7 @@ import electionguard.core.merge
 data class PublicKeys(
     val guardianId: String,
     val guardianXCoordinate: Int,
-    val coefficientProofs: List<SchnorrProof>,
+    val coefficientProofs: List<SchnorrProof>, // contains the coefficientCommitments and public key
 ) {
     init {
         require(guardianId.isNotEmpty())

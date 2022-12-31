@@ -47,20 +47,6 @@ class DecryptingTrusteeProxy(
         }
     }
 
-    override fun setMissing(group: GroupContext, lagrangeCoeff: ElementModQ, missingGuardians: List<String>): Boolean {
-        return runBlocking {
-            val url = "$remoteURL/dtrustee/$xcoord/setMissing"
-            val response: HttpResponse = client.post(url) {
-                headers {
-                    append(HttpHeaders.ContentType, "application/json")
-                }
-                setBody(SetMissingRequest(lagrangeCoeff, missingGuardians).publish())
-            }
-            println("DecryptingTrusteeProxy setMissing $id = ${response.status}")
-            (response.status == HttpStatusCode.OK)
-        }
-    }
-
     override fun decrypt(
         group: GroupContext,
         texts: List<ElementModP>,

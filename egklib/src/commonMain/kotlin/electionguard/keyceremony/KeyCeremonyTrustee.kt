@@ -28,13 +28,13 @@ class KeyCeremonyTrustee(
     val xCoordinate: Int,
     val quorum: Int,
 ) : KeyCeremonyTrusteeIF {
-    // all the secrets are in this
+    // all the secrets are in here
     private val polynomial: ElectionPolynomial = group.generatePolynomial(id, quorum)
 
     // Other guardians' public keys, keyed by other guardian id.
     internal val otherPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
 
-    // My share of other's key, keyed by other guardian id. Serialized and used by DecryptingTrustee.
+    // My share of other's key, keyed by other guardian id.
     private val myShareOfOthers: MutableMap<String, PrivateKeyShare> = mutableMapOf()
 
     // Other guardians share of my key, keyed by other guardian id. Only used in KeyCeremony
@@ -56,9 +56,6 @@ class KeyCeremonyTrustee(
 
     override fun coefficientProofs(): List<SchnorrProof> = polynomial.coefficientProofs
 
-    // debugging
-    internal fun electionPrivateKey(): ElementModQ = polynomial.coefficients[0]
-
     override fun publicKeys(): Result<PublicKeys, String> {
         return Ok(PublicKeys(
             id,
@@ -67,15 +64,19 @@ class KeyCeremonyTrustee(
         ))
     }
 
-    //  temp debug
-    internal fun valueAt(group: GroupContext, xcoord: Int) : ElementModQ {
-        return polynomial.valueAt(group, xcoord)
-    }
-
-    fun keyShare(): ElementModQ {
+    // P(ℓ) = (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. eq 3.
+    override fun keyShare(): ElementModQ {
         var result: ElementModQ = polynomial.valueAt(group, xCoordinate)
         myShareOfOthers.values.forEach{ result += it.yCoordinate }
         return result
+    }
+
+    // debugging
+    internal fun electionPrivateKey(): ElementModQ = polynomial.coefficients[0]
+
+    // debug only
+    internal fun valueAt(group: GroupContext, xcoord: Int) : ElementModQ {
+        return polynomial.valueAt(group, xcoord)
     }
 
     /** Receive publicKeys from another guardian.  */

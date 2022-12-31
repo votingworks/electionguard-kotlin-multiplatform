@@ -4,11 +4,9 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.Guardian
 import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.decryptWithBetaToContestData
 import electionguard.core.*
-import electionguard.keyceremony.calculateGexpPiAtL
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
@@ -19,11 +17,10 @@ class TallyDecryptor(
     val qbar: ElementModQ,
     val jointPublicKey: ElGamalPublicKey,
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>,
-    val guardians: Map<String, Guardian>, // all the guardians
+    val guardians: Guardians, // all the guardians
 ) {
     /**
-     * Called after gathering the shares for all available trustees.
-     * Shares are in a Map keyed by "${contestId}#@${selectionId}"
+     * Called after gathering the shares and challenge responses for all available trustees.
      */
     fun decryptTally(
         tally: EncryptedTally,
@@ -129,7 +126,7 @@ class TallyDecryptor(
         // LOOK these dont agree eq 10
         val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.1
         val b = (this.message.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.2
-        if (first) {
+        if (first) { // temp debug
             println(" qbar = $qbar")
             println(" jointPublicKey = $jointPublicKey")
             println(" this.message.pad = ${this.message.pad}")
@@ -148,34 +145,33 @@ class TallyDecryptor(
     private fun DecryptionResults.checkIndividualResponses(): Boolean {
         var ok = true
         for (partialDecryption in this.shares.values) {
-            val guardian = guardians[partialDecryption.guardianId]
-                ?: throw IllegalStateException("*** guardian ${partialDecryption.guardianId} not found")
-            // val lagrange = lagrangeCoordinates[guardian.guardianId] ?: throw IllegalStateException("*** lagrange not found for ${guardian.guardianId}")
-            val vi = this.responses[guardian.guardianId]
-                ?: throw IllegalStateException("*** response not found for ${guardian.guardianId}")
+            val guardianId = partialDecryption.guardianId
+            val vi = this.responses[guardianId]
+                ?: throw IllegalStateException("*** response not found for ${guardianId}")
             val challenge = this.challenge!!.toElementModQ(group)
 
-            val inner = innerFactor13(guardian.xCoordinate)
-            // val middle = guardian.publicKey() * (inner powP lagrange.lagrangeCoefficient)
+            val inner = guardians.getGexpP(guardianId) // lazy evaluation
             val ap = group.gPowP(vi) * (inner powP challenge) // 13
             if (partialDecryption.a != ap) {
-                println(" ayes dont match for ${guardian.guardianId}")
+                println(" ayes dont match for ${guardianId}")
                 ok = false
             }
 
             val bp = (this.ciphertext.pad powP vi) * (partialDecryption.mbari powP challenge) // 14
             if (partialDecryption.b != bp) {
-                println(" bees dont match for ${guardian.guardianId}")
+                println(" bees dont match for ${guardianId}")
                 ok = false
             }
         }
         return ok
     }
 
-    // the innermost factor of eq 13 LOOK compute ahead of time
-    private fun innerFactor13(xcoord: Int): ElementModP =
+    /* the innermost factor of eq 13 LOOK compute ahead of time
+    private fun innerFactor13(guardian: Guardian): ElementModP =
         with(group) {
-            guardians.values.map { calculateGexpPiAtL(xcoord, it.coefficientCommitments()) }.multP()
+            guardians.values.map { calculateGexpPiAtL(guardian.xCoordinate, it.coefficientCommitments()) }.multP()
         }
+
+     */
 
 }

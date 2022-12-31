@@ -12,6 +12,7 @@ import electionguard.core.productionGroup
 import electionguard.core.sigfig
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
+import electionguard.decrypt.Guardians
 import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.DecryptedTallyOrBallotSinkIF
 import electionguard.publish.makeConsumer
@@ -95,14 +96,12 @@ fun runDecryptBallots(
 
     val consumerIn = makeConsumer(inputDir, group)
     val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
-    val trusteeNames = decryptingTrustees.map { it.id() }.toSet()
-    val missingGuardians =
-        tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId) }.map { it.guardianId }
+    val guardians = Guardians(group, tallyResult.electionInitialized.guardians)
 
     val decryptor = DecryptorDoerre(group,
         tallyResult.electionInitialized.cryptoExtendedBaseHash(),
         tallyResult.electionInitialized.jointPublicKey(),
-        tallyResult.electionInitialized.guardians,
+        guardians,
         decryptingTrustees,
         )
 

@@ -24,6 +24,7 @@ import electionguard.core.randomElementModQ
 import electionguard.core.toUInt256
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptorDoerre
+import electionguard.decrypt.Guardians
 import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
 import electionguard.input.RandomBallotProvider
@@ -90,7 +91,8 @@ fun runEncryptDecryptBallot(
         }
     }
     val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
-    val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
+    val guardianList: List<Guardian> = trustees.map { makeGuardian(it) }
+    val guardians = Guardians(group, guardianList)
     val jointPublicKey: ElementModP =
         dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
@@ -128,7 +130,7 @@ fun runEncryptDecryptBallot(
             config.manifest.cryptoHash,
             cryptoBaseHash,
             cryptoExtendedBaseHash,
-            guardians,
+            guardianList,
         )
         val publisher = makePublisher(outputDir)
         publisher.writeElectionInitialized(init)
@@ -143,7 +145,7 @@ fun testDecryptor(
     manifest: Manifest,
     qbar: ElementModQ,
     publicKey: ElGamalPublicKey,
-    guardians: List<Guardian>,
+    guardians: Guardians,
     trustees: List<DecryptingTrusteeDoerre>,
     present: List<Int>
 ) {

@@ -1,7 +1,6 @@
 package electionguard.decrypt
 
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 
 /** The interface to a DecryptingTrustee. */
@@ -16,20 +15,9 @@ interface DecryptingTrusteeIF {
     fun electionPublicKey(): ElementModP
 
     /**
-     * Set missing Guardian info. Once set, cannot be changed.
-     * @param lagrangeCoeff    the lagrange coefficient for this trustee
-     * @param missingGuardians the missing guardians' Ids
-     */
-    fun setMissing(
-        group: GroupContext,
-        lagrangeCoeff: ElementModQ,
-        missingGuardians: List<String>,
-    ) : Boolean
-
-    /**
      * Compute partial decryptions of elgamal encryptions, using spec 1.52 eq 58 and 59.
      *
-     * @param texts            list of ElementModP that will be partially decrypted
+     * @param texts list of ElementModP (ciphertext.pad or A) to be partially decrypted
      * @return a list of partial decryptions, in the same order as the texts
      */
     fun decrypt(
@@ -39,7 +27,7 @@ interface DecryptingTrusteeIF {
 
     /**
      * Compute responses to Chaum-Pedersen challenges
-     * @param challenges            list of Chaum-Pedersen challenges
+     * @param challenges list of Chaum-Pedersen challenges
      * @return a list of responses, in the same order as the challenges
      */
     fun challenge(

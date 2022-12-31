@@ -6,7 +6,7 @@ import electionguard.core.GroupContext
 import electionguard.core.randomElementModQ
 
 /**
- * A Trustee that knows its own secret key, for the purpose of decryption.
+ * A Trustee that has a share of the election private key, for the purpose of decryption.
  * DecryptingTrustee must stay private. Guardian is its public info in the election record.
  */
 data class DecryptingTrusteeDoerre(
@@ -23,14 +23,6 @@ data class DecryptingTrusteeDoerre(
     override fun id(): String = id
     override fun xCoordinate(): Int = xCoordinate
     override fun electionPublicKey(): ElementModP = publicKey
-
-    override fun setMissing(
-        group: GroupContext,
-        lagrangeCoeff: ElementModQ,     // wℓ for this trustee
-        missingGuardians: List<String>, // guardian ids
-    ) : Boolean {
-        return true
-    }
 
     override fun decrypt(
         group: GroupContext,
