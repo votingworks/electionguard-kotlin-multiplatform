@@ -5,7 +5,7 @@ package electionguard.publish
 import com.github.michaelbull.result.*
 import electionguard.ballot.*
 import electionguard.core.GroupContext
-import electionguard.decrypt.DecryptingTrustee
+import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.json.CoefficientsJson
 import electionguard.json.ConstantsJson
@@ -331,7 +331,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
     }
 
-    private fun readTrustee(filePath: Path): Result<DecryptingTrustee, String> {
+    private fun readTrustee(filePath: Path): Result<DecryptingTrusteeDoerre, String> {
         return try {
             fileSystemProvider.newInputStream(filePath).use { inp ->
                 val json = Json.decodeFromStream<DecryptingTrusteeJson>(inp)

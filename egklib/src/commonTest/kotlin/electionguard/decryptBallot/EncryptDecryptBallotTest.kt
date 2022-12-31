@@ -9,7 +9,7 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Guardian
 import electionguard.ballot.Manifest
 import electionguard.ballot.makeContestData
-import electionguard.ballot.makeDecryptingTrustee
+import electionguard.ballot.makeDoerreTrustee
 import electionguard.ballot.makeGuardian
 import electionguard.core.Base16.toHex
 import electionguard.core.ElGamalPublicKey
@@ -22,8 +22,9 @@ import electionguard.core.hashElements
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.toUInt256
-import electionguard.decrypt.DecryptingTrustee
-import electionguard.decrypt.Decryptor
+import electionguard.decrypt.DecryptingTrusteeDoerre
+import electionguard.decrypt.DecryptorDoerre
+import electionguard.decrypt.Guardians
 import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
 import electionguard.input.RandomBallotProvider
@@ -89,8 +90,9 @@ fun runEncryptDecryptBallot(
             t2.receiveEncryptedKeyShare(t1.encryptedKeyShareFor(t2.id).unwrap())
         }
     }
-    val dTrustees: List<DecryptingTrustee> = trustees.map { makeDecryptingTrustee(it) }
-    val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
+    val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
+    val guardianList: List<Guardian> = trustees.map { makeGuardian(it) }
+    val guardians = Guardians(group, guardianList)
     val jointPublicKey: ElementModP =
         dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
@@ -128,7 +130,7 @@ fun runEncryptDecryptBallot(
             config.manifest.cryptoHash,
             cryptoBaseHash,
             cryptoExtendedBaseHash,
-            guardians,
+            guardianList,
         )
         val publisher = makePublisher(outputDir)
         publisher.writeElectionInitialized(init)
@@ -143,17 +145,15 @@ fun testDecryptor(
     manifest: Manifest,
     qbar: ElementModQ,
     publicKey: ElGamalPublicKey,
-    guardians: List<Guardian>,
-    trustees: List<DecryptingTrustee>,
+    guardians: Guardians,
+    trustees: List<DecryptingTrusteeDoerre>,
     present: List<Int>
 ) {
     println("present $present")
 
     val available = trustees.filter { present.contains(it.xCoordinate()) }
-    val missing = trustees.filter { !present.contains(it.xCoordinate()) }.map { it.id }
-
     val encryptor = Encryptor(group, manifest, publicKey, qbar.toUInt256())
-    val decryptor = Decryptor(group, qbar, publicKey, guardians, available, missing)
+    val decryptor = DecryptorDoerre(group, qbar, publicKey, guardians, available)
 
     var encryptTime = 0L
     var decryptTime = 0L

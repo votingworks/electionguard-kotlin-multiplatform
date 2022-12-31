@@ -14,7 +14,7 @@ import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
-import electionguard.decrypt.DecryptingTrustee
+import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.protoconvert.import
 import mu.KotlinLogging
@@ -252,7 +252,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         }
     }
 
-    private fun GroupContext.readTrustee(filename: String): DecryptingTrustee {
+    private fun GroupContext.readTrustee(filename: String): DecryptingTrusteeDoerre {
         var proto: electionguard.protogen.DecryptingTrustee
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptingTrustee.decodeFromStream(inp) }
         return proto.import(this).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }

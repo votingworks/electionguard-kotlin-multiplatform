@@ -45,18 +45,18 @@ data class ElectionPolynomial(
 }
 
 /**
- * Calculate g^Pi(ℓ) mod p = Product ((K_i,j)^ℓ^j) mod p, j = 0, quorum-1.
+ * Calculate g^Pi(xcoord) mod p = Product ((K_i,j)^xcoord^j) mod p, j = 0, quorum-1.
  * Used to test secret key share by KeyCeremonyTrustee, and verifying results in TallyDecryptor.
  * spec 1.52, sec 3.2.2 eq 16:
  */
 fun calculateGexpPiAtL(
-    xcoord: Int,  // evaluated at xcoord of available guardian (l)
-    coefficientCommitments: List<ElementModP>  // Kij for missing guardian i
+    xcoord: Int,  // evaluated at xcoord ℓ
+    coefficientCommitments: List<ElementModP>  // Kij for guardian i
 ): ElementModP {
     val group = compatibleContextOrFail(*coefficientCommitments.toTypedArray())
     val xcoordQ: ElementModQ = group.uIntToElementModQ(xcoord.toUInt())
     var result: ElementModP = group.ONE_MOD_P
-    var xcoordPower: ElementModQ = group.ONE_MOD_Q // ℓ^j
+    var xcoordPower: ElementModQ = group.ONE_MOD_Q // xcoord^j
 
     for (commitment in coefficientCommitments) {
         val term = commitment powP xcoordPower // (K_i,j)^ℓ^j

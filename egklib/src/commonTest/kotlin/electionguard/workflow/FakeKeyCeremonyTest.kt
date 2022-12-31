@@ -5,7 +5,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
-import electionguard.ballot.makeDecryptingTrustee
+import electionguard.ballot.makeDoerreTrustee
 import electionguard.ballot.makeGuardian
 import electionguard.core.Base16.toHex
 import electionguard.core.ElGamalPublicKey
@@ -16,7 +16,10 @@ import electionguard.core.encrypt
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
-import electionguard.decrypt.DecryptingTrustee
+import electionguard.core.toElementModQ
+import electionguard.decrypt.DecryptingTrusteeDoerre
+import electionguard.decrypt.PartialDecryption
+import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.publish.makeConsumer
@@ -74,7 +77,6 @@ fun runFakeKeyCeremony(
     // check they are complete
     trustees.forEach {
         assertEquals(nguardians - 1, it.otherPublicKeys.size)
-        assertEquals(nguardians - 1, it.myShareOfOthers.size)
     }
 
     val commitments: MutableList<ElementModP> = mutableListOf()
@@ -116,16 +118,47 @@ fun runFakeKeyCeremony(
     val publisher = makePublisher(outputDir)
     publisher.writeElectionInitialized(init)
 
-    val decryptingTrustees: List<DecryptingTrustee> = trustees.map { makeDecryptingTrustee(it) }
+    val decryptingTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
     val trusteePublisher = makePublisher(trusteeDir)
     trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
 
-    testEncryptDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees)
+    testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees, decryptingTrustees.map {it.xCoordinate})
 
     return init
 }
 
-// check that the public keys are good
+fun testDoerreDecrypt(group: GroupContext,
+                      publicKey: ElGamalPublicKey,
+                      trustees: List<DecryptingTrusteeDoerre>,
+                      present: List<Int>) {
+    val missing = trustees.filter {!present.contains(it.xCoordinate())}.map { it.id }
+    println("present $present, missing $missing")
+    val vote = 42
+    val evote = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))
+
+    val available = trustees.filter {present.contains(it.xCoordinate())}
+    val lagrangeCoefficients = available.associate { it.id to group.computeLagrangeCoefficient(it.xCoordinate, present) }
+
+    val shares: List<PartialDecryption> = available.map {
+        it.decrypt(group, listOf(evote.pad))[0]
+    }
+
+    val weightedProduct = with(group) {
+        shares.map {
+            val coeff = lagrangeCoefficients[it.guardianId] ?: throw IllegalArgumentException()
+            it.mbari powP coeff
+        }.multP() // eq 7
+    }
+    val bm = evote.data / weightedProduct
+    val expected = publicKey powP vote.toElementModQ(group)
+    assertEquals(expected, bm)
+
+    val dlogM: Int = publicKey.dLog(bm, 100) ?: throw RuntimeException("dlog failed")
+    println("The answer is $dlogM")
+    assertEquals(42, dlogM)
+}
+
+/* check that the public keys are good
 fun testEncryptDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, trustees: List<DecryptingTrustee>) {
     val vote = 42
     val evote = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))
@@ -137,3 +170,5 @@ fun testEncryptDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, trustee
     val dlogM: Int = publicKey.dLog(decryptedValue) ?: throw RuntimeException("dlog failed")
     assertEquals(42, dlogM)
 }
+
+ */

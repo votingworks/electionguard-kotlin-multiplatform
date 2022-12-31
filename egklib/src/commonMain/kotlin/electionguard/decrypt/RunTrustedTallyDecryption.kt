@@ -87,12 +87,13 @@ fun runDecryptTally(
         tallyResult.electionInitialized.guardians.filter { !trusteeNames.contains(it.guardianId)}.map { it.guardianId}
     println("runDecryptTally present = $trusteeNames missing = $missingGuardians")
 
-    val decryptor = Decryptor(group,
+    val guardians = Guardians(group, tallyResult.electionInitialized.guardians)
+    val decryptor = DecryptorDoerre(group,
         tallyResult.electionInitialized.cryptoExtendedBaseHash(),
         tallyResult.electionInitialized.jointPublicKey(),
-        tallyResult.electionInitialized.guardians,
+        guardians,
         decryptingTrustees,
-        missingGuardians)
+        )
     val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt() }
 
     val publisher = makePublisher(outputDir)

@@ -1,7 +1,6 @@
 package webapps.electionguard.models
 
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
 import electionguard.decrypt.ChallengeRequest
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.publish.makeConsumer
@@ -20,7 +19,6 @@ data class RemoteDecryptingTrusteeJson(val trustee_dir: String, val guardian_id:
     fun id() = guardian_id
     fun xCoordinate() = delegate.xCoordinate()
 
-    fun setMissing(coeff : ElementModQ, missingGuardians: List<String>) = delegate.setMissing(groupContext, coeff, missingGuardians)
     fun decrypt(texts: List<ElementModP>) = delegate.decrypt(groupContext, texts)
     fun challenge(challenges: List<ChallengeRequest>) = delegate.challenge(groupContext, challenges)
 }

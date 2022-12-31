@@ -2,12 +2,14 @@ package electionguard.keyceremony
 
 import com.github.michaelbull.result.Result
 import electionguard.core.ElementModP
+import electionguard.core.ElementModQ
 import electionguard.core.SchnorrProof
 
 interface KeyCeremonyTrusteeIF {
     fun id(): String
     fun xCoordinate(): Int
     fun electionPublicKey(): ElementModP
+    fun keyShare(): ElementModQ
     fun coefficientCommitments(): List<ElementModP>
     fun coefficientProofs(): List<SchnorrProof>
 

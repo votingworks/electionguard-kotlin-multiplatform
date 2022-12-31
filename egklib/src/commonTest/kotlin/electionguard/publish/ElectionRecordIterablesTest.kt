@@ -19,7 +19,7 @@ class ElectionRecordIterablesTest {
             readBallots(context, kotlinDir, 25)
             readCastBallots(context, kotlinDir, 25)
             readSpoiledBallots(context, kotlinDir, 0)
-            readSpoiledBallotTallies(context, kotlinDir, 2)
+            readSpoiledBallotTallies(context, kotlinDir, 3)
     }
 
     fun readBallots(context: GroupContext, topdir: String, expected: Int) {

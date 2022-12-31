@@ -5,11 +5,14 @@ import electionguard.decrypt.computeLagrangeCoefficient
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+private val group = productionGroup()
+
 class LagrangeCoefficientsTest {
-    val group = productionGroup()
 
     @Test
     fun testLagrangeCoefficientAreIntegral() {
+        testLagrangeCoefficientAreIntegral(listOf(1))
+        testLagrangeCoefficientAreIntegral(listOf(1, 2))
         testLagrangeCoefficientAreIntegral(listOf(1, 2, 3))
         testLagrangeCoefficientAreIntegral(listOf(1, 2, 3, 4))
         testLagrangeCoefficientAreIntegral(listOf(2, 3, 4))
@@ -40,6 +43,9 @@ class LagrangeCoefficientsTest {
 }
 
 fun computeLagrangeCoefficientInt(coordinate: Int, others: List<Int>): Int {
+    if (others.isEmpty()) {
+        return 1
+    }
     val numerator: Int = others.reduce { a, b -> a * b }
 
     val diff: List<Int> = others.map { degree: Int -> degree - coordinate }
@@ -49,10 +55,16 @@ fun computeLagrangeCoefficientInt(coordinate: Int, others: List<Int>): Int {
 }
 
 fun computeLagrangeNumerator(others: List<Int>): Int {
+    if (others.isEmpty()) {
+        return 1
+    }
     return others.reduce { a, b -> a * b }
 }
 
 fun computeLagrangeDenominator(coordinate: Int, others: List<Int>): Int {
+    if (others.isEmpty()) {
+        return 1
+    }
     val diff: List<Int> = others.map { degree: Int -> degree - coordinate }
     return diff.reduce { a, b -> a * b }
 }

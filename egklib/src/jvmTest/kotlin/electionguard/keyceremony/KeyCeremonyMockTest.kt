@@ -96,7 +96,7 @@ class KeyCeremonyMockTest {
         }
         every { spy3.keyShareFor(trustee1.id()) } answers {
             // bad KeyShare
-            Ok(KeyShare(spy3.id(), trustee1.id(), group.TWO_MOD_Q, group.TWO_MOD_Q))
+            Ok(KeyShare(spy3.id(), trustee1.id(), group.TWO_MOD_Q))
         }
         val trustees = listOf(trustee1, trustee2, spy3)
         val result = keyCeremonyExchange(trustees, false)
@@ -120,7 +120,7 @@ class KeyCeremonyMockTest {
         }
         every { spy3.keyShareFor(trustee1.id()) } answers {
             // bad KeyShare
-            Ok(KeyShare(spy3.id(), trustee1.id(), group.TWO_MOD_Q, group.TWO_MOD_Q))
+            Ok(KeyShare(spy3.id(), trustee1.id(), group.TWO_MOD_Q))
         }
         val trustees = listOf(trustee1, trustee2, spy3)
         val result = keyCeremonyExchange(trustees, true)
