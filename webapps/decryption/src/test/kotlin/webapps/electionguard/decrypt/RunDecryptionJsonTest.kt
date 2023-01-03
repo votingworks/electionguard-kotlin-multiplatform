@@ -8,7 +8,7 @@ class RunDecryptionJsonTest {
 
     @Test
     fun testDecryptionAll() {
-        val inputDir = "/home/snake/dev/github/electionguard-kotlin-multiplatform/egklib/src/commonTest/data/runWorkflowAllAvailable"
+        val inputDir = "/home/snake/tmp/electionguard/RunKeyCeremonyTest"
         val trusteeDir = "$inputDir/private_data/trustees"
         main(
             arrayOf(
@@ -28,7 +28,7 @@ class RunDecryptionJsonTest {
 
     @Test
     fun testDecryptionSome() {
-        val inputDir = "/home/snake/dev/github/electionguard-kotlin-multiplatform/egklib/src/commonTest/data/runWorkflowSomeAvailable"
+        val inputDir = "/home/snake/tmp/electionguard/RunKeyCeremonyTest"
         val trusteeDir = "$inputDir/private_data/trustees"
         main(
             arrayOf(

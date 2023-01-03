@@ -20,6 +20,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import webapps.electionguard.groupContext
 
+/** Implement DecryptingTrusteeIF by connecting to a decryptingtrustee webapp. */
 class DecryptingTrusteeProxy(
     val client: HttpClient,
     val remoteURL: String,

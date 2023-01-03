@@ -6,6 +6,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
 import electionguard.core.ElementModP
+import electionguard.core.ElementModQ
 import electionguard.core.SchnorrProof
 import electionguard.json.*
 import electionguard.keyceremony.KeyCeremonyTrusteeIF
@@ -21,6 +22,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import webapps.electionguard.groupContext
 
+/** Implement KeyCeremonyTrusteeIF by connecting to a keyceremonytrustee webapp. */
 class RemoteKeyTrusteeProxy(
     val client: HttpClient,
     val remoteURL: String,
@@ -172,6 +174,16 @@ class RemoteKeyTrusteeProxy(
     override fun electionPublicKey(): ElementModP {
         publicKeys()
         return publicKeys?.publicKey()?.key ?: throw IllegalStateException()
+    }
+
+    override fun keyShare(): ElementModQ {
+        return runBlocking {
+            val url = "$remoteURL/ktrustee/$xcoord/keyShare"
+            val response: HttpResponse = client.get(url)
+            println("$id keyShare ${xcoord} = ${response.status}")
+            val keyShareJson : ElementModQJson = response.body()
+            keyShareJson.import(groupContext)!!
+        }
     }
 
     override fun id(): String {

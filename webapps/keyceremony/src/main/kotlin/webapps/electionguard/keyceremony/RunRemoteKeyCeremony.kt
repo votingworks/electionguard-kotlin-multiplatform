@@ -22,7 +22,7 @@ import io.ktor.serialization.kotlinx.json.*
 
 /**
  * Run Remote KeyCeremony CLI.
- * The keyceremonytrustee webapp must already be running.
+ * The keyceremonytrustee webapps must already be running.
  */
 fun main(args: Array<String>) {
     val parser = ArgParser("RunRemoteKeyCeremony")
@@ -63,7 +63,7 @@ fun runKeyCeremony(
     remoteUrl: String,
     configDir: String,
     outputDir: String,
-    trusteeDir: String,
+    trusteeDir: String, // TODO
     createdBy: String?
 ): Boolean {
     val starting = getSystemTimeInMillis()

@@ -2,6 +2,7 @@ package webapps.electionguard.keyceremony
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.unwrap
 import electionguard.core.GroupContext
 import electionguard.core.HashedElGamalCiphertext
 import electionguard.core.productionGroup
@@ -16,9 +17,11 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import io.mockk.every
 import io.mockk.spyk
+import junit.framework.TestCase.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.text.toByteArray
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 private val remoteUrl = "http://0.0.0.0:11180"
 private val group = productionGroup()
@@ -44,6 +47,15 @@ class RemoteKeyCeremonyMock() {
             println(exchangeResult.error)
         }
         assertTrue(exchangeResult is Ok)
+
+        // check results
+        val kcResults = exchangeResult.unwrap()
+        assertEquals(3, kcResults.publicKeys.size)
+        assertEquals(3, kcResults.publicKeysSorted.size)
+
+        listOf(trustee1, trustee2, spy3).forEach {
+            assertNotNull(it.keyShare())
+        }
     }
 
     @Test
