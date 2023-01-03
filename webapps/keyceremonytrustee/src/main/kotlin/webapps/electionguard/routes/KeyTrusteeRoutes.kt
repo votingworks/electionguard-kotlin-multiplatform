@@ -211,5 +211,19 @@ fun Route.trusteeRouting() {
                 )
             }
         }
+
+        get("{id?}/keyShare") {
+            val id = call.parameters["id"] ?: return@get call.respondText(
+                "Missing id",
+                status = HttpStatusCode.BadRequest
+            )
+            val rguardian =
+                remoteKeyTrustees.find { it.xCoordinate == id.toInt() } ?: return@get call.respondText(
+                    "No RemoteKeyTrustee with xCoordinate $id",
+                    status = HttpStatusCode.NotFound
+                )
+            val result = rguardian.keyShare()
+            call.respond(result.publish())
+        }
     }
 }
