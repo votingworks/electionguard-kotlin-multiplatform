@@ -96,8 +96,8 @@ fun runKeyCeremony(
     val electionInitialized = keyCeremonyResults.makeElectionInitialized(
         config,
         mapOf(
-            Pair("CreatedBy", createdBy ?: "runKeyCeremony"),
-            Pair("CreatedFromDir", configDir),
+            Pair("CreatedBy", createdBy ?: "RunRemoteKeyCeremony"),
+            Pair("CreatedFromConfigDir", configDir),
         )
     )
 

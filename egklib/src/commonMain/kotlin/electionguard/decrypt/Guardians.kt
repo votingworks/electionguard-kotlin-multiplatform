@@ -9,8 +9,6 @@ data class Guardians(val group : GroupContext, val guardians: List<Guardian>) {
     val guardianMap = guardians.associateBy { it.guardianId }
     val guardianGexpP = mutableMapOf<String, ElementModP>()
 
-    fun get(guardianId : String) = guardianMap[guardianId]
-
     /**
      * g raised to P(xcoord), where P is the sum of all the trustee's secret polynomials.
      * Can be calculated entirely from the public commitments (K_j,m).

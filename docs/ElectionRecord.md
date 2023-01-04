@@ -1,6 +1,6 @@
 # 🗳 Election Record protobuf directory and file layout
 
-draft 5/17/2022 for proto_version = 2.0.0
+draft 1/4/2023 for proto_version = 2.0.1
 
 ## Public Election Record files
 

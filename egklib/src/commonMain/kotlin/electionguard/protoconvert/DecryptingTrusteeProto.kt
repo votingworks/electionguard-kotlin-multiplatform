@@ -6,9 +6,6 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
-import electionguard.core.ElGamalKeypair
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElGamalSecretKey
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.keyceremony.KeyCeremonyTrustee
@@ -32,26 +29,6 @@ fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext):
         publicKey.unwrap(),
         keyShare.unwrap(),
     ))
-}
-
-private fun electionguard.protogen.ElGamalKeypair.import(id: String, group: GroupContext):
-        Result<ElGamalKeypair, String> {
-
-    val secretKey = group.importElementModQ(this.secretKey)
-        .toResultOr { "DecryptingTrustee $id secretKey was malformed or missing" }
-    val publicKey = group.importElementModP(this.publicKey)
-        .toResultOr { "DecryptingTrustee $id publicKey was malformed or missing" }
-
-    val errors = getAllErrors(secretKey, publicKey)
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-    return Ok(
-        ElGamalKeypair(
-            ElGamalSecretKey(secretKey.unwrap()),
-            ElGamalPublicKey(publicKey.unwrap()),
-        )
-    )
 }
 
 private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: GroupContext):
@@ -80,12 +57,6 @@ fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
         this.xCoordinate(),
         this.electionPublicKey().publishProto(),
         this.keyShare().publishProto(),
-    )
-
-private fun ElGamalKeypair.publishProto() =
-    electionguard.protogen.ElGamalKeypair(
-        this.secretKey.key.publishProto(),
-        this.publicKey.key.publishProto(),
     )
 
 private fun EncryptedKeyShare.publishProto() =

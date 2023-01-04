@@ -1,11 +1,11 @@
 # 🗳 Election Record serialization for private classes
 
-draft 10/25/2022
+draft 1/4/2023
 
-1. This is version 2 of Election Record. It is not backwards compatible with version 1.
+1. This is the evolving version 2 of Election Record private messages.
 2. All fields must be present unless marked as optional.
 3. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
-4. proto_version = 2.0.0 [MAJOR.MINOR.PATCH](https://semver.org/)
+4. proto_version = 1.53.0 [MAJOR.MINOR.PATCH](https://semver.org/)
 
 ## trustees.proto
 
@@ -14,25 +14,26 @@ draft 10/25/2022
 Information passed from the KeyCeremonyTrustee to the DecryptingTrustee.
 Only the secret_key is actually private. One could store that separately and securely, and add it in when decrypting.
 
-| Name                    | Type                   | Notes   |
-|-------------------------|------------------------|---------|
-| guardian_id             | string                 |         |
-| guardian_x_coordinate   | uint32                 |         |
-| election_keypair        | ElGamalKeypair         | secret  |
-| secret_key_shares       | List\<SecretKeyShare\> |         |
+| Name                  | Type        | Notes                           |
+|-----------------------|-------------|---------------------------------|
+| guardian_id           | string      |                                 |
+| guardian_x_coordinate | uint32      |                                 |
+| public_key            | ElementModP |                                 |
+| key_share             | ElementModQ | share of the election key, P(i) |
 
-#### message ElGamalKeypair
+#### message EncryptedKeyShare
 
-| Name              | Type          | Notes  |
-|-------------------|---------------|--------|
-| secret_key        | ElementModQ   | secret |
-| public_key        | ElementModP   |        |
+| Name                 | Type                    | Notes                                      |
+|----------------------|-------------------------|--------------------------------------------|
+| polynomial_owner     | string                  | guardian j (owns the polynomial Pj)        |
+| secret_share_for     | string                  | The Id of the guardian to receive this (ℓ) |
+| encrypted_coordinate | HashedElGamalCiphertext | El (Pj(ℓ))                                 |
 
-#### message SecretKeyShare
+#### message KeyShare
 
-| Name                             | Type                    | Notes      |
-|----------------------------------|-------------------------|------------|
-| generating_guardian_id           | string                  | i          |
-| designated_guardian_id           | string                  | l          |
-| designated_guardian_x_coordinate | uint32                  | ℓ          |
-| encrypted_coordinate             | HashedElGamalCiphertext | El (Pi(ℓ)) |
+| Name             | Type                    | Notes                                      |
+|------------------|-------------------------|--------------------------------------------|
+| polynomial_owner | string                  | guardian j (owns the polynomial Pj)        |
+| secret_share_for | string                  | The Id of the guardian to receive this (ℓ) |
+| coordinate       | HashedElGamalCiphertext | Pj(ℓ)                                      |
+

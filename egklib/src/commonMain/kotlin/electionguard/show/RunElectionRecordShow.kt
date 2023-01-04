@@ -9,6 +9,7 @@ import electionguard.core.Base16.toHex
 import electionguard.core.GroupContext
 import electionguard.core.SchnorrProof
 import electionguard.core.productionGroup
+import electionguard.publish.Consumer
 import electionguard.publish.ElectionRecord
 import electionguard.publish.electionRecordFromConsumer
 import electionguard.publish.makeConsumer
@@ -29,7 +30,7 @@ fun main(args: Array<String>) {
     val show by parser.option(
         ArgType.String,
         shortName = "show",
-        description = "[constants,manifest,guardians,lagrange]"
+        description = "[all,constants,manifest,guardians,lagrange,trustees]"
     )
     val details by parser.option(
         ArgType.Boolean,
@@ -39,10 +40,14 @@ fun main(args: Array<String>) {
     parser.parse(args)
     val showSet = if (show == null) emptySet() else show!!.split(",").toSet()
 
-    runElectionRecordShow(productionGroup(), inputDir, showSet, details ?: false)
+    runElectionRecordShow(productionGroup(), inputDir, ShowSet(showSet), details ?: false)
 }
 
-fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: Set<String>, details : Boolean) {
+class ShowSet(val want: Set<String>) {
+    fun has(show:String) = want.contains("all") || want.contains(show)
+}
+
+fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: ShowSet, details : Boolean) {
     val consumer = makeConsumer(inputDir, group)
     val electionRecord = electionRecordFromConsumer(consumer)
     println("RunElectionRecord from $inputDir, stage = ${electionRecord.stage()}\n")
@@ -51,11 +56,11 @@ fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: Set<St
     println(" config numberOfGuardians = ${config.numberOfGuardians}")
     println(" config quorum  = ${config.quorum}")
     println(" config metadata  = ${config.metadata}")
-    if (showSet.contains("constants")) {
+    if (showSet.has("constants")) {
         print(" ${config.constants.show()}")
 
     }
-    if (showSet.contains("manifest")) {
+    if (showSet.has("manifest")) {
         print(" ${config.manifest.show(details)}")
     }
     println()
@@ -70,8 +75,14 @@ fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: Set<St
         println(" init quorum  = ${init.config.quorum}")
         println(" init nguardians = ${init.guardians.size}")
         println(" init metadata  = ${init.metadata}")
-        if (showSet.contains("guardians")) {
+        if (showSet.has("guardians")) {
             print(init.guardians.showGuardians(details))
+        }
+        println()
+
+        if (showSet.has("trustees")) {
+            val trusteeDir = "$inputDir/private_data/trustees"
+            print(init.guardians.showTrustees(consumer, trusteeDir))
         }
         println()
     }
@@ -105,7 +116,7 @@ fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: Set<St
     if (dtally != null) {
         println(" decryptedTally available=${dtally.lagrangeCoordinates.size}")
         println(" decryptedTally ${dtally.decryptedTally.show(details, config.manifest)}")
-        if (showSet.contains("lagrange")) {
+        if (showSet.has("lagrange")) {
             print(dtally.lagrangeCoordinates.showLagrange())
         }
     }
@@ -160,6 +171,16 @@ fun List<Guardian>.showGuardians(details : Boolean): String {
                 builder.appendLine("   ${proof.show()}")
             }
         }
+    }
+    return builder.toString()
+}
+
+fun List<Guardian>.showTrustees(consumer : Consumer, trusteeDir : String): String {
+    val builder = StringBuilder(5000)
+    builder.appendLine(" Trustees")
+    this.sortedBy { it.guardianId }.forEach { guardian ->
+        val trustee = consumer.readTrustee(trusteeDir, guardian.guardianId)
+        builder.appendLine("  ${trustee.id()} xcoord=${trustee.xCoordinate()}")
     }
     return builder.toString()
 }

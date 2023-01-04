@@ -9,8 +9,8 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
-    // private val kotlinDir = "src/commonTest/data/runWorkflowSomeAvailable"
-    private val kotlinDir = "testOut/RunElectionRecordConvertProto"
+    private val kotlinDir = "src/commonTest/data/runWorkflowSomeAvailable"
+    // private val kotlinDir = "testOut/RunElectionRecordConvertProto"
 
     @Test
     fun readBallotsWrittenByKotlin() {
