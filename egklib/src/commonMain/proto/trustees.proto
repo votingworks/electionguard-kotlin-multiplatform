@@ -12,11 +12,6 @@ message DecryptingTrustee {
   ElementModQ key_share = 6;  // My share of the election key, P(i)
 }
 
-message ElGamalKeypair {
-  ElementModQ secret_key = 1;
-  ElementModP public_key = 2;
-}
-
 message EncryptedKeyShare {
   string polynomial_owner = 1; // guardian j (owns the polynomial Pj)
   string secret_share_for = 2; // The Id of the guardian to receive this (ℓ)

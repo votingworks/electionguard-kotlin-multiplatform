@@ -1,27 +1,29 @@
 # Workflow and Command Line Programs
 
-last update 8/18/2022
+last update 1/4/2023
 
 ## Election workflow
 
 1. **Generate an ElectionConfig protobuf record**. The following examples may be useful:
-   1. A synthetic manifest is created in _electionguard.publish.PublisherTest.testWriteElectionConfig_(), 
-      and an ElectionConfig protobuf is written out. 
-   2. In the [electionguard-java](https://github.com/JohnLCaron/electionguard-java) repo, 
-      _com.sunya.electionguard.input.MakeManifestForTesting_ can read a version 1
-      JSON manifest and write out a version 2 ElectionConfig protobuf.
+
+   1. A synthetic manifest is created in _electionguard.protoconvert.ElectionConfigConvertTest.generateElectionConfig_(), 
+      and an ElectionConfig protobuf is written out.
 
 2. **KeyCeremony**. An ElectionConfig record is needed as input, and an ElectionInitialized record is output. The following examples may be useful:
+
    1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI for testing, that will run locally in a single process, 
       generate test guardians, and run the key ceremony. 
-   2. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
-      _electionguard.workflow.RunRemoteKeyCeremonyTest_ is a CLI for testing, that will run a key ceremony
-      with remote guardians over gRPC, on the same machine but in different processes. Private keys for each
-      guardian are kept private and stored separately.
-   3. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
-      _electionguard.keyceremony.RunRemoteKeyCeremony_ and _electionguard.keyceremony.RunRemoteTrustee_
-      are CLI programs with which a remote key ceremony can be run with guardians residing completely on separate machines, 
-      communicating over gRPC from anywhere on the internet.
+
+   2. To run a keyceremony using the webapps CLI:
+   
+       1. In _webapps/keyceremonytrustees_, start up _webapps.electionguard.Application_, and specify the directory to
+          write the private trustee files with a command line argument:
+              
+           `-trusteeDir <trustee directory>`
+
+       2. In _webapps/keyceremony_, run _webapps.electionguard.keyceremony.RunRemoteKeyCeremony_ CLI (see
+         RunRemoteKeyCeremonyTest as an example of the inputs needed).
+
 
 3. **Create input plaintext ballots** based on the manifest in ElectionConfig. The following examples may be useful:
     1. _TestWorkflow_ uses _RandomBallotProvider_ to generate random test ballots.
@@ -43,23 +45,20 @@ last update 8/18/2022
     2. _electionguard.decrypt.RunTrustedBallotDecryption_ is a CLI for testing, that will run locally in a single process,
       that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a 
       _DecryptedTallyOrBallot_ protobuf record that represents the decrypted spoiled ballot.
-    3. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
-       _electionguard.workflow.RunRemoteDecryptionTest_ is a CLI for testing, that will decrypt the EncryptedTally 
-       (and optionally spoiled ballots)
-       with remote guardians over gRPC, on the same machine but in different processes. Private keys for each
-       guardian are kept private and stored separately.
-    4. In the [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo,
-       _electionguard.decrypt.RunRemoteDecryptor_ and _electionguard.decrypt.RunRemoteDecryptingTrustee_
-       are CLI programs with which one can decrypt with guardians residing completely on separate machines,
-       communicating over gRPC from anywhere on the internet.
 
+   3. To run a decryption using the webapps CLI:
+
+       1. In _webapps/decryptingtrustee_, start up _webapps.electionguard.Application_
+
+       2. In _webapps/decryption_, run _webapps.electionguard.decrypt.RunRemoteTallyDecryption_ CLI.
+
+       3. See _webapps.electionguard.decrypt.RunRemoteWorkflow_ in the tests, as an example.   
+   
 7. **Verify**. The following examples may be useful:
     1. _electionguard.verify.VerifyElectionRecord_ is a CLI that reads an election record and verifies it.
 
 8. **Complete test Workflow**. The following examples may be useful:
    1. A complete test workflow can be run from electionguard.workflow.TestWorkflow in the commonTest module.
-   2. A complete test remote workflow can be run from electionguard.workflow.RunRemoteWorkflowTest in the 
-      [electionguard-remote](https://github.com/JohnLCaron/electionguard-remote) repo.
 
 
 ## Run Trusted KeyCeremony

@@ -38,12 +38,6 @@ data class DecryptionResult(
         require(lagrangeCoordinates.isNotEmpty())
         require(lagrangeCoordinates.size >= tallyResult.quorum())
     }
-    fun numberOfGuardians(): Int {
-        return tallyResult.numberOfGuardians()
-    }
-    fun quorum(): Int {
-        return tallyResult.quorum()
-    }
 }
 
 data class LagrangeCoordinate(
