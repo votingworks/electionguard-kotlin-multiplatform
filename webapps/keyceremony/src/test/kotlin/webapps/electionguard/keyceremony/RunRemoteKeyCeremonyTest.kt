@@ -11,12 +11,16 @@ class RunRemoteKeyCeremonyTest {
             arrayOf(
                 "-in",
                 configDir,
-                "-trustees",
-                "/home/snake/tmp/electionguard/RunRemoteKeyCeremonyTest/private_data/trustees",
                 "-out",
                 "/home/snake/tmp/electionguard/RunRemoteKeyCeremonyTest",
                 "-remoteUrl",
-                "http://0.0.0.0:11180"
+                "https://localhost:11183",
+                "-keystore",
+                "keystore.jks",
+                "-kpwd",
+                "ksPassword",
+                "-epwd",
+                "egPassword",
             )
         )
     }

@@ -9,7 +9,7 @@ dependencyResolutionManagement {
         create("libs") {
             version("kotlin-version", "1.7.20")
             version("coroutines-version", "1.6.4")
-            version("ktor-version", "2.1.3")
+            version("ktor-version", "2.2.2")
 
             plugin("ktor", "io.ktor.plugin").versionRef("ktor-version")
             plugin("serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin-version")
@@ -20,6 +20,7 @@ dependencyResolutionManagement {
             library("kotlinx-coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines-version")
             library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
+            //// ktor client
             library("ktor-utils", "io.ktor", "ktor-utils").versionRef("ktor-version")
             library("ktor-client-java", "io.ktor", "ktor-client-java").versionRef("ktor-version")
             library("ktor-client-content-negotiation", "io.ktor", "ktor-client-content-negotiation").versionRef("ktor-version")
@@ -33,6 +34,7 @@ dependencyResolutionManagement {
                 )
             )
 
+            //// ktor server
             library("ktor-server-core-jvm", "io.ktor", "ktor-server-core-jvm").versionRef("ktor-version")
             library("ktor-server-auth-jvm", "io.ktor", "ktor-server-auth-jvm").versionRef("ktor-version")
             library("ktor-server-auth-jwt-jvm", "io.ktor", "ktor-server-auth-jwt-jvm").versionRef("ktor-version")
@@ -40,6 +42,8 @@ dependencyResolutionManagement {
                 .versionRef("ktor-version")
             library("ktor-server-netty-jvm", "io.ktor", "ktor-server-netty-jvm").versionRef("ktor-version")
             library("ktor-serialization-kotlinx-json-jvm", "io.ktor", "ktor-serialization-kotlinx-json-jvm")
+                .versionRef("ktor-version")
+            library("ktor-network-tls-certificates", "io.ktor", "ktor-network-tls-certificates")
                 .versionRef("ktor-version")
             bundle(
                 "ktor-server",
@@ -50,6 +54,7 @@ dependencyResolutionManagement {
                     "ktor-server-content-negotiation-jvm",
                     "ktor-server-netty-jvm",
                     "ktor-serialization-kotlinx-json-jvm",
+                    "ktor-network-tls-certificates",
                 )
             )
 
