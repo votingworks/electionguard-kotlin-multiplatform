@@ -7,6 +7,7 @@ import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
+import electionguard.core.GroupContext
 import electionguard.core.SchnorrProof
 import electionguard.json.*
 import electionguard.keyceremony.KeyCeremonyTrusteeIF
@@ -20,15 +21,16 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import webapps.electionguard.groupContext
 
 /** Implement KeyCeremonyTrusteeIF by connecting to a keyceremonytrustee webapp. */
 class RemoteKeyTrusteeProxy(
+    val group : GroupContext,
     val client: HttpClient,
     val remoteURL: String,
     val id: String,
     val xcoord: Int,
     val quorum: Int,
+    val certPassword: String,
 ) : KeyCeremonyTrusteeIF {
     var publicKeys : PublicKeys? = null
 
@@ -38,6 +40,7 @@ class RemoteKeyTrusteeProxy(
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
+                    basicAuth("electionguard", certPassword)
                 }
                 setBody(
                     """{
@@ -60,16 +63,22 @@ class RemoteKeyTrusteeProxy(
             val response: HttpResponse = client.get(url) {
                 headers {
                     append(HttpHeaders.Accept, "application/json")
+                    basicAuth("electionguard", certPassword)
                 }
             }
-            val publicKeysJson: PublicKeysJson = response.body()
-            val publicKeyResult = publicKeysJson.import(groupContext)
-            if (publicKeyResult is Ok) {
-                publicKeys = publicKeyResult.unwrap()
+            if (response.status != HttpStatusCode.OK) {
+                println("response.status for $url = ${response.status}")
+                Err("$url error = ${response.status}")
             } else {
-                println("$id publicKeys = ${response.status} err = ${publicKeyResult.unwrapError()}")
+                val publicKeysJson: PublicKeysJson = response.body()
+                val publicKeyResult = publicKeysJson.import(group)
+                if (publicKeyResult is Ok) {
+                    publicKeys = publicKeyResult.unwrap()
+                } else {
+                    println("$id publicKeys = ${response.status} err = ${publicKeyResult.unwrapError()}")
+                }
+                publicKeyResult
             }
-            publicKeyResult
         }
     }
 
@@ -79,6 +88,7 @@ class RemoteKeyTrusteeProxy(
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
+                    basicAuth("electionguard", certPassword)
                 }
                 setBody(publicKeys.publish())
             }
@@ -93,12 +103,18 @@ class RemoteKeyTrusteeProxy(
             val response: HttpResponse = client.get(url) {
                 headers {
                     append(HttpHeaders.Accept, "application/json")
+                    basicAuth("electionguard", certPassword)
                 }
             }
-            val encryptedKeyShareJson: EncryptedKeyShareJson = response.body()
-            val encryptedKeyShare: EncryptedKeyShare? = encryptedKeyShareJson.import(groupContext)
-            println("$id encryptedKeyShareFor ${encryptedKeyShare?.secretShareFor} = ${response.status}")
-            if (encryptedKeyShare == null) Err("EncryptedKeyShare") else Ok(encryptedKeyShare)
+            if (response.status != HttpStatusCode.OK) {
+                println("response.status for $url = ${response.status}")
+                Err("$url error = ${response.status}")
+            } else {
+                val encryptedKeyShareJson: EncryptedKeyShareJson = response.body()
+                val encryptedKeyShare: EncryptedKeyShare? = encryptedKeyShareJson.import(group)
+                println("$id encryptedKeyShareFor ${encryptedKeyShare?.secretShareFor} = ${response.status}")
+                if (encryptedKeyShare == null) Err("EncryptedKeyShare") else Ok(encryptedKeyShare)
+            }
         }
     }
 
@@ -111,6 +127,7 @@ class RemoteKeyTrusteeProxy(
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
+                    basicAuth("electionguard", certPassword)
                 }
                 setBody(share.publish())
             }
@@ -125,12 +142,18 @@ class RemoteKeyTrusteeProxy(
             val response: HttpResponse = client.get(url) {
                 headers {
                     append(HttpHeaders.Accept, "application/json")
+                    basicAuth("electionguard", certPassword)
                 }
             }
-            val keyShareJson: KeyShareJson = response.body()
-            val keyShare: KeyShare? = keyShareJson.import(groupContext)
-            println("$id secretKeyShareFor ${keyShare?.secretShareFor} = ${response.status}")
-            if (keyShare == null) Err("SecretKeyShare") else Ok(keyShare)
+            if (response.status != HttpStatusCode.OK) {
+                println("response.status for $url = ${response.status}")
+                Err("$url error = ${response.status}")
+            } else {
+                val keyShareJson: KeyShareJson = response.body()
+                val keyShare: KeyShare? = keyShareJson.import(group)
+                println("$id secretKeyShareFor ${keyShare?.secretShareFor} = ${response.status}")
+                if (keyShare == null) Err("SecretKeyShare") else Ok(keyShare)
+            }
         }
     }
 
@@ -140,6 +163,7 @@ class RemoteKeyTrusteeProxy(
             val response: HttpResponse = client.post(url) {
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
+                    basicAuth("electionguard", certPassword)
                 }
                 setBody(keyShare.publish())
             }
@@ -151,7 +175,11 @@ class RemoteKeyTrusteeProxy(
     fun saveState(): Result<Boolean, String> {
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/saveState"
-            val response: HttpResponse = client.get(url)
+            val response: HttpResponse = client.get(url) {
+                headers {
+                    basicAuth("electionguard", certPassword)
+                }
+            }
             println("$id saveState from = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
         }
@@ -163,7 +191,7 @@ class RemoteKeyTrusteeProxy(
 
     override fun coefficientCommitments(): List<ElementModP> {
         publicKeys()
-        return publicKeys?.coefficientCommitments() ?: throw IllegalStateException()
+        return publicKeys?.coefficientCommitments() ?: throw IllegalStateException("$id coefficientCommitments failed")
     }
 
     override fun coefficientProofs(): List<SchnorrProof> {
@@ -179,10 +207,14 @@ class RemoteKeyTrusteeProxy(
     override fun keyShare(): ElementModQ {
         return runBlocking {
             val url = "$remoteURL/ktrustee/$xcoord/keyShare"
-            val response: HttpResponse = client.get(url)
+            val response: HttpResponse = client.get(url) {
+                headers {
+                    basicAuth("electionguard", certPassword)
+                }
+            }
             println("$id keyShare ${xcoord} = ${response.status}")
             val keyShareJson : ElementModQJson = response.body()
-            keyShareJson.import(groupContext)!!
+            keyShareJson.import(group)!!
         }
     }
 

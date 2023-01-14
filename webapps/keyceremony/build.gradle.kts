@@ -7,9 +7,9 @@ plugins {
 }
 
 group = "webapps.electionguard"
-version = "0.1"
+version = "0.2"
 application {
-    mainClass.set("io.ktor.server.netty.EngineMain")
+    mainClass.set("webapps.electionguard.keyceremony.RunRemoteKeyCeremonyKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -21,12 +21,9 @@ dependencies {
     implementation(libs.kotlin.result)
     implementation(libs.kotlinx.cli)
     implementation(libs.bundles.ktor.client)
-    implementation(libs.bundles.ktor.server)
     implementation(libs.bundles.logging.client)
 
-    testImplementation(libs.ktor.server.tests.jvm)
     testImplementation(libs.kotlin.test.junit)
-
     // mocking only available on jvm
     testImplementation(libs.mockk)
 }

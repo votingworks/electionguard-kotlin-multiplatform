@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 1/4/2023
+last update 1/11/2023
 
 ## Election workflow
 
@@ -9,15 +9,16 @@ last update 1/4/2023
    1. A synthetic manifest is created in _electionguard.protoconvert.ElectionConfigConvertTest.generateElectionConfig_(), 
       and an ElectionConfig protobuf is written out.
 
-2. **KeyCeremony**. An ElectionConfig record is needed as input, and an ElectionInitialized record is output. The following examples may be useful:
+2. **KeyCeremony**. An ElectionConfig record is needed as input, and an ElectionInitialized record is output. 
+   The following examples may be useful:
 
-   1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI for testing, that will run locally in a single process, 
-      generate test guardians, and run the key ceremony. 
+   1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI that will run the entire key ceremony locally in a 
+      single process. See _electionguard.keyceremony.RunKeyCeremonyTest_ as an example.
 
-   2. To run a keyceremony using the webapps CLI:
+   2. To run a keyceremony with remote guardians, using the webapps CLI:
    
-       1. In _webapps/keyceremonytrustees_, start up _webapps.electionguard.Application_, and specify the directory to
-          write the private trustee files with a command line argument:
+       1. In _webapps/keyceremonytrustees_, start up _webapps.electionguard.KeyCeremonyRemoteTrustee_, and specify the 
+          directory to write the private trustee files, using the command line argument:
               
            `-trusteeDir <trustee directory>`
 
@@ -59,6 +60,13 @@ last update 1/4/2023
 
 8. **Complete test Workflow**. The following examples may be useful:
    1. A complete test workflow can be run from electionguard.workflow.TestWorkflow in the commonTest module.
+
+input:
+*  _inputDir_/electionConfig.protobuf
+
+output:
+* _trusteeDir_/decryptingTrustee-_guardianId_.protobuf
+* _outputDir_/electionInitialized.protobuf
 
 
 ## Run Trusted KeyCeremony
@@ -202,3 +210,35 @@ input:
 
 output:
 * stdout
+
+# Remote 
+
+## Make KeyStore
+
+To use HTTPS between remote processes, we need a digital certificate. You may supply your own keystore, or use the 
+__MakeKeystore__ CLI (in keyceremonytrustee test directory). 
+This will generate a self-signed certificate and write it to a JKS keystore, to be used in the webapps.
+The certificate _alias_ = "electionguard" and _domains_ = listOf("127.0.0.1", "0.0.0.0", "localhost").
+
+````
+Usage: MakeKeyStore options_list
+Options: 
+Options: 
+    --keystorePassword, -kpwd -> password for the entire keystore (always required) { String }
+    --electionguardPassword, -epwd -> password for the electionguard certificate entry (always required) { String }
+    --sslKeyStore, -keystore -> write the keystore file to this path, default webapps/keystore.jks { String }
+    --help, -h -> Usage info 
+````
+
+Example
+
+````
+java -classpath <classpath> webapps.electionguard.MakeKeystoreKt -kpwd keystorePassword -epwd egPassword
+````
+output:
+
+````
+MakeKeyStore
+ keystorePassword = 'ksPassword' electionguardPassword = 'egPassword'
+ write to path = 'webapps/keystore.jks'
+````

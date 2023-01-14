@@ -1,26 +1,21 @@
 package webapps.electionguard.plugins
 
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.server.application.*
+import webapps.electionguard.credentialsPassword
 
 fun Application.configureSecurity() {
 
     authentication {
-        jwt {
-            val jwtAudience = this@configureSecurity.environment.config.property("jwt.audience").getString()
-            realm = this@configureSecurity.environment.config.property("jwt.realm").getString()
-            verifier(
-                JWT
-                    .require(Algorithm.HMAC256("secret"))
-                    .withAudience(jwtAudience)
-                    .withIssuer(this@configureSecurity.environment.config.property("jwt.domain").getString())
-                    .build()
-            )
-            validate { credential ->
-                if (credential.payload.audience.contains(jwtAudience)) JWTPrincipal(credential.payload) else null
+        // https://ktor.io/docs/basic.html
+        basic("auth-basic") {
+            realm = "Access to the '/' path"
+            validate { credentials ->
+                if (credentials.name == "electionguard" && credentials.password == credentialsPassword) {
+                    UserIdPrincipal(credentials.name)
+                } else {
+                    null
+                }
             }
         }
     }
