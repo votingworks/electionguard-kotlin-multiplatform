@@ -4,9 +4,11 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.Manifest
 import electionguard.core.*
 import electionguard.input.ManifestBuilder
+import electionguard.input.buildStandardManifest
 import electionguard.protoconvert.ManifestConvertTest.Companion.generateFakeManifest
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
+import electionguard.publish.makePublisher
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.string
@@ -15,6 +17,28 @@ import kotlin.random.Random
 import kotlin.test.*
 
 class ManifestTest {
+
+    private val writeout = true
+    private val ncontests = 20
+    private val nselections = 5
+
+    @Test
+    fun writeManifest() {
+        val manifest = buildStandardManifest(ncontests, nselections)
+        val json = manifest.publish()
+        val roundtrip = json.import()
+        assertNotNull(roundtrip)
+        assertTrue(roundtrip.equals(manifest))
+        assertEquals(roundtrip, manifest)
+
+        if (writeout) {
+            val output = "testOut/ManifestConvertTest"
+            val publisher = makePublisher(output, true, true)
+            publisher.writeManifest(manifest)
+            println("Wrote to $output")
+        }
+    }
+
     @Test
     fun testManifestInputBuilderRoundtrip() {
         runTest {

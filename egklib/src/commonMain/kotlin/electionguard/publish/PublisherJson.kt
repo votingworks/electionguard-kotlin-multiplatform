@@ -5,6 +5,7 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 
 /** Read/write the Election Record as protobuf files. */
 expect class PublisherJson(topDir: String, createNew: Boolean = false) : Publisher {
+    override fun writeManifest(manifest: Manifest)
     override fun writeElectionConfig(config: ElectionConfig)
     override fun writeElectionInitialized(init: ElectionInitialized)
     override fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<EncryptedBallot>)

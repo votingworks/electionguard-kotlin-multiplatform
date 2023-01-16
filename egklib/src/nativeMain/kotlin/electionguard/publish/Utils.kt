@@ -61,15 +61,52 @@ fun checkErrno(dothis: (mess: String) -> Unit) {
     }
 }
 
-fun exists(filename: String): Boolean {
+fun exists(path: String): Boolean {
     memScoped {
         val stat = alloc<stat>()
         // lstat(@kotlinx.cinterop.internal.CCall.CString __file: kotlin.String?,
         //   __buf: kotlinx.cinterop.CValuesRef<platform.posix.stat>?)
         // : kotlin.Int { /* compiled code */ }
-        return (lstat(filename, stat.ptr) == 0)
+        return (lstat(path, stat.ptr) == 0)
     }
 }
+
+fun isdirectory(path: String): Boolean {
+    memScoped {
+        val stat = alloc<stat>()
+        if (lstat(path, stat.ptr) != 0) { // does it exist?
+            return false
+        }
+        return S_ISDIR(stat.st_mode)
+    }
+}
+
+///////////
+// these macros are not in the cinterop libraries, so we add them here
+// see eg https://youtrack.jetbrains.com/issue/KT-43719/C-Interop-Support-function-like-macros
+private val S_IFMT : UInt = "0170000".toUInt(8)
+private val S_IFDIR : UInt = "0040000".toUInt(8)
+
+// taken from ubuntu dist, /usr/include/x86_64-linux-gnu/[sys|bits]/stat.h
+// hopefully its the same across posix distros
+
+// S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)	/* directory */
+// S_IFMT          0170000         /* [XSI] type of file mask */
+// S_IFDIR         0040000         /* [XSI] directory */
+fun S_ISDIR(mode: UInt): Boolean {
+    return (mode and S_IFMT) == S_IFDIR
+}
+
+/* File types.
+    #define	__S_IFDIR	0040000	/* Directory.  */
+    #define	__S_IFCHR	0020000	/* Character device.  */
+    #define	__S_IFBLK	0060000	/* Block device.  */
+    #define	__S_IFREG	0100000	/* Regular file.  */
+    #define	__S_IFIFO	0010000	/* FIFO.  */
+    #define	__S_IFLNK	0120000	/* Symbolic link.  */
+    #define	__S_IFSOCK	0140000	/* Socket.  */
+*/
+///////////
 
 // create new directories if not exist, starting at the topDir
 fun createDirectories(dir: String): Boolean {

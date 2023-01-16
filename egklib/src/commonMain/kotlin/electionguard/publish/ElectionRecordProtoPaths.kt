@@ -6,6 +6,7 @@ data class ElectionRecordProtoPaths(val topDir : String) {
     companion object {
         const val PROTO_SUFFIX = ".protobuf"
         const val DECRYPTING_TRUSTEE_PREFIX = "decryptingTrustee"
+        const val MANIFEST_FILE = "manifest$PROTO_SUFFIX"
         const val ELECTION_CONFIG_FILE = "electionConfig$PROTO_SUFFIX"
         const val ELECTION_INITIALIZED_FILE = "electionInitialized$PROTO_SUFFIX"
         const val TALLY_RESULT_FILE = "tallyResult$PROTO_SUFFIX"
@@ -13,6 +14,11 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         const val PLAINTEXT_BALLOT_FILE = "plaintextBallots$PROTO_SUFFIX"
         const val ENCRYPTED_BALLOT_FILE = "encryptedBallots$PROTO_SUFFIX"
         const val SPOILED_BALLOT_FILE = "spoiledBallotTallies$PROTO_SUFFIX"
+    }
+
+
+    fun manifestPath(): String {
+        return "$electionRecordDir/$MANIFEST_FILE"
     }
 
     fun electionConfigPath(): String {

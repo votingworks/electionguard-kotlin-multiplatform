@@ -2,11 +2,35 @@ package electionguard.protoconvert
 
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
+import electionguard.input.buildStandardManifest
+import electionguard.publish.makePublisher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class ManifestConvertTest {
+
+    private val writeout = true
+    private val ncontests = 20
+    private val nselections = 5
+
+    @Test
+    fun writeManifest() {
+        val manifest = buildStandardManifest(ncontests, nselections)
+        val proto = manifest.publishProto()
+        val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
+        assertNotNull(roundtrip)
+        assertTrue(roundtrip.equals(manifest))
+        assertEquals(roundtrip, manifest)
+
+        if (writeout) {
+            val output = "testOut/ManifestConvertTest"
+            val publisher = makePublisher(output, true)
+            publisher.writeManifest(manifest)
+            println("Wrote to $output")
+        }
+    }
 
     @Test
     fun roundtripManifest() {

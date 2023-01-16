@@ -6,9 +6,10 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Guardian
+import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.TallyResult
-import electionguard.core.fileExists
+import electionguard.core.pathExists
 import electionguard.json.publish
 import electionguard.json.publishDecryptingTrusteeJson
 import electionguard.keyceremony.KeyCeremonyTrustee
@@ -31,7 +32,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         validateOutputDir(topDir)
     }
 
-    private fun writeToFile(fileout: String, stringOut : String) {
+    private fun writeToFile(fileout: String, stringOut: String) {
         val file: CPointer<FILE> = openFile(fileout, "wb")
         try {
             writeToFile(file, fileout, stringOut.encodeToByteArray())
@@ -41,14 +42,18 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         }
     }
 
+    actual override fun writeManifest(manifest: Manifest) {
+        val fileout2 = jsonPaths.manifestPath()
+        val jsonString2 = jsonFormat.encodeToString(manifest.publish())
+        writeToFile(fileout2, jsonString2)
+    }
+
     actual override fun writeElectionConfig(config: ElectionConfig) {
         val fileout = jsonPaths.electionConstantsPath()
         val jsonString = jsonFormat.encodeToString(config.constants.publish())
         writeToFile(fileout, jsonString)
 
-        val fileout2 = jsonPaths.manifestPath()
-        val jsonString2 = jsonFormat.encodeToString(config.manifest.publish())
-        writeToFile(fileout2, jsonString2)
+        writeManifest(config.manifest)
     }
 
     actual override fun writeElectionInitialized(init: ElectionInitialized) {
@@ -149,7 +154,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
 /** Delete everything in the given directory, but leave that directory.  */
 fun removeAllFiles(path: String) {
-    if (!fileExists(path)) {
+    if (!pathExists(path)) {
         return
     }
     // TODO not done
