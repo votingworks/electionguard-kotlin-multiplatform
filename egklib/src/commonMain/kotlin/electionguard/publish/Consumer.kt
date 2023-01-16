@@ -44,8 +44,8 @@ fun makeConsumer(
     group: GroupContext,
     isJson: Boolean? = null, // false = protobuf, true = json; default: check if manifest.json file exists
 ): Consumer {
-    val jsonSerialization = isJson?:
-        pathExists("$topDir/${ElectionRecordJsonPaths.MANIFEST_FILE}") || topDir.endsWith(".zip")
+    val jsonSerialization = isJson ?: topDir.endsWith(".zip") ||
+            pathExists("$topDir/${ElectionRecordJsonPaths.MANIFEST_FILE}")
 
     return if (jsonSerialization) {
         ConsumerJson(topDir, group)
@@ -60,9 +60,9 @@ fun readManifest(
 ): Result<Manifest, String> {
     val isDirectory = isDirectory(manifestDirOrFile)
     val isJson = if (isDirectory) {
+        manifestDirOrFile.endsWith(".zip") ||
         pathExists("$manifestDirOrFile/${ElectionRecordJsonPaths.MANIFEST_FILE}")
     } else {
-        // LOOK what about zip ?
         manifestDirOrFile.endsWith(".json")
     }
 

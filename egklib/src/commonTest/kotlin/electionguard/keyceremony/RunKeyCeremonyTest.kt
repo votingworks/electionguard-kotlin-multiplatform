@@ -56,7 +56,7 @@ class RunKeyCeremonyTest {
         main(
             arrayOf(
                 "-manifest",
-                "src/commonTest/data/start/manifest.json",
+                "src/commonTest/data/startJson/manifest.json",
                 "-nguardians", "3",
                 "-quorum", "3",
                 "-trustees",
