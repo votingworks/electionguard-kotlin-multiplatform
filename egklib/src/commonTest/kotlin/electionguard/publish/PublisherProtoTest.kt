@@ -60,7 +60,7 @@ class PublisherProtoTest {
         val init = ElectionInitialized(
             config,
             generateElementModP(group),
-            config.manifest.cryptoHash,
+            config.manifest.manifestHash,
             generateUInt256(group),
             generateUInt256(group),
             List(6) { generateGuardian(it, group) },

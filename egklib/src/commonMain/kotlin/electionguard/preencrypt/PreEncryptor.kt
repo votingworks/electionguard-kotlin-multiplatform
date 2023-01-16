@@ -47,7 +47,7 @@ class PreEncryptor(
     private fun Manifest.ContestDescription.preencryptContest(
         ballotNonce: UInt256,
     ): PreContestInternal {
-        val contestNonce= Nonces(this.cryptoHash.toElementModQ(group), ballotNonce)[0]
+        val contestNonce= Nonces(this.contestHash.toElementModQ(group), ballotNonce)[0]
 
         // for each selection
         val selectionsSorted = this.selections.sortedWith(compareBy { it.sequenceOrder })
@@ -58,7 +58,7 @@ class PreEncryptor(
         return PreContestInternal(
             this.contestId,
             this.sequenceOrder,
-            this.cryptoHash,
+            this.contestHash,
             selectionsInternal,
             this.votesAllowed,
         )
@@ -67,12 +67,12 @@ class PreEncryptor(
     private fun Manifest.SelectionDescription.preencryptSelection(
         contestNonce: ElementModQ,
     ): PreSelectionInternal {
-        val selectionNonce = Nonces(this.cryptoHash.toElementModQ(group), contestNonce)[1]
+        val selectionNonce = Nonces(this.selectionHash.toElementModQ(group), contestNonce)[1]
 
         return PreSelectionInternal(
             this.selectionId,
             this.sequenceOrder,
-            this.cryptoHash,
+            this.selectionHash,
             0.encrypt(nonceEncryptionKey, selectionNonce),
             1.encrypt(nonceEncryptionKey, selectionNonce),
         )

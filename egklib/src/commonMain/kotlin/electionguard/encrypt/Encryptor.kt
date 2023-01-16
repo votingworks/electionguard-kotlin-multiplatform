@@ -122,7 +122,7 @@ class Encryptor(
         mcontest: Manifest.ContestDescription,
         ballotNonce: UInt256,
     ): CiphertextBallot.Contest {
-        val contestDescriptionHash = mcontest.cryptoHash
+        val contestDescriptionHash = mcontest.contestHash
         val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
         val (contestNonce, chaumPedersenNonce, contestDataNonce) = Nonces(contestDescriptionHashQ, ballotNonce).take(3)
 
@@ -196,7 +196,7 @@ class Encryptor(
         contestNonce: ElementModQ,
         isPlaceholder: Boolean = false,
     ): CiphertextBallot.Selection {
-        val cryptoHashQ = selectionDescription.cryptoHash.toElementModQ(group)
+        val cryptoHashQ = selectionDescription.selectionHash.toElementModQ(group)
         val (disjunctiveChaumPedersenNonce, selectionNonce) = Nonces(cryptoHashQ, contestNonce).take(2)
 
         return selectionDescription.encryptSelection(
@@ -222,7 +222,7 @@ fun Manifest.ContestDescription.encryptContest(
     extendedDataCiphertext: HashedElGamalCiphertext,
 ): CiphertextBallot.Contest {
 
-    val cryptoHash = hashElements(this.contestId, this.cryptoHash, encryptedSelections)
+    val cryptoHash = hashElements(this.contestId, this.contestHash, encryptedSelections)
     val texts: List<ElGamalCiphertext> = encryptedSelections.map { it.ciphertext }
     val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
     val nonces: Iterable<ElementModQ> = encryptedSelections.map { it.selectionNonce }
@@ -240,7 +240,7 @@ fun Manifest.ContestDescription.encryptContest(
     return CiphertextBallot.Contest(
         this.contestId,
         this.sequenceOrder,
-        this.cryptoHash, // manifest contest cryptohash
+        this.contestHash, // manifest contest cryptohash
         encryptedSelections,
         cryptoHash,      // CiphertextBallot.Contest cryptohash
         proof,
@@ -268,12 +268,12 @@ fun Manifest.SelectionDescription.encryptSelection(
         cryptoExtendedBaseHashQ
     )
 
-    val cryptoHash = hashElements(this.selectionId, this.cryptoHash, elgamalEncryption.cryptoHashUInt256())
+    val cryptoHash = hashElements(this.selectionId, this.selectionHash, elgamalEncryption.cryptoHashUInt256())
 
     return CiphertextBallot.Selection(
         this.selectionId,
         this.sequenceOrder,
-        this.cryptoHash,
+        this.selectionHash,
         elgamalEncryption,
         cryptoHash,
         isPlaceholder,

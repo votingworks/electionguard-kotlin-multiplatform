@@ -9,7 +9,7 @@ import electionguard.core.*
 data class EncryptedBallot(
     val ballotId: String,
     val ballotStyleId: String,  // matches a Manifest.BallotStyle
-    val manifestHash: UInt256,  // matches Manifest.cryptoHash
+    val manifestHash: UInt256,  // matches Manifest.manifestHash
     val codeSeed: UInt256,
     val code: UInt256,          // confirmation code, aka tracking code
     val contests: List<Contest>,
@@ -35,7 +35,7 @@ data class EncryptedBallot(
     data class Contest(
         val contestId: String, // matches ContestDescription.contestIdd
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
-        val contestHash: UInt256, // matches ContestDescription.cryptoHash
+        val contestHash: UInt256, // matches ContestDescription.contestHash
         val selections: List<Selection>,
         val cryptoHash: UInt256,
         val proof: RangeChaumPedersenProofKnownNonce,
@@ -66,7 +66,7 @@ data class EncryptedBallot(
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
-        val selectionHash: UInt256, // matches SelectionDescription.cryptoHash
+        val selectionHash: UInt256, // matches SelectionDescription.selectionHash
         val ciphertext: ElGamalCiphertext,
         val cryptoHash: UInt256,
         val proof: RangeChaumPedersenProofKnownNonce,

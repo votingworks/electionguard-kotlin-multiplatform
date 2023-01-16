@@ -181,8 +181,8 @@ class ManifestTest {
                 val obj = makeContest(id, seq, type, nsel)
                 val rt = obj.publish().import()
                 assertEquals(obj, rt)
-                assertEquals(obj.cryptoHash, rt.cryptoHash)
-                println("${obj.cryptoHash}, ${rt.cryptoHash}")
+                assertEquals(obj.contestHash, rt.contestHash)
+                println("${obj.contestHash}, ${rt.contestHash}")
                 assertEquals(obj, jsonRoundTrip(obj.publish()).import())
             }
         }
@@ -233,7 +233,7 @@ fun compareManifestHash(org: Manifest, roundtrip:Manifest) {
     assertEquals(org.contests, roundtrip.contests)
     assertEquals(org.contactInformation, roundtrip.contactInformation)
     assertEquals(org.name, roundtrip.name)
-    assertEquals(org.cryptoHash, roundtrip.cryptoHash)
+    assertEquals(org.manifestHash, roundtrip.manifestHash)
 
     assertEquals(org, org)
 }

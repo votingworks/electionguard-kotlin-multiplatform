@@ -100,7 +100,7 @@ fun compareBallots(ballot: PlaintextBallot, decryptedBallot: PlaintextBallot) {
 class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
 
     fun CiphertextBallot.decrypt(): PlaintextBallot {
-        val ballotNonce: UInt256 = hashElements(manifest.cryptoHash, this.ballotId, this.primaryNonce)
+        val ballotNonce: UInt256 = hashElements(manifest.manifestHash, this.ballotId, this.primaryNonce)
 
         val plaintext_contests = mutableListOf<PlaintextBallot.Contest>()
         for (contest in this.contests) {
@@ -123,7 +123,7 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
         ballotNonce: UInt256,
         contest: CiphertextBallot.Contest
     ): PlaintextBallot.Contest {
-        val contestDescriptionHash = mcontest.cryptoHash
+        val contestDescriptionHash = mcontest.contestHash
         val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
         val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
         val contestNonce = nonceSequence[0]
@@ -150,7 +150,7 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
         contestNonce: ElementModQ,
         selection: CiphertextBallot.Selection
     ): PlaintextBallot.Selection? {
-        val nonceSequence = Nonces(mselection.cryptoHash.toElementModQ(group), contestNonce)
+        val nonceSequence = Nonces(mselection.selectionHash.toElementModQ(group), contestNonce)
         val selectionNonce: ElementModQ = nonceSequence[1]
 
         assertEquals(selectionNonce, selection.selectionNonce)

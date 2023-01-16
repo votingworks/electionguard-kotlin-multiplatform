@@ -46,7 +46,7 @@ data class EncryptedTallyContestJson(
 fun EncryptedTally.Contest.publish() = EncryptedTallyContestJson(
     this.contestId,
     this.sequenceOrder,
-    this.contestDescriptionHash.publish(),
+    this.contestHash.publish(),
     this.selections.map { it.publish() },
 )
 
@@ -81,7 +81,7 @@ data class EncryptedTallySelectionJson(
 fun EncryptedTally.Selection.publish() = EncryptedTallySelectionJson(
     this.selectionId,
     this.sequenceOrder,
-    this.selectionDescriptionHash.publish(),
+    this.selectionHash.publish(),
     this.ciphertext.publish(),
 )
 
