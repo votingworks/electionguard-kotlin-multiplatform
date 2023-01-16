@@ -10,6 +10,7 @@ import electionguard.core.productionGroup
 import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
+import electionguard.publish.readManifest
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -25,6 +26,10 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
+var keystore = ""
+var ksPassword = ""
+var egPassword = ""
+
 /**
  * Run Remote KeyCeremony CLI.
  * The keyceremonytrustee webapp must already be running.
@@ -35,11 +40,11 @@ fun main(args: Array<String>) {
         ArgType.String,
         shortName = "in",
         description = "Directory containing input ElectionConfig record"
-    ).required()
- /*   val electionManifestFile by parser.option(
+    )
+    val electionManifest by parser.option(
         ArgType.String,
         shortName = "manifest",
-        description = "Manifest file (json or protobuf)"
+        description = "Manifest file or directory (json or protobuf)"
     )
     val nguardians by parser.option(
         ArgType.Int,
@@ -50,7 +55,7 @@ fun main(args: Array<String>) {
         ArgType.Int,
         shortName = "quorum",
         description = "quorum size"
-    ) */
+    )
     val outputDir by parser.option(
         ArgType.String,
         shortName = "out",
@@ -87,30 +92,47 @@ fun main(args: Array<String>) {
     egPassword = electionguardPassword
 
     val group = productionGroup()
+    var createdFrom = ""
 
-    println("RunRemoteKeyCeremony\n" +
-            "  inputDir = '$inputDir'\n" +
-            "  outputDir = '$outputDir'\n" +
-            "  sslKeyStore = '$sslKeyStore'\n"
-            )
+    val config: ElectionConfig = if (electionManifest != null && nguardians != null && quorum != null) {
+        val manifest = readManifest(electionManifest!!, group)
+        createdFrom = electionManifest!!
+        println(
+            "RunRemoteKeyCeremony\n" +
+                    "  electionManifest = '$electionManifest'\n" +
+                    "  nguardians = $nguardians quorum = $quorum\n" +
+                    "  outputDir = '$outputDir'\n" +
+                    "  sslKeyStore = '$sslKeyStore'\n"
+        )
+        ElectionConfig(group.constants, manifest.unwrap(), nguardians!!, quorum!!,
+            mapOf(
+                Pair("CreatedBy", createdBy ?: "RunRemoteKeyCeremony"),
+                Pair("CreatedFromElectionManifest", electionManifest!!),
+            ))
+    } else {
+        val consumerIn = makeConsumer(inputDir!!, group)
+        createdFrom = inputDir!!
+        println(
+            "RunRemoteKeyCeremony\n" +
+                    "  inputDir = '$inputDir'\n" +
+                    "  outputDir = '$outputDir'\n" +
+                    "  sslKeyStore = '$sslKeyStore'\n"
+        )
+        consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
+    }
 
-    runKeyCeremony(group, remoteUrl, inputDir, outputDir, createdBy)
+    runKeyCeremony(group, remoteUrl, createdFrom, config, outputDir, createdBy)
 }
-
-var keystore = ""
-var ksPassword = ""
-var egPassword = ""
 
 fun runKeyCeremony(
     group: GroupContext,
     remoteUrl: String,
-    configDir: String,
+    createdFrom: String,
+    config: ElectionConfig,
     outputDir: String,
     createdBy: String?
 ): Boolean {
     val starting = getSystemTimeInMillis()
-    val consumerIn = makeConsumer(configDir, group)
-    val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
     val client = HttpClient(Java) {
         install(Logging) {
@@ -130,7 +152,7 @@ fun runKeyCeremony(
 
     val trustees: List<RemoteKeyTrusteeProxy> = List(config.numberOfGuardians) {
         val seq = it + 1
-        RemoteKeyTrusteeProxy(group, client, remoteUrl,"trustee$seq", seq, config.quorum, egPassword)
+        RemoteKeyTrusteeProxy(group, client, remoteUrl, "trustee$seq", seq, config.quorum, egPassword)
     }
 
     val exchangeResult = keyCeremonyExchange(trustees)
@@ -144,7 +166,7 @@ fun runKeyCeremony(
         config,
         mapOf(
             Pair("CreatedBy", createdBy ?: "RunRemoteKeyCeremony"),
-            Pair("CreatedFromConfigDir", configDir),
+            Pair("CreatedFrom", createdFrom),
         )
     )
 
@@ -153,11 +175,11 @@ fun runKeyCeremony(
 
     // tell the trustees to save their state in some private place.
     trustees.forEach { it.saveState() }
+    client.close()
 
     val took = getSystemTimeInMillis() - starting
     println("RunTrustedKeyCeremony took $took millisecs")
 
-    client.close()
     return true
 }
 

@@ -1,73 +1,85 @@
 # Workflow and Command Line Programs
 
-last update 1/11/2023
+last update 1/16/2023
 
 ## Election workflow
 
-1. **Generate an ElectionConfig protobuf record**. The following examples may be useful:
+1. **Generate a Manifest record**. The following examples may be useful:
 
-   1. A synthetic manifest is created in _electionguard.protoconvert.ElectionConfigConvertTest.generateElectionConfig_(), 
-      and an ElectionConfig protobuf is written out.
+    1. A synthetic manifest is created in _electionguard.input.ManifestBuilder.buildStandardManifest_(),
+       and a protobuf Manifest is written out by electionguard.protoconvert.ManifestConvertTest.writeManifest.
+    2. A synthetic manifest is created in _electionguard.input.ManifestBuilder.buildStandardManifest_(),
+       and a json Manifest is written out by electionguard.json.ManifestTest.writeManifest.
 
-2. **KeyCeremony**. An ElectionConfig record is needed as input, and an ElectionInitialized record is output. 
+2. **Generate an ElectionConfig protobuf record**. The following examples may be useful:
+
+    1. A synthetic manifest is created in
+       _electionguard.protoconvert.ElectionConfigConvertTest.generateElectionConfig_(),
+       and an ElectionConfig protobuf is written out.
+
+3. **KeyCeremony**. An ElectionConfig record is needed as input, and an ElectionInitialized record is output.
    The following examples may be useful:
 
-   1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI that will run the entire key ceremony locally in a 
-      single process. See _electionguard.keyceremony.RunKeyCeremonyTest_ as an example.
+    1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI that will run the entire key ceremony locally in a
+       single process. See _electionguard.keyceremony.RunKeyCeremonyTest_ as an example.
 
-   2. To run a keyceremony with remote guardians, using the webapps CLI:
-   
-       1. In _webapps/keyceremonytrustees_, start up _webapps.electionguard.KeyCeremonyRemoteTrustee_, and specify the 
-          directory to write the private trustee files, using the command line argument:
-              
+    2. To run a keyceremony with remote guardians, using the webapps CLI:
+
+        1. In _webapps/keyceremonytrustees_, start up _webapps.electionguard.KeyCeremonyRemoteTrustee_, and specify the
+           directory to write the private trustee files, using the command line argument:
+
            `-trusteeDir <trustee directory>`
 
-       2. In _webapps/keyceremony_, run _webapps.electionguard.keyceremony.RunRemoteKeyCeremony_ CLI (see
-         RunRemoteKeyCeremonyTest as an example of the inputs needed).
+        2. In _webapps/keyceremony_, run _webapps.electionguard.keyceremony.RunRemoteKeyCeremony_ CLI (see
+           RunRemoteKeyCeremonyTest as an example of the inputs needed).
 
-
-3. **Create input plaintext ballots** based on the manifest in ElectionConfig. The following examples may be useful:
+4. **Create input plaintext ballots** based on the manifest in ElectionConfig. The following examples may be useful:
     1. _TestWorkflow_ uses _RandomBallotProvider_ to generate random test ballots.
     2. _GenerateFakeBallots_ uses _RandomBallotProvider_ to generate random test ballots.
 
-4. **Batch Encryption**. The following examples may be useful:
-    1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext ballots, encrypts the
+5. **Batch Encryption**. The following examples may be useful:
+    1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext
+       ballots, encrypts the
        ballots and writes out EncryptedBallot protobuf records. If any input plaintext ballot fails validation,
        it is annotated and written to a separate directory, and not encrypted.
 
-5. **Accumulate Tally**. The following examples may be useful:
-    1. _electionguard.tally.RunAccumulateTally_ is a CLI that reads an ElectionInitialized record and EncryptedBallot records, sums the
+6. **Accumulate Tally**. The following examples may be useful:
+    1. _electionguard.tally.RunAccumulateTally_ is a CLI that reads an ElectionInitialized record and EncryptedBallot
+       records, sums the
        votes in the encrypted ballots and writes out a _EncryptedTally_ protobuf record.
 
-6. **Decryption**. The following examples may be useful:
-    1. _electionguard.decrypt.RunTrustedTallyDecryption_ is a CLI for testing, that will run locally in a single process, 
-       that reads an EncryptedTally record and local 
+7. **Decryption**. The following examples may be useful:
+    1. _electionguard.decrypt.RunTrustedTallyDecryption_ is a CLI for testing, that will run locally in a single
+       process,
+       that reads an EncryptedTally record and local
        DecryptingTrustee records, decrypts the tally and writes out a _DecryptedTallyOrBallot_ protobuf record.
-    2. _electionguard.decrypt.RunTrustedBallotDecryption_ is a CLI for testing, that will run locally in a single process,
-      that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a 
-      _DecryptedTallyOrBallot_ protobuf record that represents the decrypted spoiled ballot.
+    2. _electionguard.decrypt.RunTrustedBallotDecryption_ is a CLI for testing, that will run locally in a single
+       process,
+       that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a
+       _DecryptedTallyOrBallot_ protobuf record that represents the decrypted spoiled ballot.
 
-   3. To run a decryption using the webapps CLI:
+    3. To run a decryption using the webapps CLI:
 
-       1. In _webapps/decryptingtrustee_, start up _webapps.electionguard.Application_
+        1. In _webapps/decryptingtrustee_, start up _webapps.electionguard.Application_
 
-       2. In _webapps/decryption_, run _webapps.electionguard.decrypt.RunRemoteTallyDecryption_ CLI.
+        2. In _webapps/decryption_, run _webapps.electionguard.decrypt.RunRemoteTallyDecryption_ CLI.
 
-       3. See _webapps.electionguard.decrypt.RunRemoteWorkflow_ in the tests, as an example.   
-   
-7. **Verify**. The following examples may be useful:
+        3. See _webapps.electionguard.decrypt.RunRemoteWorkflow_ in the tests, as an example.
+
+8. **Verify**. The following examples may be useful:
     1. _electionguard.verify.VerifyElectionRecord_ is a CLI that reads an election record and verifies it.
 
-8. **Complete test Workflow**. The following examples may be useful:
-   1. A complete test workflow can be run from electionguard.workflow.TestWorkflow in the commonTest module.
+9. **Complete test Workflow**. The following examples may be useful:
+    1. A complete test workflow can be run from electionguard.workflow.TestWorkflow in the commonTest module.
 
 input:
-*  _inputDir_/electionConfig.protobuf
+
+* _inputDir_/electionConfig.protobuf
 
 output:
+
 * _trusteeDir_/decryptingTrustee-_guardianId_.protobuf
 * _outputDir_/electionInitialized.protobuf
-
 
 ## Run Trusted KeyCeremony
 
@@ -76,20 +88,35 @@ This has access to all the trustees, so is only used for testing, or in a use ca
 ````
 Usage: RunTrustedKeyCeremony options_list
 Options: 
-    --inputDir, -in -> Directory containing input ElectionConfig record (always required) { String }
+    --inputDir, -in -> Directory containing input ElectionConfig record { String }
+    --electionManifest, -manifest -> Manifest file or directory (json or protobuf) { String }
+    --nguardians, -nguardians -> number of guardians { Int }
+    --quorum, -quorum -> quorum size { Int }
     --trusteeDir, -trustees -> Directory to write private trustees (always required) { String }
     --outputDir, -out -> Directory to write output ElectionInitialized record (always required) { String }
     --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
 
+As input, either specify the input directory that contains __electionConfig.protobuf__ file, OR the election manifest,
+nguardians and quorum.
+
+The _electionManifest_ may name
+
+* a json or protobuf file containing the manifest
+* a directory containing __manifest.protobuf__ or __manifest.json__
+
 input:
-*  _inputDir_/electionConfig.protobuf
+
+* _inputDir_/electionConfig.protobuf
+* _electionManifest_/manifest.protobuf
+* _electionManifest_/manifest.json
+* _electionManifest_ is a file containing the manifest (json or protobuf)
 
 output:
+
 * _trusteeDir_/decryptingTrustee-_guardianId_.protobuf
 * _outputDir_/electionInitialized.protobuf
-
 
 ## Run Batch Encryption
 
@@ -108,10 +135,12 @@ Options:
 ````
 
 input:
-*  _inputDir_/electionInitialized.protobuf
-*  _ballotDir_/plaintextBallots.protobuf
+
+* _inputDir_/electionInitialized.protobuf
+* _ballotDir_/plaintextBallots.protobuf
 
 output:
+
 * _outputDir_/encryptedBallots.protobuf
 * _invalidDir_/plaintextBallots.protobuf
 
@@ -130,10 +159,12 @@ Options:
 Only CAST ballots are tallied.
 
 input:
-*  _inputDir_/electionInitialized.protobuf
-*  _inputDir_/encryptedBallots.protobuf
+
+* _inputDir_/electionInitialized.protobuf
+* _inputDir_/encryptedBallots.protobuf
 
 output:
+
 * _outputDir_/tallyResult.protobuf
 
 #### Timing
@@ -158,11 +189,12 @@ Options:
 ````
 
 input:
-*  _inputDir_/tallyResult.protobuf
+
+* _inputDir_/tallyResult.protobuf
 
 output:
-* _outputDir_/decryptionResult.protobuf
 
+* _outputDir_/decryptionResult.protobuf
 
 ## Run Trusted Ballot Decryption
 
@@ -180,17 +212,19 @@ Options:
 ````
 
 The decryptSpoiledList may be:
+
 1. a comma-delimited (no spaces) list of ballot Ids referencing encryptedBallots.protobuf
 2. a fully-qualified filename of a text file containing ballot Ids (one per line) referencing encryptedBallots.protobuf
 3. "All" -> decrypt all the ballots in encryptedBallots.protobuf
 4. omitted -> decrypt the ballots in encryptedBallots.protobuf that have been marked SPOILED.
 
-
 input:
-*  _inputDir_/tallyResult.protobuf
-*  _inputDir_/encryptedBallots.protobuf
+
+* _inputDir_/tallyResult.protobuf
+* _inputDir_/encryptedBallots.protobuf
 
 output:
+
 * _outputDir_/spoiledBallotTallies.protobuf
 
 ## Run Verifier
@@ -205,18 +239,20 @@ Options:
 ````
 
 input:
-*  _inputDir_/decryptionResult.protobuf
-*  _inputDir_/spoiledBallotTallies.protobuf (optional)
+
+* _inputDir_/decryptionResult.protobuf
+* _inputDir_/spoiledBallotTallies.protobuf (optional)
 
 output:
+
 * stdout
 
-# Remote 
+# Remote
 
 ## Make KeyStore
 
-To use HTTPS between remote processes, we need a digital certificate. You may supply your own keystore, or use the 
-__MakeKeystore__ CLI (in keyceremonytrustee test directory). 
+To use HTTPS between remote processes, we need a digital certificate. You may supply your own keystore, or use the
+__MakeKeystore__ CLI (in keyceremonytrustee test directory).
 This will generate a self-signed certificate and write it to a JKS keystore, to be used in the webapps.
 The certificate _alias_ = "electionguard" and _domains_ = listOf("127.0.0.1", "0.0.0.0", "localhost").
 
@@ -235,6 +271,7 @@ Example
 ````
 java -classpath <classpath> webapps.electionguard.MakeKeystoreKt -kpwd keystorePassword -epwd egPassword
 ````
+
 output:
 
 ````

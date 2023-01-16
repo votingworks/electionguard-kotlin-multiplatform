@@ -11,6 +11,7 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
+import electionguard.ballot.Manifest
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
@@ -37,6 +38,12 @@ import platform.posix.stat
 internal val logger = KotlinLogging.logger("nativeReader")
 
 //// Used by native ConsumerProto
+
+fun readManifestInternal(filename: String): Result<Manifest, String> {
+    val buffer = gulp(filename)
+    val proto = electionguard.protogen.Manifest.decodeFromByteArray(buffer)
+    return proto.import()
+}
 
 fun readElectionConfig(filename: String): Result<ElectionConfig, String> {
     val buffer = gulp(filename)

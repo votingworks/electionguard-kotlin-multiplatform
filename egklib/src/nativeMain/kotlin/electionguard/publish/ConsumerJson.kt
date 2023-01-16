@@ -13,6 +13,7 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Guardian
+import electionguard.ballot.Manifest
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeDoerre
@@ -47,6 +48,16 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
     }
 
     actual override fun isJson() = true
+
+    actual override fun readManifest(filepath : String): Result<Manifest, String> {
+        return try {
+            val manifestJson = jsonFormat.decodeFromString<ManifestJson>(gulp(filepath).toKString())
+            val manifest = manifestJson.import()
+            Ok(manifest)
+        } catch (e: Exception) {
+            Err(e.message ?: "readManifest $filepath failed")
+        }
+    }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
         return readElectionConfig(jsonPaths.electionConstantsPath(), jsonPaths.manifestPath())

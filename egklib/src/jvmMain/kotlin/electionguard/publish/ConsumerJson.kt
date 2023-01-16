@@ -53,6 +53,15 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
     actual override fun isJson() = true
 
+    actual override fun readManifest(filepath : String): Result<Manifest, String> {
+        var manifest: Manifest
+        fileSystemProvider.newInputStream(fileSystem.getPath(filepath)).use { inp ->
+            val json = Json.decodeFromStream<ManifestJson>(inp)
+            manifest = json.import()
+        }
+        return Ok(manifest)
+    }
+
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
         return readElectionConfig(
             fileSystem.getPath(jsonPaths.electionConstantsPath()),

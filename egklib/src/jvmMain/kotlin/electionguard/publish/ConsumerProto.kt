@@ -12,6 +12,7 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
+import electionguard.ballot.Manifest
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeDoerre
@@ -124,6 +125,16 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     }
 
     //////// The low level reading functions for protobuf
+
+    actual override fun readManifest(filepath : String): Result<Manifest, String> {
+        return try {
+            var proto: electionguard.protogen.Manifest
+            FileInputStream(filepath).use { inp -> proto = electionguard.protogen.Manifest.decodeFromStream(inp) }
+            proto.import()
+        } catch (e: Exception) {
+            Err(e.message ?: "readManifest $filepath failed")
+        }
+    }
 
     private fun readElectionConfig(filename: String): Result<ElectionConfig, String> {
         return try {

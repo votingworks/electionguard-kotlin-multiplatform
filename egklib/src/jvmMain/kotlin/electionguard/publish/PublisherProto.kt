@@ -9,6 +9,7 @@ import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_CONFIG_
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_INITIALIZED_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.SPOILED_BALLOT_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ENCRYPTED_BALLOT_FILE
+import electionguard.publish.ElectionRecordProtoPaths.Companion.MANIFEST_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.TALLY_RESULT_FILE
 import pbandk.encodeToStream
 import java.io.ByteArrayOutputStream
@@ -42,6 +43,10 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
     ////////////////////
     // duplicated from ElectionRecordPath so that we can use java.nio.file.Path
 
+    fun manifestPath(): Path {
+        return electionRecordDir.resolve(MANIFEST_FILE).toAbsolutePath()
+    }
+
     fun electionConfigPath(): Path {
         return electionRecordDir.resolve(ELECTION_CONFIG_FILE).toAbsolutePath()
     }
@@ -64,6 +69,14 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
 
     fun tallyResultPath(): Path {
         return electionRecordDir.resolve(TALLY_RESULT_FILE).toAbsolutePath()
+    }
+
+    actual override fun writeManifest(manifest: Manifest) {
+        val proto = manifest.publishProto()
+        FileOutputStream(manifestPath().toFile()).use { out ->
+            proto.encodeToStream(out)
+            out.close()
+        }
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {

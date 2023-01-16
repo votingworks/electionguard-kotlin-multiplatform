@@ -5,7 +5,7 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
-import electionguard.core.fileExists
+import electionguard.core.pathExists
 import electionguard.core.fileReadLines
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
@@ -118,7 +118,7 @@ fun runDecryptBallots(
                 println(" use all")
                 consumerIn.iterateEncryptedBallots { true }
             }
-            fileExists(decryptSpoiledList) -> {
+            pathExists(decryptSpoiledList) -> {
                 println(" use ballots in file $decryptSpoiledList")
                 val wanted: List<String> = fileReadLines(decryptSpoiledList)
                 val wantedTrim: List<String> = wanted.map { it.trim() }

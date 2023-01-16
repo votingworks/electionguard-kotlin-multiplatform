@@ -5,6 +5,7 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 
 /** Write the Election Record as protobuf or json files. */
 interface Publisher {
+    fun writeManifest(manifest: Manifest)
     fun writeElectionConfig(config: ElectionConfig)
     fun writeElectionInitialized(init: ElectionInitialized)
     fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<EncryptedBallot>)

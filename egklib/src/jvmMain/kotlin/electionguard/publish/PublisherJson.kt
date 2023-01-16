@@ -25,6 +25,14 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         validateOutputDir(electionRecordDir, Formatter())
     }
 
+    actual override fun writeManifest(manifest: Manifest) {
+        val manifestJson = manifest.publish()
+        FileOutputStream(jsonPaths.manifestPath()).use { out ->
+            jsonFormat.encodeToStream(manifestJson, out)
+            out.close()
+        }
+    }
+
     actual override fun writeElectionConfig(config: ElectionConfig) {
         val constantsJson = config.constants.publish()
         FileOutputStream(jsonPaths.electionConstantsPath()).use { out ->
@@ -32,11 +40,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
             out.close()
         }
 
-        val manifestJson = config.manifest.publish()
-        FileOutputStream(jsonPaths.manifestPath()).use { out ->
-            jsonFormat.encodeToStream(manifestJson, out)
-            out.close()
-        }
+        writeManifest(config.manifest)
     }
 
     actual override fun writeElectionInitialized(init: ElectionInitialized) {

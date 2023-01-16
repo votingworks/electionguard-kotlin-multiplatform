@@ -11,6 +11,7 @@ import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
+import electionguard.publish.readManifest
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -26,7 +27,22 @@ fun main(args: Array<String>) {
         ArgType.String,
         shortName = "in",
         description = "Directory containing input ElectionConfig record"
-    ).required()
+    )
+    val electionManifest by parser.option(
+        ArgType.String,
+        shortName = "manifest",
+        description = "Manifest file or directory (json or protobuf)"
+    )
+    val nguardians by parser.option(
+        ArgType.Int,
+        shortName = "nguardians",
+        description = "number of guardians"
+    )
+    val quorum by parser.option(
+        ArgType.Int,
+        shortName = "quorum",
+        description = "quorum size"
+    )
     val trusteeDir by parser.option(
         ArgType.String,
         shortName = "trustees",
@@ -46,21 +62,46 @@ fun main(args: Array<String>) {
     println("RunTrustedKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
-    val result = runKeyCeremony(group, inputDir, outputDir, trusteeDir, createdBy)
+    var createdFrom = ""
+
+    val config: ElectionConfig = if (electionManifest != null && nguardians != null && quorum != null) {
+        val manifest = readManifest(electionManifest!!, group)
+        createdFrom = electionManifest!!
+        println(
+            "RunRemoteKeyCeremony\n" +
+                    "  electionManifest = '$electionManifest'\n" +
+                    "  nguardians = $nguardians quorum = $quorum\n" +
+                    "  outputDir = '$outputDir'\n"
+        )
+        ElectionConfig(group.constants, manifest.unwrap(), nguardians!!, quorum!!,
+            mapOf(
+                Pair("CreatedBy", createdBy ?: "RunRemoteKeyCeremony"),
+                Pair("CreatedFromElectionManifest", electionManifest!!),
+            ))
+    } else {
+        val consumerIn = makeConsumer(inputDir!!, group)
+        createdFrom = inputDir!!
+        println(
+            "RunRemoteKeyCeremony\n" +
+                    "  inputDir = '$inputDir'\n" +
+                    "  outputDir = '$outputDir'\n"
+        )
+        consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
+    }
+
+    val result = runKeyCeremony(group, createdFrom, config, outputDir, trusteeDir, createdBy)
     println("runKeyCeremony result = $result")
 }
 
 fun runKeyCeremony(
     group: GroupContext,
-    configDir: String,
+    createdFrom: String,
+    config: ElectionConfig,
     outputDir: String,
     trusteeDir: String,
     createdBy: String?
 ): Result<Boolean, String> {
     val starting = getSystemTimeInMillis()
-
-    val consumerIn = makeConsumer(configDir, group)
-    val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
     // Generate the KeyCeremonyTrustees here, which means this is a trusted situation.
     val trustees: List<KeyCeremonyTrustee> = List(config.numberOfGuardians) {
@@ -77,7 +118,7 @@ fun runKeyCeremony(
         config,
         mapOf(
             Pair("CreatedBy", createdBy ?: "runKeyCeremony"),
-            Pair("CreatedFromDir", configDir),
+            Pair("CreatedFrom", createdFrom),
         )
     )
 

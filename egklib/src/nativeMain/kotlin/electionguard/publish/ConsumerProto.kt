@@ -7,9 +7,11 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
+import electionguard.ballot.Manifest
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
+
 // implements the public API
 actual class ConsumerProto actual constructor(private val topDir: String, private val groupContext: GroupContext) : Consumer {
     private val path = ElectionRecordProtoPaths(topDir)
@@ -25,6 +27,10 @@ actual class ConsumerProto actual constructor(private val topDir: String, privat
     }
 
     actual override fun isJson() = false
+
+    actual override fun readManifest(filepath : String): Result<Manifest, String> {
+        return readManifestInternal(filepath)
+    }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
         return readElectionConfig(path.electionConfigPath())

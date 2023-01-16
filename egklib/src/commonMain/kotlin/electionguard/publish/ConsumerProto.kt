@@ -7,6 +7,7 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
+import electionguard.ballot.Manifest
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
@@ -15,6 +16,7 @@ expect class ConsumerProto (topDir: String, groupContext: GroupContext) : Consum
     override fun topdir() : String
     override fun isJson(): Boolean
 
+    override fun readManifest(filepath : String): Result<Manifest, String>
     override fun readElectionConfig(): Result<ElectionConfig, String>
     override fun readElectionInitialized(): Result<ElectionInitialized, String>
     override fun readTallyResult(): Result<TallyResult, String>

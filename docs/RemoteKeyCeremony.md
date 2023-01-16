@@ -11,7 +11,10 @@ The output are the first pieces of the Election Record: the election description
 ````
 Usage: java -jar keyceremony-all.jar [options]
 Options: 
-    --inputDir, -in -> Directory containing input ElectionConfig record (always required) { String }
+    --inputDir, -in -> Directory containing input ElectionConfig record { String }
+    --electionManifest, -manifest -> Manifest file or directory (json or protobuf) { String }
+    --nguardians, -nguardians -> number of guardians { Int }
+    --quorum, -quorum -> quorum size { Int }
     --outputDir, -out -> Directory to write output ElectionInitialized record (always required) { String }
     --remoteUrl, -remoteUrl -> URL of keyceremony trustee webapp  (always required) { String }
     --sslKeyStore, -keystore -> file path of the keystore file (always required) { String }
@@ -19,29 +22,15 @@ Options:
     --electionguardPassword, -epwd -> password for the electionguard entry (always required) { String }
     --createdBy, -createdBy -> who created for ElectionInitialized metadata { String }
     --help, -h -> Usage info 
-    
-Usage: java -jar keyceremony-all.jar [options]
-  Options:
-  * -in
-      Directory containing election manifest
-    -out
-      Directory where election record is written
-  * -nguardians
-      Number of Guardians that will be used
-      Default: 0
-  * -quorum
-      Number of Guardians that make a quorum
-      Default: 0
-    -port
-      The port to run the server on
-      Default: 17111
-    -h, --help
-      Display this help and exit
 ````
 
-The input directory containing the election manifest is required. It can be in Json or Protobuf format. 
-If Json, it must contain the file _description.json_. If Protobuf, it must contain the file _electionRecord.proto_, from
-which only the election description is read.
+As input, either specify the input directory that contains __electionConfig.protobuf__ file, OR the election manifest,
+nguardians and quorum.
+
+The _electionManifest_ may name
+* a json or protobuf file containing the manifest
+* a directory containing __manifest.protobuf__ or __manifest.json__
+
 
 The output directory where the Election Record is written is required and must be writeable. When the key ceremony is successful,
 the first parts of the record are written: the election manifest, election context, and GuardianRecords.

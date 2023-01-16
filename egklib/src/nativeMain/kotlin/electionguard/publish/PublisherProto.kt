@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import electionguard.ballot.*
+import electionguard.json.publish
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.protoconvert.publishDecryptingTrusteeProto
 import electionguard.protoconvert.publishProto
@@ -11,6 +12,7 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.set
+import kotlinx.serialization.encodeToString
 import pbandk.encodeToByteArray
 import platform.posix.FILE
 import platform.posix.fclose
@@ -30,6 +32,20 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
             if (!exists(topDir)) {
                 createDirectories(topDir)
             }
+        }
+    }
+
+    actual override fun writeManifest(manifest: Manifest) {
+        val proto = manifest.publishProto()
+        val buffer = proto.encodeToByteArray()
+
+        val fileout = path.manifestPath()
+        val file: CPointer<FILE> = openFile(fileout, "wb")
+        try {
+            writeToFile(file, fileout, buffer)
+        } finally {
+            fflush(file)
+            fclose(file)
         }
     }
 
