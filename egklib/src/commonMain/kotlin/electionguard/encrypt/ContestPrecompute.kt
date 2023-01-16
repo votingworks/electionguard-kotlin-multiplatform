@@ -82,7 +82,7 @@ class ContestPrecompute(
         private var encryptedContest: CiphertextBallot.Contest? = null
 
         init {
-            val contestDescriptionHash = mcontest.cryptoHash
+            val contestDescriptionHash = mcontest.contestHash
             val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
             val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
             contestNonce = nonceSequence[0]
@@ -165,7 +165,7 @@ class ContestPrecompute(
         private val selectionNonce: ElementModQ
 
         init {
-            val nonceSequence = Nonces(mselection.cryptoHash.toElementModQ(group), contestNonce)
+            val nonceSequence = Nonces(mselection.selectionHash.toElementModQ(group), contestNonce)
             disjunctiveChaumPedersenNonce = nonceSequence[0]
             selectionNonce = nonceSequence[1]
         }

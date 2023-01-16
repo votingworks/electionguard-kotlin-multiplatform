@@ -16,7 +16,7 @@ data class EncryptedTally(
     data class Contest(
         val contestId: String,              // matches ContestDescription.contestId
         val sequenceOrder: Int,             // matches ContestDescription.sequenceOrder
-        val contestDescriptionHash: UInt256, // matches ContestDescription.cryptoHash
+        val contestHash: UInt256,           // matches ContestDescription.contestHash
         val selections: List<Selection>,
         val contestData: HashedElGamalCiphertext? = null, // only used when decrypting ballots, not tallies
     ) {
@@ -29,7 +29,7 @@ data class EncryptedTally(
     data class Selection(
         val selectionId: String,                // matches SelectionDescription.selectionId
         val sequenceOrder: Int,                 // matches SelectionDescription.sequenceOrder
-        val selectionDescriptionHash: UInt256,  // matches SelectionDescription.cryptoHash
+        val selectionHash: UInt256,             // matches SelectionDescription.selectionHash
         val ciphertext: ElGamalCiphertext,      // accumulation over all ballots in the tally
     ) {
         init {

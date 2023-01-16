@@ -19,7 +19,7 @@ fun Manifest.publishProto() =
             this.ballotStyles.map { it.publishProto() },
             this.name.map { it.publishProto() },
             this.contactInformation?.let { this.contactInformation.publishProto() },
-            this.cryptoHash.publishProto(),
+            this.manifestHash.publishProto(),
         )
 
 private fun Manifest.BallotStyle.publishProto() =
@@ -59,7 +59,7 @@ private fun Manifest.ContestDescription.publishProto() =
             this.selections.map { it.publishProto() },
             this.ballotTitle?: "",
             this.ballotSubtitle?: "",
-            this.cryptoHash.publishProto(),
+            this.contestHash.publishProto(),
         )
 
 private fun Manifest.GeopoliticalUnit.publishProto() =
@@ -87,7 +87,7 @@ private fun Manifest.SelectionDescription.publishProto() =
             this.selectionId,
             this.sequenceOrder,
             this.candidateId,
-            this.cryptoHash.publishProto(),
+            this.selectionHash.publishProto(),
         )
 
 //// enums

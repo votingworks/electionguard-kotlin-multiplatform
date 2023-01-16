@@ -16,7 +16,7 @@ class RunRemoteKeyCeremonyTest {
                 "-remoteUrl",
                 "https://localhost:11183",
                 "-keystore",
-                "keystore.jks",
+                "../keystore.jks",
                 "-kpwd",
                 "ksPassword",
                 "-epwd",

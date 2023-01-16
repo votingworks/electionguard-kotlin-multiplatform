@@ -49,7 +49,7 @@ fun generateElectionInitialized(context: GroupContext): ElectionInitialized {
     return ElectionInitialized(
         config,
         generateElementModP(context),
-        config.manifest.cryptoHash,
+        config.manifest.manifestHash,
         generateUInt256(context),
         generateUInt256(context),
         List(6) { generateGuardian(it, context) },

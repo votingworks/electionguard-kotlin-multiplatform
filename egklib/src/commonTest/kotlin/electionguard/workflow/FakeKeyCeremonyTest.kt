@@ -89,7 +89,7 @@ fun runFakeKeyCeremony(
         primes.generator.toHex(),
         nguardians,
         quorum,
-        config.manifest.cryptoHash,
+        config.manifest.manifestHash,
     )
 
     val jointPublicKey: ElementModP =
@@ -110,7 +110,7 @@ fun runFakeKeyCeremony(
     val init = ElectionInitialized(
         newConfig,
         jointPublicKey,
-        config.manifest.cryptoHash,
+        config.manifest.manifestHash,
         cryptoBaseHash,
         cryptoExtendedBaseHash,
         guardians,

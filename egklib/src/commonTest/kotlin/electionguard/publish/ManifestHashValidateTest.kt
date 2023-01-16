@@ -62,9 +62,9 @@ class ManifestHashValidateTest {
         }
 
         for (contest in manifest.contests) {
-            println("  contest ${contest.contestId} = ${contest.cryptoHash}")
+            println("  contest ${contest.contestId} = ${contest.contestHash}")
             for (selection in contest.selections) {
-                println("    selection ${selection.selectionId} = ${selection.cryptoHash}")
+                println("    selection ${selection.selectionId} = ${selection.selectionHash}")
             }
         }
 
@@ -90,11 +90,11 @@ class ManifestHashValidateTest {
 
         val expect = "b2af12d76e8d1a869213fa7f3136eede0bb125250b9f3a23a95998665180d45f".fromSafeHex()
             .toUInt256()
-        assertEquals(expect, manifest.cryptoHash)
+        assertEquals(expect, manifest.manifestHash)
     }
 
     fun recalcManifestHash(manifest: Manifest) {
-        println("***Manifest crypto_hash: ${manifest.cryptoHash}")
+        println("***Manifest crypto_hash: ${manifest.manifestHash}")
         val cryptoHash = manifestCryptoHash(
             manifest.electionScopeId,
             manifest.electionType,
@@ -118,7 +118,7 @@ class ManifestHashValidateTest {
     }
 
     fun validateManifestHash(manifest: Manifest) {
-        println("Manifest crypto_hash: ${manifest.cryptoHash}")
+        println("Manifest crypto_hash: ${manifest.manifestHash}")
         val cryptoHash = manifestCryptoHash(
             manifest.electionScopeId,
             manifest.electionType,
@@ -133,9 +133,9 @@ class ManifestHashValidateTest {
             manifest.contactInformation
         )
         println("Expected crypto_hash: $cryptoHash")
-        assertEquals(manifest.cryptoHash, cryptoHash)
+        assertEquals(manifest.manifestHash, cryptoHash)
         for (contest in manifest.contests) {
-            println("  contest ${contest.contestId} crypto_hash: ${contest.cryptoHash}")
+            println("  contest ${contest.contestId} crypto_hash: ${contest.contestHash}")
             for (selection in contest.selections) {
                 val scryptoHash = selectionDescriptionCryptoHash(
                     selection.selectionId,
@@ -144,7 +144,7 @@ class ManifestHashValidateTest {
                 )
                 // println("    Selection ${selection.selectionId} crypto_hash: ${selection.cryptoHash}")
                 // println("    Expected  crypto_hash: $scryptoHash")
-                assertEquals(selection.cryptoHash, scryptoHash)
+                assertEquals(selection.selectionHash, scryptoHash)
             }
             val ccryptoHash = contestDescriptionCryptoHash(
                 contest.contestId,
@@ -161,7 +161,7 @@ class ManifestHashValidateTest {
             )
             // println("  Contest ${contest.contestId} crypto_hash: ${contest.cryptoHash}")
             // println("  Expected crypto_hash: $ccryptoHash")
-            assertEquals(contest.cryptoHash, ccryptoHash)
+            assertEquals(contest.contestHash, ccryptoHash)
         }
     }
 }

@@ -149,7 +149,7 @@ data class KeyCeremonyResults(
             primes.generator.toHex(),
             config.numberOfGuardians,
             config.quorum,
-            config.manifest.cryptoHash,
+            config.manifest.manifestHash,
         )
 
         // cryptoExtendedBaseHash = Qbar
@@ -169,7 +169,7 @@ data class KeyCeremonyResults(
         return ElectionInitialized(
             config,
             jointPublicKey,
-            config.manifest.cryptoHash,
+            config.manifest.manifestHash,
             cryptoBaseHash,
             qbar,
             guardians,

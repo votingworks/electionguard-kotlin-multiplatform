@@ -66,7 +66,7 @@ private fun EncryptedTally.Contest.publishProto() =
     electionguard.protogen.EncryptedTallyContest(
         this.contestId,
         this.sequenceOrder,
-        this.contestDescriptionHash.publishProto(),
+        this.contestHash.publishProto(),
         this.selections.map { it.publishProto() }
     )
 
@@ -74,6 +74,6 @@ private fun EncryptedTally.Selection.publishProto() =
     electionguard.protogen.EncryptedTallySelection(
         this.selectionId,
         this.sequenceOrder,
-        this.selectionDescriptionHash.publishProto(),
+        this.selectionHash.publishProto(),
         this.ciphertext.publishProto()
     )
