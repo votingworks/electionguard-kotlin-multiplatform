@@ -1,8 +1,6 @@
 # 🗳 Input Validation
 _last changed: Jan 17, 2023_
 
-![ReferentialIntegrity](./image/ReferentialIntegrity.svg "ReferentialIntegrity")
-
 The election manifest and each input plaintext ballot are expected to be validated before being passed to the 
 EKM library. 
 
@@ -21,6 +19,8 @@ For additional safety, Manifest Validation may be run during other workflow step
 
 
 ### A. Referential integrity
+
+<img src="./images/ReferentialIntegrity.svg" alt="ReferentialIntegrity" width="800"/>
 
 1. Referential integrity of BallotStyle geopoliticalUnitIds.
     * For each BallotStyle, all geopoliticalUnitIds reference a GeopoliticalUnit in Manifest.geopoliticalUnitIds
@@ -97,3 +97,5 @@ If an Input Ballot fails validation, it is annotated as to why it failed, and pl
 ### C. Voting limits
 
 1. Each PlaintextBallot.Selection must have a vote whose value is 0 or 1.
+
+
