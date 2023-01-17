@@ -1,7 +1,7 @@
 # 🗳 Tally Validation
 _last changed: Jan 17, 2023_
 
-![ReferentialIntegrity](./image/ReferentialIntegrity.svg "ReferentialIntegrity")
+<img src="./images/ReferentialIntegrity.svg" alt="ReferentialIntegrity" width="800"/>
 
 ## Encrypted Tally
 
