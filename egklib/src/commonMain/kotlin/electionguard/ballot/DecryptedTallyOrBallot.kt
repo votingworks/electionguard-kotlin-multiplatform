@@ -39,7 +39,7 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
      *
      * @param selectionId equals the Manifest.SelectionDescription.selectionId.
      * @param tally     the decrypted vote count.
-     * @param value     g^tally or M in the spec. used in verifier
+     * @param value     M = K^tally in the spec. used in verifier
      * @param message   The encrypted vote count = (A, B).
      * @param proof     Proof of correctness
      */

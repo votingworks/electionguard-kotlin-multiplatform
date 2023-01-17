@@ -7,7 +7,7 @@ package electionguard.ballot
  */
 data class PlaintextBallot(
     val ballotId: String,       // a unique ballot ID created by the external system
-    val ballotStyleId: String,  // matches BallotStyle.ballotStyleId
+    val ballotStyleId: String,  // matches a Manifest.BallotStyle
     val contests: List<Contest>,
     val errors: String? = null, // error messages from processing, eg when invalid
 ) {
@@ -21,7 +21,7 @@ data class PlaintextBallot(
     /** The plaintext representation of a voter's selections for one contest. */
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId
-        val sequenceOrder: Int, // validate Ballot.A.2.1
+        val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
         val selections: List<Selection>,
         val writeIns: List<String> = emptyList(),
     ) {
@@ -33,7 +33,7 @@ data class PlaintextBallot(
     /** The plaintext representation of one selection for a particular contest. */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
-        val sequenceOrder: Int, // validate Ballot.A.4.1
+        val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
         val vote: Int,
     )  {
         init {

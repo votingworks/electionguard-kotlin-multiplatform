@@ -1,5 +1,7 @@
-# 🗳 EKM Input Validation
-_last changed: Oct 28, 2022_
+# 🗳 Input Validation
+_last changed: Jan 17, 2023_
+
+![ReferentialIntegrity](./image/ReferentialIntegrity.svg "ReferentialIntegrity")
 
 The election manifest and each input plaintext ballot are expected to be validated before being passed to the 
 EKM library. 
@@ -68,7 +70,7 @@ should be generated and tested.
 Input Ballots are generated external to the electionguard library, so Input Ballot Validation must be run on each
 ballot, before accepting the ballot for encryption. 
 
-If an Input Ballots fails validation, it is annotated as to why it failed, and placed in the invalid ballot directory for examination.
+If an Input Ballot fails validation, it is annotated as to why it failed, and placed in the invalid ballot directory for examination.
 
 ### A. Referential integrity
 
@@ -78,7 +80,7 @@ If an Input Ballots fails validation, it is annotated as to why it failed, and p
 
    2.1 The PlaintextBallot.Contest and matching ContestDescription must have matching sequenceOrder.
 
-3. PlaintextBallot.Contest's geopoliticalUnitId must be listed in the PlaintextBallot's BallotStyle geopoliticalUnitIds.
+3. The matching ContestDescription's geopoliticalUnitId must be listed in the PlaintextBallot's BallotStyle.geopoliticalUnitIds.
 
 4. Within the PlaintextBallot.Contest and matching ContestDescription, each Selection.selectionId must match a SelectionDescription.selectionId.
 
