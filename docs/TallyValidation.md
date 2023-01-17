@@ -1,5 +1,7 @@
-# 🗳 EKM Tally Validation
-_last changed: Aug 10, 2022_
+# 🗳 Tally Validation
+_last changed: Jan 17, 2023_
+
+![ReferentialIntegrity](./image/ReferentialIntegrity.svg "ReferentialIntegrity")
 
 ## Encrypted Tally
 
@@ -12,11 +14,11 @@ Encrypted Tally Validation may be run as part of Verification 11.
 
 1. For each EncryptedTally.Contest in the tally, the contestId must match a ContestDescription.contestId in Manifest.contests.
 
-   1.1 The EncryptedTally.Contest contestDescriptionHash must match the corresponding ContestDescription.cryptoHash.
+   1.1 The EncryptedTally.Contest.contestHash must match the corresponding ContestDescription.contestHash.
    
 2. Within the EncryptedTally.Contest and matching ContestDescription, each EncryptedTally.Selection.selectionId must match a SelectionDescription.selectionId.
    
-   2.1 The EncryptedTally.Selection selectionDescriptionHash must match the corresponding SelectionDescription.cryptoHash.
+   2.1 The EncryptedTally.Selection.selectionHash must match the corresponding SelectionDescription.selectionHash.
 
 ### B. Duplication
 
@@ -25,9 +27,9 @@ Encrypted Tally Validation may be run as part of Verification 11.
 2. Within a EncryptedTally.Contest, all EncryptedTally.Selection have a unique selectionId. 
 
 
-## Plaintext Tally
+## DecryptedBallotOrTally
 
-Plaintext Tally Validation may be run as part of verification.
+DecryptedBallotOrTally validation may be run as part of verification.
 
 ### A. Referential integrity with Manifest
 
@@ -35,13 +37,14 @@ Plaintext Tally Validation may be run as part of verification.
    
 2. Within the DecryptedTallyOrBallot.Contest and matching ContestDescription, each DecryptedTallyOrBallot.Selection.selectionId must match a SelectionDescription.selectionId.
 
-### B. Referential integrity with Ciphertext Tally
+### B. Referential integrity with EncryptedTally or EncryptedBallot
 
-1. For each DecryptedTallyOrBallot.Contest in the tally, the contestId must match a EncryptedTally.Contest.contestId.
+1. For each DecryptedTallyOrBallot.Contest in the tally, the contestId must match a Encrypted\[Tally|Ballot].Contest.contestId.
    
-2. Within the DecryptedTallyOrBallot.Contest and matching EncryptedTally.Contest, each DecryptedTallyOrBallot.Selection.selectionId must match a EncryptedTally.Selection.selectionId.
+2. Within the DecryptedTallyOrBallot.Contest and matching Encrypted\[Tally|Ballot].Contest, each 
+   DecryptedTallyOrBallot.Selection.selectionId must match a Encrypted\[Tally|Ballot].Selection.selectionId.
 
-   2.1 The DecryptedTallyOrBallot.Selection.message must compare equal to the EncryptedTally.Selection.message.
+   2.1 The DecryptedTallyOrBallot.Selection.message must compare equal to the Encrypted\[Tally|Ballot].Selection.message.
    
 ### C. Duplication
 
@@ -53,7 +56,7 @@ Plaintext Tally Validation may be run as part of verification.
 
     2.1 In the selections map, the key must match the value.object_id. (JSON only)
 
-### D. PartialDecryption
+### D. PartialDecryption LOOK probably not needed - waiting for 2.0 spec
 
 1. All Selection shares have a selectionId matching the Selection.selectionId.
 
@@ -61,7 +64,7 @@ Plaintext Tally Validation may be run as part of verification.
 
 3. There are _nguardians_ PartialDecryptions in the DecryptedTallyOrBallot.Selection.
 
-### E. RecoveredPartialDecryption (when PartialDecryption contains non-empty RecoveredPartialDecryptions)
+### E. RecoveredPartialDecryption (when PartialDecryption contains non-empty RecoveredPartialDecryptions) LOOK probably not needed
 
 1. Each RecoveredPartialDecryption has a non-null share.
 
