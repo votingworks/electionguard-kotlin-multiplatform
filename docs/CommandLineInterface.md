@@ -1,8 +1,10 @@
 # Workflow and Command Line Programs
 
-last update 1/16/2023
+last update 1/17/2023
 
 ## Election workflow
+
+<img src="./images/Workflow.svg" alt="Workflow" width="800"/>
 
 1. **Generate a Manifest record**. The following examples may be useful:
 
@@ -247,7 +249,9 @@ output:
 
 * stdout
 
-# Remote
+# Remote Processes
+
+<img src="./images/RemoteProcesses.svg" alt="RemoteProcesses" width="800"/>
 
 ## Make KeyStore
 
