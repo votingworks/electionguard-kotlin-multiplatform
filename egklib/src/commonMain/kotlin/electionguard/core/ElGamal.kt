@@ -184,7 +184,7 @@ fun ElementModP.computeShare(secretKey: ElementModQ): ElementModP {
 
 fun ElGamalCiphertext.decryptWithShares(publicKey: ElGamalPublicKey, shares: Iterable<ElementModP>): Int? {
     val sharesList = shares.toList()
-    val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray())) // shares)
+    val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray()))
     val allSharesProductM: ElementModP = with (context) { sharesList.multP() }
     val decryptedValue: ElementModP = this.data / allSharesProductM
     return publicKey.dLog(decryptedValue)
