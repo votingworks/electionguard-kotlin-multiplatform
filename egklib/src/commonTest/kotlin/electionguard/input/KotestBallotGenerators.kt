@@ -4,10 +4,13 @@ import electionguard.ballot.Manifest
 import electionguard.core.assert
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.*
-import io.kotest.property.arbs.cars
-import io.kotest.property.kotlinx.datetime.date
+import kotlinx.datetime.Clock
 import kotlinx.datetime.DatePeriod
-import kotlinx.datetime.plus
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration.Companion.days
 
 private val firstNames = arrayListOf(
     "James",
@@ -169,23 +172,23 @@ object KotestBallotGenerators {
         Arb.pair(Arb.of(firstNames), Arb.of(lastNames))
             .map { "${it.first} ${it.second}" }
 
-    fun email(humanName: String): Arb<String> {
+    fun email(): Arb<String> {
         return Arb.string(minSize = 1, maxSize = 10, Codepoint.alphanumeric())
     }
 
     private fun digits(): Arb<Codepoint> =
         Arb.of(('0'..'9').map { Codepoint(it.code) })
 
-    fun phoneNumber(humanName: String): Arb<String> =
+    fun phoneNumber(): Arb<String> =
         Arb.string(size = 10, codepoints = digits())
 
     fun address(): Arb<String> =
-        Arb.bind(Arb.int(1..2000), Arb.cars()) { n, s -> "$n $s Street" }
+        Arb.bind(Arb.int(1..2000), phoneNumber()) { n, s -> "$n $s Street" }
 
     fun contactInformation(): Arb<Manifest.ContactInformation> = arbitrary {
         val name = humanName().bind()
-        val em = email(name).bind()
-        val phNumber = phoneNumber(name).bind()
+        val em = email().bind()
+        val phNumber = phoneNumber().bind()
         val addr = listOf(address().bind())
 
         Manifest.ContactInformation(
@@ -248,7 +251,7 @@ object KotestBallotGenerators {
     }
 
     /**
-     * Generates a [BallotStyle] object, which rolls up a list of parties and
+     * Generates a [Manifest.BallotStyle] object, which rolls up a list of parties and
      * geopolitical units (passed as arguments), with some additional information
      * added on as well.
      */
@@ -374,7 +377,6 @@ object KotestBallotGenerators {
         assert (n > 0)
         assert (n <= m)
 
-        val partyIds = partyList.map { it.partyId }
         val candidates = Arb.list(candidate(partyList), m..m).bind()
         val u = uuid().bind()
         val geoUnit = Arb.of(geoUnits).bind()
@@ -402,7 +404,7 @@ object KotestBallotGenerators {
         ))
     }
 
-    fun manifest(maxParties: Int = 3, maxContests: Int = 3): Arb<Manifest> = arbitrary { rs ->
+    fun manifest(maxParties: Int = 3, maxContests: Int = 3): Arb<Manifest> = arbitrary { _ ->
         val geoUnits = Arb.list(geopoliticalUnit(), 1..10).bind()
         val numParties = Arb.int(1..maxParties).bind()
         val parties = partyList(numParties).bind()
@@ -416,8 +418,11 @@ object KotestBallotGenerators {
         val contests = contestsAndCandidates.map { it.second }
 
         val styles = ballotStyle(parties, geoUnits).bind()
-        val startDate = Arb.date(yearRange = 2020..2024).bind()
-        val endDate = startDate + DatePeriod(days = 1)
+        val currentMoment : Instant = Clock.System.now()
+        val startDate: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.UTC)
+        DatePeriod.parse("1 day")
+        val endDateInstant = currentMoment.plus(1.days)
+        val endDate: LocalDateTime = endDateInstant.toLocalDateTime(TimeZone.UTC)
 
         Manifest(
             electionScopeId = "scopeId: " + uuid().bind(),

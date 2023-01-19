@@ -97,16 +97,6 @@ dependencyResolutionManagement {
 
             // property based testing
             library("kotest-property", "io.kotest", "kotest-property").version("5.5.4")
-            library("kotest-arbs", "io.kotest.extensions", "kotest-property-arbs").version("2.1.2")
-            library("kotest-datetime", "io.kotest.extensions", "kotest-property-datetime").version("1.1.0")
-            bundle(
-                "kotest-all",
-                listOf(
-                    "kotest-property",
-                    "kotest-arbs",
-                    "kotest-datetime",
-                )
-            )
 
             //// jvm only
             // uses junit:junit:4.13.2
