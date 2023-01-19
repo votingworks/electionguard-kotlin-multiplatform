@@ -109,7 +109,7 @@ kotlin {
                     implementation(libs.kotlinx.coroutines.test)
 
                     // Fancy property-based testing
-                    implementation(libs.bundles.kotest.all)
+                    implementation(libs.kotest.property)
                 }
             }
         val jvmMain by
