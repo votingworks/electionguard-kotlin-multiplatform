@@ -100,9 +100,9 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         ballots: Iterable<EncryptedBallot>
     ) {
         writeElectionInitialized(init)
-        val sink = encryptedBallotSink()
-        ballots.forEach {sink.writeEncryptedBallot(it) }
-        sink.close()
+        encryptedBallotSink().use { sink ->
+            ballots.forEach { sink.writeEncryptedBallot(it) }
+        }
     }
 
     actual override fun writeTallyResult(tally: TallyResult) {

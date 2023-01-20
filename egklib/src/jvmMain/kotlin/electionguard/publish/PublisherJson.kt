@@ -68,9 +68,9 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         writeElectionInitialized(init)
 
         validateOutputDir(Path.of(jsonPaths.encryptedBallotDir()), Formatter())
-        val sink = encryptedBallotSink()
-        ballots.forEach {sink.writeEncryptedBallot(it) }
-        sink.close()
+        encryptedBallotSink().use { sink ->
+            ballots.forEach { sink.writeEncryptedBallot(it) }
+        }
     }
 
     actual override fun writeTallyResult(tally: TallyResult) {

@@ -134,27 +134,30 @@ fun runDecryptBallots(
             }
         }
 
-    runBlocking {
-        val outputChannel = Channel<DecryptedTallyOrBallot>()
-        val decryptorJobs = mutableListOf<Job>()
-        val ballotProducer = produceBallots(ballotIter)
-        repeat(nthreads) {
-            decryptorJobs.add(
-                launchDecryptor(
-                    it,
-                    ballotProducer,
-                    decryptor,
-                    outputChannel
+    try {
+        runBlocking {
+            val outputChannel = Channel<DecryptedTallyOrBallot>()
+            val decryptorJobs = mutableListOf<Job>()
+            val ballotProducer = produceBallots(ballotIter)
+            repeat(nthreads) {
+                decryptorJobs.add(
+                    launchDecryptor(
+                        it,
+                        ballotProducer,
+                        decryptor,
+                        outputChannel
+                    )
                 )
-            )
-        }
-        launchSink(outputChannel, sink)
+            }
+            launchSink(outputChannel, sink)
 
-        // wait for all decryptions to be done, then close everything
-        joinAll(*decryptorJobs.toTypedArray())
-        outputChannel.close()
+            // wait for all decryptions to be done, then close everything
+            joinAll(*decryptorJobs.toTypedArray())
+            outputChannel.close()
+        }
+    } finally {
+        sink.close()
     }
-    sink.close()
 
     decryptor.stats.show(5)
     val count = decryptor.stats.count()

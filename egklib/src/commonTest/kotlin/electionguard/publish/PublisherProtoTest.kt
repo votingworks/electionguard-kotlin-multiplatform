@@ -9,6 +9,7 @@ import electionguard.protoconvert.generateElectionConfig
 import electionguard.protoconvert.generateElementModP
 import electionguard.protoconvert.generateGuardian
 import electionguard.protoconvert.generateUInt256
+import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -106,11 +107,11 @@ class PublisherProtoTest {
 
     @Test
     fun testWriteSpoiledBallots() {
-        val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
-        consumerIn.iterateDecryptedBallots().forEach {
-            sink.writeDecryptedTallyOrBallot(it)
+        publisher.decryptedTallyOrBallotSink().use { sink ->
+            consumerIn.iterateDecryptedBallots().forEach {
+                sink.writeDecryptedTallyOrBallot(it)
+            }
         }
-        sink.close()
 
         val inBallots = consumerIn.iterateDecryptedBallots().associateBy { it.id }
         consumerOut.iterateDecryptedBallots().forEach {
