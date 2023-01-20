@@ -205,8 +205,8 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
     fun readDecryptionResult(filename: String, tallyResult: TallyResult): Result<DecryptionResult, String> {
         // all the coefficients in a map in one file
-        val json = jsonFormat.decodeFromString<CoefficientsJson>(gulp(jsonPaths.lagrangePath()).toKString())
-        val lagrangeCoordinates = json.import(group)
+        val jsonCoeff = jsonFormat.decodeFromString<CoefficientsJson>(gulp(jsonPaths.lagrangePath()).toKString())
+        val lagrangeCoordinates = jsonCoeff.import(group)
 
         return try {
             val json = jsonFormat.decodeFromString<DecryptedTallyJson>(gulp(filename).toKString())
