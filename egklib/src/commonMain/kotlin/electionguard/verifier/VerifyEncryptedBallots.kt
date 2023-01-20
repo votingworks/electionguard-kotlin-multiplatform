@@ -178,7 +178,7 @@ class VerifyEncryptedBallots(
 
         // The encrypted selections match the product of the pre-encryptions associated with the short codes listed as selected.
         println("allEncryptedSelections")
-        contest.selections.forEach { println(" ${it.ciphertext.cryptoHashUInt256().cryptoHashString()}") }
+        contest.selections.forEach { println(" $ballotId cryptoHash ${it.ciphertext.cryptoHashUInt256().cryptoHashString()}") }
         println("selectedVector")
         contest.preEncryption!!.selectedVectors.forEach { println("  ${it.selectionHash.cryptoHashString()}") }
 

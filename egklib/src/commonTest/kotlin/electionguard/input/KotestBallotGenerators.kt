@@ -225,7 +225,7 @@ object KotestBallotGenerators {
 
     fun language(prefix: String = ""): Arb<Manifest.Language> =
         // we're just dumping alpha text here for lack of anything interesting
-        Arb.bind(Arb.string(1..10), twoLetterCodes()) { n, l -> Manifest.Language("${prefix}n", l) }
+        Arb.bind(Arb.string(1..10), twoLetterCodes()) { _, l -> Manifest.Language("${prefix}n", l) }
 
     fun url(): Arb<String> =
         Arb.string(minSize = 1, maxSize = 10, codepoints = Codepoint.alphanumeric())

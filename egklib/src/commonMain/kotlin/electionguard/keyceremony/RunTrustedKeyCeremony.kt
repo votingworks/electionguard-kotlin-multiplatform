@@ -62,7 +62,7 @@ fun main(args: Array<String>) {
     println("RunTrustedKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
-    var createdFrom = ""
+    var createdFrom : String
 
     val config: ElectionConfig = if (electionManifest != null && nguardians != null && quorum != null) {
         val manifest = readManifest(electionManifest!!, group)

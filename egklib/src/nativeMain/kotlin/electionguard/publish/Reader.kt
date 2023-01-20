@@ -24,6 +24,7 @@ import kotlinx.cinterop.IntVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.plus
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.value
@@ -36,6 +37,7 @@ import platform.posix.lstat
 import platform.posix.stat
 
 internal val logger = KotlinLogging.logger("nativeReader")
+internal val MAX_RECORD = 1000 * 1000
 
 //// Used by native ConsumerProto
 
@@ -115,6 +117,7 @@ class EncryptedBallotIterator(
                 fclose(file)
                 return done()
             }
+            println("  readFromFile vlen = $length")
             val message = readFromFile(file, length.toULong(), filename)
             val ballotProto = electionguard.protogen.EncryptedBallot.decodeFromByteArray(message)
             if (protoFilter?.invoke(ballotProto) == false) {
@@ -220,9 +223,12 @@ fun gulp(filename: String): ByteArray {
 }
 
 @Throws(IOException::class)
-fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String): ByteArray {
+fun readFromFile(file: CPointer<FILE>, nwant : ULong, filename : String): ByteArray {
     return memScoped {
-        val bytePtr: CArrayPointer<ByteVar> = allocArray(nbytes.toInt())
+        if (nwant > MAX_RECORD.toULong()) {
+            throw IOException("Fail readFromFile $filename, length = $nwant")
+        }
+        val result : CArrayPointer<ByteVar> = allocArray(nwant.toInt())
 
         // fread(
         //   __ptr: kotlinx.cinterop.CValuesRef<*>?,
@@ -230,13 +236,22 @@ fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String): ByteA
         //   __n: platform.posix.size_t /* = kotlin.ULong */,
         //   __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
         //   : kotlin.ULong { /* compiled code */ }
-        val nread = fread(bytePtr, 1, nbytes, file)
-        if (nread < 0u) {
-            checkErrno { mess -> throw IOException("Fail read $mess on $filename") }
+        var nhave = 0.toULong()
+        var nneed = nwant
+        while (nhave < nwant) {
+            val nread = fread(result + nhave.toInt(), 1, nwant, file)
+            if (nread < 0u) {
+                checkErrno { mess -> throw IOException("Fail read $mess on $filename") }
+            }
+            nhave += nread
+            nneed -= nread
+            if (nhave < nwant) {
+                println("  readFromFile $nread still need $nneed")
+            }
         }
-        if (nread != nbytes) {
-            throw IOException("Fail read $nread != $nbytes on $filename")
+        if (nhave != nwant) {
+            throw IOException("Fail read nwant $nwant != nread $nhave on $filename")
         }
-        return@memScoped bytePtr.readBytes(nread.toInt())
+        return@memScoped result.readBytes(nhave.toInt())
     }
 }

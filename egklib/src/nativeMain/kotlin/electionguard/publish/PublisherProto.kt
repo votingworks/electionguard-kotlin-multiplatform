@@ -1,7 +1,6 @@
 package electionguard.publish
 
 import electionguard.ballot.*
-import electionguard.json.publish
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.protoconvert.publishDecryptingTrusteeProto
 import electionguard.protoconvert.publishProto
@@ -11,8 +10,8 @@ import kotlinx.cinterop.CArrayPointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.plus
 import kotlinx.cinterop.set
-import kotlinx.serialization.encodeToString
 import pbandk.encodeToByteArray
 import platform.posix.FILE
 import platform.posix.fclose
@@ -183,6 +182,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
             val buffer = ballotProto.encodeToByteArray()
 
             val length = writeVlen(file, fileout, buffer.size)
+            println("  writeEncryptedBallotProto ${buffer.size} $length")
             if (length <= 0) {
                 fclose(file)
                 throw IOException("write failed on $fileout")
@@ -232,12 +232,20 @@ fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArray) {
         //    __n: platform.posix.size_t /* = kotlin.ULong */,
         //    __s: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
         // : kotlin.ULong { /* compiled code */ }
-        val nwrite = fwrite(bytePtr, 1, buffer.size.toULong(), file)
-        if (nwrite < 0u) {
-            checkErrno { mess -> throw IOException("Fail fwrite $mess on $filename") }
+        val nwant = buffer.size.toULong()
+        var ndone = 0.toULong()
+        var nneed = nwant
+        while (ndone < nwant) {
+            val nwrite = fwrite(bytePtr + ndone.toInt(), 1, nneed, file)
+            println("  writeToFile $nneed $nwrite")
+            if (nwrite < 0u) {
+                checkErrno { mess -> throw IOException("Fail fwrite $mess on $filename") }
+            }
+            ndone += nwrite
+            nneed -= nwrite
         }
-        if (nwrite != buffer.size.toULong()) {
-            throw IOException("Fail fwrite $nwrite != $buffer.size  on $filename")
+        if (ndone != nwant) {
+            throw IOException("Fail fwrite $ndone != $nwant  on $filename")
         }
     }
 }
