@@ -223,12 +223,9 @@ fun gulp(filename: String): ByteArray {
 }
 
 @Throws(IOException::class)
-fun readFromFile(file: CPointer<FILE>, nwant : ULong, filename : String): ByteArray {
+fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String): ByteArray {
     return memScoped {
-        if (nwant > MAX_RECORD.toULong()) {
-            throw IOException("Fail readFromFile $filename, length = $nwant")
-        }
-        val result : CArrayPointer<ByteVar> = allocArray(nwant.toInt())
+        val bytePtr: CArrayPointer<ByteVar> = allocArray(nbytes.toInt())
 
         // fread(
         //   __ptr: kotlinx.cinterop.CValuesRef<*>?,
@@ -236,22 +233,13 @@ fun readFromFile(file: CPointer<FILE>, nwant : ULong, filename : String): ByteAr
         //   __n: platform.posix.size_t /* = kotlin.ULong */,
         //   __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
         //   : kotlin.ULong { /* compiled code */ }
-        var nhave = 0.toULong()
-        var nneed = nwant
-        while (nhave < nwant) {
-            val nread = fread(result + nhave.toInt(), 1, nwant, file)
-            if (nread < 0u) {
-                checkErrno { mess -> throw IOException("Fail read $mess on $filename") }
-            }
-            nhave += nread
-            nneed -= nread
-            if (nhave < nwant) {
-                println("  readFromFile $nread still need $nneed")
-            }
+        val nread = fread(bytePtr, 1, nbytes, file)
+        if (nread < 0U) {
+            checkErrno { mess -> throw IOException("Fail read $mess on '$filename'") }
         }
-        if (nhave != nwant) {
-            throw IOException("Fail read nwant $nwant != nread $nhave on $filename")
+        if (nread != nbytes) {
+            throw IOException("Fail read $nread != $nbytes on '$filename'")
         }
-        return@memScoped result.readBytes(nhave.toInt())
+        return@memScoped bytePtr.readBytes(nread.toInt())
     }
 }

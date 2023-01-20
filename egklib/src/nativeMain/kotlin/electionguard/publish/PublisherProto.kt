@@ -4,18 +4,17 @@ import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.protoconvert.publishDecryptingTrusteeProto
 import electionguard.protoconvert.publishProto
+import io.ktor.utils.io.core.use
 import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.CArrayPointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.plus
 import kotlinx.cinterop.set
 import pbandk.encodeToByteArray
 import platform.posix.FILE
 import platform.posix.fclose
-import platform.posix.fflush
 import platform.posix.fwrite
 
 /** Write the Election Record as protobuf files.  */
@@ -43,7 +42,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         try {
             writeToFile(file, fileout, buffer)
         } finally {
-            fflush(file)
             fclose(file)
         }
     }
@@ -57,7 +55,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         try {
             writeToFile(file, fileout, buffer)
         } finally {
-            fflush(file)
             fclose(file)
         }
     }
@@ -71,7 +68,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         try {
             writeToFile(file, fileout, buffer)
         } finally {
-            fflush(file)
             fclose(file)
         }
     }
@@ -81,9 +77,9 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         ballots: Iterable<EncryptedBallot>
     ) {
         writeElectionInitialized(init)
-        val sink = encryptedBallotSink()
-        ballots.forEach {sink.writeEncryptedBallot(it) }
-        sink.close()
+        encryptedBallotSink().use { sink ->
+            ballots.forEach { sink.writeEncryptedBallot(it) }
+        }
     }
 
     actual override fun writeTallyResult(tally: TallyResult) {
@@ -95,7 +91,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         try {
             writeToFile(file, fileout, buffer)
         } finally {
-            fflush(file)
             fclose(file)
         }
     }
@@ -109,7 +104,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         try {
             writeToFile(file, fileout, buffer)
         } finally {
-            fflush(file)
             fclose(file)
         }
     }
@@ -166,7 +160,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         try {
             writeToFile(file, fileout, buffer)
         } finally {
-            fflush(file)
             fclose(file)
         }
     }
@@ -232,20 +225,12 @@ fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArray) {
         //    __n: platform.posix.size_t /* = kotlin.ULong */,
         //    __s: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
         // : kotlin.ULong { /* compiled code */ }
-        val nwant = buffer.size.toULong()
-        var ndone = 0.toULong()
-        var nneed = nwant
-        while (ndone < nwant) {
-            val nwrite = fwrite(bytePtr + ndone.toInt(), 1, nneed, file)
-            println("  writeToFile $nneed $nwrite")
-            if (nwrite < 0u) {
-                checkErrno { mess -> throw IOException("Fail fwrite $mess on $filename") }
-            }
-            ndone += nwrite
-            nneed -= nwrite
+        val nwrite = fwrite(bytePtr, 1, buffer.size.toULong(), file)
+        if (nwrite < buffer.size.toULong()) {
+            checkErrno { mess -> throw IOException("Fail fwrite $mess on $filename") }
         }
-        if (ndone != nwant) {
-            throw IOException("Fail fwrite $ndone != $nwant  on $filename")
+        if (nwrite != buffer.size.toULong()) {
+            throw IOException("Fail fwrite $nwrite != ${buffer.size}  on $filename")
         }
     }
 }

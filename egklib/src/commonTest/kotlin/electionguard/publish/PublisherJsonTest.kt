@@ -10,6 +10,7 @@ import electionguard.protoconvert.generateElectionConfig
 import electionguard.protoconvert.generateElementModP
 import electionguard.protoconvert.generateGuardian
 import electionguard.protoconvert.generateUInt256
+import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -116,11 +117,11 @@ class PublisherJsonTest {
         val publisher = makePublisher(output4, true, true)
         val consumerOut = makeConsumer(output4, group, true)
 
-        val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
-        consumerIn.iterateDecryptedBallots().forEach {
-            sink.writeDecryptedTallyOrBallot(it)
-        }
-        sink.close()
+       publisher.decryptedTallyOrBallotSink().use { sink ->
+           consumerIn.iterateDecryptedBallots().forEach {
+               sink.writeDecryptedTallyOrBallot(it)
+           }
+       }
 
         assertTrue(consumerOut.iterateDecryptedBallots().approxEqualsDecryptedBallots(consumerIn.iterateDecryptedBallots()))
     }

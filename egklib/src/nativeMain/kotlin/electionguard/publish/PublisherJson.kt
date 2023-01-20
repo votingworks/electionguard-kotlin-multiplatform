@@ -13,12 +13,12 @@ import electionguard.core.pathExists
 import electionguard.json.publish
 import electionguard.json.publishDecryptingTrusteeJson
 import electionguard.keyceremony.KeyCeremonyTrustee
+import io.ktor.utils.io.core.use
 import kotlinx.cinterop.CPointer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import platform.posix.FILE
 import platform.posix.fclose
-import platform.posix.fflush
 
 /** Write the Election Record as protobuf files.  */
 actual class PublisherJson actual constructor(topDir: String, createNew: Boolean) : Publisher {
@@ -37,7 +37,6 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         try {
             writeToFile(file, fileout, stringOut.encodeToByteArray())
         } finally {
-            fflush(file)
             fclose(file)
         }
     }
@@ -77,9 +76,9 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         writeElectionInitialized(init)
 
         validateOutputDir(jsonPaths.encryptedBallotDir())
-        val sink = encryptedBallotSink()
-        ballots.forEach { sink.writeEncryptedBallot(it) }
-        sink.close()
+        encryptedBallotSink().use { sink ->
+            ballots.forEach { sink.writeEncryptedBallot(it) }
+        }
     }
 
     actual override fun writeTallyResult(tally: TallyResult) {

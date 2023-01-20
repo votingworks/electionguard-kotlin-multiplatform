@@ -189,26 +189,29 @@ fun batchEncryption(
     val publisher = makePublisher(outputDir)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
 
-    runBlocking {
-        val outputChannel = Channel<EncryptedBallot>()
-        val encryptorJobs = mutableListOf<Job>()
-        val ballotProducer = produceBallots(ballots.filter { validate(it) })
-        repeat(nthreads) {
-            encryptorJobs.add(
-                launchEncryptor(
-                    it,
-                    ballotProducer,
-                    outputChannel
-                ) { ballot -> runEncryption.encrypt(ballot) }
-            )
-        }
-        launchSink(outputChannel, sink)
+    try {
+        runBlocking {
+            val outputChannel = Channel<EncryptedBallot>()
+            val encryptorJobs = mutableListOf<Job>()
+            val ballotProducer = produceBallots(ballots.filter { validate(it) })
+            repeat(nthreads) {
+                encryptorJobs.add(
+                    launchEncryptor(
+                        it,
+                        ballotProducer,
+                        outputChannel
+                    ) { ballot -> runEncryption.encrypt(ballot) }
+                )
+            }
+            launchSink(outputChannel, sink)
 
-        // wait for all encryptions to be done, then close everything
-        joinAll(*encryptorJobs.toTypedArray())
-        outputChannel.close()
+            // wait for all encryptions to be done, then close everything
+            joinAll(*encryptorJobs.toTypedArray())
+            outputChannel.close()
+        }
+    } finally {
+        sink.close()
     }
-    sink.close()
     val took = getSystemTimeInMillis() - starting
 
     publisher.writeElectionInitialized(

@@ -2,6 +2,7 @@ package electionguard.publish
 
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
+import io.ktor.utils.io.core.use
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -48,11 +49,12 @@ fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: S
         println(" electionInit written")
     }
 
-    val esink = producer.encryptedBallotSink()
     var ecount = 0
-    consumer.iterateEncryptedBallots{ true} .forEach() {
-        esink.writeEncryptedBallot(it)
-        ecount++
+    producer.encryptedBallotSink().use { esink ->
+        consumer.iterateEncryptedBallots { true }.forEach() {
+            esink.writeEncryptedBallot(it)
+            ecount++
+        }
     }
     println(" $ecount encryptedBallots written")
 
@@ -68,11 +70,12 @@ fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: S
         println(" decrypted tally result written")
     }
 
-    val dsink = producer.decryptedTallyOrBallotSink()
     var dcount = 0
-    consumer.iterateDecryptedBallots().forEach() {
-        dsink.writeDecryptedTallyOrBallot(it)
-        dcount++
+    producer.decryptedTallyOrBallotSink().use { dsink ->
+        consumer.iterateDecryptedBallots().forEach() {
+            dsink.writeDecryptedTallyOrBallot(it)
+            dcount++
+        }
     }
     println(" $dcount decryptedBallots written")
 }
