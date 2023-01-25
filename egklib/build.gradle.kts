@@ -8,7 +8,7 @@ buildscript {
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("multiplatform") version "1.7.20"
+    kotlin("multiplatform") version "1.7.21"
     id("electionguard.common-conventions")
 
     // cross-platform serialization support
@@ -23,7 +23,7 @@ plugins {
 
 group = "electionguard-kotlin-multiplatform"
 version = "1.53.0.SNAPSHOT"
-val kotlinVersion by extra("1.7.20")
+val kotlinVersion by extra("1.7.21")
 
 kotlin {
     jvm {

@@ -1,6 +1,6 @@
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.7.21"
     id("electionguard.common-conventions")
     alias(libs.plugins.ktor)
     alias(libs.plugins.serialization)

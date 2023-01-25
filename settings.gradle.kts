@@ -7,7 +7,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            version("kotlin-version", "1.7.20")
+            version("kotlin-version", "1.7.21")
             version("coroutines-version", "1.6.4")
             version("ktor-version", "2.2.2")
 
