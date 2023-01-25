@@ -6,9 +6,13 @@ buildscript {
     }
 }
 
+
+val kotlinVersion : String = providers.gradleProperty("kotlinVersion").get()
+println("Read kotlinVersion from gradle.properties = $kotlinVersion")
+
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("multiplatform") version "1.7.21"
+    kotlin("multiplatform") version providers.gradleProperty("kotlinVersion").get()
     id("electionguard.common-conventions")
 
     // cross-platform serialization support
@@ -23,7 +27,6 @@ plugins {
 
 group = "electionguard-kotlin-multiplatform"
 version = "1.53.0.SNAPSHOT"
-val kotlinVersion by extra("1.7.21")
 
 kotlin {
     jvm {

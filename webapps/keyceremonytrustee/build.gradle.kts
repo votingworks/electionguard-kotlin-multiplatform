@@ -1,6 +1,11 @@
+buildscript {
+    repositories {
+    }
+}
+
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("jvm") version "1.7.21"
+    kotlin("jvm") version providers.gradleProperty("kotlinVersion").get()
     id("electionguard.common-conventions")
     alias(libs.plugins.ktor)
     alias(libs.plugins.serialization)
