@@ -1,6 +1,11 @@
+buildscript {
+    repositories {
+    }
+}
+
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    kotlin("multiplatform") version "1.7.21"
+    kotlin("multiplatform") version providers.gradleProperty("kotlinVersion").get()
     id("electionguard.common-conventions")
 
     // for some reason we need these, else get error
