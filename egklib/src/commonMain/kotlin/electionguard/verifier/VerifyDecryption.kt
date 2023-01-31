@@ -113,7 +113,7 @@ class VerifyDecryption(
         val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.2
         val b = (this.message.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.3
 
-        // LOOK should agree with 1.53, section 3.5.3 eq 60, this is 8.B, 11.B
+        // spec 1.53, section 3.5.3 eq 60, this is 8.B, 11.B
         val challenge = hashElements(qbar, jointPublicKey, this.message.pad, this.message.data, a, b, Mbar)
         if (first) {
             println(" verify qbar = $qbar")
