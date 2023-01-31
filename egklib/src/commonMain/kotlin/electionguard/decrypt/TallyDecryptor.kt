@@ -141,23 +141,24 @@ class TallyDecryptor(
         return (challenge.toElementModQ(group) == this.proof.c)
     }
 
-    // Verify with eq 13, 14
+    // Verify with eq 63, 64
     private fun DecryptionResults.checkIndividualResponses(): Boolean {
         var ok = true
         for (partialDecryption in this.shares.values) {
             val guardianId = partialDecryption.guardianId
             val vi = this.responses[guardianId]
                 ?: throw IllegalStateException("*** response not found for ${guardianId}")
-            val challenge = this.challenge!!.toElementModQ(group)
+            val wi = lagrangeCoordinates[guardianId]!!.lagrangeCoefficient
+            val challenge = wi * this.challenge!!.toElementModQ(group) // eq 61
 
-            val inner = guardians.getGexpP(guardianId) // lazy evaluation
-            val ap = group.gPowP(vi) * (inner powP challenge) // 13
+            val inner = guardians.getGexpP(guardianId)
+            val ap = group.gPowP(vi) * (inner powP challenge) // eq 63
             if (partialDecryption.a != ap) {
                 println(" ayes dont match for ${guardianId}")
                 ok = false
             }
 
-            val bp = (this.ciphertext.pad powP vi) * (partialDecryption.mbari powP challenge) // 14
+            val bp = (this.ciphertext.pad powP vi) * (partialDecryption.mbari powP challenge) // eq 64
             if (partialDecryption.b != bp) {
                 println(" bees dont match for ${guardianId}")
                 ok = false
@@ -165,13 +166,4 @@ class TallyDecryptor(
         }
         return ok
     }
-
-    /* the innermost factor of eq 13 LOOK compute ahead of time
-    private fun innerFactor13(guardian: Guardian): ElementModP =
-        with(group) {
-            guardians.values.map { calculateGexpPiAtL(guardian.xCoordinate, it.coefficientCommitments()) }.multP()
-        }
-
-     */
-
 }

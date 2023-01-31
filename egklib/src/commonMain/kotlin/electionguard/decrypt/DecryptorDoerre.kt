@@ -74,20 +74,21 @@ class DecryptorDoerre(
             dresults.dlogM = jointPublicKey.dLog(bm, maxDlog) ?: throw RuntimeException("dlog failed on $id")
             dresults.mbar = weightedProduct
 
-            // collective proof, eq 10, 11
+            // collective proof, 1.53 section 3.5.3 eq 59
             val a: ElementModP = with(group) { dresults.shares.values.map { it.a }.multP() }
             val b: ElementModP = with(group) { dresults.shares.values.map { it.b }.multP() }
-            // LOOK 06 ??
-            dresults.challenge = hashElements(qbar, jointPublicKey, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct) // eq 11
+            // spec 1.53, eq 60
+            dresults.challenge = hashElements(qbar, jointPublicKey, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
 
             if (first) { // temp debug, a,b dont validate
-                println(" qbar = $qbar")
+                println(" decrypt qbar = $qbar")
                 println(" jointPublicKey = $jointPublicKey")
                 println(" message.pad = ${dresults.ciphertext.pad}")
                 println(" message.data = ${dresults.ciphertext.data}")
                 println(" a= $a")
                 println(" b= $b")
                 println(" Mbar = $weightedProduct")
+                println(" c = ${dresults.challenge}")
                 first = false
             }
         }
@@ -191,16 +192,21 @@ class DecryptorDoerre(
     fun Decryptions.challengeTrustee(
         trustee: DecryptingTrusteeIF,
     ) : TrusteeChallengeResponses {
+        val wi = lagrangeCoordinates[trustee.id()]!!.lagrangeCoefficient
         // Get all the challenges from the shares for this trustee
         val requests: MutableList<ChallengeRequest> = mutableListOf()
         for ((id, results) in this.shares) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u))
+            // spec 1.53, eq 61
+            val ci = wi * results.challenge!!.toElementModQ(group)
+            requests.add(ChallengeRequest(id, ci, result.u))
         }
         // Get all the challenges from the contestData
         for ((id, results) in this.contestData) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            requests.add(ChallengeRequest(id, results.challenge!!.toElementModQ(group), result.u))
+            // spec 1.53, eq 61
+            val ci = wi * results.challenge!!.toElementModQ(group)
+            requests.add(ChallengeRequest(id, ci, result.u))
         }
 
         // ask for all of them at once

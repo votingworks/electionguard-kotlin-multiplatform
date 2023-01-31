@@ -47,7 +47,7 @@ data class ElectionPolynomial(
 /**
  * Calculate g^Pi(xcoord) mod p = Product ((K_i,j)^xcoord^j) mod p, j = 0, quorum-1.
  * Used to test secret key share by KeyCeremonyTrustee, and verifying results in TallyDecryptor.
- * spec 1.52, sec 3.2.2 eq 16:
+ * spec 1.53, sec 3.2.2 eq 17:
  */
 fun calculateGexpPiAtL(
     xcoord: Int,  // evaluated at xcoord ℓ

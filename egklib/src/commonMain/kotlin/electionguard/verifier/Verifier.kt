@@ -73,13 +73,13 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         }
 
         // tally decryption
-        val verifyTally = VerifyDecryption(group, manifest, jointPublicKey, qbar)
-        val tallyResult = verifyTally.verify(record.decryptedTally()!!, isBallot = false, stats)
+        val verifyDecryption = VerifyDecryption(group, manifest, jointPublicKey, qbar)
+        val tallyResult = verifyDecryption.verify(record.decryptedTally()!!, isBallot = false, stats)
         println(" 8,9. verifyTallyDecryption $tallyResult")
 
         // 10, 11, 12, 13, 14 spoiled ballots
         val spoiledResult =
-            verifyTally.verifySpoiledBallotTallies(record.decryptedBallots(), nthreads, stats, showTime)
+            verifyDecryption.verifySpoiledBallotTallies(record.decryptedBallots(), nthreads, stats, showTime)
         println(" 10,11,12,13,14. verifySpoiledBallotTallies $spoiledResult")
 
         val allOk = (parametersOk is Ok) && (guardiansOk is Ok) && (publicKeyOk is Ok) &&
@@ -105,6 +105,11 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         if (!constants.generator.contentEquals(group.constants.generator)) {
             check.add(Err("  1.D The small prime is non equal to the large modulus p defined in Section 3.1.1"))
         }
+
+        // LOOK not done
+        // (1.E) The base hash code Q has been computed correctly as
+        //        Q = H(00; p, q, g, n, k, date, info, manifest hash),
+
         return check.merge()
     }
 
@@ -135,7 +140,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
 
         val commitments = mutableListOf<ElementModP>()
         this.record.guardians().forEach { commitments.addAll(it.coefficientCommitments()) }
-        // spec 1.52, eq 17 and 3.B
+        // spec 1.53, eq 18 and 3.B
         val computedQbar: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitments)
         if (qbar != computedQbar.toElementModQ(group)) {
             errors.add(Err("  3.B qbar does not match computed = H(Q, K, {K_ij})"))

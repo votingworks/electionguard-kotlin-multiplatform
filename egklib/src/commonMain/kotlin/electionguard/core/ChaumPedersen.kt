@@ -182,8 +182,8 @@ fun RangeChaumPedersenProofKnownNonce.validate(
 
         val wj = (vj - j.toElementModQ(context) * cj)
         ExpandedGenericChaumPedersenProof(
-            a = context.gPowP(vj) * (alpha powP cj), // 4.1, 4.2, 5.1
-            b = (publicKey powP wj) * (beta powP cj), // 4.3, 4.4, 5.2
+            a = context.gPowP(vj) * (alpha powP cj), // 4.1, 4.2, 5.3
+            b = (publicKey powP wj) * (beta powP cj), // 4.3, 4.4, 5.4
             c = cj,
             r = vj)
 
@@ -196,7 +196,7 @@ fun RangeChaumPedersenProofKnownNonce.validate(
 
     // sum of the proof.c
     val abList = expandedProofs.flatMap { listOf(it.a, it.b) }.toTypedArray()
-    val c = hashElements(qbar, publicKey, alpha, beta, *abList).toElementModQ(context) // 4.5, 5.3
+    val c = hashElements(qbar, publicKey, alpha, beta, *abList).toElementModQ(context) // 4.5, 5.5
     val cSum = this.proofs.fold(context.ZERO_MOD_Q) { a, b -> a + b.c }
     results.add(
         if (cSum == c) Ok(true) else Err("    4.C,5.C challenge sum is invalid")
