@@ -31,9 +31,9 @@ data class DecryptingTrusteeDoerre(
         val results: MutableList<PartialDecryption> = mutableListOf()
         for (text: ElementModP in texts) {
             val u = group.randomElementModQ(2)
-            val a = group.gPowP(u)
+            val a = group.gPowP(u)  // spec 1.53, eq 58
             val b = text powP u
-            val mi = text powP keyShare // M = A ^ P(i), eq 6
+            val mi = text powP keyShare // M = A ^ P(i), spec 1.53, eq 55
             results.add(PartialDecryption(id, mi, u, a, b)) // controversial to send u, could cache it here.
         }
         return results
@@ -44,7 +44,7 @@ data class DecryptingTrusteeDoerre(
         challenges: List<ChallengeRequest>,
     ): List<ChallengeResponse> {
         return challenges.map {
-            ChallengeResponse(it.id, it.nonce - it.challenge * keyShare) // eq 12
+            ChallengeResponse(it.id, it.nonce - it.challenge * keyShare) // spec 1.53, eq 62
         }
     }
 }

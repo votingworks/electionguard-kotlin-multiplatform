@@ -21,7 +21,7 @@ data class SchnorrProof(
         val context = compatibleContextOrFail(publicKey, challenge, response)
 
         val gPowV = context.gPowP(response) // g^v_ij
-        val h = gPowV * (publicKey powP challenge) // h_ij; spec 1.52, section 3.2.2, eq 2.1
+        val h = gPowV * (publicKey powP challenge) // h_ij; spec 1.53, section 3.2.2, eq 9
         val c = hashElements(publicKey, h).toElementModQ(context)
 
         val inBoundsU = response.inBounds()

@@ -68,16 +68,9 @@ class VerifyDecryption(
                     results.add(Err("    8.A,11.A response out of bounds: '$where2' "))
                 }
 
-                /* LOOK could be done in proof.validate(), but current GenericChaumPedersen is too awkward.
-                // LOOK we calculate Mbar = B / M, so cant independently verify 9.A, 12.A
-                val Mbar: ElementModP = selection.message.data / selection.value
-                val a = group.gPowP(selection.proof.r) * (jointPublicKey powP selection.proof.c) // 8.1
-                val b = (selection.message.pad powP selection.proof.r) * (Mbar powP selection.proof.c) // 8.2
-                val mbar = selection.value / selection.message.data
-                val challenge = hashElements(qbar, jointPublicKey, selection.message.pad, selection.message.data, a, b, mbar) // 8.B,11.B
-                */
+                // 8.B, 11.B
                 if (!selection.verifySelection()) {
-                    // results.add(Err("    8.B,11.B Challenge does not match: '$where2' ")) LOOK fails
+                    results.add(Err("    8.B,11.B Challenge does not match: '$where2' ")) // LOOK fails
                 }
 
                 // M = K^t mod p.
@@ -114,24 +107,25 @@ class VerifyDecryption(
     }
 
     // this is the verifier proof (box 8)
-    private var first = true
+    private var first = false
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        val Mbar: ElementModP = this.message.data / this.value
-        // LOOK these dont agree with eq 10
-        val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.1
-        val b = (this.message.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.2
+        val Mbar: ElementModP = this.message.data / this.value // 8.1
+        val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.2
+        val b = (this.message.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.3
+
+        // LOOK should agree with 1.53, section 3.5.3 eq 60, this is 8.B, 11.B
+        val challenge = hashElements(qbar, jointPublicKey, this.message.pad, this.message.data, a, b, Mbar)
         if (first) {
-            println(" qbar = $qbar")
+            println(" verify qbar = $qbar")
             println(" jointPublicKey = $jointPublicKey")
             println(" this.message.pad = ${this.message.pad}")
             println(" this.message.data = ${this.message.data}")
             println(" a= $a")
             println(" b= $b")
             println(" Mbar = $Mbar")
+            println(" c = $challenge")
             first = false
         }
-
-        val challenge = hashElements(qbar, jointPublicKey, this.message.pad, this.message.data, a, b, Mbar) // 8.B
         return (challenge.toElementModQ(group) == this.proof.c)
     }
 

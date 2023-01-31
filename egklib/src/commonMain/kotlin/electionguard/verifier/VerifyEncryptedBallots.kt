@@ -53,7 +53,7 @@ class VerifyEncryptedBallots(
             joinAll(*verifierJobs.toTypedArray())
         }
 
-        // check duplicate confirmation codes (6.B)
+        // check duplicate confirmation codes (6.B): LOOK what if multiple records for the election?
         // LOOK what about checking for duplicate ballot ids?
         val checkDuplicates = mutableMapOf<UInt256, String>()
         confirmationCodes.forEach {
@@ -143,6 +143,7 @@ class VerifyEncryptedBallots(
     private fun verifyTrackingCode(ballot: EncryptedBallot): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
 
+        // LOOK how do we know what B_i is suppoed to be ??
         val cryptoHashCalculated = hashElements(ballot.ballotId, manifest.cryptoHashUInt256(), ballot.contests) // B_i
         if (cryptoHashCalculated != ballot.cryptoHash) {
             errors.add(Err("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} "))

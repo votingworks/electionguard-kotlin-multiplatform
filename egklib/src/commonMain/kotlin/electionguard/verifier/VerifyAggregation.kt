@@ -65,7 +65,7 @@ class VerifyAggregation(
     }
 }
 
-// while we are traversing the ballots, also accumulate ElGamalCiphertext in order to test the EncryptedTally
+// while we are traversing the encrypted ballots, also accumulate ElGamalCiphertext in order to test the EncryptedTally
 // this is bounded by total unique "contestId.selectionId", does not grow by number of ballots
 class SelectionAggregator {
     var selectionEncryptions = mutableMapOf<String, ElGamalCiphertext>() // key "contestId.selectionId"
