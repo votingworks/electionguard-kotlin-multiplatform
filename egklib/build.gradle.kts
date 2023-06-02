@@ -26,7 +26,7 @@ plugins {
 }
 
 group = "electionguard-kotlin-multiplatform"
-version = "1.53.0.SNAPSHOT"
+version = "1.53.0"
 
 kotlin {
     jvm {
