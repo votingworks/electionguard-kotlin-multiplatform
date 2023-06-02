@@ -22,11 +22,12 @@ plugins {
     // Creates a `formatKotlin` Gradle action that seems to be reliable.
     // alias(libs.plugins.formatter)
 
+
     id("maven-publish")
 }
 
 group = "electionguard-kotlin-multiplatform"
-version = "1.53.0.SNAPSHOT"
+version = "1.53.0"
 
 kotlin {
     jvm {
