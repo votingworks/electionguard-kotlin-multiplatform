@@ -75,8 +75,21 @@ data class Manifest(
     val ballotStyles: List<BallotStyle>,
     val name: List<Language>,
     val contactInformation: ContactInformation?,
-    val manifestHash: UInt256,
-) {
+    val manifestHash: UInt256 =
+        manifestCryptoHash(
+            electionScopeId,
+            electionType,
+            startDate,
+            endDate,
+            geopoliticalUnits,
+            parties,
+            contests,
+            ballotStyles,
+            name,
+            contactInformation
+        ),
+) : CryptoHashableUInt256 {
+    override fun cryptoHashUInt256() = manifestHash
 
     /** Map of ballotStyleId to all Contests that use it. */
     val styleToContestsMap : Map<String, List<ContestDescription>> by
