@@ -7,7 +7,7 @@ data class ElectionInitialized(
     val config: ElectionConfig,
     /** The joint public key (K) in the ElectionGuard Spec. */
     val jointPublicKey: ElementModP,
-    val manifestHash: UInt256, // matches Manifest.cryptoHash
+    val manifestHash: UInt256,
     val cryptoBaseHash: UInt256,  // aka q
     val cryptoExtendedBaseHash: UInt256, // aka qbar
     val guardians: List<Guardian>,

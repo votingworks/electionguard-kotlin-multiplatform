@@ -30,7 +30,7 @@ class PreEncryptor(
         ballotStyleId: String,
         primaryNonce: UInt256,
     ): PreBallotInternal {
-        val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), ballotId, primaryNonce)
+        val ballotNonce: UInt256 = hashElements(manifest.manifestHash, ballotId, primaryNonce)
         val mcontests = manifest.styleToContestsMap[ballotStyleId]
             ?: throw IllegalArgumentException("Unknown ballotStyleId $ballotStyleId")
 

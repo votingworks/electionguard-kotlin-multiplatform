@@ -34,7 +34,7 @@ class ContestPrecompute(
 ) {
     val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
     private val primaryNonce: ElementModQ = primaryNonce ?: group.randomElementModQ()
-    val ballotNonce: UInt256 = hashElements(manifest.cryptoHashUInt256(), this.ballotId, primaryNonce)
+    val ballotNonce: UInt256 = hashElements(manifest.manifestHash, this.ballotId, primaryNonce)
     private val mcontests: List<Manifest.ContestDescription>
     val contests: List<Contest>
 
@@ -55,13 +55,13 @@ class ContestPrecompute(
 
         // Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1 January 1970)
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
-        val cryptoHash = hashElements(ballotId, manifest.cryptoHashUInt256(), encryptedContests)
+        val cryptoHash = hashElements(ballotId, manifest.manifestHash, encryptedContests)
         val ballotCode = hashElements(codeSeed, timestamp, cryptoHash)
 
         return CiphertextBallot(
             ballotId,
             ballotStyleId,
-            manifest.cryptoHashUInt256(),
+            manifest.manifestHash,
             codeSeed.toUInt256(),
             ballotCode,
             encryptedContests,

@@ -25,6 +25,8 @@ data class UInt256(val bytes: ByteArray) : CryptoHashableString {
 
     override fun cryptoHashString(): String = bytes.toHex()
 
+    fun toHex(): String = bytes.toHex()
+
     companion object {
         val ZERO = 0U.toUInt256()
         val ONE = 1U.toUInt256()
