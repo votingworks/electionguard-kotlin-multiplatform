@@ -4,17 +4,21 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
+import electionguard.publish.Publisher
+import electionguard.publish.makePublisher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ElectionInitializedConvertTest {
+    val outputDir = "testOut/ElectionInitializedConvertTest"
+    val publisher = makePublisher(outputDir, true)
 
     @Test
     fun roundtripElectionInitialized() {
         val context = tinyGroup()
-        val electionRecord = generateElectionInitialized(context)
+        val electionRecord = generateElectionInitialized(publisher, context)
         val proto = electionRecord.publishProto()
         val roundtrip = proto.import(context).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
@@ -27,8 +31,7 @@ class ElectionInitializedConvertTest {
         //    val metadata: Map<String, String>
         assertEquals(roundtrip.config, electionRecord.config)
         assertEquals(roundtrip.jointPublicKey, electionRecord.jointPublicKey)
-        assertEquals(roundtrip.manifestHash, electionRecord.manifestHash)
-        assertEquals(roundtrip.cryptoExtendedBaseHash, electionRecord.cryptoExtendedBaseHash)
+        assertEquals(roundtrip.extendedBaseHash, electionRecord.extendedBaseHash)
         assertEquals(roundtrip.guardians, electionRecord.guardians)
         assertEquals(roundtrip.metadata, electionRecord.metadata)
 
@@ -37,7 +40,7 @@ class ElectionInitializedConvertTest {
     }
 }
 
-fun generateElectionInitialized(context: GroupContext): ElectionInitialized {
+fun generateElectionInitialized(publisher: Publisher, context: GroupContext): ElectionInitialized {
     //     val config: ElectionConfig,
     //    /** The joint public key (K) in the ElectionGuard Spec. */
     //    val jointPublicKey: ElementModP,
@@ -45,12 +48,10 @@ fun generateElectionInitialized(context: GroupContext): ElectionInitialized {
     //    val cryptoExtendedBaseHash: UInt256, // qbar
     //    val guardians: List<Guardian>,
     //    val metadata: Map<String, String>
-    val config = generateElectionConfig(6, 4)
+    val config = generateElectionConfig(publisher, 6, 4)
     return ElectionInitialized(
         config,
         generateElementModP(context),
-        config.manifest.manifestHash,
-        generateUInt256(context),
         generateUInt256(context),
         List(6) { generateGuardian(it, context) },
     )

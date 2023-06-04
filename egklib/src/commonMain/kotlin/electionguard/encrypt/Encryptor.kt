@@ -77,7 +77,7 @@ class Encryptor(
         timestampOverride: Long? = null,
         confirmationCode: UInt256? = null,
     ): CiphertextBallot {
-        val ballotNonce: UInt256 = hashElements(manifest.manifestHash, this.ballotId, primaryNonce)
+        val ballotNonce: UInt256 = hashElements(UInt256.ONE, this.ballotId, primaryNonce) // TODO
         val plaintextContests = this.contests.associateBy { it.contestId }
 
         val encryptedContests = mutableListOf<CiphertextBallot.Contest>()
@@ -87,7 +87,7 @@ class Encryptor(
             encryptedContests.add(pcontest.encryptContest(mcontest, ballotNonce))
         }
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
-        val cryptoHash = hashElements(ballotId, manifest.manifestHash, sortedContests) // B_i
+        val cryptoHash = hashElements(ballotId, UInt256.ONE, sortedContests) // B_i // TODO
 
         // TODO make this simpler, need spec to be clearer.
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000)
@@ -97,7 +97,7 @@ class Encryptor(
         return CiphertextBallot(
             ballotId,
             ballotStyleId,
-            manifest.manifestHash,
+            UInt256.ONE, // TODO
             codeSeed.toUInt256(),
             trackingCode,
             sortedContests,

@@ -60,22 +60,25 @@ interface CryptoHashableElement {
  */
 fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
     val hmac = HmacSha256(key)
-    elements.forEach { hmac.update(hashElementsToByteArray(it)) }
+    elements.forEach { hmac.addToHash(it) }
     return hmac.finish()
 }
 
-private fun hashElementsToByteArray(element : Any) : ByteArray {
-    return when (element) {
-        is Byte -> ByteArray(1) { element }
-        is ByteArray -> element
-        is UInt256 -> element.bytes
-        is Element -> element.byteArray()
-        // is CryptoHashableString -> element.cryptoHashString().toByteArray()
-        // is CryptoHashableUInt256 -> element.cryptoHashUInt256().cryptoHashString().toByteArray()
-        is String -> element.toByteArray()
-        is Short -> hashElementsToByteArray(element.toUShort())
-        is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
-        else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
+private fun HmacSha256.addToHash(element : Any) {
+    if (element is Iterable<*>) {
+        element.forEach { this.addToHash(it!!) }
+    } else {
+        val ba : ByteArray = when (element) {
+            is Byte -> ByteArray(1) { element }
+            is ByteArray -> element
+            is UInt256 -> element.bytes
+            is Element -> element.byteArray()
+            is String -> element.toByteArray()
+            is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
+            is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
+            else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
+        }
+        this.update(ba)
     }
 }
 
@@ -98,6 +101,26 @@ fun hashFunctionConcatSize(key: ByteArray, vararg elements: Any): Int {
         result = result + eh
     }
     return result.size
+}
+
+private fun hashElementsToByteArray(element : Any) : ByteArray {
+    if (element is Iterable<*>) {
+        var result = ByteArray(0)
+        element.forEach { result = result + hashElementsToByteArray(it!!) }
+        return result
+    } else {
+        val ba : ByteArray = when (element) {
+            is Byte -> ByteArray(1) { element }
+            is ByteArray -> element
+            is UInt256 -> element.bytes
+            is Element -> element.byteArray()
+            is String -> element.toByteArray()
+            is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
+            is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
+            else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
+        }
+        return ba
+    }
 }
 
 //////////////////////////// OLD

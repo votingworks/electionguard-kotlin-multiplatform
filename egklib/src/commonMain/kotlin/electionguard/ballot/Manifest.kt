@@ -2,32 +2,6 @@ package electionguard.ballot
 
 import electionguard.core.*
 
-fun manifestCryptoHash(
-    electionScopeId: String,
-    electionType: Manifest.ElectionType,
-    startDate: String,
-    endDate: String,
-    geopoliticalUnits: List<Manifest.GeopoliticalUnit>,
-    parties: List<Manifest.Party>,
-    contests: List<Manifest.ContestDescription>,
-    ballotStyles: List<Manifest.BallotStyle>,
-    name: List<Manifest.Language>,
-    contactInformation: Manifest.ContactInformation?
-) =
-    hashElements(
-        // follows the python code
-        electionScopeId,
-        electionType.name,
-        startDate,
-        endDate,
-        name,
-        contactInformation,
-        geopoliticalUnits,
-        parties,
-        contests,
-        ballotStyles,
-    )
-
 fun contestDescriptionCryptoHash(
     contestId: String,
     sequenceOrder: Int,
@@ -75,22 +49,7 @@ data class Manifest(
     val ballotStyles: List<BallotStyle>,
     val name: List<Language>,
     val contactInformation: ContactInformation?,
-    val manifestHash: UInt256 =
-        manifestCryptoHash(
-            electionScopeId,
-            electionType,
-            startDate,
-            endDate,
-            geopoliticalUnits,
-            parties,
-            contests,
-            ballotStyles,
-            name,
-            contactInformation
-        ),
-) : CryptoHashableUInt256 {
-    override fun cryptoHashUInt256() = manifestHash
-
+) {
     /** Map of ballotStyleId to all Contests that use it. */
     val styleToContestsMap : Map<String, List<ContestDescription>> by
     lazy {

@@ -157,10 +157,12 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             Ok(
                 ElectionConfig(
                     electionConstants,
+                    ByteArray(0),
                     manifest,
                     1, // LOOK not in JSON
                     1, // LOOK not in JSON
-                )
+                    "N/A",
+                    "N/A",                )
             )
         } catch (e: Exception) {
             Err(e.message ?: "readElectionConfig $constantsFile failed")

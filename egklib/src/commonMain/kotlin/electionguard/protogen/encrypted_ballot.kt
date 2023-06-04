@@ -545,13 +545,14 @@ private fun EncryptedBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): 
             3 -> manifestHash = _fieldValue as electionguard.protogen.UInt256
             4 -> codeSeed = _fieldValue as electionguard.protogen.UInt256
             5 -> code = _fieldValue as electionguard.protogen.UInt256
-            6 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.EncryptedBallotContest> }
+            6 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallotContest> }
             7 -> timestamp = _fieldValue as Long
             8 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
             9 -> state = _fieldValue as electionguard.protogen.EncryptedBallot.BallotState
             10 -> isPreencrypt = _fieldValue as Boolean
         }
     }
+
     return EncryptedBallot(ballotId, ballotStyleId, manifestHash, codeSeed,
         code, pbandk.ListWithSize.Builder.fixed(contests), timestamp, cryptoHash,
         state, isPreencrypt, unknownFields)
@@ -589,13 +590,14 @@ private fun EncryptedBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDec
             1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
             3 -> contestHash = _fieldValue as electionguard.protogen.UInt256
-            4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.EncryptedBallotSelection> }
+            4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallotSelection> }
             5 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
             6 -> proof = _fieldValue as electionguard.protogen.RangeChaumPedersenProofKnownNonce
             7 -> encryptedContestData = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
             8 -> preEncryption = _fieldValue as electionguard.protogen.PreEncryption
         }
     }
+
     return EncryptedBallotContest(contestId, sequenceOrder, contestHash, pbandk.ListWithSize.Builder.fixed(selections),
         cryptoHash, proof, encryptedContestData, preEncryption, unknownFields)
 }
@@ -622,10 +624,11 @@ private fun PreEncryption.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Pr
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> contestHash = _fieldValue as electionguard.protogen.UInt256
-            2 -> selectedVectors = (selectedVectors ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PreEncryptionVector> }
-            3 -> allHashes = (allHashes ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PreEncryptionVector> }
+            2 -> selectedVectors = (selectedVectors ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.PreEncryptionVector> }
+            3 -> allHashes = (allHashes ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.PreEncryptionVector> }
         }
     }
+
     return PreEncryption(contestHash, pbandk.ListWithSize.Builder.fixed(selectedVectors), pbandk.ListWithSize.Builder.fixed(allHashes), unknownFields)
 }
 
@@ -651,9 +654,10 @@ private fun PreEncryptionVector.Companion.decodeWithImpl(u: pbandk.MessageDecode
         when (_fieldNumber) {
             1 -> selectionHash = _fieldValue as electionguard.protogen.UInt256
             2 -> code = _fieldValue as String
-            3 -> selectedVector = (selectedVector ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElGamalCiphertext> }
+            3 -> selectedVector = (selectedVector ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.ElGamalCiphertext> }
         }
     }
+
     return PreEncryptionVector(selectionHash, code, pbandk.ListWithSize.Builder.fixed(selectedVector), unknownFields)
 }
 
@@ -690,6 +694,7 @@ private fun EncryptedBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageD
             6 -> proof = _fieldValue as electionguard.protogen.RangeChaumPedersenProofKnownNonce
         }
     }
+
     return EncryptedBallotSelection(selectionId, sequenceOrder, selectionHash, ciphertext,
         cryptoHash, proof, unknownFields)
 }
@@ -711,8 +716,9 @@ private fun RangeChaumPedersenProofKnownNonce.Companion.decodeWithImpl(u: pbandk
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> proofs = (proofs ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.GenericChaumPedersenProof> }
+            1 -> proofs = (proofs ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.GenericChaumPedersenProof> }
         }
     }
+
     return RangeChaumPedersenProofKnownNonce(pbandk.ListWithSize.Builder.fixed(proofs), unknownFields)
 }

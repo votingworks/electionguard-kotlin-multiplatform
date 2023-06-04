@@ -65,7 +65,7 @@ fun precomputeContest(group: GroupContext, stats: Stats, revotes: Int, electionI
         group,
         manifest,
         ElGamalPublicKey(electionInit.jointPublicKey),
-        electionInit.cryptoExtendedBaseHash,
+        electionInit.extendedBaseHash,
         ballot.ballotId,
         ballot.ballotStyleId,
         group.randomElementModQ(2),

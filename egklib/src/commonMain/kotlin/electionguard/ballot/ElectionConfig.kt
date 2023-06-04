@@ -4,19 +4,29 @@ import electionguard.core.*
 import electionguard.core.Base16.toHex
 import io.ktor.utils.io.core.*
 
-
-// TODO could get all Parameter Validation into ElectionConfig
-
 /** Configuration input for KeyCeremony. */
 data class ElectionConfig(
     val constants: ElectionConstants,
-    val manifest: Manifest,
+    val manifestFile: ByteArray, // the exact bytes of the original manifest File
+    val manifest: Manifest, // the parsed objects
+
     /** The number of guardians necessary to generate the public key. */
     val numberOfGuardians: Int,
     /** The quorum of guardians necessary to decrypt an election. Must be <= numberOfGuardians. */
     val quorum: Int,
+    /** date string used in hash */
+    val electionDate : String,
+    /** info string used in hash */
+    val jurisdictionInfo : String,
+
     /** arbitrary key/value metadata. */
     val metadata: Map<String, String> = emptyMap(),
+
+    /** may be calculated or passed in */
+    val parameterBaseHash : UInt256 = parameterBaseHash(constants), // Hp
+    val manifestHash : UInt256 = manifestHash(parameterBaseHash, manifestFile), // Hm
+    val electionBaseHash : UInt256 =  // Hb
+        electionBaseHash(parameterBaseHash, numberOfGuardians, quorum, electionDate, jurisdictionInfo, manifestHash),
 ) {
     init {
         require(numberOfGuardians > 0)  { "numberOfGuardians ${numberOfGuardians} <= 0" }
@@ -40,6 +50,8 @@ data class ElectionConstants(
     /** generator or G. */
     val generator: ByteArray,
 ) {
+    val hp = parameterBaseHash(this)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

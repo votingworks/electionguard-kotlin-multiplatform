@@ -144,7 +144,7 @@ class VerifyEncryptedBallots(
         val errors = mutableListOf<Result<Boolean, String>>()
 
         // LOOK how do we know what B_i is suppoed to be ??
-        val cryptoHashCalculated = hashElements(ballot.ballotId, manifest.manifestHash, ballot.contests) // B_i
+        val cryptoHashCalculated = hashElements(ballot.ballotId, UInt256.ONE, ballot.contests) // B_i // TODO
         if (cryptoHashCalculated != ballot.cryptoHash) {
             errors.add(Err("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} "))
         }
@@ -158,7 +158,7 @@ class VerifyEncryptedBallots(
 
     private fun verifyPreencryptedCode(ballot: EncryptedBallot): Result<Boolean, String> {
         val errors = mutableListOf<String>()
-        val cryptoHashCalculated = hashElements(ballot.ballotId, manifest.manifestHash, ballot.contests) // B_i
+        val cryptoHashCalculated = hashElements(ballot.ballotId, UInt256.ONE, ballot.contests) // B_i // TODO
         if (cryptoHashCalculated != ballot.cryptoHash) {
             errors.add("    6. Test ballot.cryptoHash failed for preencrypted '${ballot.ballotId}' ")
         }

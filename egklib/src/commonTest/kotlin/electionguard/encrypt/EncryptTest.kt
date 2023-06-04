@@ -22,11 +22,10 @@ class EncryptTest {
             val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
             val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
-            val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)
+            val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
             val result = encryptor.encrypt(ballot, group.TWO_MOD_Q, group.TWO_MOD_Q)
 
             var first = true
-            println("electionRecord.manifest.cryptoHash = ${electionInit.manifestHash}")
             println("result = ${result.cryptoHash} nonce ${result.ballotNonce()}")
             for (contest in result.contests) {
                 // println(" contest ${contest.contestId} = ${contest.cryptoHash} nonce ${contest.contestNonce}")
@@ -48,7 +47,7 @@ class EncryptTest {
             val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
             val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
-            val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.cryptoExtendedBaseHash)
+            val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
             val nonce1 = group.randomElementModQ(minimum = 2)
             val nonce2 = group.randomElementModQ(minimum = 3)
             val result1 = encryptor.encrypt(ballot, nonce1, nonce2, 0)

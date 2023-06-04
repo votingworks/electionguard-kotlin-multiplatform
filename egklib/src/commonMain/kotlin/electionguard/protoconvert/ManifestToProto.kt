@@ -19,7 +19,6 @@ fun Manifest.publishProto() =
             this.ballotStyles.map { it.publishProto() },
             this.name.map { it.publishProto() },
             this.contactInformation?.let { this.contactInformation.publishProto() },
-            this.manifestHash.publishProto(),
         )
 
 private fun Manifest.BallotStyle.publishProto() =

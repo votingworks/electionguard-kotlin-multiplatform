@@ -1,9 +1,7 @@
 package electionguard.verifier
 
 import com.github.michaelbull.result.*
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
-import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.publish.ElectionRecord
 
@@ -15,31 +13,36 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
     val qbar: ElementModQ
 
     init {
-        if (record.stage() < ElectionRecord.Stage.INIT) {
-            throw IllegalStateException("election record stage = ${record.stage()}, not initialized\n")
-        }
         group = productionGroup()
-        jointPublicKey = ElGamalPublicKey(record.jointPublicKey()!!)
-        qbar = record.cryptoExtendedBaseHash()!!.toElementModQ(group)
         manifest = record.manifest()
+
+        if (record.stage() < ElectionRecord.Stage.INIT) { // fake
+            qbar = group.ONE_MOD_Q
+            jointPublicKey = ElGamalPublicKey(group.ONE_MOD_P)
+        } else {
+            jointPublicKey = ElGamalPublicKey(record.jointPublicKey()!!)
+            qbar = record.extendedBaseHash()!!.toElementModQ(group)
+        }
     }
 
     fun verify(stats : Stats, showTime : Boolean = false): Boolean {
         println("\n****Verify election record in = ${record.topdir()}\n")
         val starting13 = getSystemTimeInMillis()
 
+        val parametersOk = verifyParameters(record.config())
+        println(" 1. verifyParameters= $parametersOk")
+
         if (record.stage() < ElectionRecord.Stage.INIT) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
-            return false
+            val took = getSystemTimeInMillis() - starting13
+            if (showTime) println("   verify `took $took millisecs")
+            return true
         }
-
-        val parametersOk = verifyParameters()
-        println(" 1. verifyParameters= $parametersOk")
 
         val guardiansOk = verifyGuardianPublicKey()
         println(" 2. verifyGuardianPublicKeys= $guardiansOk")
 
-        val publicKeyOk = verifyElectionPublicKey(record.cryptoBaseHash()!!)
+        val publicKeyOk = verifyElectionPublicKey(record.electionBaseHash()!!)
         println(" 3. verifyElectionPublicKey= $publicKeyOk")
 
         if (record.stage() < ElectionRecord.Stage.ENCRYPTED) {
@@ -88,10 +91,10 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         return allOk
     }
 
-    // Verification Box 1
-    private fun verifyParameters(): Result<Boolean, String> {
+    // Verification 1 (Parameter validation)
+    private fun verifyParameters(config : ElectionConfig): Result<Boolean, String> {
         val check: MutableList<Result<Boolean, String>> = mutableListOf()
-        val constants = this.record.constants()
+        val constants = config.constants
 
         if (!constants.largePrime.contentEquals(group.constants.largePrime)) {
             check.add(Err("  1.A The large prime is not equal to the large modulus p defined in Section 3.1.1"))
@@ -106,9 +109,18 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             check.add(Err("  1.D The small prime is non equal to the large modulus p defined in Section 3.1.1"))
         }
 
-        // LOOK not done
-        // (1.E) The base hash code Q has been computed correctly as
-        //        Q = H(00; p, q, g, n, k, date, info, manifest hash),
+        val Hp = parameterBaseHash(config.constants)
+        if (Hp != config.parameterBaseHash) {
+            check.add(Err("  1.E The parameter base hash does not match eq 4"))
+        }
+        val Hm = manifestHash(Hp, config.manifestFile)
+        if (Hm != config.manifestHash) {
+            check.add(Err("  1.F The manifest hash does not match eq 5"))
+        }
+        val Hd = electionBaseHash(Hp, config.numberOfGuardians, config.quorum, config.electionDate, config.jurisdictionInfo, Hm)
+        if (Hd != config.electionBaseHash) {
+            check.add(Err("  1.F The election base hash does not match eq 6"))
+        }
 
         return check.merge()
     }
@@ -118,9 +130,9 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for (guardian in this.record.guardians()) {
             guardian.coefficientProofs.forEachIndexed { index, proof ->
-                val result = proof.validate()
+                val result = proof.validate(guardian.xCoordinate, index)
                 if (result is Err) {
-                    checkProofs.add(Err("  2.A Guardian ${guardian.guardianId} has invalid proof for coefficient $index " +
+                    checkProofs.add(Err("  2. Guardian ${guardian.guardianId} has invalid proof for coefficient $index " +
                         result.unwrapError()
                     ))
                 }

@@ -13,6 +13,8 @@ import electionguard.core.normalize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+// TODO update to 2.0
+
 @Serializable
 @SerialName("ElectionConstants")
 data class ConstantsJson(
@@ -57,18 +59,16 @@ fun ElectionInitialized.publish() = ContextJson(
     this.config.numberOfGuardians,
     this.config.quorum,
     this.jointPublicKey.publish(),
-    UInt256.ONE.publish(), // TODO WRONG
-    this.manifestHash.publish(),
-    this.cryptoBaseHash.publish(),
-    this.cryptoExtendedBaseHash.publish(),
+    UInt256.ONE.publish(), // TODO WRONG : "commitment_hash"
+    this.config.manifestHash.publish(),
+    this.config.electionBaseHash.publish(),
+    this.extendedBaseHash.publish(),
 )
 
 fun ContextJson.import(group: GroupContext, electionConfig: ElectionConfig, guardians: List<Guardian>) : ElectionInitialized {
     return ElectionInitialized(
         electionConfig.copy(numberOfGuardians = this.number_of_guardians, quorum = this.quorum),
         this.elgamal_public_key.import(group)?: throw RuntimeException(),
-        this.manifest_hash.import()?: throw RuntimeException(),
-        this.crypto_base_hash.import()?: throw RuntimeException(),
         this.crypto_extended_base_hash.import()?: throw RuntimeException(),
         guardians.sortedBy { it.guardianId },
     )

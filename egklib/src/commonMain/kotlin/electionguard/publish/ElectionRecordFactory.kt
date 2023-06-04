@@ -97,12 +97,16 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return config
     }
 
-    override fun cryptoExtendedBaseHash(): UInt256? {
-        return init?.cryptoExtendedBaseHash
+    override fun parameterBaseHash(): UInt256 {
+        return config.parameterBaseHash
     }
 
-    override fun cryptoBaseHash(): UInt256? {
-        return init?.cryptoBaseHash
+    override fun electionBaseHash(): UInt256 {
+        return config.electionBaseHash
+    }
+
+    override fun extendedBaseHash(): UInt256? {
+        return init?.extendedBaseHash
     }
 
     override fun jointPublicKey(): ElementModP? {

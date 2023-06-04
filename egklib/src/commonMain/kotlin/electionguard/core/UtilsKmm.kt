@@ -12,3 +12,6 @@ expect fun isDirectory(path: String): Boolean
 /** Read lines from a file. */
 expect fun fileReadLines(filename: String): List<String>
 
+/** Read bytes from a file. */
+expect fun fileReadBytes(filename: String): ByteArray
+

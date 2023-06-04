@@ -220,10 +220,11 @@ private fun PlaintextBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): 
         when (_fieldNumber) {
             1 -> ballotId = _fieldValue as String
             2 -> ballotStyleId = _fieldValue as String
-            3 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextBallotContest> }
+            3 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.PlaintextBallotContest> }
             4 -> errors = _fieldValue as String
         }
     }
+
     return PlaintextBallot(ballotId, ballotStyleId, pbandk.ListWithSize.Builder.fixed(contests), errors, unknownFields)
 }
 
@@ -250,10 +251,11 @@ private fun PlaintextBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDec
         when (_fieldNumber) {
             1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            3 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.PlaintextBallotSelection> }
-            4 -> writeIns = (writeIns ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
+            3 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.PlaintextBallotSelection> }
+            4 -> writeIns = (writeIns ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
         }
     }
+
     return PlaintextBallotContest(contestId, sequenceOrder, pbandk.ListWithSize.Builder.fixed(selections), pbandk.ListWithSize.Builder.fixed(writeIns), unknownFields)
 }
 
@@ -280,5 +282,6 @@ private fun PlaintextBallotSelection.Companion.decodeWithImpl(u: pbandk.MessageD
             3 -> vote = _fieldValue as Int
         }
     }
+
     return PlaintextBallotSelection(selectionId, sequenceOrder, vote, unknownFields)
 }

@@ -1,5 +1,8 @@
 package electionguard.protoconvert
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.core.*
 import pbandk.ByteArr
 
@@ -11,6 +14,11 @@ fun GroupContext.importElementModQ(modQ: electionguard.protogen.ElementModQ?): E
 
 fun importUInt256(modQ: electionguard.protogen.UInt256?): UInt256? =
     modQ?.value?.array?.toUInt256()
+
+fun electionguard.protogen.UInt256.import(): Result<UInt256, String> {
+    val result = this.value?.array?.toUInt256()
+    return if (result != null) Ok(result) else Err("malformed UInt256") // TODO
+}
 
 fun GroupContext.importElementModP(modP: electionguard.protogen.ElementModP?): ElementModP? =
     modP?.let { this.binaryToElementModP(modP.value.array) }

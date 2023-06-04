@@ -5,9 +5,15 @@ package electionguard.protogen
 @pbandk.Export
 public data class ElectionConfig(
     val constants: electionguard.protogen.ElectionConstants? = null,
+    val manifestFile: pbandk.ByteArr = pbandk.ByteArr.empty,
     val manifest: electionguard.protogen.Manifest? = null,
     val numberOfGuardians: Int = 0,
     val quorum: Int = 0,
+    val electionDate: String = "",
+    val jurisdictionInfo: String = "",
+    val parameterBaseHash: electionguard.protogen.UInt256? = null,
+    val manifestHash: electionguard.protogen.UInt256? = null,
+    val electionBaseHash: electionguard.protogen.UInt256? = null,
     val metadata: List<electionguard.protogen.ElectionConfig.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -19,7 +25,7 @@ public data class ElectionConfig(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConfig = electionguard.protogen.ElectionConfig.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(5)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(11)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -69,6 +75,66 @@ public data class ElectionConfig(
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElectionConfig.MetadataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionConfig.MetadataEntry.Companion)),
                         jsonName = "metadata",
                         value = electionguard.protogen.ElectionConfig::metadata
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "manifestFile",
+                        number = 7,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
+                        jsonName = "manifestFile",
+                        value = electionguard.protogen.ElectionConfig::manifestFile
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "electionDate",
+                        number = 8,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "electionDate",
+                        value = electionguard.protogen.ElectionConfig::electionDate
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "jurisdictionInfo",
+                        number = 9,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "jurisdictionInfo",
+                        value = electionguard.protogen.ElectionConfig::jurisdictionInfo
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "parameter_base_hash",
+                        number = 10,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "parameterBaseHash",
+                        value = electionguard.protogen.ElectionConfig::parameterBaseHash
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "manifest_hash",
+                        number = 11,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "manifestHash",
+                        value = electionguard.protogen.ElectionConfig::manifestHash
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "election_base_hash",
+                        number = 12,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "electionBaseHash",
+                        value = electionguard.protogen.ElectionConfig::electionBaseHash
                     )
                 )
             }
@@ -212,8 +278,6 @@ public data class ElectionConstants(
 public data class ElectionInitialized(
     val config: electionguard.protogen.ElectionConfig? = null,
     val jointPublicKey: electionguard.protogen.ElementModP? = null,
-    val manifestHash: electionguard.protogen.UInt256? = null,
-    val cryptoBaseHash: electionguard.protogen.UInt256? = null,
     val cryptoExtendedBaseHash: electionguard.protogen.UInt256? = null,
     val guardians: List<electionguard.protogen.Guardian> = emptyList(),
     val metadata: List<electionguard.protogen.ElectionInitialized.MetadataEntry> = emptyList(),
@@ -227,7 +291,7 @@ public data class ElectionInitialized(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionInitialized = electionguard.protogen.ElectionInitialized.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionInitialized> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionInitialized, *>>(7)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionInitialized, *>>(5)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -247,16 +311,6 @@ public data class ElectionInitialized(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "jointPublicKey",
                         value = electionguard.protogen.ElectionInitialized::jointPublicKey
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "manifest_hash",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "manifestHash",
-                        value = electionguard.protogen.ElectionInitialized::manifestHash
                     )
                 )
                 add(
@@ -287,16 +341,6 @@ public data class ElectionInitialized(
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElectionInitialized.MetadataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionInitialized.MetadataEntry.Companion)),
                         jsonName = "metadata",
                         value = electionguard.protogen.ElectionInitialized::metadata
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "crypto_base_hash",
-                        number = 7,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "cryptoBaseHash",
-                        value = electionguard.protogen.ElectionInitialized::cryptoBaseHash
                     )
                 )
             }
@@ -721,6 +765,9 @@ private fun ElectionConfig.protoMergeImpl(plus: pbandk.Message?): ElectionConfig
     it.copy(
         constants = constants?.plus(plus.constants) ?: plus.constants,
         manifest = manifest?.plus(plus.manifest) ?: plus.manifest,
+        parameterBaseHash = parameterBaseHash?.plus(plus.parameterBaseHash) ?: plus.parameterBaseHash,
+        manifestHash = manifestHash?.plus(plus.manifestHash) ?: plus.manifestHash,
+        electionBaseHash = electionBaseHash?.plus(plus.electionBaseHash) ?: plus.electionBaseHash,
         metadata = metadata + plus.metadata,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -729,9 +776,15 @@ private fun ElectionConfig.protoMergeImpl(plus: pbandk.Message?): ElectionConfig
 @Suppress("UNCHECKED_CAST")
 private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionConfig {
     var constants: electionguard.protogen.ElectionConstants? = null
+    var manifestFile: pbandk.ByteArr = pbandk.ByteArr.empty
     var manifest: electionguard.protogen.Manifest? = null
     var numberOfGuardians = 0
     var quorum = 0
+    var electionDate = ""
+    var jurisdictionInfo = ""
+    var parameterBaseHash: electionguard.protogen.UInt256? = null
+    var manifestHash: electionguard.protogen.UInt256? = null
+    var electionBaseHash: electionguard.protogen.UInt256? = null
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.ElectionConfig.MetadataEntry>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
@@ -740,11 +793,19 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
             3 -> manifest = _fieldValue as electionguard.protogen.Manifest
             4 -> numberOfGuardians = _fieldValue as Int
             5 -> quorum = _fieldValue as Int
-            6 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElectionConfig.MetadataEntry> }
+            6 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.ElectionConfig.MetadataEntry> }
+            7 -> manifestFile = _fieldValue as pbandk.ByteArr
+            8 -> electionDate = _fieldValue as String
+            9 -> jurisdictionInfo = _fieldValue as String
+            10 -> parameterBaseHash = _fieldValue as electionguard.protogen.UInt256
+            11 -> manifestHash = _fieldValue as electionguard.protogen.UInt256
+            12 -> electionBaseHash = _fieldValue as electionguard.protogen.UInt256
         }
     }
-    return ElectionConfig(constants, manifest, numberOfGuardians, quorum,
-        pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+
+    return ElectionConfig(constants, manifestFile, manifest, numberOfGuardians,
+        quorum, electionDate, jurisdictionInfo, parameterBaseHash,
+        manifestHash, electionBaseHash, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export
@@ -768,6 +829,7 @@ private fun ElectionConfig.MetadataEntry.Companion.decodeWithImpl(u: pbandk.Mess
             2 -> value = _fieldValue as String
         }
     }
+
     return ElectionConfig.MetadataEntry(key, value, unknownFields)
 }
 
@@ -798,6 +860,7 @@ private fun ElectionConstants.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             5 -> name = _fieldValue as String
         }
     }
+
     return ElectionConstants(name, largePrime, smallPrime, cofactor,
         generator, unknownFields)
 }
@@ -810,8 +873,6 @@ private fun ElectionInitialized.protoMergeImpl(plus: pbandk.Message?): ElectionI
     it.copy(
         config = config?.plus(plus.config) ?: plus.config,
         jointPublicKey = jointPublicKey?.plus(plus.jointPublicKey) ?: plus.jointPublicKey,
-        manifestHash = manifestHash?.plus(plus.manifestHash) ?: plus.manifestHash,
-        cryptoBaseHash = cryptoBaseHash?.plus(plus.cryptoBaseHash) ?: plus.cryptoBaseHash,
         cryptoExtendedBaseHash = cryptoExtendedBaseHash?.plus(plus.cryptoExtendedBaseHash) ?: plus.cryptoExtendedBaseHash,
         guardians = guardians + plus.guardians,
         metadata = metadata + plus.metadata,
@@ -823,8 +884,6 @@ private fun ElectionInitialized.protoMergeImpl(plus: pbandk.Message?): ElectionI
 private fun ElectionInitialized.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionInitialized {
     var config: electionguard.protogen.ElectionConfig? = null
     var jointPublicKey: electionguard.protogen.ElementModP? = null
-    var manifestHash: electionguard.protogen.UInt256? = null
-    var cryptoBaseHash: electionguard.protogen.UInt256? = null
     var cryptoExtendedBaseHash: electionguard.protogen.UInt256? = null
     var guardians: pbandk.ListWithSize.Builder<electionguard.protogen.Guardian>? = null
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.ElectionInitialized.MetadataEntry>? = null
@@ -833,15 +892,14 @@ private fun ElectionInitialized.Companion.decodeWithImpl(u: pbandk.MessageDecode
         when (_fieldNumber) {
             1 -> config = _fieldValue as electionguard.protogen.ElectionConfig
             2 -> jointPublicKey = _fieldValue as electionguard.protogen.ElementModP
-            3 -> manifestHash = _fieldValue as electionguard.protogen.UInt256
             4 -> cryptoExtendedBaseHash = _fieldValue as electionguard.protogen.UInt256
-            5 -> guardians = (guardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.Guardian> }
-            6 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.ElectionInitialized.MetadataEntry> }
-            7 -> cryptoBaseHash = _fieldValue as electionguard.protogen.UInt256
+            5 -> guardians = (guardians ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.Guardian> }
+            6 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.ElectionInitialized.MetadataEntry> }
         }
     }
-    return ElectionInitialized(config, jointPublicKey, manifestHash, cryptoBaseHash,
-        cryptoExtendedBaseHash, pbandk.ListWithSize.Builder.fixed(guardians), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+
+    return ElectionInitialized(config, jointPublicKey, cryptoExtendedBaseHash, pbandk.ListWithSize.Builder.fixed(guardians),
+        pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export
@@ -865,6 +923,7 @@ private fun ElectionInitialized.MetadataEntry.Companion.decodeWithImpl(u: pbandk
             2 -> value = _fieldValue as String
         }
     }
+
     return ElectionInitialized.MetadataEntry(key, value, unknownFields)
 }
 
@@ -889,9 +948,10 @@ private fun Guardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Guardia
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> xCoordinate = _fieldValue as Int
-            4 -> coefficientProofs = (coefficientProofs ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.SchnorrProof> }
+            4 -> coefficientProofs = (coefficientProofs ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.SchnorrProof> }
         }
     }
+
     return Guardian(guardianId, xCoordinate, pbandk.ListWithSize.Builder.fixed(coefficientProofs), unknownFields)
 }
 
@@ -922,11 +982,12 @@ private fun TallyResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Tall
         when (_fieldNumber) {
             1 -> electionInit = _fieldValue as electionguard.protogen.ElectionInitialized
             2 -> encryptedTally = _fieldValue as electionguard.protogen.EncryptedTally
-            3 -> ballotIds = (ballotIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
-            4 -> tallyIds = (tallyIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
-            5 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.TallyResult.MetadataEntry> }
+            3 -> ballotIds = (ballotIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
+            4 -> tallyIds = (tallyIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
+            5 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.TallyResult.MetadataEntry> }
         }
     }
+
     return TallyResult(electionInit, encryptedTally, pbandk.ListWithSize.Builder.fixed(ballotIds), pbandk.ListWithSize.Builder.fixed(tallyIds),
         pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
@@ -952,6 +1013,7 @@ private fun TallyResult.MetadataEntry.Companion.decodeWithImpl(u: pbandk.Message
             2 -> value = _fieldValue as String
         }
     }
+
     return TallyResult.MetadataEntry(key, value, unknownFields)
 }
 
@@ -980,10 +1042,11 @@ private fun DecryptionResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder):
         when (_fieldNumber) {
             1 -> tallyResult = _fieldValue as electionguard.protogen.TallyResult
             2 -> decryptedTally = _fieldValue as electionguard.protogen.DecryptedTallyOrBallot
-            3 -> lagrangeCoordinates = (lagrangeCoordinates ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.LagrangeCoordinate> }
-            4 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptionResult.MetadataEntry> }
+            3 -> lagrangeCoordinates = (lagrangeCoordinates ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.LagrangeCoordinate> }
+            4 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.DecryptionResult.MetadataEntry> }
         }
     }
+
     return DecryptionResult(tallyResult, decryptedTally, pbandk.ListWithSize.Builder.fixed(lagrangeCoordinates), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
@@ -1008,6 +1071,7 @@ private fun DecryptionResult.MetadataEntry.Companion.decodeWithImpl(u: pbandk.Me
             2 -> value = _fieldValue as String
         }
     }
+
     return DecryptionResult.MetadataEntry(key, value, unknownFields)
 }
 
@@ -1035,5 +1099,6 @@ private fun LagrangeCoordinate.Companion.decodeWithImpl(u: pbandk.MessageDecoder
             3 -> lagrangeCoefficient = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
+
     return LagrangeCoordinate(guardianId, xCoordinate, lagrangeCoefficient, unknownFields)
 }

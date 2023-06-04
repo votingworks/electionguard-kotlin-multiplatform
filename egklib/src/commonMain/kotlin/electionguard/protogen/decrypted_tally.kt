@@ -275,9 +275,10 @@ private fun DecryptedTallyOrBallot.Companion.decodeWithImpl(u: pbandk.MessageDec
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> id = _fieldValue as String
-            2 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptedContest> }
+            2 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.DecryptedContest> }
         }
     }
+
     return DecryptedTallyOrBallot(id, pbandk.ListWithSize.Builder.fixed(contests), unknownFields)
 }
 
@@ -302,10 +303,11 @@ private fun DecryptedContest.Companion.decodeWithImpl(u: pbandk.MessageDecoder):
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> contestId = _fieldValue as String
-            2 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.DecryptedSelection> }
+            2 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.DecryptedSelection> }
             3 -> decryptedContestData = _fieldValue as electionguard.protogen.DecryptedContestData
         }
     }
+
     return DecryptedContest(contestId, pbandk.ListWithSize.Builder.fixed(selections), decryptedContestData, unknownFields)
 }
 
@@ -339,6 +341,7 @@ private fun DecryptedSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder
             5 -> proof = _fieldValue as electionguard.protogen.GenericChaumPedersenProof
         }
     }
+
     return DecryptedSelection(selectionId, tally, value, message,
         proof, unknownFields)
 }
@@ -372,5 +375,6 @@ private fun DecryptedContestData.Companion.decodeWithImpl(u: pbandk.MessageDecod
             4 -> beta = _fieldValue as electionguard.protogen.ElementModP
         }
     }
+
     return DecryptedContestData(contestData, encryptedContestData, proof, beta, unknownFields)
 }

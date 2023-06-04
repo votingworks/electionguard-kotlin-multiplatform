@@ -35,7 +35,7 @@ class DecryptionWithNonceTest {
             group,
             electionInit.manifest(),
             ElGamalPublicKey(electionInit.jointPublicKey),
-            electionInit.cryptoExtendedBaseHash
+            electionInit.extendedBaseHash
         )
 
         var encryptTime = 0L
@@ -100,7 +100,7 @@ class DecryptionWithNonceTest {
             group,
             electionInit.manifest(),
             ElGamalPublicKey(electionInit.jointPublicKey),
-            electionInit.cryptoExtendedBaseHash
+            electionInit.extendedBaseHash
         )
 
         var encryptTime = 0L
@@ -166,7 +166,7 @@ class DecryptionWithNonceTest {
             group,
             electionInit.manifest(),
             ElGamalPublicKey(electionInit.jointPublicKey),
-            electionInit.cryptoExtendedBaseHash
+            electionInit.extendedBaseHash
         )
 
         var encryptTime = 0L

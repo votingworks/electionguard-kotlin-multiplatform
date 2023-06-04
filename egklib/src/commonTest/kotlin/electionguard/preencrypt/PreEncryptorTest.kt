@@ -72,7 +72,7 @@ internal class PreEncryptorTest {
             val mballot = markBallotChooseOne(manifest, pballot)
             mballot.show()
 
-            val recorder = Recorder(group, manifest, electionInit.jointPublicKey(), electionInit.cryptoExtendedBaseHash)
+            val recorder = Recorder(group, manifest, electionInit.jointPublicKey(), electionInit.extendedBaseHash)
 
             with(recorder) {
                 mballot.record(UInt256.TWO, primaryNonce, codeLen)

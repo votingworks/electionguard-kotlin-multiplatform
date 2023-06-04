@@ -55,6 +55,7 @@ private val productionGroups4096old : Map<PowRadixOption, ProductionGroupContext
         )
     }
 
+// TODO use 1.9
 private val productionGroups3072 =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(

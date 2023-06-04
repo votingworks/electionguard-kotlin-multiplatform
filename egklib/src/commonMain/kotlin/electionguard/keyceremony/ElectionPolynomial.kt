@@ -1,13 +1,6 @@
 package electionguard.keyceremony
 
-import electionguard.core.ElGamalKeypair
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.SchnorrProof
-import electionguard.core.compatibleContextOrFail
-import electionguard.core.elGamalKeyPairFromRandom
-import electionguard.core.schnorrProof
+import electionguard.core.*
 
 /** Pi(x), spec 1.52, section 3.2.1. Must be kept secret. */
 data class ElectionPolynomial(
@@ -66,9 +59,10 @@ fun calculateGexpPiAtL(
     return result
 }
 
-/** Generate random coefficients for a polynomial of degree quorum-1. */
+/** Generate random coefficients for a polynomial of degree quorum-1. spec 1.9, p 19, eq 8 and 9. */
 fun GroupContext.generatePolynomial(
     guardianId: String,
+    guardianXCoord: Int,
     quorum: Int,
 ): ElectionPolynomial {
     val coefficients = mutableListOf<ElementModQ>()
@@ -79,7 +73,7 @@ fun GroupContext.generatePolynomial(
         val keypair: ElGamalKeypair = elGamalKeyPairFromRandom(this)
         coefficients.add(keypair.secretKey.key)
         commitments.add(keypair.publicKey.key)
-        proofs.add(keypair.schnorrProof())
+        proofs.add(keypair.schnorrProof(guardianXCoord, coeff))
     }
     return ElectionPolynomial(guardianId, coefficients, commitments, proofs)
 }

@@ -233,7 +233,6 @@ fun compareManifestHash(org: Manifest, roundtrip:Manifest) {
     assertEquals(org.contests, roundtrip.contests)
     assertEquals(org.contactInformation, roundtrip.contactInformation)
     assertEquals(org.name, roundtrip.name)
-    assertEquals(org.manifestHash, roundtrip.manifestHash)
 
     assertEquals(org, org)
 }

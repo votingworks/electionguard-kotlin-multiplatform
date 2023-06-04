@@ -7,13 +7,8 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.makeGuardian
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.UInt256
+import electionguard.core.*
 import electionguard.core.hashElements
-import electionguard.core.productionGroup
-import electionguard.core.toElementModQ
-import electionguard.core.toUInt256
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -43,13 +38,15 @@ class KeyCeremonyTest {
         }
 
         // makeElectionInitialized
-        val manifestHash: UInt256 = 42U.toUInt256()
-        val fakeManifest = makeFakeManifest(manifestHash)
+        val fakeManifest = makeFakeManifest()
         val config = ElectionConfig(
             group.constants,
+            ByteArray(0),
             fakeManifest,
             3,
             2,
+            "no",
+            "no",
         )
         val init: ElectionInitialized = kc.makeElectionInitialized(config)
 
@@ -60,13 +57,11 @@ class KeyCeremonyTest {
 
         val commitments: MutableList<ElementModP> = mutableListOf()
         strustees.forEach { commitments.addAll(it.coefficientCommitments()) }
-        val expectedExtendedBaseHash: UInt256 = hashElements(init.cryptoBaseHash, init.jointPublicKey, commitments)
+        val expectedExtendedBaseHash: UInt256 = hashFunction(config.electionBaseHash.bytes, 0x12.toByte(), init.jointPublicKey, commitments)
 
         assertEquals(config, init.config)
         assertEquals(expectedPublicKey, init.jointPublicKey)
-        assertEquals(manifestHash, init.manifestHash)
-        assertNotNull(init.cryptoBaseHash)
-        assertEquals(expectedExtendedBaseHash, init.cryptoExtendedBaseHash)
+        assertEquals(expectedExtendedBaseHash, init.extendedBaseHash)
         assertEquals(strustees.map { makeGuardian(it) }, init.guardians)
         assertNotNull(init.metadata["CreatedBy"])
 
@@ -117,16 +112,14 @@ class KeyCeremonyTest {
         assertTrue(result is Err, result.getError())
         assertTrue(result.toString().contains("keyCeremonyExchange trustees have non-unique xcoordinates"))
     }
-
 }
 
-fun makeFakeManifest(cryptoHash: UInt256): Manifest {
+fun makeFakeManifest(): Manifest {
     return Manifest(
         "electionScopeId",
         "specVersion",
         Manifest.ElectionType.general,
         "startDate", "endDate",
         emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), null,
-        cryptoHash
     )
 }

@@ -206,9 +206,10 @@ private fun EncryptedTally.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> tallyId = _fieldValue as String
-            2 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.EncryptedTallyContest> }
+            2 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedTallyContest> }
         }
     }
+
     return EncryptedTally(tallyId, pbandk.ListWithSize.Builder.fixed(contests), unknownFields)
 }
 
@@ -236,9 +237,10 @@ private fun EncryptedTallyContest.Companion.decodeWithImpl(u: pbandk.MessageDeco
             1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
             3 -> contestDescriptionHash = _fieldValue as electionguard.protogen.UInt256
-            4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<electionguard.protogen.EncryptedTallySelection> }
+            4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedTallySelection> }
         }
     }
+
     return EncryptedTallyContest(contestId, sequenceOrder, contestDescriptionHash, pbandk.ListWithSize.Builder.fixed(selections), unknownFields)
 }
 
@@ -269,5 +271,6 @@ private fun EncryptedTallySelection.Companion.decodeWithImpl(u: pbandk.MessageDe
             4 -> ciphertext = _fieldValue as electionguard.protogen.ElGamalCiphertext
         }
     }
+
     return EncryptedTallySelection(selectionId, sequenceOrder, selectionDescriptionHash, ciphertext, unknownFields)
 }

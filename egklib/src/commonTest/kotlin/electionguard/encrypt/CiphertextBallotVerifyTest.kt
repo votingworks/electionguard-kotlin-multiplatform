@@ -30,13 +30,13 @@ class CiphertextBallotVerifyTest {
             group,
             electionInit.manifest(),
             ElGamalPublicKey(electionInit.jointPublicKey),
-            electionInit.cryptoExtendedBaseHash
+            electionInit.extendedBaseHash
         )
 
         val verifier = VerifyCiphertextBallot(
             electionInit.manifest(),
             ElGamalPublicKey(electionInit.jointPublicKey),
-            electionInit.cryptoExtendedBaseHash.toElementModQ(group),
+            electionInit.extendedBaseHash.toElementModQ(group),
         )
 
         val starting = getSystemTimeInMillis()
@@ -112,7 +112,7 @@ private class VerifyCiphertextBallot(
         val errors = mutableListOf<Result<Boolean, String>>()
 
         // LOOK also check contest.cryptoHash??
-        val cryptoHashCalculated = hashElements(ballot.ballotId, manifest.cryptoHashUInt256(), ballot.contests) // B_i
+        val cryptoHashCalculated = hashElements(ballot.ballotId, UInt256.ONE, ballot.contests) // B_i // TODO
         if (cryptoHashCalculated != ballot.cryptoHash) {
             errors.add(Err("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} "))
         }

@@ -86,6 +86,16 @@ fun main(args: Array<String>) {
         shortName = "createdBy",
         description = "who created for ElectionInitialized metadata"
     )
+    val electionDate by parser.option(
+        ArgType.String,
+        shortName = "electionDate",
+        description = "election date"
+    )
+    val info by parser.option(
+        ArgType.String,
+        shortName = "info",
+        description = "jurisdictional information"
+    )
     parser.parse(args)
     keystore = sslKeyStore
     ksPassword = keystorePassword
@@ -104,7 +114,9 @@ fun main(args: Array<String>) {
                     "  outputDir = '$outputDir'\n" +
                     "  sslKeyStore = '$sslKeyStore'\n"
         )
-        ElectionConfig(group.constants, manifest.unwrap(), nguardians!!, quorum!!,
+        ElectionConfig(group.constants, ByteArray(0), manifest.unwrap(), nguardians!!, quorum!!,
+            electionDate ?: "N/A",
+            info ?: "N/A",
             mapOf(
                 Pair("CreatedBy", createdBy ?: "RunRemoteKeyCeremony"),
                 Pair("CreatedFromElectionManifest", electionManifest!!),

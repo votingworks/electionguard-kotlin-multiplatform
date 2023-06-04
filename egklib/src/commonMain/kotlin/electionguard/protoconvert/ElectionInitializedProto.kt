@@ -16,16 +16,12 @@ fun electionguard.protogen.ElectionInitialized.import(group: GroupContext):
     val electionConfig = this.config?.import() ?: Err("Null ElectionConfig")
     val jointPublicKey = group.importElementModP(this.jointPublicKey)
         .toResultOr { "ElectionInitialized jointPublicKey was malformed or missing" }
-    val manifestHash = importUInt256(this.manifestHash)
-        .toResultOr { "ElectionInitialized manifestHash was malformed or missing" }
-    val cryptoBaseHash = importUInt256(this.cryptoBaseHash)
-        .toResultOr { "ElectionInitialized cryptoBaseHash was malformed or missing" }
     val cryptoExtendedBaseHash = importUInt256(this.cryptoExtendedBaseHash)
         .toResultOr { "ElectionInitialized cryptoExtendedBaseHash was malformed or missing" }
 
     val (guardians, gerrors) = this.guardians.map { it.import(group) }.partition()
 
-    val errors = getAllErrors(electionConfig, jointPublicKey, manifestHash, cryptoExtendedBaseHash) + gerrors
+    val errors = getAllErrors(electionConfig, jointPublicKey, cryptoExtendedBaseHash) + gerrors
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -33,8 +29,6 @@ fun electionguard.protogen.ElectionInitialized.import(group: GroupContext):
     return Ok(ElectionInitialized(
         electionConfig.unwrap(),
         jointPublicKey.unwrap(),
-        manifestHash.unwrap(),
-        cryptoBaseHash.unwrap(),
         cryptoExtendedBaseHash.unwrap(),
         guardians,
         this.metadata.associate { it.key to it.value }
@@ -68,9 +62,7 @@ fun ElectionInitialized.publishProto() =
     electionguard.protogen.ElectionInitialized(
         this.config.publishProto(),
         this.jointPublicKey.publishProto(),
-        this.manifestHash.publishProto(),
-        this.cryptoBaseHash.publishProto(),
-        this.cryptoExtendedBaseHash.publishProto(),
+        this.extendedBaseHash.publishProto(),
         this.guardians.map { it.publishProto() },
         this.metadata.entries.map { electionguard.protogen.ElectionInitialized.MetadataEntry(it.key, it.value) }
     )

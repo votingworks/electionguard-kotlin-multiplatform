@@ -2,7 +2,6 @@ package electionguard.ballot
 
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
 import electionguard.core.UInt256
 
 /** Results of tallying some collection of ballots, namely an EncryptedTally. */
@@ -17,7 +16,7 @@ data class TallyResult(
         return ElGamalPublicKey(electionInitialized.jointPublicKey)
     }
     fun cryptoExtendedBaseHash(): UInt256 {
-        return electionInitialized.cryptoExtendedBaseHash
+        return electionInitialized.extendedBaseHash
     }
     fun numberOfGuardians(): Int {
         return electionInitialized.config.numberOfGuardians

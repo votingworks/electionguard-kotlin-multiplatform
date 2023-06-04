@@ -4,17 +4,21 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
+import electionguard.publish.Publisher
+import electionguard.publish.makePublisher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DecryptionResultConvertTest {
+    val outputDir = "testOut/DecryptionResultConvertTest"
+    val publisher = makePublisher(outputDir, true)
 
     @Test
     fun roundtripDecryptionResult() {
         val context = tinyGroup()
-        val electionRecord = generateDecryptionResult(context)
+        val electionRecord = generateDecryptionResult(publisher, context)
         val proto = electionRecord.publishProto()
         val roundtrip = proto.import(context).getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
@@ -29,9 +33,9 @@ class DecryptionResultConvertTest {
     }
 }
 
-fun generateDecryptionResult(context: GroupContext): DecryptionResult {
+fun generateDecryptionResult(publisher : Publisher, context: GroupContext): DecryptionResult {
     return DecryptionResult(
-        generateTallyResult(context),
+        generateTallyResult(publisher, context),
         DecryptedTallyOrBallotConvertTest.generateFakeTally(0, context),
         List(4) { generateDecryptingGuardian(context, it) },
     )

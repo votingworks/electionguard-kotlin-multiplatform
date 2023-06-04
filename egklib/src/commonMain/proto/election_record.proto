@@ -10,12 +10,18 @@ option java_outer_classname = "ElectionRecordProto";
 
 // Election Configuration, before the KeyCeremony
 message ElectionConfig {
-  // string proto_version = 1; // protobuf serialization version
+  string spec_version = 1; // specification version
   ElectionConstants constants = 2;
+  bytes manifestFile = 7;
   Manifest manifest = 3;
   uint32 number_of_guardians = 4; // n, the number of guardians necessary to generate the public key
   uint32 quorum = 5; // k, the quorum of guardians necessary to decrypt an election.  Must be <= number_of_guardians.
-  map<string, string> metadata = 6;
+  string electionDate = 8; // for election base hash
+  string jurisdictionInfo = 9; // for election base hash
+  UInt256 parameter_base_hash = 10; // Hp
+  UInt256 manifest_hash = 11;       // Hm
+  UInt256 election_base_hash = 12;  // He
+  map<string, string> metadata = 6; // arbitrary metadata added by the software
 }
 
 // The constants for mathematical functions during the election.
@@ -30,16 +36,12 @@ message ElectionConstants {
 // Election Initialization, after the KeyCeremony
 message ElectionInitialized {
   ElectionConfig config = 1;
-
   ElementModP joint_public_key = 2; // K
-  UInt256 manifest_hash = 3;        // Manifest.crypto_hash;
-  UInt256 crypto_base_hash = 7;     // the base hash code, 𝑄
-  UInt256 crypto_extended_base_hash = 4; // the extended base hash code 𝑄' = H(𝑄, K), aka Qbar
-
-  // public information about the Guardians / Trustees
-  repeated Guardian guardians = 5;
-  // arbitrary metadata added by the software
-  map<string, string> metadata = 6;
+  reserved 3;
+  UInt256 crypto_extended_base_hash = 4;
+  repeated Guardian guardians = 5; // public information about the Guardians / Trustees
+  map<string, string> metadata = 6; // arbitrary metadata added by the software
+  reserved 7;
 }
 
 // Public info for Guardians

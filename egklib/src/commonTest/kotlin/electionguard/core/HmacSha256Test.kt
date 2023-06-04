@@ -58,7 +58,40 @@ class HmacSha256Test {
         )
         assertEquals(callUpdate, callConcat)
 
-        val callParameter = parameterBaseHash()
+        val callParameter = parameterBaseHash(productionGroup().constants)
+        assertEquals(callUpdate, callParameter)
+    }
+
+    @Test
+    fun testIterator() {
+        val primes = productionGroup().constants
+
+        // HP = H(HV ; 00, p, q, g)   spec 1.9 eq 4
+        // The symbol HV denotes the version byte array that encodes the used version of this specification.
+        // The array has length 32 and contains the UTF-8 encoding of the string "v2.0" followed by 00-
+        // bytes, i.e. HV = 76322E30 ∥ b(0, 28).
+        val version = "v2.0".toByteArray()
+        val HV = ByteArray(32) { if (it < 4) version[it] else 0 }
+
+        val callConcat = hashFunctionConcat(
+            HV,
+            0.toByte(),
+            listOf(primes.largePrime, primes.smallPrime, primes.generator),
+        )
+        assertEquals(1057, hashFunctionConcatSize(
+            HV,
+            0.toByte(),
+            listOf(primes.largePrime, primes.smallPrime, primes.generator),
+        ))
+
+        val callUpdate = hashFunction(
+            HV,
+            0.toByte(),
+            listOf(primes.largePrime, primes.smallPrime, primes.generator),
+        )
+        assertEquals(callUpdate, callConcat)
+
+        val callParameter = parameterBaseHash(productionGroup().constants)
         assertEquals(callUpdate, callParameter)
     }
 

@@ -76,40 +76,6 @@ enum class ProductionMode(val numBitsInP: Int) {
     val numLongWordsInP: Int = numBitsInP / 64
 }
 
-interface Element : CryptoHashableString {
-    /**
-     * Every Element knows the [GroupContext] that was used to create it. This simplifies code that
-     * computes with elements, allowing arithmetic expressions to be written in many cases without
-     * needing to pass in the context.
-     */
-    val context: GroupContext
-
-    /**
-     * Normal computations should ensure that every [Element] is in the modular bounds defined by
-     * the group, but deserialization of hostile inputs or buggy code might not preserve this
-     * property, so it's valuable to have a way to check. This method allows anything in [0, N)
-     * where N is the group modulus.
-     */
-    fun inBounds(): Boolean
-
-    /**
-     * Normal computations should ensure that every [Element] is in the modular bounds defined by
-     * the group, but deserialization of hostile inputs or buggy code might not preserve this
-     * property, so it's valuable to have a way to check. This method allows anything in [1, N)
-     * where N is the group modulus.
-     */
-    fun inBoundsNoZero(): Boolean
-
-    /** Checks whether this element is zero. */
-    fun isZero(): Boolean
-
-    /** Converts from any [Element] to a big-endian [ByteArray] representation. */
-    fun byteArray(): ByteArray
-
-    /** Returns a string representation suitable for cryptographic hashing. */
-    override fun cryptoHashString(): String = base16()
-}
-
 /**
  * The GroupContext interface provides all the necessary context to define the arithmetic that we'll
  * be doing, such as the moduli P and Q, the generator G, and so forth. This also allows us to
@@ -256,6 +222,40 @@ interface GroupContext {
     fun dLogG(p: ElementModP, maxResult: Int = - 1): Int?
 }
 
+interface Element : CryptoHashableString {
+    /**
+     * Every Element knows the [GroupContext] that was used to create it. This simplifies code that
+     * computes with elements, allowing arithmetic expressions to be written in many cases without
+     * needing to pass in the context.
+     */
+    val context: GroupContext
+
+    /**
+     * Normal computations should ensure that every [Element] is in the modular bounds defined by
+     * the group, but deserialization of hostile inputs or buggy code might not preserve this
+     * property, so it's valuable to have a way to check. This method allows anything in [0, N)
+     * where N is the group modulus.
+     */
+    fun inBounds(): Boolean
+
+    /**
+     * Normal computations should ensure that every [Element] is in the modular bounds defined by
+     * the group, but deserialization of hostile inputs or buggy code might not preserve this
+     * property, so it's valuable to have a way to check. This method allows anything in [1, N)
+     * where N is the group modulus.
+     */
+    fun inBoundsNoZero(): Boolean
+
+    /** Checks whether this element is zero. */
+    fun isZero(): Boolean
+
+    /** Converts from any [Element] to a big-endian [ByteArray] representation. */
+    fun byteArray(): ByteArray
+
+    /** Returns a string representation suitable for cryptographic hashing. */
+    override fun cryptoHashString(): String = base16()
+}
+
 interface ElementModQ : Element, Comparable<ElementModQ> {
     /** Modular addition */
     operator fun plus(other: ElementModQ): ElementModQ
@@ -284,8 +284,7 @@ interface ElementModQ : Element, Comparable<ElementModQ> {
 
 interface ElementModP : Element, Comparable<ElementModP> {
     /**
-     * Validates that this element is a quadratic residue (and is thus reachable from
-     * [GroupContext.gPowP]). Returns true if everything is good.
+     * Validates that this element is a quadratic residue, ie in Z^r_p.
      */
     fun isValidResidue(): Boolean
 

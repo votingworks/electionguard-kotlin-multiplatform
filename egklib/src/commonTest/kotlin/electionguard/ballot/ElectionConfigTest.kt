@@ -1,6 +1,7 @@
 package electionguard.ballot
 
 import electionguard.core.Base16.toHex
+import electionguard.core.productionGroup
 import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,7 +19,7 @@ class ElectionConfigTest {
         val HV = ByteArray(32) { if (it < 4) version[it] else 0 }
         assertEquals("76322E3000000000000000000000000000000000000000000000000000000000", HV.toHex())
 
-        val parameterBaseHash = parameterBaseHash()
+        val parameterBaseHash = parameterBaseHash(productionGroup().constants)
         assertEquals("AB91D83C3DC3FEB76E57C2783CFE2CA85ADB4BC01FC5123EEAE3124CC3FB6CDE", parameterBaseHash.toHex())
     }
 }
