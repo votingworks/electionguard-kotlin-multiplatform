@@ -46,7 +46,7 @@ fun runDoerreTest(
 ) {
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
-        KeyCeremonyTrustee(group, "guardian$seq", seq, quorum)
+        KeyCeremonyTrustee(group,"guardian$seq", seq, quorum)
     }.sortedBy { it.xCoordinate }
 
     // exchange PublicKeys

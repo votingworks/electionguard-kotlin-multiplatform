@@ -7,7 +7,38 @@ import java.math.BigInteger
 
 private val logger = KotlinLogging.logger("Group")
 
-private val productionGroups4096 =
+private val montgomeryI = BigInteger.ONE shl Primes4096.nbits
+private val p = BigInteger(Primes4096.pStr, 16)
+private val q = BigInteger(Primes4096.qStr, 16)
+private val g = BigInteger(Primes4096.gStr, 16)
+private val r = BigInteger(Primes4096.rStr, 16)
+
+private val productionGroups4096 : Map<PowRadixOption, ProductionGroupContext> =
+    PowRadixOption.values().associateWith {
+        ProductionGroupContext(
+            pBytes = p.toByteArray().normalize(512),
+            qBytes = q.toByteArray().normalize(32),
+            gBytes = g.toByteArray().normalize(512),
+            rBytes = r.toByteArray().normalize(512),
+            montIMinus1Bytes = (montgomeryI - BigInteger.ONE).toByteArray(),
+            montIPrimeBytes = (montgomeryI.modPow(p - BigInteger.TWO, p)).toByteArray(),
+            montPPrimeBytes = ((montgomeryI - p).modInverse(montgomeryI)).toByteArray(),
+            name = "production group, ${it.description}, 4096 bits",
+            powRadixOption = it,
+            productionMode = ProductionMode.Mode4096,
+            numPBits = intProduction4096PBits
+        )
+    }
+
+/*
+val montgomeryI = BigInteger.ONE shl numBits // 2^{4096} or 2^{3072}
+val montgomeryIMinusOne = montgomeryI - BigInteger.ONE
+val montgomeryIPrime = montgomeryI.modPow(p - BigInteger.TWO, p)
+val montgomeryPPrime = (montgomeryI - p).modInverse(montgomeryI)
+ */
+
+
+private val productionGroups4096old : Map<PowRadixOption, ProductionGroupContext> =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
             pBytes = b64Production4096P.fromSafeBase64(),
@@ -24,6 +55,7 @@ private val productionGroups4096 =
         )
     }
 
+// TODO use 1.9
 private val productionGroups3072 =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(

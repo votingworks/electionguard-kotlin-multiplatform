@@ -175,16 +175,16 @@ fun batchEncryption(
     }
     val starting = getSystemTimeInMillis() // start timing here
 
-    val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
+    val codeSeed: ElementModQ = electionInit.extendedBaseHash.toElementModQ(group)
     val primaryNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow primaryNonce to be passed in on command line?
     val encryptor = Encryptor(
         group,
         electionInit.manifest(),
         ElGamalPublicKey(electionInit.jointPublicKey),
-        electionInit.cryptoExtendedBaseHash
+        electionInit.extendedBaseHash
     )
     val runEncryption = RunEncryption(group, encryptor, codeSeed, primaryNonce, electionInit.manifest(),
-        electionInit.jointPublicKey, electionInit.cryptoExtendedBaseHash, check)
+        electionInit.jointPublicKey, electionInit.extendedBaseHash, check)
 
     val publisher = makePublisher(outputDir)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
@@ -215,7 +215,7 @@ fun batchEncryption(
     val took = getSystemTimeInMillis() - starting
 
     publisher.writeElectionInitialized(
-        electionInit.addMetadata(
+        electionInit.addMetadataToCopy(
             Pair("Used", createdBy ?: "RunBatchEncryption"),
             Pair("UsedOn", getSystemDate().toString()),
             Pair("CreatedFromDir", inputDir)

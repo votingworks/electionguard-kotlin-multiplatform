@@ -71,12 +71,13 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         return electionRecordDir.resolve(TALLY_RESULT_FILE).toAbsolutePath()
     }
 
-    actual override fun writeManifest(manifest: Manifest) {
+    actual override fun writeManifest(manifest: Manifest) : String {
         val proto = manifest.publishProto()
         FileOutputStream(manifestPath().toFile()).use { out ->
             proto.encodeToStream(out)
             out.close()
         }
+        return manifestPath().toString()
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {

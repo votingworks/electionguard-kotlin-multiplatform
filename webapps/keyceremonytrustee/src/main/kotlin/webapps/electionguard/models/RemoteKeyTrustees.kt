@@ -17,7 +17,9 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("RemoteGuardianJson")
 
 @Serializable
-data class RemoteKeyTrustee(val id: String, val xCoordinate: Int, val quorum: Int) {
+data class RemoteKeyTrustee(val id: String,
+                            val xCoordinate: Int,
+                            val quorum: Int) {
     @Transient
     private val delegate = KeyCeremonyTrustee(productionGroup(), id, xCoordinate, quorum)
 

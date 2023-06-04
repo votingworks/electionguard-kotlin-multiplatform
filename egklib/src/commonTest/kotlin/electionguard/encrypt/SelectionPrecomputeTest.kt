@@ -59,7 +59,7 @@ class SelectionPrecomputeTest {
 
 fun precomputeSelections(group: GroupContext, stats: Stats, revotes: Int, electionInit: ElectionInitialized, ballot: PlaintextBallot): SelectionPrecompute {
     val manifest: Manifest = electionInit.manifest()
-    val codeSeed: ElementModQ = electionInit.cryptoExtendedBaseHash.toElementModQ(group)
+    val codeSeed: ElementModQ = electionInit.extendedBaseHash.toElementModQ(group)
     val masterNonce = group.TWO_MOD_Q
 
     var starting = getSystemTimeInMillis()
@@ -67,7 +67,7 @@ fun precomputeSelections(group: GroupContext, stats: Stats, revotes: Int, electi
         group,
         manifest,
         ElGamalPublicKey(electionInit.jointPublicKey),
-        electionInit.cryptoExtendedBaseHash,
+        electionInit.extendedBaseHash,
         ballot.ballotId,
         ballot.ballotStyleId,
         codeSeed,

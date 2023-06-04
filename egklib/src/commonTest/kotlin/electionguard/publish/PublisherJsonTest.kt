@@ -29,7 +29,7 @@ class PublisherJsonTest {
         val publisher = makePublisher(output1, true, true)
         val consumerOut = makeConsumer(output1, group, true)
 
-        val config = generateElectionConfig(3, 3)
+        val config = generateElectionConfig(publisher,3, 3)
 
         // ManifestInputValidation
         val manifestValidator = ManifestInputValidation(config.manifest)
@@ -61,14 +61,12 @@ class PublisherJsonTest {
         val publisher = makePublisher(output2, true, true)
         val consumerOut = makeConsumer(output2, group, true)
 
-        val config = generateElectionConfig(6, 4)
+        val config = generateElectionConfig(publisher, 6, 4)
         publisher.writeElectionConfig(config)
 
         val init = ElectionInitialized(
             config,
             generateElementModP(group),
-            config.manifest.manifestHash,
-            generateUInt256(group),
             generateUInt256(group),
             List(6) { generateGuardian(it, group) },
         )
@@ -184,8 +182,7 @@ fun ElectionInitialized.approxEquals(expected: ElectionInitialized) : Boolean {
     assertEquals(expected.config.quorum, this.config.quorum)
 
     assertEquals(expected.jointPublicKey, this.jointPublicKey)
-    assertEquals(expected.cryptoBaseHash, this.cryptoBaseHash)
-    assertEquals(expected.cryptoExtendedBaseHash, this.cryptoExtendedBaseHash)
+    assertEquals(expected.extendedBaseHash, this.extendedBaseHash)
     assertEquals(expected.guardians, this.guardians)
     return true
 }

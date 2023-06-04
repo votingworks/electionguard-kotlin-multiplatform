@@ -27,7 +27,7 @@ class PublicKeysTest {
                 repeat(quota) {
                     val kp = elGamalKeypairs(group).single()
                     val nonce = elementsModQ(group).single()
-                    proofs.add(kp.schnorrProof(nonce))
+                    proofs.add(kp.schnorrProof(xcoord, it, nonce))
                 }
                 val publicKey = PublicKeys(id, xcoord, proofs)
                 assertEquals(publicKey, publicKey.publish().import(group).unwrap())

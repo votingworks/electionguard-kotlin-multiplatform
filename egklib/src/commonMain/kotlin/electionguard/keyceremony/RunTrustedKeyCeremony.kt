@@ -58,12 +58,24 @@ fun main(args: Array<String>) {
         shortName = "createdBy",
         description = "who created"
     )
+    val electionDate by parser.option(
+        ArgType.String,
+        shortName = "electionDate",
+        description = "election date"
+    )
+    val info by parser.option(
+        ArgType.String,
+        shortName = "info",
+        description = "jurisdictional information"
+    )
     parser.parse(args)
     println("RunTrustedKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
     var createdFrom : String
 
+    // As input, either specify the input directory that contains electionConfig.protobuf file,
+    // OR the election manifest, nguardians and quorum.
     val config: ElectionConfig = if (electionManifest != null && nguardians != null && quorum != null) {
         val manifest = readManifest(electionManifest!!, group)
         createdFrom = electionManifest!!
@@ -73,7 +85,9 @@ fun main(args: Array<String>) {
                     "  nguardians = $nguardians quorum = $quorum\n" +
                     "  outputDir = '$outputDir'\n"
         )
-        ElectionConfig(group.constants, manifest.unwrap(), nguardians!!, quorum!!,
+        ElectionConfig(group.constants, ByteArray(0), manifest.unwrap(), nguardians!!, quorum!!,
+            electionDate ?: "N/A",
+            info ?: "N/A",
             mapOf(
                 Pair("CreatedBy", createdBy ?: "RunRemoteKeyCeremony"),
                 Pair("CreatedFromElectionManifest", electionManifest!!),
@@ -103,10 +117,10 @@ fun runKeyCeremony(
 ): Result<Boolean, String> {
     val starting = getSystemTimeInMillis()
 
-    // Generate the KeyCeremonyTrustees here, which means this is a trusted situation.
+    // Generate all KeyCeremonyTrustees here, which means this is a trusted situation.
     val trustees: List<KeyCeremonyTrustee> = List(config.numberOfGuardians) {
         val seq = it + 1
-        KeyCeremonyTrustee(group, "trustee$seq", seq, config.quorum)
+        KeyCeremonyTrustee(group,"trustee$seq", seq, config.quorum)
     }
 
     val exchangeResult = keyCeremonyExchange(trustees)

@@ -29,10 +29,12 @@ interface ElectionRecord {
     fun quorum(): Int
     fun config(): ElectionConfig
 
-    /** The extended base hash, Qbar in the spec.  */
-    fun cryptoExtendedBaseHash(): UInt256?
-    /** The base hash, Q in the spec.  */
-    fun cryptoBaseHash(): UInt256?
+    /** The parameter base hash, Hp. */
+    fun parameterBaseHash(): UInt256
+    /** The base hash, Hb. */
+    fun electionBaseHash(): UInt256
+    /** The extended base hash, He.  */
+    fun extendedBaseHash(): UInt256?
     /** Joint election key, K in the spec.  */
     fun jointPublicKey(): ElementModP?
     /** public data of the guardians. */

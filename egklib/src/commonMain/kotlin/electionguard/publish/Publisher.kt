@@ -6,7 +6,7 @@ import io.ktor.utils.io.core.Closeable
 
 /** Write the Election Record as protobuf or json files. */
 interface Publisher {
-    fun writeManifest(manifest: Manifest)
+    fun writeManifest(manifest: Manifest) : String // return filename
     fun writeElectionConfig(config: ElectionConfig)
     fun writeElectionInitialized(init: ElectionInitialized)
     fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<EncryptedBallot>)

@@ -9,7 +9,6 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ManifestFromProto")
 
 fun electionguard.protogen.Manifest.import(): Result<Manifest, String> {
-
     return Ok(
         Manifest(
             this.electionScopeId,

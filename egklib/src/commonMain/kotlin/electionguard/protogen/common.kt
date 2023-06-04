@@ -440,8 +440,8 @@ private fun ContestData.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Cont
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> status = _fieldValue as electionguard.protogen.ContestData.Status
-            2 -> overVotes = (overVotes ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<Int> }
-            3 -> writeIns = (writeIns ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as Sequence<String> }
+            2 -> overVotes = (overVotes ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<Int> }
+            3 -> writeIns = (writeIns ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
             4 -> filler = _fieldValue as String
         }
     }
@@ -571,6 +571,7 @@ private fun HashedElGamalCiphertext.Companion.decodeWithImpl(u: pbandk.MessageDe
             4 -> numBytes = _fieldValue as Int
         }
     }
+
     return HashedElGamalCiphertext(c0, c1, c2, numBytes, unknownFields)
 }
 
@@ -600,6 +601,7 @@ private fun SchnorrProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Sch
             3 -> response = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
+
     return SchnorrProof(publicKey, challenge, response, unknownFields)
 }
 
@@ -622,5 +624,6 @@ private fun UInt256.Companion.decodeWithImpl(u: pbandk.MessageDecoder): UInt256 
             1 -> value = _fieldValue as pbandk.ByteArr
         }
     }
+
     return UInt256(value, unknownFields)
 }

@@ -119,7 +119,7 @@ fun runEncryptDecryptBallot(
             primes.generator.toHex(),
             config.numberOfGuardians,
             config.quorum,
-            config.manifest.manifestHash,
+            config.manifestHash, // TODO
         )
 
         // spec 1.52, eq 17 and 3.B
@@ -127,8 +127,6 @@ fun runEncryptDecryptBallot(
         val init = ElectionInitialized(
             config,
             jointPublicKey,
-            config.manifest.manifestHash,
-            cryptoBaseHash,
             cryptoExtendedBaseHash,
             guardianList,
         )

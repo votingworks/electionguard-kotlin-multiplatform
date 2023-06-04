@@ -156,6 +156,7 @@ private fun DecryptingTrustee.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             6 -> keyShare = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
+
     return DecryptingTrustee(guardianId, guardianXCoordinate, publicKey, keyShare, unknownFields)
 }
 
@@ -183,5 +184,6 @@ private fun EncryptedKeyShare.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             5 -> encryptedCoordinate = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
         }
     }
+
     return EncryptedKeyShare(polynomialOwner, secretShareFor, encryptedCoordinate, unknownFields)
 }

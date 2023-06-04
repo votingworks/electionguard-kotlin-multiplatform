@@ -3,20 +3,7 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElGamalSecretKey
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.HashedElGamalCiphertext
-import electionguard.core.SchnorrProof
-import electionguard.core.context
-import electionguard.core.decrypt
-import electionguard.core.hashedElGamalEncrypt
-import electionguard.core.merge
-import electionguard.core.randomElementModQ
-import electionguard.core.toElementModQ
-import electionguard.core.toUInt256
+import electionguard.core.*
 
 /**
  * A Trustee that knows its own secret key and polynomial.
@@ -29,7 +16,7 @@ class KeyCeremonyTrustee(
     val quorum: Int,
 ) : KeyCeremonyTrusteeIF {
     // all the secrets are in here
-    private val polynomial: ElectionPolynomial = group.generatePolynomial(id, quorum)
+    private val polynomial: ElectionPolynomial = group.generatePolynomial(id, xCoordinate, quorum)
 
     // Other guardians' public keys, keyed by other guardian id.
     internal val otherPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()

@@ -61,7 +61,7 @@ dependencyResolutionManagement {
             // depends on kotlin-stdlib-common:1.6.20 -> 1.7.20
             library("kotlin-result", "com.michael-bull.kotlin-result:kotlin-result:1.1.16")
             // depends on kotlin 1.5.32 -> 1.7.20, coroutines 1.5.2, protoc 3.19.1
-            library("pbandk", "pro.streem.pbandk:pbandk-runtime:0.14.1")
+            library("pbandk", "pro.streem.pbandk:pbandk-runtime:0.14.2")
 
             //// logging
             library("microutils-logging", "io.github.microutils:kotlin-logging:3.0.4")

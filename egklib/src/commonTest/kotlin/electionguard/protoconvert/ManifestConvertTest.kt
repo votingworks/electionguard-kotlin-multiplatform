@@ -50,7 +50,6 @@ class ManifestConvertTest {
             assertEquals(rgpu.geopoliticalUnitId, gpu.geopoliticalUnitId)
             assertEquals(rgpu.contactInformation, gpu.contactInformation)
             assertEquals(rgpu.type, gpu.type)
-            assertEquals(rgpu.cryptoHashUInt256(), gpu.cryptoHashUInt256())
             assertEquals(rgpu, gpu)
         }
         assertEquals(roundtrip.geopoliticalUnits, manifest.geopoliticalUnits)

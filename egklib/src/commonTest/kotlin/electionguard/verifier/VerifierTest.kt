@@ -5,6 +5,16 @@ import kotlin.test.Test
 
 class VerifierTest {
     @Test
+    fun verification1() {
+        runVerifier(productionGroup(), "src/commonTest/data/start", 1, true)
+    }
+
+    @Test
+    fun verification2() {
+        runVerifier(productionGroup(), "testOut/RunKeyCeremonyTest", 1, true)
+    }
+
+    @Test
     fun readElectionRecordAndValidate() {
         runVerifier(productionGroup(), "src/commonTest/data/runWorkflowAllAvailable", 11, true)
     }

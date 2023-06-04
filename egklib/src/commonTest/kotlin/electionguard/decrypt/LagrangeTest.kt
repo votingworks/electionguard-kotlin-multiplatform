@@ -22,10 +22,10 @@ class LagrangeTest {
 
     @Test
     fun testLagrangeInterpolation() {
-         val w1 = group.computeLagrangeCoefficient(1, listOf(1, 2))
+        val w1 = group.computeLagrangeCoefficient(1, listOf(1, 2))
         val w2 = group.computeLagrangeCoefficient(2, listOf(1, 2))
 
-        val polly = group.generatePolynomial("guardian1", 2)
+        val polly = group.generatePolynomial("guardian1", 1, 2)
         val y1 = polly.valueAt(group, 1)
         val y2 = polly.valueAt(group, 2)
 
@@ -39,11 +39,11 @@ class LagrangeTest {
         val w1 = group.computeLagrangeCoefficient(1, listOf(1, 2))
         val w2 = group.computeLagrangeCoefficient(2, listOf(1, 2))
 
-        val polly1 = group.generatePolynomial("guardian1", 2)
+        val polly1 = group.generatePolynomial("guardian1", 1, 2)
         val y11 = polly1.valueAt(group, 1)
         val y12 = polly1.valueAt(group, 2)
 
-        val polly2 = group.generatePolynomial("guardian2", 2)
+        val polly2 = group.generatePolynomial("guardian2", 2, 2)
         val y21 = polly2.valueAt(group, 1)
         val y22 = polly2.valueAt(group, 2)
 

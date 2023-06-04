@@ -68,7 +68,7 @@ class ContestDataTest {
                 .build()
 
 
-            val encryptor = Encryptor(context, manifest, keypair.publicKey, electionInit.cryptoExtendedBaseHash)
+            val encryptor = Encryptor(context, manifest, keypair.publicKey, electionInit.extendedBaseHash)
             val nonce1 = context.randomElementModQ(minimum = 2)
             val nonce2 = context.randomElementModQ(minimum = 3)
             val eballot = encryptor.encrypt(ballot, nonce1, nonce2, 0)

@@ -31,7 +31,7 @@ message Manifest {
   repeated BallotStyle ballot_styles = 10;
   repeated Language name = 11;
   ContactInformation contact_information = 12;
-  UInt256 crypto_hash = 13;
+  reserved 13;
 }
 
 message BallotStyle {

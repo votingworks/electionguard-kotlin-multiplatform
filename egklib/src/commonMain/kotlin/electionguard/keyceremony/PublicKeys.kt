@@ -3,10 +3,7 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrapError
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.SchnorrProof
-import electionguard.core.merge
+import electionguard.core.*
 
 data class PublicKeys(
     val guardianId: String,
@@ -30,13 +27,10 @@ data class PublicKeys(
     fun validate(): Result<Boolean, String> {
         val checkProofs: MutableList<Result<Boolean, String>> = mutableListOf()
         for ((idx, proof) in this.coefficientProofs.withIndex()) {
-            val result = proof.validate()
+            val result = proof.validate(guardianXCoordinate, idx)
             if (result is Err) {
                 checkProofs.add(
-                    Err("  Guardian $guardianId has invalid proof for coefficient $idx " +
-                                result.unwrapError()
-                    )
-                )
+                    Err("  Guardian $guardianId has invalid proof for coefficient $idx " + result.unwrapError()))
             }
         }
         return checkProofs.merge()

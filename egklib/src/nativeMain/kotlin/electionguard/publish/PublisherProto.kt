@@ -33,7 +33,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         }
     }
 
-    actual override fun writeManifest(manifest: Manifest) {
+    actual override fun writeManifest(manifest: Manifest) : String {
         val proto = manifest.publishProto()
         val buffer = proto.encodeToByteArray()
 
@@ -44,6 +44,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         } finally {
             fclose(file)
         }
+        return fileout
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {

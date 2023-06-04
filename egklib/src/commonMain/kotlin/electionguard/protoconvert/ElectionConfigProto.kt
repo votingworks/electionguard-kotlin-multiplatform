@@ -1,28 +1,33 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
-import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.*
 import electionguard.ballot.*
 import pbandk.ByteArr
 
 fun electionguard.protogen.ElectionConfig.import(): Result<ElectionConfig, String> {
     val electionConstants = this.constants?.import() ?: Err("Null ElectionConstants")
     val manifest = this.manifest?.import() ?: Err("Null Manifest")
+    val parameterHash = this.parameterBaseHash?.import() ?: Err("Null parameterBaseHash")
+    val manifestHash = manifestHash?.import() ?: Err("Null manifestHash")
+    val electionHash = this.electionBaseHash?.import() ?: Err("Null electionBaseHash")
 
-    val errors = getAllErrors(electionConstants, manifest)
+    val errors = getAllErrors(electionConstants, manifest, parameterHash, manifestHash, electionHash)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
 
     return Ok(ElectionConfig(
         electionConstants.unwrap(),
+        this.manifestFile.array,
         manifest.unwrap(),
         this.numberOfGuardians,
         this.quorum,
-        this.metadata.associate { it.key to it.value }
+        this.electionDate,
+        this.jurisdictionInfo,
+        this.metadata.associate { it.key to it.value },
+        parameterHash.unwrap(),
+        manifestHash.unwrap(),
+        electionHash.unwrap(),
     ))
 }
 
@@ -43,10 +48,16 @@ private fun electionguard.protogen.ElectionConstants.import(): Result<ElectionCo
 fun ElectionConfig.publishProto() =
     electionguard.protogen.ElectionConfig(
         constants.publishProto(),
+        ByteArr(this.manifestFile),
         manifest.publishProto(),
         this.numberOfGuardians,
         this.quorum,
-        this.metadata.entries.map { electionguard.protogen.ElectionConfig.MetadataEntry(it.key, it.value) }
+        this.electionDate,
+        this.jurisdictionInfo,
+        this.parameterBaseHash.publishProto(),
+        this.manifestHash.publishProto(),
+        this.electionBaseHash.publishProto(),
+        this.metadata.entries.map { electionguard.protogen.ElectionConfig.MetadataEntry(it.key, it.value) },
     )
 
 private fun ElectionConstants.publishProto() =

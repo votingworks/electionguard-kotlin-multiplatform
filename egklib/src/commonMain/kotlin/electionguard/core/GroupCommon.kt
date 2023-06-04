@@ -9,16 +9,17 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("GroupCommon")
 
 // 4096-bit P and 256-bit Q primes, plus generator G and cofactor R
-internal const val b64Production4096P = "AP//////////////////////////////////////////k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCa/72OS1n6A6nw7tBknMtiEFfREFaukTITWgjkO0Zz10uv6ljeuHjMhtcz2+e/OBVLNs+KltFWeJmqrgwJ1Mi2t7hv0qHqHeYv+GQ+x8Jxgnl3Il5qwvC9YcdGlhVCo8476l21T+cOY+bQn4/ChljoBWekfP3mDudB5dhae9RpMc7YIgNlWUlkuDmJb8qrzMmzGVnAg/Iq0+5ZHDL6ssdEjyoFfbLbSe5S4BgnQeU4ZfAEzI5wS3xcQL8wTE2MTxPt9gR8VVMC0iONjOEd8kJPG2bCxdI40HRNtnmvKJBIcDH5wK6hxLtv6VVO5Sj98bBeWyViI7LwkhXzcZ+cfMxp3fFy0NYjQhf8wAN/GLk+9TiRMLemYeXCblQhQGi7yv6jKmeBi9MHWtH1x+nMPRc3+ygXG6+E27ZhK3iBwaSOQ5zQOpK/UiJaKzjmVC6fcivOFaOBtXU+qEJ2M4HMroNRKzBRGzLl6NgDYhSa0DCqul86V5i7Iqp+wbbQ8XkD9OIthAc0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWav//////////////////////////////////////////"
-internal const val b64Production4096Q = "AP////////////////////////////////////////9D"
-internal const val b64Production4096P256MinusQ = "AL0="
-internal const val b64Production4096R = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8k8Rn432wx6TRvj+BAVLLVqHOzDr2XMAZDAPfNHCbivamTAztzy1VnanZfwlcMHbGhgN2GRSNLIbDFxAq+iFIAx8ERArA/wyaQXqJISUS52B7JQHapNOKLBQQxINhSeK9uMgmDmJ8RkaWPv/p4W5JXUi9IVxtjsnRZnZXoqHIUG8hE/+tGaayvHxFdgRWcZGDMJ+HS8ms5XD/2od6orI6LW8pHBVUyi6xLxLNAJuLhzSmStUeuJO9iRdQuFFiJB2QjwyXCYeXWOfoIz6rO/LWq1OvoyqhU61mguWgZIiXyb4YoNUL7OAww0MjNq2RY+M/jn2vSY8UuyhSr/qBSEHrGN1fDolRbVV3dihcFgcdIRGU7hw/NGQgNquIbj7CiILOQAPeozW02TW65LWCNbn7K6txPI9wWhx95CIgIJ1rvKzEZzGGAVZScuSmPjjiSZdUrkk6wajoNGnu81yifCcbx5Lu4hFW5he5IuqPcTwizygtxdY4W7EoaOt4Enj6CrKolY/Mtf/i5cNh/BdEIBIrAWPKSkYwjIxGyR6nRXwTan2f1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kg=="
-internal const val b64Production4096G = "HUHknEd+Feru8MXkrAjUpGwmjNNCT8AdE3ab20NnMhhYe8hsTBRI0AagNpnzq65f6xnilvXRQ8xeSj/IkIjJ9FI9Fm7jrp1fsDwL3Xet1cAX9sVeLsksIm/vXGwd8ufDbZDn6q3gmCQdNAmYO8zStTeek5H7xi+fjZOdEgixYDZ8E0JkEiGJWV7IXIzb5fnTB/RpEsBJMvjBaBWna0aCvWvcDtUrANjTD1nHMdWn/66BZdU8+WZJqsK3Q9pW8U8Z2sxSNvKbGrn5vvxpaXKT1d6ti1v13purbeZ8RXGeVjRKPL3zYJgksbV4406utt0xkKs1cdbWccUSKCwdp702tCUdJYT63qgLnhQUIwdN2bX7g6y96tTIelj/9Rf5d6gwgDcKOwz5ihvCl4xHqsKWEf1sQOL5h1w11QRDqao/SWEdzToNb/PLP6zzFHG9thhguSxZTU5GVpuzn+6t/x/WTINqbW24XGunJBdmt6tWv3OWM7BUFH9xcJIUEulI2eR0AtFbscJXMYYSwSHDa4DrhDPAjn0LcUnjqwqHNaku3Oj/lD4ootzqz8xp7DGJCcsEe+HFhYhEta1E8i7rKJ5MxVT3peLz3qAmh3/5KFGBYHHOAo64aNllzLLSKVqMVb0cBws5sJrgazfSk0O52Jl9wkTEaLmAlwcxc27gGLutuYc="
+// Generated from PrintConstants from the spec 1.9 hex values
+internal val b64Production4096P = "AP//////////////////////////////////////////sXIX99HPeavJ47OYA/L2r0DzQyZymLYtig0XW4uq+ivnuHYgbeusmFWVUvtK+hsQ7S6uNcE4IUQnVzspEWm4JT6WyhYiSujFGsvaETF8OH656pvDsTZgOyVvoOx2V/dLcs6HsZ1lSMr136a9ODAySGVfoYcvIOOi2i2XxQ8/1cYH9MoR+1v7kGENMPiP5VGi7ladbfwe+hV9LiPeFACzlhdGB3XbiZDlyUPnMrR5zTPMzE5lk5NRTEwaHgvR1gldJWabMzVkozdqnH+KXhSOggdNtgFc/nqjDEgKVBc1DSyVXVF5seF7na4xPNtsYGyxB49zXRstsxtfULUYUGTBi00WLbOzZYU9dZihlRric+5VcLbGj5aYNJbU5tMwr4ibRKAlVHMc3I6hcpPRIopO+Y1vUXf7zwdVJopcH5U4uYJhr/1Eaxyjz16SIriMZtPFQiGD7cmUIQkLuxb689lJ8jbgKyDO6Ia5BcEo1T0L0vliE2MZavUDAgBg5JkIORoMVzObor66fQUqxbYcxOkgfO8vDOLXNzlY12ImWJBEV0T7Xy2kt1EAWJLTVokN7+nK2bnUtxPgYWKi2P3Q3y/WCP//////////////////////////////////////////"
+internal val b64Production4096Q = "AP////////////////////////////////////////9D"
+internal val b64Production4096P256MinusQ = "AL0="
+internal val b64Production4096R = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8sXIX99HPeavJ47OYA/L2r0DzQyZymLYtig0XW4urhXro9CgWVBiAbGKw6jY1Wjpz4MdBmFv2oOMTAXm/LwtD4zrYYpI4YbjJ92jEFpUZYAutBgk/lksn4C2GgxIxqRYN5I9NpT2KteaeOGtpS+wa5yLUdXkknVQkdnxcM7kVHgfFwR0QasRG0zC0fbWdNS5HpTFX3gRGGQD2/jYNuJffUxbYfJSucdrQvoS2R8S8+BjCOi1Ou1PHAqXIBi0Z9em1AzqU9/9zL1QSlxKGnZe4yWxBKSGp2GeXcPSZoEHCl8/3nUyRSetsr2e56j3FY9ll86rRN3/yLenD5iBo3Q7WFRw3tPdGNMK9CdqRL9WZ9DM6jSzABWJ9yje61D5ko5YxGcC/40gQoh7nz8Qh1TOYy8epWzv1heWgS3kOL+H+m8Jk/agQn2RUoIL177LzfqI3qinfMg1uqGDEGpBUzNJIdsYlP2Z7+wE5tVMf8wGJlhIC/SsNVadScsf9czQ/eJm8oLNqTEcKZKAJJEyE53zrySQX1bsTvxgWfYAz62xN14ef1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kf1Kg=="
+internal val b64Production4096G = "NgNv7SFPO1DcVm06MS/kEx/uHCvObQLqObR3rAX3+IXzjP53p+Raz0ApEUxNepv+BYvy+ZXSR5092mGP/ZENPEI2qyz914OlAW90Zc9Zu/RdJKIvEw8tBP6TstWLucHR0n/JoX0q9Jp3nz/73KIpAMFCAu5smWFgNL41y83T57t5lq3+U0tjzKQeIf9dx3jrsbhsU7++mZh9euoHViN/tAkiE5+Qpi8qqNmtNN/3meM8hXpkaNABrPO2gduH3EJCdV4qxaUCfbgZhPAzxNF4Nx8nPbtPzqHmKMI+UnWbx3ZXKANc6ia0TEmmVmaImCCkXDPdN+pKHQDLYjBc1UG+HoqSaFoHASsaIKdGw1kaLbOBUADSqsz+Q9xJ6CjB7XOHRmr9jkvxk1WTsqRC7sJxxQrTn3M3l6HqEYAqJVeRZTRmKmt+mp5EmiTIz/gJ55pNgG62gRGTMObFeYXjmyALSJNjn9/epJ92rRrNmX66E2V1QeeexXQ35QTtqd0BEGFRbGQ/sw1tWK/M0otz/top7BKwGl64Y5mlk6nV9FDeOcuSlixexpJTSNtU0Sj9mcFLRX+IPsIBEqdaagWB09gKO07wnshvlVL/2hZT8TOqJTSYOm8xsO5Gl5Naax6i91uF5+uhUbpIYJTWhyKwVGM/7FHKPymzHnfjF7F4trnYrg8="
 
-internal const val b64Production4096MontgomeryI = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-internal const val b64Production4096MontgomeryIMinus1 = "AP//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
-internal const val b64Production4096MontgomeryIPrime = "AKSZ6H5W9bINAiMN6a6HSwbigTX27Dgzuqd+4d9EsijOuqNdgY2lyMhN/xIg12AQAph7X8SMckK/ytJ5bgkWWPu6QwI46RQNkBuTHoBCVlKGrWJSbK5TYShEQVEe97kZ30z9prNOhvwZNnTYsqgxvghS+fQkMwlmNy5hEZiuyaArpCm4cI+BgPrUPe2uGmxgUOTL3Ipri4bMkDzKPjbVkh0yFyBAjA/Vpb8gci9CW6TR+J2UdwGTmZrNbMt1SHhG32VlNftF53FffZpdd+gO+y4BgMvRtZK/RbfdwJ8mZygESHdRaCbLDlDZEFens4rmRRQ4uIt7i2rEIUIIGWxCmD4h/9AD9/dwKMq0R+Q0Ti9WfDX5kGaNQsYXstsxkcdT/rUnO5+9ftxyXf2rUy5ThjvG102CBzLocpOk3ce1bPwSTEOq4lIPYAW2fbzT1Xakv+U5Xwd5pGx+Zp/7uYlNn7YCC/9C/RFJYOFlfxgC2H17O4GSmOSzXOOK7Bp7/zrW7+o/k4DbLV5jXltaOPC8jV+RMM8mx4TWKctx0ywHYdd84WUF3eoTwGVb3XE06n1KjLdKDrXtwpspFErX8opDN0hkCwyLGb1Ibvl9hyHpP0gbbE7tP1oG/u2Wx6xzRluTPELm4XslAAUyacnBq6JNvLtHZWPtJXANoAnQtZTkDvjB"
-internal const val b64Production4096MontgomeryPPrime = "AKSZ6H5W9bINAiMN6a6HSwbigTX27Dgzuqd+4d9EsijPADqc3SYdA8Rq8V2PtOq3U9hrEu6VjhKHgUtxYhBO97qIC3vdbWuC9NtgEKja7eU0Y8KT2E2/XZ+0Gf5gJHZ4//aVRkPkAnxe6iTMN2zjdKYtFW0QZ0PtAj33HOLcQx+sORfOnFLSdVhg8fws+8eOgZwd/ZRkEkSpyhdgVPJgfmy1M9NkZarlZ6QvdKgnsOoDHUnSoMs1OpowwAWP+eue3WwwnwXfKjqhi9TEa/Ld02+cq6iC4PHI2aGjfuzujZM6VBj2XjDZlUk3RHYvFGW2Gq2fqHkJo9smjdasVy3/G6fT+Cz5owxggcncVWPrc3VNnGd4H9hY777NQ8Y5MDdOtlMl0dAO+p61t9ikR/Mv3mYIqx/gdfKfVoKTk+VvU/BcCRb2MrMzggmPeSCPeIH8QAYWIIyciQKiFcg1hmtTjSa+v86FsYutke6dTpQeSnL5/5+yAEfUnLSaby2AU/6yxkXdFw/I49cmUpDTq6R+rCrF/uutEeOSH7VOQqfjLkq9nVMHzZvEu+npZBEMI0UlLQp7Pt7YUlkxmAWu+tfllMA0qoWXP3mpP/uCp1xHwD1D0vnKAtAxmbrO3dRTOlJWawAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
+internal val b64Production4096MontgomeryI = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+internal val b64Production4096MontgomeryIMinus1 = "AP//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+internal val b64Production4096MontgomeryIPrime = "AL+bQF0cKBEdRWrPMtwSNVz+0jI2FY99DgiVSo3zl4Fh5gwIa8G31c65S6M+hnUUSyOgj+4ojFKFnyg+o+DN7yfOITXi1IJH7kxIl7itrOAloBmmMCCJbND//JJAJgT9D+EUa7NJ7552az3v+ssEjCM9JD04OJoQDwKRmxJDIdnFh9pWZhEYhohsrLIc+qRSbp8JBuIGFQcEBA5DP8N7dlh1kddTS13Nr4ksY9iylbBD6kyLPUXLQbCIGl2z4312w0KUJBHDTOmNg1fSQwTQl45O/RISEYnoM03hry+nfp2WHg/BmpvaUII7ITAchCzo1fup6RSdz2qCG2by1nRD2rAw/lpGZfoULzro+dBjEUeoZCI8rN6d0sjyech5U/gVisNcqEa4XA+ea8Q804RPon8dbJH+yERsnzy1f8Oyh36MS6dGgnjC5sMNgBMdBUfrK0jF1kNBExs6GcqTJu6zspGGbn8GDI32ic661ZndgODQlMdyq715LmHSNSmFw4wStqbhDdgN3yXb9xJvFDYRVCS1h1q4Tnhlj1EOqhHrM9NwrIsFRFTvcVPsP5V1/FxrxagYJ1acA0DQvf+xoszpPGFySTz9iXcbpMlBylr5gu4ebBSkqjYHGzrTkJGsCkqnq+JNhinTUXK8KdO0iXToyGm9jJL+LiXZ7zWtOAveShTs"
+internal val b64Production4096MontgomeryPPrime = "AL+bQF0cKBEdRWrPMtwSNVz+0jI2FY99DgiVSo3zl4FiINeMNWVVKLtZ+r2mYwwz1gFDXhxzmJ6mmTUTlQ0ASUne6nH8iHPBTTxojajkcPY+99BcRU4Lqdlhdu+yI9Sq/5jEYfxz8iyx9xTeXxrBF+7JNtUN+rB0n5HBWwmwsQlDKy8kfGYkDOtSAmecyBy3PLhuUii/+Y35DDL/okjZz2xKJBu82tLFf41plk2EBW5DxGfjOwsY9J8EeZiGfFu0ozbaZMW5hlRIWCluf+d71Pf+6AAcDc9fnk7cyIydQwpgNXRkuJ2/bX5ithWlrbhFpohSCqc2dLPJciwugV0Z5FYLJAJYmWxoGl7QDbp6So0wpvaUbXgiN8q0OHlMytPx4H/Zwtl8IU5F/1/zlYWU6xkvVasvJ/J7qOp9YcsEWeXGjqGTfWPGN/s+bhWPuj6YcuQIn7sCRoaZZKoHp8J4vUQV2nNtvyRVYqO8nnX7FR2GH9CaJ+2RX0niLe+HeTeVP9tf/ohoZesFJtDhwZZMkeDnEG77L8oYYXTG9CdocQzjQE0AsmYcTf1sBBp4/YTdyI/NmXOEYZlpZ/AezIiFY5X7Xy2kt1EAWJLTVokN7+nK2bnUtxPgYWKi2P3Q3y/WCQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
 
 internal const val intProduction4096PBits = 4096
 
@@ -73,40 +74,6 @@ enum class ProductionMode(val numBitsInP: Int) {
 
     val numBytesInP: Int = numBitsInP / 8
     val numLongWordsInP: Int = numBitsInP / 64
-}
-
-interface Element : CryptoHashableString {
-    /**
-     * Every Element knows the [GroupContext] that was used to create it. This simplifies code that
-     * computes with elements, allowing arithmetic expressions to be written in many cases without
-     * needing to pass in the context.
-     */
-    val context: GroupContext
-
-    /**
-     * Normal computations should ensure that every [Element] is in the modular bounds defined by
-     * the group, but deserialization of hostile inputs or buggy code might not preserve this
-     * property, so it's valuable to have a way to check. This method allows anything in [0, N)
-     * where N is the group modulus.
-     */
-    fun inBounds(): Boolean
-
-    /**
-     * Normal computations should ensure that every [Element] is in the modular bounds defined by
-     * the group, but deserialization of hostile inputs or buggy code might not preserve this
-     * property, so it's valuable to have a way to check. This method allows anything in [1, N)
-     * where N is the group modulus.
-     */
-    fun inBoundsNoZero(): Boolean
-
-    /** Checks whether this element is zero. */
-    fun isZero(): Boolean
-
-    /** Converts from any [Element] to a big-endian [ByteArray] representation. */
-    fun byteArray(): ByteArray
-
-    /** Returns a string representation suitable for cryptographic hashing. */
-    override fun cryptoHashString(): String = base16()
 }
 
 /**
@@ -255,6 +222,40 @@ interface GroupContext {
     fun dLogG(p: ElementModP, maxResult: Int = - 1): Int?
 }
 
+interface Element : CryptoHashableString {
+    /**
+     * Every Element knows the [GroupContext] that was used to create it. This simplifies code that
+     * computes with elements, allowing arithmetic expressions to be written in many cases without
+     * needing to pass in the context.
+     */
+    val context: GroupContext
+
+    /**
+     * Normal computations should ensure that every [Element] is in the modular bounds defined by
+     * the group, but deserialization of hostile inputs or buggy code might not preserve this
+     * property, so it's valuable to have a way to check. This method allows anything in [0, N)
+     * where N is the group modulus.
+     */
+    fun inBounds(): Boolean
+
+    /**
+     * Normal computations should ensure that every [Element] is in the modular bounds defined by
+     * the group, but deserialization of hostile inputs or buggy code might not preserve this
+     * property, so it's valuable to have a way to check. This method allows anything in [1, N)
+     * where N is the group modulus.
+     */
+    fun inBoundsNoZero(): Boolean
+
+    /** Checks whether this element is zero. */
+    fun isZero(): Boolean
+
+    /** Converts from any [Element] to a big-endian [ByteArray] representation. */
+    fun byteArray(): ByteArray
+
+    /** Returns a string representation suitable for cryptographic hashing. */
+    override fun cryptoHashString(): String = base16()
+}
+
 interface ElementModQ : Element, Comparable<ElementModQ> {
     /** Modular addition */
     operator fun plus(other: ElementModQ): ElementModQ
@@ -283,8 +284,7 @@ interface ElementModQ : Element, Comparable<ElementModQ> {
 
 interface ElementModP : Element, Comparable<ElementModP> {
     /**
-     * Validates that this element is a quadratic residue (and is thus reachable from
-     * [GroupContext.gPowP]). Returns true if everything is good.
+     * Validates that this element is a quadratic residue, ie in Z^r_p.
      */
     fun isValidResidue(): Boolean
 

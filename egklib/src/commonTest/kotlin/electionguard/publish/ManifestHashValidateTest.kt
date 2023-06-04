@@ -21,8 +21,7 @@ class ManifestHashValidateTest {
             val context = productionGroup()
             val consumerIn = makeConsumer(input, context)
             val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-            val electionConfig = init.config
-            validateManifestHash(electionConfig.manifest)
+            validateManifestHash(init.config)
         }
     }
 
@@ -67,74 +66,17 @@ class ManifestHashValidateTest {
                 println("    selection ${selection.selectionId} = ${selection.selectionHash}")
             }
         }
-
         println()
-        println("***manifestCryptoHash")
-        val cryptoHash = manifestCryptoHash(
-            manifest.electionScopeId,
-            manifest.electionType,
-            manifest.startDate,
-            manifest.endDate,
-            manifest.geopoliticalUnits,
-            manifest.parties,
-            // manifest.candidates,
-            manifest.contests,
-            manifest.ballotStyles,
-            manifest.name,
-            manifest.contactInformation
-        )
-
-        println()
-        println("***manifest.cryptohash '$cryptoHash' ")
-        println()
-
-        val expect = "b2af12d76e8d1a869213fa7f3136eede0bb125250b9f3a23a95998665180d45f".fromSafeHex()
-            .toUInt256()
-        assertEquals(expect, manifest.manifestHash)
     }
 
-    fun recalcManifestHash(manifest: Manifest) {
-        println("***Manifest crypto_hash: ${manifest.manifestHash}")
-        val cryptoHash = manifestCryptoHash(
-            manifest.electionScopeId,
-            manifest.electionType,
-            manifest.startDate,
-            manifest.endDate,
-            manifest.geopoliticalUnits,
-            manifest.parties,
-            // manifest.candidates,
-            manifest.contests,
-            manifest.ballotStyles,
-            manifest.name,
-            manifest.contactInformation
-        )
-        println("  calculated crypto_hash: $cryptoHash")
+    fun validateManifestHash(config : ElectionConfig) {
+        val Hp =  parameterBaseHash(config.constants)
+        assertEquals(Hp, config.parameterBaseHash)
+        val Hm = manifestHash(Hp, config.manifestFile)
+        assertEquals(Hm, config.manifestHash)
+        assertEquals(electionBaseHash(Hp, config.numberOfGuardians, config.quorum, config.electionDate, config.jurisdictionInfo, Hm), config.electionBaseHash)
 
-        println("***manifest.electionScopeId '${manifest.electionScopeId}' ")
-        println("***manifest.electionType '${manifest.electionType}' ")
-        println("***manifest.startDate '${manifest.startDate}' ")
-        println("***manifest.endDate '${manifest.endDate}' ")
-        println("***manifest.name '${manifest.name}' ")
-    }
-
-    fun validateManifestHash(manifest: Manifest) {
-        println("Manifest crypto_hash: ${manifest.manifestHash}")
-        val cryptoHash = manifestCryptoHash(
-            manifest.electionScopeId,
-            manifest.electionType,
-            manifest.startDate,
-            manifest.endDate,
-            manifest.geopoliticalUnits,
-            manifest.parties,
-            // manifest.candidates,
-            manifest.contests,
-            manifest.ballotStyles,
-            manifest.name,
-            manifest.contactInformation
-        )
-        println("Expected crypto_hash: $cryptoHash")
-        assertEquals(manifest.manifestHash, cryptoHash)
-        for (contest in manifest.contests) {
+        for (contest in config.manifest.contests) {
             println("  contest ${contest.contestId} crypto_hash: ${contest.contestHash}")
             for (selection in contest.selections) {
                 val scryptoHash = selectionDescriptionCryptoHash(

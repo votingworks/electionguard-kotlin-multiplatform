@@ -2,32 +2,6 @@ package electionguard.ballot
 
 import electionguard.core.*
 
-fun manifestCryptoHash(
-    electionScopeId: String,
-    electionType: Manifest.ElectionType,
-    startDate: String,
-    endDate: String,
-    geopoliticalUnits: List<Manifest.GeopoliticalUnit>,
-    parties: List<Manifest.Party>,
-    contests: List<Manifest.ContestDescription>,
-    ballotStyles: List<Manifest.BallotStyle>,
-    name: List<Manifest.Language>,
-    contactInformation: Manifest.ContactInformation?
-) =
-    hashElements(
-        // follows the python code
-        electionScopeId,
-        electionType.name,
-        startDate,
-        endDate,
-        name,
-        contactInformation,
-        geopoliticalUnits,
-        parties,
-        contests,
-        ballotStyles,
-    )
-
 fun contestDescriptionCryptoHash(
     contestId: String,
     sequenceOrder: Int,
@@ -75,22 +49,7 @@ data class Manifest(
     val ballotStyles: List<BallotStyle>,
     val name: List<Language>,
     val contactInformation: ContactInformation?,
-    val manifestHash: UInt256 =
-        manifestCryptoHash(
-            electionScopeId,
-            electionType,
-            startDate,
-            endDate,
-            geopoliticalUnits,
-            parties,
-            contests,
-            ballotStyles,
-            name,
-            contactInformation
-        ),
-) : CryptoHashableUInt256 {
-    override fun cryptoHashUInt256() = manifestHash
-
+) {
     /** Map of ballotStyleId to all Contests that use it. */
     val styleToContestsMap : Map<String, List<ContestDescription>> by
     lazy {
@@ -355,11 +314,7 @@ data class Manifest(
         val geopoliticalUnitIds: List<String>,
         val partyIds: List<String>,
         val imageUri: String?,
-        val cryptoHash: UInt256 =
-            hashElements(ballotStyleId, geopoliticalUnitIds, partyIds, imageUri),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-    }
+    )
 
     /** A candidate in a contest. */
     data class Candidate(
@@ -368,11 +323,8 @@ data class Manifest(
         val partyId: String?,
         val imageUri: String?,
         val isWriteIn: Boolean,
-        val cryptoHash: UInt256 = hashElements(candidateId, name, partyId, imageUri),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-        constructor(candidateId: String) :
-                this(candidateId, null, null, null, false)
+    )  {
+        constructor(candidateId: String) : this(candidateId, null, null, null, false)
     }
 
     /**
@@ -383,10 +335,7 @@ data class Manifest(
         val addressLine: List<String>,
         val email: String?,
         val phone: String?,
-        val cryptoHash: UInt256 = hashElements(name, addressLine, email, phone),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-    }
+    )
 
     /**
      * A physical or virtual unit of representation or vote/seat aggregation. Use this entity to
@@ -399,11 +348,7 @@ data class Manifest(
         val name: String,
         val type: ReportingUnitType,
         val contactInformation: String?,
-        val cryptoHash: UInt256 =
-            hashElements(geopoliticalUnitId, name, type.name, contactInformation),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-    }
+    )
 
     /**
      * The ISO-639 language code.
@@ -413,10 +358,7 @@ data class Manifest(
     data class Language(
         val value: String,
         val language: String,
-        val cryptoHash: UInt256 = hashElements(value, language),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-    }
+    )
 
     /**
      * A political party.
@@ -428,12 +370,8 @@ data class Manifest(
         val abbreviation: String?,
         val color: String?,
         val logoUri: String?,
-        val cryptoHash: UInt256 = hashElements(partyId, name, abbreviation, color, logoUri),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-
-        constructor(partyId: String) :
-            this(partyId,"",null, null, null)
+    ) {
+        constructor(partyId: String) : this(partyId,"",null, null, null)
     }
 
     /**

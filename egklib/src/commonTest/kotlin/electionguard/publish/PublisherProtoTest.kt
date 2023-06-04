@@ -26,7 +26,7 @@ class PublisherProtoTest {
 
     @Test
     fun testRoundtripElectionConfig() {
-        val config = generateElectionConfig(3, 3)
+        val config = generateElectionConfig(publisher,3, 3)
 
         // ManifestInputValidation
         val manifestValidator = ManifestInputValidation(config.manifest)
@@ -55,14 +55,12 @@ class PublisherProtoTest {
 
     @Test
     fun testRoundtripElectionInit() {
-        val config = generateElectionConfig(6, 4)
+        val config = generateElectionConfig(publisher,6, 4)
         publisher.writeElectionConfig(config)
 
         val init = ElectionInitialized(
             config,
             generateElementModP(group),
-            config.manifest.manifestHash,
-            generateUInt256(group),
             generateUInt256(group),
             List(6) { generateGuardian(it, group) },
         )

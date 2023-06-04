@@ -25,12 +25,13 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         validateOutputDir(electionRecordDir, Formatter())
     }
 
-    actual override fun writeManifest(manifest: Manifest) {
+    actual override fun writeManifest(manifest: Manifest)  : String {
         val manifestJson = manifest.publish()
         FileOutputStream(jsonPaths.manifestPath()).use { out ->
             jsonFormat.encodeToStream(manifestJson, out)
             out.close()
         }
+        return jsonPaths.manifestPath()
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {

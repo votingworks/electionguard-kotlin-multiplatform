@@ -54,6 +54,8 @@ fun makeConsumer(
     }
 }
 
+// specify the manifest filename, or the directory that its in. May be JSON or proto. If JSON, may be zipped.
+// TODO needs testing
 fun readManifest(
     manifestDirOrFile: String,
     group: GroupContext,
