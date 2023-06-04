@@ -73,6 +73,7 @@ public data class DecryptingTrustee(
 
 @pbandk.Export
 public data class EncryptedKeyShare(
+    val ownerXcoord: Int = 0,
     val polynomialOwner: String = "",
     val secretShareFor: String = "",
     val encryptedCoordinate: electionguard.protogen.HashedElGamalCiphertext? = null,
@@ -86,7 +87,7 @@ public data class EncryptedKeyShare(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedKeyShare = electionguard.protogen.EncryptedKeyShare.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedKeyShare> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedKeyShare, *>>(3)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedKeyShare, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -116,6 +117,16 @@ public data class EncryptedKeyShare(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.HashedElGamalCiphertext.Companion),
                         jsonName = "encryptedCoordinate",
                         value = electionguard.protogen.EncryptedKeyShare::encryptedCoordinate
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "owner_xcoord",
+                        number = 6,
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
+                        jsonName = "ownerXcoord",
+                        value = electionguard.protogen.EncryptedKeyShare::ownerXcoord
                     )
                 )
             }
@@ -173,6 +184,7 @@ private fun EncryptedKeyShare.protoMergeImpl(plus: pbandk.Message?): EncryptedKe
 
 @Suppress("UNCHECKED_CAST")
 private fun EncryptedKeyShare.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedKeyShare {
+    var ownerXcoord = 0
     var polynomialOwner = ""
     var secretShareFor = ""
     var encryptedCoordinate: electionguard.protogen.HashedElGamalCiphertext? = null
@@ -182,8 +194,9 @@ private fun EncryptedKeyShare.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             1 -> polynomialOwner = _fieldValue as String
             2 -> secretShareFor = _fieldValue as String
             5 -> encryptedCoordinate = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
+            6 -> ownerXcoord = _fieldValue as Int
         }
     }
 
-    return EncryptedKeyShare(polynomialOwner, secretShareFor, encryptedCoordinate, unknownFields)
+    return EncryptedKeyShare(ownerXcoord, polynomialOwner, secretShareFor, encryptedCoordinate, unknownFields)
 }

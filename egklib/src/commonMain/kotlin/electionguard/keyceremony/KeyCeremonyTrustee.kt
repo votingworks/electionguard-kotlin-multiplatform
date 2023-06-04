@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.core.*
+import kotlin.experimental.xor
 
 /**
  * A Trustee that knows its own secret key and polynomial.
@@ -88,26 +89,20 @@ class KeyCeremonyTrustee(
         return errors.merge()
     }
 
-    /** Create another guardian's share of my key, encrypted. */
+    /** Create another guardian's share of my key, encrypted. spec 1.9 p 20 Share encryption. */
     override fun encryptedKeyShareFor(otherGuardian: String): Result<EncryptedKeyShare, String> {
         var pkeyShare = othersShareOfMyKey[otherGuardian]
         if (pkeyShare == null) {
-            val other = otherPublicKeys[otherGuardian]
+            val other : PublicKeys = otherPublicKeys[otherGuardian] // G_l's public keys
                 ?: return Err("Trustee '$id', does not have public key for '$otherGuardian'")
 
             // Compute my polynomial's y value at the other's x coordinate = Pi(ℓ)
             val Pil: ElementModQ = polynomial.valueAt(group, other.guardianXCoordinate)
-            // The encryption of that, using the other's public key. See spec 1.52, section 3.2.2 eq 14.
-            val nonce: ElementModQ = other.publicKey().context.randomElementModQ(minimum = 2)
-            val EPil = Pil.byteArray().hashedElGamalEncrypt(other.publicKey(), nonce)
+            // My encryption of Pil, using the other's public key. spec 1.9, section 3.2.2 eq 17.
+            val EPil : HashedElGamalCiphertext = shareEncryption(Pil, other)
 
+            pkeyShare = PrivateKeyShare(this.xCoordinate, this.id, other.guardianId, EPil, Pil)
             // keep track in case its challenged
-            pkeyShare = PrivateKeyShare(
-                this.id,
-                other.guardianId,
-                EPil,
-                Pil,
-            )
             othersShareOfMyKey[other.guardianId] = pkeyShare
         }
 
@@ -124,26 +119,28 @@ class KeyCeremonyTrustee(
         }
 
         // decrypt Pi(l)
-        val secretKey = ElGamalSecretKey(this.electionPrivateKey())
-        val byteArray = share.encryptedCoordinate.decrypt(secretKey)
+        val pilbytes = shareDecryption(share!!)
             ?: return Err("Trustee '$id' couldnt decrypt EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
-        val expected: ElementModQ = byteArray.toUInt256().toElementModQ(group) // Pi(ℓ)
+        val expectedPil: ElementModQ = pilbytes.toUInt256().toElementModQ(group) // Pi(ℓ)
 
         // The other's Kij
         val publicKeys = otherPublicKeys[share.polynomialOwner]
             ?: return Err("Trustee '$id' does not have public keys for missingGuardianId '${share.polynomialOwner}'")
 
-        // Is that value consistent with the missing guardian's commitments?
-        // verify spec 1.52, sec 3.2.2 eq 16: g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1
-        if (group.gPowP(expected) != calculateGexpPiAtL(this.xCoordinate, publicKeys.coefficientCommitments())) {
+        // Having decrypted each Pi (ℓ), guardian Gℓ can now verify its validity against
+        // the commitments Ki,0 , Ki,1 , . . . , Ki,k−1 made by Gi to its coefficients by confirming that
+        // g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1 eq 19
+        if (group.gPowP(expectedPil) != calculateGexpPiAtL(this.xCoordinate, publicKeys.coefficientCommitments())) {
             return Err("Trustee '$id' failed to validate EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
         }
 
+        // keep track of this result
         myShareOfOthers[share.polynomialOwner] = PrivateKeyShare(
+            share.ownerXcoord,
             share.polynomialOwner,
             this.id,
             share.encryptedCoordinate,
-            expected,
+            expectedPil,
         )
         return Ok(true)
     }
@@ -218,6 +215,7 @@ class KeyCeremonyTrustee(
                 // ok use it, but encrypt it ourself, dont use passed value, and use a new nonce
                 val EPil = keyShare.yCoordinate.byteArray().hashedElGamalEncrypt(myPublicKey)
                 myShareOfOthers[keyShare.polynomialOwner] = PrivateKeyShare(
+                    keyShare.ownerXcoord,
                     keyShare.polynomialOwner,
                     keyShare.secretShareFor,
                     EPil,
@@ -228,14 +226,99 @@ class KeyCeremonyTrustee(
 
         return errors.merge()
     }
+
+    // guardian Gi encryption Eℓ of Pi(ℓ) at another guardian's Gℓ coordinate ℓ
+    fun shareEncryption(
+        Pil : ElementModQ,
+        other: PublicKeys,
+        nonce: ElementModQ = other.publicKey().context.randomElementModQ(minimum = 2)
+    ): HashedElGamalCiphertext {
+
+        val K_l = other.publicKey() // other's publicKey
+        val hp = K_l.context.constants.hp.bytes
+        val i = xCoordinate.toUShort()
+        val l = other.guardianXCoordinate.toUShort()
+
+        // (alpha, beta) = (g^R mod p, K^R mod p)  spec 1.9, p 20, eq 13
+        // by encrypting a zero, we achieve exactly this
+        val (alpha, beta) = 0.encrypt(K_l, nonce)
+        // ki,ℓ = H(HP ; 11, i, ℓ, Kℓ , αi,ℓ , βi,ℓ ) eq 14
+        val kil = hashFunction(hp, 0x11.toByte(), i, l, K_l.key, alpha, beta).bytes
+
+        // This key derivation uses the KDF in counter mode from SP 800-108r1. The second input to HMAC contains
+        // the counter in the first byte, the UTF-8 encoding of the string "share enc keys" as the Label (encoding is denoted
+        // by b(. . . ), see Section 5.1.4), a separation 00 byte, the UTF-8 encoding of the string "share encrypt" concatenated
+        // with encodings of the numbers i and ℓ of the sending and receiving guardians as the Context, and the final two bytes
+        // specifying the length of the output key material as 512 bits in total.
+
+        val label = "share enc keys"
+        // context = b(”share encrypt”) ∥ b(i, 2) ∥ b(ℓ, 2)
+        val context = "share encrypt"
+        // k0 = HMAC(ki,ℓ , 01 ∥ label ∥ 00 ∥ context ∥ 0200) eq 15
+        val k0 = hashFunction(kil, 0x01.toByte(), label, 0x00.toByte(), context, i, l, 512.toShort()).bytes
+        // k1 = HMAC(ki,ℓ , 02 ∥ label ∥ 00 ∥ context ∥ 0200), eq 16
+        val k1 = hashFunction(kil, 0x02.toByte(), label, 0x00.toByte(), context, i, l, 512.toShort()).bytes
+
+        // eq 18
+        // C0 = g^nonce == alpha
+        val c0: ElementModP = alpha
+        // C1 = b(Pi(ℓ),32) ⊕ k1, • The symbol ⊕ denotes bitwise XOR.
+        val pilBytes = Pil.byteArray()
+        val c1 = ByteArray(32) { pilBytes[it] xor k1[it] }
+        // C2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 )
+        val c2 = hashFunction(k0, c0, c1)
+
+        return HashedElGamalCiphertext(c0, c1, c2, pilBytes.size)
+    }
+
+    // Share decryption. After receiving the ciphertext (Ci,ℓ,0 , Ci,ℓ,1 , Ci,ℓ,2 ) from guardian Gi , guardian
+    // Gℓ decrypts it by computing βi,ℓ = (Ci,ℓ,0 )sℓ mod p, setting αi,ℓ = Ci,ℓ,0 and obtaining ki,ℓ =
+    // H(HP ; 11, i, ℓ, Kℓ , αi,ℓ , βi,ℓ ).
+    // Now the MAC key k0 and the encryption key k1 can be computed as
+    // above in Equations (15) and (16), which allows Gℓ to verify the validity of the MAC, namely that
+    // Ci,ℓ,2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 ). If the MAC verifies, Gℓ decrypts b(Pi (ℓ), 32) = Ci,ℓ,1 ⊕k1 .
+    fun shareDecryption(share: EncryptedKeyShare): ByteArray?  {
+        // αi,ℓ = Ci,ℓ,0
+        // βi,ℓ = (Ci,ℓ,0 )sℓ mod p
+        // ki,ℓ = H(HP ; 11, i, ℓ, Kℓ , αi,ℓ , βi,ℓ )
+        val c0 = share.encryptedCoordinate.c0
+        val c1 = share.encryptedCoordinate.c1
+
+        val alpha = c0
+        val beta = c0 powP this.electionPrivateKey()
+        val hp = group.constants.hp.bytes
+        val kil = hashFunction(hp, 0x11.toByte(), share.ownerXcoord.toShort(), xCoordinate.toShort(), electionPublicKey(), alpha, beta).bytes
+
+        // Now the MAC key k0 and the encryption key k1 can be computed as above in Equations (15) and (16)
+        val label = "share enc keys"
+        // context = b(”share encrypt”) ∥ b(i, 2) ∥ b(ℓ, 2)
+        val context = "share encrypt"
+        // k0 = HMAC(ki,ℓ , 01 ∥ label ∥ 00 ∥ context ∥ 0200) eq 15
+        val k0 = hashFunction(kil, 0x01.toByte(), label, 0x00.toByte(), context, share.ownerXcoord.toShort(), xCoordinate.toShort(), 512.toShort()).bytes
+        // k1 = HMAC(ki,ℓ , 02 ∥ label ∥ 00 ∥ context ∥ 0200), eq 16
+        val k1 = hashFunction(kil, 0x02.toByte(), label, 0x00.toByte(), context, share.ownerXcoord.toShort(), xCoordinate.toShort(), 512.toShort()).bytes
+
+        // Gℓ can verify the validity of the MAC, namely that
+        // Ci,ℓ,2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 ). If the MAC verifies, Gℓ decrypts b(Pi (ℓ), 32) = Ci,ℓ,1 ⊕ k1 .
+        val expectedC2 = hashFunction(k0, c0, c1)
+        if (expectedC2 != share.encryptedCoordinate.c2) {
+            return null
+        }
+
+        //  If the MAC verifies, Gℓ decrypts b(Pi (ℓ), 32) = Ci,ℓ,1 ⊕ k1 .
+        val pilBytes = ByteArray(32) { c1[it] xor k1[it] }
+        return pilBytes
+    }
+
 }
 
 // internal use only
 private data class PrivateKeyShare(
-    val polynomialOwner: String, // guardian j (owns the polynomial Pj)
+    val ownerXcoord: Int, // guardian i (owns the polynomial Pi) xCoordinate
+    val polynomialOwner: String, // guardian i (owns the polynomial Pi)
     val secretShareFor: String, // guardian l with coordinate ℓ
-    val encryptedCoordinate: HashedElGamalCiphertext, // El(Pj_(ℓ))
-    val yCoordinate: ElementModQ, // Pj_(ℓ), trustee ℓ's share of trustee j's secret
+    val encryptedCoordinate: HashedElGamalCiphertext, // El(Pi_(ℓ))
+    val yCoordinate: ElementModQ, // Pi_(ℓ), trustee ℓ's share of trustee i's secret
 ) {
     init {
         require(polynomialOwner.isNotEmpty())
@@ -243,12 +326,14 @@ private data class PrivateKeyShare(
     }
 
     fun makeEncryptedKeyShare() = EncryptedKeyShare(
+        ownerXcoord,
         polynomialOwner,
         secretShareFor,
         encryptedCoordinate,
     )
 
     fun makeKeyShare() = KeyShare(
+        ownerXcoord,
         polynomialOwner,
         secretShareFor,
         yCoordinate,

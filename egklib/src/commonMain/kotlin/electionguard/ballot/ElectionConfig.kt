@@ -4,8 +4,11 @@ import electionguard.core.*
 import electionguard.core.Base16.toHex
 import io.ktor.utils.io.core.*
 
+const val protocolVersion = "v2.0"
+
 /** Configuration input for KeyCeremony. */
 data class ElectionConfig(
+    val configVersion: String,
     val constants: ElectionConstants,
     val manifestFile: ByteArray, // the exact bytes of the original manifest File
     val manifest: Manifest, // the parsed objects
@@ -90,7 +93,7 @@ fun parameterBaseHash(primes : ElectionConstants) : UInt256 {
     // The symbol HV denotes the version byte array that encodes the used version of this specification.
     // The array has length 32 and contains the UTF-8 encoding of the string "v2.0" followed by 00-
     // bytes, i.e. HV = 76322E30 ∥ b(0, 28).
-    val version = "v2.0".toByteArray()
+    val version = protocolVersion.toByteArray()
     val HV = ByteArray(32) { if (it < 4) version[it] else 0 }
 
     return hashFunction(

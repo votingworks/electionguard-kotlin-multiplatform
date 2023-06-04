@@ -4,6 +4,7 @@ package electionguard.protogen
 
 @pbandk.Export
 public data class ElectionConfig(
+    val specVersion: String = "",
     val constants: electionguard.protogen.ElectionConstants? = null,
     val manifestFile: pbandk.ByteArr = pbandk.ByteArr.empty,
     val manifest: electionguard.protogen.Manifest? = null,
@@ -25,8 +26,18 @@ public data class ElectionConfig(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConfig = electionguard.protogen.ElectionConfig.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(11)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(12)
             fieldsList.apply {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "spec_version",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "specVersion",
+                        value = electionguard.protogen.ElectionConfig::specVersion
+                    )
+                )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -775,6 +786,7 @@ private fun ElectionConfig.protoMergeImpl(plus: pbandk.Message?): ElectionConfig
 
 @Suppress("UNCHECKED_CAST")
 private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionConfig {
+    var specVersion = ""
     var constants: electionguard.protogen.ElectionConstants? = null
     var manifestFile: pbandk.ByteArr = pbandk.ByteArr.empty
     var manifest: electionguard.protogen.Manifest? = null
@@ -789,6 +801,7 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
+            1 -> specVersion = _fieldValue as String
             2 -> constants = _fieldValue as electionguard.protogen.ElectionConstants
             3 -> manifest = _fieldValue as electionguard.protogen.Manifest
             4 -> numberOfGuardians = _fieldValue as Int
@@ -803,9 +816,9 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
         }
     }
 
-    return ElectionConfig(constants, manifestFile, manifest, numberOfGuardians,
-        quorum, electionDate, jurisdictionInfo, parameterBaseHash,
-        manifestHash, electionBaseHash, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+    return ElectionConfig(specVersion, constants, manifestFile, manifest,
+        numberOfGuardians, quorum, electionDate, jurisdictionInfo,
+        parameterBaseHash, manifestHash, electionBaseHash, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export

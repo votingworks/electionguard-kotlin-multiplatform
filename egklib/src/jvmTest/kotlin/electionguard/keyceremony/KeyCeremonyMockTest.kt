@@ -37,7 +37,7 @@ class KeyCeremonyMockTest {
             val result1 = trustee3.encryptedKeyShareFor(trustee1.id())
             assertTrue(result1 is Ok)
             val ss21 = result1.unwrap()
-            Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), ss21.encryptedCoordinate))
+            Ok(EncryptedKeyShare(spy3.xCoordinate(), spy3.id(), trustee1.id(), ss21.encryptedCoordinate))
         }
         val trustees = listOf(trustee1, trustee2, spy3)
 
@@ -55,7 +55,7 @@ class KeyCeremonyMockTest {
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
             // bad EncryptedShare
-            Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
+            Ok(EncryptedKeyShare(spy3.xCoordinate(), spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
         }
         val trustees = listOf(trustee1, trustee2, spy3)
         val result = keyCeremonyExchange(trustees, true)
@@ -73,7 +73,7 @@ class KeyCeremonyMockTest {
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
             // bad EncryptedShare
-            Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
+            Ok(EncryptedKeyShare(spy3.xCoordinate(), spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
         }
         val trustees = listOf(trustee1, trustee2, spy3)
         val result = keyCeremonyExchange(trustees, false)
@@ -92,11 +92,11 @@ class KeyCeremonyMockTest {
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
             // bad EncryptedShare
-            Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
+            Ok(EncryptedKeyShare(spy3.xCoordinate(), spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
         }
         every { spy3.keyShareFor(trustee1.id()) } answers {
             // bad KeyShare
-            Ok(KeyShare(spy3.id(), trustee1.id(), group.TWO_MOD_Q))
+            Ok(KeyShare(spy3.xCoordinate(), spy3.id(), trustee1.id(), group.TWO_MOD_Q))
         }
         val trustees = listOf(trustee1, trustee2, spy3)
         val result = keyCeremonyExchange(trustees, false)
@@ -116,11 +116,11 @@ class KeyCeremonyMockTest {
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
             // bad EncryptedShare
-            Ok(EncryptedKeyShare(spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
+            Ok(EncryptedKeyShare(spy3.xCoordinate(), spy3.id(), trustee1.id(), generateHashedCiphertext(group)))
         }
         every { spy3.keyShareFor(trustee1.id()) } answers {
             // bad KeyShare
-            Ok(KeyShare(spy3.id(), trustee1.id(), group.TWO_MOD_Q))
+            Ok(KeyShare(spy3.xCoordinate(), spy3.id(), trustee1.id(), group.TWO_MOD_Q))
         }
         val trustees = listOf(trustee1, trustee2, spy3)
         val result = keyCeremonyExchange(trustees, true)

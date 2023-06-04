@@ -9,12 +9,11 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
 import electionguard.core.*
-import electionguard.core.Base16.toHex
 
 private const val debug = false
 
 /** Exchange PublicKeys and secret KeyShares among the trustees */
-fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFailure : Boolean = true): Result<KeyCeremonyResults, String> {
+fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFailure : Boolean = false): Result<KeyCeremonyResults, String> {
     // make sure trustee ids are all different
     val uniqueIds = trustees.map{it.id()}.toSet()
     if (uniqueIds.size != trustees.size) {

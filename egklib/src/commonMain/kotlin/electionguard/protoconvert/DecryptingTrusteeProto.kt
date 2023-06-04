@@ -42,6 +42,7 @@ private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: G
     }
     return Ok(
         EncryptedKeyShare(
+            this.ownerXcoord,
             this.polynomialOwner,
             this.secretShareFor,
             encryptedCoordinate.unwrap(),
@@ -61,6 +62,7 @@ fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
 
 private fun EncryptedKeyShare.publishProto() =
     electionguard.protogen.EncryptedKeyShare(
+        this.ownerXcoord,
         this.polynomialOwner,
         this.secretShareFor,
         this.encryptedCoordinate.publishProto(),

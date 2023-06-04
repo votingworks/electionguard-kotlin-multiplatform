@@ -6,6 +6,7 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
+import electionguard.ballot.protocolVersion
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
@@ -85,7 +86,7 @@ fun main(args: Array<String>) {
                     "  nguardians = $nguardians quorum = $quorum\n" +
                     "  outputDir = '$outputDir'\n"
         )
-        ElectionConfig(group.constants, ByteArray(0), manifest.unwrap(), nguardians!!, quorum!!,
+        ElectionConfig(protocolVersion, group.constants, ByteArray(0), manifest.unwrap(), nguardians!!, quorum!!,
             electionDate ?: "N/A",
             info ?: "N/A",
             mapOf(
@@ -105,6 +106,7 @@ fun main(args: Array<String>) {
 
     val result = runKeyCeremony(group, createdFrom, config, outputDir, trusteeDir, createdBy)
     println("runKeyCeremony result = $result")
+    require(result is Ok)
 }
 
 fun runKeyCeremony(

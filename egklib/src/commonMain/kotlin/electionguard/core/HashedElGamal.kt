@@ -5,6 +5,7 @@ private val logger = KotlinLogging.logger("HashedElGamal")
 
 /**
  * The ciphertext representation of an arbitrary byte-array, encrypted with an ElGamal public key.
+ * spec 1.9, section 3.2.2 eq 17.
  */
 data class HashedElGamalCiphertext(
     val c0: ElementModP,
