@@ -3,16 +3,18 @@ package electionguard.keyceremony
 import electionguard.core.ElementModQ
 import electionguard.core.HashedElGamalCiphertext
 
-/** Pj_(ℓ), guardian ℓ's share of guardian j's secret. */
+/** Pi_(ℓ), guardian ℓ's share of guardian i's secret. */
 data class KeyShare(
-    val polynomialOwner: String, // guardian j (owns the polynomial Pj)
+    val ownerXcoord: Int, // guardian i (owns the polynomial Pi) xCoordinate
+    val polynomialOwner: String, // guardian i (owns the polynomial Pi)
     val secretShareFor: String, // guardian l with coordinate ℓ
-    val yCoordinate: ElementModQ, // Pj_(ℓ), guardian ℓ's share of guardian j's secret
+    val yCoordinate: ElementModQ, // Pi_(ℓ), guardian ℓ's share of guardian i's secret
 )
 
-/** Encrypted version of Pj_(ℓ). */
+/** Encrypted version of Pi_(ℓ). */
 data class EncryptedKeyShare(
-    val polynomialOwner: String, // guardian j (owns the polynomial Pj)
+    val ownerXcoord: Int, // guardian i (owns the polynomial Pi) xCoordinate
+    val polynomialOwner: String, // guardian i (owns the polynomial Pi)
     val secretShareFor: String, // guardian l with coordinate ℓ
-    val encryptedCoordinate: HashedElGamalCiphertext, // El(Pj_(ℓ)), spec 1.52, eq 14
+    val encryptedCoordinate: HashedElGamalCiphertext, // El(Pi_(ℓ)), spec 1.9, eq 17
 )

@@ -445,6 +445,7 @@ private fun ContestData.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Cont
             4 -> filler = _fieldValue as String
         }
     }
+
     return ContestData(status, pbandk.ListWithSize.Builder.fixed(overVotes), pbandk.ListWithSize.Builder.fixed(writeIns), filler, unknownFields)
 }
 
@@ -467,6 +468,7 @@ private fun ElementModP.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Elem
             1 -> value = _fieldValue as pbandk.ByteArr
         }
     }
+
     return ElementModP(value, unknownFields)
 }
 
@@ -489,6 +491,7 @@ private fun ElementModQ.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Elem
             1 -> value = _fieldValue as pbandk.ByteArr
         }
     }
+
     return ElementModQ(value, unknownFields)
 }
 
@@ -515,6 +518,7 @@ private fun ElGamalCiphertext.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             2 -> data = _fieldValue as electionguard.protogen.ElementModP
         }
     }
+
     return ElGamalCiphertext(pad, data, unknownFields)
 }
 
@@ -541,6 +545,7 @@ private fun GenericChaumPedersenProof.Companion.decodeWithImpl(u: pbandk.Message
             4 -> response = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
+
     return GenericChaumPedersenProof(challenge, response, unknownFields)
 }
 
