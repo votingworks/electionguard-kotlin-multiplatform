@@ -79,7 +79,7 @@ class KeyCeremonyTrustee(
             errors.add( Err("${this.id} receivePublicKeys from '${publicKeys.guardianId}': needs ($quorum) coefficientProofs"))
         }
         if (errors.isEmpty()) {
-            val validProofs: Result<Boolean, String> = publicKeys.validate(group.constants.hp)
+            val validProofs: Result<Boolean, String> = publicKeys.validate()
             if (validProofs is Err) {
                 return validProofs
             }
