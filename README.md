@@ -1,13 +1,17 @@
 # ElectionGuard-Kotlin-Multiplatform
+
+last update 6/05/2023
+
 ElectionGuard-Kotlin-Multiplatform (EKM) is an experimental attempt to create a multiplatform Kotlin implementation of 
 [ElectionGuard](https://github.com/microsoft/electionguard), capable of running
 "everywhere" (Android / JVM, iOS / Unix native, and eventually JavaScript-in-browser).
 
+EKM is targeting the ElectionGuard 2.0 spec, currently in beta.
 Note that EKM is *not* compatible with ElectionGuard-Python or any other
-ElectionGuard implementation. EKM is, however, intended to have full feature-parity
-with the Python codebase.
+ElectionGuard 1.0 implementation. 
 
-EKM is available under an MIT-style open source license.
+EKM is available under an MIT-style open source 
+[License](LICENSE).
 
 *Table of contents*:
 - [Incompatibilities with ElectionGuard 1.0](#incompatibilities-with-electionguard-10)
@@ -19,7 +23,7 @@ EKM is available under an MIT-style open source license.
 - [Input Validation](#input-validation)
 - [Authors](#authors)
 
-## Incompatibilities with ElectionGuard 1.0
+## Implementation of ElectionGuard 2.0
 
 - EKM uses an optimized encoding of an encrypted ElGamal counter, proposed by [Pereira](https://perso.uclouvain.be/olivier.pereira/). Where 
   ElectionGuard 1.0 defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{ar}g^m\right)$,
@@ -36,19 +40,16 @@ EKM is available under an MIT-style open source license.
   linear with respect to the size of the constant, and when the constant is "1", 
   the proof will be the same size as the original disjunctive proof.
 
-The above changes are consistent with changes that have been proposed for ElectionGuard 2.0. The following
-changes are not:
-
-- EKM does not use JSON for serialization. Instead, it uses [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers), a binary format
-  that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
-  the relevant data formats, which could be adopted by other implementations,
-  making it easier for future ElectionGuard implementations to have compatible
-  data serialization.
-
-- EKM changes how hashes are computed, defining the result of a hash function as
-  a 256-bit unsigned integer rather than an element-mod-q. This simplifies the code 
-  in a variety of ways. The `UInt256` type is used in a number of other contexts,
+- EKM defines the result of a hash function as a 256-bit unsigned integer `UInt256` type rather than a `ElementModQ`
+  type. This simplifies the code in a variety of ways. The `UInt256` type is used in a number of other contexts,
   like HMAC keys, allowing those implementations to be independent of the ElGamal group parameters.
+  For serialization, the output of `UInt256` type is identical to `ElementModQ`, so this is an internal 
+  difference compatible with other implementations.
+
+- EKM can use both JSON and [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers) for serialization. 
+  Protobuf is a binary format
+  that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
+  the relevant data formats, which constitutes a well defined and compact schema for EG serialization.
 
 ## Cool features of EKM
 
@@ -103,13 +104,13 @@ could use here when it's ready.
 
 ## API differences from ElectionGuard-Python
 
-The biggest and most notable difference is the use of [GroupContext](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/kotlin/electionguard/core/GroupCommon.kt#L117) 
+The biggest and most notable difference is the use of [GroupContext](egklib/src/commonMain/kotlin/electionguard/core/GroupCommon.kt) 
 instances. A `GroupContext` provides
 all the necessary state to do computation with a group, replacing a series of global variables, in 
 the Python code, with instance variables inside the group context. You get a group context by calling 
-[productionGroup()](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/kotlin/electionguard/core/Group.kt#L11)
+[productionGroup()](egklib/src/commonMain/kotlin/electionguard/core/Group.kt)
 with an optional parameter specifying how much precomputation (and memory use) you're willing to tolerate
-in response for more acceleration of the cryptographic primitives. There's also a [tinyGroup()](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonTest/kotlin/electionguard/core/TinyGroup.kt#L23), only
+in response for more acceleration of the cryptographic primitives. There's also a [tinyGroup()](egklib/src/commonTest/kotlin/electionguard/core/TinyGroup.kt), only
 available to unit tests, that operates with 32-bit primes rather than the original 256 or 4096-bit primes. This 
 allows the unit tests to run radically faster, and in some cases even discover corner case bugs that would
 be unlikely to manifest if the tests were operating with a production group.
@@ -123,16 +124,16 @@ a period, the IDE's autocomplete menu should offer you a variety of useful
 methods.
 
 ## Protobuf Serialization
-* [Protobuf serialization 1.53](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec1.53.md)
-* [Election Record serialization for private classes](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationPrivate.md)
-* [Election Record protobuf directory and file layout](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ElectionRecord.md)
-* [Protobuf serialization (ver 1) and comparison with JSON](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/ProtoSerializationSpec1.md)
+* [Protobuf serialization 1.53](docs/ProtoSerializationSpec1.53.md)
+* [Election Record serialization for private classes](docs/ProtoSerializationPrivate.md)
+* [Election Record protobuf directory and file layout](docs/ElectionRecord.md)
+* [Protobuf serialization (ver 1) and comparison with JSON](docs/ProtoSerializationSpec1.md)
 
 ## Workflow
-* [Workflow and Command Line Programs](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/CommandLineInterface.md)
+* [Workflow and Command Line Programs](docs/CommandLineInterface.md)
 
 ## Input Validation
-* [Input Validation](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/InputValidation.md)
+* [Input Validation](docs/InputValidation.md)
 
 ## Authors
 - [John Caron](https://github.com/JohnLCaron)
