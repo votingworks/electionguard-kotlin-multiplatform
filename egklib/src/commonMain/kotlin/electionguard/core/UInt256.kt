@@ -31,6 +31,8 @@ data class UInt256(val bytes: ByteArray) : CryptoHashableString {
         val ZERO = 0U.toUInt256()
         val ONE = 1U.toUInt256()
         val TWO = 2U.toUInt256()
+
+        fun random() : UInt256 = UInt256(randomBytes(32))
     }
 }
 

@@ -15,8 +15,8 @@ class GenerateFakeBallots {
     @Test
     fun generateFakeBallots() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
-        val outputDir =  "testOut/runFakeBallotTest/private_data"
+        val inputDir = "testOut/RunKeyCeremonyTest" // "src/commonTest/data/runWorkflowAllAvailable"
+        val outputDir =  "testOut/GenerateFakeBallots/private_data"
         val nballots = 33
 
         val consumerIn = makeConsumer(inputDir, group)

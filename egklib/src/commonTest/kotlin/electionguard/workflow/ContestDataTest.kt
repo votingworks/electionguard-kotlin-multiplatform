@@ -7,11 +7,7 @@ import electionguard.ballot.ContestDataStatus
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.importContestData
-import electionguard.core.decrypt
-import electionguard.core.elGamalKeyPairFromRandom
-import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
-import electionguard.core.runTest
+import electionguard.core.*
 import electionguard.encrypt.Encryptor
 import electionguard.input.BallotInputBuilder
 import electionguard.publish.makeConsumer
@@ -69,9 +65,7 @@ class ContestDataTest {
 
 
             val encryptor = Encryptor(context, manifest, keypair.publicKey, electionInit.extendedBaseHash)
-            val nonce1 = context.randomElementModQ(minimum = 2)
-            val nonce2 = context.randomElementModQ(minimum = 3)
-            val eballot = encryptor.encrypt(ballot, nonce1, nonce2, 0)
+            val eballot = encryptor.encrypt(ballot)
 
             eballot.contests.forEachIndexed { idx, it ->
                 assertNotNull(it.contestData)

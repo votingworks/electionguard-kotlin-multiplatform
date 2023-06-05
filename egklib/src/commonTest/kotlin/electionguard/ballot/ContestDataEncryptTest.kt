@@ -2,12 +2,7 @@ package electionguard.ballot
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
-import electionguard.core.decrypt
-import electionguard.core.elGamalKeyPairFromRandom
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.propTestSlowConfig
-import electionguard.core.runTest
-import electionguard.core.tinyGroup
+import electionguard.core.*
 import electionguard.protoconvert.importHashedCiphertext
 import electionguard.protoconvert.publishProto
 import io.kotest.property.Arb
@@ -65,7 +60,7 @@ class ContestDataEncryptTest {
         println("")
         var starting = getSystemTimeInMillis()
 
-        val target = contestData.encrypt(keypair.publicKey, 1, null)
+        val target = contestData.encrypt(keypair.publicKey, 1, UInt256.random())
         assertEquals(64, target.c1.size)
         // assertEquals(target.numBytes, target.c1.size)
         var took = getSystemTimeInMillis() - starting
@@ -110,7 +105,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes, null)
+                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -131,7 +126,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes, null)
+                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -152,7 +147,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 2
-                val target = contestData.encrypt(keypair.publicKey, votes, null)
+                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -173,7 +168,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes, null)
+                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -194,7 +189,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 3
-                val target = contestData.encrypt(keypair.publicKey, votes, null)
+                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
                 if ((1 + votes) * 32 != target.c1.size) {
                     println("${(1 + votes) * 32} != ${target.c1.size}")
                 }
@@ -212,7 +207,7 @@ class ContestDataEncryptTest {
             if (debug) println("\ncontestData = $contestData")
 
             val votes = 1
-            val target = contestData.encrypt(keypair.publicKey, votes, null)
+            val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
             if ((1 + votes) * 32 != target.c1.size) {
                 assertEquals((1 + votes) * 32, target.c1.size)
             }

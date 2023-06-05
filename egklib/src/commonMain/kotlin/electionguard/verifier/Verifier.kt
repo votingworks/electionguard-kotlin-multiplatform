@@ -96,6 +96,9 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         val check: MutableList<Result<Boolean, String>> = mutableListOf()
         val constants = config.constants
 
+        if (config.configVersion != protocolVersion) {
+            check.add(Err("  1.A The election record specification version '${config.configVersion}' does not match '$protocolVersion'"))
+        }
         if (!constants.largePrime.contentEquals(group.constants.largePrime)) {
             check.add(Err("  1.A The large prime is not equal to the large modulus p defined in Section 3.1.1"))
         }
@@ -119,7 +122,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         }
         val Hd = electionBaseHash(Hp, config.numberOfGuardians, config.quorum, config.electionDate, config.jurisdictionInfo, Hm)
         if (Hd != config.electionBaseHash) {
-            check.add(Err("  1.F The election base hash does not match eq 6"))
+            check.add(Err("  1.G The election base hash does not match eq 6"))
         }
 
         return check.merge()

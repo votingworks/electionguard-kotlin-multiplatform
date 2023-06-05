@@ -240,13 +240,11 @@ private fun EncryptedBallot.convertToTally(): EncryptedTally {
             EncryptedTally.Selection(
                 it.selectionId,
                 it.sequenceOrder,
-                it.selectionHash,
                 it.ciphertext)
         }
         EncryptedTally.Contest(
             contest.contestId,
             contest.sequenceOrder,
-            contest.contestHash,
             selections,
             contest.contestData,
         )

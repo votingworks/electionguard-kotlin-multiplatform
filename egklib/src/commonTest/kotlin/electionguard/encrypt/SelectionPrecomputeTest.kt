@@ -5,13 +5,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.Stats
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.productionGroup
-import electionguard.core.toElementModQ
+import electionguard.core.*
 import electionguard.publish.makeConsumer
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlin.test.Test
@@ -60,7 +54,6 @@ class SelectionPrecomputeTest {
 fun precomputeSelections(group: GroupContext, stats: Stats, revotes: Int, electionInit: ElectionInitialized, ballot: PlaintextBallot): SelectionPrecompute {
     val manifest: Manifest = electionInit.manifest()
     val codeSeed: ElementModQ = electionInit.extendedBaseHash.toElementModQ(group)
-    val masterNonce = group.TWO_MOD_Q
 
     var starting = getSystemTimeInMillis()
     val pballot = SelectionPrecompute(
@@ -71,7 +64,7 @@ fun precomputeSelections(group: GroupContext, stats: Stats, revotes: Int, electi
         ballot.ballotId,
         ballot.ballotStyleId,
         codeSeed,
-        masterNonce,
+        UInt256.random(),
         0,
     )
     val nselections = pballot.contests.map { it.selections.size }.sum()

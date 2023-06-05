@@ -32,7 +32,6 @@ class EncryptedTallyConvertTest {
             return EncryptedTally.Contest(
                 "contest$cseq",
                 cseq,
-                generateUInt256(context),
                 selections,
             )
         }
@@ -41,14 +40,9 @@ class EncryptedTallyConvertTest {
             sseq: Int,
             context: GroupContext
         ): EncryptedTally.Selection {
-            //         val selectionId: String,
-            //        val sequenceOrder: Int,
-            //        val selectionDescriptionHash: ElementModQ,
-            //        val ciphertext: ElGamalCiphertext,
             return EncryptedTally.Selection(
                 "selection$sseq",
                 sseq,
-                generateUInt256(context),
                 generateCiphertext(context),
             )
         }

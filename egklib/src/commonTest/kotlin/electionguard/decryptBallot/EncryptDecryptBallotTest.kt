@@ -20,7 +20,6 @@ import electionguard.core.UInt256
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
 import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
 import electionguard.core.toUInt256
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptorDoerre
@@ -156,11 +155,10 @@ fun testDecryptor(
     var encryptTime = 0L
     var decryptTime = 0L
     RandomBallotProvider(manifest, nballots, true).ballots().forEach { ballot ->
-        val codeSeed = group.randomElementModQ(minimum = 2)
-        val masterNonce = group.randomElementModQ(minimum = 2)
+        val masterNonce = UInt256.random()
 
         val startEncrypt = getSystemTimeInMillis()
-        val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+        val ciphertextBallot = encryptor.encrypt(ballot, masterNonce, 0)
         val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
         encryptTime += getSystemTimeInMillis() - startEncrypt
 

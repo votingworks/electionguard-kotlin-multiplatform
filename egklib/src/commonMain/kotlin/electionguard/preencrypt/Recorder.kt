@@ -13,11 +13,11 @@ import electionguard.encrypt.Encryptor
 class Recorder(
     val group: GroupContext,
     val manifest: Manifest,
-    nonceEncryptionKey: ElGamalPublicKey,
-    cryptoExtendedBaseHash: UInt256,
+    jointPublicKey: ElGamalPublicKey,
+    extendedBaseHash: UInt256,
 ) {
-    internal val preEncryptor = PreEncryptor( group, manifest, nonceEncryptionKey)
-    val encryptor = Encryptor( group, manifest, nonceEncryptionKey, cryptoExtendedBaseHash)
+    internal val preEncryptor = PreEncryptor( group, manifest, jointPublicKey)
+    val encryptor = Encryptor( group, manifest, jointPublicKey, extendedBaseHash)
 
     internal fun MarkedPreEncryptedBallot.record(
         codeSeed : UInt256,
@@ -49,10 +49,10 @@ class Recorder(
             plaintextContests,
         )
 
-        val ciphertextBallot = encryptor.encrypt(
+        val ciphertextBallot = encryptor.encryptPre( // TODO
             plaintextBallot,
             codeSeed.toElementModQ(group),
-            primaryNonce.toElementModQ(group),
+            primaryNonce,
             null,
             preEncryptedBallot.confirmationCode,
         )

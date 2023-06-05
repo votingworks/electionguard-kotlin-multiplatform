@@ -139,7 +139,7 @@ fun Int.encrypt(
 
     // We don't have to check if message >= Q, because it's an integer, and Q
     // is much larger than that.
-
+    // Enc(σ, ξ) = (α, β) = (g^ξ mod p, K^σ · K^ξ mod p) = (g^ξ mod p, K^σ+ξ mod p). (21)
     val pad = context.gPowP(nonce)
     val data = publicKey.key powP (nonce + this.toElementModQ(context))
 

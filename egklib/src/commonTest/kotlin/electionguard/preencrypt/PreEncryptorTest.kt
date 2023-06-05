@@ -135,6 +135,11 @@ internal class PreEncryptorTest {
         mballot.show()
 
         // record
+        //     val group: GroupContext,
+        //    val manifest: Manifest,
+        //    jointPublicKey: ElGamalPublicKey,
+        //    manifestHash: UInt256,
+        //    extendedBaseHash: UInt256,
         val recorder = Recorder(group, manifest, publicKey, qbar)
         val (recordedBallot, ciphertextBallot) = with(recorder) {
             mballot.record(UInt256.TWO, primaryNonce, codeLen)

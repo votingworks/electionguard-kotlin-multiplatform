@@ -53,7 +53,6 @@ public data class EncryptedTally(
 public data class EncryptedTallyContest(
     val contestId: String = "",
     val sequenceOrder: Int = 0,
-    val contestDescriptionHash: electionguard.protogen.UInt256? = null,
     val selections: List<electionguard.protogen.EncryptedTallySelection> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -65,7 +64,7 @@ public data class EncryptedTallyContest(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedTallyContest = electionguard.protogen.EncryptedTallyContest.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedTallyContest> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedTallyContest, *>>(4)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedTallyContest, *>>(3)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -85,16 +84,6 @@ public data class EncryptedTallyContest(
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "sequenceOrder",
                         value = electionguard.protogen.EncryptedTallyContest::sequenceOrder
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "contest_description_hash",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "contestDescriptionHash",
-                        value = electionguard.protogen.EncryptedTallyContest::contestDescriptionHash
                     )
                 )
                 add(
@@ -122,7 +111,6 @@ public data class EncryptedTallyContest(
 public data class EncryptedTallySelection(
     val selectionId: String = "",
     val sequenceOrder: Int = 0,
-    val selectionDescriptionHash: electionguard.protogen.UInt256? = null,
     val ciphertext: electionguard.protogen.ElGamalCiphertext? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -134,7 +122,7 @@ public data class EncryptedTallySelection(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedTallySelection = electionguard.protogen.EncryptedTallySelection.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedTallySelection> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedTallySelection, *>>(4)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedTallySelection, *>>(3)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -154,16 +142,6 @@ public data class EncryptedTallySelection(
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "sequenceOrder",
                         value = electionguard.protogen.EncryptedTallySelection::sequenceOrder
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "selection_description_hash",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "selectionDescriptionHash",
-                        value = electionguard.protogen.EncryptedTallySelection::selectionDescriptionHash
                     )
                 )
                 add(
@@ -219,7 +197,6 @@ public fun EncryptedTallyContest?.orDefault(): electionguard.protogen.EncryptedT
 
 private fun EncryptedTallyContest.protoMergeImpl(plus: pbandk.Message?): EncryptedTallyContest = (plus as? EncryptedTallyContest)?.let {
     it.copy(
-        contestDescriptionHash = contestDescriptionHash?.plus(plus.contestDescriptionHash) ?: plus.contestDescriptionHash,
         selections = selections + plus.selections,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -229,19 +206,17 @@ private fun EncryptedTallyContest.protoMergeImpl(plus: pbandk.Message?): Encrypt
 private fun EncryptedTallyContest.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedTallyContest {
     var contestId = ""
     var sequenceOrder = 0
-    var contestDescriptionHash: electionguard.protogen.UInt256? = null
     var selections: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptedTallySelection>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            3 -> contestDescriptionHash = _fieldValue as electionguard.protogen.UInt256
             4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedTallySelection> }
         }
     }
 
-    return EncryptedTallyContest(contestId, sequenceOrder, contestDescriptionHash, pbandk.ListWithSize.Builder.fixed(selections), unknownFields)
+    return EncryptedTallyContest(contestId, sequenceOrder, pbandk.ListWithSize.Builder.fixed(selections), unknownFields)
 }
 
 @pbandk.Export
@@ -250,7 +225,6 @@ public fun EncryptedTallySelection?.orDefault(): electionguard.protogen.Encrypte
 
 private fun EncryptedTallySelection.protoMergeImpl(plus: pbandk.Message?): EncryptedTallySelection = (plus as? EncryptedTallySelection)?.let {
     it.copy(
-        selectionDescriptionHash = selectionDescriptionHash?.plus(plus.selectionDescriptionHash) ?: plus.selectionDescriptionHash,
         ciphertext = ciphertext?.plus(plus.ciphertext) ?: plus.ciphertext,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -260,17 +234,15 @@ private fun EncryptedTallySelection.protoMergeImpl(plus: pbandk.Message?): Encry
 private fun EncryptedTallySelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedTallySelection {
     var selectionId = ""
     var sequenceOrder = 0
-    var selectionDescriptionHash: electionguard.protogen.UInt256? = null
     var ciphertext: electionguard.protogen.ElGamalCiphertext? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            3 -> selectionDescriptionHash = _fieldValue as electionguard.protogen.UInt256
             4 -> ciphertext = _fieldValue as electionguard.protogen.ElGamalCiphertext
         }
     }
 
-    return EncryptedTallySelection(selectionId, sequenceOrder, selectionDescriptionHash, ciphertext, unknownFields)
+    return EncryptedTallySelection(selectionId, sequenceOrder, ciphertext, unknownFields)
 }

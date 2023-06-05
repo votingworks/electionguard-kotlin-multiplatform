@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
+import electionguard.ballot.protocolVersion
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
@@ -114,7 +115,7 @@ fun main(args: Array<String>) {
                     "  outputDir = '$outputDir'\n" +
                     "  sslKeyStore = '$sslKeyStore'\n"
         )
-        ElectionConfig(group.constants, ByteArray(0), manifest.unwrap(), nguardians!!, quorum!!,
+        ElectionConfig(protocolVersion, group.constants, ByteArray(0), manifest.unwrap(), nguardians!!, quorum!!,
             electionDate ?: "N/A",
             info ?: "N/A",
             mapOf(

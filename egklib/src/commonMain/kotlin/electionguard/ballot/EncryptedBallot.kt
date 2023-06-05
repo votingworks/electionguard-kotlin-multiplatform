@@ -9,12 +9,9 @@ import electionguard.core.*
 data class EncryptedBallot(
     val ballotId: String,
     val ballotStyleId: String,  // matches a Manifest.BallotStyle
-    val manifestHash: UInt256,  // matches Manifest.manifestHash
-    val codeSeed: UInt256,
-    val code: UInt256,          // confirmation code, aka tracking code
+    val confirmationCode: UInt256, // tracking code, H(B), eq 59
     val contests: List<Contest>,
     val timestamp: Long,
-    val cryptoHash: UInt256,
     val state: BallotState,
     val isPreencrypt: Boolean = false,
 ) {
@@ -35,19 +32,17 @@ data class EncryptedBallot(
     data class Contest(
         val contestId: String, // matches ContestDescription.contestIdd
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
-        val contestHash: UInt256, // matches ContestDescription.contestHash
+        val contestHash: UInt256, // eq 58
         val selections: List<Selection>,
-        val cryptoHash: UInt256,
         val proof: RangeChaumPedersenProofKnownNonce,
         val contestData: HashedElGamalCiphertext,
         val preEncryption: PreEncryption? = null, // pre-encrypted ballots only
 
-    )  : CryptoHashableUInt256 {
+    )  {
         init {
             require(contestId.isNotEmpty())
             require(selections.isNotEmpty())
         }
-        override fun cryptoHashUInt256() = cryptoHash
     }
 
     data class PreEncryption(
@@ -66,14 +61,11 @@ data class EncryptedBallot(
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
-        val selectionHash: UInt256, // matches SelectionDescription.selectionHash
         val ciphertext: ElGamalCiphertext,
-        val cryptoHash: UInt256,
         val proof: RangeChaumPedersenProofKnownNonce,
-    )  : CryptoHashableUInt256 {
+    )   {
         init {
             require(selectionId.isNotEmpty())
         }
-        override fun cryptoHashUInt256() = cryptoHash
     }
 }

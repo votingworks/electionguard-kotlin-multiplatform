@@ -39,22 +39,16 @@ fun EncryptedTallyJson.import(group: GroupContext) : Result<EncryptedTally, Stri
 data class EncryptedTallyContestJson(
     val object_id: String,
     val sequence_order: Int,
-    val description_hash: UInt256Json,
     val selections: List<EncryptedTallySelectionJson>,
 )
 
 fun EncryptedTally.Contest.publish() = EncryptedTallyContestJson(
     this.contestId,
     this.sequenceOrder,
-    this.contestHash.publish(),
     this.selections.map { it.publish() },
 )
 
 fun EncryptedTallyContestJson.import(group: GroupContext) : Result<EncryptedTally.Contest, String> {
-    val contestHash = this.description_hash.import()
-    if (contestHash == null) {
-        return Err("Failed to import contest ${this.object_id}")
-    }
     val (selections, serrors) = this.selections.map { it.import(group) }.partition()
     if (serrors.isNotEmpty()) {
         return Err(serrors.joinToString("\n"))
@@ -62,7 +56,6 @@ fun EncryptedTallyContestJson.import(group: GroupContext) : Result<EncryptedTall
     return Ok(EncryptedTally.Contest(
         this.object_id,
         this.sequence_order,
-        contestHash,
         selections,
     ))
 }
@@ -74,27 +67,23 @@ fun EncryptedTallyContestJson.import(group: GroupContext) : Result<EncryptedTall
 data class EncryptedTallySelectionJson(
     val object_id: String,
     val sequence_order: Int,
-    val description_hash: UInt256Json,
     val ciphertext: ElGamalCiphertextJson,
 )
 
 fun EncryptedTally.Selection.publish() = EncryptedTallySelectionJson(
     this.selectionId,
     this.sequenceOrder,
-    this.selectionHash.publish(),
     this.ciphertext.publish(),
 )
 
 fun EncryptedTallySelectionJson.import(group: GroupContext) : Result<EncryptedTally.Selection, String> {
-    val selectionHash = this.description_hash.import()
     val ciphertext = this.ciphertext.import(group)
-    if (selectionHash == null || ciphertext == null) {
+    if (ciphertext == null) {
         return Err("Failed to import selection ${this.object_id}")
     }
     return Ok(EncryptedTally.Selection(
         this.object_id,
         this.sequence_order,
-        selectionHash,
         ciphertext,
     ))
 }

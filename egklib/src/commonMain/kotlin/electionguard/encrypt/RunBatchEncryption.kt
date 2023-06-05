@@ -176,7 +176,7 @@ fun batchEncryption(
     val starting = getSystemTimeInMillis() // start timing here
 
     val codeSeed: ElementModQ = electionInit.extendedBaseHash.toElementModQ(group)
-    val primaryNonce = if (fixedNonces) group.TWO_MOD_Q else null // TODO allow primaryNonce to be passed in on command line?
+    val primaryNonce = if (fixedNonces) UInt256.TWO else null // TODO allow primaryNonce to be passed in on command line?
     val encryptor = Encryptor(
         group,
         electionInit.manifest(),
@@ -239,7 +239,7 @@ private class RunEncryption(
     val group: GroupContext,
     val encryptor: Encryptor,
     val codeSeed: ElementModQ,
-    val primaryNonce: ElementModQ?,
+    val ballotNonce: UInt256?,
     manifest: Manifest,
     val jointPublicKey: ElementModP,
     cryptoExtendedBaseHash: UInt256,
@@ -253,16 +253,13 @@ private class RunEncryption(
     }
 
     fun encrypt(ballot: PlaintextBallot): EncryptedBallot {
-        val ciphertextBallot = if (primaryNonce != null) // make result deterministic
-            encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
-        else
-            encryptor.encrypt(ballot, codeSeed, group.randomElementModQ()) // each ballot has a random master nonce
+        val ciphertextBallot = encryptor.encrypt(ballot, ballotNonce) // each ballot has a random master nonce
 
         // experiments in testing the encryption
-        if (check == CheckType.EncryptTwice) {
-            val encrypted2 = encryptor.encrypt(ballot, codeSeed, ciphertextBallot.primaryNonce, ciphertextBallot.timestamp)
-            if (encrypted2.cryptoHash != ciphertextBallot.cryptoHash) {
-                logger.warn { "encrypted.cryptoHash doesnt match" }
+        if (check == CheckType.EncryptTwice && ballotNonce != null) {
+            val encrypted2 = encryptor.encrypt(ballot, ballotNonce)
+            if (encrypted2.confirmationCode != ciphertextBallot.confirmationCode) {
+                logger.warn { "encrypted.confirmationCode doesnt match" }
             }
             if (encrypted2 != ciphertextBallot) {
                 logger.warn { "encrypted doesnt match" }

@@ -15,12 +15,9 @@ message EncryptedBallot {
 
   string ballot_id = 1; // a unique Ballot ID created by the external system
   string ballot_style_id = 2; // The ballot_style_id of the BallotStyle in the Election Manifest
-  UInt256 manifest_hash = 3; // Matches Manifest.crypto_hash
-  UInt256 code_seed = 4; // Previous ballot tracking hash or seed hash, aka code_seed
-  UInt256 code = 5; // ballot tracking code, H_i
+  UInt256 confirmation_code = 5; // ballot tracking code, H_i
   repeated EncryptedBallotContest contests = 6;
   int64 timestamp = 7; // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
-  UInt256 crypto_hash = 8;
   BallotState state = 9;
   bool is_preencrypt = 10;
 }
@@ -31,7 +28,6 @@ message EncryptedBallotContest {
   uint32 sequence_order = 2; // matches the ContestDescription.sequence_order
   UInt256 contest_hash = 3; // matches ContestDescription.crypto_hash
   repeated EncryptedBallotSelection selections = 4;
-  UInt256 crypto_hash = 5;
   RangeChaumPedersenProofKnownNonce proof = 6;  // The proof the sum of the selections does not exceed the maximum
   HashedElGamalCiphertext encrypted_contest_data = 7; // see 3.3.4
   PreEncryption pre_encryption = 8; // only for pre-encryptions
@@ -55,9 +51,7 @@ message PreEncryptionVector {
 message EncryptedBallotSelection {
   string selection_id = 1; // matches the SelectionDescription.selection_id
   uint32 sequence_order = 2; // matches the SelectionDescription.sequence_order
-  UInt256 selection_hash = 3; // matches SelectionDescription.crypto_hash
   ElGamalCiphertext ciphertext = 4; // The encrypted representation of the vote field
-  UInt256 crypto_hash = 5;
   RangeChaumPedersenProofKnownNonce proof = 6; // The proof the selection is an encryption of 0 or 1
 }
 

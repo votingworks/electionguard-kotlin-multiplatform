@@ -17,8 +17,8 @@ data class RangeChaumPedersenProofKnownNonce(
 /**
  * General-purpose Chaum-Pedersen proof object, demonstrating that the prover knows the exponent `x`
  * for two tuples `(g, g^x)` and `(h, h^x)`, without revealing anything about `x`. This is used as a
- * component in other proofs. (See
- * [Chaum-Pedersen 1992](https://link.springer.com/chapter/10.1007/3-540-48071-4_7))
+ * component in other proofs.
+ * (See [Chaum-Pedersen 1992](https://link.springer.com/chapter/10.1007/3-540-48071-4_7))
  *
  * @param c hash(a, b, and possibly other state) (aka challenge)
  * @param r w + xc (aka response)
@@ -68,9 +68,8 @@ fun GenericChaumPedersenProof.expand(
 fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
     plaintext: Int,
     limit: Int,
-    nonce: ElementModQ,
+    aggNonce: ElementModQ,
     publicKey: ElGamalPublicKey,
-    seed: ElementModQ,
     qbar: ElementModQ,
     overrideErrorChecks: Boolean = false
 ): RangeChaumPedersenProofKnownNonce {
@@ -85,16 +84,13 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
     }
 
     val (alpha, beta) = this
-    val context = compatibleContextOrFail(pad, nonce, publicKey.key, seed, qbar, alpha, beta)
+    val context = compatibleContextOrFail(pad, aggNonce, publicKey.key, qbar, alpha, beta)
 
-    // Performance note: these lists are actually ArrayList, so indexing will
-    // be a constant-time operation.
-
-    val uList = Nonces(seed, "range-chaum-pedersen-proof").take(limit + 1)
-
+    // get some random nonces
+     val uList = Nonces(aggNonce, "range-chaum-pedersen-proof").take(limit + 1)
     // Randomly chosen c-values; note that c[plaintext] (c_l in the spec) should
     // not be taken from this list; that's going to be computed later on.
-    val cList = Nonces(seed, "range-chaum-pedersen-proof-constants").take(limit + 1)
+    val cList = Nonces(aggNonce, "range-chaum-pedersen-proof-constants").take(limit + 1)
 
     val aList = uList.map { u -> context.gPowP(u) }
     val bList = uList.mapIndexed { j, u ->
@@ -132,8 +128,8 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
     val vList = uList.zip(cList).mapIndexed { j, (uj, cj) ->
         val cjActual = if (j == plaintext) cl else cj
 
-        // Spec, page 22, equation 52 (v_j)
-        uj - cjActual * nonce
+        // Spec 1.9, page 31, equation 57 (v_j)
+        uj - cjActual * aggNonce
     }
 
     return RangeChaumPedersenProofKnownNonce(
@@ -169,7 +165,7 @@ fun RangeChaumPedersenProofKnownNonce.validate(
     val (alpha, beta) = ciphertext
     results.add(
         if (alpha.isValidResidue() && beta.isValidResidue()) Ok(true) else
-            Err("    4.A invalid residue: alpha = ${alpha.inBounds()} beta = ${beta.inBounds()}")
+            Err("    4.A,5.A invalid residue: alpha = ${alpha.inBounds()} beta = ${beta.inBounds()}")
     )
 
     val expandedProofs = proofs.mapIndexed { j, proof ->

@@ -23,8 +23,7 @@ class ChaumPedersenTest {
         runTest {
             val context = tinyGroup()
             val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
-            val nonce = context.ONE_MOD_Q
-            val seed = context.TWO_MOD_Q
+            val nonce = context.TWO_MOD_Q
             val message = 0.encrypt(keypair, nonce)
             val badMessage1 = 1.encrypt(keypair, nonce)
             val badMessage2 = 0.encrypt(keypair, context.TWO_MOD_Q)
@@ -36,7 +35,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
             val badProof1 =
@@ -45,7 +43,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
             val badProof2 =
@@ -54,7 +51,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
             val badProof3 =
@@ -63,7 +59,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
 
@@ -133,9 +128,8 @@ class ChaumPedersenTest {
                     message.rangeChaumPedersenProofKnownNonce(
                         plaintext = constant,
                         limit = constant,
-                        nonce = nonce,
+                        aggNonce = nonce,
                         publicKey = keypair.publicKey,
-                        seed = seed,
                         qbar = context.ONE_MOD_Q
                     )
                 assertTrue(
@@ -165,9 +159,8 @@ class ChaumPedersenTest {
                     badMessage.rangeChaumPedersenProofKnownNonce(
                         plaintext = constant,
                         limit = constant,
-                        nonce = nonce,
+                        aggNonce = nonce,
                         publicKey = keypair.publicKey,
-                        seed = seed,
                         qbar = context.ONE_MOD_Q
                     )
                 assertFalse(
@@ -179,9 +172,8 @@ class ChaumPedersenTest {
                     message.rangeChaumPedersenProofKnownNonce(
                         plaintext = badConstant,
                         limit = badConstant,
-                        nonce = nonce,
+                        aggNonce = nonce,
                         publicKey = keypair.publicKey,
-                        seed = seed,
                         qbar = context.ONE_MOD_Q
                     )
                 assertFalse(
@@ -346,7 +338,6 @@ class ChaumPedersenTest {
             val context = tinyGroup()
             val keypair = elGamalKeyPairFromSecret(context.TWO_MOD_Q)
             val nonce = context.ONE_MOD_Q
-            val seed = context.TWO_MOD_Q
             val message0 = 0.encrypt(keypair, nonce)
             val message1 = 1.encrypt(keypair, nonce)
             val badMessage0 = 0.encrypt(keypair, context.TWO_MOD_Q)
@@ -360,7 +351,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
             val goodProof1 =
@@ -369,7 +359,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
             val badProof0 =
@@ -378,7 +367,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
             val badProof1 =
@@ -387,7 +375,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
             val badProof2 =
@@ -396,7 +383,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
             val badProof3 =
@@ -405,7 +391,6 @@ class ChaumPedersenTest {
                     1,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     hashHeader
                 )
 
@@ -450,7 +435,6 @@ class ChaumPedersenTest {
                         1,
                         nonce,
                         keypair.publicKey,
-                        seed,
                         hashHeader
                     )
 
@@ -504,7 +488,6 @@ class ChaumPedersenTest {
             val constant = 42
             val key = context.ONE_MOD_P
             val nonce = context.TWO_MOD_Q
-            val seed = context.TWO_MOD_Q
             val hashHeader = context.ONE_MOD_Q
             val publicKey = ElGamalPublicKey(key)
 
@@ -520,9 +503,8 @@ class ChaumPedersenTest {
                 message.rangeChaumPedersenProofKnownNonce(
                     plaintext = constant,
                     limit = constant,
-                    nonce = nonceAccum,
+                    aggNonce = nonceAccum,
                     publicKey = publicKey,
-                    seed = seed,
                     qbar = hashHeader
                 )
 
@@ -544,7 +526,6 @@ class ChaumPedersenTest {
             val context = productionGroup()
             val constant = 42
             val contestNonce = context.randomElementModQ(2)
-            val seed = context.randomElementModQ(2)
             val hashHeader = context.randomElementModQ(2)
             val keyPair = elGamalKeyPairFromSecret(context.randomElementModQ(2))
             val publicKey = keyPair.publicKey
@@ -564,9 +545,8 @@ class ChaumPedersenTest {
                 ciphertextAccumulation.rangeChaumPedersenProofKnownNonce(
                     plaintext = constant,
                     limit = constant,
-                    nonce = nonceAccum,
+                    aggNonce = nonceAccum,
                     publicKey = publicKey,
-                    seed = seed,
                     qbar = hashHeader
                 )
 
@@ -706,18 +686,17 @@ class ChaumPedersenTest {
         val keypair = elGamalKeyPairFromSecret(secretKey)
         val publicKey = keypair.publicKey
         val nonce = 3.toElementModQ(context)
-        val seed = 10.toElementModQ(context)
         val qbar = 42.toElementModQ(context)
         val ciphertext0 = 0.encrypt(keypair, nonce)
         val ciphertext2 = 2.encrypt(keypair, nonce)
 
-        val rangeProof01 = ciphertext0.rangeChaumPedersenProofKnownNonce(0, 1, nonce, publicKey, seed, qbar)
+        val rangeProof01 = ciphertext0.rangeChaumPedersenProofKnownNonce(0, 1, nonce, publicKey,  qbar)
         val valid01 = rangeProof01.validate(ciphertext0, publicKey, qbar, 1)
 
-        val rangeProof02 = ciphertext0.rangeChaumPedersenProofKnownNonce(0, 2, nonce, publicKey, seed, qbar)
+        val rangeProof02 = ciphertext0.rangeChaumPedersenProofKnownNonce(0, 2, nonce, publicKey,  qbar)
         val valid02 = rangeProof02.validate(ciphertext0, publicKey, qbar, 2)
 
-        val rangeProof22 = ciphertext2.rangeChaumPedersenProofKnownNonce(2, 2, nonce, publicKey, seed, qbar)
+        val rangeProof22 = ciphertext2.rangeChaumPedersenProofKnownNonce(2, 2, nonce, publicKey, qbar)
         val valid22 = rangeProof22.validate(ciphertext2, publicKey, qbar, 2)
 
         if (valid01 is Err) {
@@ -744,9 +723,8 @@ class ChaumPedersenTest {
                 Arb.int(0, 5),
                 elementsModQNoZero(context),
                 elGamalKeypairs(context),
-                elementsModQ(context),
                 elementsModQ(context)
-            ) { p0, p1, nonce, keypair, seed, qbar ->
+            ) { p0, p1, nonce, keypair, qbar ->
                 val plaintext = min(p0, p1)
                 val rangeLimit = max(p0, p1)
 
@@ -756,7 +734,6 @@ class ChaumPedersenTest {
                     rangeLimit,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     qbar
                 )
 
@@ -775,9 +752,8 @@ class ChaumPedersenTest {
                 Arb.int(1, 5),
                 elementsModQNoZero(context),
                 elGamalKeypairs(context),
-                elementsModQ(context),
                 elementsModQ(context)
-            ) { p0, p1, nonce, keypair, seed, qbar ->
+            ) { p0, p1, nonce, keypair, qbar ->
                 // we're deliberately making the plaintext greater than the range limit!
                 val rangeLimit = p0
                 val plaintext = p0 + p1
@@ -788,7 +764,6 @@ class ChaumPedersenTest {
                     rangeLimit,
                     nonce,
                     keypair.publicKey,
-                    seed,
                     qbar,
                     true // disables checks that would otherwise reject this proof
                 )

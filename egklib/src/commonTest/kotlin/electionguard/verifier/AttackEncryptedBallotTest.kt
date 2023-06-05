@@ -3,14 +3,10 @@ package electionguard.verifier
 import com.github.michaelbull.result.Ok
 import electionguard.ballot.ContestData
 import electionguard.ballot.ElectionInitialized
-import electionguard.core.productionGroup
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.GroupContext
-import electionguard.core.Stats
-import electionguard.core.hashElements
+import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
@@ -96,19 +92,16 @@ class AttackEncryptedBallotTest {
             }
         }
 
-        val contestHashes = ccontests.map { it.cryptoHash }
-        val cryptoHashMunged = hashElements(ballot.ballotId, ballot.manifestHash, contestHashes)
-        val trackingCodeMunged = hashElements(ballot.codeSeed, ballot.timestamp, cryptoHashMunged)
+        //val contestHashes = ccontests.map { it.cryptoHash }
+        //val cryptoHashMunged = hashElements(ballot.ballotId, ballot.manifestHash, contestHashes)
+        //val trackingCodeMunged = hashElements(ballot.codeSeed, ballot.timestamp, cryptoHashMunged)
 
         return EncryptedBallot(
             ballot.ballotId,
             ballot.ballotStyleId,
-            ballot.manifestHash,
-            ballot.codeSeed,
-            trackingCodeMunged,
+            UInt256.random(),
             ccontests,
             ballot.timestamp,
-            cryptoHashMunged,
             ballot.state
         )
     }
@@ -134,37 +127,34 @@ class AttackEncryptedBallotTest {
         selections2[idx55] = switch44
         selections2[idx56] = switch45
 
-        val changeCrypto = hashElements(contest.contestId, contest.cryptoHash, selections2)
+        // val changeCrypto = hashElements(contest.contestId, contest.cryptoHash, selections2)
         val contestData = ContestData(emptyList(), emptyList())
         return EncryptedBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
             contest.contestHash,
             selections2,
-            changeCrypto,
             contest.proof,
-            contestData.encrypt(publicKey, 1, null),
+            contestData.encrypt(publicKey, 1, UInt256.random()),
         )
     }
 
     // this fails in EncryptedBallot.Selection.is_valid_encryption() because the crypto_hash includes the
     // selection_id and the ciphertext.
 
-    // switch the vote for the two selections
+    // switch the vote for the two selections TODO
     private fun switchVote(s1: EncryptedBallot.Selection, s2: EncryptedBallot.Selection): EncryptedBallot.Selection {
-        val changeCryptoHash = hashElements(s1.selectionId, s1.selectionHash, s2.ciphertext.cryptoHashUInt256())
+        val changeCryptoHash = hashElements(s1.selectionId, s2.ciphertext.cryptoHashUInt256())
         //        val selectionId: String, // matches SelectionDescription.selectionId
         //        val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
-        //        val selectionHash: UInt256, // matches SelectionDescription.cryptoHash
         //        val ciphertext: ElGamalCiphertext,
-        //        val cryptoHash: UInt256,
         //        val isPlaceholderSelection: Boolean,
         //        val proof: DisjunctiveChaumPedersenProofKnownNonce,
         //        val extendedData: HashedElGamalCiphertext?,
         return EncryptedBallot.Selection(
-            s1.selectionId, s1.sequenceOrder, s1.selectionHash,
+            s1.selectionId,
+            s1.sequenceOrder,
             s2.ciphertext,
-            changeCryptoHash,
             s2.proof,
         )
     }
