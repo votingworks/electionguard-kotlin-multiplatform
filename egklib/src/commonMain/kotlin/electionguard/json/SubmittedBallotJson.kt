@@ -56,6 +56,7 @@ fun SubmittedBallotJson.import(group: GroupContext) : Result<EncryptedBallot, St
         this.object_id,
         this.style_id,
         code,
+        ByteArray(0),
         contests,
         this.timestamp,
         state,

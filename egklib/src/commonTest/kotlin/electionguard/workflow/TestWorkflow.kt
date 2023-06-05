@@ -61,6 +61,16 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
+        //     group: GroupContext,
+        //    inputDir: String,
+        //    outputDir: String,
+        //    ballots: Iterable<PlaintextBallot>,
+        //    invalidDir: String?,
+        //    fixedNonces: Boolean,
+        //    nthreads: Int,
+        //    createdBy: String?,
+        //    check: CheckType = CheckType.None,
+        //    chainCodes : Boolean = false,
         batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
 
         // tally

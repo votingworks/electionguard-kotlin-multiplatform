@@ -36,6 +36,7 @@ class EncryptedBallotConvertTest {
             "ballotId $seq",
             "ballotIdStyle",
             generateUInt256(context),
+            ByteArray(0),
             contests,
             42,
             if (Random.nextBoolean())

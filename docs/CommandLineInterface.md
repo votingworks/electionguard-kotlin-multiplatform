@@ -2,6 +2,20 @@
 
 last update 1/17/2023
 
+<!-- TOC -->
+* [Workflow and Command Line Programs](#workflow-and-command-line-programs)
+  * [Election workflow](#election-workflow)
+  * [Run Trusted KeyCeremony](#run-trusted-keyceremony)
+  * [Run Batch Encryption](#run-batch-encryption)
+  * [Run Accumulate Tally](#run-accumulate-tally)
+      * [Timing](#timing)
+  * [Run Trusted Tally Decryption](#run-trusted-tally-decryption)
+  * [Run Trusted Ballot Decryption](#run-trusted-ballot-decryption)
+  * [Run Verifier](#run-verifier)
+  * [Remote Processes](#remote-processes)
+    * [Make KeyStore](#make-keystore)
+<!-- TOC -->
+
 ## Election workflow
 
 <img src="./images/Workflow.svg" alt="Workflow" width="800"/>
@@ -74,14 +88,12 @@ last update 1/17/2023
 9. **Complete test Workflow**. The following examples may be useful:
     1. A complete test workflow can be run from electionguard.workflow.TestWorkflow in the commonTest module.
 
-input:
-
-* _inputDir_/electionConfig.protobuf
-
-output:
-
-* _trusteeDir_/decryptingTrustee-_guardianId_.protobuf
-* _outputDir_/electionInitialized.protobuf
+    input:
+    * _inputDir_/electionConfig.protobuf
+    
+    output:
+   * _trusteeDir_/decryptingTrustee-_guardianId_.protobuf
+   * _outputDir_/electionInitialized.protobuf
 
 ## Run Trusted KeyCeremony
 
@@ -249,11 +261,11 @@ output:
 
 * stdout
 
-# Remote Processes
+## Remote Processes
 
 <img src="./images/RemoteProcesses.svg" alt="RemoteProcesses" width="800"/>
 
-## Make KeyStore
+### Make KeyStore
 
 To use HTTPS between remote processes, we need a digital certificate. You may supply your own keystore, or use the
 __MakeKeystore__ CLI (in keyceremonytrustee test directory).

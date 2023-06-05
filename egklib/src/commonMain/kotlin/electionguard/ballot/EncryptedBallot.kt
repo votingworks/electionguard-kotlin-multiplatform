@@ -10,6 +10,7 @@ data class EncryptedBallot(
     val ballotId: String,
     val ballotStyleId: String,  // matches a Manifest.BallotStyle
     val confirmationCode: UInt256, // tracking code, H(B), eq 59
+    val codeBaux: ByteArray, // Baux in eq 59
     val contests: List<Contest>,
     val timestamp: Long,
     val state: BallotState,

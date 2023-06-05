@@ -8,6 +8,7 @@ data class CiphertextBallot(
     val ballotId: String,
     val ballotStyleId: String,
     val confirmationCode: UInt256, // tracking code, H(B), eq 59
+    val codeBaux: ByteArray, // Baux in eq 59
     val contests: List<Contest>,
     val timestamp: Long,
     val ballotNonce: UInt256,
@@ -45,6 +46,7 @@ fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot
         this.ballotId,
         this.ballotStyleId,
         this.confirmationCode,
+        this.codeBaux,
         this.contests.map { it.submit() },
         this.timestamp,
         state,

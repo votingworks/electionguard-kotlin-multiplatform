@@ -10,14 +10,12 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.Stats
 import electionguard.core.UInt256
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.decryptBallot.DecryptionWithEmbeddedNonces
 import electionguard.input.BallotInputValidation
@@ -95,12 +93,19 @@ fun main(args: Array<String>) {
         shortName = "createdBy",
         description = "who created"
     )
+    val chainCodes by parser.option(
+        ArgType.Boolean,
+        shortName = "chainCodes",
+        description = "Chain confirmationCodes"
+    ).default( false)
+
     parser.parse(args)
 
     println("RunBatchEncryption starting\n   input= $inputDir\n   ballots = $ballotDir\n   output = $outputDir" +
             "\n   nthreads = $nthreads" +
             "\n   fixedNonces = $fixedNonces" +
-            "\n   check = $check"
+            "\n   check = $check" +
+            "\n   chainCodes = $chainCodes"
     )
 
     batchEncryption(
@@ -113,6 +118,7 @@ fun main(args: Array<String>) {
         nthreads,
         createdBy,
         check,
+        chainCodes,
     )
 }
 
@@ -121,11 +127,12 @@ enum class CheckType { None, Verify, EncryptTwice, DecryptNonce }
 // encrypt ballots in inputDir
 fun batchEncryption(
     group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
-    invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None
+    invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None,
+    chainCodes : Boolean = false
 ) {
     val consumerIn = makeConsumer(inputDir, group)
     return batchEncryption(group, inputDir, outputDir, consumerIn.iteratePlaintextBallots(ballotDir, null),
-        invalidDir, fixedNonces, nthreads, createdBy, check)
+        invalidDir, fixedNonces, nthreads, createdBy, check, chainCodes)
 }
 
 // encrypt the ballots in Iterable<PlaintextBallot>
@@ -138,7 +145,8 @@ fun batchEncryption(
     fixedNonces: Boolean,
     nthreads: Int,
     createdBy: String?,
-    check: CheckType = CheckType.None
+    check: CheckType = CheckType.None,
+    chainCodes : Boolean = false,
 ) {
     val consumerIn = makeConsumer(inputDir, group)
     val electionInit: ElectionInitialized =
@@ -175,16 +183,17 @@ fun batchEncryption(
     }
     val starting = getSystemTimeInMillis() // start timing here
 
-    val codeSeed: ElementModQ = electionInit.extendedBaseHash.toElementModQ(group)
-    val primaryNonce = if (fixedNonces) UInt256.TWO else null // TODO allow primaryNonce to be passed in on command line?
+    val useThreads = if (chainCodes) 1 else nthreads
+
+    val ballotNonce = if (fixedNonces) UInt256.TWO else null
     val encryptor = Encryptor(
         group,
         electionInit.manifest(),
         ElGamalPublicKey(electionInit.jointPublicKey),
         electionInit.extendedBaseHash
     )
-    val runEncryption = RunEncryption(group, encryptor, codeSeed, primaryNonce, electionInit.manifest(),
-        electionInit.jointPublicKey, electionInit.extendedBaseHash, check)
+    val runEncryption = EncryptionRunner(group, encryptor, ballotNonce, electionInit.manifest(),
+        electionInit.jointPublicKey, electionInit.extendedBaseHash, check, chainCodes)
 
     val publisher = makePublisher(outputDir)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
@@ -194,7 +203,7 @@ fun batchEncryption(
             val outputChannel = Channel<EncryptedBallot>()
             val encryptorJobs = mutableListOf<Job>()
             val ballotProducer = produceBallots(ballots.filter { validate(it) })
-            repeat(nthreads) {
+            repeat(useThreads) {
                 encryptorJobs.add(
                     launchEncryptor(
                         it,
@@ -233,17 +242,18 @@ fun batchEncryption(
     println("    $countEncryptions total encryptions = $encryptionPerBallot per ballot = $msecPerEncryption millisecs/encryption")
 }
 
+private var codeBaux = ByteArray(0)
+
 // orchestrates the encryption
-// TODO: codeSeed is constant, not trying to do chaining
-private class RunEncryption(
+private class EncryptionRunner(
     val group: GroupContext,
     val encryptor: Encryptor,
-    val codeSeed: ElementModQ,
     val ballotNonce: UInt256?,
     manifest: Manifest,
     val jointPublicKey: ElementModP,
     cryptoExtendedBaseHash: UInt256,
-    val check: CheckType
+    val check: CheckType,
+    val chainCodes : Boolean,
 ) {
     val verifier: VerifyEncryptedBallots?
     init {
@@ -253,7 +263,11 @@ private class RunEncryption(
     }
 
     fun encrypt(ballot: PlaintextBallot): EncryptedBallot {
-        val ciphertextBallot = encryptor.encrypt(ballot, ballotNonce) // each ballot has a random master nonce
+        val ciphertextBallot = if (chainCodes) {
+            encryptor.encrypt(ballot, ballotNonce, null, codeBaux)
+        } else {
+            encryptor.encrypt(ballot, ballotNonce)
+        }
 
         // experiments in testing the encryption
         if (check == CheckType.EncryptTwice && ballotNonce != null) {
@@ -279,6 +293,8 @@ private class RunEncryption(
                 logger.warn { "encrypted ballot fails decryption = $decryptResult" }
             }
         }
+
+        codeBaux = ciphertextBallot.confirmationCode.bytes
         return ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
     }
 }

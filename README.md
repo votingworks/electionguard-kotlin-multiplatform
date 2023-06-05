@@ -1,6 +1,6 @@
 # ElectionGuard-Kotlin-Multiplatform
 
-last update 6/05/2023
+_last update 6/05/2023_
 
 ElectionGuard-Kotlin-Multiplatform (EKM) is an experimental attempt to create a multiplatform Kotlin implementation of 
 [ElectionGuard](https://github.com/microsoft/electionguard), capable of running
@@ -14,14 +14,16 @@ EKM is available under an MIT-style open source
 [License](LICENSE).
 
 *Table of contents*:
-- [Incompatibilities with ElectionGuard 1.0](#incompatibilities-with-electionguard-10)
-- [Cool features of EKM](#cool-features-of-ekm)
-- [What about JavaScript?](#what-about-javascript)
-- [API differences from ElectionGuard-Python](#api-differences-from-electionguard-python)
-- [Protobuf Serialization](#protobuf-serialization)
-- [Workflow and Command Line Interfaces](#workflow)
-- [Input Validation](#input-validation)
-- [Authors](#authors)
+<!-- TOC -->
+* [Implementation of ElectionGuard 2.0](#implementation-of-electionguard-20)
+* [Cool features of EKM](#cool-features-of-ekm)
+* [What about JavaScript?](#what-about-javascript)
+* [API differences from ElectionGuard-Python](#api-differences-from-electionguard-python)
+* [Protobuf Serialization](#protobuf-serialization)
+* [Workflow](#workflow)
+* [Input Validation](#input-validation)
+* [Authors](#authors)
+<!-- TOC -->
 
 ## Implementation of ElectionGuard 2.0
 
