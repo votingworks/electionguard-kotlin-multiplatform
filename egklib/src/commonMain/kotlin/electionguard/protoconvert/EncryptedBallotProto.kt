@@ -13,6 +13,7 @@ import electionguard.preencrypt.RecordedPreBallot
 import electionguard.preencrypt.RecordedPreContest
 import electionguard.preencrypt.RecordedSelectionVector
 import mu.KotlinLogging
+import pbandk.ByteArr
 
 private val logger = KotlinLogging.logger("EncryptedBallotConvert")
 
@@ -36,6 +37,7 @@ fun electionguard.protogen.EncryptedBallot.import(group: GroupContext):
             this.ballotId,
             this.ballotStyleId,
             confirmationCode.unwrap(),
+            this.codeBaux.array,
             contests,
             this.timestamp,
             ballotState.unwrap(),
@@ -150,6 +152,7 @@ fun EncryptedBallot.publishProto(recordedPreBallot: RecordedPreBallot) = electio
             this.ballotId,
             this.ballotStyleId,
             this.confirmationCode.publishProto(),
+            ByteArr(this.codeBaux),
             this.contests.map { it.publishProto(recordedPreBallot) },
             this.timestamp,
             this.state.publishProto(),
@@ -200,6 +203,7 @@ fun EncryptedBallot.publishProto() =
         this.ballotId,
         this.ballotStyleId,
         this.confirmationCode.publishProto(),
+        ByteArr(this.codeBaux),
         this.contests.map { it.publishProto() },
         this.timestamp,
         this.state.publishProto()

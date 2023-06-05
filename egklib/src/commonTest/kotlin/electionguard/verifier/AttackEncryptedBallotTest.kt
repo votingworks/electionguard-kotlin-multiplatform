@@ -100,6 +100,7 @@ class AttackEncryptedBallotTest {
             ballot.ballotId,
             ballot.ballotStyleId,
             UInt256.random(),
+            ByteArray(0),
             ccontests,
             ballot.timestamp,
             ballot.state

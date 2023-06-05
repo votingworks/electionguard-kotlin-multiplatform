@@ -49,6 +49,25 @@ class RunBatchEncryptionTest {
     }
 
     @Test
+    fun testRunBatchEncryptionChain() {
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/runWorkflowAllAvailable",
+                "-ballots",
+                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "-out",
+                "testOut/testRunBatchEncryptionChain",
+                "-invalid",
+                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "-nthreads",
+                "$nthreads",
+                "-chainCodes",
+            )
+        )
+    }
+
+    @Test
     fun testRunBatchEncryptionEncryptTwice() {
         main(
             arrayOf(

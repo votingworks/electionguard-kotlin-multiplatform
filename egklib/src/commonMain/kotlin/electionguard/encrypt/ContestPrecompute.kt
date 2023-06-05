@@ -67,6 +67,7 @@ class ContestPrecompute(
             ballotId,
             ballotStyleId,
             ballotCode,
+            ByteArray(0),
             encryptedContests,
             timestamp,
             ballotNonce,

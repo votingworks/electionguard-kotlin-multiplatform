@@ -131,7 +131,7 @@ class VerifyEncryptedBallots(
         // TODO specify use chain in manifest and verify (6D-G)
         // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
         val contestHashes = ballot.contests.map { it.contestHash }
-        val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x24.toByte(), contestHashes)
+        val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x24.toByte(), contestHashes, ballot.codeBaux)
         if (confirmationCode != ballot.confirmationCode) {
             results.add(Err("    6.B. Incorrect ballot confirmation code for ballot ${ballot.ballotId} "))
         }

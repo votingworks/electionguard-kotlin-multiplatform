@@ -20,6 +20,11 @@ class VerifierTest {
     }
 
     @Test
+    fun verificationChained() {
+        runVerifier(productionGroup(), "testOut/testRunBatchEncryptionChain", 11, true)
+    }
+
+    @Test
     fun readElectionRecordAndValidate() {
         runVerifier(productionGroup(), "src/commonTest/data/runWorkflowAllAvailable", 11, true)
     }
