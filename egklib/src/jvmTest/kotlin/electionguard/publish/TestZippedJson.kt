@@ -6,6 +6,7 @@ import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.json.ConstantsJson
 import electionguard.json.import
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import java.io.FileInputStream
@@ -21,6 +22,7 @@ import kotlin.test.assertTrue
 
 
 // run jvm verifier on native election record
+@OptIn(ExperimentalSerializationApi::class)
 class TestZippedJson {
     val zippedJson = "src/commonTest/data/testElectionRecord/jsonZip/test100j.zip"
     val fs = FileSystems.newFileSystem(Path.of(zippedJson), mutableMapOf<String, String>())

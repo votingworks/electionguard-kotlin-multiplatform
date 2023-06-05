@@ -45,9 +45,7 @@ class EncryptionNonceTest {
 
         val starting = getSystemTimeInMillis()
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
-            val codeSeed = group.randomElementModQ(minimum = 2)
-            val primaryNonce = group.randomElementModQ(minimum = 2)
-            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
+            val ciphertextBallot = encryptor.encrypt(ballot, null, 0)
 
             // decrypt with nonces
             val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey())
@@ -100,7 +98,7 @@ fun compareBallots(ballot: PlaintextBallot, decryptedBallot: PlaintextBallot) {
 class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
 
     fun CiphertextBallot.decrypt(): PlaintextBallot {
-        val ballotNonce: UInt256 = hashElements(UInt256.ONE, this.ballotId, this.primaryNonce) // TODO
+        val ballotNonce: UInt256 = hashElements(UInt256.ONE, this.ballotId, this.ballotNonce) // TODO
 
         val plaintext_contests = mutableListOf<PlaintextBallot.Contest>()
         for (contest in this.contests) {
@@ -128,8 +126,6 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
         val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
         val contestNonce = nonceSequence[0]
 
-        assertEquals(contestNonce, contest.contestNonce)
-
         val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
         for (selection in contest.selections.filter { !it.isPlaceholderSelection }) {
             val mselection = mcontest.selections.find { it.selectionId == selection.selectionId }
@@ -150,7 +146,7 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
         contestNonce: ElementModQ,
         selection: CiphertextBallot.Selection
     ): PlaintextBallot.Selection? {
-        val nonceSequence = Nonces(mselection.selectionHash.toElementModQ(group), contestNonce)
+        val nonceSequence = Nonces(mselection.selectionHash.toElementModQ(group), contestNonce) // TODO
         val selectionNonce: ElementModQ = nonceSequence[1]
 
         assertEquals(selectionNonce, selection.selectionNonce)

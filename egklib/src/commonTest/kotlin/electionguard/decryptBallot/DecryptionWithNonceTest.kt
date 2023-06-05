@@ -6,10 +6,7 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.makeContestData
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
+import electionguard.core.*
 import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
 import electionguard.input.RandomBallotProvider
@@ -42,9 +39,8 @@ class DecryptionWithNonceTest {
         var decryptTime = 0L
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
             val startEncrypt = getSystemTimeInMillis()
-            val codeSeed = group.randomElementModQ(minimum = 2)
-            val primaryNonce = group.randomElementModQ(minimum = 2)
-            val encryptedBallot = encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
+            val primaryNonce = UInt256.random()
+            val encryptedBallot = encryptor.encrypt(ballot, primaryNonce, 0)
             encryptTime += getSystemTimeInMillis() - startEncrypt
 
             // decrypt with nonces and check
@@ -107,9 +103,8 @@ class DecryptionWithNonceTest {
         var decryptTime = 0L
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
             val startEncrypt = getSystemTimeInMillis()
-            val codeSeed = group.randomElementModQ(minimum = 2)
-            val primaryNonce = group.randomElementModQ(minimum = 2)
-            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
+            val primaryNonce = UInt256.random()
+            val ciphertextBallot = encryptor.encrypt(ballot, primaryNonce, 0)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
             encryptTime += getSystemTimeInMillis() - startEncrypt
 
@@ -173,10 +168,9 @@ class DecryptionWithNonceTest {
         var decryptTime = 0L
         val nb = 100
         RandomBallotProvider(electionInit.manifest(), nb, true).ballots().forEach { ballot ->
-            val codeSeed = group.randomElementModQ(minimum = 2)
-            val primaryNonce = group.randomElementModQ(minimum = 2)
+            val primaryNonce = UInt256.random()
             val startEncrypt = getSystemTimeInMillis()
-            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, primaryNonce, 0)
+            val ciphertextBallot = encryptor.encrypt(ballot, primaryNonce, 0)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
             encryptTime += getSystemTimeInMillis() - startEncrypt
 

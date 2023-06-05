@@ -2,10 +2,7 @@ package electionguard.encrypt
 
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
-import electionguard.core.runTest
+import electionguard.core.*
 import electionguard.publish.makeConsumer
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,10 +20,10 @@ class EncryptTest {
             val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
             val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
-            val result = encryptor.encrypt(ballot, group.TWO_MOD_Q, group.TWO_MOD_Q)
+            val result = encryptor.encrypt(ballot)
 
             var first = true
-            println("result = ${result.cryptoHash} nonce ${result.ballotNonce()}")
+            println("result = ${result.confirmationCode} nonce ${result.ballotNonce}")
             for (contest in result.contests) {
                 // println(" contest ${contest.contestId} = ${contest.cryptoHash} nonce ${contest.contestNonce}")
                 for (selection in contest.selections) {
@@ -48,10 +45,9 @@ class EncryptTest {
             val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
 
             val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
-            val nonce1 = group.randomElementModQ(minimum = 2)
-            val nonce2 = group.randomElementModQ(minimum = 3)
-            val result1 = encryptor.encrypt(ballot, nonce1, nonce2, 0)
-            val result2 = encryptor.encrypt(ballot, nonce1, nonce2, 0)
+            val nonce1 = UInt256.random()
+            val result1 = encryptor.encrypt(ballot, nonce1, 0)
+            val result2 = encryptor.encrypt(ballot, nonce1, 0)
 
             result1.contests.forEachIndexed { index, contest1 ->
                 val contest2 = result2.contests[index]

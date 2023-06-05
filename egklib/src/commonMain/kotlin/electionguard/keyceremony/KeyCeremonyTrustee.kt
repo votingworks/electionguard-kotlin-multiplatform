@@ -119,7 +119,7 @@ class KeyCeremonyTrustee(
         }
 
         // decrypt Pi(l)
-        val pilbytes = shareDecryption(share!!)
+        val pilbytes = shareDecryption(share)
             ?: return Err("Trustee '$id' couldnt decrypt EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
         val expectedPil: ElementModQ = pilbytes.toUInt256().toElementModQ(group) // Pi(ℓ)
 

@@ -10,9 +10,7 @@ import electionguard.core.UInt256
 import electionguard.core.get
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.hashElements
-import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
-import electionguard.core.toUInt256
 
 /**
  * Experimental.
@@ -30,11 +28,10 @@ class SelectionPrecompute(
     val ballotId: String,
     val ballotStyleId: String,
     val codeSeed: ElementModQ,
-    primaryNonce: ElementModQ?, // if null, use random
+    primaryNonce: UInt256?, // if null, use random
     private val timestampOverride: Long? = null, // if null, use time of encryption
 ) {
     val cryptoExtendedBaseHashQ = cryptoExtendedBaseHash.toElementModQ(group)
-    private val primaryNonce: ElementModQ = primaryNonce ?: group.randomElementModQ()
     val ballotNonce: UInt256 = hashElements(UInt256.ONE, this.ballotId, primaryNonce) // TODO
     private val mcontests: List<Manifest.ContestDescription>
     val contests: List<Contest>
@@ -59,16 +56,21 @@ class SelectionPrecompute(
         val cryptoHash = hashElements(ballotId, UInt256.ONE, encryptedContests) // TODO
         val ballotCode = hashElements(codeSeed, timestamp, cryptoHash)
 
+        //     val ballotId: String,
+        //    val ballotStyleId: String,
+        //    val manifestHash: UInt256, // matches config.manifestHash
+        //    val confirmationCode: UInt256, // tracking code, H(B), eq 59
+        //    val contests: List<Contest>,
+        //    val timestamp: Long,
+        //    val ballotNonce: UInt256,
+        //    val isPreEncrypt: Boolean = false,
         return CiphertextBallot(
             ballotId,
             ballotStyleId,
-            UInt256.ONE, // TODO
-            codeSeed.toUInt256(),
             ballotCode,
             encryptedContests,
             timestamp,
-            cryptoHash,
-            primaryNonce,
+            ballotNonce,
         )
     }
 
@@ -79,7 +81,7 @@ class SelectionPrecompute(
         private val placeholders = mutableListOf<Selection>()
         private val contestNonce: ElementModQ
         private val chaumPedersenNonce: ElementModQ
-        private val contestDataNonce: ElementModQ
+        private val contestDataNonce: UInt256
 
         init {
             val contestDescriptionHash = mcontest.contestHash
@@ -87,7 +89,7 @@ class SelectionPrecompute(
             val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
             contestNonce = nonceSequence[0]
             chaumPedersenNonce = nonceSequence[1]
-            contestDataNonce = nonceSequence[2]
+            contestDataNonce = UInt256.random()
             mcontest.selections.forEach { selections.add(Selection(it, contestNonce, false)) }
 
             // Add a placeholder selection for each possible vote in the contest
@@ -127,8 +129,6 @@ class SelectionPrecompute(
                 elgamalPublicKey,
                 cryptoExtendedBaseHashQ,
                 votes,
-                contestNonce,
-                chaumPedersenNonce,
                 encryptedSelections,
                 contestData.encrypt(elgamalPublicKey, mcontest.votesAllowed, contestDataNonce),
             )
@@ -162,7 +162,6 @@ class SelectionPrecompute(
                 0,
                 elgamalPublicKey,
                 cryptoExtendedBaseHashQ,
-                disjunctiveChaumPedersenNonce,
                 selectionNonce,
                 isPlaceholder,
             )
@@ -174,7 +173,6 @@ class SelectionPrecompute(
                 1,
                 elgamalPublicKey,
                 cryptoExtendedBaseHashQ,
-                disjunctiveChaumPedersenNonce,
                 selectionNonce,
                 isPlaceholder,
             )

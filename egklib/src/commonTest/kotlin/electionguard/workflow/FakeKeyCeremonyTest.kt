@@ -2,11 +2,7 @@ package electionguard.workflow
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.Guardian
-import electionguard.ballot.makeDoerreTrustee
-import electionguard.ballot.makeGuardian
+import electionguard.ballot.*
 import electionguard.core.Base16.toHex
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
@@ -99,6 +95,7 @@ fun runFakeKeyCeremony(
     val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitments)
 
     val newConfig = ElectionConfig(
+        protocolVersion,
         config.constants,
         config.manifestFile,
         config.manifest,

@@ -24,7 +24,7 @@ import electionguard.core.toElementModQ
 /** Decryption of a EncryptedBallot using the master nonce. */
 class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
 
-    fun EncryptedBallot.decrypt(primaryNonce: ElementModQ): Result<PlaintextBallot, String> {
+    fun EncryptedBallot.decrypt(primaryNonce: UInt256): Result<PlaintextBallot, String> {
         val ballotNonce: UInt256 = hashElements(UInt256.ONE, this.ballotId, primaryNonce) // TODO
 
         val (plaintextContests, cerrors) = this.contests.map {

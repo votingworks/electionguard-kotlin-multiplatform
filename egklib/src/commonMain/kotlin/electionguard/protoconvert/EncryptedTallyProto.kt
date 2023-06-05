@@ -21,34 +21,27 @@ fun electionguard.protogen.EncryptedTally.import(group: GroupContext): Result<En
 private fun electionguard.protogen.EncryptedTallyContest.import(group: GroupContext):
         Result<EncryptedTally.Contest, String> {
 
-    val contestHash = importUInt256(this.contestDescriptionHash)
-        .toResultOr { "Contest ${this.contestId} description hash was malformed or missing" }
     val (selections, serrors) = this.selections.map { it.import(group) }.partition()
 
-    val errors = getAllErrors(contestHash) + serrors
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
+    if (serrors.isNotEmpty()) {
+        return Err(serrors.joinToString("\n"))
     }
-    return Ok(EncryptedTally.Contest(this.contestId, this.sequenceOrder, contestHash.unwrap(), selections))
+    return Ok(EncryptedTally.Contest(this.contestId, this.sequenceOrder, selections))
 }
 
 private fun electionguard.protogen.EncryptedTallySelection.import(group: GroupContext):
         Result<EncryptedTally.Selection, String> {
 
-    val selectionDescriptionHash =
-        importUInt256(this.selectionDescriptionHash).toResultOr { "Selection ${this.selectionId} description hash missing" }
     val ciphertext = group.importCiphertext(this.ciphertext)
         .toResultOr { "Selection ${this.selectionId} ciphertext missing" }
 
-    val errors = getAllErrors(selectionDescriptionHash, ciphertext)
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
+    if (ciphertext is Err) {
+        return ciphertext
     }
     return Ok(
         EncryptedTally.Selection(
             this.selectionId,
             this.sequenceOrder,
-            selectionDescriptionHash.unwrap(),
             ciphertext.unwrap(),
         )
     )
@@ -66,7 +59,6 @@ private fun EncryptedTally.Contest.publishProto() =
     electionguard.protogen.EncryptedTallyContest(
         this.contestId,
         this.sequenceOrder,
-        this.contestHash.publishProto(),
         this.selections.map { it.publishProto() }
     )
 
@@ -74,6 +66,5 @@ private fun EncryptedTally.Selection.publishProto() =
     electionguard.protogen.EncryptedTallySelection(
         this.selectionId,
         this.sequenceOrder,
-        this.selectionHash.publishProto(),
         this.ciphertext.publishProto()
     )

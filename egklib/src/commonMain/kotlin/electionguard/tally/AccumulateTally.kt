@@ -25,10 +25,6 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
             logger.warn { "Ballot ${ballot.ballotId} is duplicate"}
             return false
         }
-        if (UInt256.ONE != ballot.manifestHash) { // TODO
-            logger.warn { "Ballot ${ballot.ballotId} manifestHash does not match manifest ${manifest.electionScopeId}"}
-            return false
-        }
 
         for (ballotContest in ballot.contests) {
             val contest = contests[ballotContest.contestId]
@@ -67,7 +63,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         fun build(): EncryptedTally.Contest {
             val tallySelections = selections.values.map { it.build() }
             return EncryptedTally.Contest(
-                manifestContest.contestId, manifestContest.sequenceOrder, manifestContest.contestHash, tallySelections)
+                manifestContest.contestId, manifestContest.sequenceOrder, tallySelections)
         }
     }
 
@@ -80,8 +76,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
 
         fun build(): EncryptedTally.Selection {
             return EncryptedTally.Selection(
-                manifestSelection.selectionId, manifestSelection.sequenceOrder, manifestSelection.selectionHash,
-                ciphertextAccumulate.encryptedSum(),
+                manifestSelection.selectionId, manifestSelection.sequenceOrder, ciphertextAccumulate.encryptedSum(),
             )
         }
     }

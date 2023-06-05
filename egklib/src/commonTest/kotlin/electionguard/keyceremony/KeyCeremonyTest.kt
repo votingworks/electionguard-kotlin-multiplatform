@@ -3,10 +3,7 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.Manifest
-import electionguard.ballot.makeGuardian
+import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.core.hashElements
 import kotlin.test.Test
@@ -40,6 +37,7 @@ class KeyCeremonyTest {
         // makeElectionInitialized
         val fakeManifest = makeFakeManifest()
         val config = ElectionConfig(
+            protocolVersion,
             group.constants,
             ByteArray(0),
             fakeManifest,

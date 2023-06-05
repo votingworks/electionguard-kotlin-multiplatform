@@ -72,7 +72,7 @@ class SimpleBallotBenchmark {
         val selectionsAndProofs = plaintextWithNonceAndCiphertext.mapIndexed { i, (p, n, c) ->
             Pair(
                 c,
-                c.rangeChaumPedersenProofKnownNonce(p, 1, n, keypair.publicKey, proofNonces[i], context.ONE_MOD_Q)
+                c.rangeChaumPedersenProofKnownNonce(p, 1, n, keypair.publicKey, proofNonces[i])
             )
         }
         val encryptedSum = selectionsAndProofs.map { it.first }.encryptedSum()
@@ -84,7 +84,6 @@ class SimpleBallotBenchmark {
             nonceSum,
             keypair.publicKey,
             seed,
-            context.ONE_MOD_Q
         )
 
         return SimpleEncryptedBallot(selectionsAndProofs, sumProof)

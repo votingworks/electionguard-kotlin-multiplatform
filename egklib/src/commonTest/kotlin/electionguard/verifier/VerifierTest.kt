@@ -10,8 +10,13 @@ class VerifierTest {
     }
 
     @Test
-    fun verification2and3() {
+    fun verification23() {
         runVerifier(productionGroup(), "testOut/RunKeyCeremonyTest", 1, true)
+    }
+
+    @Test
+    fun verification456() {
+        runVerifier(productionGroup(), "testOut/testRunBatchEncryptionTest", 11, true)
     }
 
     @Test

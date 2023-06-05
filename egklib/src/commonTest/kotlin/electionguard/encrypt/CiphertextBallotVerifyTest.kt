@@ -42,9 +42,7 @@ class CiphertextBallotVerifyTest {
         val starting = getSystemTimeInMillis()
         RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
             // encrypt
-            val codeSeed = group.randomElementModQ(minimum = 2)
-            val masterNonce = group.randomElementModQ(minimum = 2)
-            val ciphertextBallot = encryptor.encrypt(ballot, codeSeed, masterNonce, 0)
+            val ciphertextBallot = encryptor.encrypt(ballot, null, 0)
 
             // verify
             val results = verifier.verify(ciphertextBallot)
@@ -111,14 +109,8 @@ private class VerifyCiphertextBallot(
     private fun verifyTrackingCode(ballot: CiphertextBallot): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
 
-        // LOOK also check contest.cryptoHash??
-        val cryptoHashCalculated = hashElements(ballot.ballotId, UInt256.ONE, ballot.contests) // B_i // TODO
-        if (cryptoHashCalculated != ballot.cryptoHash) {
-            errors.add(Err("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} "))
-        }
-
-        val trackingCodeCalculated = hashElements(ballot.codeSeed, ballot.timestamp, ballot.cryptoHash)
-        if (trackingCodeCalculated != ballot.code) {
+        val trackingCodeCalculated = hashElements(ballot.timestamp) // TODO
+        if (trackingCodeCalculated != ballot.confirmationCode) {
             errors.add(Err("    6.A Test ballot.trackingCode failed for ${ballot.ballotId} "))
         }
         return errors.merge()

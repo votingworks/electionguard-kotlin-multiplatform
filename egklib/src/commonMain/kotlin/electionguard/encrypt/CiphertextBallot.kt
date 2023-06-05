@@ -3,48 +3,33 @@ package electionguard.encrypt
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 
-/** Used only while encrypting. */
+/** Intermediate stage while encrypting. */
 data class CiphertextBallot(
     val ballotId: String,
     val ballotStyleId: String,
-    val manifestHash: UInt256, // matches Manifest.cryptoHash
-    val codeSeed: UInt256,
-    val code: UInt256, // tracking code, H_i
+    val confirmationCode: UInt256, // tracking code, H(B), eq 59
     val contests: List<Contest>,
     val timestamp: Long,
-    val cryptoHash: UInt256,
-    val primaryNonce: ElementModQ,
+    val ballotNonce: UInt256,
     val isPreEncrypt: Boolean = false,
 ) {
-    fun ballotNonce(): UInt256 {
-        return hashElements(this.manifestHash, this.ballotId, this.primaryNonce)
-    }
-
     data class Contest(
         val contestId: String, // matches ContestDescription.contestIdd
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
-        val contestHash: UInt256, // matches ContestDescription.cryptoHash
+        val cipherHash: UInt256, // eq 58
         val selections: List<Selection>,
-        val cryptoHash: UInt256,
         val proof: RangeChaumPedersenProofKnownNonce,
-        val contestNonce: ElementModQ,
         val contestData: HashedElGamalCiphertext,
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-    }
+    )
 
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
-        val selectionHash: UInt256, // matches SelectionDescription.cryptoHash
         val ciphertext: ElGamalCiphertext,
-        val cryptoHash: UInt256,
         val isPlaceholderSelection: Boolean,
         val proof: RangeChaumPedersenProofKnownNonce,
         val selectionNonce: ElementModQ,
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = cryptoHash
-    }
+    )
 }
 
 fun CiphertextBallot.cast(): EncryptedBallot {
@@ -59,12 +44,9 @@ fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot
     return EncryptedBallot(
         this.ballotId,
         this.ballotStyleId,
-        this.manifestHash,
-        this.codeSeed,
-        this.code,
+        this.confirmationCode,
         this.contests.map { it.submit() },
         this.timestamp,
-        this.cryptoHash,
         state,
         this.isPreEncrypt,
     )
@@ -74,9 +56,8 @@ fun CiphertextBallot.Contest.submit(): EncryptedBallot.Contest {
     return EncryptedBallot.Contest(
         this.contestId,
         this.sequenceOrder,
-        this.contestHash,
+        this.cipherHash,
         this.selections.map { it.submit() },
-        this.cryptoHash,
         this.proof,
         this.contestData,
     )
@@ -86,9 +67,7 @@ fun CiphertextBallot.Selection.submit(): EncryptedBallot.Selection {
     return EncryptedBallot.Selection(
         this.selectionId,
         this.sequenceOrder,
-        this.selectionHash,
         this.ciphertext,
-        this.cryptoHash,
         this.proof,
     )
 }

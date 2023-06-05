@@ -71,6 +71,7 @@ fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): 
     val manifestBytes = fileReadBytes(filename)
 
     return ElectionConfig(
+        protocolVersion,
         productionGroup().constants,
         manifestBytes,
         fakeManifest,

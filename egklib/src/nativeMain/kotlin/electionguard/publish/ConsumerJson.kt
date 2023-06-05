@@ -156,6 +156,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
             Ok(
                 ElectionConfig(
+                    "TODO",
                     electionConstants,
                     ByteArray(0),
                     manifest,

@@ -6,6 +6,7 @@ import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.core.*
+import electionguard.encrypt.encryptContest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +30,7 @@ class VerifyEncryptedBallots(
     val group: GroupContext,
     val manifest: Manifest,
     val jointPublicKey: ElGamalPublicKey,
-    val cryptoExtendedBaseHash: ElementModQ,
+    val extendedBaseHash: ElementModQ, // He
     private val nthreads: Int,
 ) {
     val aggregator = SelectionAggregator() // for box 7
@@ -53,12 +54,12 @@ class VerifyEncryptedBallots(
             joinAll(*verifierJobs.toTypedArray())
         }
 
-        // check duplicate confirmation codes (6.B): LOOK what if multiple records for the election?
+        // check duplicate confirmation codes (6.C): LOOK what if multiple records for the election?
         // LOOK what about checking for duplicate ballot ids?
         val checkDuplicates = mutableMapOf<UInt256, String>()
         confirmationCodes.forEach {
             if (checkDuplicates[it.code] != null) {
-                allResults.add(Err("    6.B. Duplicate tracking code for ballot ${it.ballotId} and ${checkDuplicates[it.code]}"))
+                allResults.add(Err("    6.C. Duplicate confirmation code for ballot ${it.ballotId} and ${checkDuplicates[it.code]}"))
             }
             checkDuplicates[it.code] = it.ballotId
         }
@@ -75,47 +76,66 @@ class VerifyEncryptedBallots(
         val starting = getSystemTimeInMillis()
         val results = mutableListOf<Result<Boolean, String>>()
 
-        if (ballot.isPreencrypt) {
+        // TODO
+        /* if (ballot.isPreencrypt) {
             results.add(verifyPreencryptedCode(ballot))
         } else {
             results.add(verifyTrackingCode(ballot))
         }
 
+         */
+
         var ncontests = 0
         var nselections = 0
         for (contest in ballot.contests) {
             val where = "${ballot.ballotId}/${contest.contestId}"
-
             ncontests++
             nselections += contest.selections.size
 
-            // Box 4
+            // Box 4 : selection limit
             contest.selections.forEach {
                 results.add(verifySelection(where, it))
             }
 
-            // Box 5
-            // calculate ciphertextAccumulation (A, B)
-            // LOOK 5.A unneeded because we dont keep (A,B) in election record
+            // Box 5 : contest limit
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
-
-            // test that the proof is correct; covers 5.B, 5.C
             val proof: RangeChaumPedersenProofKnownNonce = contest.proof
             val cvalid = proof.validate(
                 ciphertextAccumulation,
                 this.jointPublicKey,
-                this.cryptoExtendedBaseHash,
+                this.extendedBaseHash,
                 manifest.contestIdToLimit[contest.contestId]!!
             )
             if (cvalid is Err) {
                 results.add(Err("    5. ChaumPedersenProof failed for $where = ${cvalid.error} "))
             }
 
+            // 6A : contest hash
+            // χl = H(HE ; 23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (58)
+            val ciphers = mutableListOf<ElementModP>()
+            texts.forEach {
+                ciphers.add(it.pad)
+                ciphers.add(it.data)
+            }
+            val cipherHash = hashFunction(extendedBaseHash.byteArray(), 0x23.toByte(), contest.contestId, jointPublicKey.key, ciphers)
+            if (cipherHash != contest.contestHash) {
+                results.add(Err("    6.A. Incorrect contest hash for contest ${contest.contestId} "))
+            }
+
             if (ballot.isPreencrypt) {
                 results.add(verifyPreencryptedContest(ballot.ballotId, contest))
             }
         }
+
+        // TODO specify use chain in manifest and verify (6D-G)
+        // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
+        val contestHashes = ballot.contests.map { it.contestHash }
+        val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x24.toByte(), contestHashes)
+        if (confirmationCode != ballot.confirmationCode) {
+            results.add(Err("    6.B. Incorrect ballot confirmation code for ballot ${ballot.ballotId} "))
+        }
+
         stats.of("verifyEncryptions", "selection").accum(getSystemTimeInMillis() - starting, nselections)
         if (debugBallots) println(" Ballot '${ballot.ballotId}' ncontests = $ncontests nselections = $nselections")
         return results.merge()
@@ -130,7 +150,7 @@ class VerifyEncryptedBallots(
         val svalid = selection.proof.validate(
             selection.ciphertext,
             this.jointPublicKey,
-            this.cryptoExtendedBaseHash,
+            this.extendedBaseHash,
             1,
         )
         if (svalid is Err) {
@@ -139,7 +159,7 @@ class VerifyEncryptedBallots(
         return errors.merge()
     }
 
-    // box 6.A
+    /* box 6.A
     private fun verifyTrackingCode(ballot: EncryptedBallot): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
 
@@ -172,6 +192,8 @@ class VerifyEncryptedBallots(
 
         return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
     }
+
+     */
 
     private fun verifyPreencryptedContest(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val errors = mutableListOf<String>()
@@ -224,7 +246,7 @@ class VerifyEncryptedBallots(
             val result = verify(ballot)
             mutex.withLock {
                 agg.add(ballot) // this slows down the ballot parallelism: nselections * (2 (modP multiplication))
-                confirmationCodes.add(ConfirmationCode(ballot.ballotId, ballot.code))
+                confirmationCodes.add(ConfirmationCode(ballot.ballotId, ballot.confirmationCode))
                 allResults.add(result)
             }
             yield()

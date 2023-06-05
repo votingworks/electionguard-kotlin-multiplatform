@@ -3,14 +3,7 @@ package electionguard.ballot
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.HashedElGamalCiphertext
-import electionguard.core.decryptWithBeta
-import electionguard.core.decryptWithNonce
-import electionguard.core.hashedElGamalEncrypt
-import electionguard.core.safeEnumValueOf
+import electionguard.core.*
 import mu.KotlinLogging
 import pbandk.decodeFromByteArray
 import pbandk.encodeToByteArray
@@ -63,7 +56,7 @@ data class ContestData(
     // If still too large, truncate writeIns to CHOP_WRITE_INS characters, append "*" to string to indicate truncated
     // If still too large, truncate overVote to (votesAllowed + 1), append "-1" to list to indicate some were removed
     // If now too small, add a filler string to make it exactly (votesAllowed + 1) * BLOCK_SIZE
-    fun encrypt(publicKey: ElGamalPublicKey, votesAllowed: Int, contestDataNonce: ElementModQ?): HashedElGamalCiphertext {
+    fun encrypt(publicKey: ElGamalPublicKey, votesAllowed: Int, contestDataNonce: UInt256): HashedElGamalCiphertext {
         val messageSize = (1 + votesAllowed) * BLOCK_SIZE
 
         var trialContestData = this
@@ -119,8 +112,9 @@ data class ContestData(
         if (debug) println(" trialSizes = $trialSizes")
 
         // HMAC encryption
+        val contestDataNonceQ = contestDataNonce.toElementModQ(publicKey.context)
         return if (contestDataNonce == null) trialContestDataBA.hashedElGamalEncrypt(publicKey)
-               else trialContestDataBA.hashedElGamalEncrypt(publicKey, contestDataNonce)
+               else trialContestDataBA.hashedElGamalEncrypt(publicKey, contestDataNonceQ)
     }
 }
 
