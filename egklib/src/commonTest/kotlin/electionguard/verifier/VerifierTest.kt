@@ -25,6 +25,11 @@ class VerifierTest {
     }
 
     @Test
+    fun verificationTally() {
+        runVerifier(productionGroup(), "testOut/runTallyAccumulationTest", 11, true)
+    }
+
+    @Test
     fun readElectionRecordAndValidate() {
         runVerifier(productionGroup(), "src/commonTest/data/runWorkflowAllAvailable", 11, true)
     }

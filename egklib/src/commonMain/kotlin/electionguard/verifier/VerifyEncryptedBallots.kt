@@ -101,7 +101,7 @@ class VerifyEncryptedBallots(
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
             val proof: RangeChaumPedersenProofKnownNonce = contest.proof
-            val cvalid = proof.validate(
+            val cvalid = proof.validate2(
                 ciphertextAccumulation,
                 this.jointPublicKey,
                 this.extendedBaseHash,
@@ -147,7 +147,7 @@ class VerifyEncryptedBallots(
         val here = "${where}/${selection.selectionId}"
 
         // test that the proof is correct covers 4.A, 4.B, 4.C
-        val svalid = selection.proof.validate(
+        val svalid = selection.proof.validate2(
             selection.ciphertext,
             this.jointPublicKey,
             this.extendedBaseHash,
