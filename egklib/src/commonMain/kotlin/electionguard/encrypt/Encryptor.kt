@@ -183,7 +183,7 @@ fun Manifest.ContestDescription.encryptContest(
     val nonces: Iterable<ElementModQ> = encryptedSelections.map { it.selectionNonce }
     val aggNonce: ElementModQ = with(group) { nonces.addQ() }
 
-    val proof = ciphertextAccumulation.rangeChaumPedersenProofKnownNonce(
+    val proof = ciphertextAccumulation.makeChaumPedersen(
         totalVotedFor,      // (ℓ in the spec)
         this.votesAllowed,  // (L in the spec)
         aggNonce,
@@ -218,7 +218,7 @@ fun Manifest.SelectionDescription.encryptSelection(
 ): CiphertextBallot.Selection {
     val elgamalEncryption: ElGamalCiphertext = vote.encrypt(jointPublicKey, selectionNonce)
 
-    val proof = elgamalEncryption.rangeChaumPedersenProofKnownNonce(
+    val proof = elgamalEncryption.makeChaumPedersen(
         vote,
         1,
         selectionNonce,

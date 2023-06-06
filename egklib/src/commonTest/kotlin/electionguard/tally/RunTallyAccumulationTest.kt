@@ -9,7 +9,8 @@ class RunTallyAccumulationTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowAllAvailable",
+                "testOut/testRunBatchEncryptionTest",
+                // "src/commonTest/data/runWorkflowAllAvailable",
                 "-out",
                 "testOut/runTallyAccumulationTest",
                 "-name",
