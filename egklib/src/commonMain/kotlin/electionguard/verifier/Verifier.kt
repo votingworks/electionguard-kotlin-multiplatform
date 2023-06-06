@@ -156,8 +156,10 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
 
         val commitments = mutableListOf<ElementModP>()
         guardiansSorted.forEach { commitments.addAll(it.coefficientCommitments()) }
+        require(record.quorum() * record.numberOfGuardians() == commitments.size)
 
         // spec 1.9, eq 20
+        // HE = H(HB ; 12, K, K1,0 , K1,1 , . . . , K1,k−1 , K2,0 , . . . , Kn,k−2 , Kn,k−1 )
         val computeHe = hashFunction(record.electionBaseHash().bytes, 0x12.toByte(), jointPublicKey.key, commitments)
         if (He != computeHe.toElementModQ(group)) {
             errors.add(Err("  3.B extendedBaseHash does not match computed"))

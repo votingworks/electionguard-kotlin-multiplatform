@@ -14,7 +14,7 @@ private val logger = KotlinLogging.logger("TallyDecryptor")
 /** Turn an EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(
     val group: GroupContext,
-    val qbar: ElementModQ,
+    val extendedBaseHash: ElementModQ,
     val jointPublicKey: ElGamalPublicKey,
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>,
     val guardians: Guardians, // all the guardians
@@ -127,7 +127,7 @@ class TallyDecryptor(
         val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.1
         val b = (this.message.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.2
         if (first) { // temp debug
-            println(" qbar = $qbar")
+            println(" extendedBaseHash = $extendedBaseHash")
             println(" jointPublicKey = $jointPublicKey")
             println(" this.message.pad = ${this.message.pad}")
             println(" this.message.data = ${this.message.data}")
@@ -137,7 +137,8 @@ class TallyDecryptor(
             first = false
         }
 
-        val challenge = hashElements(qbar, jointPublicKey, this.message.pad, this.message.data, a, b, Mbar) // 8.B
+        // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
+        val challenge = hashFunction(extendedBaseHash.byteArray(), 0x30.toByte(), jointPublicKey.key, this.message.pad, this.message.data, a, b, Mbar)
         return (challenge.toElementModQ(group) == this.proof.c)
     }
 

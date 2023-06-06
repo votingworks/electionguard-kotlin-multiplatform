@@ -3,16 +3,8 @@ package electionguard.workflow
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
+import electionguard.core.*
 import electionguard.core.Base16.toHex
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
-import electionguard.core.encrypt
-import electionguard.core.hashElements
-import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
-import electionguard.core.toElementModQ
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
@@ -55,7 +47,7 @@ fun runFakeKeyCeremony(
     nguardians: Int,
     quorum: Int,
 ): ElectionInitialized {
-    // just need the manifest
+    // just need the manifest from here
     val consumerIn = makeConsumer(configDir, group)
     val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
 
@@ -73,27 +65,22 @@ fun runFakeKeyCeremony(
     // check they are complete
     trustees.forEach {
         assertEquals(nguardians - 1, it.otherPublicKeys.size)
+        assertEquals(quorum, it.coefficientCommitments().size)
     }
 
     val commitments: MutableList<ElementModP> = mutableListOf()
-    trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
-
-    val primes = config.constants
-    val cryptoBaseHash: UInt256 = hashElements(
-        primes.largePrime.toHex(),
-        primes.smallPrime.toHex(),
-        primes.generator.toHex(),
-        nguardians,
-        quorum,
-        config.manifestHash, // TODO
-    )
+    trustees.forEach {
+        commitments.addAll(it.coefficientCommitments())
+        println("trustee ${it.id}")
+        it.coefficientCommitments().forEach { println("   ${it.toStringShort()}") }
+    }
+    assertEquals(quorum * nguardians, commitments.size)
 
     val jointPublicKey: ElementModP =
         trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
+    println("jointPublicKey ${jointPublicKey.toStringShort()}")
 
-    // spec 1.52, eq 17 and 3.B
-    val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitments)
-
+    // create a new config so the quorum, nguardians can change
     val newConfig = ElectionConfig(
         protocolVersion,
         config.constants,
@@ -105,12 +92,16 @@ fun runFakeKeyCeremony(
         config.jurisdictionInfo,
         mapOf(Pair("Created by", "runFakeKeyCeremony")),
     )
+    println("newConfig.electionBaseHash ${newConfig.electionBaseHash}")
+
+    // He = H(HB ; 12, K, K1,0 , K1,1 , . . . , K1,k−1 , K2,0 , . . . , Kn,k−2 , Kn,k−1 ) spec 1.9 p.22, eq 20.
+    val He = hashFunction(newConfig.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey, commitments)
 
     val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
     val init = ElectionInitialized(
         newConfig,
         jointPublicKey,
-        cryptoExtendedBaseHash,
+        He,
         guardians,
     )
     val publisher = makePublisher(outputDir)

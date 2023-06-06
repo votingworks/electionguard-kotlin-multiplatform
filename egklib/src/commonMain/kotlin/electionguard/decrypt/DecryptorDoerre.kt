@@ -17,7 +17,7 @@ private const val maxDlog: Int = 1000
  */
 class DecryptorDoerre(
     val group: GroupContext,
-    val qbar: ElementModQ,
+    val extendedBaseHash: ElementModQ,
     val jointPublicKey: ElGamalPublicKey,
     val guardians: Guardians, // all guardians
     private val decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
@@ -66,7 +66,7 @@ class DecryptorDoerre(
                 dresults.shares.map { (key, value) ->
                     val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
                     value.mbari powP coeff.lagrangeCoefficient
-                }.multP() // eq 7
+                }.multP() // eq 69
             }
 
             // eq 8
@@ -74,14 +74,14 @@ class DecryptorDoerre(
             dresults.dlogM = jointPublicKey.dLog(bm, maxDlog) ?: throw RuntimeException("dlog failed on $id")
             dresults.mbar = weightedProduct
 
-            // collective proof, 1.53 section 3.5.3 eq 59
+            // collective proof, spec 1.9 section 3.5.3 eq 71
             val a: ElementModP = with(group) { dresults.shares.values.map { it.a }.multP() }
             val b: ElementModP = with(group) { dresults.shares.values.map { it.b }.multP() }
-            // spec 1.53, eq 60
-            dresults.challenge = hashElements(qbar, jointPublicKey, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
+            // c = H(HE ; 30, K, A, B, a, b, M ). eq 72
+            dresults.challenge = hashFunction(extendedBaseHash.byteArray(), 0x30.toByte(), jointPublicKey.key, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
 
             if (first) { // temp debug, a,b dont validate
-                println(" decrypt qbar = $qbar")
+                println(" decrypt qbar = $extendedBaseHash")
                 println(" jointPublicKey = $jointPublicKey")
                 println(" message.pad = ${dresults.ciphertext.pad}")
                 println(" message.data = ${dresults.ciphertext.data}")
@@ -110,7 +110,7 @@ class DecryptorDoerre(
 
                 // collective challenge (spec 1.52 section 3.5.3 eq 70)
                 cresults.challenge = hashElements(
-                    qbar,
+                    extendedBaseHash,
                     jointPublicKey,
                     cresults.ciphertext.c0,
                     cresults.ciphertext.c1.toHex(),
@@ -140,7 +140,7 @@ class DecryptorDoerre(
 
         val startTally = getSystemTimeInMillis()
         // After gathering the challenge responses from the available trustees, we can verify and publish.
-        val tallyDecryptor = TallyDecryptor(group, qbar, jointPublicKey, lagrangeCoordinates, guardians)
+        val tallyDecryptor = TallyDecryptor(group, extendedBaseHash, jointPublicKey, lagrangeCoordinates, guardians)
         val result = tallyDecryptor.decryptTally(this, decryptions, stats)
 
         stats.of("decryptTally").accum(getSystemTimeInMillis() - startTally, ndecrypt)
@@ -197,7 +197,7 @@ class DecryptorDoerre(
         val requests: MutableList<ChallengeRequest> = mutableListOf()
         for ((id, results) in this.shares) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            // spec 1.53, eq 61
+            // spec 1.9, eq 73
             val ci = wi * results.challenge!!.toElementModQ(group)
             requests.add(ChallengeRequest(id, ci, result.u))
         }
@@ -215,7 +215,7 @@ class DecryptorDoerre(
     }
 }
 
-/** Compute the lagrange coefficient, now that we know which guardians are present. spec 1.52 section 3.5.2, eq 55. */
+/** Compute the lagrange coefficient, now that we know which guardians are present. spec 1.9 section 3.6.2, eq 68. */
 fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>): ElementModQ {
     val others: List<Int> = present.filter { it != coordinate }
     if (others.isEmpty()) {
