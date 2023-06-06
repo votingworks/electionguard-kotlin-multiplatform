@@ -28,7 +28,7 @@ class VerifyDecryption(
     val group: GroupContext,
     val manifest: Manifest,
     val jointPublicKey: ElGamalPublicKey,
-    val qbar: ElementModQ,
+    val extendedBaseHash: ElementModQ,
 ) {
 
     fun verify(decrypted: DecryptedTallyOrBallot, isBallot: Boolean, stats: Stats): Result<Boolean, String> {
@@ -113,10 +113,10 @@ class VerifyDecryption(
         val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.2
         val b = (this.message.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.3
 
-        // spec 1.53, section 3.5.3 eq 60, this is 8.B, 11.B
-        val challenge = hashElements(qbar, jointPublicKey, this.message.pad, this.message.data, a, b, Mbar)
+        // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
+        val challenge = hashFunction(extendedBaseHash.byteArray(), 0x30.toByte(), jointPublicKey.key, this.message.pad, this.message.data, a, b, Mbar)
         if (first) {
-            println(" verify qbar = $qbar")
+            println(" verify qbar = $extendedBaseHash")
             println(" jointPublicKey = $jointPublicKey")
             println(" this.message.pad = ${this.message.pad}")
             println(" this.message.data = ${this.message.data}")
@@ -146,7 +146,7 @@ class VerifyDecryption(
         }
         // (10.B,14.B) The challenge value c satisfies c = H(Q, K, C0, C1, C2, a, b, β).
         val challenge = hashElements(
-            qbar,
+            extendedBaseHash,
             jointPublicKey,
             ciphertext.c0,
             ciphertext.c1.toHex(),
