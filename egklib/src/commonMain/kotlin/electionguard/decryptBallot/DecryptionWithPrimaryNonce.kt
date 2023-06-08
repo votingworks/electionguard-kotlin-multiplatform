@@ -10,22 +10,13 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.decryptWithNonceToContestData
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.Nonces
-import electionguard.core.UInt256
-import electionguard.core.decryptWithNonce
-import electionguard.core.get
-import electionguard.core.hashElements
-import electionguard.core.take
-import electionguard.core.toElementModQ
+import electionguard.core.*
 
 /** Decryption of a EncryptedBallot using the master nonce. */
-class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
+class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey,
+    val extendedBaseHash: UInt256) {
 
-    fun EncryptedBallot.decrypt(primaryNonce: UInt256): Result<PlaintextBallot, String> {
-        val ballotNonce: UInt256 = hashElements(UInt256.ONE, this.ballotId, primaryNonce) // TODO
+    fun EncryptedBallot.decrypt(ballotNonce: UInt256): Result<PlaintextBallot, String> {
 
         val (plaintextContests, cerrors) = this.contests.map {
             val mcontest = manifest.contests.find { tcontest -> it.contestId == tcontest.contestId}
@@ -52,9 +43,6 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
         ballotNonce: UInt256,
         contest: EncryptedBallot.Contest
     ): Result<PlaintextBallot.Contest, String> {
-        val contestDescriptionHash = mcontest.contestHash
-        val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
-        val (contestNonce, _, contestDataNonce) = Nonces(contestDescriptionHashQ, ballotNonce).take(3)
 
         val dSelections = mutableListOf<PlaintextBallot.Selection>()
         val errors = mutableListOf<String>()
@@ -64,7 +52,7 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
                 errors.add(" Cant find selection ${selection.selectionId} in contest ${mcontest.contestId}")
                 continue
             }
-            val dSelection = decryptSelectionWithPrimaryNonce(mselection, contestNonce, selection)
+            val dSelection = decryptSelectionWithPrimaryNonce(ballotNonce, contest.contestId, selection)
             if (dSelection == null) {
                 errors.add(" decryption with master nonce failed for contest: ${contest.contestId} selection: ${selection.selectionId}")
             } else {
@@ -76,7 +64,8 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
         }
 
         // contest data
-        val contestDataResult = contest.contestData.decryptWithNonceToContestData(publicKey, contestDataNonce)
+        val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, mcontest.contestId, "contest data")
+        val contestDataResult = contest.contestData.decryptWithNonceToContestData(publicKey, contestDataNonce.toElementModQ(group))
         if (contestDataResult is Err) {
             return contestDataResult
         }
@@ -102,14 +91,13 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
     }
 
     private fun decryptSelectionWithPrimaryNonce(
-        mselection: Manifest.SelectionDescription,
-        contestNonce: ElementModQ,
+        ballotNonce: UInt256,
+        contestLabel: String,
         selection: EncryptedBallot.Selection
     ): PlaintextBallot.Selection? {
-        val nonceSequence = Nonces(mselection.selectionHash.toElementModQ(group), contestNonce)
-        val selectionNonce: ElementModQ = nonceSequence[1]
+        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestLabel, selection.selectionId)
+        val decodedVote: Int? = selection.ciphertext.decryptWithNonce(publicKey, selectionNonce.toElementModQ(group))
 
-        val decodedVote: Int? = selection.ciphertext.decryptWithNonce(publicKey, selectionNonce)
         return decodedVote?.let {
             PlaintextBallot.Selection(
                 selection.selectionId,

@@ -181,8 +181,6 @@ class ManifestTest {
                 val obj = makeContest(id, seq, type, nsel)
                 val rt = obj.publish().import()
                 assertEquals(obj, rt)
-                assertEquals(obj.contestHash, rt.contestHash)
-                println("${obj.contestHash}, ${rt.contestHash}")
                 assertEquals(obj, jsonRoundTrip(obj.publish()).import())
             }
         }

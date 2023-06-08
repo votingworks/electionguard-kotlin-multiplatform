@@ -17,7 +17,7 @@ import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.toElementModQ
-import electionguard.decryptBallot.DecryptionWithEmbeddedNonces
+import electionguard.decryptBallot.DecryptionWithPrimaryNonce
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
 import electionguard.publish.EncryptedBallotSinkIF
@@ -249,16 +249,19 @@ private class EncryptionRunner(
     val group: GroupContext,
     val encryptor: Encryptor,
     val ballotNonce: UInt256?,
-    manifest: Manifest,
+    val manifest: Manifest,
     val jointPublicKey: ElementModP,
-    cryptoExtendedBaseHash: UInt256,
+    val extendedBaseHash: UInt256,
     val check: CheckType,
     val chainCodes : Boolean,
 ) {
+    val publicKeyEG = ElGamalPublicKey(jointPublicKey)
+    val extendedBaseHashQ = extendedBaseHash.toElementModQ(group)
+
     val verifier: VerifyEncryptedBallots?
     init {
         verifier = if (check == CheckType.Verify) VerifyEncryptedBallots(group, manifest,
-            ElGamalPublicKey(jointPublicKey), cryptoExtendedBaseHash.toElementModQ(group), 1)
+            publicKeyEG, extendedBaseHashQ, 1)
         else null
     }
 
@@ -287,8 +290,11 @@ private class EncryptionRunner(
             }
         } else if (check == CheckType.DecryptNonce) {
             // Decrypt with Nonce to ensure encryption worked
-            val decryptor = DecryptionWithEmbeddedNonces(ElGamalPublicKey(jointPublicKey))
-            val decryptResult = with (decryptor) { ciphertextBallot.decrypt() }
+            val primaryNonce = ciphertextBallot.ballotNonce
+            val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
+
+            val decryptionWithPrimaryNonce = DecryptionWithPrimaryNonce(group, manifest, publicKeyEG, extendedBaseHash)
+            val decryptResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(primaryNonce) }
             if (decryptResult is Err) {
                 logger.warn { "encrypted ballot fails decryption = $decryptResult" }
             }

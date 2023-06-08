@@ -50,7 +50,7 @@ class CiphertextBallotVerifyTest {
             assertTrue(results is Ok)
 
             // decrypt and verify embedded nonces
-            val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey())
+            val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey(), electionInit.extendedBaseHash)
             val decryptedBallot = with (decryptionWithNonce) { ciphertextBallot.decrypt() }
             assertNotNull(decryptedBallot)
 
