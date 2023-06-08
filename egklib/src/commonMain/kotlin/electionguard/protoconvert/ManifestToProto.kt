@@ -58,7 +58,6 @@ private fun Manifest.ContestDescription.publishProto() =
             this.selections.map { it.publishProto() },
             this.ballotTitle?: "",
             this.ballotSubtitle?: "",
-            this.contestHash.publishProto(),
         )
 
 private fun Manifest.GeopoliticalUnit.publishProto() =
@@ -86,7 +85,6 @@ private fun Manifest.SelectionDescription.publishProto() =
             this.selectionId,
             this.sequenceOrder,
             this.candidateId,
-            this.selectionHash.publishProto(),
         )
 
 //// enums

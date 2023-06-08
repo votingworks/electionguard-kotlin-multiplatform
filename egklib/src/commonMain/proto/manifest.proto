@@ -136,12 +136,10 @@ message ContestDescription {
   repeated SelectionDescription selections = 8;
   string ballot_title = 9;
   string ballot_subtitle = 10;
-  UInt256 crypto_hash = 12;
 }
 
 message SelectionDescription {
   string selection_id = 1;
   uint32 sequence_order = 2; // unique within contest
   string candidate_id = 3;   // matches Candidate.candidate_id
-  UInt256 crypto_hash = 4;
 }

@@ -4,18 +4,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.Nonces
-import electionguard.core.UInt256
-import electionguard.core.decryptWithNonce
-import electionguard.core.get
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.hashElements
-import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
-import electionguard.core.toElementModQ
+import electionguard.core.*
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makeConsumer
 import kotlin.math.roundToInt
@@ -48,7 +37,7 @@ class EncryptionNonceTest {
             val ciphertextBallot = encryptor.encrypt(ballot, null, 0)
 
             // decrypt with nonces
-            val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey())
+            val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey(), electionInit.extendedBaseHash)
             val decryptedBallot = with (decryptionWithNonce) { ciphertextBallot.decrypt() }
             assertNotNull(decryptedBallot)
 
@@ -94,17 +83,14 @@ fun compareBallots(ballot: PlaintextBallot, decryptedBallot: PlaintextBallot) {
     }
 }
 
-// create our own class (instead of DecryptionWithEmbeddedNonces) in order to validate the embedded nonces
-class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey) {
+class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey, val extendedBaseHash: UInt256) {
 
     fun CiphertextBallot.decrypt(): PlaintextBallot {
-        val ballotNonce: UInt256 = hashElements(UInt256.ONE, this.ballotId, this.ballotNonce) // TODO
+        val ballotNonce: UInt256 = this.ballotNonce
 
         val plaintext_contests = mutableListOf<PlaintextBallot.Contest>()
         for (contest in this.contests) {
-            val mcontest = manifest.contests.find { it.contestId == contest.contestId}
-            assertNotNull(mcontest)
-            val plaintextContest = verifyContestNonces(mcontest, ballotNonce, contest)
+            val plaintextContest = verifyContestNonces(ballotNonce, contest)
             assertNotNull(plaintextContest)
             plaintext_contests.add(plaintextContest)
         }
@@ -117,20 +103,13 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
     }
 
     private fun verifyContestNonces(
-        mcontest: Manifest.ContestDescription,
         ballotNonce: UInt256,
         contest: CiphertextBallot.Contest
     ): PlaintextBallot.Contest {
-        val contestDescriptionHash = mcontest.contestHash
-        val contestDescriptionHashQ = contestDescriptionHash.toElementModQ(group)
-        val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
-        val contestNonce = nonceSequence[0]
 
         val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
         for (selection in contest.selections) {
-            val mselection = mcontest.selections.find { it.selectionId == selection.selectionId }
-            assertNotNull(mselection)
-            val plaintextSelection = verifySelectionNonces(mselection, contestNonce, selection)
+            val plaintextSelection = verifySelectionNonces(ballotNonce, contest.contestId, selection)
             assertNotNull(plaintextSelection)
             plaintextSelections.add(plaintextSelection)
         }
@@ -142,13 +121,11 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
     }
 
     private fun verifySelectionNonces(
-        mselection: Manifest.SelectionDescription,
-        contestNonce: ElementModQ,
+        ballotNonce: UInt256,
+        contestLabel: String,
         selection: CiphertextBallot.Selection
     ): PlaintextBallot.Selection? {
-        val nonceSequence = Nonces(mselection.selectionHash.toElementModQ(group), contestNonce) // TODO
-        val selectionNonce: ElementModQ = nonceSequence[1]
-
+        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestLabel, selection.selectionId).toElementModQ(group)
         assertEquals(selectionNonce, selection.selectionNonce)
 
         val decodedVote: Int? = selection.ciphertext.decryptWithNonce(publicKey, selection.selectionNonce)

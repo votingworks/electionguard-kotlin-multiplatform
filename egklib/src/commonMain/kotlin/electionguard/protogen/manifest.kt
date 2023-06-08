@@ -650,7 +650,6 @@ public data class ContestDescription(
     val selections: List<electionguard.protogen.SelectionDescription> = emptyList(),
     val ballotTitle: String = "",
     val ballotSubtitle: String = "",
-    val cryptoHash: electionguard.protogen.UInt256? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.ContestDescription = protoMergeImpl(other)
@@ -661,7 +660,7 @@ public data class ContestDescription(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ContestDescription = electionguard.protogen.ContestDescription.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ContestDescription> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ContestDescription, *>>(11)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ContestDescription, *>>(10)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -763,16 +762,6 @@ public data class ContestDescription(
                         value = electionguard.protogen.ContestDescription::ballotSubtitle
                     )
                 )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "crypto_hash",
-                        number = 12,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "cryptoHash",
-                        value = electionguard.protogen.ContestDescription::cryptoHash
-                    )
-                )
             }
             pbandk.MessageDescriptor(
                 fullName = "ContestDescription",
@@ -816,7 +805,6 @@ public data class SelectionDescription(
     val selectionId: String = "",
     val sequenceOrder: Int = 0,
     val candidateId: String = "",
-    val cryptoHash: electionguard.protogen.UInt256? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.SelectionDescription = protoMergeImpl(other)
@@ -827,7 +815,7 @@ public data class SelectionDescription(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.SelectionDescription = electionguard.protogen.SelectionDescription.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.SelectionDescription> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.SelectionDescription, *>>(4)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.SelectionDescription, *>>(3)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -857,16 +845,6 @@ public data class SelectionDescription(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "candidateId",
                         value = electionguard.protogen.SelectionDescription::candidateId
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "crypto_hash",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "cryptoHash",
-                        value = electionguard.protogen.SelectionDescription::cryptoHash
                     )
                 )
             }
@@ -1120,7 +1098,6 @@ public fun ContestDescription?.orDefault(): electionguard.protogen.ContestDescri
 private fun ContestDescription.protoMergeImpl(plus: pbandk.Message?): ContestDescription = (plus as? ContestDescription)?.let {
     it.copy(
         selections = selections + plus.selections,
-        cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1137,7 +1114,6 @@ private fun ContestDescription.Companion.decodeWithImpl(u: pbandk.MessageDecoder
     var selections: pbandk.ListWithSize.Builder<electionguard.protogen.SelectionDescription>? = null
     var ballotTitle = ""
     var ballotSubtitle = ""
-    var cryptoHash: electionguard.protogen.UInt256? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -1151,13 +1127,12 @@ private fun ContestDescription.Companion.decodeWithImpl(u: pbandk.MessageDecoder
             8 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.SelectionDescription> }
             9 -> ballotTitle = _fieldValue as String
             10 -> ballotSubtitle = _fieldValue as String
-            12 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
         }
     }
 
     return ContestDescription(contestId, sequenceOrder, geopoliticalUnitId, voteVariation,
         numberElected, votesAllowed, name, pbandk.ListWithSize.Builder.fixed(selections),
-        ballotTitle, ballotSubtitle, cryptoHash, unknownFields)
+        ballotTitle, ballotSubtitle, unknownFields)
 }
 
 @pbandk.Export
@@ -1166,7 +1141,6 @@ public fun SelectionDescription?.orDefault(): electionguard.protogen.SelectionDe
 
 private fun SelectionDescription.protoMergeImpl(plus: pbandk.Message?): SelectionDescription = (plus as? SelectionDescription)?.let {
     it.copy(
-        cryptoHash = cryptoHash?.plus(plus.cryptoHash) ?: plus.cryptoHash,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1176,16 +1150,14 @@ private fun SelectionDescription.Companion.decodeWithImpl(u: pbandk.MessageDecod
     var selectionId = ""
     var sequenceOrder = 0
     var candidateId = ""
-    var cryptoHash: electionguard.protogen.UInt256? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
             3 -> candidateId = _fieldValue as String
-            4 -> cryptoHash = _fieldValue as electionguard.protogen.UInt256
         }
     }
 
-    return SelectionDescription(selectionId, sequenceOrder, candidateId, cryptoHash, unknownFields)
+    return SelectionDescription(selectionId, sequenceOrder, candidateId, unknownFields)
 }

@@ -1,38 +1,5 @@
 package electionguard.ballot
 
-import electionguard.core.*
-
-fun contestDescriptionCryptoHash(
-    contestId: String,
-    sequenceOrder: Int,
-    geopoliticalUnitId: String,
-    voteVariation: Manifest.VoteVariationType,
-    numberElected: Int,
-    votesAllowed: Int,
-    name: String,
-    selections: List<Manifest.SelectionDescription>,
-    ballotTitle: String?,
-    ballotSubtitle: String?,
-) =
-    hashElements(
-        contestId,
-        sequenceOrder,
-        geopoliticalUnitId,
-        voteVariation.name,
-        ballotTitle,
-        ballotSubtitle,
-        name,
-        numberElected,
-        votesAllowed,
-        selections,
-    )
-
-fun selectionDescriptionCryptoHash(
-    selectionId: String,
-    sequenceOrder: Int,
-    candidateId: String,
-) = hashElements(selectionId, sequenceOrder, candidateId)
-
 /**
  * The Election Manifest: defines the candidates, contests, and associated information for a specific election.
  */
@@ -389,22 +356,7 @@ data class Manifest(
         val selections: List<SelectionDescription>,
         val ballotTitle: String?,
         val ballotSubtitle: String?,
-        val contestHash: UInt256 =
-            contestDescriptionCryptoHash(
-                contestId,
-                sequenceOrder,
-                geopoliticalUnitId,
-                voteVariation,
-                numberElected,
-                votesAllowed,
-                name,
-                selections,
-                ballotTitle,
-                ballotSubtitle,
-            ),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = contestHash
-    }
+    )
 
     /**
      * A ballot selection for a specific candidate in a contest.
@@ -414,9 +366,5 @@ data class Manifest(
         val selectionId: String,
         val sequenceOrder: Int,
         val candidateId: String,
-        val selectionHash: UInt256 =
-            selectionDescriptionCryptoHash(selectionId, sequenceOrder, candidateId),
-    ) : CryptoHashableUInt256 {
-        override fun cryptoHashUInt256() = selectionHash
-    }
+    )
 }
