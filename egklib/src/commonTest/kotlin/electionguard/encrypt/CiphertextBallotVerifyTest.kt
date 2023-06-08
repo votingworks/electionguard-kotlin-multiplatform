@@ -118,10 +118,8 @@ private class VerifyCiphertextBallot(
 
     private fun verifySelections(ballotId: String, contest: CiphertextBallot.Contest): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
-        var nplaceholders = 0
         for (selection in contest.selections) {
             val where = "${ballotId}/${contest.contestId}/${selection.selectionId}"
-            if (selection.isPlaceholderSelection) nplaceholders++
 
             // test that the proof is correct covers 4.A, 4.B, 4.C, 4.D
             val svalid = selection.proof.validate(

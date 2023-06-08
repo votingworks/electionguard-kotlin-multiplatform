@@ -103,7 +103,7 @@ fun main(args: Array<String>) {
     egPassword = electionguardPassword
 
     val group = productionGroup()
-    var createdFrom = ""
+    var createdFrom : String
 
     val config: ElectionConfig = if (electionManifest != null && nguardians != null && quorum != null) {
         val manifest = readManifest(electionManifest!!, group)

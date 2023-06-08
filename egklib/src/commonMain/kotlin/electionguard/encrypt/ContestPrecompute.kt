@@ -91,7 +91,7 @@ class ContestPrecompute(
             contestNonce = nonceSequence[0]
             chaumPedersenNonce = nonceSequence[1]
             contestDataNonce = UInt256.random()
-            mcontest.selections.forEach { selections.add(Selection(it, contestNonce, false)) }
+            mcontest.selections.forEach { selections.add(Selection(it, contestNonce)) }
 
             // Add a placeholder selection for each possible vote in the contest
             val limit = mcontest.votesAllowed
@@ -159,14 +159,12 @@ class ContestPrecompute(
         return Selection(
             mselection,
             contestNonce,
-            true,
         )
     }
 
     inner class Selection(
         val mselection: Manifest.SelectionDescription,
         contestNonce: ElementModQ,
-        private val isPlaceholder: Boolean = false
     ) {
         var vote = 0
         private val disjunctiveChaumPedersenNonce: ElementModQ
@@ -179,17 +177,11 @@ class ContestPrecompute(
         }
 
         fun encryptedSelection(): CiphertextBallot.Selection {
-            //     vote: Int,
-            //    jointPublicKey: ElGamalPublicKey,
-            //    cryptoExtendedBaseHashQ: ElementModQ,
-            //    selectionNonce: ElementModQ,
-            //    isPlaceholder: Boolean = false,
             return mselection.encryptSelection(
                 vote,
                 elgamalPublicKey,
                 cryptoExtendedBaseHashQ,
                 selectionNonce,
-                isPlaceholder,
             )
         }
     }

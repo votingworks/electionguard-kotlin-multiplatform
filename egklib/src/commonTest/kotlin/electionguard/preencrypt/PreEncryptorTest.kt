@@ -146,7 +146,7 @@ internal class PreEncryptorTest {
         for (contest in ciphertextBallot.contests) {
             println(" contest ${contest.contestId}")
             if (isLimitOne) {
-                val ve = contest.selections.filter { !it.isPlaceholderSelection }.map { it.ciphertext }
+                val ve = contest.selections.map { it.ciphertext }
                 val hv = hashElements(ve)
                 contest.selections.forEach { println("   ${it.selectionId} = ${it.ciphertext.cryptoHashUInt256().cryptoHashString()}")}
 
