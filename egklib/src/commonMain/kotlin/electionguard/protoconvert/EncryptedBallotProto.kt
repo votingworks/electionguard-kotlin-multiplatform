@@ -10,7 +10,7 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import electionguard.preencrypt.RecordedPreBallot
-import electionguard.preencrypt.RecordedPreContest
+import electionguard.preencrypt.RecordedPreEncryption
 import electionguard.preencrypt.RecordedSelectionVector
 import mu.KotlinLogging
 import pbandk.ByteArr
@@ -79,29 +79,40 @@ private fun electionguard.protogen.EncryptedBallotContest.import(
             selections,
             proof.unwrap(),
             group.importHashedCiphertext(this.encryptedContestData)!!,
-            group.importPreEncryption(this.preEncryption),
+            group.importPreEncryption(where, this.preEncryption),
         )
     )
 }
 
-private fun GroupContext.importPreEncryption(proto: electionguard.protogen.PreEncryption?):
+private fun GroupContext.importPreEncryption(where: String, proto: electionguard.protogen.PreEncryption?):
         EncryptedBallot.PreEncryption? {
     if (proto === null) {
         return null
     }
+    val selectionHashes = mutableListOf<UInt256>()
+    proto.allSelectionHashes.forEach {
+    val hash = importUInt256(it)
+        if (hash != null) {
+            selectionHashes.add(hash)
+        } else {
+            // TODO
+        }
+    }
+
     return EncryptedBallot.PreEncryption(
         importUInt256(proto.contestHash)!!,
-        proto.selectedVectors.map { it.import(this) },
-        proto.allHashes.map { it.import(this) },
+        selectionHashes,
+        proto.selectedVectors.map { this.importSelectionVector(it) },
     )
 }
 
-private fun electionguard.protogen.PreEncryptionVector.import(group: GroupContext):
-        EncryptedBallot.PreEncryptionVector {
-    return EncryptedBallot.PreEncryptionVector(
-        importUInt256(this.selectionHash)!!,
-        this.code,
-        this.selectedVector.map { group.importCiphertext(it)!! }, // LOOK make Result
+private fun GroupContext.importSelectionVector(vector: electionguard.protogen.SelectionVector):
+        EncryptedBallot.SelectionVector {
+    return EncryptedBallot.SelectionVector(
+        importUInt256(vector.selectionHash)!!,
+        vector.shortCode,
+        vector.encryptions.map { this.importCiphertext(it)!! }, // LOOK make Result
+        // vector.proofs.map { this.importChaumPedersenProof(it)!! }, // LOOK make Result
     )
 }
 
@@ -156,7 +167,7 @@ fun EncryptedBallot.publishProto(recordedPreBallot: RecordedPreBallot) = electio
             this.contests.map { it.publishProto(recordedPreBallot) },
             this.timestamp,
             this.state.publishProto(),
-            this.isPreencrypt,
+            true,
         )
 
 private fun EncryptedBallot.Contest.publishProto(recordedPreBallot: RecordedPreBallot):
@@ -177,21 +188,23 @@ private fun EncryptedBallot.Contest.publishProto(recordedPreBallot: RecordedPreB
         )
 }
 
-private fun RecordedPreContest.publishProto():
+private fun RecordedPreEncryption.publishProto():
         electionguard.protogen.PreEncryption {
     return electionguard.protogen.PreEncryption(
         this.contestHash.publishProto(),
-        this.selectionVectors.map { it.publishProto() },
+        this.allSelectionHashes.map { it.publishProto() },
+        this.selectedVectors.map { it.publishProto() },
     )
 }
 
 private fun RecordedSelectionVector.publishProto():
-        electionguard.protogen.PreEncryptionVector {
+        electionguard.protogen.SelectionVector {
     return electionguard.protogen
-        .PreEncryptionVector(
-            this.selectionHash.publishProto(),
-            this.code,
-            this.selectionVector.map { it.publishProto() },
+        .SelectionVector(
+            this.selectionHash.toUInt256().publishProto(),
+            this.shortCode,
+            this.encryptions.map { it.publishProto() },
+            // this.proofs.map { it.publishProto() },
         )
 }
 

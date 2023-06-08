@@ -15,12 +15,14 @@ message EncryptedBallot {
 
   string ballot_id = 1; // a unique Ballot ID created by the external system
   string ballot_style_id = 2; // The ballot_style_id of the BallotStyle in the Election Manifest
-  UInt256 confirmation_code = 5; // ballot tracking code, H(B), eq 59
+  UInt256 confirmation_code = 5; // ballot tracking code, H(B), eq 59 or eq 96 for preencrypt
   bytes code_baux = 4; // Baux in eq 59
   repeated EncryptedBallotContest contests = 6;
   int64 timestamp = 7; // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
   BallotState state = 9;
+
   bool is_preencrypt = 10;
+  UInt256 primary_nonce = 11; // only when uncast ?
 }
 
 // Encrypted selections for a specific contest.
@@ -31,21 +33,8 @@ message EncryptedBallotContest {
   repeated EncryptedBallotSelection selections = 4;
   RangeChaumPedersenProofKnownNonce proof = 6;  // The proof the sum of the selections does not exceed the maximum
   HashedElGamalCiphertext encrypted_contest_data = 7; // see 3.3.4
+
   PreEncryption pre_encryption = 8; // only for pre-encryptions
-}
-
-message PreEncryption {
-  UInt256 contest_hash = 1;
-  repeated PreEncryptionVector selected_vectors = 2; // size = limit – sorted numerically
-  // The pre-encryption hashes and associated short codes for every option on the ballot – sorted numerically
-  repeated PreEncryptionVector all_hashes = 3;
-}
-
-message PreEncryptionVector {
-  UInt256 selection_hash = 1; // H(Vj)
-  string code = 2;
-  // present only for selected_vectors
-  repeated ElGamalCiphertext selected_vector = 3; // Vj, size = nselections, in order by sequence_order
 }
 
 // Encryption of a specific selection.
@@ -57,5 +46,34 @@ message EncryptedBallotSelection {
 }
 
 message RangeChaumPedersenProofKnownNonce {
-  repeated GenericChaumPedersenProof proofs = 1; // one for each in {0, limit}
+  repeated GenericChaumPedersenProof proofs = 1; // one for each in [0, limit]
+}
+
+/////////////////////////////////////////
+
+// Selection vectors generated from pre-encrypted ballots are indistinguishable from those produced
+// by standard ElectionGuard. However, the election record for each pre-encrypted ballot includes a
+// significant amount of additional information. Specifically, for each cast ballot, the election record
+// should contain
+//  • the standard ElectionGuard encrypted ballot data consisting of selection vectors for each con-
+//    test together with all the standard associated zero-knowledge proofs that the ballot is well-
+//    formed,
+//  • the selection hashes for every option on the ballot – sorted numerically within each contest,
+//  • and the short codes and pre-encryption selection vectors associated with all selections on the
+//    ballot made by the voter.
+//
+
+message PreEncryption {
+  UInt256 contest_hash = 1; // (95)
+  // selection hashes for every option on the ballot and L null vectors
+  repeated UInt256 all_selection_hashes = 2; // size = nselections + limit – sorted numerically
+  // short codes and selection vectors for voter selections, plus additional null selections to make exactly L vectors.
+  repeated SelectionVector selected_vectors = 3; // size = limit – sorted numerically
+}
+
+// Ψi,m = ⟨E1 , E2 , . . . , Em ⟩  (92)
+message SelectionVector {
+  UInt256 selection_hash = 1; // ψi (93)
+  string short_code = 2;
+  repeated ElGamalCiphertext encryptions = 3; // Ej, size = nselections, in order by sequence_order
 }
