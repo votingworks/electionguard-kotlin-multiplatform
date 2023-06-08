@@ -117,7 +117,6 @@ class Encryptor(
                 ballotNonce,
                 mcontest.contestId,
                 mselection,
-                false,
             ))
         }
 
@@ -151,7 +150,6 @@ class Encryptor(
         ballotNonce: UInt256,
         contestLabel: String,
         selectionDescription: Manifest.SelectionDescription,
-        isPlaceholder: Boolean = false,
     ): CiphertextBallot.Selection {
 
         // ξi,j = H(HE ; 20, ξB , Λi , λj ). eq 22
@@ -162,7 +160,6 @@ class Encryptor(
             jointPublicKey,
             extendedBaseHashQ,
             selectionNonce.toElementModQ(group),
-            isPlaceholder,
         )
     }
 }
@@ -213,7 +210,6 @@ fun Manifest.SelectionDescription.encryptSelection(
     jointPublicKey: ElGamalPublicKey,
     cryptoExtendedBaseHashQ: ElementModQ,
     selectionNonce: ElementModQ,
-    isPlaceholder: Boolean = false,
 ): CiphertextBallot.Selection {
     val elgamalEncryption: ElGamalCiphertext = vote.encrypt(jointPublicKey, selectionNonce)
 
@@ -229,7 +225,6 @@ fun Manifest.SelectionDescription.encryptSelection(
         this.selectionId,
         this.sequenceOrder,
         elgamalEncryption,
-        isPlaceholder,
         proof,
         selectionNonce,
     )

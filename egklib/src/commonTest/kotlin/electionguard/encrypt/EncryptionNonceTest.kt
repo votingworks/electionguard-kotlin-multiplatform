@@ -127,7 +127,7 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
         val contestNonce = nonceSequence[0]
 
         val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
-        for (selection in contest.selections.filter { !it.isPlaceholderSelection }) {
+        for (selection in contest.selections) {
             val mselection = mcontest.selections.find { it.selectionId == selection.selectionId }
             assertNotNull(mselection)
             val plaintextSelection = verifySelectionNonces(mselection, contestNonce, selection)

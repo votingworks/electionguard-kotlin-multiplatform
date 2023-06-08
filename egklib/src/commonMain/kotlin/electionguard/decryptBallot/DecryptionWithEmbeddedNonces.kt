@@ -28,7 +28,7 @@ class DecryptionWithEmbeddedNonces(val publicKey: ElGamalPublicKey) {
     private fun decryptContestWithNonces(contest: CiphertextBallot.Contest): Result<PlaintextBallot.Contest, String> {
         val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
         val errors = mutableListOf<String>()
-        for (selection in contest.selections.filter {!it.isPlaceholderSelection}) {
+        for (selection in contest.selections) {
             val plaintextSelection = decryptSelectionWithNonces(selection)
             if (plaintextSelection == null) {
                 errors.add(" decryption with nonces failed for contest: ${contest.contestId} selection: ${selection.selectionId}")

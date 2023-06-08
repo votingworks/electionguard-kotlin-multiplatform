@@ -32,7 +32,6 @@ class TestRemoteWorkflow {
         val invalidDir =  "${privateDir}/invalid"
 
         val group = productionGroup()
-        val missing = emptyList<Int>() // all guardians present
 
         // key ceremony was already run in RunRemoteKeyCeremonyTest
         val consumerIn = makeConsumer(keyceremonyDir, group)
