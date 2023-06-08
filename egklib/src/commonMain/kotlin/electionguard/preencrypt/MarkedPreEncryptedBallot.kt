@@ -7,7 +7,7 @@ internal data class MarkedPreEncryptedBallot(
     val contests: List<MarkedPreEncryptedContest>,
 )  {
     fun show() {
-        println("MarkedPreEncryptedBallot ${ballotId} = ${ballotStyleId}")
+        println("MarkedPreEncryptedBallot ${ballotId} style= ${ballotStyleId}")
         for (contest in this.contests) {
             println(" contest ${contest.contestId}")
             for (selectionCode in contest.selectedCodes) {
@@ -19,5 +19,5 @@ internal data class MarkedPreEncryptedBallot(
 
 internal data class MarkedPreEncryptedContest(
     val contestId: String,
-    val selectedCodes: List<String>, // voter selected "short codes"
+    val selectedCodes: List<String>, // voter selected "short codes". may be empty.
 )

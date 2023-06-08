@@ -26,7 +26,7 @@ class Encryptor(
         var previousTrackingHash = codeSeed
         val encryptedBallots = mutableListOf<CiphertextBallot>()
         for (ballot in ballots) {
-            val encryptedBallot = ballot.encryptBallot(UInt256.random(), null, previousTrackingHash.bytes)
+            val encryptedBallot = ballot.encryptBallot(UInt256.random(), null, null, previousTrackingHash.bytes)
             encryptedBallots.add(encryptedBallot)
             previousTrackingHash = encryptedBallot.confirmationCode
         }
@@ -36,20 +36,19 @@ class Encryptor(
     /** Encrypt with this codeSeed and primary nonce and optional timestamp and confirmationCode overrides. */
     fun encryptPre( // TODO
         ballot: PlaintextBallot,
-        codeSeed: ElementModQ, // should be UInt256
-        primaryNonce: UInt256, // should be UInt256
-        timestampOverride: Long? = null, // if null, use getSystemTimeInMillis()
-        confirmationCode: UInt256? = null // non-null for preencrypt; if null, calculate from spec
+        primaryNonce: UInt256,
+        confirmationCode: UInt256,
     ): CiphertextBallot {
-        return ballot.encryptBallot( primaryNonce, timestampOverride, ByteArray(0))
+        return ballot.encryptBallot( primaryNonce, confirmationCode, null, ByteArray(0))
     }
 
     fun encrypt(ballot: PlaintextBallot, ballotNonce: UInt256? = null, timestampOverride: Long? = null, codeBaux : ByteArray = ByteArray(0)): CiphertextBallot {
-        return ballot.encryptBallot( ballotNonce ?: UInt256.random(), timestampOverride, codeBaux)
+        return ballot.encryptBallot( ballotNonce ?: UInt256.random(), null, timestampOverride, codeBaux)
     }
 
     private fun PlaintextBallot.encryptBallot(
         ballotNonce: UInt256,
+        codeOverride: UInt256? = null, // non-null for preencrypt; if null, calculate from spec
         timestampOverride: Long? = null,
         codeBaux : ByteArray = ByteArray(0),
     ): CiphertextBallot {
@@ -64,8 +63,8 @@ class Encryptor(
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
 
         // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
-        val contestHashes = sortedContests.map { it.cipherHash }
-        val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, codeBaux)
+        val contestHashes = sortedContests.map { it.contestHash }
+        val confirmationCode = codeOverride ?: hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, codeBaux)
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000) // secs since epoch
 
         return CiphertextBallot(
@@ -76,7 +75,7 @@ class Encryptor(
             sortedContests,
             timestamp,
             ballotNonce,
-            confirmationCode != null, // TODO wrong
+            codeOverride != null,
         )
     }
 

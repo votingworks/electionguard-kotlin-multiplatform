@@ -6,7 +6,6 @@ buildscript {
     }
 }
 
-
 val kotlinVersion : String = providers.gradleProperty("kotlinVersion").get()
 println("Read kotlinVersion from gradle.properties = $kotlinVersion")
 

@@ -17,7 +17,7 @@ data class CiphertextBallot(
     data class Contest(
         val contestId: String, // matches ContestDescription.contestIdd
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
-        val cipherHash: UInt256, // eq 58
+        val contestHash: UInt256, // eq 58
         val selections: List<Selection>,
         val proof: RangeChaumPedersenProofKnownNonce,
         val contestData: HashedElGamalCiphertext,
@@ -29,7 +29,7 @@ data class CiphertextBallot(
         val ciphertext: ElGamalCiphertext, //  the encrypted vote
         val isPlaceholderSelection: Boolean,
         val proof: RangeChaumPedersenProofKnownNonce,
-        val selectionNonce: ElementModQ,
+        val selectionNonce: ElementModQ, // TODO
     )
 }
 
@@ -58,7 +58,7 @@ fun CiphertextBallot.Contest.submit(): EncryptedBallot.Contest {
     return EncryptedBallot.Contest(
         this.contestId,
         this.sequenceOrder,
-        this.cipherHash,
+        this.contestHash,
         this.selections.map { it.submit() },
         this.proof,
         this.contestData,

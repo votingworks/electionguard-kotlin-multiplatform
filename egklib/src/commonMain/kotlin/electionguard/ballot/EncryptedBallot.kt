@@ -46,19 +46,6 @@ data class EncryptedBallot(
         }
     }
 
-    data class PreEncryption(
-        val contestHash: UInt256,
-        val selectedVectors: List<PreEncryptionVector> = emptyList(), // size = limit, sorted numerically
-        // The pre-encryption hashes and associated short codes for every option on the ballot – sorted numerically
-        val allHashes: List<PreEncryptionVector> = emptyList(),
-    )
-
-    data class PreEncryptionVector(
-        val selectionHash: UInt256, // H(Vj)
-        val code: String,
-        val selectedVector: List<ElGamalCiphertext>, // Vj, size = nselections, in order by sequenceOrder
-    )
-
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
@@ -69,4 +56,19 @@ data class EncryptedBallot(
             require(selectionId.isNotEmpty())
         }
     }
+
+    data class PreEncryption(
+        val contestHash: UInt256,
+        // the selection hashes for every option on the ballot
+        val allSelectionHashes: List<UInt256>, // size = nselections + limit, sorted numerically
+        // the short codes and selection vectors for all selections on the made by the voter.
+        val selectedVectors: List<SelectionVector>, // size = limit, sorted numerically
+    )
+
+    data class SelectionVector(
+        val selectionHash: UInt256,
+        val shortCode: String,
+        val encryptions: List<ElGamalCiphertext>,
+    )
+
 }

@@ -2,46 +2,54 @@ package electionguard.preencrypt
 
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
-import electionguard.core.toElementModQ
+import electionguard.core.*
 import electionguard.encrypt.CiphertextBallot
 import electionguard.encrypt.Encryptor
 
-/** The crypto part of the "The Recording Tool" */
+/**
+ * The crypto part of the "The Recording Tool".
+ * The encrypting/decrypting primaryNonce is done external.
+ */
 class Recorder(
     val group: GroupContext,
     val manifest: Manifest,
-    jointPublicKey: ElGamalPublicKey,
-    extendedBaseHash: UInt256,
+    val publicKey: ElementModP,
+    val extendedBaseHash: UInt256,
+    val sigma : (UInt256) -> String, // hash trimming function Ω
 ) {
-    internal val preEncryptor = PreEncryptor( group, manifest, jointPublicKey)
-    val encryptor = Encryptor( group, manifest, jointPublicKey, extendedBaseHash)
+    val preEncryptor = PreEncryptor( group, manifest, publicKey, extendedBaseHash, sigma)
+    val encryptor = Encryptor( group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash)
 
-    internal fun MarkedPreEncryptedBallot.record(
-        codeSeed : UInt256,
-        primaryNonce: UInt256,
-        codeLen: Int,
-    ): Pair<RecordedPreBallot, CiphertextBallot> {
-        val preInternal = preEncryptor.preencryptInternal(this.ballotId, this.ballotStyleId, primaryNonce)
-        val preEncryptedBallot = preInternal.makeExternal()
+    /*
+    The ballot recording tool receives an election manifest, an identifier for a ballot style, the decrypted
+    primary nonce ξ and, for a cast ballot, all the selections made by the voter.
+     */
+    internal fun MarkedPreEncryptedBallot.record(primaryNonce: UInt256): Pair<RecordedPreBallot, CiphertextBallot> {
+        // uses the primary nonce ξ to regenerate all of the encryptions on the ballot
+        val preEncryptedBallot = preEncryptor.preencrypt(this.ballotId, this.ballotStyleId, primaryNonce)
+        val recordPreBallot = this.makeRecordedPreBallot(preEncryptedBallot)
 
-        // now find the matches
-        val mballotContests = this.contests.associateBy { it.contestId }
+        // match against the choices in MarkedPreEncryptedBallot
+        val markedContests = this.contests.associateBy { it.contestId }
+
+        // Find the pre-encryptions corresponding to the selections made by the voter and, using
+        // the encryption nonces derived from the primary nonce, generates proofs of ballot-correctness as in
+        // standard ElectionGuard section 3.3.5.
+        //
+        // If a contest selection limit is greater than one, then homomorphically
+        // combine the selected pre-encryption vectors corresponding to the selections made to produce a
+        // single vector of encrypted selections. The selected pre-encryption vectors are combined by com-
+        // ponentwise multiplication (modulo p), and the derived encryption nonces are added (modulo q)
+        // to create suitable nonces for this combined pre-encryption vector. These derived nonces will be
+        // necessary to form zero-knowledge proofs that the associated encryption vectors are well-formed.
 
         val plaintextContests = mutableListOf<PlaintextBallot.Contest>()
-        for (pcontest in preEncryptedBallot.contests) {
-            val mcontest = mballotContests[pcontest.contestId]
-            if (mcontest != null) { // ok to skip contests, encryptedBallot will deal
-                plaintextContests.add(mcontest.recordContest(pcontest))
+        for (preeContest in preEncryptedBallot.contests) {
+            val markedContest = markedContests[preeContest.contestId]
+            if (markedContest != null) { // ok to skip contests, Encryptor will deal
+                plaintextContests.add( markedContest.recordContest(preeContest) )
             }
         }
-
-        val recordPreBallot = makeRecordedPreBallot(
-            this,
-            preInternal.addSelectionCodes(preEncryptedBallot, codeLen),
-        )
 
         val plaintextBallot = PlaintextBallot(
             this.ballotId,
@@ -49,42 +57,31 @@ class Recorder(
             plaintextContests,
         )
 
-        val ciphertextBallot = encryptor.encryptPre( // TODO
+        // TODO need special form of encryptPre??
+        val ciphertextBallot = encryptor.encryptPre(
             plaintextBallot,
-            codeSeed.toElementModQ(group),
             primaryNonce,
-            null,
             preEncryptedBallot.confirmationCode,
         )
 
         return Pair(recordPreBallot, ciphertextBallot)
     }
 
-    private fun MarkedPreEncryptedContest.recordContest(
-        pcontest: PreEncryptedContest,
-    ): PlaintextBallot.Contest {
+    private fun MarkedPreEncryptedContest.recordContest(preeContest: PreEncryptedContest): PlaintextBallot.Contest {
 
-        val plSelections = mutableListOf<PlaintextBallot.Selection>()
+        val plainSelections = mutableListOf<PlaintextBallot.Selection>()
         for (selectionCode in this.selectedCodes) { // counting on order
-            val plSelection = matchSelection(selectionCode, pcontest) ?:
+            val preeSelection = matchSelection(selectionCode, preeContest) ?:
                 throw IllegalArgumentException("Unknown selectionCode ${selectionCode}")
-            plSelections.add(PlaintextBallot.Selection(
-                plSelection.selectionId,
-                plSelection.sequenceOrder,
-                1,
-            ))
-            println("recordContest ${selectionCode} -> vote for selection ${plSelection.selectionId}")
+            plainSelections.add( PlaintextBallot.Selection(preeSelection.selectionId, preeSelection.sequenceOrder, 1))
+            println("recordContest ${selectionCode} -> vote for selection ${preeSelection.selectionId}")
         }
 
-        return PlaintextBallot.Contest(
-            pcontest.contestId,
-            pcontest.sequenceOrder,
-            plSelections,
-        )
+        return PlaintextBallot.Contest(preeContest.contestId, preeContest.sequenceOrder, plainSelections)
     }
 
-    fun matchSelection(selectionCode: String, pcontest: PreEncryptedContest): PreEncryptedSelection? {
+    fun matchSelection(selectionCode: String, preeContest: PreEncryptedContest): PreEncryptedSelection? {
         // just brute search, could make faster
-        return pcontest.selections.find { it.preencryptionHash.cryptoHashString().endsWith(selectionCode) }
+        return preeContest.selectionsSorted.find { sigma(it.selectionHash.toUInt256()) == selectionCode }
     }
 }

@@ -6,7 +6,6 @@ import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.core.*
-import electionguard.encrypt.encryptContest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -76,15 +75,6 @@ class VerifyEncryptedBallots(
         val starting = getSystemTimeInMillis()
         val results = mutableListOf<Result<Boolean, String>>()
 
-        // TODO
-        /* if (ballot.isPreencrypt) {
-            results.add(verifyPreencryptedCode(ballot))
-        } else {
-            results.add(verifyTrackingCode(ballot))
-        }
-
-         */
-
         var ncontests = 0
         var nselections = 0
         for (contest in ballot.contests) {
@@ -124,16 +114,20 @@ class VerifyEncryptedBallots(
             }
 
             if (ballot.isPreencrypt) {
-                results.add(verifyPreencryptedContest(ballot.ballotId, contest))
+                // results.add(verifyPreencryption(ballot.ballotId, contest))
             }
         }
 
-        // TODO specify use chain in manifest and verify (6D-G)
-        // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
-        val contestHashes = ballot.contests.map { it.contestHash }
-        val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x24.toByte(), contestHashes, ballot.codeBaux)
-        if (confirmationCode != ballot.confirmationCode) {
-            results.add(Err("    6.B. Incorrect ballot confirmation code for ballot ${ballot.ballotId} "))
+        if (!ballot.isPreencrypt) {
+            // TODO specify use chain in manifest and verify (6D-G)
+            // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
+            val contestHashes = ballot.contests.map { it.contestHash }
+            val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x24.toByte(), contestHashes, ballot.codeBaux)
+            if (confirmationCode != ballot.confirmationCode) {
+                results.add(Err("    6.B. Incorrect ballot confirmation code for ballot ${ballot.ballotId} "))
+            }
+        } else {
+            results.add(verifyPreencryptedCode(ballot))
         }
 
         stats.of("verifyEncryptions", "selection").accum(getSystemTimeInMillis() - starting, nselections)
@@ -159,51 +153,33 @@ class VerifyEncryptedBallots(
         return errors.merge()
     }
 
-    /* box 6.A
-    private fun verifyTrackingCode(ballot: EncryptedBallot): Result<Boolean, String> {
-        val errors = mutableListOf<Result<Boolean, String>>()
+    private fun verifyPreencryption(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
+        val results = mutableListOf<Result<Boolean, String>>()
 
-        // LOOK how do we know what B_i is suppoed to be ??
-        val cryptoHashCalculated = hashElements(ballot.ballotId, UInt256.ONE, ballot.contests) // B_i // TODO
-        if (cryptoHashCalculated != ballot.cryptoHash) {
-            errors.add(Err("    6. Test ballot.cryptoHash failed for ${ballot.ballotId} "))
+        if (contest.preEncryption == null) {
+            results.add(Err("    17. Contest ${contest.contestId} for preencrypted '${ballotId}' has no preEncryption"))
+            return results.merge()
         }
 
-        val trackingCodeCalculated = hashElements(ballot.codeSeed, ballot.timestamp, ballot.cryptoHash)
-        if (trackingCodeCalculated != ballot.code) {
-            errors.add(Err("    6.A Test ballot.trackingCode failed for ${ballot.ballotId} "))
-        }
-        return errors.merge()
-    }
+        // Verification 14 (Correctness of selection encryptions in pre-encrypted ballots) is the same as Verification 4 ??
+        // Verification 15 (Adherence to vote limits in pre-encrypted ballots) is the same as Verification 5 ??
 
-    private fun verifyPreencryptedCode(ballot: EncryptedBallot): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
-        val cryptoHashCalculated = hashElements(ballot.ballotId, UInt256.ONE, ballot.contests) // B_i // TODO
-        if (cryptoHashCalculated != ballot.cryptoHash) {
-            errors.add("    6. Test ballot.cryptoHash failed for preencrypted '${ballot.ballotId}' ")
+        val cv = contest.preEncryption
+        for (sv in cv.selectedVectors) {
+            val hashVector: List<ElementModP> = sv.encryptions.map{ listOf(it.pad, it.data) }.flatten()
+            val selectionHash = hashFunction(extendedBaseHash.byteArray(), 0x40.toByte(), "sv.selectionId", jointPublicKey.key, hashVector)
+            if (selectionHash != sv.selectionHash) {
+                results.add(Err("    17.A. Incorrect selectionHash for ${"sv.selectionId"} contest=${contest.contestId} ballot='${ballotId}' "))
+            }
         }
 
-        // check confirmation code against PreEncryptedBallot
-        val trackingCodeCalculated = hashElements(ballot.contests.map { it.contestHash })
-        if (trackingCodeCalculated != ballot.code) {
-            logger.warn{"    6.A Test ballot.trackingCode failed for preencrypted '${ballot.ballotId}'"}
-            // errors.add("    6.A Test ballot.trackingCode failed for preencrypted '${ballot.ballotId}'")
-        }
-
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
-    }
-
-     */
-
-    private fun verifyPreencryptedContest(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
         // All short codes on the ballot are correctly computed from the pre-encrypted selections associated with each short code
 
         // The encrypted selections match the product of the pre-encryptions associated with the short codes listed as selected.
-        println("allEncryptedSelections")
-        contest.selections.forEach { println(" $ballotId cryptoHash ${it.ciphertext.cryptoHashUInt256().cryptoHashString()}") }
+        println("verifyPreencryption allEncryptedSelections")
+        contest.selections.forEach { println("  $ballotId cryptoHash ${it.ciphertext.cryptoHashUInt256().cryptoHashString()}") }
         println("selectedVector")
-        contest.preEncryption!!.selectedVectors.forEach { println("  ${it.selectionHash.cryptoHashString()}") }
+        contest.preEncryption.selectedVectors.forEach { println("  ${it.selectionHash.cryptoHashString()}") }
 
         // LOOK need spec
         /* The encrypted selections match the product of the pre-encryptions associated with the short codes listed as selected.
@@ -214,9 +190,42 @@ class VerifyEncryptedBallots(
             errors.add("    P.2 selectedProduct doesnt equal encryptedSelections for '${ballotId}' contest '${contest.contestId}'")
         } */
 
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+        return results.merge()
     }
 
+    // Verification 17 (Validation of confirmation codes in pre-encrypted ballots)
+    private fun verifyPreencryptedCode(ballot: EncryptedBallot): Result<Boolean, String> {
+        val errors = mutableListOf<String>()
+
+        val contestHashes = mutableListOf<UInt256>()
+        for (contest in ballot.contests) {
+            if (contest.preEncryption == null) {
+                errors.add("    17. Contest ${contest.contestId} for preencrypted '${ballot.ballotId}' has no preEncryption")
+                continue
+            }
+            val cv = contest.preEncryption
+            for (sv in cv.selectedVectors) {
+                val hashVector: List<ElementModP> = sv.encryptions.map{ listOf(it.pad, it.data) }.flatten()
+                val selectionHash = hashFunction(extendedBaseHash.byteArray(), 0x40.toByte(), jointPublicKey.key, hashVector)
+                if (selectionHash != sv.selectionHash) {
+                    errors.add("    17.A. Incorrect selectionHash for selection shortCode=${sv.shortCode} contest=${contest.contestId} ballot='${ballot.ballotId}' ")
+                }
+            }
+
+            val contestHash = hashFunction(extendedBaseHash.byteArray(), 0x41.toByte(), contest.contestId, jointPublicKey.key, cv.allSelectionHashes)
+            if (contestHash != cv.contestHash) {
+                errors.add("    17.B. Incorrect contestHash for ${contest.contestId} ballot='${ballot.ballotId}' ")
+            }
+            contestHashes.add(contestHash)
+        }
+
+        val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x42.toByte(), contestHashes, ballot.codeBaux)
+        if (confirmationCode != ballot.confirmationCode) {
+            errors.add("    17.C. Incorrect confirmationCode ballot='${ballot.ballotId}' ")
+        }
+
+        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString("\n"))
+    }
 
     //////////////////////////////////////////////////////////////
     // coroutines
