@@ -44,7 +44,7 @@ class RunDecryptBallotsTest {
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
-            "ballot-id--1233356670,ballot-id-1822388890,ballot-id--1538332585", 3,
+            "ballot-id-549581202,ballot-id-514953351,ballot-id--434997615", 3,
         )
         assertEquals(3, n)
     }
