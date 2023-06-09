@@ -101,8 +101,8 @@ val ElGamalKeypair.context: GroupContext
  * This also means that this ElGamal ciphertext is *not compatible with ElectionGuard 1.0*, but
  * is anticipated to be the standard for ElectionGuard 2.0 and later.
  */
-data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP)  : CryptoHashableUInt256 {
-    override fun cryptoHashUInt256() = hashElements(pad, data)
+data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP) {
+    override fun toString() = "pad=${pad.toStringShort()} data=${data.toStringShort()} "
 }
 
 /**

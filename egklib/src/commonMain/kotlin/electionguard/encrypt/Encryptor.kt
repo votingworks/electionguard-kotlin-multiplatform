@@ -193,12 +193,12 @@ fun Manifest.ContestDescription.encryptContest(
         ciphers.add(it.pad)
         ciphers.add(it.data)
     }
-    val cipherHash = hashFunction(extendedBaseHashQ.byteArray(), 0x23.toByte(), this.contestId, jointPublicKey.key, ciphers)
+    val contestHash = hashFunction(extendedBaseHashQ.byteArray(), 0x23.toByte(), this.contestId, jointPublicKey.key, ciphers)
 
     return CiphertextBallot.Contest(
         this.contestId,
         this.sequenceOrder,
-        cipherHash,
+        contestHash,
         encryptedSelections,
         proof,
         extendedDataCiphertext,

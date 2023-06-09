@@ -108,13 +108,13 @@ class VerifyEncryptedBallots(
                 ciphers.add(it.pad)
                 ciphers.add(it.data)
             }
-            val cipherHash = hashFunction(extendedBaseHash.byteArray(), 0x23.toByte(), contest.contestId, jointPublicKey.key, ciphers)
-            if (cipherHash != contest.contestHash) {
+            val contestHash = hashFunction(extendedBaseHash.byteArray(), 0x23.toByte(), contest.contestId, jointPublicKey.key, ciphers)
+            if (contestHash != contest.contestHash) {
                 results.add(Err("    6.A. Incorrect contest hash for contest ${contest.contestId} "))
             }
 
             if (ballot.isPreencrypt) {
-                // results.add(verifyPreencryption(ballot.ballotId, contest))
+                results.add(verifyPreencryption(ballot.ballotId, contest))
             }
         }
 
@@ -153,6 +153,9 @@ class VerifyEncryptedBallots(
         return errors.merge()
     }
 
+    // TODO
+    fun sigma(hash : UInt256) : String = hash.toHex().substring(0, 5)
+
     private fun verifyPreencryption(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val results = mutableListOf<Result<Boolean, String>>()
 
@@ -160,35 +163,54 @@ class VerifyEncryptedBallots(
             results.add(Err("    17. Contest ${contest.contestId} for preencrypted '${ballotId}' has no preEncryption"))
             return results.merge()
         }
-
-        // Verification 14 (Correctness of selection encryptions in pre-encrypted ballots) is the same as Verification 4 ??
-        // Verification 15 (Adherence to vote limits in pre-encrypted ballots) is the same as Verification 5 ??
-
         val cv = contest.preEncryption
-        for (sv in cv.selectedVectors) {
-            val hashVector: List<ElementModP> = sv.encryptions.map{ listOf(it.pad, it.data) }.flatten()
-            val selectionHash = hashFunction(extendedBaseHash.byteArray(), 0x40.toByte(), "sv.selectionId", jointPublicKey.key, hashVector)
-            if (selectionHash != sv.selectionHash) {
-                results.add(Err("    17.A. Incorrect selectionHash for ${"sv.selectionId"} contest=${contest.contestId} ballot='${ballotId}' "))
+        val contestLimit = manifest.contestIdToLimit[contest.contestId]!!
+        val nselection = contest.selections.size
+
+
+        require(contestLimit == cv.selectedVectors.size)
+        require(contestLimit + nselection == cv.allSelectionHashes.size)
+
+        // All short codes on the ballot are correctly computed from the pre-encrypted selections associated with each short code
+        cv.selectedVectors.forEach { sv ->
+            if (sv.shortCode != sigma(sv.selectionHash)) {
+                results.add(Err("    16. Contest ${contest.contestId} selection ${sv.shortCode} does not match"))
+            } else {
+                println("   shortcode ${sv.shortCode} OK")
             }
         }
 
-        // All short codes on the ballot are correctly computed from the pre-encrypted selections associated with each short code
+        // Note that in a contest with a selection limit of one, the selection vector will be identical to one of
+        // the pre-encryption selection vectors. However, when a contest has a selection limit greater than
+        // one, the resulting selection vector will be a product of multiple pre-encryption selection vectors.
 
-        // The encrypted selections match the product of the pre-encryptions associated with the short codes listed as selected.
-        println("verifyPreencryption allEncryptedSelections")
-        contest.selections.forEach { println("  $ballotId cryptoHash ${it.ciphertext.cryptoHashUInt256().cryptoHashString()}") }
-        println("selectedVector")
-        contest.preEncryption.selectedVectors.forEach { println("  ${it.selectionHash.cryptoHashString()}") }
+        val selectionVector : List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
+        if (true) { // TODO
+            var match = false
+            cv.selectedVectors.forEach {
+                if (it.encryptions == selectionVector) {
+                    match = true
+                }
+            }
+            if (!match) {
+                results.add(Err("    16. Contest ${contest.contestId} selectionVector has no match"))
+            }  else {
+                println("   Contest ${contest.contestId} match OK")
+            }
+        } else {
+            require (contestLimit == cv.selectedVectors.size)
 
-        // LOOK need spec
-        /* The encrypted selections match the product of the pre-encryptions associated with the short codes listed as selected.
-        val allEncryptedSelections = contest.selections.filter { !it.isPlaceholderSelection }.map { it.ciphertext }
-        val allProduct = allEncryptedSelections.encryptedSum()
-        val selectedProduct = contest.selectedVector.encryptedSum()
-        if (allProduct != selectedProduct) {
-            errors.add("    P.2 selectedProduct doesnt equal encryptedSelections for '${ballotId}' contest '${contest.contestId}'")
-        } */
+            // product of multiple pre-encryption selection vectors. component-wise I think
+            for (idx in 0 until nselection) {
+                val compList = cv.selectedVectors.map { it.encryptions[idx] }
+                val sum = compList.encryptedSum()
+                if (sum != selectionVector[idx]) {
+                    results.add(Err("    16. Contest ${contest.contestId} contestLimit = $contestLimit selectionVector does not match product"))
+                }  else {
+                    println("   Contest ${contest.contestId} contestLimit = $contestLimit product match OK")
+                }
+            }
+        }
 
         return results.merge()
     }
@@ -212,11 +234,12 @@ class VerifyEncryptedBallots(
                 }
             }
 
-            val contestHash = hashFunction(extendedBaseHash.byteArray(), 0x41.toByte(), contest.contestId, jointPublicKey.key, cv.allSelectionHashes)
-            if (contestHash != cv.contestHash) {
+            // χl = H(HE ; 41, Λl , K, ψσ(1) , ψσ(2) , . . . , ψσ(m+L) )
+            val preencryptionHash = hashFunction(extendedBaseHash.byteArray(), 0x41.toByte(), contest.contestId, jointPublicKey.key, cv.allSelectionHashes)
+            if (preencryptionHash != cv.preencryptionHash) {
                 errors.add("    17.B. Incorrect contestHash for ${contest.contestId} ballot='${ballot.ballotId}' ")
             }
-            contestHashes.add(contestHash)
+            contestHashes.add(preencryptionHash)
         }
 
         val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x42.toByte(), contestHashes, ballot.codeBaux)

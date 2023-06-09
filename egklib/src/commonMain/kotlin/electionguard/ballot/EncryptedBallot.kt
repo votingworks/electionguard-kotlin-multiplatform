@@ -58,12 +58,21 @@ data class EncryptedBallot(
     }
 
     data class PreEncryption(
-        val contestHash: UInt256,
+        val preencryptionHash: UInt256,
         // the selection hashes for every option on the ballot
         val allSelectionHashes: List<UInt256>, // size = nselections + limit, sorted numerically
         // the short codes and selection vectors for all selections on the made by the voter.
         val selectedVectors: List<SelectionVector>, // size = limit, sorted numerically
-    )
+    ) {
+        fun show() {
+            println("PreEncryption preencryptionHash = $preencryptionHash")
+            println("   allSelectionHashes = $allSelectionHashes")
+            for (sv in this.selectedVectors) {
+                println("  selection ${sv.shortCode} selectionHash= ${sv.selectionHash}")
+                sv.encryptions.forEach { println("   encryption ${it}") }
+            }
+        }
+    }
 
     data class SelectionVector(
         val selectionHash: UInt256,

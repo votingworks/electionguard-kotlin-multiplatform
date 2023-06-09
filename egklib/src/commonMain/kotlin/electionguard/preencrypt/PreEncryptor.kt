@@ -26,19 +26,17 @@ class PreEncryptor(
         • for each contest, votesAllowed additional null selections vectors, and a contest hash
         • a confirmation code for the ballot
      */
-    internal fun preencrypt(
-        ballotId: String,
-        ballotStyleId: String,
-        primaryNonce: UInt256,
-        codeBaux : ByteArray = ByteArray(0),
+    internal fun preencrypt(ballotId: String, ballotStyleId: String, primaryNonce: UInt256,
+                            codeBaux : ByteArray = ByteArray(0)
     ): PreEncryptedBallot {
+
         val mcontests = manifest.styleToContestsMap[ballotStyleId]
             ?: throw IllegalArgumentException("Unknown ballotStyleId $ballotStyleId")
 
         val preeContests = mcontests.sortedBy { it.sequenceOrder }.map {
             it.preencryptContest(primaryNonce)
         }
-        val contestHashes = preeContests.map { it.contestHash }
+        val contestHashes = preeContests.map { it.preencryptionHash }
 
         // H(B) = H(HE ; 42, χ1 , χ2 , . . . , χmB , Baux ). (96)
         val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x42.toByte(), contestHashes, codeBaux)
@@ -55,9 +53,9 @@ class PreEncryptor(
     private fun Manifest.ContestDescription.preencryptContest(primaryNonce: UInt256): PreEncryptedContest {
         val preeSelections = mutableListOf<PreEncryptedSelection>()
 
-        val sortedSelections = this.selections.sortedBy { it.sequenceOrder }
-        val selectionLabels = sortedSelections.map { it.selectionId }
-        sortedSelections.map {
+        val selections = this.selections.sortedBy { it.sequenceOrder }
+        val selectionLabels = selections.map { it.selectionId }
+        selections.map {
             preeSelections.add( preencryptSelection(primaryNonce, this.contestId, it.selectionId, it.sequenceOrder, selectionLabels))
         }
 
@@ -68,25 +66,25 @@ class PreEncryptor(
             sequence++
         }
 
-        // now sort those by selectionHash
-        val selectionVectorsSorted = preeSelections.sortedBy { it.selectionHash }
-        val selectionHashes = selectionVectorsSorted.map { it.selectionHash.toUInt256() }
+        // numerically sorted selectionHashes
+        val selectionHashes = preeSelections.sortedBy { it.selectionHash }.map { it.selectionHash.toUInt256() }
 
         // χl = H(HE ; 41, Λl , K, ψσ(1) , ψσ(2) , . . . , ψσ(m+L) ), (95)
-        val contestHash = hashFunction(extendedBaseHash.bytes, 0x41.toByte(), this.contestId, publicKey, selectionHashes)
+        val preencryptionHash = hashFunction(extendedBaseHash.bytes, 0x41.toByte(), this.contestId, publicKey, selectionHashes)
 
         return PreEncryptedContest(
             this.contestId,
             this.sequenceOrder,
             this.votesAllowed,
-            selectionVectorsSorted,
-            contestHash,
+            preeSelections,
+            preencryptionHash,
         )
     }
 
     // depends only on the labels.
     private fun preencryptSelection(primaryNonce: UInt256, contestLabel : String, selectionId : String,
                                     sequenceOrder: Int, selectionLabels: List<String>): PreEncryptedSelection {
+
         val encryptionVector = mutableListOf<ElGamalCiphertext>()
         val hashElements = mutableListOf<ElementModP>()
         selectionLabels.forEach{
