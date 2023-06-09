@@ -7,46 +7,46 @@ import kotlin.collections.fold
 // Proves that (α, β) is an encryption of an integer in the range 0, 1, . . . , L.
 // (Requires knowledge of encryption nonce ξ for which (α, β) is an encryption of ℓ.)
 fun ElGamalCiphertext.makeChaumPedersen(
-    plaintext: Int, // ℓ
+    vote: Int, // ℓ
     limit: Int,     // L
-    aggNonce: ElementModQ,
+    nonce: ElementModQ, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
     publicKey: ElGamalPublicKey, // K
     extendedBaseHash: ElementModQ, // He
     overrideErrorChecks: Boolean = false
 ): RangeChaumPedersenProofKnownNonce {
-    if (!overrideErrorChecks && plaintext < 0) {
+    if (!overrideErrorChecks && vote < 0) {
         throw ArithmeticException("negative plaintexts not supported")
     }
     if (!overrideErrorChecks && limit < 0) {
         throw ArithmeticException("negative limits not supported")
     }
-    if (!overrideErrorChecks && limit < plaintext) {
+    if (!overrideErrorChecks && limit < vote) {
         throw ArithmeticException("limit must be at least as big as the plaintext")
     }
 
     val (alpha, beta) = this
-    val group = compatibleContextOrFail(pad, aggNonce, publicKey.key, extendedBaseHash, alpha, beta)
+    val group = compatibleContextOrFail(pad, nonce, publicKey.key, extendedBaseHash, alpha, beta)
 
     // random nonces u_j
-    val randomUj = Nonces(aggNonce, "range-chaum-pedersen-proof").take(limit + 1)
+    val randomUj = Nonces(nonce, "range-chaum-pedersen-proof").take(limit + 1)
     // Random challenges c_j
-    val randomCj = Nonces(aggNonce, "range-chaum-pedersen-proof-constants").take(limit + 1)
+    val randomCj = Nonces(nonce, "range-chaum-pedersen-proof-constants").take(limit + 1)
 
     // (aℓ , bℓ ) = (g^uℓ mod p, K^uℓ mod p), for j = ℓ (eq 23)
     // (aj , bj ) = (g^uj mod p, K^tj mod p), where tj = (uj +(ℓ−j)cj ), for j != ℓ (eq 24)
     val aList = randomUj.map { u -> group.gPowP(u) }
     val bList = randomUj.mapIndexed { j, u ->
-        if (j == plaintext) {
+        if (j == vote) {
             //  j = ℓ
             publicKey powP u
         } else {
             //  j != ℓ
             // We can't convert a negative number to an ElementModQ,
             // so we instead use the unaryMinus operator.
-            val plaintextMinusIndex = if (plaintext >= j)
-                (plaintext - j).toElementModQ(group)
+            val plaintextMinusIndex = if (vote >= j)
+                (vote - j).toElementModQ(group)
             else
-                -((j - plaintext).toElementModQ(group))
+                -((j - vote).toElementModQ(group))
 
             publicKey powP (plaintextMinusIndex * randomCj[j] + u) // tj = (uj +(ℓ−j)cj )
         }
@@ -60,19 +60,19 @@ fun ElGamalCiphertext.makeChaumPedersen(
 
     // cl = (c − (c0 + · · · + cℓ−1 + cℓ+1 + · · · + cL )) mod q. eq 26
     val cl = c -
-            randomCj.filterIndexed { j, _ -> j != plaintext }
+            randomCj.filterIndexed { j, _ -> j != vote }
                 .fold(group.ZERO_MOD_Q) { a, b -> a + b }
 
     // responses are computed for all 0 ≤ j ≤ L as vj = (uj − cj ξ) mod q (eq 27)
     val vList = randomUj.zip(randomCj).mapIndexed { j, (uj, cj) ->
-        val cjActual = if (j == plaintext) cl else cj
+        val cjActual = if (j == vote) cl else cj
 
         // Spec 1.9, page 31, equation 57 (v_j)
-        uj - cjActual * aggNonce
+        uj - cjActual * nonce
     }
 
     // substitute cl into the random challenges when j = l
-    val cListFinal = randomCj.mapIndexed { j, cj -> if (j == plaintext) cl else cj }
+    val cListFinal = randomCj.mapIndexed { j, cj -> if (j == vote) cl else cj }
     // turn the challenges and responses into a list of GenericChaumPedersenProof(cj, vj)
     val cpgList : List<GenericChaumPedersenProof> = cListFinal.zip(vList).map{ (cj, vj) ->
         GenericChaumPedersenProof(cj, vj)

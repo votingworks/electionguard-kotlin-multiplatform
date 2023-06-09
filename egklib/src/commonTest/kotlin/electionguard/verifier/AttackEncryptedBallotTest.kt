@@ -145,7 +145,7 @@ class AttackEncryptedBallotTest {
 
     // switch the vote for the two selections TODO
     private fun switchVote(s1: EncryptedBallot.Selection, s2: EncryptedBallot.Selection): EncryptedBallot.Selection {
-        val changeCryptoHash = hashElements(s1.selectionId, s2.ciphertext.cryptoHashUInt256())
+        val changeCryptoHash = hashElements(s1.selectionId, s2.ciphertext)
         //        val selectionId: String, // matches SelectionDescription.selectionId
         //        val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
         //        val ciphertext: ElGamalCiphertext,

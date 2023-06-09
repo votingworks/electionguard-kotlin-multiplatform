@@ -25,7 +25,6 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 private val random = Random
-private const val codeLen = 4
 
 internal class PreEncryptorTest {
     val input = "src/commonTest/data/runWorkflowAllAvailable"
@@ -136,37 +135,38 @@ internal class PreEncryptorTest {
         println()
 
         // record
+        println("Recorder.record")
         val recorder = Recorder(group, manifest, publicKey, qbar, ::sigma)
         val (recordedBallot, ciphertextBallot) = with(recorder) {
             mballot.record(primaryNonce)
         }
 
-        val mcontests = mballot.contests.associateBy { it.contestId }
         println("\nCiphertextBallot ${ciphertextBallot.ballotId}")
         for (contest in ciphertextBallot.contests) {
             println(" contest ${contest.contestId}")
-            if (isLimitOne) {
-                val ve = contest.selections.map { it.ciphertext }
-                val hv = hashElements(ve)
-                contest.selections.forEach { println("   ${it.selectionId} = ${it.ciphertext.cryptoHashUInt256().cryptoHashString()}")}
-
-                val mcontest =
-                    mcontests[contest.contestId] ?: throw IllegalArgumentException("Unknown contest $contest.contestId")
-                mcontest.selectedCodes.forEach {
-                    println("  hv = ${hv.cryptoHashString()} endsWith $it")
-                    // assertTrue(hv.cryptoHashString().startsWith(it))
-                }
+            contest.selections.forEach {
+                println("   selection ${it.selectionId} = ${it.ciphertext}")
             }
         }
         println()
 
         recordedBallot.show()
         println()
-        val encryptedBallot = ciphertextBallot.cast()
 
         // roundtrip through the proto, combines the recordedBallot
+        val encryptedBallot = ciphertextBallot.cast()
         val proto = encryptedBallot.publishProto(recordedBallot)
         val fullEncryptedBallot = proto.import(group).unwrap()
+
+        println("\nEncryptedBallot ${encryptedBallot.ballotId}")
+        for (contest in fullEncryptedBallot.contests) {
+            println(" contest ${contest.contestId}")
+            contest.selections.forEach {
+                println("   selection ${it.selectionId} = ${it.ciphertext}")
+            }
+            contest.preEncryption?.show()
+        }
+        println()
 
         val stats = Stats()
         val verifier = VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar.toElementModQ(group), 1)
@@ -177,12 +177,13 @@ internal class PreEncryptorTest {
         assertTrue(results is Ok)
     }
 
+    // pick one selection to vote for
     fun markBallotChooseOne(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
         val pcontests = mutableListOf<MarkedPreEncryptedContest>()
         for (pcontest in pballot.contests) {
-            val n = pcontest.selectionsSorted.size
+            val n = pcontest.selections.size
             val idx = random.nextInt(n)
-            val pselection = pcontest.selectionsSorted[idx]
+            val pselection = pcontest.selections[idx]
             pcontests.add(
                 MarkedPreEncryptedContest(
                     pcontest.contestId,
@@ -204,9 +205,15 @@ internal class PreEncryptorTest {
         for (pcontest in pballot.contests) {
             val mcontest = manifest.contests.find { it.contestId == pcontest.contestId }
                 ?: throw IllegalArgumentException("Cant find $pcontest.contestId")
+
             val selections = mutableListOf<String>()
-            for (idx in 0 until mcontest.votesAllowed) {
-                selections.add(sigma(pcontest.selectionsSorted[idx].selectionHash.toUInt256()))
+            val nselections = pcontest.selections.size
+            val doneIdx = mutableSetOf<Int>()
+            while (doneIdx.size < mcontest.votesAllowed) {
+                val idx = random.nextInt(nselections)
+                if (!doneIdx.contains(idx)) {
+                    selections.add(sigma(pcontest.selections[idx].selectionHash.toUInt256()))
+                }
             }
             pcontests.add(
                 MarkedPreEncryptedContest(
