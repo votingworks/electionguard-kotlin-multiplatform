@@ -86,12 +86,14 @@ class PreEncryptor(
                                     sequenceOrder: Int, selectionLabels: List<String>): PreEncryptedSelection {
 
         val encryptionVector = mutableListOf<ElGamalCiphertext>()
+        val encryptionNonces = mutableListOf<ElementModQ>()
         val hashElements = mutableListOf<ElementModP>()
         selectionLabels.forEach{
             // ξi,j,k = H(HE ; 43, ξ, Λi , λj , λk ) eq 97
             val nonce = hashFunction(extendedBaseHash.bytes, 0x43.toByte(), primaryNonce, contestLabel, selectionId, it).toElementModQ(group)
             val encoding = if (selectionId == it) 1.encrypt(publicKeyEG, nonce) else 0.encrypt(publicKeyEG, nonce)
             encryptionVector.add(encoding)
+            encryptionNonces.add(nonce)
             hashElements.add(encoding.pad)
             hashElements.add(encoding.data)
         }
@@ -106,6 +108,7 @@ class PreEncryptor(
             selectionHash.toElementModQ(group),
             sigma(selectionHash),
             encryptionVector,
+            encryptionNonces,
         )
     }
 }

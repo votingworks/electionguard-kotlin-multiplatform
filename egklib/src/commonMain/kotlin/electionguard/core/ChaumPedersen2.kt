@@ -92,7 +92,7 @@ fun RangeChaumPedersenProofKnownNonce.validate2(
     val results = mutableListOf<Result<Boolean, String>>()
 
     if (limit + 1 != proofs.size) {
-        return Err("    RangeProof expected ${limit + 1} proofs, only found ${proofs.size}")
+        return Err("    RangeProof expected ${limit + 1} proofs, but found ${proofs.size}")
     }
 
     val (alpha, beta) = ciphertext

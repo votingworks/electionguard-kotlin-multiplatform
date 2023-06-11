@@ -3,13 +3,12 @@ package electionguard.preencrypt
 import electionguard.core.*
 
 /**
- * The result of RecordPreBallot.record(), for use by the "Recording Tool" processing a marked pre-encrypted ballot.
- * Used to serialize a pre-encrypted EncryptedBallot after its been voted.
- * Has the extra Preencryption info for the EncryptedBallot.
+ * Intermediate working ballot to transform pre encrypted ballot to an Encrypted ballot.
+ * Not externally visable
  */
-data class RecordedPreBallot(
+internal data class PreBallot(
     val ballotId: String,
-    val contests: List<RecordedPreEncryption>,
+    val contests: List<PreContest>,
 ) {
     fun show() {
         println("\nRecordPreBallot '$ballotId' ")
@@ -23,20 +22,26 @@ data class RecordedPreBallot(
     }
 }
 
-data class RecordedPreEncryption(
+data class PreContest(
     val contestId: String,
     val contestHash: UInt256,  // (95)
     val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
-    val selectedVectors: List<RecordedSelectionVector>, // limit number of them, sorted by selectionHash
+    val selectedVectors: List<PreSelectionVector>, // limit number of them, sorted by selectionHash
+    val votedFor: List<Boolean> // nselections, in order by sequence_order
 ) {
+    init {
+        require(votedFor.size == allSelectionHashes.size - selectedVectors.size)
+    }
     fun selectedCodes() : List<String> = selectedVectors.map { it.shortCode }
+    fun nselections() = votedFor.size
 }
 
-data class RecordedSelectionVector(
+data class PreSelectionVector(
     val selectionId: String, // do not serialize
     val selectionHash: ElementModQ, // ψi (93)
     val shortCode: String,
     val encryptions: List<ElGamalCiphertext>, // Ej, size = nselections, in order by sequence_order
+    val nonces: List<ElementModQ>, // size = nselections, in order by sequence_order
 ) {
     override fun toString() =
         buildString {
@@ -46,49 +51,54 @@ data class RecordedSelectionVector(
         }
 }
 
-internal fun MarkedPreEncryptedBallot.makeRecordedPreBallot(preeBallot : PreEncryptedBallot): RecordedPreBallot {
-    val contests = mutableListOf<RecordedPreEncryption>()
+internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBallot): PreBallot {
+    val contests = mutableListOf<PreContest>()
     preeBallot.contests.forEach { preeContest ->
         val markedContest = this.contests.find { it.contestId == preeContest.contestId }
             ?: throw IllegalArgumentException("Cant find ${preeContest.contestId}")
 
-        // find the selections
-        val selections = mutableListOf<PreEncryptedSelection>()
+        // find the selected selections
+        val selected = mutableListOf<PreEncryptedSelection>()
         markedContest.selectedCodes.map { selectedShortCode ->
             val selection = preeContest.selections.find { it.shortCode == selectedShortCode } ?: throw RuntimeException()
-            if (selection != null) selections.add(selection)
+            if (selection != null) selected.add(selection)
+        }
+
+        val nselections = preeContest.selections.size - preeContest.votesAllowed
+        val votedFor = mutableListOf<Boolean>()
+        repeat(nselections) { idx ->
+            val selection = preeContest.selections[idx]
+            votedFor.add( selected.find { it.selectionId == selection.selectionId } != null)
         }
 
         // add null vector on undervote
-        val votesMissing = preeContest.votesAllowed - selections.size
+        val votesMissing = preeContest.votesAllowed - selected.size
         repeat (votesMissing) {
-            val nullVector = findNullVectorNotSelected(preeContest.selections, selections)
-            selections.add(nullVector)
+            val nullVector = findNullVectorNotSelected(preeContest.selections, selected)
+            selected.add(nullVector)
         }
-        require (selections.size == preeContest.votesAllowed)
+        require (selected.size == preeContest.votesAllowed)
 
         // The selectionVectors are sorted numerically by selectionHash, so cant be associated with a selection
-        val sortedSelectedVectors = selections.sortedBy { it.selectionHash }
-        val sortedRecordedVectors = sortedSelectedVectors.map { preeSelection ->
-            RecordedSelectionVector(preeSelection.selectionId, preeSelection.selectionHash, preeSelection.shortCode, preeSelection.selectionVector)
+        val sortedSelectedVectors = selected.sortedBy { it.selectionHash }
+        val sortedRecordedVectors = sortedSelectedVectors.mapIndexed { idx, preeSelection ->
+            PreSelectionVector(preeSelection.selectionId, preeSelection.selectionHash, preeSelection.shortCode,
+                preeSelection.selectionVector, preeSelection.selectionNonces)
         }
         val allSortedSelectedHashes = preeContest.selections.sortedBy { it.selectionHash }.map { it.selectionHash.toUInt256() }
 
         contests.add(
-            //     val contestId: String,
-            //    val contestHash: UInt256,
-            //    val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
-            //    val selectedVectors: List<RecordedSelectionVector> = emptyList(), // limit number of them, sorted by selectionHash
-            RecordedPreEncryption(
-                preeContest.contestId,
-                preeContest.preencryptionHash,
-                allSortedSelectedHashes,
-                sortedRecordedVectors,
+             PreContest(
+                 preeContest.contestId,
+                 preeContest.preencryptionHash,
+                 allSortedSelectedHashes,
+                 sortedRecordedVectors,
+                 votedFor,
             )
         )
     }
 
-    return RecordedPreBallot(
+    return PreBallot(
         this.ballotId,
         contests,
     )

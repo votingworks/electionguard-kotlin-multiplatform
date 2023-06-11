@@ -167,16 +167,13 @@ class VerifyEncryptedBallots(
         val contestLimit = manifest.contestIdToLimit[contest.contestId]!!
         val nselection = contest.selections.size
 
-
         require(contestLimit == cv.selectedVectors.size)
         require(contestLimit + nselection == cv.allSelectionHashes.size)
 
         // All short codes on the ballot are correctly computed from the pre-encrypted selections associated with each short code
         cv.selectedVectors.forEach { sv ->
             if (sv.shortCode != sigma(sv.selectionHash)) {
-                results.add(Err("    16. Contest ${contest.contestId} selection ${sv.shortCode} does not match"))
-            } else {
-                println("   shortcode ${sv.shortCode} OK")
+                results.add(Err("    16. Contest ${contest.contestId} shortCode '${sv.shortCode}' has no match"))
             }
         }
 
@@ -185,7 +182,7 @@ class VerifyEncryptedBallots(
         // one, the resulting selection vector will be a product of multiple pre-encryption selection vectors.
 
         val selectionVector : List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
-        if (true) { // TODO
+        if (contestLimit == 1) {
             var match = false
             cv.selectedVectors.forEach {
                 if (it.encryptions == selectionVector) {
@@ -194,8 +191,6 @@ class VerifyEncryptedBallots(
             }
             if (!match) {
                 results.add(Err("    16. Contest ${contest.contestId} selectionVector has no match"))
-            }  else {
-                println("   Contest ${contest.contestId} match OK")
             }
         } else {
             require (contestLimit == cv.selectedVectors.size)
@@ -206,8 +201,6 @@ class VerifyEncryptedBallots(
                 val sum = compList.encryptedSum()
                 if (sum != selectionVector[idx]) {
                     results.add(Err("    16. Contest ${contest.contestId} contestLimit = $contestLimit selectionVector does not match product"))
-                }  else {
-                    println("   Contest ${contest.contestId} contestLimit = $contestLimit product match OK")
                 }
             }
         }
