@@ -5,7 +5,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 
-private const val MAX_DLOG: Int = 1_000_000
+// TODO make this settable
+private const val MAX_DLOG: Int = 1000 // 1_000_000
 
 actual fun dLoggerOf(base: ElementModP) = DLog(base)
 

@@ -17,6 +17,7 @@ import electionguard.verifier.VerifyEncryptedBallots
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
+import kotlin.math.min
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -93,12 +94,26 @@ internal class PreEncryptorTest {
     }
 
     @Test
+    fun testSingleLimitProblem() {
+        runTest {
+            val ebuilder = ManifestBuilder("testSingleLimit")
+            val manifest: Manifest = ebuilder.addContest("onlyContest")
+                .addSelection("selection1", "candidate1")
+                .done()
+                .build()
+
+            val chosenBallot = ChosenBallot(1)
+            runComplete(group, "testSingleLimit", manifest, chosenBallot::markedBallot, true)
+        }
+    }
+
+    @Test
     fun fuzzTestSingleLimit() {
         runTest {
             var count = 0
             println("fuzzTestSingleLimit")
             checkAll(
-                iterations = 25,
+                iterations = 50,
                 Arb.int(min = 1, max = 9),
             ) { nselections ->
                 val ebuilder = ManifestBuilder("fuzzTestSingleLimit")
@@ -108,7 +123,7 @@ internal class PreEncryptorTest {
                     }
                 cbuilder.done()
                 val manifest: Manifest = ebuilder.build()
-                runComplete(group, "fuzzTestSingleLimit$nselections", manifest, ::markBallotChooseOne, false)
+                runComplete(group, "fuzzTestSingleLimit$count", manifest, ::markBallotChooseOne, false)
                 count++
                 if (count % 10 == 0) {
                     println(" $count")
@@ -131,6 +146,36 @@ internal class PreEncryptorTest {
                 .build()
 
             runComplete(group, "testMultipleSelections", manifest, ::markBallotToLimit, true)
+        }
+    }
+
+    @Test
+    fun fuzzTestMultipleSelections() {
+        runTest {
+            var count = 0
+            println("fuzzTestMultipleSelections")
+            checkAll(
+                iterations = 50,
+                Arb.int(min = 2, max = 9),
+                Arb.int(min = 2, max = 9),
+            ) { nselections, contestLimit ->
+                val votesAllowed = min(nselections, contestLimit)
+                val ebuilder = ManifestBuilder("fuzzTestMultipleSelections")
+                val cbuilder = ebuilder.addContest("onlyContest")
+                    .setVoteVariationType(Manifest.VoteVariationType.n_of_m, votesAllowed)
+
+                repeat(nselections) {
+                    cbuilder.addSelection("selection$it", "candidate$it")
+                }
+                cbuilder.done()
+                val manifest: Manifest = ebuilder.build()
+
+                runComplete(group, "fuzzTestMultipleSelections.$count", manifest, ::markBallotToLimit, false)
+                count++
+                if (count % 10 == 0) {
+                    println(" $count")
+                }
+            }
         }
     }
 }
@@ -201,6 +246,9 @@ internal fun runComplete(
         VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar.toElementModQ(group), 1)
     val results = verifier.verifyEncryptedBallot(fullEncryptedBallot, stats)
     if (show) println("VerifyEncryptedBallots $results\n")
+    if (results !is Ok) {
+        println()
+    }
 
     // decrypt with nonce
     val decryptionWithPrimaryNonce = DecryptionWithPrimaryNonce(group, manifest, ElGamalPublicKey(publicKey), qbar)
@@ -254,15 +302,24 @@ internal class ChosenBallot(val selectedIdx: Int) {
     fun markedBallot(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
         val pcontests = mutableListOf<MarkedPreEncryptedContest>()
         for (pcontest in pballot.contests) {
-            val idx = selectedIdx
-            val pselection = pcontest.selections[idx]
-            pcontests.add(
-                MarkedPreEncryptedContest(
-                    pcontest.contestId,
-                    listOf(sigma(pselection.selectionHash.toUInt256())),
-                    listOf(pselection.selectionId),
+            if (selectedIdx < pcontest.selections.size) {
+                val pselection = pcontest.selections[selectedIdx]
+                pcontests.add(
+                    MarkedPreEncryptedContest(
+                        pcontest.contestId,
+                        listOf(sigma(pselection.selectionHash.toUInt256())),
+                        listOf(pselection.selectionId),
+                    )
                 )
-            )
+            } else {
+                pcontests.add(
+                    MarkedPreEncryptedContest(
+                        pcontest.contestId,
+                        listOf(),
+                        listOf(),
+                    )
+                )
+            }
         }
 
         return MarkedPreEncryptedBallot(

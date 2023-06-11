@@ -29,29 +29,20 @@ class Recorder(
         // uses the primary nonce ξ to regenerate all of the encryptions on the ballot
         val preEncryptedBallot = preEncryptor.preencrypt(this.ballotId, this.ballotStyleId, ballotNonce)
         val recordPreBallot = this.makeRecordedPreBallot(preEncryptedBallot)
+        val preBallot = this.makePreBallot(preEncryptedBallot)
         val timestamp = (getSystemTimeInMillis() / 1000) // secs since epoch
 
         // match against the choices in MarkedPreEncryptedBallot
         val recordContests = recordPreBallot.contests.associateBy { it.contestId }
+        val preContests = preBallot.contests.associateBy { it.contestId }
 
         val contests = mutableListOf<CiphertextBallot.Contest>()
         for (preeContest in preEncryptedBallot.contests) {
-            val recordContest = recordContests[preeContest.contestId]!!
-
-            val cipherContest1 = recordContest.makeContest1(ballotNonce, preeContest)
-            val cipherContest = if (preeContest.votesAllowed == 1) recordContest.makeContest1p(ballotNonce, preeContest)
-                                else recordContest.makeContest(ballotNonce, preeContest)
+            val preContest = preContests[preeContest.contestId]!!
+            val cipherContest = preContest.makeContest(ballotNonce, preeContest)
             contests.add( cipherContest)
         }
 
-        //     val ballotId: String,
-        //    val ballotStyleId: String,
-        //    val confirmationCode: UInt256, // tracking code, H(B), eq 59
-        //    val codeBaux: ByteArray, // Baux in eq 59
-        //    val contests: List<Contest>,
-        //    val timestamp: Long,
-        //    val ballotNonce: UInt256,
-        //    val isPreEncrypt: Boolean = false,
         val ciphertextBallot =  CiphertextBallot(
             ballotId,
             ballotStyleId,
@@ -204,8 +195,7 @@ class Recorder(
         return result
     }
 
-    // fake
-    private fun RecordedPreEncryption.makeContest(ballotNonce: UInt256, preeContest: PreEncryptedContest): CiphertextBallot.Contest {
+    private fun PreContest.makeContest(ballotNonce: UInt256, preeContest: PreEncryptedContest): CiphertextBallot.Contest {
 
         // Find the pre-encryptions corresponding to the selections made by the voter and, using
         // the encryption nonces derived from the primary nonce, generate proofs of ballot-correctness as in
@@ -218,41 +208,16 @@ class Recorder(
         // to create suitable nonces for this combined pre-encryption vector. These derived nonces will be
         // necessary to form zero-knowledge proofs that the associated encryption vectors are well-formed.
 
-        // homomorphically combine the selected pre-encryption vectors by componentwise multiplication
-        val nselections = preeContest.selections.size
-        val nvectors = this.selectedVectors.size
-        require (nvectors == preeContest.votesAllowed)
-
-        var combinedEncryption = mutableListOf<ElGamalCiphertext>()
-        var combinedEncryptionNonces = mutableListOf<ElementModQ>()
-        repeat(nselections) { idx ->
-            var componentEncryptions : List<ElGamalCiphertext> = this.selectedVectors.map { it.encryptions[idx] }
-            combinedEncryption.add( componentEncryptions.encryptedSum() )
-            var componentNonces : List<ElementModQ> = this.selectedVectors.map {
-                hashFunction(extendedBaseHash.bytes, 0x43.toByte(), ballotNonce, preeContest.contestId, selectedVector.selectionId, selectionk).toElementModQ(group)
-            }
-            val aggNonce: ElementModQ = with(group) { componentNonces.addQ() }
-            combinedEncryptionNonces.add( aggNonce )
-        }
-        if (preeContest.votesAllowed == 1) {
-            require(combinedEncryption.size == nselections)
-            val selectedEncryption = this.selectedVectors[0].encryptions
-            repeat(nselections) { idx ->
-                require(combinedEncryption[idx] == selectedEncryption[idx])
-            }
-        }
-
-        // println("    makeContest vote for preeSelection ${preeSelection.selectionId} seq=${preeSelection.sequenceOrder}")
-        val selections = makeSelections(ballotNonce, preeContest.contestId, selectedVector, preeContest.selections)
-        val votedFor = if (selectedVector.selectionId.startsWith("null")) 0 else 1
+        val selections = this.makeSelections(preeContest)
 
         val texts: List<ElGamalCiphertext> = selections.map { it.ciphertext }
         val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
         val nonces: Iterable<ElementModQ> = selections.map { it.selectionNonce }
         val aggNonce: ElementModQ = with(group) { nonces.addQ() }
+        val totalVotes = votedFor.map{ if (it) 1 else 0 }.sum()
 
         val proof = ciphertextAccumulation.makeChaumPedersen(
-            votedFor,      // (ℓ in the spec)
+            totalVotes,      // (ℓ in the spec)
             preeContest.votesAllowed,  // (L in the spec)
             aggNonce,
             publicKeyEG,
@@ -280,23 +245,25 @@ class Recorder(
             selections, proof, contestDataEncrypted)
     }
 
-    private fun RecordedPreEncryption.makeSelections(ballotNonce : UInt256, preeContest: PreEncryptedContest): List<CiphertextBallot.Selection> {
+    private fun PreContest.makeSelections(preeContest: PreEncryptedContest): List<CiphertextBallot.Selection> {
 
-        // homomorphically combine the selected pre-encryption vectors by componentwise multiplication
-        val nselections = preeContest.selections.size
+        val nselections = preeContest.selections.size - preeContest.votesAllowed
         val nvectors = this.selectedVectors.size
         require (nvectors == preeContest.votesAllowed)
 
+        // homomorphically combine the selected pre-encryption vectors by component wise multiplication
         var combinedEncryption = mutableListOf<ElGamalCiphertext>()
-        var combinedEncryptionNonces = mutableListOf<ElementModQ>()
         repeat(nselections) { idx ->
             var componentEncryptions : List<ElGamalCiphertext> = this.selectedVectors.map { it.encryptions[idx] }
             combinedEncryption.add( componentEncryptions.encryptedSum() )
-            var componentNonces : List<ElementModQ> = this.selectedVectors.map {
-                hashFunction(extendedBaseHash.bytes, 0x43.toByte(), ballotNonce, preeContest.contestId, selectedVector.selectionId, selectionk).toElementModQ(group)
-            }
+        }
+
+        // the encryption nonces are added to create suitable nonces
+        var combinedNonces = mutableListOf<ElementModQ>()
+        repeat(nselections) { idx ->
+            var componentNonces : List<ElementModQ> = this.selectedVectors.map {it.nonces[idx] }
             val aggNonce: ElementModQ = with(group) { componentNonces.addQ() }
-            combinedEncryptionNonces.add( aggNonce )
+            combinedNonces.add( aggNonce )
         }
 
         if (preeContest.votesAllowed == 1) {
@@ -308,21 +275,17 @@ class Recorder(
         }
 
         val result = mutableListOf<CiphertextBallot.Selection>()
-        selectedVector.encryptions.forEachIndexed { idx, encryption ->
-            val selectionk = preeContest.selections[idx].selectionId
-            val votedFor = if (selectionk == selectedVector.selectionId) 1 else 0
-
-            // ξi,j,k = H(HE ; 43, ξ, Λi , λj , λk ) eq 97
-            val nonce = hashFunction(extendedBaseHash.bytes, 0x43.toByte(), ballotNonce, preeContest.contestId, selectedVector.selectionId, selectionk).toElementModQ(group)
+        combinedEncryption.forEachIndexed { idx, encryption ->
+            val selection = preeContest.selections[idx]
 
             val proof = encryption.makeChaumPedersen(
-                votedFor,
+                if (this.votedFor[idx]) 1 else 0,
                 1,
-                nonce,
+                combinedNonces[idx],
                 publicKeyEG,
                 extendedBaseHashQ
             )
-            result.add( CiphertextBallot.Selection(selectionk, preeContest.selections[idx].sequenceOrder, encryption, proof, nonce))
+            result.add( CiphertextBallot.Selection(selection.selectionId, selection.sequenceOrder, encryption, proof, combinedNonces[idx]))
         }
         return result
     }

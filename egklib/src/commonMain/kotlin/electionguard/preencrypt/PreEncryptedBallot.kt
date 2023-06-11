@@ -41,5 +41,5 @@ data class PreEncryptedSelection(
     val selectionHash: ElementModQ, // allow numerical sorting with ElementModQ, eq 93
     val shortCode: String,
     val selectionVector: List<ElGamalCiphertext>, // in sequenceOrder
-    // LOOK why dont we just store the damn nonces ??
+    val selectionNonces: List<ElementModQ>, // in sequenceOrder
 )

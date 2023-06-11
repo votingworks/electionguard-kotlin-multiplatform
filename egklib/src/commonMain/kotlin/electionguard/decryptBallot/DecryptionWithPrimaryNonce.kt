@@ -23,7 +23,7 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
             if (mcontest == null) {
                 Err("Cant find contest ${it.contestId} in manifest")
             } else {
-                decryptContestWithPrimaryNonce(this.isPreencrypt, ballotNonce, it)
+                decryptContestWithPrimaryNonce(this.isPreencrypt, ballotNonce, it, mcontest.votesAllowed)
             }
         }.partition()
 
@@ -41,11 +41,17 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
     private fun decryptContestWithPrimaryNonce(
         isPreencrypt : Boolean,
         ballotNonce: UInt256,
-        contest: EncryptedBallot.Contest
+        contest: EncryptedBallot.Contest,
+        contestLimit : Int,
     ): Result<PlaintextBallot.Contest, String> {
 
         val decryptions: List<PlaintextBallot.Selection> = if (isPreencrypt) {
-            decryptPreencryption(ballotNonce, contest)
+            if (contestLimit == 1) {
+                decryptPreencryptionLimit1(ballotNonce, contest)
+            } else {
+                TODO()
+                // decryptPreencryption(ballotNonce, contest)
+            }
         } else {
             val dSelections = mutableListOf<PlaintextBallot.Selection>()
             val errors = mutableListOf<String>()
@@ -108,7 +114,7 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
         }
     }
 
-    private fun decryptPreencryption (
+    private fun decryptPreencryptionLimit1 (
         ballotNonce: UInt256,
         contest: EncryptedBallot.Contest
     ): List<PlaintextBallot.Selection> {
@@ -133,7 +139,7 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
             }
         }
         if ( genSelection == null) {
-            genSelection = "null1"
+            genSelection = "null1"  // wtf?
         }
 
         return contest.selections.map { selection ->
@@ -142,4 +148,29 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
             PlaintextBallot.Selection(selection.selectionId, selection.sequenceOrder, decodedVote!!)
         }
     }
+
+    /*
+    private fun decryptPreencryption (
+        ballotNonce: UInt256,
+        contest: EncryptedBallot.Contest
+    ): List<PlaintextBallot.Selection> {
+        val nselections = contest.selections.size
+        val preContest = contest.preEncryption!!
+
+        // the encryption nonces are added to create suitable nonces
+        var combinedNonces = mutableListOf<ElementModQ>()
+        repeat(nselections) { idx ->
+            var componentNonces : List<ElementModQ> = preContest.selectedVectors.map { it.nonces[idx] }
+            val aggNonce: ElementModQ = with(group) { componentNonces.addQ() }
+            combinedNonces.add( aggNonce )
+        }
+
+        return contest.selections.mapIndexed { idx, selection ->
+            val decodedVote = selection.ciphertext.decryptWithNonce(publicKey, combinedNonces[idx])
+            PlaintextBallot.Selection(selection.selectionId, selection.sequenceOrder, decodedVote!!)
+        }
+    }
+
+     */
+
 }
