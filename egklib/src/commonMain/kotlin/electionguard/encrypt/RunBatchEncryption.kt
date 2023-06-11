@@ -17,7 +17,7 @@ import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.toElementModQ
-import electionguard.decryptBallot.DecryptionWithPrimaryNonce
+import electionguard.decryptBallot.DecryptWithNonce
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
 import electionguard.publish.EncryptedBallotSinkIF
@@ -293,7 +293,7 @@ private class EncryptionRunner(
             val primaryNonce = ciphertextBallot.ballotNonce
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 
-            val decryptionWithPrimaryNonce = DecryptionWithPrimaryNonce(group, manifest, publicKeyEG, extendedBaseHash)
+            val decryptionWithPrimaryNonce = DecryptWithNonce(group, manifest, publicKeyEG, extendedBaseHash)
             val decryptResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(primaryNonce) }
             if (decryptResult is Err) {
                 logger.warn { "encrypted ballot fails decryption = $decryptResult" }

@@ -18,12 +18,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
-import mu.KotlinLogging
 
 private const val debugBallots = false
-private val logger = KotlinLogging.logger("VerifyEncryptedBallots")
+// private val logger = KotlinLogging.logger("VerifyEncryptedBallots")
 
-/** Box 4,5,6. Can be multithreaded. */
+/** Box 4,5,6,16,17. Can be multithreaded. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyEncryptedBallots(
     val group: GroupContext,
@@ -153,9 +152,10 @@ class VerifyEncryptedBallots(
         return errors.merge()
     }
 
-    // TODO
-    fun sigma(hash : UInt256) : String = hash.toHex().substring(0, 5)
+    // TODO specify sigma in manifest
+    private fun sigma(hash : UInt256) : String = hash.toHex().substring(0, 5)
 
+    // Verification 16 (Validation of short codes in pre-encrypted ballots)
     private fun verifyPreencryption(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val results = mutableListOf<Result<Boolean, String>>()
 
@@ -182,26 +182,14 @@ class VerifyEncryptedBallots(
         // one, the resulting selection vector will be a product of multiple pre-encryption selection vectors.
 
         val selectionVector : List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
-        if (contestLimit == 1) {
-            var match = false
-            cv.selectedVectors.forEach {
-                if (it.encryptions == selectionVector) {
-                    match = true
-                }
-            }
-            if (!match) {
-                results.add(Err("    16. Contest ${contest.contestId} selectionVector has no match"))
-            }
-        } else {
-            require (contestLimit == cv.selectedVectors.size)
+        require (contestLimit == cv.selectedVectors.size)
 
-            // product of multiple pre-encryption selection vectors. component-wise I think
-            for (idx in 0 until nselection) {
-                val compList = cv.selectedVectors.map { it.encryptions[idx] }
-                val sum = compList.encryptedSum()
-                if (sum != selectionVector[idx]) {
-                    results.add(Err("    16. Contest ${contest.contestId} contestLimit = $contestLimit selectionVector does not match product"))
-                }
+        // product of multiple pre-encryption selection vectors. component-wise I think
+        for (idx in 0 until nselection) {
+            val compList = cv.selectedVectors.map { it.encryptions[idx] }
+            val sum = compList.encryptedSum()
+            if (sum != selectionVector[idx]) {
+                results.add(Err("    16. Contest ${contest.contestId} (contestLimit=$contestLimit) selectionVector $idx does not match product"))
             }
         }
 

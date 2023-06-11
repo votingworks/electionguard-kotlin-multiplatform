@@ -22,7 +22,7 @@ internal data class PreBallot(
     }
 }
 
-data class PreContest(
+internal data class PreContest(
     val contestId: String,
     val contestHash: UInt256,  // (95)
     val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
@@ -36,12 +36,12 @@ data class PreContest(
     fun nselections() = votedFor.size
 }
 
-data class PreSelectionVector(
+internal data class PreSelectionVector(
     val selectionId: String, // do not serialize
     val selectionHash: ElementModQ, // ψi (93)
     val shortCode: String,
     val encryptions: List<ElGamalCiphertext>, // Ej, size = nselections, in order by sequence_order
-    val nonces: List<ElementModQ>, // size = nselections, in order by sequence_order
+    val nonces: List<ElementModQ>, // size = nselections, in order by sequence_order, do not serialize
 ) {
     override fun toString() =
         buildString {

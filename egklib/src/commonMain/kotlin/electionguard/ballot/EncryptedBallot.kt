@@ -77,7 +77,7 @@ data class EncryptedBallot(
     data class SelectionVector(
         val selectionHash: UInt256,
         val shortCode: String,
-        val encryptions: List<ElGamalCiphertext>,
+        val encryptions: List<ElGamalCiphertext>, // Ej, size = nselections, in order by sequence_order
     )
 
 }
