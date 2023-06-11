@@ -7,7 +7,7 @@ import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.core.*
-import electionguard.decryptBallot.DecryptionWithPrimaryNonce
+import electionguard.decryptBallot.DecryptPreencryptWithNonce
 import electionguard.encrypt.cast
 import electionguard.input.ManifestBuilder
 import electionguard.protoconvert.import
@@ -245,13 +245,17 @@ internal fun runComplete(
     val verifier =
         VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar.toElementModQ(group), 1)
     val results = verifier.verifyEncryptedBallot(fullEncryptedBallot, stats)
-    if (show) println("VerifyEncryptedBallots $results\n")
-    if (results !is Ok) {
-        println()
+    if (show || results !is Ok) {
+        println("VerifyEncryptedBallots $results\n")
     }
 
     // decrypt with nonce
-    val decryptionWithPrimaryNonce = DecryptionWithPrimaryNonce(group, manifest, ElGamalPublicKey(publicKey), qbar)
+    //     val group: GroupContext,
+    //    val manifest: Manifest,
+    //    val publicKey: ElGamalPublicKey,
+    //    val extendedBaseHash: UInt256,
+    //    sigma : (UInt256) -> String, // hash trimming function Ω
+    val decryptionWithPrimaryNonce = DecryptPreencryptWithNonce(group, manifest, ElGamalPublicKey(publicKey), qbar, ::sigma)
     val decryptedBallotResult = with(decryptionWithPrimaryNonce) { fullEncryptedBallot.decrypt(primaryNonce) }
     if (decryptedBallotResult is Err) {
         println("decryptedBallotResult $decryptedBallotResult")

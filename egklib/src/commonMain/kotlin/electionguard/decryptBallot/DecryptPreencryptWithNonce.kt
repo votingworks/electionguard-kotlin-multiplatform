@@ -11,19 +11,31 @@ import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.decryptWithNonceToContestData
 import electionguard.core.*
+import electionguard.preencrypt.PreEncryptedContest
+import electionguard.preencrypt.PreEncryptedSelection
+import electionguard.preencrypt.PreEncryptor
 
-/** Decryption of a EncryptedBallot using the ballot nonce. */
-class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifest, val publicKey: ElGamalPublicKey,
-    val extendedBaseHash: UInt256) {
+/** Decryption of a preencrypted EncryptedBallot using the ballot nonce. */
+class DecryptPreencryptWithNonce(
+    val group: GroupContext,
+    val manifest: Manifest,
+    val publicKey: ElGamalPublicKey,
+    val extendedBaseHash: UInt256,
+    sigma : (UInt256) -> String, // hash trimming function Ω
+) {
+    val preEncryptor = PreEncryptor( group, manifest, publicKey.key, extendedBaseHash, sigma)
 
     fun EncryptedBallot.decrypt(ballotNonce: UInt256): Result<PlaintextBallot, String> {
+        require(this.isPreencrypt)
+
+        val preEncryptedBallot = preEncryptor.preencrypt(this.ballotId, this.ballotStyleId, ballotNonce)
 
         val (plaintextContests, cerrors) = this.contests.map {
-            val mcontest = manifest.contests.find { tcontest -> it.contestId == tcontest.contestId}
-            if (mcontest == null) {
+            val pcontest = preEncryptedBallot.contests.find { tcontest -> it.contestId == tcontest.contestId}
+            if (pcontest == null) {
                 Err("Cant find contest ${it.contestId} in manifest")
             } else {
-                decryptContestWithPrimaryNonce(this.isPreencrypt, ballotNonce, it, mcontest.votesAllowed)
+                decryptContest(ballotNonce, it, pcontest)
             }
         }.partition()
 
@@ -38,36 +50,20 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
         ))
     }
 
-    private fun decryptContestWithPrimaryNonce(
-        isPreencrypt : Boolean,
+    private fun decryptContest(
         ballotNonce: UInt256,
         contest: EncryptedBallot.Contest,
-        contestLimit : Int,
+        pcontest: PreEncryptedContest,
     ): Result<PlaintextBallot.Contest, String> {
 
-        val decryptions: List<PlaintextBallot.Selection> = if (isPreencrypt) {
-            if (contestLimit == 1) {
-                decryptPreencryptionLimit1(ballotNonce, contest)
-            } else {
-                TODO()
-                // decryptPreencryption(ballotNonce, contest)
-            }
+        val decryptions: List<PlaintextBallot.Selection> = decryptPreencryption(contest, pcontest)
+        /* val decryptions: List<PlaintextBallot.Selection> = if (pcontest.votesAllowed == 1) {
+            decryptPreencryptLimit1(ballotNonce, contest)
         } else {
-            val dSelections = mutableListOf<PlaintextBallot.Selection>()
-            val errors = mutableListOf<String>()
-            for (selection in contest.selections) {
-                val dSelection = decryptSelectionWithPrimaryNonce(ballotNonce, contest.contestId, selection)
-                if (dSelection == null) {
-                    errors.add(" decryption with nonce failed for contest: '${contest.contestId}' selection: '${selection.selectionId}'")
-                } else {
-                    dSelections.add(dSelection)
-                }
-            }
-            if (errors.isNotEmpty()) {
-                return Err(errors.joinToString("\n"))
-            }
-            dSelections
+            decryptPreencryption(contest, pcontest)
         }
+
+         */
 
         // contest data
         val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contest.contestId, "contest data")
@@ -96,25 +92,7 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
         ))
     }
 
-    private fun decryptSelectionWithPrimaryNonce(
-        ballotNonce: UInt256,
-        contestLabel: String,
-        selection: EncryptedBallot.Selection
-    ): PlaintextBallot.Selection? {
-
-        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestLabel, selection.selectionId) // eq 22
-        val decodedVote: Int? = selection.ciphertext.decryptWithNonce(publicKey, selectionNonce.toElementModQ(group))
-
-        return decodedVote?.let {
-            PlaintextBallot.Selection(
-                selection.selectionId,
-                selection.sequenceOrder,
-                decodedVote,
-            )
-        }
-    }
-
-    private fun decryptPreencryptionLimit1 (
+    private fun decryptPreencryptLimit1 (
         ballotNonce: UInt256,
         contest: EncryptedBallot.Contest
     ): List<PlaintextBallot.Selection> {
@@ -149,18 +127,19 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
         }
     }
 
-    /*
     private fun decryptPreencryption (
-        ballotNonce: UInt256,
-        contest: EncryptedBallot.Contest
+        contest: EncryptedBallot.Contest,
+        preeContest: PreEncryptedContest,
     ): List<PlaintextBallot.Selection> {
         val nselections = contest.selections.size
-        val preContest = contest.preEncryption!!
+        val preEncryption = contest.preEncryption!!
 
-        // the encryption nonces are added to create suitable nonces
         var combinedNonces = mutableListOf<ElementModQ>()
         repeat(nselections) { idx ->
-            var componentNonces : List<ElementModQ> = preContest.selectedVectors.map { it.nonces[idx] }
+            val componentNonces = preEncryption.selectedVectors.map { selected ->
+                val pv: PreEncryptedSelection = preeContest.selections.find { it.shortCode == selected.shortCode }!!
+                pv.selectionNonces[idx]
+            }
             val aggNonce: ElementModQ = with(group) { componentNonces.addQ() }
             combinedNonces.add( aggNonce )
         }
@@ -170,7 +149,5 @@ class DecryptionWithPrimaryNonce(val group : GroupContext, val manifest: Manifes
             PlaintextBallot.Selection(selection.selectionId, selection.sequenceOrder, decodedVote!!)
         }
     }
-
-     */
 
 }

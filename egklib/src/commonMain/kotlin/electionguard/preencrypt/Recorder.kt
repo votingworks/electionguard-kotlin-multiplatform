@@ -261,7 +261,7 @@ class Recorder(
         // the encryption nonces are added to create suitable nonces
         var combinedNonces = mutableListOf<ElementModQ>()
         repeat(nselections) { idx ->
-            var componentNonces : List<ElementModQ> = this.selectedVectors.map {it.nonces[idx] }
+            var componentNonces : List<ElementModQ> = this.selectedVectors.map { it.nonces[idx] }
             val aggNonce: ElementModQ = with(group) { componentNonces.addQ() }
             combinedNonces.add( aggNonce )
         }

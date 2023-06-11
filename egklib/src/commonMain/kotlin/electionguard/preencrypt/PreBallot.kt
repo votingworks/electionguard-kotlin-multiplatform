@@ -41,7 +41,7 @@ data class PreSelectionVector(
     val selectionHash: ElementModQ, // ψi (93)
     val shortCode: String,
     val encryptions: List<ElGamalCiphertext>, // Ej, size = nselections, in order by sequence_order
-    val nonces: List<ElementModQ>, // size = nselections, in order by sequence_order
+    val nonces: List<ElementModQ>, // size = nselections, in order by sequence_order, do not serialize
 ) {
     override fun toString() =
         buildString {

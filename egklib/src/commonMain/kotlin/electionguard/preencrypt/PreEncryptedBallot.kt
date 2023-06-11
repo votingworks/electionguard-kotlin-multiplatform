@@ -40,6 +40,6 @@ data class PreEncryptedSelection(
     val sequenceOrder: Int,  // matches the Manifest
     val selectionHash: ElementModQ, // allow numerical sorting with ElementModQ, eq 93
     val shortCode: String,
-    val selectionVector: List<ElGamalCiphertext>, // in sequenceOrder
-    val selectionNonces: List<ElementModQ>, // in sequenceOrder
+    val selectionVector: List<ElGamalCiphertext>, // nselections, in sequenceOrder
+    val selectionNonces: List<ElementModQ>, // nselections, in sequenceOrder
 )
