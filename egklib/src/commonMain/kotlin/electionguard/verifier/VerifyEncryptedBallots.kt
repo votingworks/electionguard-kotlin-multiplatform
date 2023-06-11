@@ -175,8 +175,6 @@ class VerifyEncryptedBallots(
         cv.selectedVectors.forEach { sv ->
             if (sv.shortCode != sigma(sv.selectionHash)) {
                 results.add(Err("    16. Contest ${contest.contestId} selection ${sv.shortCode} does not match"))
-            } else {
-                println("   shortcode ${sv.shortCode} OK")
             }
         }
 
@@ -194,8 +192,6 @@ class VerifyEncryptedBallots(
             }
             if (!match) {
                 results.add(Err("    16. Contest ${contest.contestId} selectionVector has no match"))
-            }  else {
-                println("   Contest ${contest.contestId} match OK")
             }
         } else {
             require (contestLimit == cv.selectedVectors.size)

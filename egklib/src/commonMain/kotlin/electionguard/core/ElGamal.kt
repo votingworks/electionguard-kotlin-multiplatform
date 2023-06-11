@@ -191,12 +191,12 @@ fun ElGamalCiphertext.decryptWithShares(publicKey: ElGamalPublicKey, shares: Ite
 }
 
 /** Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned. */
-fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ): Int? {
+fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ, maxResult: Int = -1): Int? {
     compatibleContextOrFail(pad, data, publicKey.key, nonce)
 
     val blind = publicKey powP (-nonce)
     val kPowM = data * blind // data * blind = publicKey ^ m
-    return publicKey.dLog(kPowM)
+    return publicKey.dLog(kPowM, maxResult)
 }
 
 /** Homomorphically "adds" two ElGamal ciphertexts together through piecewise multiplication. */
@@ -207,7 +207,6 @@ operator fun ElGamalCiphertext.plus(o: ElGamalCiphertext): ElGamalCiphertext {
 
 /**
  * Homomorphically "adds" a sequence of ElGamal ciphertexts through piecewise multiplication.
- *
  * @throws ArithmeticException if the sequence is empty
  */
 fun Iterable<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext =

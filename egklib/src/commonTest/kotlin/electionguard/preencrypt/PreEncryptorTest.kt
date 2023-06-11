@@ -1,44 +1,43 @@
 package electionguard.preencrypt
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.Stats
-import electionguard.core.UInt256
-import electionguard.core.hashElements
-import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
-import electionguard.core.runTest
-import electionguard.core.toElementModQ
-import electionguard.core.toUInt256
+import electionguard.core.*
+import electionguard.decryptBallot.DecryptionWithPrimaryNonce
 import electionguard.encrypt.cast
 import electionguard.input.ManifestBuilder
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
 import electionguard.publish.makeConsumer
 import electionguard.verifier.VerifyEncryptedBallots
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.int
+import io.kotest.property.checkAll
 import kotlin.random.Random
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 private val random = Random
 
 internal class PreEncryptorTest {
     val input = "src/commonTest/data/runWorkflowAllAvailable"
+    val group = productionGroup()
 
     // sanity check that PreEncryptor.preencrypt doesnt barf
     @Test
     fun testPreencrypt() {
         runTest {
-            val group = productionGroup()
             val consumerIn = makeConsumer(input, group)
             val electionInit = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val manifest = electionInit.manifest()
 
-            val preEncryptor = PreEncryptor(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)
+            val preEncryptor =
+                PreEncryptor(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)
 
             manifest.ballotStyles.forEach { println(it) }
 
@@ -47,19 +46,17 @@ internal class PreEncryptorTest {
         }
     }
 
-    fun sigma(hash : UInt256) : String = hash.toHex().substring(0, 5)
-
     // sanity check that Recorder.record doesnt barf
     @Test
     fun testRecord() {
         runTest {
-            val group = productionGroup()
             val consumerIn = makeConsumer(input, group)
             val electionInit: ElectionInitialized =
                 consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val manifest = electionInit.manifest()
 
-            val preEncryptor = PreEncryptor(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)
+            val preEncryptor =
+                PreEncryptor(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)
 
             manifest.ballotStyles.forEach { println(it) }
 
@@ -70,7 +67,8 @@ internal class PreEncryptorTest {
             val mballot = markBallotChooseOne(manifest, pballot)
             mballot.show()
 
-            val recorder = Recorder(group, manifest,  electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)
+            val recorder =
+                Recorder(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)
 
             with(recorder) {
                 mballot.record(primaryNonce)
@@ -89,7 +87,33 @@ internal class PreEncryptorTest {
                 .done()
                 .build()
 
-            runComplete("testSingleLimit", manifest, this::markBallotChooseOne, true)
+            val chosenBallot = ChosenBallot(1)
+            runComplete(group, "testSingleLimit", manifest, chosenBallot::markedBallot, true)
+        }
+    }
+
+    @Test
+    fun fuzzTestSingleLimit() {
+        runTest {
+            var count = 0
+            println("fuzzTestSingleLimit")
+            checkAll(
+                iterations = 25,
+                Arb.int(min = 1, max = 9),
+            ) { nselections ->
+                val ebuilder = ManifestBuilder("fuzzTestSingleLimit")
+                val cbuilder = ebuilder.addContest("onlyContest")
+                    repeat(nselections) {
+                        cbuilder.addSelection("selection$it", "candidate$it")
+                    }
+                cbuilder.done()
+                val manifest: Manifest = ebuilder.build()
+                runComplete(group, "fuzzTestSingleLimit$nselections", manifest, ::markBallotChooseOne, false)
+                count++
+                if (count % 10 == 0) {
+                    println(" $count")
+                }
+            }
         }
     }
 
@@ -106,41 +130,41 @@ internal class PreEncryptorTest {
                 .done()
                 .build()
 
-            runComplete("testMultipleSelections", manifest, this::markBallotToLimit, false)
+            runComplete(group, "testMultipleSelections", manifest, ::markBallotToLimit, true)
         }
     }
+}
 
-    fun runComplete(
-        ballot_id: String,
-        manifest: Manifest,
-        markBallot: (manifest: Manifest, pballot: PreEncryptedBallot) -> MarkedPreEncryptedBallot,
-        isLimitOne: Boolean,
-    ) {
-        val group = productionGroup()
+internal fun runComplete(
+    group: GroupContext,
+    ballot_id: String,
+    manifest: Manifest,
+    markBallot: (manifest: Manifest, pballot: PreEncryptedBallot) -> MarkedPreEncryptedBallot,
+    show: Boolean,
+) {
+    if (show) println("===================================================================")
+    val qbar = 4242U.toUInt256()
+    val secret = group.randomElementModQ(minimum = 1)
+    val publicKey = group.gPowP(secret)
+    val primaryNonce = UInt256.random()
 
-        val qbar = 4242U.toUInt256()
-        val secret = group.randomElementModQ(minimum = 1)
-        val publicKey = group.gPowP(secret)
+    // pre-encrypt
+    val preEncryptor = PreEncryptor(group, manifest, publicKey, qbar, ::sigma)
+    val pballot = preEncryptor.preencrypt(ballot_id, "ballotStyle", primaryNonce)
+    if (show) pballot.show()
 
-        // pre-encrypt
-        val preEncryptor = PreEncryptor(group, manifest, publicKey, qbar, ::sigma)
-        val primaryNonce = 42U.toUInt256()
-        val pballot = preEncryptor.preencrypt(ballot_id, "ballotStyle", primaryNonce)
-        pballot.show()
-        println()
+    // vote
+    val markedBallot = markBallot(manifest, pballot)
+    if (show) markedBallot.show()
 
-        // vote
-        val mballot = markBallot(manifest, pballot)
-        mballot.show()
-        println()
+    // record
+    val recorder = Recorder(group, manifest, publicKey, qbar, ::sigma)
+    val (recordedBallot, ciphertextBallot) = with(recorder) {
+        markedBallot.record(primaryNonce)
+    }
 
-        // record
-        println("Recorder.record")
-        val recorder = Recorder(group, manifest, publicKey, qbar, ::sigma)
-        val (recordedBallot, ciphertextBallot) = with(recorder) {
-            mballot.record(primaryNonce)
-        }
-
+    // show record results
+    if (show) {
         println("\nCiphertextBallot ${ciphertextBallot.ballotId}")
         for (contest in ciphertextBallot.contests) {
             println(" contest ${contest.contestId}")
@@ -149,16 +173,18 @@ internal class PreEncryptorTest {
             }
         }
         println()
-
         recordedBallot.show()
         println()
+    }
 
-        // roundtrip through the proto, combines the recordedBallot
-        val encryptedBallot = ciphertextBallot.cast()
-        val proto = encryptedBallot.publishProto(recordedBallot)
-        val fullEncryptedBallot = proto.import(group).unwrap()
+    // roundtrip through the proto, combines the recordedBallot
+    val encryptedBallot = ciphertextBallot.cast()
+    val proto = encryptedBallot.publishProto(recordedBallot)
+    val fullEncryptedBallot = proto.import(group).unwrap()
 
-        println("\nEncryptedBallot ${encryptedBallot.ballotId}")
+    // show what ends up in the election record
+    if (show) {
+        println("\nEncryptedBallot ${fullEncryptedBallot.ballotId}")
         for (contest in fullEncryptedBallot.contests) {
             println(" contest ${contest.contestId}")
             contest.selections.forEach {
@@ -167,27 +193,74 @@ internal class PreEncryptorTest {
             contest.preEncryption?.show()
         }
         println()
-
-        val stats = Stats()
-        val verifier = VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar.toElementModQ(group), 1)
-        val results = verifier.verifyEncryptedBallot(fullEncryptedBallot, stats)
-        println("VerifyEncryptedBallots $results")
-        println()
-
-        assertTrue(results is Ok)
     }
 
-    // pick one selection to vote for
-    fun markBallotChooseOne(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
+    // verify
+    val stats = Stats()
+    val verifier =
+        VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar.toElementModQ(group), 1)
+    val results = verifier.verifyEncryptedBallot(fullEncryptedBallot, stats)
+    if (show) println("VerifyEncryptedBallots $results\n")
+
+    // decrypt with nonce
+    val decryptionWithPrimaryNonce = DecryptionWithPrimaryNonce(group, manifest, ElGamalPublicKey(publicKey), qbar)
+    val decryptedBallotResult = with(decryptionWithPrimaryNonce) { fullEncryptedBallot.decrypt(primaryNonce) }
+    if (decryptedBallotResult is Err) {
+        println("decryptedBallotResult $decryptedBallotResult")
+    }
+    assertTrue(decryptedBallotResult is Ok)
+    val decryptedBallot = decryptedBallotResult.unwrap()
+
+    if (show) {
+        println("\nDecryptedBallot ${decryptedBallot.ballotId}")
+        for (contest in decryptedBallot.contests) {
+            println(" contest ${contest.contestId}")
+            contest.selections.forEach {
+                println("   selection ${it.selectionId} = ${it.vote}")
+            }
+        }
+        println()
+    }
+
+    // check votes are correct
+    for (contest in decryptedBallot.contests) {
+        if (show) println(" check votes for contest ${contest.contestId}")
+        val markedContest = markedBallot.contests.find { it.contestId == contest.contestId }!!
+        contest.selections.forEach {
+            if (show) println("   selection ${it.selectionId} = ${it.vote}")
+            val have = it.vote == 1
+            val wanted = markedContest.selectedIds.contains(it.selectionId)
+            assertEquals(wanted, have)
+        }
+    }
+
+    // check decryptedBallot.sequenceOrder corresponds to CiphertextBallot
+    for (contest in decryptedBallot.contests) {
+        if (show) println(" check decryptedBallot contest ${contest.contestId}")
+        val cipherContest = ciphertextBallot.contests.find { it.contestId == contest.contestId }!!
+        contest.selections.forEach { plainSelection ->
+            val cipherSelection = cipherContest.selections.find { it.selectionId == plainSelection.selectionId }!!
+            assertEquals(cipherSelection.sequenceOrder, plainSelection.sequenceOrder)
+        }
+    }
+
+    assertTrue(results is Ok)
+}
+
+fun sigma(hash: UInt256): String = hash.toHex().substring(0, 5)
+
+internal class ChosenBallot(val selectedIdx: Int) {
+
+    fun markedBallot(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
         val pcontests = mutableListOf<MarkedPreEncryptedContest>()
         for (pcontest in pballot.contests) {
-            val n = pcontest.selections.size
-            val idx = random.nextInt(n)
+            val idx = selectedIdx
             val pselection = pcontest.selections[idx]
             pcontests.add(
                 MarkedPreEncryptedContest(
                     pcontest.contestId,
                     listOf(sigma(pselection.selectionHash.toUInt256())),
+                    listOf(pselection.selectionId),
                 )
             )
         }
@@ -198,36 +271,62 @@ internal class PreEncryptorTest {
             pcontests,
         )
     }
+}
 
-    // pick all selections 0..limit-1
-    fun markBallotToLimit(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
-        val pcontests = mutableListOf<MarkedPreEncryptedContest>()
-        for (pcontest in pballot.contests) {
-            val mcontest = manifest.contests.find { it.contestId == pcontest.contestId }
-                ?: throw IllegalArgumentException("Cant find $pcontest.contestId")
+// pick one selection to vote for
+internal fun markBallotChooseOne(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
+    val pcontests = mutableListOf<MarkedPreEncryptedContest>()
+    for (pcontest in pballot.contests) {
+        val n = pcontest.selections.size
+        val idx = random.nextInt(n)
+        val pselection = pcontest.selections[idx]
+        pcontests.add(
+            MarkedPreEncryptedContest(
+                pcontest.contestId,
+                listOf(sigma(pselection.selectionHash.toUInt256())),
+                listOf(pselection.selectionId),
+            )
+        )
+    }
 
-            val selections = mutableListOf<String>()
-            val nselections = pcontest.selections.size
-            val doneIdx = mutableSetOf<Int>()
-            while (doneIdx.size < mcontest.votesAllowed) {
-                val idx = random.nextInt(nselections)
-                if (!doneIdx.contains(idx)) {
-                    selections.add(sigma(pcontest.selections[idx].selectionHash.toUInt256()))
-                }
+    return MarkedPreEncryptedBallot(
+        pballot.ballotId,
+        pballot.ballotStyleId,
+        pcontests,
+    )
+}
+
+// pick all selections 0..limit-1
+internal fun markBallotToLimit(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
+    val pcontests = mutableListOf<MarkedPreEncryptedContest>()
+    for (pcontest in pballot.contests) {
+        val shortCodes = mutableListOf<String>()
+        val selections = mutableListOf<String>()
+        val nselections = pcontest.selections.size
+        val doneIdx = mutableSetOf<Int>()
+        val nvotes = random.nextInt(pcontest.votesAllowed + 1)
+
+        while (doneIdx.size < nvotes) {
+            val idx = random.nextInt(nselections)
+            if (!doneIdx.contains(idx)) {
+                shortCodes.add(sigma(pcontest.selections[idx].selectionHash.toUInt256()))
+                selections.add(pcontest.selections[idx].selectionId)
+                doneIdx.add(idx)
             }
-            pcontests.add(
-                MarkedPreEncryptedContest(
-                    pcontest.contestId,
-                    selections,
-                )
-            )
         }
 
-        return MarkedPreEncryptedBallot(
-            pballot.ballotId,
-            pballot.ballotStyleId,
-            pcontests,
+        pcontests.add(
+            MarkedPreEncryptedContest(
+                pcontest.contestId,
+                shortCodes,
+                selections,
+            )
         )
     }
 
+    return MarkedPreEncryptedBallot(
+        pballot.ballotId,
+        pballot.ballotStyleId,
+        pcontests,
+    )
 }

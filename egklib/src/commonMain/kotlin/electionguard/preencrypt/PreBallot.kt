@@ -3,13 +3,12 @@ package electionguard.preencrypt
 import electionguard.core.*
 
 /**
- * The result of RecordPreBallot.record(), for use by the "Recording Tool" processing a marked pre-encrypted ballot.
- * Used to serialize a pre-encrypted EncryptedBallot after its been voted.
- * Has the extra Preencryption info for the EncryptedBallot.
+ * Intermediate working ballot to transform pre encrypted ballot to an Encrypted ballot.
+ * Not externally visable
  */
-data class RecordedPreBallot(
+internal data class PreBallot(
     val ballotId: String,
-    val contests: List<RecordedPreEncryption>,
+    val contests: List<PreContest>,
 ) {
     fun show() {
         println("\nRecordPreBallot '$ballotId' ")
@@ -23,16 +22,16 @@ data class RecordedPreBallot(
     }
 }
 
-data class RecordedPreEncryption(
+data class PreContest(
     val contestId: String,
     val contestHash: UInt256,  // (95)
     val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
-    val selectedVectors: List<RecordedSelectionVector>, // limit number of them, sorted by selectionHash
+    val selectedVectors: List<PreSelectionVector>, // limit number of them, sorted by selectionHash
 ) {
     fun selectedCodes() : List<String> = selectedVectors.map { it.shortCode }
 }
 
-data class RecordedSelectionVector(
+data class PreSelectionVector(
     val selectionId: String, // do not serialize
     val selectionHash: ElementModQ, // ψi (93)
     val shortCode: String,
@@ -46,8 +45,8 @@ data class RecordedSelectionVector(
         }
 }
 
-internal fun MarkedPreEncryptedBallot.makeRecordedPreBallot(preeBallot : PreEncryptedBallot): RecordedPreBallot {
-    val contests = mutableListOf<RecordedPreEncryption>()
+internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBallot): PreBallot {
+    val contests = mutableListOf<PreContest>()
     preeBallot.contests.forEach { preeContest ->
         val markedContest = this.contests.find { it.contestId == preeContest.contestId }
             ?: throw IllegalArgumentException("Cant find ${preeContest.contestId}")
@@ -70,7 +69,7 @@ internal fun MarkedPreEncryptedBallot.makeRecordedPreBallot(preeBallot : PreEncr
         // The selectionVectors are sorted numerically by selectionHash, so cant be associated with a selection
         val sortedSelectedVectors = selections.sortedBy { it.selectionHash }
         val sortedRecordedVectors = sortedSelectedVectors.map { preeSelection ->
-            RecordedSelectionVector(preeSelection.selectionId, preeSelection.selectionHash, preeSelection.shortCode, preeSelection.selectionVector)
+            PreSelectionVector(preeSelection.selectionId, preeSelection.selectionHash, preeSelection.shortCode, preeSelection.selectionVector)
         }
         val allSortedSelectedHashes = preeContest.selections.sortedBy { it.selectionHash }.map { it.selectionHash.toUInt256() }
 
@@ -79,7 +78,7 @@ internal fun MarkedPreEncryptedBallot.makeRecordedPreBallot(preeBallot : PreEncr
             //    val contestHash: UInt256,
             //    val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
             //    val selectedVectors: List<RecordedSelectionVector> = emptyList(), // limit number of them, sorted by selectionHash
-            RecordedPreEncryption(
+            PreContest(
                 preeContest.contestId,
                 preeContest.preencryptionHash,
                 allSortedSelectedHashes,
@@ -88,7 +87,7 @@ internal fun MarkedPreEncryptedBallot.makeRecordedPreBallot(preeBallot : PreEncr
         )
     }
 
-    return RecordedPreBallot(
+    return PreBallot(
         this.ballotId,
         contests,
     )

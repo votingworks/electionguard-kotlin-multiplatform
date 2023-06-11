@@ -3,7 +3,7 @@ package electionguard.encrypt
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 
-/** Intermediate stage while encrypting. */
+/** Intermediate stage while encrypting. Does not have the extra Preencrytion info. */
 data class CiphertextBallot(
     val ballotId: String,
     val ballotStyleId: String,

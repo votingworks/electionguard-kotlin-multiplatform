@@ -17,12 +17,13 @@ data class PreEncryptedBallot(
     fun show() {
         println("\nPreEncryptedBallot $ballotId code = $confirmationCode")
         for (contest in this.contests) {
-            println(" contest ${contest.contestId} (${contest.votesAllowed}) = ${contest.preencryptionHash.toHex()}")
+            println(" contest ${contest.contestId} (votesAllowed=${contest.votesAllowed}) = ${contest.preencryptionHash.toHex()}")
             for (selection in contest.selections) {
                 println("  selection ${selection.selectionId} (${selection.sequenceOrder}) = ${selection.shortCode}")
                 selection.selectionVector.forEach { println("   encryption ${it}") }
             }
         }
+        println()
     }
 }
 
@@ -40,4 +41,5 @@ data class PreEncryptedSelection(
     val selectionHash: ElementModQ, // allow numerical sorting with ElementModQ, eq 93
     val shortCode: String,
     val selectionVector: List<ElGamalCiphertext>, // in sequenceOrder
+    // LOOK why dont we just store the damn nonces ??
 )
