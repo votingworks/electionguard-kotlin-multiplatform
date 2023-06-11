@@ -23,7 +23,7 @@ class DecryptPreencryptWithNonce(
     val extendedBaseHash: UInt256,
     sigma : (UInt256) -> String, // hash trimming function Ω
 ) {
-    val preEncryptor = PreEncryptor( group, manifest, publicKey.key, extendedBaseHash, sigma)
+    private val preEncryptor = PreEncryptor( group, manifest, publicKey.key, extendedBaseHash, sigma)
 
     fun EncryptedBallot.decrypt(ballotNonce: UInt256): Result<PlaintextBallot, String> {
         require(this.isPreencrypt)
@@ -57,13 +57,6 @@ class DecryptPreencryptWithNonce(
     ): Result<PlaintextBallot.Contest, String> {
 
         val decryptions: List<PlaintextBallot.Selection> = decryptPreencryption(contest, pcontest)
-        /* val decryptions: List<PlaintextBallot.Selection> = if (pcontest.votesAllowed == 1) {
-            decryptPreencryptLimit1(ballotNonce, contest)
-        } else {
-            decryptPreencryption(contest, pcontest)
-        }
-
-         */
 
         // contest data
         val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contest.contestId, "contest data")
@@ -92,41 +85,6 @@ class DecryptPreencryptWithNonce(
         ))
     }
 
-    private fun decryptPreencryptLimit1 (
-        ballotNonce: UInt256,
-        contest: EncryptedBallot.Contest
-    ): List<PlaintextBallot.Selection> {
-        val contestLabel = contest.contestId
-        val nselections = contest.selections.size
-
-        // find out which of the selections generated the nonces
-        var genSelection : String? = null
-        for (selectioni in contest.selections) {
-            var allOk = true
-            for (selectionj in contest.selections) {
-                val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x43.toByte(), ballotNonce, contestLabel, selectioni.selectionId, selectionj.selectionId) // eq 97
-                if (null == selectionj.ciphertext.decryptWithNonce(publicKey, selectionNonce.toElementModQ(group), nselections)) {
-                    allOk = false
-                    break
-                }
-            }
-            // if we get to here, then all the encryptions worked, so selectioni is the one we want
-            if (allOk) {
-                genSelection = selectioni.selectionId
-                break
-            }
-        }
-        if ( genSelection == null) {
-            genSelection = "null1"  // wtf?
-        }
-
-        return contest.selections.map { selection ->
-            val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x43.toByte(), ballotNonce, contestLabel, genSelection, selection.selectionId)
-            val decodedVote = selection.ciphertext.decryptWithNonce(publicKey, selectionNonce.toElementModQ(group))
-            PlaintextBallot.Selection(selection.selectionId, selection.sequenceOrder, decodedVote!!)
-        }
-    }
-
     private fun decryptPreencryption (
         contest: EncryptedBallot.Contest,
         preeContest: PreEncryptedContest,
@@ -134,7 +92,7 @@ class DecryptPreencryptWithNonce(
         val nselections = contest.selections.size
         val preEncryption = contest.preEncryption!!
 
-        var combinedNonces = mutableListOf<ElementModQ>()
+        val combinedNonces = mutableListOf<ElementModQ>()
         repeat(nselections) { idx ->
             val componentNonces = preEncryption.selectedVectors.map { selected ->
                 val pv: PreEncryptedSelection = preeContest.selections.find { it.shortCode == selected.shortCode }!!

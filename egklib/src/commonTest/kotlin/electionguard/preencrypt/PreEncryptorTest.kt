@@ -250,11 +250,6 @@ internal fun runComplete(
     }
 
     // decrypt with nonce
-    //     val group: GroupContext,
-    //    val manifest: Manifest,
-    //    val publicKey: ElGamalPublicKey,
-    //    val extendedBaseHash: UInt256,
-    //    sigma : (UInt256) -> String, // hash trimming function Ω
     val decryptionWithPrimaryNonce = DecryptPreencryptWithNonce(group, manifest, ElGamalPublicKey(publicKey), qbar, ::sigma)
     val decryptedBallotResult = with(decryptionWithPrimaryNonce) { fullEncryptedBallot.decrypt(primaryNonce) }
     if (decryptedBallotResult is Err) {

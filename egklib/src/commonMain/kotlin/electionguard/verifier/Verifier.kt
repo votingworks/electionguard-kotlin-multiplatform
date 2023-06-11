@@ -56,7 +56,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, nthreads)
         // Note we are validating all ballots, not just CAST
         val ballotResult = verifyBallots.verify(record.encryptedBallots { true }, stats, showTime)
-        println(" 4,5,6. verifyEncryptedBallots $ballotResult")
+        println(" 4,5,6,16,17. verifyEncryptedBallots $ballotResult")
 
         // 10 contest data for encrypted ballots
 
