@@ -3,6 +3,37 @@ package electionguard.core
 import com.github.michaelbull.result.*
 import kotlin.collections.fold
 
+/**
+ * Disjunctive proof that the ciphertext is between zero and a maximum
+ * value, inclusive. Note that the size of the proof is proportional to
+ * the maximum value. Example: a proof that a ciphertext is in [0, 5]
+ * will have six internal proof components.
+ */
+data class ChaumPedersenRangeProofKnownNonce(
+    val proofs: List<ChaumPedersenProof>,
+)
+
+/**
+ * General-purpose Chaum-Pedersen proof object, for demonstrating that the prover knows the exponent `x`
+ * for two tuples `(g, g^x)` and `(h, h^x)`, without revealing anything about `x`.
+ * (See [Chaum-Pedersen 1992](https://link.springer.com/chapter/10.1007/3-540-48071-4_7))
+ *
+ * @param c challenge
+ * @param r response
+ */
+data class ChaumPedersenProof(val c: ElementModQ, val r: ElementModQ)
+
+/**
+ * Expanded form of the [ChaumPedersenProof], with the `a` and `b` values recomputed. This
+ * should not be serialized.
+ */
+data class ExpandedChaumPedersenProof(
+    val a: ElementModP,
+    val b: ElementModP,
+    val c: ElementModQ,
+    val r: ElementModQ,
+)
+
 // 3.3.5 p 26 eq 23-27
 // Proves that (α, β) is an encryption of an integer in the range 0, 1, . . . , L.
 // (Requires knowledge of encryption nonce ξ for which (α, β) is an encryption of ℓ.)
@@ -13,7 +44,7 @@ fun ElGamalCiphertext.makeChaumPedersen(
     publicKey: ElGamalPublicKey, // K
     extendedBaseHash: ElementModQ, // He
     overrideErrorChecks: Boolean = false
-): RangeChaumPedersenProofKnownNonce {
+): ChaumPedersenRangeProofKnownNonce {
     if (!overrideErrorChecks && vote < 0) {
         throw ArithmeticException("negative plaintexts not supported")
     }
@@ -74,15 +105,13 @@ fun ElGamalCiphertext.makeChaumPedersen(
     // substitute cl into the random challenges when j = l
     val cListFinal = randomCj.mapIndexed { j, cj -> if (j == vote) cl else cj }
     // turn the challenges and responses into a list of GenericChaumPedersenProof(cj, vj)
-    val cpgList : List<GenericChaumPedersenProof> = cListFinal.zip(vList).map{ (cj, vj) ->
-        GenericChaumPedersenProof(cj, vj)
+    val cpgList : List<ChaumPedersenProof> = cListFinal.zip(vList).map{ (cj, vj) ->
+        ChaumPedersenProof(cj, vj)
     }
-    return RangeChaumPedersenProofKnownNonce(cpgList)
-
-    // could also create ExpandedGenericChaumPedersenProof(a,b,c,v) and let the serialization layer handle the contraction
+    return ChaumPedersenRangeProofKnownNonce(cpgList)
 }
 
-fun RangeChaumPedersenProofKnownNonce.validate2(
+fun ChaumPedersenRangeProofKnownNonce.validate2(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey, // K
     extendedBaseHash: ElementModQ, // He
@@ -110,7 +139,7 @@ fun RangeChaumPedersenProofKnownNonce.validate2(
         )
 
         val wj = (vj - j.toElementModQ(group) * cj)
-        ExpandedGenericChaumPedersenProof(
+        ExpandedChaumPedersenProof(
             a = group.gPowP(vj) * (alpha powP cj), // 4.3
             b = (publicKey powP wj) * (beta powP cj), // 4.4
             c = cj,

@@ -3,54 +3,23 @@ package electionguard.core
 import com.github.michaelbull.result.*
 import kotlin.collections.fold
 
+// Everything needed for version 2 is in ChaumPedersen2.kt
 
 /**
- * Disjunctive proof that the ciphertext is between zero and a maximum
- * value, inclusive. Note that the size of the proof is proportional to
- * the maximum value. Example: a proof that a ciphertext is in [0, 5]
- * will have six internal proof components.
- */
-data class RangeChaumPedersenProofKnownNonce(
-    val proofs: List<GenericChaumPedersenProof>,
-)
-
-/**
- * General-purpose Chaum-Pedersen proof object, demonstrating that the prover knows the exponent `x`
- * for two tuples `(g, g^x)` and `(h, h^x)`, without revealing anything about `x`. This is used as a
- * component in other proofs.
- * (See [Chaum-Pedersen 1992](https://link.springer.com/chapter/10.1007/3-540-48071-4_7))
- *
- * @param c hash(a, b, and possibly other state) (aka challenge)
- * @param r w + xc (aka response)
- */
-data class GenericChaumPedersenProof(val c: ElementModQ, val r: ElementModQ)
-
-/**
- * Expanded form of the [GenericChaumPedersenProof], with the `a` and `b` values recomputed. This
- * should not be serialized.
- */
-data class ExpandedGenericChaumPedersenProof(
-    val a: ElementModP,
-    val b: ElementModP,
-    val c: ElementModQ,
-    val r: ElementModQ,
-)
-
-/**
- * Given a [GenericChaumPedersenProof], computes the `a` and `b` values that are needed for proofs
+ * Given a [ChaumPedersenProof], computes the `a` and `b` values that are needed for proofs
  * and such, but are removed for serialization.
  */
-fun GenericChaumPedersenProof.expand(
+fun ChaumPedersenProof.expand(
     g: ElementModP,
     gx: ElementModP,
     h: ElementModP,
     hx: ElementModP,
-): ExpandedGenericChaumPedersenProof {
+): ExpandedChaumPedersenProof {
     val gr = g powP r // g^r = g^(w - xc)
     val hr = h powP r // h^r = h^(w - xc)
     val a = gr * (gx powP c) // cancelling out the xc, getting g^w
     val b = hr * (hx powP c) // cancelling out the xc, getting h^w
-    return ExpandedGenericChaumPedersenProof(a, b, c, r)
+    return ExpandedChaumPedersenProof(a, b, c, r)
 }
 
 /**
@@ -72,7 +41,7 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
     publicKey: ElGamalPublicKey,
     qbar: ElementModQ,
     overrideErrorChecks: Boolean = false
-): RangeChaumPedersenProofKnownNonce {
+): ChaumPedersenRangeProofKnownNonce {
     if (!overrideErrorChecks && plaintext < 0) {
         throw ArithmeticException("negative plaintexts not supported")
     }
@@ -132,9 +101,9 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
         uj - cjActual * aggNonce
     }
 
-    return RangeChaumPedersenProofKnownNonce(
+    return ChaumPedersenRangeProofKnownNonce(
         cListFinal.zip(vList).map{ (cj, vj) ->
-            GenericChaumPedersenProof(cj, vj)
+            ChaumPedersenProof(cj, vj)
         },
     )
 }
@@ -149,7 +118,7 @@ fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
  * @param limit The maximum possible value for the plaintext (inclusive)
  * @return true if the proof is valid, else an error message
  */
-fun RangeChaumPedersenProofKnownNonce.validate(
+fun ChaumPedersenRangeProofKnownNonce.validate(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey,
     qbar: ElementModQ,
@@ -177,7 +146,7 @@ fun RangeChaumPedersenProofKnownNonce.validate(
         )
 
         val wj = (vj - j.toElementModQ(context) * cj)
-        ExpandedGenericChaumPedersenProof(
+        ExpandedChaumPedersenProof(
             a = context.gPowP(vj) * (alpha powP cj), // 4.1, 4.2, 5.3
             b = (publicKey powP wj) * (beta powP cj), // 4.3, 4.4, 5.4
             c = cj,
@@ -216,7 +185,7 @@ fun RangeChaumPedersenProofKnownNonce.validate(
  * @param checkC If false, the challenge constant is not verified. (default: true)
  * @return true if the proof is valid, else an error message
  */
-internal fun GenericChaumPedersenProof.validate(
+internal fun ChaumPedersenProof.validate(
     g: ElementModP,
     gx: ElementModP,
     h: ElementModP,
@@ -228,7 +197,7 @@ internal fun GenericChaumPedersenProof.validate(
     return expand(g, gx, h, hx).validate(g, gx, h, hx, hashHeader, hashFooter, checkC)
 }
 
-internal fun ExpandedGenericChaumPedersenProof.validate(
+internal fun ExpandedChaumPedersenProof.validate(
     g: ElementModP,
     gx: ElementModP,
     h: ElementModP,
@@ -284,7 +253,7 @@ fun genericChaumPedersenProofOf(
     seed: ElementModQ,
     hashHeader: Array<Element>,
     hashFooter: Array<Element> = emptyArray(),
-): GenericChaumPedersenProof {
+): ChaumPedersenProof {
     val context = compatibleContextOrFail(g, h, x, seed, *hashHeader, *hashFooter)
 
     // The proof generates a random value w ∈ Z q , computes the commitments (a , b) = (g^w , A^w),
@@ -299,14 +268,14 @@ fun genericChaumPedersenProofOf(
     val c = hashElements(*hashHeader, a, b, *hashFooter).toElementModQ(context)
     val r = w - x * c
 
-    return GenericChaumPedersenProof(c, r)
+    return ChaumPedersenProof(c, r)
 }
 
 /**
  * Produces a generic "fake" Chaum-Pedersen proof that two tuples share an exponent, i.e., that for
  * (g, g^x) and (h, h^x), it's the same value of x, but without revealing x. Unlike the regular
  * Chaum-Pedersen proof, this version allows the challenge `c` to be specified, which allows
- * everything to be faked. See the [GenericChaumPedersenProof.validate] method on the resulting proof
+ * everything to be faked. See the [ChaumPedersenProof.validate] method on the resulting proof
  * object. By default, the challenge is validated by hashing elements of the proof, which prevents
  * these "fake" proofs from passing validation, but you can suppress the hash check with an optional
  * parameter.
@@ -317,8 +286,8 @@ fun genericChaumPedersenProofOf(
  * Note that there's no need to specify g, gx, h, and hx, since those values are completely
  * unnecessary to produce a fake proof of their correspondence!
  */
-fun fakeGenericChaumPedersenProofOf(c: ElementModQ, seed: ElementModQ): GenericChaumPedersenProof {
+fun fakeGenericChaumPedersenProofOf(c: ElementModQ, seed: ElementModQ): ChaumPedersenProof {
     compatibleContextOrFail(c, seed)
     val r = Nonces(seed, "generic-chaum-pedersen-proof")[0]
-    return GenericChaumPedersenProof(c, r)
+    return ChaumPedersenProof(c, r)
 }

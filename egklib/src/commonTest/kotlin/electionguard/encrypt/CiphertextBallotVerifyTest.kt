@@ -87,7 +87,7 @@ private class VerifyCiphertextBallot(
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
 
             // test that the proof is correct; covers 5.C, 5.D, 5.E
-            val proof: RangeChaumPedersenProofKnownNonce = contest.proof
+            val proof: ChaumPedersenRangeProofKnownNonce = contest.proof
             val cvalid = proof.validate(
                 ciphertextAccumulation,
                 this.jointPublicKey,

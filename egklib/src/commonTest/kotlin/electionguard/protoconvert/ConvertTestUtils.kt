@@ -7,14 +7,14 @@ import kotlin.random.nextUInt
 
 fun generateRangeChaumPedersenProofKnownNonce(
     context: GroupContext
-): RangeChaumPedersenProofKnownNonce {
-    return RangeChaumPedersenProofKnownNonce(
+): ChaumPedersenRangeProofKnownNonce {
+    return ChaumPedersenRangeProofKnownNonce(
         listOf(generateGenericChaumPedersenProof(context)),
     )
 }
 
-fun generateGenericChaumPedersenProof(context: GroupContext): GenericChaumPedersenProof {
-    return GenericChaumPedersenProof(generateElementModQ(context), generateElementModQ(context),)
+fun generateGenericChaumPedersenProof(context: GroupContext): ChaumPedersenProof {
+    return ChaumPedersenProof(generateElementModQ(context), generateElementModQ(context),)
 }
 
 fun generateSchnorrProof(context: GroupContext): SchnorrProof {

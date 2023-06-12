@@ -586,7 +586,7 @@ class ChaumPedersenTest {
             assertTrue(proof1.validate(g, gx1, h, hx1, arrayOf(header)) is Ok)
 
             // proof that we know the secret, x
-            val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
+            val proof: ChaumPedersenProof = genericChaumPedersenProofOf(
                 context.G_MOD_P,
                 ciphertext.pad,
                 x,
@@ -622,7 +622,7 @@ class ChaumPedersenTest {
             val publicKey = keypair.publicKey.key
 
             // proof that we know the secret, x
-            val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
+            val proof: ChaumPedersenProof = genericChaumPedersenProofOf(
                 context.G_MOD_P,
                 ciphertext.pad,
                 x = keypair.secretKey.key,
@@ -656,7 +656,7 @@ class ChaumPedersenTest {
             val partialDecryption: ElementModP = ciphertext.computeShare(ElGamalSecretKey(generatingGuardianValue))
 
             // proof that we know the secret, x
-            val proof: GenericChaumPedersenProof = genericChaumPedersenProofOf(
+            val proof: ChaumPedersenProof = genericChaumPedersenProofOf(
                 g = context.G_MOD_P,
                 h = ciphertext.pad,
                 x = generatingGuardianValue,

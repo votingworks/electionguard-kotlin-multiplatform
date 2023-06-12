@@ -89,7 +89,7 @@ class VerifyEncryptedBallots(
             // Box 5 : contest limit
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
-            val proof: RangeChaumPedersenProofKnownNonce = contest.proof
+            val proof: ChaumPedersenRangeProofKnownNonce = contest.proof
             val cvalid = proof.validate2(
                 ciphertextAccumulation,
                 this.jointPublicKey,
