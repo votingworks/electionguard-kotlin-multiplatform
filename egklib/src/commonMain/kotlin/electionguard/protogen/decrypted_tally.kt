@@ -113,7 +113,7 @@ public data class DecryptedSelection(
     val tally: Int = 0,
     val value: electionguard.protogen.ElementModP? = null,
     val message: electionguard.protogen.ElGamalCiphertext? = null,
-    val proof: electionguard.protogen.GenericChaumPedersenProof? = null,
+    val proof: electionguard.protogen.ChaumPedersenProof? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.DecryptedSelection = protoMergeImpl(other)
@@ -171,7 +171,7 @@ public data class DecryptedSelection(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof",
                         number = 5,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.GenericChaumPedersenProof.Companion),
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ChaumPedersenProof.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.DecryptedSelection::proof
                     )
@@ -191,7 +191,7 @@ public data class DecryptedSelection(
 public data class DecryptedContestData(
     val contestData: electionguard.protogen.ContestData? = null,
     val encryptedContestData: electionguard.protogen.HashedElGamalCiphertext? = null,
-    val proof: electionguard.protogen.GenericChaumPedersenProof? = null,
+    val proof: electionguard.protogen.ChaumPedersenProof? = null,
     val beta: electionguard.protogen.ElementModP? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -230,7 +230,7 @@ public data class DecryptedContestData(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof",
                         number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.GenericChaumPedersenProof.Companion),
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ChaumPedersenProof.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.DecryptedContestData::proof
                     )
@@ -330,7 +330,7 @@ private fun DecryptedSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder
     var tally = 0
     var value: electionguard.protogen.ElementModP? = null
     var message: electionguard.protogen.ElGamalCiphertext? = null
-    var proof: electionguard.protogen.GenericChaumPedersenProof? = null
+    var proof: electionguard.protogen.ChaumPedersenProof? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -338,7 +338,7 @@ private fun DecryptedSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder
             2 -> tally = _fieldValue as Int
             3 -> value = _fieldValue as electionguard.protogen.ElementModP
             4 -> message = _fieldValue as electionguard.protogen.ElGamalCiphertext
-            5 -> proof = _fieldValue as electionguard.protogen.GenericChaumPedersenProof
+            5 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
         }
     }
 
@@ -364,14 +364,14 @@ private fun DecryptedContestData.protoMergeImpl(plus: pbandk.Message?): Decrypte
 private fun DecryptedContestData.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptedContestData {
     var contestData: electionguard.protogen.ContestData? = null
     var encryptedContestData: electionguard.protogen.HashedElGamalCiphertext? = null
-    var proof: electionguard.protogen.GenericChaumPedersenProof? = null
+    var proof: electionguard.protogen.ChaumPedersenProof? = null
     var beta: electionguard.protogen.ElementModP? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> contestData = _fieldValue as electionguard.protogen.ContestData
             2 -> encryptedContestData = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
-            3 -> proof = _fieldValue as electionguard.protogen.GenericChaumPedersenProof
+            3 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
             4 -> beta = _fieldValue as electionguard.protogen.ElementModP
         }
     }
