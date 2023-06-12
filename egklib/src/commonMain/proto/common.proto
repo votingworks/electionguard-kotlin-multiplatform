@@ -36,7 +36,7 @@ message ElGamalCiphertext {
   ElementModP data = 2;
 }
 
-message GenericChaumPedersenProof {
+message ChaumPedersenProof {
   reserved 1;
   reserved 2;
   ElementModQ challenge = 3; // c in the spec

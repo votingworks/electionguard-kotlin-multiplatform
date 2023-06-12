@@ -81,7 +81,7 @@ internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBal
 
         // The selectionVectors are sorted numerically by selectionHash, so cant be associated with a selection
         val sortedSelectedVectors = selected.sortedBy { it.selectionHash }
-        val sortedRecordedVectors = sortedSelectedVectors.mapIndexed { idx, preeSelection ->
+        val sortedRecordedVectors = sortedSelectedVectors.map { preeSelection ->
             PreSelectionVector(preeSelection.selectionId, preeSelection.selectionHash, preeSelection.shortCode,
                 preeSelection.selectionVector, preeSelection.selectionNonces)
         }

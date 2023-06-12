@@ -31,7 +31,7 @@ message EncryptedBallotContest {
   uint32 sequence_order = 2; // matches the ContestDescription.sequence_order
   UInt256 contest_hash = 3; // matches ContestDescription.crypto_hash
   repeated EncryptedBallotSelection selections = 4;
-  RangeChaumPedersenProofKnownNonce proof = 6;  // The proof the sum of the selections does not exceed the maximum
+  ChaumPedersenRangeProofKnownNonce proof = 6;  // Proof the sum of the selections does not exceed the maximum
   HashedElGamalCiphertext encrypted_contest_data = 7; // see 3.3.4
 
   PreEncryption pre_encryption = 8; // only for pre-encryptions
@@ -42,11 +42,11 @@ message EncryptedBallotSelection {
   string selection_id = 1; // matches the SelectionDescription.selection_id
   uint32 sequence_order = 2; // matches the SelectionDescription.sequence_order
   ElGamalCiphertext ciphertext = 4; // The encrypted representation of the vote field
-  RangeChaumPedersenProofKnownNonce proof = 6; // The proof the selection is an encryption of 0 or 1
+  ChaumPedersenRangeProofKnownNonce proof = 6; // Proof the selection is an encryption of 0 or 1
 }
 
-message RangeChaumPedersenProofKnownNonce {
-  repeated GenericChaumPedersenProof proofs = 1; // one for each in [0, limit]
+message ChaumPedersenRangeProofKnownNonce {
+  repeated ChaumPedersenProof proofs = 1; // one for each in [0, limit]
 }
 
 /////////////////////////////////////////
