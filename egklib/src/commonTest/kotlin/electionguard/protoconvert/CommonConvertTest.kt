@@ -52,7 +52,7 @@ class CommonConvertTest {
                 elementsModQ(productionGroup()),
             ) { c, r ->
                     val context = productionGroup()
-                    val proof = GenericChaumPedersenProof(c, r)
+                    val proof = ChaumPedersenProof(c, r)
 
                     val proto = proof.publishProto()
                     val roundtrip = context.importChaumPedersenProof(proto)

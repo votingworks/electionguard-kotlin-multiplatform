@@ -2,7 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModP
-import electionguard.core.GenericChaumPedersenProof
+import electionguard.core.ChaumPedersenProof
 import electionguard.core.HashedElGamalCiphertext
 
 /**
@@ -30,7 +30,7 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
     data class DecryptedContestData(
         val contestData: ContestData,
         val encryptedContestData : HashedElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
-        val proof: GenericChaumPedersenProof,
+        val proof: ChaumPedersenProof,
         var beta: ElementModP,
     )
 
@@ -49,7 +49,7 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
         val value: ElementModP, // M = K^tally = B/Mbar  // equals 1 when tally = 0; is this needed? 8.B, 11.B.
                                 // seems like could compute M and Mbar from B and t, then the challenge in 8 is enough
         val message: ElGamalCiphertext, // (A, B) same as EncryptedTally.Selection.ciphertext
-        val proof: GenericChaumPedersenProof,
+        val proof: ChaumPedersenProof,
     ) {
         init {
             require(selectionId.isNotEmpty())

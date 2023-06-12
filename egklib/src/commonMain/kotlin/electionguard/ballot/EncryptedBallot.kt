@@ -35,7 +35,7 @@ data class EncryptedBallot(
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
         val contestHash: UInt256, // eq 58
         val selections: List<Selection>,
-        val proof: RangeChaumPedersenProofKnownNonce,
+        val proof: ChaumPedersenRangeProofKnownNonce,
         val contestData: HashedElGamalCiphertext,
         val preEncryption: PreEncryption? = null, // pre-encrypted ballots only
 
@@ -50,7 +50,7 @@ data class EncryptedBallot(
         val selectionId: String, // matches SelectionDescription.selectionId
         val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
         val ciphertext: ElGamalCiphertext,
-        val proof: RangeChaumPedersenProofKnownNonce,
+        val proof: ChaumPedersenRangeProofKnownNonce,
     )   {
         init {
             require(selectionId.isNotEmpty())

@@ -118,15 +118,15 @@ private fun GroupContext.importSelectionVector(vector: electionguard.protogen.Se
 
 private fun GroupContext.importRangeProof(
     where: String,
-    range: electionguard.protogen.RangeChaumPedersenProofKnownNonce?
-): Result<RangeChaumPedersenProofKnownNonce, String> {
+    range: electionguard.protogen.ChaumPedersenRangeProofKnownNonce?
+): Result<ChaumPedersenRangeProofKnownNonce, String> {
     if (range == null) {
         return Err("Null RangeChaumPedersenProofKnownNonce in $where")
     }
     val proofs = range.proofs.map { this.importChaumPedersenProof(it) }
     val allgood = proofs.map { it != null }.reduce{a, b -> a && b }
 
-    return if (allgood) Ok(RangeChaumPedersenProofKnownNonce(proofs.map { it!! }))
+    return if (allgood) Ok(ChaumPedersenRangeProofKnownNonce(proofs.map { it!! }))
     else Err("importChaumPedersenProof failed $where")
 }
 
@@ -248,7 +248,7 @@ private fun EncryptedBallot.Selection.publishProto() =
         this.proof.publishProto(),
     )
 
-fun RangeChaumPedersenProofKnownNonce.publishProto() =
-    electionguard.protogen.RangeChaumPedersenProofKnownNonce(
+fun ChaumPedersenRangeProofKnownNonce.publishProto() =
+    electionguard.protogen.ChaumPedersenRangeProofKnownNonce(
         this.proofs.map { it.publishProto() },
     )

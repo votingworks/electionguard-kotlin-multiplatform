@@ -62,7 +62,7 @@ class TallyDecryptor(
                 return null
             }
             val challenge = contestDataDecryptions.challenge!!.toElementModQ(group)
-            val proof = GenericChaumPedersenProof(challenge, response)
+            val proof = ChaumPedersenProof(challenge, response)
 
             if (contestDataDecryptions.beta == null) {
                 logger.error { "$where: ContestDataResults missing beta" }
@@ -93,7 +93,7 @@ class TallyDecryptor(
         // response (v) is the sum of the individual responses, eq 15.
         val response: ElementModQ = with(group) { selectionDecryptions.responses.values.map { it }.addQ() }
         // finally we can create the proof
-        val proof = GenericChaumPedersenProof(selectionDecryptions.challenge!!.toElementModQ(group), response)
+        val proof = ChaumPedersenProof(selectionDecryptions.challenge!!.toElementModQ(group), response)
         val M = selection.ciphertext.data / selectionDecryptions.mbar!! // M = K^t
 
         val decrypytedSelection = DecryptedTallyOrBallot.Selection(

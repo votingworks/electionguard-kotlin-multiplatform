@@ -55,8 +55,8 @@ class SimpleBallotBenchmark {
     class SimplePlaintextBallot(val selections: List<Int>)
 
     class SimpleEncryptedBallot(
-        val selectionsAndProofs: List<Pair<ElGamalCiphertext, RangeChaumPedersenProofKnownNonce>>,
-        val sumProof: RangeChaumPedersenProofKnownNonce
+        val selectionsAndProofs: List<Pair<ElGamalCiphertext, ChaumPedersenRangeProofKnownNonce>>,
+        val sumProof: ChaumPedersenRangeProofKnownNonce
     )
 
     fun SimplePlaintextBallot.encrypt(

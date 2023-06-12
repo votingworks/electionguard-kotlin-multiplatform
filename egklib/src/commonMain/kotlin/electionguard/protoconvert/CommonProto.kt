@@ -33,12 +33,12 @@ fun GroupContext.importCiphertext(
 }
 
 fun GroupContext.importChaumPedersenProof(
-    proof: electionguard.protogen.GenericChaumPedersenProof?,
-): GenericChaumPedersenProof? {
+    proof: electionguard.protogen.ChaumPedersenProof?,
+): ChaumPedersenProof? {
     if (proof == null) return null
     val challenge = this.importElementModQ(proof.challenge)
     val response = this.importElementModQ(proof.response)
-    return if (challenge == null || response == null) null else GenericChaumPedersenProof(challenge, response)
+    return if (challenge == null || response == null) null else ChaumPedersenProof(challenge, response)
 }
 
 fun GroupContext.importHashedCiphertext(
@@ -79,8 +79,8 @@ fun ElGamalCiphertext.publishProto() =
         this.data.publishProto(),
     )
 
-fun GenericChaumPedersenProof.publishProto() =
-    electionguard.protogen.GenericChaumPedersenProof(
+fun ChaumPedersenProof.publishProto() =
+    electionguard.protogen.ChaumPedersenProof(
         this.c.publishProto(),
         this.r.publishProto(),
     )

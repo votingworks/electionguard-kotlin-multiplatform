@@ -14,7 +14,7 @@ import kotlin.system.measureTimeMillis
 
 class SimplePlaintextBallot(val selections: List<Int>)
 
-class SimpleEncryptedBallot(val selectionsAndProofs: List<Pair<ElGamalCiphertext, RangeChaumPedersenProofKnownNonce>>, val sumProof: RangeChaumPedersenProofKnownNonce)
+class SimpleEncryptedBallot(val selectionsAndProofs: List<Pair<ElGamalCiphertext, ChaumPedersenRangeProofKnownNonce>>, val sumProof: ChaumPedersenRangeProofKnownNonce)
 
 fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair, seed: ElementModQ, limit : Int = 1): SimpleEncryptedBallot {
     val encryptionNonces = Nonces(seed, "encryption")

@@ -15,16 +15,16 @@ data class ChaumPedersenProofJson(
     val response: ElementModQJson
     )
 
-fun GenericChaumPedersenProof.publish() = ChaumPedersenProofJson(
+fun ChaumPedersenProof.publish() = ChaumPedersenProofJson(
     this.c.publish(),
     this.r.publish()
 )
 
-fun ChaumPedersenProofJson.import(group: GroupContext): GenericChaumPedersenProof? {
+fun ChaumPedersenProofJson.import(group: GroupContext): ChaumPedersenProof? {
     val c = this.challenge.import(group)
     val r = this.response.import(group)
     if (c == null || r == null) return null
-    return GenericChaumPedersenProof(c, r)
+    return ChaumPedersenProof(c, r)
 }
 
 /////////////////////////
@@ -36,14 +36,14 @@ data class RangeProofJson(
     val proofs: List<ChaumPedersenProofJson>,
 )
 
-fun RangeChaumPedersenProofKnownNonce.publish() = RangeProofJson(
+fun ChaumPedersenRangeProofKnownNonce.publish() = RangeProofJson(
     this.proofs.map { it.publish() },
 )
 
-fun RangeProofJson.import(group: GroupContext): Result<RangeChaumPedersenProofKnownNonce, String> {
+fun RangeProofJson.import(group: GroupContext): Result<ChaumPedersenRangeProofKnownNonce, String> {
     val proofs = this.proofs.map { it.import(group) }
     val allgood = proofs.map { it != null }.reduce { a, b -> a && b }
 
-    return if (allgood) Ok(RangeChaumPedersenProofKnownNonce(proofs.map { it!!} ))
+    return if (allgood) Ok(ChaumPedersenRangeProofKnownNonce(proofs.map { it!!} ))
     else Err("importChaumPedersenProof failed")
 }

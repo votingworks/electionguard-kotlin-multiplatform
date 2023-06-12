@@ -1,6 +1,6 @@
 package electionguard.json
 
-import electionguard.core.GenericChaumPedersenProof
+import electionguard.core.ChaumPedersenProof
 import electionguard.core.elementsModQ
 import electionguard.core.productionGroup
 import electionguard.core.runTest
@@ -18,7 +18,7 @@ class ChaumPedersenTest {
                 elementsModQ(group),
                 elementsModQ(group),
             ) { challenge, response ->
-                val goodProof = GenericChaumPedersenProof(challenge, response)
+                val goodProof = ChaumPedersenProof(challenge, response)
                 assertEquals(goodProof, goodProof.publish().import(group))
                 assertEquals(goodProof, jsonRoundTrip(goodProof.publish()).import(group))
             }
