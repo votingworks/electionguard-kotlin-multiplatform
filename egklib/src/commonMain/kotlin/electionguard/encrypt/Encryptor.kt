@@ -125,8 +125,8 @@ class Encryptor(
             this.writeIns,
             status
         )
-        // ξ = H(HE ; 20, ξB , Λ, ”contest data”) (47)
-        val contestDataNonce = hashFunction(extendedBaseHashB, 0x20.toByte(), ballotNonce, mcontest.contestId, "contest data")
+
+        val contestDataEncrypted = contestData.encrypt(jointPublicKey, extendedBaseHash, mcontest.contestId, ballotNonce, mcontest.votesAllowed)
 
         return mcontest.encryptContest(
             group,
@@ -134,7 +134,7 @@ class Encryptor(
             extendedBaseHashQ,
             if (status == ContestDataStatus.over_vote) 0 else totalVotedFor,
             encryptedSelections.sortedBy { it.sequenceOrder },
-            contestData.encrypt(jointPublicKey, mcontest.votesAllowed, contestDataNonce),
+            contestDataEncrypted,
         )
     }
 

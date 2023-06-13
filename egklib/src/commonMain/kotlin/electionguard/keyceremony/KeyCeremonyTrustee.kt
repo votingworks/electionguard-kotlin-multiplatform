@@ -155,7 +155,6 @@ class KeyCeremonyTrustee(
     /** Receive and verify a key share. */
     override fun receiveKeyShare(keyShare: KeyShare): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
-        val myPublicKey = ElGamalPublicKey(this.electionPublicKey())
 
         if (keyShare.secretShareFor != id) {
             return Err("Sent KeyShare to wrong trustee '${this.id}', should be availableGuardianId '${keyShare.secretShareFor}'")
@@ -213,7 +212,9 @@ class KeyCeremonyTrustee(
                 errors.add(Err("Trustee '$id' failed to validate KeyShare for missingGuardianId '${keyShare.polynomialOwner}'"))
             } else {
                 // ok use it, but encrypt it ourself, dont use passed value, and use a new nonce
-                val EPil = keyShare.yCoordinate.byteArray().hashedElGamalEncrypt(myPublicKey)
+                val Pil: ElementModQ = polynomial.valueAt(group, otherKeys.guardianXCoordinate)
+                val EPil : HashedElGamalCiphertext = this.shareEncryption(Pil, otherKeys)
+
                 myShareOfOthers[keyShare.polynomialOwner] = PrivateKeyShare(
                     keyShare.ownerXcoord,
                     keyShare.polynomialOwner,
@@ -226,6 +227,9 @@ class KeyCeremonyTrustee(
 
         return errors.merge()
     }
+
+    private val label = "share_enc_keys"
+    private val context = "share_encrypt"
 
     // guardian Gi encryption Eℓ of Pi(ℓ) at another guardian's Gℓ coordinate ℓ
     fun shareEncryption(
@@ -251,13 +255,11 @@ class KeyCeremonyTrustee(
         // with encodings of the numbers i and ℓ of the sending and receiving guardians as the Context, and the final two bytes
         // specifying the length of the output key material as 512 bits in total.
 
-        val label = "share enc keys"
         // context = b(”share encrypt”) ∥ b(i, 2) ∥ b(ℓ, 2)
-        val context = "share encrypt"
         // k0 = HMAC(ki,ℓ , 01 ∥ label ∥ 00 ∥ context ∥ 0200) eq 15
-        val k0 = hashFunction(kil, 0x01.toByte(), label, 0x00.toByte(), context, i, l, 512.toShort()).bytes
+        val k0 = hmacFunction(kil, 0x01.toByte(), label, 0x00.toByte(), context, i, l, 512.toShort()).bytes
         // k1 = HMAC(ki,ℓ , 02 ∥ label ∥ 00 ∥ context ∥ 0200), eq 16
-        val k1 = hashFunction(kil, 0x02.toByte(), label, 0x00.toByte(), context, i, l, 512.toShort()).bytes
+        val k1 = hmacFunction(kil, 0x02.toByte(), label, 0x00.toByte(), context, i, l, 512.toShort()).bytes
 
         // eq 18
         // C0 = g^nonce == alpha
@@ -266,7 +268,7 @@ class KeyCeremonyTrustee(
         val pilBytes = Pil.byteArray()
         val c1 = ByteArray(32) { pilBytes[it] xor k1[it] }
         // C2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 )
-        val c2 = hashFunction(k0, c0, c1)
+        val c2 = hmacFunction(k0, c0, c1)
 
         return HashedElGamalCiphertext(c0, c1, c2, pilBytes.size)
     }
@@ -290,17 +292,15 @@ class KeyCeremonyTrustee(
         val kil = hashFunction(hp, 0x11.toByte(), share.ownerXcoord.toShort(), xCoordinate.toShort(), electionPublicKey(), alpha, beta).bytes
 
         // Now the MAC key k0 and the encryption key k1 can be computed as above in Equations (15) and (16)
-        val label = "share enc keys"
         // context = b(”share encrypt”) ∥ b(i, 2) ∥ b(ℓ, 2)
-        val context = "share encrypt"
         // k0 = HMAC(ki,ℓ , 01 ∥ label ∥ 00 ∥ context ∥ 0200) eq 15
-        val k0 = hashFunction(kil, 0x01.toByte(), label, 0x00.toByte(), context, share.ownerXcoord.toShort(), xCoordinate.toShort(), 512.toShort()).bytes
+        val k0 = hmacFunction(kil, 0x01.toByte(), label, 0x00.toByte(), context, share.ownerXcoord.toShort(), xCoordinate.toShort(), 512.toShort()).bytes
         // k1 = HMAC(ki,ℓ , 02 ∥ label ∥ 00 ∥ context ∥ 0200), eq 16
-        val k1 = hashFunction(kil, 0x02.toByte(), label, 0x00.toByte(), context, share.ownerXcoord.toShort(), xCoordinate.toShort(), 512.toShort()).bytes
+        val k1 = hmacFunction(kil, 0x02.toByte(), label, 0x00.toByte(), context, share.ownerXcoord.toShort(), xCoordinate.toShort(), 512.toShort()).bytes
 
         // Gℓ can verify the validity of the MAC, namely that
         // Ci,ℓ,2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 ). If the MAC verifies, Gℓ decrypts b(Pi (ℓ), 32) = Ci,ℓ,1 ⊕ k1 .
-        val expectedC2 = hashFunction(k0, c0, c1)
+        val expectedC2 = hmacFunction(k0, c0, c1)
         if (expectedC2 != share.encryptedCoordinate.c2) {
             return null
         }

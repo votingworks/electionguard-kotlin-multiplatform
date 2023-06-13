@@ -85,6 +85,19 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
         }
     }
 
+    // spec 1.9, p 21
+    // If the recipient guardian Gℓ reports not receiving a suitable value Pi (ℓ), it becomes incumbent on the
+    // sending guardian Gi to publish this Pi (ℓ) together with the nonce ξi,ℓ it used to encrypt Pi (ℓ)
+    // under the public key Kℓ of recipient guardian Gℓ . If guardian Gi fails to produce a suitable Pi (ℓ)
+    // and nonce ξi,ℓ that match both the published encryption and the above equation, it should be
+    // excluded from the election and the key generation process should be restarted with an alternate guardian.
+    //   If, however, the published Pi (ℓ) and ξi,ℓ satisfy both the published encryption and the
+    // equation (19) above, the claim of malfeasance is dismissed, and the key generation process continues undeterred.
+    //   It is also permissible to dismiss any guardian that makes a false claim of malfeasance. However, this is not
+    // required as the sensitive information that is released as a result of the claim could have been released by the
+    // claimant in any case.
+    // TODO KeyShare should include ξi,ℓ
+
     // Phase Two: if any secretKeyShares fail to validate, send and validate KeyShares
     val keyResults: MutableList<Result<Boolean, String>> = mutableListOf()
     keyShareFailures.forEach {

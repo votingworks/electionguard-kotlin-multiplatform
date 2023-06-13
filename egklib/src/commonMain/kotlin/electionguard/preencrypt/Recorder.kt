@@ -94,9 +94,8 @@ nonce that enables the encryptions to be opened and checked.
             emptyList(),
             ContestDataStatus.normal
         )
-        // ξ = H(HE ; 20, ξB , Λ, ”contest data”) (47)
-        val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, preeContest.contestId, "contest data")
-        val contestDataEncrypted = contestData.encrypt(publicKeyEG, preeContest.votesAllowed, contestDataNonce)
+
+        val contestDataEncrypted = contestData.encrypt(publicKeyEG, extendedBaseHash, preeContest.contestId, ballotNonce, preeContest.votesAllowed)
 
         // χl = H(HE ; 23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (58)
         val ciphers = mutableListOf<ElementModP>()

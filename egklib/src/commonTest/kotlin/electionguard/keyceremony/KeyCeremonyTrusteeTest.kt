@@ -3,11 +3,9 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
-import electionguard.core.productionGroup
-import kotlin.test.Test
+import electionguard.core.*
+import kotlin.test.*
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class KeyCeremonyTrusteeTest {
 
@@ -63,7 +61,24 @@ class KeyCeremonyTrusteeTest {
         val badKeys = PublicKeys("bad", 43, badProofs)
         val result1 = trustee1.receivePublicKeys(badKeys)
         assertTrue(result1 is Err)
-        assertEquals("  Guardian bad has invalid proof for coefficient 0 inBoundsU=true validChallenge=false", result1.error)
+        assertContains(result1.error,"  Guardian bad has invalid proof for coefficient 0 inBoundsU=true validChallenge=false")
+    }
+
+    @Test
+    fun testShareEncryptDecrypt() {
+        val group = productionGroup()
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 4)
+
+        val publicKeys2 : PublicKeys = trustee2.publicKeys().unwrap()
+        val pil = group.randomElementModQ()
+        val share : HashedElGamalCiphertext = trustee1.shareEncryption(pil, publicKeys2)
+        val encryptedShare = EncryptedKeyShare(trustee1.xCoordinate, trustee1.id, trustee2.id, share)
+
+        val pilbytes : ByteArray? = trustee2.shareDecryption(encryptedShare)
+        assertNotNull(pilbytes)
+        val decodedPil: ElementModQ = pilbytes.toUInt256().toElementModQ(group) // Pi(ℓ)
+        assertEquals(pil, decodedPil)
     }
 
     @Test

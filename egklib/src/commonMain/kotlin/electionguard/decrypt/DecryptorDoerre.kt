@@ -17,7 +17,7 @@ private const val maxDlog: Int = 1000
  */
 class DecryptorDoerre(
     val group: GroupContext,
-    val extendedBaseHash: ElementModQ,
+    val extendedBaseHash: UInt256,
     val jointPublicKey: ElGamalPublicKey,
     val guardians: Guardians, // all guardians
     private val decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
@@ -78,7 +78,7 @@ class DecryptorDoerre(
             val a: ElementModP = with(group) { dresults.shares.values.map { it.a }.multP() }
             val b: ElementModP = with(group) { dresults.shares.values.map { it.b }.multP() }
             // c = H(HE ; 30, K, A, B, a, b, M ). eq 72
-            dresults.challenge = hashFunction(extendedBaseHash.byteArray(), 0x30.toByte(), jointPublicKey.key, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
+            dresults.challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), jointPublicKey.key, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
 
             if (first) { // temp debug, a,b dont validate
                 println(" decrypt qbar = $extendedBaseHash")

@@ -3,36 +3,6 @@ package electionguard.core
 import io.ktor.utils.io.core.*
 
 /**
- * Any ElectionGuard type can implement this interface, and is then supported by [hashElements]. If
- * multiple CryptoHashable interfaces are implemented, [CryptoHashableString] is the highest
- * priority, followed by [CryptoHashableUInt256], and lastly [CryptoHashableElement].
- */
-interface CryptoHashableString {
-    /** Returns a string suitable for input to a cryptographic hash function. */
-    fun cryptoHashString(): String
-}
-
-/**
- * Any ElectionGuard type can implement this interface, and is then supported by [hashElements]. If
- * multiple CryptoHashable interfaces are implemented, [CryptoHashableString] is the highest
- * priority, followed by [CryptoHashableUInt256], and lastly [CryptoHashableElement].
- */
-interface CryptoHashableUInt256 {
-    /** Returns a [UInt256], suitable for input to a cryptographic hash function. */
-    fun cryptoHashUInt256(): UInt256
-}
-
-/**
- * Any ElectionGuard type can implement this interface, and is then supported by [hashElements]. If
- * multiple CryptoHashable interfaces are implemented, [CryptoHashableString] is the highest
- * priority, followed by [CryptoHashableUInt256], and lastly [CryptoHashableElement].
- */
-interface CryptoHashableElement {
-    /** Returns an [Element], suitable for input to a cryptographic hash function. */
-    fun cryptoHashElement(): Element
-}
-
-/**
  * The hash function H used in ElectionGuard is HMAC-SHA-256, i.e. HMAC instantiated with SHA-25639 .
  * Therefore, H takes two byte arrays as inputs.
  *
@@ -64,6 +34,12 @@ fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
     return hmac.finish()
 }
 
+fun hmacFunction(key: ByteArray, vararg elements: Any): UInt256 {
+    val hmac = HmacSha256(key)
+    elements.forEach { hmac.addToHash(it) }
+    return hmac.finish()
+}
+
 private fun HmacSha256.addToHash(element : Any) {
     if (element is Iterable<*>) {
         element.forEach { this.addToHash(it!!) }
@@ -83,6 +59,8 @@ private fun HmacSha256.addToHash(element : Any) {
 }
 
 private val U256 = 256.toUShort()
+
+//// test concatenation vs update
 
 fun hashFunctionConcat(key: ByteArray, vararg elements: Any): UInt256 {
     var result = ByteArray(0)
@@ -123,7 +101,52 @@ private fun hashElementsToByteArray(element : Any) : ByteArray {
     }
 }
 
-//////////////////////////// OLD
+
+////////////////////////////// KDF
+
+/**
+ * NIST 800-108-compliant key derivation function (KDF) state.
+ * [See the spec](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-108.pdf),
+ * section 5.1.
+ *
+ *  - The [key] must be 32 bytes long, suitable for use in HMAC-SHA256.
+ *  - The [label] is a string that identifies the purpose for the derived keying material.
+ *  - The [context] is a string containing the information related to the derived keying material.
+ *    It may include identities of parties who are deriving and/or using the derived keying material.
+ *  - The [lengthInBits] specifies the length of the encrypted message in *bits*, not bytes.
+ */
+class KDF(val key: UInt256, label: String, context: String, lengthInBits: Int) {
+    // we're going to convert the strings as UTF-8
+    private val labelBytes = label.encodeToByteArray()
+    private val contextBytes = context.encodeToByteArray()
+    private val lengthInBitsByteArray = lengthInBits.toByteArray()
+
+    /** Get the requested key bits from the sequence. */
+    operator fun get(index: Int): UInt256 {
+        // NIST spec: K(i) := PRF (KI, [i] || Label || 0x00 || Context || [L])
+        val input =
+            concatByteArrays(
+                index.toByteArray(),
+                labelBytes,
+                byteArrayOf(0),
+                contextBytes,
+                lengthInBitsByteArray
+            )
+        return input.hmacSha256(key)
+    }
+}
+
+/////////////////////////// ORG
+
+/**
+ * Any ElectionGuard type can implement this interface, and is then supported by [hashElements]. If
+ * multiple CryptoHashable interfaces are implemented, [CryptoHashableString] is the highest
+ * priority, followed by [CryptoHashableUInt256], and lastly [CryptoHashableElement].
+ */
+interface CryptoHashableString {
+    /** Returns a string suitable for input to a cryptographic hash function. */
+    fun cryptoHashString(): String
+}
 
 /** Wrapper class to serve as an HMAC-SHA256 machine for the given key. */
 class HmacProcessor(private val hmacKey: UInt256) {
@@ -173,8 +196,6 @@ private fun hashElementsHelper(
             when (it) {
                 null -> "null"
                 is CryptoHashableString -> it.cryptoHashString()
-                is CryptoHashableUInt256 -> it.cryptoHashUInt256().cryptoHashString()
-                is CryptoHashableElement -> it.cryptoHashElement().cryptoHashString()
                 is String -> it
                 is Number, UInt, ULong, UShort, UByte -> it.toString()
                 is Iterable<*> ->

@@ -59,8 +59,12 @@ class DecryptWithNonce(val group : GroupContext, val manifest: Manifest, val pub
         }
 
         // contest data
-        val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contest.contestId, "contest data")
-        val contestDataResult = contest.contestData.decryptWithNonceToContestData(publicKey, contestDataNonce.toElementModQ(group))
+        val contestDataResult = contest.contestData.decryptWithNonceToContestData(
+            publicKey,
+            extendedBaseHash,
+            contest.contestId,
+            ballotNonce)
+
         if (contestDataResult is Err) {
             return contestDataResult
         }
