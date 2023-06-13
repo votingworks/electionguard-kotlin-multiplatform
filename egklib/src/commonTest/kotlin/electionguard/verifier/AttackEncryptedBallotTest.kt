@@ -130,13 +130,18 @@ class AttackEncryptedBallotTest {
 
         // val changeCrypto = hashElements(contest.contestId, contest.cryptoHash, selections2)
         val contestData = ContestData(emptyList(), emptyList())
+        // publicKey: ElGamalPublicKey, // aka K
+        //        extendedBaseHash: UInt256, // aka He
+        //        contestId: String, // aka Λ
+        //        ballotNonce: UInt256,
+        //        votesAllowed: Int
         return EncryptedBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
             contest.contestHash,
             selections2,
             contest.proof,
-            contestData.encrypt(publicKey, 1, UInt256.random()),
+            contestData.encrypt(publicKey, UInt256.random(), "contestId", UInt256.random(), 1),
         )
     }
 
@@ -145,13 +150,6 @@ class AttackEncryptedBallotTest {
 
     // switch the vote for the two selections TODO
     private fun switchVote(s1: EncryptedBallot.Selection, s2: EncryptedBallot.Selection): EncryptedBallot.Selection {
-        val changeCryptoHash = hashElements(s1.selectionId, s2.ciphertext)
-        //        val selectionId: String, // matches SelectionDescription.selectionId
-        //        val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
-        //        val ciphertext: ElGamalCiphertext,
-        //        val isPlaceholderSelection: Boolean,
-        //        val proof: DisjunctiveChaumPedersenProofKnownNonce,
-        //        val extendedData: HashedElGamalCiphertext?,
         return EncryptedBallot.Selection(
             s1.selectionId,
             s1.sequenceOrder,
@@ -170,7 +168,7 @@ fun decryptTally(
     val guardians = Guardians(group, electionInit.guardians)
     val decryptor = DecryptorDoerre(
         group,
-        electionInit.cryptoExtendedBaseHash(),
+        electionInit.extendedBaseHash,
         electionInit.jointPublicKey(),
         guardians,
         decryptingTrustees,

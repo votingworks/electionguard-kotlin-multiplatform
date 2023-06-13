@@ -9,7 +9,6 @@ import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -17,31 +16,32 @@ import kotlin.test.assertTrue
 private const val debug = false
 
 class ContestDataEncryptTest {
-    val context = tinyGroup()
-    val keypair = elGamalKeyPairFromRandom(context)
+    val group = tinyGroup()
+    val keypair = elGamalKeyPairFromRandom(group)
+    val extendedBaseHash = UInt256.random()
 
     @Test
     fun serializeContestData() {
-        doOne(ContestData(listOf(), listOf()))
-        doOne(ContestData(listOf(), listOf(), ContestDataStatus.null_vote))
-        doOne(ContestData(listOf(), listOf(), ContestDataStatus.under_vote))
+        encryptDecrypt(ContestData(listOf(), listOf()))
+        encryptDecrypt(ContestData(listOf(), listOf(), ContestDataStatus.null_vote))
+        encryptDecrypt(ContestData(listOf(), listOf(), ContestDataStatus.under_vote))
 
-        doOne(ContestData(listOf(1, 2, 3), listOf()))
-        doOne(ContestData(listOf(1, 2, 3, 4), listOf()))
-        doOne(ContestData(listOf(111, 211, 311), listOf()))
-        doOne(ContestData(listOf(111, 211, 311, 411), listOf()))
-        doOne(ContestData(listOf(111, 211, 311, 411, 511), listOf()))
+        encryptDecrypt(ContestData(listOf(1, 2, 3), listOf()))
+        encryptDecrypt(ContestData(listOf(1, 2, 3, 4), listOf()))
+        encryptDecrypt(ContestData(listOf(111, 211, 311), listOf()))
+        encryptDecrypt(ContestData(listOf(111, 211, 311, 411), listOf()))
+        encryptDecrypt(ContestData(listOf(111, 211, 311, 411, 511), listOf()))
 
-        doOne(ContestData(listOf(1, 2, 3, 4), listOf("a string")))
+        encryptDecrypt(ContestData(listOf(1, 2, 3, 4), listOf("a string")))
 
-        doOne(ContestData(listOf(1, 2, 3, 4), listOf("a long string ")))
+        encryptDecrypt(ContestData(listOf(1, 2, 3, 4), listOf("a long string ")))
 
-        doOne(ContestData(listOf(1, 2, 3, 4), listOf("a longer longer longer string")))
+        encryptDecrypt(ContestData(listOf(1, 2, 3, 4), listOf("a longer longer longer string")))
 
-        doOne(ContestData(MutableList(100) { it }, emptyList()), true)
-        doOne(ContestData(MutableList(100) { it }, listOf("a longer longer longer string")), true)
+        encryptDecrypt(ContestData(MutableList(100) { it }, emptyList()), true)
+        encryptDecrypt(ContestData(MutableList(100) { it }, listOf("a longer longer longer string")), true)
 
-        doOne(
+        encryptDecrypt(
             ContestData(
                 listOf(1, 2, 3, 4), listOf(
                     "1000000",
@@ -56,37 +56,41 @@ class ContestDataEncryptTest {
         println()
     }
 
-    fun doOne(contestData: ContestData, isTruncated: Boolean = false) {
+    fun encryptDecrypt(contestData: ContestData, isTruncated: Boolean = false) {
         println("")
         var starting = getSystemTimeInMillis()
 
-        val target = contestData.encrypt(keypair.publicKey, 1, UInt256.random())
+        //  publicKey: ElGamalPublicKey, // aka K
+        //        extendedBaseHash: UInt256, // aka He
+        //        contestId: String, // aka Λ
+        //        ballotNonce: UInt256,
+        //        votesAllowed: Int
+        val ballotNonce = UInt256.random()
+        val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", ballotNonce, 1)
         assertEquals(64, target.c1.size)
-        // assertEquals(target.numBytes, target.c1.size)
         var took = getSystemTimeInMillis() - starting
         println(" contestData.encrypt took $took millisecs")
 
         val hashProto = target.publishProto()
-        val hashRoundtrip = context.importHashedCiphertext(hashProto)
+        val hashRoundtrip = group.importHashedCiphertext(hashProto)
         assertEquals(target, hashRoundtrip)
 
         // HMAC decryption
         starting = getSystemTimeInMillis()
-        val contestDataBArt = target.decrypt(keypair)!!
+
+        val contestDataResult = target.decryptWithNonceToContestData(keypair.publicKey, extendedBaseHash, "contestId", ballotNonce)
+        assertTrue( contestDataResult is Ok)
+        val contestDataRoundtrip = contestDataResult.unwrap()
+
         took = getSystemTimeInMillis() - starting
         println(" contestData.decrypt took $took millisecs")
-
-        // ContestData roundtrip
-        val contestDataProtoRoundtrip = electionguard.protogen.ContestData.decodeFromByteArray(contestDataBArt)
-        val contestDataRoundtrip = importContestData(contestDataProtoRoundtrip)
-        assertTrue( contestDataRoundtrip is Ok)
 
         if (isTruncated) {
             println("truncated $contestData")
             println("          $contestDataRoundtrip")
-            assertEquals(contestData.status, contestDataRoundtrip.unwrap().status)
+            assertEquals(contestData.status, contestDataRoundtrip.status)
         } else {
-            assertEquals(contestData, contestDataRoundtrip.unwrap())
+            assertEquals(contestData, contestDataRoundtrip)
         }
     }
 
@@ -105,7 +109,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -126,7 +130,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -147,7 +151,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 2
-                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -168,7 +172,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -189,7 +193,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 3
-                val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
                 if ((1 + votes) * 32 != target.c1.size) {
                     println("${(1 + votes) * 32} != ${target.c1.size}")
                 }
@@ -207,7 +211,7 @@ class ContestDataEncryptTest {
             if (debug) println("\ncontestData = $contestData")
 
             val votes = 1
-            val target = contestData.encrypt(keypair.publicKey, votes, UInt256.random())
+            val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
             if ((1 + votes) * 32 != target.c1.size) {
                 assertEquals((1 + votes) * 32, target.c1.size)
             }

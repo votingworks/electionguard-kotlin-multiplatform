@@ -98,7 +98,7 @@ fun runEncryptDecryptBallot(
     testDecryptor(
         group,
         config.manifest,
-        group.TWO_MOD_Q,
+        UInt256.TWO,
         ElGamalPublicKey(jointPublicKey),
         guardians,
         dTrustees,
@@ -140,7 +140,7 @@ fun runEncryptDecryptBallot(
 fun testDecryptor(
     group: GroupContext,
     manifest: Manifest,
-    qbar: ElementModQ,
+    extendedBaseHash: UInt256,
     publicKey: ElGamalPublicKey,
     guardians: Guardians,
     trustees: List<DecryptingTrusteeDoerre>,
@@ -149,8 +149,8 @@ fun testDecryptor(
     println("present $present")
 
     val available = trustees.filter { present.contains(it.xCoordinate()) }
-    val encryptor = Encryptor(group, manifest, publicKey, qbar.toUInt256())
-    val decryptor = DecryptorDoerre(group, qbar, publicKey, guardians, available)
+    val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash)
+    val decryptor = DecryptorDoerre(group, extendedBaseHash, publicKey, guardians, available)
 
     var encryptTime = 0L
     var decryptTime = 0L

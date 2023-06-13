@@ -141,4 +141,21 @@ class HashTest {
             assertEquals(expect2, h2)
         }
     }
+
+    @Test
+    fun HmacVsHashelement() {
+        runTest {
+            val context = productionGroup()
+            checkAll(propTestSlowConfig,
+                uint256s(),
+                elementsModQ(context)) { key, q1 ->
+                    val hmac = HmacProcessor(key)
+                    val hmac1 = hmac.hmacElements(q1)
+                    val he1 = hashElements(key, q1)
+
+                    println("hmac1 = $hmac1")
+                    println("he1 = $he1")
+                }
+        }
+    }
 }

@@ -12,7 +12,7 @@ option java_outer_classname = "ElectionRecordProto";
 message ElectionConfig {
   string spec_version = 1; // specification version
   ElectionConstants constants = 2;
-  bytes manifestFile = 7;
+  bytes manifestFile = 7; // the original source of the manifest
   Manifest manifest = 3;
   uint32 number_of_guardians = 4; // n, the number of guardians necessary to generate the public key
   uint32 quorum = 5; // k, the quorum of guardians necessary to decrypt an election.  Must be <= number_of_guardians.

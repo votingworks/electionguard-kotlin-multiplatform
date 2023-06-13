@@ -14,7 +14,7 @@ private val logger = KotlinLogging.logger("TallyDecryptor")
 /** Turn an EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(
     val group: GroupContext,
-    val extendedBaseHash: ElementModQ,
+    val extendedBaseHash: UInt256,
     val jointPublicKey: ElGamalPublicKey,
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>,
     val guardians: Guardians, // all the guardians
@@ -49,7 +49,7 @@ class TallyDecryptor(
     }
 
     private fun decryptContestData(
-        where: String,
+        contestId: String,
         contestDataDecryptions: ContestDataResults?, // results for this selection
     ): DecryptedTallyOrBallot.DecryptedContestData? {
         return contestDataDecryptions?.let {
@@ -58,18 +58,23 @@ class TallyDecryptor(
 
             // finally we can create the proof
             if (contestDataDecryptions.challenge == null) {
-                logger.error { "$where: ContestDataResults missing challenge" }
+                logger.error { "$contestId: ContestDataResults missing challenge" }
                 return null
             }
             val challenge = contestDataDecryptions.challenge!!.toElementModQ(group)
             val proof = ChaumPedersenProof(challenge, response)
 
             if (contestDataDecryptions.beta == null) {
-                logger.error { "$where: ContestDataResults missing beta" }
+                logger.error { "$contestId: ContestDataResults missing beta" }
                 return null
             }
             val contestData =
-                contestDataDecryptions.ciphertext.decryptWithBetaToContestData(contestDataDecryptions.beta!!)
+                contestDataDecryptions.ciphertext.decryptWithBetaToContestData(
+                    jointPublicKey,
+                    extendedBaseHash,
+                    contestId,
+                    contestDataDecryptions.beta!!
+                )
             if (contestData is Err) {
                 return null
             }
@@ -138,7 +143,7 @@ class TallyDecryptor(
         }
 
         // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
-        val challenge = hashFunction(extendedBaseHash.byteArray(), 0x30.toByte(), jointPublicKey.key, this.message.pad, this.message.data, a, b, Mbar)
+        val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), jointPublicKey.key, this.message.pad, this.message.data, a, b, Mbar)
         return (challenge.toElementModQ(group) == this.proof.c)
     }
 

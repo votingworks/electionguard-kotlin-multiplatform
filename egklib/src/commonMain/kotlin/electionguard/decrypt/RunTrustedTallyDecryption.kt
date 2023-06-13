@@ -89,7 +89,7 @@ fun runDecryptTally(
 
     val guardians = Guardians(group, tallyResult.electionInitialized.guardians)
     val decryptor = DecryptorDoerre(group,
-        tallyResult.electionInitialized.cryptoExtendedBaseHash(),
+        tallyResult.electionInitialized.extendedBaseHash,
         tallyResult.electionInitialized.jointPublicKey(),
         guardians,
         decryptingTrustees,

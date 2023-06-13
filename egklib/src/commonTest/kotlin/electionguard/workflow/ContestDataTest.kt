@@ -3,10 +3,7 @@ package electionguard.workflow
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.ContestDataStatus
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.Manifest
-import electionguard.ballot.importContestData
+import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.encrypt.Encryptor
 import electionguard.input.BallotInputBuilder
@@ -71,7 +68,13 @@ class ContestDataTest {
                 assertNotNull(it.contestData)
                 assertEquals(64, it.contestData.c1.size)
 
-                val baRT = it.contestData.decrypt(keypair)!!
+                val baRT = it.contestData.decryptWithSecretKey(
+                    keypair.publicKey,
+                    electionInit.extendedBaseHash,
+                    it.contestId,
+                    keypair.secretKey
+                )
+                assertNotNull(baRT)
                 val protoRoundtrip = electionguard.protogen.ContestData.decodeFromByteArray(baRT)
                 val contestDataResult = importContestData(protoRoundtrip)
                 assertTrue( contestDataResult is Ok)

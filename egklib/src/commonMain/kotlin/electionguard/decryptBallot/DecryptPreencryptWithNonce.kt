@@ -59,8 +59,12 @@ class DecryptPreencryptWithNonce(
         val decryptions: List<PlaintextBallot.Selection> = decryptPreencryption(contest, pcontest)
 
         // contest data
-        val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contest.contestId, "contest data")
-        val contestDataResult = contest.contestData.decryptWithNonceToContestData(publicKey, contestDataNonce.toElementModQ(group))
+        val contestDataResult = contest.contestData.decryptWithNonceToContestData(
+            publicKey,
+            extendedBaseHash,
+            contest.contestId,
+            ballotNonce)
+
         if (contestDataResult is Err) {
             return contestDataResult
         }
