@@ -16,7 +16,7 @@ fun electionguard.protogen.ElectionInitialized.import(group: GroupContext):
     val electionConfig = this.config?.import() ?: Err("Null ElectionConfig")
     val jointPublicKey = group.importElementModP(this.jointPublicKey)
         .toResultOr { "ElectionInitialized jointPublicKey was malformed or missing" }
-    val cryptoExtendedBaseHash = importUInt256(this.cryptoExtendedBaseHash)
+    val cryptoExtendedBaseHash = importUInt256(this.extendedBaseHash)
         .toResultOr { "ElectionInitialized cryptoExtendedBaseHash was malformed or missing" }
 
     val (guardians, gerrors) = this.guardians.map { it.import(group) }.partition()

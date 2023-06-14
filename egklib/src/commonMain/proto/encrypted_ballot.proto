@@ -29,7 +29,7 @@ message EncryptedBallot {
 message EncryptedBallotContest {
   string contest_id = 1; // matches the ContestDescription.contest_id
   uint32 sequence_order = 2; // matches the ContestDescription.sequence_order
-  UInt256 contest_hash = 3; // matches ContestDescription.crypto_hash
+  UInt256 contest_hash = 3; // eq 58
   repeated EncryptedBallotSelection selections = 4;
   ChaumPedersenRangeProofKnownNonce proof = 6;  // Proof the sum of the selections does not exceed the maximum
   HashedElGamalCiphertext encrypted_contest_data = 7; // see 3.3.4
@@ -64,11 +64,11 @@ message ChaumPedersenRangeProofKnownNonce {
 //
 
 message PreEncryption {
-  UInt256 contest_hash = 1; // (95)
+  UInt256 preencryption_hash = 1; // (95)
   // selection hashes for every option on the ballot and L null vectors
-  repeated UInt256 all_selection_hashes = 2; // size = nselections + limit – sorted numerically
+  repeated UInt256 all_selection_hashes = 2; // size = nselections + limit ; sorted numerically
   // short codes and selection vectors for voter selections, plus additional null selections to make exactly L vectors.
-  repeated SelectionVector selected_vectors = 3; // size = limit – sorted numerically
+  repeated SelectionVector selected_vectors = 3; // size = limit ; sorted numerically
 }
 
 // Ψi,m = ⟨E1 , E2 , . . . , Em ⟩  (92)

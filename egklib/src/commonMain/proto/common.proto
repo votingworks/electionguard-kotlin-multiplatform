@@ -32,8 +32,8 @@ message ElementModQ {
 }
 
 message ElGamalCiphertext {
-  ElementModP pad = 1;
-  ElementModP data = 2;
+  ElementModP pad = 1;   // g^R
+  ElementModP data = 2;  // K^(V+R)
 }
 
 message ChaumPedersenProof {
