@@ -8,7 +8,7 @@ import io.kotest.property.checkAll
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ChaumPedersenTest {
+class ChaumPedersenJsonTest {
     @Test
     fun testRoundtrip() {
         runTest {

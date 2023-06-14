@@ -11,7 +11,7 @@ class CommonConvertTest {
     fun convertElementMod() {
         runTest {
             checkAll(
-                validElementsModP(productionGroup()),
+                validResiduesOfP(productionGroup()),
                 elementsModQ(productionGroup()),
             ) { fakeElementModP, fakeElementModQ ->
                     val context = productionGroup()
@@ -31,8 +31,8 @@ class CommonConvertTest {
     fun convertCiphertext() {
         runTest {
             checkAll(
-                validElementsModP(productionGroup()),
-                validElementsModP(productionGroup()),
+                validResiduesOfP(productionGroup()),
+                validResiduesOfP(productionGroup()),
             ) { fakePad, fakeData ->
                     val context = productionGroup()
                     val ciphertext = ElGamalCiphertext(fakePad, fakeData)
@@ -65,7 +65,7 @@ class CommonConvertTest {
     fun convertSchnorrProof() {
         runTest {
             checkAll(
-                elementsModP(productionGroup()),
+                validResiduesOfP(productionGroup()),
                 elementsModQ(productionGroup()),
                 elementsModQ(productionGroup()),
             ) { k, c, r ->
@@ -83,7 +83,7 @@ class CommonConvertTest {
     fun convertHashedElGamalCiphertext() {
         runTest {
             checkAll(
-                validElementsModP(productionGroup()),
+                validResiduesOfP(productionGroup()),
                 byteArrays(21),
                 uint256s(),
             ) { p, c1, u ->

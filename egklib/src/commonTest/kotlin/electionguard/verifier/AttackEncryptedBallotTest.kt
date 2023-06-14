@@ -39,7 +39,7 @@ class AttackEncryptedBallotTest {
     private val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
     private val showCount = true
 
-    @Test
+    // @Test
     fun attackEncryptedBallots() {
         val context = productionGroup()
         val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, context))

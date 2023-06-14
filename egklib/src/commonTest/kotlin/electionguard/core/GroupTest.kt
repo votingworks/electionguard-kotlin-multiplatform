@@ -80,7 +80,7 @@ class GroupTest {
 
     fun validResiduesForGPowP(contextF: () -> GroupContext) {
         runTest {
-            forAll(propTestFastConfig, validElementsModP(contextF())) { it.isValidResidue() }
+            forAll(propTestFastConfig, validResiduesOfP(contextF())) { it.isValidResidue() }
         }
     }
 
@@ -282,7 +282,7 @@ class GroupTest {
         runTest {
             val context = contextF()
             // our inverse code only works for elements in the subgroup, which makes it faster
-            forAll(propTestFastConfig, validElementsModP(context)) {
+            forAll(propTestFastConfig, validResiduesOfP(context)) {
                 it.multInv() * it == context.ONE_MOD_P
             }
         }
@@ -320,7 +320,7 @@ class GroupTest {
     fun divisionP(contextF: () -> GroupContext) {
         runTest {
             val context = contextF()
-            forAll(propTestFastConfig, validElementsModP(context), validElementsModP(context))
+            forAll(propTestFastConfig, validResiduesOfP(context), validResiduesOfP(context))
                 { a, b -> (a * b) / b == a }
         }
     }
@@ -462,9 +462,9 @@ class GroupTest {
             val context = contextF()
             checkAll(
                 propTestFastConfig,
-                validElementsModP(context),
-                validElementsModP(context),
-                validElementsModP(context)
+                validResiduesOfP(context),
+                validResiduesOfP(context),
+                validResiduesOfP(context)
             ) { a, b, c ->
                 val expected = a * b * c
                 assertEquals(expected, context.multP(a, b, c))
