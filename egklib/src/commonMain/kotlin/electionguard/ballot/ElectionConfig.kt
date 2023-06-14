@@ -35,6 +35,42 @@ data class ElectionConfig(
         require(numberOfGuardians > 0)  { "numberOfGuardians ${numberOfGuardians} <= 0" }
         require(numberOfGuardians >= quorum) { "numberOfGuardians ${numberOfGuardians} != $quorum" }
     }
+
+    // overrride because of the byte array
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ElectionConfig) return false
+
+        if (configVersion != other.configVersion) return false
+        if (constants != other.constants) return false
+        if (!manifestFile.contentEquals(other.manifestFile)) return false
+        if (manifest != other.manifest) return false
+        if (numberOfGuardians != other.numberOfGuardians) return false
+        if (quorum != other.quorum) return false
+        if (electionDate != other.electionDate) return false
+        if (jurisdictionInfo != other.jurisdictionInfo) return false
+        if (metadata != other.metadata) return false
+        if (parameterBaseHash != other.parameterBaseHash) return false
+        if (manifestHash != other.manifestHash) return false
+        return electionBaseHash == other.electionBaseHash
+    }
+
+    override fun hashCode(): Int {
+        var result = configVersion.hashCode()
+        result = 31 * result + constants.hashCode()
+        result = 31 * result + manifestFile.contentHashCode()
+        result = 31 * result + manifest.hashCode()
+        result = 31 * result + numberOfGuardians
+        result = 31 * result + quorum
+        result = 31 * result + electionDate.hashCode()
+        result = 31 * result + jurisdictionInfo.hashCode()
+        result = 31 * result + metadata.hashCode()
+        result = 31 * result + parameterBaseHash.hashCode()
+        result = 31 * result + manifestHash.hashCode()
+        result = 31 * result + electionBaseHash.hashCode()
+        return result
+    }
+
 }
 
 /**

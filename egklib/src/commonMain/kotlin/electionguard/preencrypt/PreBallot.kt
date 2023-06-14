@@ -4,7 +4,7 @@ import electionguard.core.*
 
 /**
  * Intermediate working ballot to transform pre encrypted ballot to an Encrypted ballot.
- * Not externally visable
+ * Not externally visible.
  */
 internal data class PreBallot(
     val ballotId: String,

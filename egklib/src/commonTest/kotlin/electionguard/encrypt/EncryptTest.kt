@@ -35,9 +35,9 @@ class EncryptTest {
         }
     }
 
-    // test that if you pass in the same master nonce, you get the same encryption
+    // test that if you pass in the same ballot nonce, you get the same encryption
     @Test
-    fun testEncryptionWithMasterNonce() {
+    fun testEncryptionWithBallotNonce() {
         runTest {
             val group = productionGroup()
             val consumerIn = makeConsumer(input, group)
@@ -57,7 +57,10 @@ class EncryptTest {
                 }
                 assertEquals(contest1, contest2)
             }
-            assertEquals(result1, result2)
+            // data class equals doesnt compare bytearray.contentEquals()
+            assertEquals(result1.confirmationCode, result2.confirmationCode)
+            assertEquals(result1.timestamp, result2.timestamp)
+            assertEquals(result1.ballotNonce, result2.ballotNonce)
         }
     }
 }

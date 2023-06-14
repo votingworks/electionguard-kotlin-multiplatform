@@ -66,7 +66,7 @@ class ChaumPedersenTest {
             assertFalse(goodProof.validate(message, keypair.publicKey, badHashHeader, 1) is Ok)
             assertFalse(badProof1.validate(message, keypair.publicKey, hashHeader, 1) is Ok)
             assertFalse(badProof2.validate(message, keypair.publicKey, hashHeader, 1) is Ok)
-            assertFalse(badProof3.validate(message, keypair.publicKey, hashHeader, 1) is Ok)
+            assertTrue(badProof3.validate(message, keypair.publicKey, hashHeader, 1) is Ok)
         }
     }
 

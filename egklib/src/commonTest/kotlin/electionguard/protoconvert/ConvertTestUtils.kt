@@ -1,6 +1,8 @@
 package electionguard.protoconvert
 
 import electionguard.core.*
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.map
 import io.ktor.utils.io.core.*
 import kotlin.random.Random
 import kotlin.random.nextUInt
@@ -19,7 +21,7 @@ fun generateGenericChaumPedersenProof(context: GroupContext): ChaumPedersenProof
 
 fun generateSchnorrProof(context: GroupContext): SchnorrProof {
     return SchnorrProof(
-        generateElementModP(context),
+        generatePublicKey(context),
         generateElementModQ(context),
         generateElementModQ(context),
     )
@@ -41,6 +43,7 @@ fun generateUInt256(context: GroupContext): UInt256 {
     return generateElementModQ(context).toUInt256();
 }
 
-fun generateElementModP(context: GroupContext): ElementModP {
-    return context.uIntToElementModP(Random.nextUInt(1879047647.toUInt()))
-}
+fun generateElementModP(context: GroupContext) = context.uIntToElementModP(Random.nextUInt(1879047647.toUInt()))
+
+fun generatePublicKey(group: GroupContext): ElementModP =
+    group.gPowP(group.randomElementModQ())

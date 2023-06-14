@@ -23,7 +23,7 @@ class MontgomeryGroupTest {
 
             checkAll(
                 if (context.isProductionStrength()) propTestFastConfig else propTestSlowConfig,
-                validElementsModP(context), validElementsModP(context))
+                validResiduesOfP(context), validResiduesOfP(context))
             { a, b ->
                 val expected = a * b
                 val actual = (a.toMontgomeryElementModP() * b.toMontgomeryElementModP()).toElementModP()
@@ -51,7 +51,7 @@ class MontgomeryGroupTest {
 
             checkAll(
                 if (context.isProductionStrength()) propTestFastConfig else propTestSlowConfig,
-                validElementsModP(context)) {
+                validResiduesOfP(context)) {
                 val outAndBack = it.toMontgomeryElementModP().toElementModP()
                 assertEquals(it, outAndBack)
             }

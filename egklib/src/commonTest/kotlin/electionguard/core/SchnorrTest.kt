@@ -23,7 +23,7 @@ class SchnorrTest {
                 Arb.int(1, 11),
                 Arb.int(0, 10),
                 elementsModQ(tinyGroup()),
-                validElementsModP(tinyGroup()),
+                validResiduesOfP(tinyGroup()),
                 elementsModQ(tinyGroup())
             ) { kp, i, j, nonce, fakeElementModP, fakeElementModQ ->
                 val goodProof = kp.schnorrProof(i, j, nonce)

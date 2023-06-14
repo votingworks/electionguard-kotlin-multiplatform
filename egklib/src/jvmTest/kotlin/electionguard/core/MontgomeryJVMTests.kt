@@ -21,7 +21,7 @@ class MontgomeryJVMTests {
     fun shiftyModAndDivTiny() = runTest {
         val context = tinyGroup()
 
-        checkAll(validElementsModP(context), validElementsModP(context)) { a, b ->
+        checkAll(validResiduesOfP(context), validResiduesOfP(context)) { a, b ->
             val aVal = a.toMontgomeryElementModP() as TinyMontgomeryElementModP
             val bVal = b.toMontgomeryElementModP() as TinyMontgomeryElementModP
             with (aVal) {
@@ -39,7 +39,7 @@ class MontgomeryJVMTests {
 
             checkAll(
                 propTestSlowConfig,
-                validElementsModP(context), validElementsModP((context))
+                validResiduesOfP(context), validResiduesOfP((context))
             ) { a, b ->
                 val aVal = a.toMontgomeryElementModP() as ProductionMontgomeryElementModP
                 val bVal = b.toMontgomeryElementModP() as ProductionMontgomeryElementModP

@@ -26,9 +26,9 @@ fun elementsModQNoZero(ctx: GroupContext) = elementsModQ(ctx, 1)
 
 /**
  * Generates a valid element of the subgroup of ElementModP where there exists an e in Q such that v
- * = g^e.
+ * = g^e. aka "the set of r-th-residues in Z∗_p"
  */
-fun validElementsModP(ctx: GroupContext): Arb<ElementModP> =
+fun validResiduesOfP(ctx: GroupContext): Arb<ElementModP> =
     elementsModQ(ctx).map { e -> ctx.gPowP(e) }
 
 /**

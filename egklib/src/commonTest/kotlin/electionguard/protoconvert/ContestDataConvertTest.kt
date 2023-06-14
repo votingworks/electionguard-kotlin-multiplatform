@@ -14,7 +14,7 @@ class ContestDataConvertTest {
     fun convertContestData() {
         runTest {
             checkAll(
-                validElementsModP(productionGroup()),
+                validResiduesOfP(productionGroup()),
                 byteArrays(21),
                 uint256s(),
             ) { p, c1, u ->
