@@ -29,8 +29,8 @@ fun ElectionConstants.publish() = ConstantsJson(
     this.name,
     this.largePrime.toHex(), // .normalize(512).toHex(),
     this.smallPrime.toHex(), // .normalize(32).toHex(),
-    this.cofactor.normalize(481).toHex(),
-    this.generator.normalize(512).toHex(),
+    this.cofactor.toHex(), //.normalize(481).toHex(),
+    this.generator.toHex(), //.normalize(512).toHex(),
 )
 
 fun ConstantsJson.import() = ElectionConstants(

@@ -21,6 +21,34 @@ data class EncryptedBallot(
         require(contests.isNotEmpty())
     }
 
+    // override because of bytearray
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is EncryptedBallot) return false
+
+        if (ballotId != other.ballotId) return false
+        if (ballotStyleId != other.ballotStyleId) return false
+        if (confirmationCode != other.confirmationCode) return false
+        if (!codeBaux.contentEquals(other.codeBaux)) return false
+        if (contests != other.contests) return false
+        if (timestamp != other.timestamp) return false
+        if (state != other.state) return false
+        return isPreencrypt == other.isPreencrypt
+    }
+
+    override fun hashCode(): Int {
+        var result = ballotId.hashCode()
+        result = 31 * result + ballotStyleId.hashCode()
+        result = 31 * result + confirmationCode.hashCode()
+        result = 31 * result + codeBaux.contentHashCode()
+        result = 31 * result + contests.hashCode()
+        result = 31 * result + timestamp.hashCode()
+        result = 31 * result + state.hashCode()
+        result = 31 * result + isPreencrypt.hashCode()
+        return result
+    }
+
+
     enum class BallotState {
         /** A ballot that has been explicitly cast */
         CAST,

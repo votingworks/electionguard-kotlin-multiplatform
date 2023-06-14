@@ -97,6 +97,7 @@ nonce that enables the encryptions to be opened and checked.
 
         val contestDataEncrypted = contestData.encrypt(publicKeyEG, extendedBaseHash, preeContest.contestId, ballotNonce, preeContest.votesAllowed)
 
+        // we are going to substitute preencryptionHash (eq 95) instead of eq 58 when we validate
         // χl = H(HE ; 23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (58)
         val ciphers = mutableListOf<ElementModP>()
         texts.forEach {
