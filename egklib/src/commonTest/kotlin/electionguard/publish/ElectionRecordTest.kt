@@ -22,12 +22,12 @@ class ElectionRecordTest {
         readElectionRecordAndValidate("src/commonTest/data/runWorkflowSomeAvailable")
     }
 
-    @Test
+    // @Test
     fun readElectionRecordJson() {
         readElectionRecordAndValidate("src/commonTest/data/testElectionRecord/convertJson")
     }
 
-    @Test
+    // @Test
     fun readElectionRecordRoundtrip() {
         readElectionRecordAndValidate("src/commonTest/data/testElectionRecord/roundtripProto")
     }

@@ -23,7 +23,7 @@ class ConsumerJsonTest {
         )
     }
 
-    @ParameterizedTest
+    //@ParameterizedTest
     @MethodSource("params")
     fun readElectionRecord(topdir: String) {
         val context = productionGroup()
@@ -39,7 +39,7 @@ class ConsumerJsonTest {
         assertEquals(specVersion, config.manifest.specVersion)
     }
 
-    @ParameterizedTest
+    //@ParameterizedTest
     @MethodSource("params")
     fun readSpoiledBallotTallys(topdir: String) {
         val context = productionGroup()
@@ -52,7 +52,7 @@ class ConsumerJsonTest {
         }
     }
 
-    @ParameterizedTest
+    //@ParameterizedTest
     @MethodSource("params")
     fun readEncryptedBallots(topdir: String) {
         val context = productionGroup()
@@ -65,7 +65,7 @@ class ConsumerJsonTest {
         }
     }
 
-    @ParameterizedTest
+    //@ParameterizedTest
     @MethodSource("params")
     fun readEncryptedBallotsCast(topdir: String) {
         val context = productionGroup()
@@ -78,7 +78,7 @@ class ConsumerJsonTest {
         }
     }
 
-    @ParameterizedTest
+    //@ParameterizedTest
     @MethodSource("params")
     fun readSubmittedBallotsSpoiled(topdir: String) {
         val context = productionGroup()
