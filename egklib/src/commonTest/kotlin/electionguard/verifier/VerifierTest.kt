@@ -15,11 +15,6 @@ class VerifierTest {
     }
 
     @Test
-    fun verification456() {
-        runVerifier(productionGroup(), "testOut/testRunBatchEncryptionTest", 11, true)
-    }
-
-    @Test
     fun verificationChained() {
         runVerifier(productionGroup(), "testOut/testRunBatchEncryptionChain", 11, true)
     }

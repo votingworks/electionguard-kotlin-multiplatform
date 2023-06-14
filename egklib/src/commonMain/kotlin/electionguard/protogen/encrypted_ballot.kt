@@ -352,7 +352,7 @@ public data class ChaumPedersenRangeProofKnownNonce(
 
 @pbandk.Export
 public data class PreEncryption(
-    val contestHash: electionguard.protogen.UInt256? = null,
+    val preencryptionHash: electionguard.protogen.UInt256? = null,
     val allSelectionHashes: List<electionguard.protogen.UInt256> = emptyList(),
     val selectedVectors: List<electionguard.protogen.SelectionVector> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -370,11 +370,11 @@ public data class PreEncryption(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "contest_hash",
+                        name = "preencryption_hash",
                         number = 1,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "contestHash",
-                        value = electionguard.protogen.PreEncryption::contestHash
+                        jsonName = "preencryptionHash",
+                        value = electionguard.protogen.PreEncryption::preencryptionHash
                     )
                 )
                 add(
@@ -612,7 +612,7 @@ public fun PreEncryption?.orDefault(): electionguard.protogen.PreEncryption = th
 
 private fun PreEncryption.protoMergeImpl(plus: pbandk.Message?): PreEncryption = (plus as? PreEncryption)?.let {
     it.copy(
-        contestHash = contestHash?.plus(plus.contestHash) ?: plus.contestHash,
+        preencryptionHash = preencryptionHash?.plus(plus.preencryptionHash) ?: plus.preencryptionHash,
         allSelectionHashes = allSelectionHashes + plus.allSelectionHashes,
         selectedVectors = selectedVectors + plus.selectedVectors,
         unknownFields = unknownFields + plus.unknownFields
@@ -621,19 +621,19 @@ private fun PreEncryption.protoMergeImpl(plus: pbandk.Message?): PreEncryption =
 
 @Suppress("UNCHECKED_CAST")
 private fun PreEncryption.Companion.decodeWithImpl(u: pbandk.MessageDecoder): PreEncryption {
-    var contestHash: electionguard.protogen.UInt256? = null
+    var preencryptionHash: electionguard.protogen.UInt256? = null
     var allSelectionHashes: pbandk.ListWithSize.Builder<electionguard.protogen.UInt256>? = null
     var selectedVectors: pbandk.ListWithSize.Builder<electionguard.protogen.SelectionVector>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> contestHash = _fieldValue as electionguard.protogen.UInt256
+            1 -> preencryptionHash = _fieldValue as electionguard.protogen.UInt256
             2 -> allSelectionHashes = (allSelectionHashes ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.UInt256> }
             3 -> selectedVectors = (selectedVectors ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.SelectionVector> }
         }
     }
 
-    return PreEncryption(contestHash, pbandk.ListWithSize.Builder.fixed(allSelectionHashes), pbandk.ListWithSize.Builder.fixed(selectedVectors), unknownFields)
+    return PreEncryption(preencryptionHash, pbandk.ListWithSize.Builder.fixed(allSelectionHashes), pbandk.ListWithSize.Builder.fixed(selectedVectors), unknownFields)
 }
 
 @pbandk.Export

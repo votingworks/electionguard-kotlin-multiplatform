@@ -126,6 +126,7 @@ a period, the IDE's autocomplete menu should offer you a variety of useful
 methods.
 
 ## Protobuf Serialization
+* [Protobuf serialization 1.9](docs/ProtoSerializationSpec1.9.md)
 * [Protobuf serialization 1.53](docs/ProtoSerializationSpec1.53.md)
 * [Election Record serialization for private classes](docs/ProtoSerializationPrivate.md)
 * [Election Record protobuf directory and file layout](docs/ElectionRecord.md)

@@ -14,7 +14,7 @@ class PreEncryptor(
     val extendedBaseHash: UInt256,
     val sigma : (UInt256) -> String, // hash trimming function Ω
 ) {
-    val publicKeyEG = ElGamalPublicKey(publicKey)
+    private val publicKeyEG = ElGamalPublicKey(publicKey)
 
     /* The encrypting tool for pre-encrypted ballots takes as input parameters
         • an election manifest,

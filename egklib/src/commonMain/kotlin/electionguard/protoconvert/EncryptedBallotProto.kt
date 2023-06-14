@@ -100,7 +100,7 @@ private fun GroupContext.importPreEncryption(where: String, proto: electionguard
     }
 
     return EncryptedBallot.PreEncryption(
-        importUInt256(proto.contestHash)!!,
+        importUInt256(proto.preencryptionHash)!!,
         selectionHashes,
         proto.selectedVectors.map { this.importSelectionVector(it) },
     )
@@ -191,7 +191,7 @@ private fun EncryptedBallot.Contest.publishProto(recordedPreBallot: RecordedPreB
 private fun RecordedPreEncryption.publishProto():
         electionguard.protogen.PreEncryption {
     return electionguard.protogen.PreEncryption(
-        this.contestHash.publishProto(),
+        this.preencryptionHash.publishProto(),
         this.allSelectionHashes.map { it.publishProto() },
         this.selectedVectors.map { it.publishProto() },
     )

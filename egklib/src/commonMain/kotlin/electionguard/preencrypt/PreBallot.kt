@@ -14,7 +14,7 @@ internal data class PreBallot(
         println("\nRecordPreBallot '$ballotId' ")
         for (contest in this.contests) {
             println(" contest ${contest.contestId} = ${contest.selectedCodes()}")
-            println("   contestHash = ${contest.contestHash.toHex()}")
+            println("   contestHash = ${contest.preencryptionHash.toHex()}")
             println("   selectionHashes (${contest.allSelectionHashes.size}) = ${contest.allSelectionHashes}")
             println("   selectedVectors (${contest.selectedVectors.size}) =")
             contest.selectedVectors.forEach { println("    $it")}
@@ -24,7 +24,7 @@ internal data class PreBallot(
 
 internal data class PreContest(
     val contestId: String,
-    val contestHash: UInt256,  // (95)
+    val preencryptionHash: UInt256,  // (95)
     val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
     val selectedVectors: List<PreSelectionVector>, // limit number of them, sorted by selectionHash
     val votedFor: List<Boolean> // nselections, in order by sequence_order

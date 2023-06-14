@@ -36,7 +36,7 @@ kotlin {
             .configure {
                 useJUnitPlatform()
                 minHeapSize = "512m"
-                maxHeapSize = "2048m"
+                maxHeapSize = "8g"
                 jvmArgs = listOf("-Xss128m")
 
                 // Make tests run in parallel
