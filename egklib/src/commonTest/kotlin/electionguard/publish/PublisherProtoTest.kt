@@ -123,7 +123,7 @@ class PublisherProtoTest {
                     assertEquals(inSelection.selectionId, it.selectionId)
                     assertEquals(inSelection.tally, it.tally)
                     assertEquals(inSelection.value, it.value)
-                    assertEquals(inSelection.message, it.message)
+                    assertEquals(inSelection.ciphertext, it.ciphertext)
                     assertEquals(inSelection.proof, it.proof)
                     assertEquals(inSelection, it)
                 }

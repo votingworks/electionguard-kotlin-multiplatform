@@ -1,5 +1,7 @@
 package electionguard.decryptBallot
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ContestDataStatus
@@ -11,16 +13,7 @@ import electionguard.ballot.Manifest
 import electionguard.ballot.makeContestData
 import electionguard.ballot.makeDoerreTrustee
 import electionguard.ballot.makeGuardian
-import electionguard.core.Base16.toHex
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
-import electionguard.core.getSystemTimeInMillis
-import electionguard.core.hashElements
-import electionguard.core.productionGroup
-import electionguard.core.toUInt256
+import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
@@ -30,10 +23,12 @@ import electionguard.input.RandomBallotProvider
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
+import electionguard.verifier.VerifyDecryption
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /** Test KeyCeremony Trustee generation and recovered decryption. */
 class EncryptDecryptBallotTest {
@@ -61,7 +56,7 @@ class EncryptDecryptBallotTest {
 private val writeout = false
 private val nguardians = 4
 private val quorum = 3
-private val nballots = 10
+private val nballots = 11
 private val debug = false
 
 fun runEncryptDecryptBallot(
@@ -95,7 +90,7 @@ fun runEncryptDecryptBallot(
     val jointPublicKey: ElementModP =
         dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
-    testDecryptor(
+    testEncryptDecryptVerify(
         group,
         config.manifest,
         UInt256.TWO,
@@ -109,24 +104,12 @@ fun runEncryptDecryptBallot(
     if (writeout) {
         val commitments: MutableList<ElementModP> = mutableListOf()
         trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
-        val commitmentsHash = hashElements(commitments)
+        val extendedBaseHash = hashFunction(config.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey, commitments)
 
-        val primes = config.constants
-        val cryptoBaseHash: UInt256 = hashElements(
-            primes.largePrime.toHex(),
-            primes.smallPrime.toHex(),
-            primes.generator.toHex(),
-            config.numberOfGuardians,
-            config.quorum,
-            config.manifestHash, // TODO
-        )
-
-        // spec 1.52, eq 17 and 3.B
-        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
         val init = ElectionInitialized(
             config,
             jointPublicKey,
-            cryptoExtendedBaseHash,
+            extendedBaseHash,
             guardianList,
         )
         val publisher = makePublisher(outputDir)
@@ -137,7 +120,7 @@ fun runEncryptDecryptBallot(
     }
 }
 
-fun testDecryptor(
+fun testEncryptDecryptVerify(
     group: GroupContext,
     manifest: Manifest,
     extendedBaseHash: UInt256,
@@ -151,6 +134,7 @@ fun testDecryptor(
     val available = trustees.filter { present.contains(it.xCoordinate()) }
     val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash)
     val decryptor = DecryptorDoerre(group, extendedBaseHash, publicKey, guardians, available)
+    val verifier = VerifyDecryption(group, manifest, publicKey, extendedBaseHash.toElementModQ(group))
 
     var encryptTime = 0L
     var decryptTime = 0L
@@ -175,6 +159,7 @@ fun testDecryptor(
             assertNotNull(dcontest)
             assertNotNull(dcontest.decryptedContestData)
             assertEquals(dcontest.decryptedContestData!!.contestData.writeIns, orgContestData.writeIns)
+            println("   ${orgContest.contestId} writeins = ${orgContestData.writeIns}")
 
             val status = dcontest.decryptedContestData!!.contestData.status
             val overvotes = dcontest.decryptedContestData!!.contestData.overvotes
@@ -195,6 +180,12 @@ fun testDecryptor(
                     assertEquals(selection.vote, dselection.tally)
                 }
             }
+
+            val result = verifier.verify(decryptedBallot,  true, Stats())
+            if (result is Err) {
+                println(result)
+            }
+            assertTrue( result is Ok)
         }
     }
 

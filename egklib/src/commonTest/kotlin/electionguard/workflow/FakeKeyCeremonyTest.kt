@@ -4,7 +4,6 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.*
-import electionguard.core.Base16.toHex
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
@@ -135,7 +134,7 @@ fun testDoerreDecrypt(group: GroupContext,
     val weightedProduct = with(group) {
         shares.map {
             val coeff = lagrangeCoefficients[it.guardianId] ?: throw IllegalArgumentException()
-            it.mbari powP coeff
+            it.Mi powP coeff
         }.multP() // eq 7
     }
     val bm = evote.data / weightedProduct

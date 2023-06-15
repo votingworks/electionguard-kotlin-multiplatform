@@ -89,12 +89,12 @@ private fun electionguard.protogen.DecryptedSelection.import(group: GroupContext
         Result<DecryptedTallyOrBallot.Selection, String> {
     val value = group.importElementModP(this.value)
         .toResultOr { "DecryptedSelection ${this.selectionId} value was malformed or missing" }
-    val message = group.importCiphertext(this.message)
-        .toResultOr { "DecryptedSelection ${this.selectionId} message was malformed or missing" }
+    val ciphertext = group.importCiphertext(this.ciphertext)
+        .toResultOr { "DecryptedSelection ${this.selectionId} ciphertext was malformed or missing" }
     val proof = group.importChaumPedersenProof(this.proof)
         .toResultOr { "DecryptedSelection ${this.selectionId} proof was malformed or missing" }
 
-    val errors = getAllErrors(value, message, proof)
+    val errors = getAllErrors(value, ciphertext, proof)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -104,7 +104,7 @@ private fun electionguard.protogen.DecryptedSelection.import(group: GroupContext
             this.selectionId,
             this.tally,
             value.unwrap(),
-            message.unwrap(),
+            ciphertext.unwrap(),
             proof.unwrap(),
         )
     )
@@ -130,7 +130,7 @@ private fun DecryptedTallyOrBallot.Selection.publishProto() =
         this.selectionId,
         this.tally,
         this.value.publishProto(),
-        this.message.publishProto(),
+        this.ciphertext.publishProto(),
         this.proof.publishProto()
     )
 

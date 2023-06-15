@@ -21,13 +21,13 @@ message DecryptedSelection {
   string selection_id = 1; // matches SelectionDescription.selection_id
   uint32 tally = 2;
   ElementModP value = 3; // g^tally or M in the spec.
-  ElGamalCiphertext message = 4;
+  ElGamalCiphertext ciphertext = 4; // same as EncryptedTally.Selection.ciphertext
   ChaumPedersenProof proof = 5;
 }
 
 message DecryptedContestData {
   ContestData contest_data = 1;
-  HashedElGamalCiphertext encrypted_contest_data = 2; // see 3.3.4. matches EncryptedBallotContest
+  HashedElGamalCiphertext encrypted_contest_data = 2; // matches EncryptedBallotContest.encrypted_contest_data
   ChaumPedersenProof proof = 3;
-  ElementModP beta = 4; //  β = C0^s mod p
+  ElementModP beta = 4; //  β = C0^s mod p TODO is this needed for decryption or proof??
 }

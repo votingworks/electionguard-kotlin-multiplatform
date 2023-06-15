@@ -23,7 +23,7 @@ enum class ContestDataStatus {
 
 /**
  * This information consists of any text written into one or more write-in text fields, information about overvotes,
- * undervotes, and null votes, and possibly other data about voter selections. spec 1.52 section 3.3.3
+ * undervotes, and null votes, and possibly other data about voter selections.
  */
 data class ContestData(
     val overvotes: List<Int>,
@@ -129,7 +129,7 @@ data class ContestData(
         contestId: String, // aka Λ
         ballotNonce: UInt256): HashedElGamalCiphertext {
 
-        // D = D_1 ∥ D_2 ∥ · · · ∥ D_bD  (46)
+        // D = D_1 ∥ D_2 ∥ · · · ∥ D_bD  ; spec 1.9 eq (46)
         val messageBlocks: List<UInt256> =
             this.toList()
                 .chunked(32) { block ->
@@ -141,29 +141,29 @@ data class ContestData(
 
         val group = compatibleContextOrFail(publicKey.key)
 
-        // ξ = H(HE ; 20, ξB , Λ, ”contest_data”) (47)
+        // ξ = H(HE ; 20, ξB , Λ, ”contest_data”) ; spec 1.9 eq (47)
         val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestId, contestDataLabel)
 
         // ElectionGuard spec: (α, β) = (g^ξ mod p, K^ξ mod p); by encrypting a zero, we achieve exactly this
         val (alpha, beta) = 0.encrypt(publicKey, contestDataNonce.toElementModQ(group))
-        // k = H(HE ; 22, K, α, β). (48)
+        // k = H(HE ; 22, K, α, β). ; spec 1.9 eq (48)
         val kdfKey = hashFunction(extendedBaseHash.bytes, 0x22.toByte(), publicKey.key, alpha, beta)
 
         // context = b(”contest_data”) ∥ b(Λ).
         val context = "$contestDataLabel$contestId"
-        val kdf = KDF(kdfKey, label, context, this.size * 8) // TODO is this (49) ??
+        val kdf = KDF(kdfKey, label, context, this.size * 8) // TODO is this spec 1.9 eq(49) ??
 
         val k0 = kdf[0]
         val c0 = alpha.byteArray() // (50)
         val encryptedBlocks = messageBlocks.mapIndexed { i, p -> (p xor kdf[i + 1]).bytes }.toTypedArray()
         val c1 = concatByteArrays(*encryptedBlocks) // (51)
-        val c2 = (c0 + c1).hmacSha256(k0) // (52) TODO hmacFunction() ??
+        val c2 = (c0 + c1).hmacSha256(k0) // ; spec 1.9 eq (52) TODO can we use hmacFunction() ??
 
         return HashedElGamalCiphertext(alpha, c1, c2, this.size)
     }
 }
 
-// TODO could be used in Encryptor
+// TODO could be used in Encryptor ??
 fun makeContestData(
     votesAllowed: Int,
     selections: List<PlaintextBallot.Selection>,
