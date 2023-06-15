@@ -97,7 +97,7 @@ data class PartialDecryptionJson(
 
 fun PartialDecryption.publish() = PartialDecryptionJson(
     this.guardianId,
-    this.mbari.publish(),
+    this.Mi.publish(),
     this.u.publish(),
     this.a.publish(),
     this.b.publish(),

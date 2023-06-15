@@ -9,23 +9,23 @@ import electionguard.core.UInt256
 /** One decryption from one Decrypting Trustee */
 data class PartialDecryption(
     val guardianId: String,  // guardian i
-    val mbari: ElementModP, // M_i = A ^ P(i)
-    val u: ElementModQ,
+    val Mi: ElementModP, // Mi = A ^ P(i); spec 1.9, eq 67 or C0 ^ P(i); spec 1.9, eq 78
+    val u: ElementModQ,  // these are needed for the proof
     val a: ElementModP,
     val b: ElementModP,
 )
 
-/** One decryption with info from all the Decrypting Trustees. */
+/** One selection decryption from one Decrypting Trustees. */
 data class DecryptionResult(
     val id: String,     // "contestId#@selectionId"
-    val ciphertext: ElGamalCiphertext, // (A, B)
+    val ciphertext: ElGamalCiphertext, // text to decrypt
     val share: PartialDecryption,
 )
 
-/** One contest data decryption with info from all the Decrypting Trustees. */
+/** One contest data decryption from one Decrypting Trustees. */
 data class ContestDataResult(
     val contestId: String,
-    val ciphertext: HashedElGamalCiphertext,
+    val ciphertext: HashedElGamalCiphertext, // text to decrypt
     val share: PartialDecryption,
 )
 
@@ -46,13 +46,13 @@ class TrusteeDecryptions(val id : String) {
 
 data class ChallengeRequest(
     val id: String, // "contestId#@selectionId"
-    val challenge: ElementModQ,
+    val challenge: ElementModQ, // spec 1.9, eq 73
     val nonce: ElementModQ,
 )
 
 data class ChallengeResponse(
     val id: String, // "contestId#@selectionId"
-    val response: ElementModQ,
+    val response: ElementModQ, // spec 1.9, eq 74
 )
 
 data class TrusteeChallengeResponses(
@@ -62,28 +62,37 @@ data class TrusteeChallengeResponses(
 
 //// Mutable structures to hold the work as it progresses
 
-/** One decryption with info from all the Decrypting Trustees. */
+/**
+ * One decryption with info from all the Decrypting Trustees.
+ * Mutable, built incrementally.
+ */
 class DecryptionResults(
     val id: String,     // "contestId#@selectionId"
-    val ciphertext: ElGamalCiphertext, // A
+    val ciphertext: ElGamalCiphertext, // text to decrypt
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
-    var dlogM: Int? = null,
-    var mbar: ElementModP? = null, // mbar = prod(Mi), LOOK could be K^t to save an extra divide
-    var challenge: UInt256? = null,
-    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // guardianId, v_i
+    var tally: Int? = null, // the decrypted tally
+    var M: ElementModP? = null, // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 1.9, eq 69
+    var collectiveChallenge: UInt256? = null, // spec 1.9 eq 72
+    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; spec 1.9, eq 74
 )
 
-/** One contest data decryption with info from all the Decrypting Trustees. */
+/**
+ * One contest data decryption with info from all the Decrypting Trustees.
+ * Mutable, built incrementally.
+ */
 class ContestDataResults(
     val contestId: String,
-    val ciphertext: HashedElGamalCiphertext,
+    val ciphertext: HashedElGamalCiphertext, // text to decrypt
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var beta: ElementModP? = null,
-    var challenge: UInt256? = null,
-    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // guardianId, v_i
+    var collectiveChallenge: UInt256? = null, // spec 1.9 eq 82
+    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; spec 1.9, eq 83
 )
 
-/** All decryptions from all the Decrypting Trustees for one ballot. */
+/**
+ * All decryptions from all the Decrypting Trustees for one ballot.
+ * Mutable, built incrementally.
+ */
 class Decryptions {
     val shares: MutableMap<String, DecryptionResults> = mutableMapOf() // key "contestId#@selectionId"
     val contestData: MutableMap<String, ContestDataResults> = mutableMapOf() // key contestId

@@ -26,12 +26,11 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
         }
     }
 
-    // used for validation; see spec 1.52, section 3.5.4, 4.10.2
     data class DecryptedContestData(
         val contestData: ContestData,
         val encryptedContestData : HashedElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
         val proof: ChaumPedersenProof,
-        var beta: ElementModP,
+        var beta: ElementModP, // needed to verify 10.2
     )
 
     /**
@@ -39,16 +38,15 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
      *
      * @param selectionId equals the Manifest.SelectionDescription.selectionId.
      * @param tally     the decrypted vote count.
-     * @param value     M = K^tally in the spec. used in verifier
-     * @param message   The encrypted vote count = (A, B).
-     * @param proof     Proof of correctness
+     * @param value     T = K^tally in the spec. used in verifier
+     * @param ciphertext The encrypted vote count
+     * @param proof     Proof of correctness that ciphertext encrypts tally
      */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
-        val tally: Int,         // logK(M)
-        val value: ElementModP, // M = K^tally = B/Mbar  // equals 1 when tally = 0; is this needed? 8.B, 11.B.
-                                // seems like could compute M and Mbar from B and t, then the challenge in 8 is enough
-        val message: ElGamalCiphertext, // (A, B) same as EncryptedTally.Selection.ciphertext
+        val tally: Int,         // logK(T)
+        val value: ElementModP, // T = K^t mod p; spec 1.9 eq (65)
+        val ciphertext: ElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
         val proof: ChaumPedersenProof,
     ) {
         init {

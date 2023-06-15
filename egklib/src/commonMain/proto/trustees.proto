@@ -7,9 +7,9 @@ option java_outer_classname = "TrusteeProto";
 
 message DecryptingTrustee {
   string guardian_id = 1;
-  uint32 guardian_x_coordinate = 2; // the x coefficient (sequence_order), must be > 0
-  ElementModP public_key = 5;     // Guardian's private and public key
-  ElementModQ key_share = 6;      // My share of the election key, P(i)
+  uint32 guardian_x_coordinate = 2; // my x coefficient (aka sequence_order), must be > 0
+  ElementModP public_key = 5;      // my public key
+  ElementModQ key_share = 6;       // P(i) = my share of the secret key s = (s1 + s2 + · · · + sn ), eq 66
 }
 
 message EncryptedKeyShare {

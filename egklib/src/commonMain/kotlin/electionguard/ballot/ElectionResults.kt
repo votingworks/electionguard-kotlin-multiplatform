@@ -42,7 +42,7 @@ data class DecryptionResult(
 data class LagrangeCoordinate(
     var guardianId: String,
     var xCoordinate: Int,
-    var lagrangeCoefficient: ElementModQ, // wℓ, spec 1.52 eq 55
+    var lagrangeCoefficient: ElementModQ, // wℓ, spec 1.9 eq 68
 ) {
     init {
         require(guardianId.isNotEmpty())

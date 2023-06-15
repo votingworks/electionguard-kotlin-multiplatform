@@ -74,7 +74,7 @@ fun DecryptedTallyOrBallot.Selection.publish() = DecryptedTallySelectionJson(
     this.selectionId,
     this.tally,
     this.value.publish(),
-    this.message.publish(),
+    this.ciphertext.publish(),
     this.proof.publish(),
 )
 

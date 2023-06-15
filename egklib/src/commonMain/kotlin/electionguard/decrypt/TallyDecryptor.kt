@@ -1,21 +1,26 @@
 package electionguard.decrypt
 
 import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.decryptWithBetaToContestData
 import electionguard.core.*
+import electionguard.core.Base16.toHex
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
+
+private const val verifySelections = true
+private const val verifyContestData = true
 
 /** Turn an EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(
     val group: GroupContext,
     val extendedBaseHash: UInt256,
-    val jointPublicKey: ElGamalPublicKey,
+    val publicKey: ElGamalPublicKey,
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>,
     val guardians: Guardians, // all the guardians
 ) {
@@ -53,24 +58,26 @@ class TallyDecryptor(
         contestDataDecryptions: ContestDataResults?, // results for this selection
     ): DecryptedTallyOrBallot.DecryptedContestData? {
         return contestDataDecryptions?.let {
-            // response (v) is the sum of the individual responses
+            // v = Sum(v_i mod q); spec 1.9 eq (86)
             val response: ElementModQ = with(group) { contestDataDecryptions.responses.values.map { it }.addQ() }
 
             // finally we can create the proof
-            if (contestDataDecryptions.challenge == null) {
+            if (contestDataDecryptions.collectiveChallenge == null) {
                 logger.error { "$contestId: ContestDataResults missing challenge" }
                 return null
             }
-            val challenge = contestDataDecryptions.challenge!!.toElementModQ(group)
+            val challenge = contestDataDecryptions.collectiveChallenge!!.toElementModQ(group)
             val proof = ChaumPedersenProof(challenge, response)
 
             if (contestDataDecryptions.beta == null) {
                 logger.error { "$contestId: ContestDataResults missing beta" }
                 return null
             }
+
+            // use beta to do the decryption
             val contestData =
                 contestDataDecryptions.ciphertext.decryptWithBetaToContestData(
-                    jointPublicKey,
+                    publicKey,
                     extendedBaseHash,
                     contestId,
                     contestDataDecryptions.beta!!
@@ -79,75 +86,105 @@ class TallyDecryptor(
                 return null
             }
 
-            DecryptedTallyOrBallot.DecryptedContestData(
+            val decryptedContestData = DecryptedTallyOrBallot.DecryptedContestData(
                 contestData.unwrap(),
                 contestDataDecryptions.ciphertext,
                 proof,
                 contestDataDecryptions.beta!!,
             )
+
+            if (verifyContestData) {
+                val results = verifyContestData(contestId, decryptedContestData)
+                if (results is Err) {
+                    println(results)
+                }
+            }
+
+            decryptedContestData
         }
     }
 
-    // LOOK detect nulls
+    // this is the verifier proof (box 10)
+    private fun verifyContestData(where: String, decryptedContestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
+        val proof = decryptedContestData.proof
+        val hashedCiphertext = decryptedContestData.encryptedContestData
+        // a = g^v * K^c  (10.1,14.1)
+        val a = group.gPowP(proof.r) * (publicKey powP proof.c)
+
+        // b = C0^v * β^c (10.2,14.2)
+        val b = (hashedCiphertext.c0 powP proof.r) * (decryptedContestData.beta powP proof.c)
+
+        val results = mutableListOf<Result<Boolean, String>>()
+
+        // (10.A,14.A) The given value v is in the set Zq.
+        if (!proof.r.inBounds()) {
+            results.add(Err("     (10.A,14.A) The value v is not in the set Zq.: '$where'"))
+        }
+
+        // (10.B) The challenge value c satisfies c = H(HE ; 31, K, C0 , C1 , C2 , a, b, β).
+        val challenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), publicKey.key,
+            hashedCiphertext.c0,
+            hashedCiphertext.c1.toHex(),
+            hashedCiphertext.c2,
+            a, b, decryptedContestData.beta)
+
+        if (challenge != proof.c.toUInt256()) {
+            results.add(Err("     (10.B,14.B) The challenge value is wrong: '$where'"))
+        }
+        return results.merge()
+    }
+
+    // TODO detect nulls
     private fun decryptSelection(
         selection: EncryptedTally.Selection,
         selectionDecryptions: DecryptionResults, // results for this selection
         contestId: String,
         stats: Stats,
     ): DecryptedTallyOrBallot.Selection {
-        // response (v) is the sum of the individual responses, eq 15.
+        // v = Sum(v_i mod q); spec 1.9 eq (77)
         val response: ElementModQ = with(group) { selectionDecryptions.responses.values.map { it }.addQ() }
         // finally we can create the proof
-        val proof = ChaumPedersenProof(selectionDecryptions.challenge!!.toElementModQ(group), response)
-        val M = selection.ciphertext.data / selectionDecryptions.mbar!! // M = K^t
+        val proof = ChaumPedersenProof(selectionDecryptions.collectiveChallenge!!.toElementModQ(group), response)
+        val T = selection.ciphertext.data / selectionDecryptions.M!! // "decrypted value" T = B · M −1
 
         val decrypytedSelection = DecryptedTallyOrBallot.Selection(
             selection.selectionId,
-            selectionDecryptions.dlogM!!,
-            M,
+            selectionDecryptions.tally!!,
+            T,
             selection.ciphertext,
             proof
         )
 
-        val startVerifyDetailed = getSystemTimeInMillis()
-        if (!selectionDecryptions.checkIndividualResponses()) {
-            println("checkIndividualResponses failed for  $contestId and ${selection.selectionId}")
-        }
-        stats.of("checkIndividualResponses", "selection", "selections").accum(getSystemTimeInMillis() - startVerifyDetailed, 1)
+        if (verifySelections) {
+            val startVerifyDetailed = getSystemTimeInMillis()
+            if (!selectionDecryptions.checkIndividualResponses()) {
+                println("checkIndividualResponses failed for  $contestId and ${selection.selectionId}")
+            }
+            stats.of("checkIndividualResponses", "selection", "selections")
+                .accum(getSystemTimeInMillis() - startVerifyDetailed, 1)
 
-        val startVerify = getSystemTimeInMillis()
-        if (!decrypytedSelection.verifySelection()) {
-            // println("verifySelection failed for  $contestId and ${selection.selectionId}")
+            val startVerify = getSystemTimeInMillis()
+            if (!decrypytedSelection.verifySelection()) {
+                println("verifySelection failed for  $contestId and ${selection.selectionId}")
+            }
+            stats.of("verifySelection", "selection", "selections").accum(getSystemTimeInMillis() - startVerify, 1)
         }
-        stats.of("verifySelection", "selection", "selections").accum(getSystemTimeInMillis() - startVerify, 1)
 
         return decrypytedSelection
     }
 
     // this is the verifier proof (box 8)
-    private var first = false
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        val Mbar: ElementModP = this.message.data / this.value
-        // LOOK these dont agree eq 10
-        val a = group.gPowP(this.proof.r) * (jointPublicKey powP this.proof.c) // 8.1
-        val b = (this.message.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.2
-        if (first) { // temp debug
-            println(" extendedBaseHash = $extendedBaseHash")
-            println(" jointPublicKey = $jointPublicKey")
-            println(" this.message.pad = ${this.message.pad}")
-            println(" this.message.data = ${this.message.data}")
-            println(" a= $a")
-            println(" b= $b")
-            println(" Mbar = $Mbar")
-            first = false
-        }
+        val M: ElementModP = this.ciphertext.data / this.value // 8.1
+        val a = group.gPowP(this.proof.r) * (publicKey powP this.proof.c) // 8.2
+        val b = (this.ciphertext.pad powP this.proof.r) * (M powP this.proof.c) // 8.3
 
         // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
-        val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), jointPublicKey.key, this.message.pad, this.message.data, a, b, Mbar)
+        val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey.key, this.ciphertext.pad, this.ciphertext.data, a, b, M)
         return (challenge.toElementModQ(group) == this.proof.c)
     }
 
-    // Verify with eq 63, 64
+    // Verify with spec 1.9 eq 75, 76
     private fun DecryptionResults.checkIndividualResponses(): Boolean {
         var ok = true
         for (partialDecryption in this.shares.values) {
@@ -155,16 +192,16 @@ class TallyDecryptor(
             val vi = this.responses[guardianId]
                 ?: throw IllegalStateException("*** response not found for ${guardianId}")
             val wi = lagrangeCoordinates[guardianId]!!.lagrangeCoefficient
-            val challenge = wi * this.challenge!!.toElementModQ(group) // eq 61
+            val ci = wi * this.collectiveChallenge!!.toElementModQ(group) // spec 1.9 eq 73
 
             val inner = guardians.getGexpP(guardianId)
-            val ap = group.gPowP(vi) * (inner powP challenge) // eq 63
+            val ap = group.gPowP(vi) * (inner powP ci) // spec 1.9 eq 75
             if (partialDecryption.a != ap) {
                 println(" ayes dont match for ${guardianId}")
                 ok = false
             }
 
-            val bp = (this.ciphertext.pad powP vi) * (partialDecryption.mbari powP challenge) // eq 64
+            val bp = (this.ciphertext.pad powP vi) * (partialDecryption.Mi powP ci) // spec 1.9 eq 76
             if (partialDecryption.b != bp) {
                 println(" bees dont match for ${guardianId}")
                 ok = false

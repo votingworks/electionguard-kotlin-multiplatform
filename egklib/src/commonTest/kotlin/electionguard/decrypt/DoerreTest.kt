@@ -5,20 +5,14 @@ import electionguard.ballot.makeDoerreTrustee
 
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
-import electionguard.core.UInt256
 import electionguard.core.encrypt
-import electionguard.core.hashElements
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.toElementModQ
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.publish.makeConsumer
-import electionguard.publish.makePublisher
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 private val group = productionGroup()
 private val configDir = "src/commonTest/data/start"
@@ -69,45 +63,6 @@ fun runDoerreTest(
         dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
 
     testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
-
-    /*
-    if (writeout) {
-        val commitments: MutableList<ElementModP> = mutableListOf()
-        trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
-        val commitmentsHash = hashElements(commitments)
-
-        val consumerIn = makeConsumer(configDir, group)
-        val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
-
-        val primes = config.constants
-        val cryptoBaseHash: UInt256 = hashElements(
-            primes.largePrime.toHex(),
-            primes.smallPrime.toHex(),
-            primes.generator.toHex(),
-            config.numberOfGuardians,
-            config.quorum,
-            config.manifest.cryptoHash,
-        )
-
-        // spec 1.52, eq 17 and 3.B
-        val cryptoExtendedBaseHash: UInt256 = hashElements(cryptoBaseHash, jointPublicKey, commitmentsHash)
-        val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
-        val init = ElectionInitialized(
-            config,
-            jointPublicKey,
-            config.manifest.cryptoHash,
-            cryptoBaseHash,
-            cryptoExtendedBaseHash,
-            guardians,
-        )
-        val publisher = makePublisher(outputDir)
-        publisher.writeElectionInitialized(init)
-
-        val trusteePublisher = makePublisher(trusteeDir)
-        trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
-    }
-
-     */
 }
 
 fun testDoerreDecrypt(group: GroupContext,
@@ -129,7 +84,7 @@ fun testDoerreDecrypt(group: GroupContext,
     val weightedProduct = with(group) {
         shares.map {
             val coeff = lagrangeCoefficients[it.guardianId] ?: throw IllegalArgumentException()
-            it.mbari powP coeff
+            it.Mi powP coeff
         }.multP() // eq 7
     }
     val bm = evote.data / weightedProduct

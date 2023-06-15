@@ -2,7 +2,7 @@ package electionguard.keyceremony
 
 import electionguard.core.*
 
-/** Pi(x), spec 1.52, section 3.2.1. Must be kept secret. */
+/** Pi(x), spec 1.9, section 3.2.1. Must be kept secret. */
 data class ElectionPolynomial(
     val guardianId: String,  // ith guardian
 
@@ -40,7 +40,7 @@ data class ElectionPolynomial(
 /**
  * Calculate g^Pi(xcoord) mod p = Product ((K_i,j)^xcoord^j) mod p, j = 0, quorum-1.
  * Used to test secret key share by KeyCeremonyTrustee, and verifying results in TallyDecryptor.
- * spec 1.53, sec 3.2.2 eq 17:
+ * spec 1.9, sec 3.2.2 eq 19:
  */
 fun calculateGexpPiAtL(
     xcoord: Int,  // evaluated at xcoord ℓ

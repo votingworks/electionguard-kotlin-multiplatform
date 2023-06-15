@@ -52,7 +52,7 @@ class KeyCeremonyTrustee(
         ))
     }
 
-    // P(ℓ) = (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. eq 3.
+    // P(ℓ) = (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. eq 66.
     override fun keyShare(): ElementModQ {
         var result: ElementModQ = polynomial.valueAt(group, xCoordinate)
         myShareOfOthers.values.forEach{ result += it.yCoordinate }
@@ -160,54 +160,12 @@ class KeyCeremonyTrustee(
             return Err("Sent KeyShare to wrong trustee '${this.id}', should be availableGuardianId '${keyShare.secretShareFor}'")
         }
 
-        /* spec 1.52 says:
-        If the recipient guardian Tℓ reports not receiving a suitable value Pi (ℓ), it becomes incumbent on the
-        sending guardian Ti to publish this Pi (ℓ) together with the nonce Ri,ℓ it used to encrypt Pi (ℓ)
-        under the public key Kℓ of recipient guardian Tℓ . If guardian Ti fails to produce a suitable Pi (ℓ)
-        and nonce Ri,ℓ that match both the published encryption and the above equation, it should be
-        excluded from the election and the key generation process should be restarted with an alternate
-        guardian. If, however, the published Pi (ℓ) and Ri,ℓ satisfy both the published encryption and the
-        equation above, the claim of malfeasance is dismissed, and the key generation process continues
-        undeterred.19
-
-        But in discussions with Josh 11/9/22, he says:
-
-        As, I’m seeing things, the nonces aren’t relevant and never need to be supplied.  Guardian  is supposed to send
-        Guardian  the share value  by encrypting it as  and handing it off.  If Guardian  claims to have not received a
-        satisfactory , Guardian  is supposed to simply publish  so that anyone can check its validity directly.
-        The verification is against the previously committed versions of coefficients  instead of against the
-        transmitted encryption.  This prevents observers from needing to adjudicate whether or not Guardian
-        sent a correct value initially.
-
-        So im disabling the nonce exchange, and wait for spec 2 before continuing this.
-         */
-
-        /*
-        val encryptedKeyShare = myShareOfOthers[keyShare.missingGuardianId] // what they sent us before
-        if (encryptedKeyShare == null) {
-            errors.add(Err("Trustee '$id', does not have encryptedKeyShare for missingGuardianId '${keyShare.missingGuardianId}';" +
-                " must call receiveSecretKeyShare() first"))
-        } else {
-            // check that we can use the nonce to decrypt the El(Pi(ℓ)) that was sent previously
-            val d = encryptedKeyShare.encryptedCoordinate.decryptWithNonce(myPublicKey, keyShare.nonce)
-            if (d == null) {
-                errors.add(Err("Trustee '$id' couldnt decrypt encryptedKeyShare for missingGuardianId '${keyShare.missingGuardianId}'"))
-            } else {
-                // Check if the decrypted value matches the Pi(ℓ) that was sent.
-                val expected: ElementModQ = d.toUInt256().toElementModQ(group) // Pi(ℓ)
-                if (expected != keyShare.coordinate) {
-                    errors.add(Err("Trustee '$id' receiveKeyShare for '${keyShare.missingGuardianId}' decrypted KeyShare doesnt match"))
-                }
-            }
-        }
-         */
-
         val otherKeys = otherPublicKeys[keyShare.polynomialOwner]
         if (otherKeys == null) {
             errors.add(Err("Trustee '$id', does not have public key for missingGuardianId '${keyShare.polynomialOwner}'"))
         } else {
-            // check if the Pi(ℓ) that was sent satisfies eq 16.
-            // verify spec 1.52, sec 3.2.2 eq 16: g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1
+            // check if the Pi(ℓ) that was sent satisfies spec 1.9, eq 12.
+            // g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1
             if (group.gPowP(keyShare.yCoordinate) != calculateGexpPiAtL(this.xCoordinate, otherKeys.coefficientCommitments())) {
                 errors.add(Err("Trustee '$id' failed to validate KeyShare for missingGuardianId '${keyShare.polynomialOwner}'"))
             } else {

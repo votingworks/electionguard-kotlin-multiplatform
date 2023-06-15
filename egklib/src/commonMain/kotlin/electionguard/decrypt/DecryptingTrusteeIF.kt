@@ -15,7 +15,7 @@ interface DecryptingTrusteeIF {
     fun electionPublicKey(): ElementModP
 
     /**
-     * Compute partial decryptions of elgamal encryptions, using spec 1.52 eq 58 and 59.
+     * Compute partial decryptions of elgamal encryptions.
      *
      * @param texts list of ElementModP (ciphertext.pad or A) to be partially decrypted
      * @return a list of partial decryptions, in the same order as the texts

@@ -44,8 +44,7 @@ class DecryptorDoerre(
 
     var first = false
     fun EncryptedTally.decrypt(isBallot : Boolean = false): DecryptedTallyOrBallot {
-        // we need the DecryptionResults from all trustees before we can do the challenges
-        // LOOK we could parallelize this, maybe needed for remote case?
+        // get the DecryptionResults from all trustees before we can do the challenges
         val startDecrypt = getSystemTimeInMillis()
         val trusteeDecryptions = mutableListOf<TrusteeDecryptions>()
         for (decryptingTrustee in decryptingTrustees) {
@@ -56,74 +55,71 @@ class DecryptorDoerre(
 
         val ndecrypt = decryptions.shares.size + decryptions.contestData.size
         stats.of("computeShares").accum(getSystemTimeInMillis() - startDecrypt, ndecrypt)
-
         val startChallengeTotal = getSystemTimeInMillis()
 
         // compute M for each DecryptionResults over all the shares from available guardians
         for ((id, dresults) in decryptions.shares) {
-            // lagrange weighted product of the shares
+            // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 1.9, eq 69
             val weightedProduct = with(group) {
                 dresults.shares.map { (key, value) ->
                     val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
-                    value.mbari powP coeff.lagrangeCoefficient
-                }.multP() // eq 69
+                    value.Mi powP coeff.lagrangeCoefficient
+                }.multP()
             }
 
-            // eq 8
-            val bm = dresults.ciphertext.data / weightedProduct
-            dresults.dlogM = jointPublicKey.dLog(bm, maxDlog) ?: throw RuntimeException("dlog failed on $id")
-            dresults.mbar = weightedProduct
+            // T = B · M−1 mod p; spec 1.9, eq 65
+            val T = dresults.ciphertext.data / weightedProduct
+            // T = K^t mod p, take log to get t = tally
+            dresults.tally = jointPublicKey.dLog(T, maxDlog) ?: throw RuntimeException("dlog failed on $id")
+            dresults.M = weightedProduct
 
-            // collective proof, spec 1.9 section 3.5.3 eq 71
+            // compute the collective challenge, needed for the collective proof; spec 1.9 eq 71
             val a: ElementModP = with(group) { dresults.shares.values.map { it.a }.multP() }
             val b: ElementModP = with(group) { dresults.shares.values.map { it.b }.multP() }
-            // c = H(HE ; 30, K, A, B, a, b, M ). eq 72
-            dresults.challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), jointPublicKey.key, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
+            // "collective challenge" c = H(HE ; 30, K, A, B, a, b, M ); spec 1.9 eq 72
+            dresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), jointPublicKey.key, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
 
-            if (first) { // temp debug, a,b dont validate
-                println(" decrypt qbar = $extendedBaseHash")
+            if (first) { // temp debug, when a,b dont validate
+                println(" decrypt extendedBaseHash = $extendedBaseHash")
                 println(" jointPublicKey = $jointPublicKey")
                 println(" message.pad = ${dresults.ciphertext.pad}")
                 println(" message.data = ${dresults.ciphertext.data}")
                 println(" a= $a")
                 println(" b= $b")
-                println(" Mbar = $weightedProduct")
-                println(" c = ${dresults.challenge}")
+                println(" M = $weightedProduct")
+                println(" c = ${dresults.collectiveChallenge}")
                 first = false
             }
         }
 
-        // compute the challenges for each ContestDataResult
+        // note that the proof is only in the decrypted ballot, and is only checked by the verifier
+        // that means you could get this wrong and encrypt/decrypt would still work, just proof validation would fail
         if (isBallot) {
             for (cresults in decryptions.contestData.values) {
-                // lagrange weighted product of the shares
+                // lagrange weighted product of the shares, beta = Prod(M_i^w_i) mod p; spec 1.9, eq 79
                 val weightedProduct = with(group) {
                     cresults.shares.map { (key, value) ->
                         val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
-                        value.mbari powP coeff.lagrangeCoefficient
-                    }.multP() // eq 7
+                        value.Mi powP coeff.lagrangeCoefficient
+                    }.multP()
                 }
                 cresults.beta = weightedProduct
 
+                // compute the collective challenge, needed for the collective proof; spec 1.9 eq 81
                 val a: ElementModP = with(group) { cresults.shares.values.map { it.a }.multP() }
                 val b: ElementModP = with(group) { cresults.shares.values.map { it.b }.multP() }
 
-                // collective challenge (spec 1.52 section 3.5.3 eq 70)
-                cresults.challenge = hashElements(
-                    extendedBaseHash,
-                    jointPublicKey,
+                // "collective challenge" c = c = H(HE ; 31, K, C0 , C1 , C2 , a, b, β) ; spec 1.9 eq 82
+                cresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), jointPublicKey.key,
                     cresults.ciphertext.c0,
                     cresults.ciphertext.c1.toHex(),
                     cresults.ciphertext.c2,
-                    a,
-                    b,
-                    weightedProduct,
-                ) // eq 62
+                    a, b, weightedProduct)
             }
         }
 
-        // send all challenges for both decryption and contestData, get results into the decryptions
-        // LOOK we could parallelize this, maybe needed for remote case?
+        // now that we have the collective challenges, gather the individual challenges for both decryption and
+        // contestData from each trustee, to construct the proofs.
         val startChallengeCalls = getSystemTimeInMillis()
         val trusteeChallengeResponses = mutableListOf<TrusteeChallengeResponses>()
         for (trustee in decryptingTrustees) {
@@ -137,14 +133,14 @@ class DecryptorDoerre(
 
         stats.of("challengeCalls").accum(getSystemTimeInMillis() - startChallengeCalls, ndecrypt)
         stats.of("challengesTotal").accum(getSystemTimeInMillis() - startChallengeTotal, ndecrypt)
-
         val startTally = getSystemTimeInMillis()
+
         // After gathering the challenge responses from the available trustees, we can verify and publish.
+        // Put that code into a different class to keep this one from getting too big.
         val tallyDecryptor = TallyDecryptor(group, extendedBaseHash, jointPublicKey, lagrangeCoordinates, guardians)
         val result = tallyDecryptor.decryptTally(this, decryptions, stats)
 
         stats.of("decryptTally").accum(getSystemTimeInMillis() - startTally, ndecrypt)
-
         return result
     }
 
@@ -198,14 +194,14 @@ class DecryptorDoerre(
         for ((id, results) in this.shares) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
             // spec 1.9, eq 73
-            val ci = wi * results.challenge!!.toElementModQ(group)
+            val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
             requests.add(ChallengeRequest(id, ci, result.u))
         }
         // Get all the challenges from the contestData
         for ((id, results) in this.contestData) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            // spec 1.53, eq 61
-            val ci = wi * results.challenge!!.toElementModQ(group)
+            // spec 1.9, eq 73
+            val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
             requests.add(ChallengeRequest(id, ci, result.u))
         }
 
@@ -215,7 +211,7 @@ class DecryptorDoerre(
     }
 }
 
-/** Compute the lagrange coefficient, now that we know which guardians are present. spec 1.9 section 3.6.2, eq 68. */
+/** Compute the lagrange coefficient, now that we know which guardians are present; spec 1.9 section 3.6.2, eq 68. */
 fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>): ElementModQ {
     val others: List<Int> = present.filter { it != coordinate }
     if (others.isEmpty()) {
