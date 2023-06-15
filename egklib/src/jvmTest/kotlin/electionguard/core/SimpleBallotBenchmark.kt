@@ -22,7 +22,7 @@ fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair
     val plaintextWithNonce = selections.mapIndexed { i, s -> Pair(s, encryptionNonces[i]) }
     val plaintextWithNonceAndCiphertext = plaintextWithNonce.map { (p, n) -> Triple(p, n, p.encrypt(keypair, n))}
     val selectionsAndProofs = plaintextWithNonceAndCiphertext.mapIndexed { i, (p, n, c) ->
-        Pair(c, c.rangeChaumPedersenProofKnownNonce(p, 1, n, keypair.publicKey, proofNonces[i]))
+        Pair(c, c.makeChaumPedersen(p, 1, n, keypair.publicKey, proofNonces[i]))
     }
     val encryptedSum = selectionsAndProofs.map { it.first }.encryptedSum()
     val nonceSum = plaintextWithNonce.map { it.second }.reduce { a, b -> a + b }
@@ -42,7 +42,7 @@ fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair
     // * @param publicKey The ElGamal public key for the election
     // * @param seed Used to generate other random values here
     // * @param qbar The election extended base hash (Q')
-    val sumProof = encryptedSum.rangeChaumPedersenProofKnownNonce(plaintextSum, limit, nonceSum, keypair.publicKey, seed)
+    val sumProof = encryptedSum.makeChaumPedersen(plaintextSum, limit, nonceSum, keypair.publicKey, seed)
 
     return SimpleEncryptedBallot(selectionsAndProofs, sumProof)
 }
@@ -75,9 +75,7 @@ fun main() {
                         1.encrypt(keypair, nonces[0]).decrypt(keypair)
 
                         println("Running!")
-
                         var results: List<SimpleEncryptedBallot>
-
                         val encryptionTimeMs = measureTimeMillis {
                             results = ProgressBar
                                 .wrap(

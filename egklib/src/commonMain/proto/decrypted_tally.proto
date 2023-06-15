@@ -29,5 +29,5 @@ message DecryptedContestData {
   ContestData contest_data = 1;
   HashedElGamalCiphertext encrypted_contest_data = 2; // matches EncryptedBallotContest.encrypted_contest_data
   ChaumPedersenProof proof = 3;
-  ElementModP beta = 4; //  β = C0^s mod p TODO is this needed for decryption or proof??
+  ElementModP beta = 4; //  β = C0^s mod p ; needed to verify 10.2
 }
