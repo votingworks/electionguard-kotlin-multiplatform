@@ -1,10 +1,13 @@
 package electionguard.core
 
+import electionguard.ballot.ElectionConstants
 import electionguard.core.Base16.fromSafeHex
 import electionguard.core.Base16.toHex
 import electionguard.core.Base64.fromSafeBase64
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -43,7 +46,16 @@ class ConstantsTest {
         }
     }
 
-    // @Test TODO fix this
+    private fun ElectionConstants.requireCompatible(other: ElectionConstants) {
+        if (!isCompatible(other)) {
+            val errStr =
+                "other group is incompatible with this group: " +
+                        Json.encodeToString(mapOf("other" to other, "this" to this))
+            throw RuntimeException(errStr)
+        }
+    }
+
+    @Test
     fun testConstants() {
         val group = productionGroup()
         val constants = group.constants

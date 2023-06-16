@@ -1,77 +1,51 @@
 package electionguard.core
 
 import electionguard.ballot.ElectionConstants
-import electionguard.core.Base64.fromSafeBase64
 import mu.KotlinLogging
 import java.math.BigInteger
 
 private val logger = KotlinLogging.logger("Group")
 
-private val montgomeryI = BigInteger.ONE shl Primes4096.nbits
-private val p = BigInteger(Primes4096.pStr, 16)
-private val q = BigInteger(Primes4096.qStr, 16)
-private val g = BigInteger(Primes4096.gStr, 16)
-private val r = BigInteger(Primes4096.rStr, 16)
+private val montgomeryI4096 = BigInteger.ONE shl Primes4096.nbits
+private val p4096 = BigInteger(Primes4096.pStr, 16)
 
 private val productionGroups4096 : Map<PowRadixOption, ProductionGroupContext> =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
-            pBytes = p.toByteArray().normalize(512),
-            qBytes = q.toByteArray().normalize(32),
-            gBytes = g.toByteArray().normalize(512),
-            rBytes = r.toByteArray().normalize(512),
-            montIMinus1Bytes = (montgomeryI - BigInteger.ONE).toByteArray(),
-            montIPrimeBytes = (montgomeryI.modPow(p - BigInteger.TWO, p)).toByteArray(),
-            montPPrimeBytes = ((montgomeryI - p).modInverse(montgomeryI)).toByteArray(),
+            pBytes = Primes4096.largePrimeBytes,
+            qBytes = Primes4096.smallPrimeBytes,
+            gBytes = Primes4096.generatorBytes,
+            rBytes = Primes4096.residualBytes,
+            montIMinus1Bytes = (montgomeryI4096 - BigInteger.ONE).toByteArray(),
+            montIPrimeBytes = (montgomeryI4096.modPow(p4096 - BigInteger.TWO, p4096)).toByteArray(),
+            montPPrimeBytes = ((montgomeryI4096 - p4096).modInverse(montgomeryI4096)).toByteArray(),
             name = "production group, ${it.description}, 4096 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode4096,
-            numPBits = intProduction4096PBits
+            numPBits = Primes4096.nbits
         )
     }
 
-/*
-val montgomeryI = BigInteger.ONE shl numBits // 2^{4096} or 2^{3072}
-val montgomeryIMinusOne = montgomeryI - BigInteger.ONE
-val montgomeryIPrime = montgomeryI.modPow(p - BigInteger.TWO, p)
-val montgomeryPPrime = (montgomeryI - p).modInverse(montgomeryI)
- */
+private val montgomeryI3072 = BigInteger.ONE shl Primes3072.nbits
+private val p3072 = BigInteger(Primes3072.pStr, 16)
 
-
-private val productionGroups4096old : Map<PowRadixOption, ProductionGroupContext> =
+private val productionGroups3072 : Map<PowRadixOption, ProductionGroupContext> =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
-            pBytes = b64Production4096P.fromSafeBase64(),
-            qBytes = b64Production4096Q.fromSafeBase64(),
-            gBytes = b64Production4096G.fromSafeBase64(),
-            rBytes = b64Production4096R.fromSafeBase64(),
-            montIMinus1Bytes = b64Production4096MontgomeryIMinus1.fromSafeBase64(),
-            montIPrimeBytes = b64Production4096MontgomeryIPrime.fromSafeBase64(),
-            montPPrimeBytes = b64Production4096MontgomeryPPrime.fromSafeBase64(),
-            name = "production group, ${it.description}, 4096 bits",
-            powRadixOption = it,
-            productionMode = ProductionMode.Mode4096,
-            numPBits = intProduction4096PBits
-        )
-    }
-
-// TODO use 1.9
-private val productionGroups3072 =
-    PowRadixOption.values().associateWith {
-        ProductionGroupContext(
-            pBytes = b64Production3072P.fromSafeBase64(),
-            qBytes = b64Production3072Q.fromSafeBase64(),
-            gBytes = b64Production3072G.fromSafeBase64(),
-            rBytes = b64Production3072R.fromSafeBase64(),
-            montIMinus1Bytes = b64Production3072MontgomeryIMinus1.fromSafeBase64(),
-            montIPrimeBytes = b64Production3072MontgomeryIPrime.fromSafeBase64(),
-            montPPrimeBytes = b64Production3072MontgomeryPPrime.fromSafeBase64(),
+            pBytes = Primes3072.largePrimeBytes,
+            qBytes = Primes3072.smallPrimeBytes,
+            gBytes = Primes3072.generatorBytes,
+            rBytes = Primes3072.residualBytes,
+            montIMinus1Bytes = (montgomeryI3072 - BigInteger.ONE).toByteArray(),
+            montIPrimeBytes = (montgomeryI3072.modPow(p3072 - BigInteger.TWO, p3072)).toByteArray(),
+            montPPrimeBytes = ((montgomeryI3072 - p3072).modInverse(montgomeryI3072)).toByteArray(),
             name = "production group, ${it.description}, 3072 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode3072,
-            numPBits = intProduction3072PBits
+            numPBits = Primes3072.nbits
         )
     }
+
 
 actual fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) : GroupContext =
     when(mode) {

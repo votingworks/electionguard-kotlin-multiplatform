@@ -8,37 +8,37 @@ import kotlinx.cinterop.*
 import platform.posix.free
 import platform.posix.uint64_tVar
 
-private val productionGroups4096 =
+private val productionGroups4096 : Map<PowRadixOption, ProductionGroupContext> =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
-            pBytes = b64Production4096P.fromSafeBase64(),
-            qBytes = b64Production4096Q.fromSafeBase64(),
+            pBytes = Primes4096.largePrimeBytes,
+            qBytes = Primes4096.smallPrimeBytes,
+            gBytes = Primes4096.generatorBytes,
+            rBytes = Primes4096.residualBytes,
             p256minusQBytes = b64Production4096P256MinusQ.fromSafeBase64(),
-            gBytes = b64Production4096G.fromSafeBase64(),
-            rBytes = b64Production4096R.fromSafeBase64(),
             name = "production group, ${it.description}, 4096 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode4096,
-            numPBits = intProduction4096PBits.toUInt(),
-            numPBytes = intProduction4096PBits.toUInt() / 8U,
-            numPLWords = intProduction4096PBits.toUInt() / 64U,
+            numPBits = Primes4096.nbits.toUInt(),
+            numPBytes = Primes4096.nbits.toUInt() / 8U,
+            numPLWords = Primes4096.nbits.toUInt() / 64U,
         )
     }
 
 private val productionGroups3072 =
     PowRadixOption.values().associateWith {
         ProductionGroupContext(
-            pBytes = b64Production3072P.fromSafeBase64(),
-            qBytes = b64Production3072Q.fromSafeBase64(),
+            pBytes = Primes3072.largePrimeBytes,
+            qBytes = Primes3072.smallPrimeBytes,
+            gBytes = Primes3072.generatorBytes,
+            rBytes = Primes3072.residualBytes,
             p256minusQBytes = b64Production3072P256MinusQ.fromSafeBase64(),
-            gBytes = b64Production3072G.fromSafeBase64(),
-            rBytes = b64Production3072R.fromSafeBase64(),
             name = "production group, ${it.description}, 3072 bits",
             powRadixOption = it,
             productionMode = ProductionMode.Mode3072,
-            numPBits = intProduction3072PBits.toUInt(),
-            numPBytes = intProduction3072PBits.toUInt() / 8U,
-            numPLWords = intProduction3072PBits.toUInt() / 64U,
+            numPBits = Primes3072.nbits.toUInt(),
+            numPBytes = Primes3072.nbits.toUInt() / 8U,
+            numPLWords = Primes3072.nbits.toUInt() / 64U,
         )
     }
 
@@ -250,8 +250,8 @@ class ProductionGroupContext(
     val pBytes: ByteArray,
     val qBytes: ByteArray,
     val gBytes: ByteArray,
-    val p256minusQBytes: ByteArray,
     val rBytes: ByteArray,
+    val p256minusQBytes: ByteArray,
     val name: String,
     val powRadixOption: PowRadixOption,
     val productionMode: ProductionMode,

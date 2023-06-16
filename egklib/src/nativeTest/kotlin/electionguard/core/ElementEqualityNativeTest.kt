@@ -25,8 +25,8 @@ class ElementEqualityNativeTest {
         assertEquals("UInt256(0xC59AAD302F149A018F925AEC7B819C6F890441F0954C36C198FD0066C5A93F11)", biu2.toString())
 
         assertEquals(biu2, biu)
-        assertEquals(biu2.cryptoHashString(), biu.cryptoHashString())
-        assertEquals(biq2.cryptoHashString(), biq.cryptoHashString())
+        assertEquals(biu2.toHex(), biu.toHex())
+        assertEquals(biq2.base16(), biq.base16())
         assertEquals(biq2, biq)
     }
 }
