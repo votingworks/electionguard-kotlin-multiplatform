@@ -1,10 +1,10 @@
 # ElectionGuard-Kotlin-Multiplatform
 
-_last update 6/05/2023_
+_last update 6/15/2023_
 
 ElectionGuard-Kotlin-Multiplatform (EKM) is an experimental attempt to create a multiplatform Kotlin implementation of 
-[ElectionGuard](https://github.com/microsoft/electionguard), capable of running
-"everywhere" (Android / JVM, iOS / Unix native, and eventually JavaScript-in-browser).
+[ElectionGuard](https://github.com/microsoft/electionguard), with the eventual goal of running
+"everywhere" (Android / JVM, iOS, Unix native, and possibly JavaScript-in-browser and/or WASM).
 
 EKM is targeting the ElectionGuard 2.0 spec, currently in beta.
 Note that EKM is *not* compatible with ElectionGuard-Python or any other
@@ -52,6 +52,10 @@ EKM is available under an MIT-style open source
   Protobuf is a binary format
   that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
   the relevant data formats, which constitutes a well defined and compact schema for EG serialization.
+
+- Currently we have 85% LOC code coverage on the common core library (8463/9947 LOC). Our goal is > 90% LOC coverage.
+
+- Currently we are focusing on just the JVM implementation. We will consider the native and other implementations in the future.
 
 ## Cool features of EKM
 
