@@ -22,7 +22,7 @@ class ElementEqualityJvmTest {
         assertEquals(biu2.toString(), "UInt256(0xC59AAD302F149A018F925AEC7B819C6F890441F0954C36C198FD0066C5A93F11)")
 
         assertEquals(biu2, biu)
-        assertEquals(biq2.cryptoHashString(), biq.cryptoHashString())
+        assertEquals(biq2.base16(), biq.base16())
 
         // ElementModQ now equal because it uses normalized bytes
         assertNotEquals(bi2, bi)

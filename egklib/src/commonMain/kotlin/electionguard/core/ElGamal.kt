@@ -5,7 +5,7 @@ package electionguard.core
  * when using the key. Also contains the [inverseKey] (i.e., the multiplicative inverse mod `p`)
  * and supports computing discrete logs ([dLog]) with the key as the base.
  */
-class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
+class ElGamalPublicKey(inputKey: ElementModP) {
     val key = inputKey.acceleratePow()
     val inverseKey = inputKey.multInv() // not accelerated because not used for pow
     private val dlogger = dLoggerOf(inputKey)
@@ -20,8 +20,6 @@ class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
     override fun hashCode(): Int = key.hashCode()
 
     override fun toString(): String = key.toString()
-
-    override fun cryptoHashString(): String = key.cryptoHashString()
 
     /** Helper function. `key powP e` is shorthand for `key.key powP e`. */
     infix fun powP(exponent: ElementModQ): ElementModP = key powP exponent
@@ -48,7 +46,7 @@ class ElGamalPublicKey(inputKey: ElementModP) : CryptoHashableString {
  * A wrapper around an ElementModQ that allows us to hang onto a pre-computed [negativeKey]
  * (i.e., the additive inverse mod `q`). The secret key must be in [2, Q).
  */
-class ElGamalSecretKey(val key: ElementModQ) : CryptoHashableString {
+class ElGamalSecretKey(val key: ElementModQ) {
     init {
         if (key < key.context.TWO_MOD_Q)
             throw ArithmeticException("secret key must be in [2, Q)")
@@ -67,7 +65,6 @@ class ElGamalSecretKey(val key: ElementModQ) : CryptoHashableString {
 
     override fun toString(): String = key.toString()
 
-    override fun cryptoHashString(): String = key.cryptoHashString()
 }
 
 /** A public and private keypair, suitable for doing ElGamal cryptographic operations. */
@@ -215,7 +212,9 @@ fun Iterable<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext =
     // an exception on that, and otherwise we're fine.
     asSequence()
         .let {
-            it.ifEmpty { throw ArithmeticException("Cannot sum an empty list of ciphertexts") }
+            it.ifEmpty {
+                throw ArithmeticException("Cannot sum an empty list of ciphertexts")
+            }
                 .reduce { a, b -> a + b }
         }
 

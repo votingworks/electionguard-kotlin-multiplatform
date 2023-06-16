@@ -8,7 +8,7 @@ import kotlin.experimental.xor
  * care, because [ByteArray] allows for mutation, and the internal representation is available for
  * external use.
  */
-data class UInt256(val bytes: ByteArray) : CryptoHashableString {
+data class UInt256(val bytes: ByteArray) {
     init {
         require(bytes.size == 32) { "UInt256 must have exactly 32 bytes" }
     }
@@ -22,8 +22,6 @@ data class UInt256(val bytes: ByteArray) : CryptoHashableString {
     override fun toString(): String {
         return "UInt256(0x${bytes.toHex()})"
     }
-
-    override fun cryptoHashString(): String = bytes.toHex()
 
     fun toHex(): String = bytes.toHex()
 

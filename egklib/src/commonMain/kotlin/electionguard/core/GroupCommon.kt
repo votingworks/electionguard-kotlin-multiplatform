@@ -222,7 +222,7 @@ interface GroupContext {
     fun dLogG(p: ElementModP, maxResult: Int = - 1): Int?
 }
 
-interface Element : CryptoHashableString {
+interface Element {
     /**
      * Every Element knows the [GroupContext] that was used to create it. This simplifies code that
      * computes with elements, allowing arithmetic expressions to be written in many cases without
@@ -251,9 +251,6 @@ interface Element : CryptoHashableString {
 
     /** Converts from any [Element] to a big-endian [ByteArray] representation. */
     fun byteArray(): ByteArray
-
-    /** Returns a string representation suitable for cryptographic hashing. */
-    override fun cryptoHashString(): String = base16()
 }
 
 interface ElementModQ : Element, Comparable<ElementModQ> {
