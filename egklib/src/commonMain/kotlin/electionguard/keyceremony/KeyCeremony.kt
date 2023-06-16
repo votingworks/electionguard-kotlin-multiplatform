@@ -96,7 +96,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
     //   It is also permissible to dismiss any guardian that makes a false claim of malfeasance. However, this is not
     // required as the sensitive information that is released as a result of the claim could have been released by the
     // claimant in any case.
-    // TODO KeyShare should include ξi,ℓ
+    // TODO should KeyShare include ξi,ℓ
 
     // Phase Two: if any secretKeyShares fail to validate, send and validate KeyShares
     val keyResults: MutableList<Result<Boolean, String>> = mutableListOf()

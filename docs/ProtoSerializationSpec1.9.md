@@ -1,15 +1,68 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 6/14/2023
+draft 6/15/2023
 
 1. This is the evolving version 2 of the Election Record. It is not backwards compatible with version 1.
 2. All fields must be present unless marked as optional.
 3. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
 4. proto_version = 1.9.0 [MAJOR.MINOR.PATCH](https://semver.org/)
 
+**Table of Contents**
+ 
+<!-- TOC -->
+* [🗳 Election Record KMP serialization (proposed specification)](#-election-record-kmp-serialization-proposed-specification)
+  * [common.proto](#commonproto)
+      * [message ContestData](#message-contestdata)
+      * [message ElementModQ](#message-elementmodq)
+      * [message ElementModP](#message-elementmodp)
+      * [message ElGamalCiphertext](#message-elgamalciphertext)
+      * [message ChaumPedersenProof](#message-chaumpedersenproof)
+      * [message HashedElGamalCiphertext](#message-hashedelgamalciphertext)
+      * [message SchnorrProof](#message-schnorrproof)
+      * [message UInt256](#message-uint256)
+  * [manifest.proto](#manifestproto)
+      * [message Manifest](#message-manifest)
+      * [message BallotStyle](#message-ballotstyle)
+      * [message Candidate](#message-candidate)
+      * [message ContactInformation](#message-contactinformation)
+      * [message GeopoliticalUnit](#message-geopoliticalunit)
+      * [message Language](#message-language)
+      * [message Party](#message-party)
+      * [message ContestDescription](#message-contestdescription)
+      * [message SelectionDescription](#message-selectiondescription)
+  * [election_record.proto](#electionrecordproto)
+      * [message ElectionConfig](#message-electionconfig)
+      * [message ElectionConstants](#message-electionconstants)
+      * [message ElectionInitialized](#message-electioninitialized)
+      * [message Guardian](#message-guardian)
+      * [message TallyResult](#message-tallyresult)
+      * [message DecryptionResult](#message-decryptionresult)
+      * [message LagrangeCoordinate](#message-lagrangecoordinate)
+  * [plaintext_ballot.proto](#plaintextballotproto)
+      * [message PlaintextBallot](#message-plaintextballot)
+      * [message PlaintextBallotContest](#message-plaintextballotcontest)
+      * [message PlaintextBallotSelection](#message-plaintextballotselection)
+  * [encrypted_ballot.proto](#encryptedballotproto)
+      * [message EncryptedBallot](#message-encryptedballot)
+      * [message EncryptedBallotContest](#message-encryptedballotcontest)
+      * [message EncryptedBallotSelection](#message-encryptedballotselection)
+      * [message ChaumPedersenRangeProofKnownNonce](#message-chaumpedersenrangeproofknownnonce)
+      * [message PreEncryption](#message-preencryption)
+      * [message PreEncryptionVector](#message-preencryptionvector)
+  * [encrypted_tally.proto](#encryptedtallyproto)
+      * [message EncryptedTally](#message-encryptedtally)
+      * [message EncryptedTallyContest](#message-encryptedtallycontest)
+      * [message EncryptedTallySelection](#message-encryptedtallyselection)
+  * [decrypted_tally.proto](#decryptedtallyproto)
+    * [message DecryptedTallyOrBallot](#message-decryptedtallyorballot)
+    * [message DecryptedContest](#message-decryptedcontest)
+    * [message DecryptedSelection](#message-decryptedselection)
+    * [message DecryptedContestData](#message-decryptedcontestdata)
+<!-- TOC -->
+
 ## common.proto
 
-[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/common.proto)
+[schema](../egklib/src/commonMain/proto/common.proto)
 
 #### message ContestData
 
@@ -69,7 +122,7 @@ draft 6/14/2023
 
 ## manifest.proto
 
-[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/manifest.proto)
+[schema](../egklib/src/commonMain/proto/manifest.proto)
 
 #### message Manifest
 
@@ -167,7 +220,7 @@ draft 6/14/2023
 
 ## election_record.proto
 
-[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/election_record.proto)
+[schema](../egklib/src/commonMain/proto/election_record.proto)
 
 #### message ElectionConfig
 
@@ -243,7 +296,7 @@ draft 6/14/2023
 
 ## plaintext_ballot.proto
 
-[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/plaintext_ballot.proto)
+[schema](../egklib/src/commonMain/proto/plaintext_ballot.proto)
 
 #### message PlaintextBallot
 
@@ -273,7 +326,7 @@ draft 6/14/2023
 
 ## encrypted_ballot.proto
 
-[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/encrypted_ballot.proto)
+[schema](../egklib/src/commonMain/proto/encrypted_ballot.proto)
 
 #### message EncryptedBallot
 
@@ -333,7 +386,7 @@ draft 6/14/2023
 
 ## encrypted_tally.proto
 
-[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/encrypted_tally.proto)
+[schema](../egklib/src/commonMain/proto/encrypted_tally.proto)
 
 #### message EncryptedTally
 
@@ -360,7 +413,7 @@ draft 6/14/2023
 
 ## decrypted_tally.proto
 
-[schema](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/src/commonMain/proto/decrypted_tally.proto)
+[schema](../egklib/src/commonMain/proto/decrypted_tally.proto)
 
 ### message DecryptedTallyOrBallot
 
@@ -369,7 +422,7 @@ draft 6/14/2023
 | id       | string                   | tallyId or ballotId |
 | contests | List\<DecryptedContest\> |                     |
 
-#### message DecryptedContest
+### message DecryptedContest
 
 | Name                   | Type                       | Notes                            |
 |------------------------|----------------------------|----------------------------------|
@@ -377,7 +430,7 @@ draft 6/14/2023
 | selections             | List\<DecryptedSelection\> |                                  |
 | decrypted_contest_data | DecryptedContestData       | optional, ballot decryption only |
 
-#### message DecryptedSelection
+### message DecryptedSelection
 
 | Name         | Type               | Notes                             |
 |--------------|--------------------|-----------------------------------|
@@ -387,7 +440,7 @@ draft 6/14/2023
 | message      | ElGamalCiphertext  | encrypted vote count              |
 | proof        | ChaumPedersenProof |                                   |
 
-#### message DecryptedContestData
+### message DecryptedContestData
 
 | Name                   | Type                    | Notes                                     |
 |------------------------|-------------------------|-------------------------------------------|
