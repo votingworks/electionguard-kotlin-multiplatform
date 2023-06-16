@@ -42,7 +42,7 @@ class VerifyAggregation(
                         errors.add(Err("  7.B  Ballot Aggregation does not match: $key"))
                     }
                 } else {
-                    // TODO test this; but what is it? is it needed? left over from placeholders ??
+                    // TODO what is it? is it needed? left over from placeholders ??
                     if (selection.ciphertext.pad != group.ZERO_MOD_P || selection.ciphertext.data != group.ZERO_MOD_P) {
                         errors.add(Err("    Ballot Aggregation empty does not match $key"))
                     }

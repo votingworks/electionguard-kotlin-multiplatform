@@ -70,7 +70,7 @@ class VerifyDecryption(
 
                 // 8.B, 11.B
                 if (!selection.verifySelection()) {
-                    results.add(Err("    8.B,11.B Challenge does not match: '$where2' ")) // LOOK fails
+                    results.add(Err("    8.B,11.B Challenge does not match: '$where2' "))
                 }
 
                 // M = K^t mod p.

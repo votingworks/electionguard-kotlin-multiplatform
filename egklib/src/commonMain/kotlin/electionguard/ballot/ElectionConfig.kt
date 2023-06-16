@@ -134,7 +134,7 @@ fun parameterBaseHash(primes : ElectionConstants) : UInt256 {
 
     return hashFunction(
         HV,
-        0.toByte(),
+        0x00.toByte(),
         primes.largePrime,
         primes.smallPrime,
         primes.generator,
@@ -145,7 +145,7 @@ fun manifestHash(Hp: UInt256, manifestFile : ByteArray) : UInt256 {
     // HM = H(HP ; 01, manifest).   spec 1.9, p 16, eq 5
     return hashFunction(
         Hp.bytes,
-        1.toByte(),
+        0x01.toByte(),
         manifestFile,
     )
 }
@@ -154,7 +154,7 @@ fun electionBaseHash(Hp: UInt256, n : Int, k : Int, date : String, info : String
     // HB = H(HP ; 02, n, k, date, info, HM ).   spec 1.9, p 17, eq 6
     return hashFunction(
         Hp.bytes,
-        2.toByte(),
+        0x02.toByte(),
         n.toUShort(),
         k.toUShort(),
         date,

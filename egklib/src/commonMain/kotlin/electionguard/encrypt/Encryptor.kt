@@ -33,15 +33,6 @@ class Encryptor(
         return encryptedBallots
     }
 
-    /** Encrypt with this codeSeed and primary nonce and optional timestamp and confirmationCode overrides. */
-    fun encryptPre( // TODO
-        ballot: PlaintextBallot,
-        primaryNonce: UInt256,
-        confirmationCode: UInt256,
-    ): CiphertextBallot {
-        return ballot.encryptBallot( primaryNonce, confirmationCode, null, ByteArray(0))
-    }
-
     fun encrypt(ballot: PlaintextBallot, ballotNonce: UInt256? = null, timestampOverride: Long? = null, codeBaux : ByteArray = ByteArray(0)): CiphertextBallot {
         return ballot.encryptBallot( ballotNonce ?: UInt256.random(), null, timestampOverride, codeBaux)
     }

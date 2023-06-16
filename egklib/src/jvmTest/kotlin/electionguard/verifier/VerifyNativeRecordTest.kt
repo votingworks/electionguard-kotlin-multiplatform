@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 class VerifyNativeRecordTest {
     val nativeDir = "src/commonTest/data/testElectionRecord/native/"
 
-    // @Test LOOK
+    // @Test TODO
     fun verifyNativeRecordTest() {
         runTest {
             val group = productionGroup()

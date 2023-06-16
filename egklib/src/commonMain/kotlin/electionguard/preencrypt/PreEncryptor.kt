@@ -99,8 +99,8 @@ class PreEncryptor(
         }
 
         // here is the selection order dependency
-        // ψi = H(HE ; 40, λi , K, α1 , β1 , α2 , β2 . . . , αm , βm ), (eq 93) LOOK selectionId
-        val selectionHash = hashFunction(extendedBaseHash.bytes, 0x40.toByte(), /* selectionId, */ publicKey, hashElements)
+        // ψi = H(HE ; 40, K, α1 , β1 , α2 , β2 . . . , αm , βm ), (eq 93)
+        val selectionHash = hashFunction(extendedBaseHash.bytes, 0x40.toByte(), publicKey, hashElements)
 
         return PreEncryptedSelection(
             selectionId,

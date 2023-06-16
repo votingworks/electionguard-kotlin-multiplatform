@@ -5,7 +5,7 @@ import java.math.BigInteger
 import kotlin.test.assertEquals
 import kotlin.test.Test
 
-// Unlike the "normal" group tests, these ones need to look inside at the internal
+// Unlike the "normal" group tests, these ones need to see inside at the internal
 // data structures (e.g., BigInteger for Java), so we put these tests in the JVM-only
 // section to make this possible.
 class MontgomeryJVMTests {

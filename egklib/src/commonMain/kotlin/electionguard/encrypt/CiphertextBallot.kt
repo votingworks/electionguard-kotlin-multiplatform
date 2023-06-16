@@ -28,7 +28,7 @@ data class CiphertextBallot(
         val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
         val ciphertext: ElGamalCiphertext, //  the encrypted vote
         val proof: ChaumPedersenRangeProofKnownNonce,
-        val selectionNonce: ElementModQ, // TODO
+        val selectionNonce: ElementModQ,
     )
 }
 
