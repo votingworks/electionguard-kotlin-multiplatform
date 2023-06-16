@@ -15,10 +15,13 @@ package electionguard.core
  * ```kotlin
  * val (a, b, c) = Nonces(seed, "some-specific-purpose")
  * ```
+ *
+ * @param varargs must be types that are accepted by hashFunction()
  */
 class Nonces(seed: ElementModQ, vararg headers: Any) {
+    val internalGroup = compatibleContextOrFail(seed)
     val internalSeed =
-        if (headers.isNotEmpty()) hashElements(seed, *headers).toElementModQ(seed.context) else seed
+        if (headers.isNotEmpty()) hashFunction(seed.byteArray(), *headers).bytes else seed.byteArray()
 
     override fun equals(other: Any?) =
         when (other) {
@@ -39,7 +42,7 @@ operator fun Nonces.get(index: Int): ElementModQ = getWithHeaders(index)
  * Headers can be included to optionally help specify what a nonce is being used for.
  */
 fun Nonces.getWithHeaders(index: Int, vararg headers: String) =
-    hashElements(internalSeed, index, *headers).toElementModQ(internalSeed.context)
+    hashFunction(internalSeed, index, *headers).toElementModQ(internalGroup)
 
 /**
  * Get an infinite (lazy) sequences of nonces. Equivalent to indexing with [Nonces.get] starting at

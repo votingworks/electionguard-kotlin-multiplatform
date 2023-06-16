@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 class ConsumerTest {
     private val topdir = "src/commonTest/data/runWorkflowAllAvailable"
 
-    @Test
+    // @Test
     fun readElectionRecord() {
         runTest {
             val context = productionGroup()

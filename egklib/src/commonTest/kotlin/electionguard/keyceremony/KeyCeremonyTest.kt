@@ -5,7 +5,6 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
 import electionguard.ballot.*
 import electionguard.core.*
-import electionguard.core.hashElements
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
