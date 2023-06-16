@@ -11,11 +11,11 @@ import kotlin.test.assertTrue
 class TestConstants {
     @Test
     fun saneConstantsBig() {
-        val p = b64Production4096P.fromSafeBase64().toHaclBignumP(mode = ProductionMode.Mode4096)
-        val q = b64Production4096Q.fromSafeBase64().toHaclBignumQ()
+        val p = Primes4096.largePrimeBytes.toHaclBignumP(mode = ProductionMode.Mode4096)
+        val q = Primes4096.smallPrimeBytes.toHaclBignumQ()
         val qInv = b64Production4096P256MinusQ.fromSafeBase64().toHaclBignumQ()
-        val g = b64Production4096G.fromSafeBase64().toHaclBignumP(mode = ProductionMode.Mode4096)
-        val r = b64Production4096R.fromSafeBase64().toHaclBignumP(mode = ProductionMode.Mode4096)
+        val g = Primes4096.generatorBytes.toHaclBignumP(mode = ProductionMode.Mode4096)
+        val r = Primes4096.residualBytes.toHaclBignumP(mode = ProductionMode.Mode4096)
 
         val big1_256 = 1U.toHaclBignumQ()
         val big1_4096 = 1U.toHaclBignumP(mode = ProductionMode.Mode4096)

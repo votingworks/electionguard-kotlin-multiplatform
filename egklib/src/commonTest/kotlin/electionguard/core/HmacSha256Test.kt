@@ -12,13 +12,13 @@ class HmacSha256Test {
     fun testUpdate() {
         val callUpdate = hashFunction(
             byteArrayOf(1, 2),
-            b64Production4096P,
-            b64Production4096Q,
+            Primes4096.largePrimeBytes,
+            Primes4096.smallPrimeBytes,
         )
         val callConcat = hashFunctionConcat(
             byteArrayOf(1, 2),
-            b64Production4096P,
-            b64Production4096Q,
+            Primes4096.largePrimeBytes,
+            Primes4096.smallPrimeBytes,
         )
         assertEquals(callUpdate, callConcat)
     }

@@ -53,7 +53,7 @@ EKM is available under an MIT-style open source
   that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
   the relevant data formats, which constitutes a well defined and compact schema for EG serialization.
 
-- Currently we have 85% LOC code coverage on the common core library (8463/9947 LOC). Our goal is > 90% LOC coverage.
+- Currently we have 88% LOC code coverage on the common and jvm core library (5714/6522 LOC) (5721/7728 LOC) BOGUS 
 
 - Currently we are focusing on just the JVM implementation. We will consider the native and other implementations in the future.
 

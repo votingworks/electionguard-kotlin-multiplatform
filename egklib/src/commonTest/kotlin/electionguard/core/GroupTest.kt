@@ -496,7 +496,7 @@ class GroupTest {
             assertTrue(ctxP.isCompatible(ctxP.constants))
             assertTrue(ctxP.isCompatible(ctxP2.constants))
             assertFalse(ctx3.isCompatible(ctxP))
-            assertFalse(ctxT.constants.isCompatible(ctxP.constants))
+            assertFalse(ctxT.isCompatible(ctxP.constants))
         }
     }
 
