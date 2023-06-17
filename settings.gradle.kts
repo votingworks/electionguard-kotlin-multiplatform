@@ -18,7 +18,7 @@ dependencyResolutionManagement {
             library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
             library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             library("kotlinx-coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines-version")
-            library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+            library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
             //// ktor client
             library("ktor-utils", "io.ktor", "ktor-utils").versionRef("ktor-version")

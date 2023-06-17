@@ -37,17 +37,17 @@ class ConstantsTest {
             val productionDesc2 = productionGroup2.constants
             val productionDesc3 = productionGroup3.constants
 
-            shouldNotThrowAny { tinyDesc.requireCompatible(tinyDesc) }
-            shouldNotThrowAny { productionDesc1.requireCompatible(productionDesc1) }
-            shouldNotThrowAny { productionDesc1.requireCompatible(productionDesc2) }
-            shouldThrow<RuntimeException> { tinyDesc.requireCompatible(productionDesc1) }
-            shouldThrow<RuntimeException> { productionDesc1.requireCompatible(productionDesc3) }
-            shouldThrow<RuntimeException> { productionDesc3.requireCompatible(productionDesc1) }
+            shouldNotThrowAny { tinyDesc.requireCompatible(tinyGroup, tinyDesc) }
+            shouldNotThrowAny { productionDesc1.requireCompatible(productionGroup1, productionDesc1) }
+            shouldNotThrowAny { productionDesc1.requireCompatible(productionGroup2, productionDesc2) }
+            shouldThrow<RuntimeException> { tinyDesc.requireCompatible(productionGroup1, productionDesc1) }
+            shouldThrow<RuntimeException> { productionDesc1.requireCompatible(productionGroup2, productionDesc3) }
+            shouldThrow<RuntimeException> { productionDesc3.requireCompatible(productionGroup1, productionDesc1) }
         }
     }
 
-    private fun ElectionConstants.requireCompatible(other: ElectionConstants) {
-        if (!isCompatible(other)) {
+    private fun ElectionConstants.requireCompatible(group: GroupContext, other: ElectionConstants) {
+        if (!group.isCompatible(other)) {
             val errStr =
                 "other group is incompatible with this group: " +
                         Json.encodeToString(mapOf("other" to other, "this" to this))

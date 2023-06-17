@@ -15,16 +15,9 @@ import io.ktor.utils.io.core.*
  * The second input can have arbitrary length and is only restricted by the maximal input length
  * for SHA-256 and HMAC. Hence we view the function H formally as follows (understanding that
  * HMAC implementations pad the 32-byte keys to exactly 64 bytes by appending 32 00 bytes):
- *          H : B^32 × B* → B^32 , H(B0 ; B1 ) → HMAC-SHA-256(B0 , B1 )       spec 1.9 eq 104
+ *    H : B^32 × B* → B^32 , H(B0 ; B1 ) → HMAC-SHA-256(B0 , B1 )  ; spec 1.9 eq 104
  *
- * Given zero or more elements, calculate their cryptographic hash using SHA256. Specifically
- * handled types are [Element], [String], and [Iterable] containers of those types, as well as
- * anything implementing [CryptoHashableString] or [CryptoHashableElement]. Unsupported types yield
- * an [IllegalArgumentException].
- *
- * Of course, infinitely long iterables cannot be hashed, and will cause this function to run
- * forever or until it runs out of memory.
- *
+ * @param key HMAC key.
  * @param elements Zero or more elements of any of the accepted types.
  * @return A cryptographic hash of these elements, converted to strings and suitably concatenated.
  */
@@ -34,6 +27,7 @@ fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
     return hmac.finish()
 }
 
+// identical to hashFunction, made separate to follow the spec.
 fun hmacFunction(key: ByteArray, vararg elements: Any): UInt256 {
     val hmac = HmacSha256(key)
     elements.forEach { hmac.addToHash(it) }

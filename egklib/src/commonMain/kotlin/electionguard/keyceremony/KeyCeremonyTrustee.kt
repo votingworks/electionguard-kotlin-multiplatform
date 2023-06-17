@@ -10,22 +10,21 @@ import kotlin.experimental.xor
  * A Trustee that knows its own secret key and polynomial.
  * KeyCeremonyTrustee must stay private. Guardian is its public info in the election record.
  */
-class KeyCeremonyTrustee(
+open class KeyCeremonyTrustee(
     val group: GroupContext,
     val id: String,
     val xCoordinate: Int,
     val quorum: Int,
+    val polynomial : ElectionPolynomial = group.generatePolynomial(id, xCoordinate, quorum)
 ) : KeyCeremonyTrusteeIF {
-    // all the secrets are in here
-    private val polynomial: ElectionPolynomial = group.generatePolynomial(id, xCoordinate, quorum)
 
-    // Other guardians' public keys, keyed by other guardian id.
+    // Other guardians' public keys
     internal val otherPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
 
-    // My share of other's key, keyed by other guardian id.
-    private val myShareOfOthers: MutableMap<String, PrivateKeyShare> = mutableMapOf()
+    // My share of other's key.
+    internal val myShareOfOthers: MutableMap<String, PrivateKeyShare> = mutableMapOf()
 
-    // Other guardians share of my key, keyed by other guardian id. Only used in KeyCeremony
+    // Other guardians share of my key.
     private val othersShareOfMyKey: MutableMap<String, PrivateKeyShare> = mutableMapOf()
 
     init {
@@ -52,7 +51,8 @@ class KeyCeremonyTrustee(
         ))
     }
 
-    // P(ℓ) = (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. eq 66.
+    // The value P(i) == Gi’s share of the secret key s = (s1 + s2 + · · · + sn )
+    // == (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. eq 66.
     override fun keyShare(): ElementModQ {
         var result: ElementModQ = polynomial.valueAt(group, xCoordinate)
         myShareOfOthers.values.forEach{ result += it.yCoordinate }
@@ -190,10 +190,10 @@ class KeyCeremonyTrustee(
     private val context = "share_encrypt"
 
     // guardian Gi encryption Eℓ of Pi(ℓ) at another guardian's Gℓ coordinate ℓ
-    fun shareEncryption(
+    open fun shareEncryption(
         Pil : ElementModQ,
         other: PublicKeys,
-        nonce: ElementModQ = other.publicKey().context.randomElementModQ(minimum = 2)
+        nonce: ElementModQ = group.randomElementModQ(minimum = 2)
     ): HashedElGamalCiphertext {
 
         val K_l = other.publicKey() // other's publicKey
@@ -271,7 +271,7 @@ class KeyCeremonyTrustee(
 }
 
 // internal use only
-private data class PrivateKeyShare(
+internal data class PrivateKeyShare(
     val ownerXcoord: Int, // guardian i (owns the polynomial Pi) xCoordinate
     val polynomialOwner: String, // guardian i (owns the polynomial Pi)
     val secretShareFor: String, // guardian l with coordinate ℓ
