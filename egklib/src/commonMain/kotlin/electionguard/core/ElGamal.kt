@@ -26,7 +26,7 @@ class ElGamalPublicKey(inputKey: ElementModP) {
 
     /**
      * Given an element x for which there exists an e, such that (key)^e = x, this will find e,
-     * so long as e is less than [maxResult], which if unspecified defaults to a platform-specific
+     * so long as e is less than [maxResult], which, if unspecified, defaults to a platform-specific
      * value designed not to consume too much memory (perhaps 10 million). This will consume O(e)
      * time, the first time, after which the results are memoized for all values between 0 and e,
      * for better future performance.
@@ -167,18 +167,6 @@ fun ElGamalCiphertext.computeShare(secretKey: ElGamalSecretKey): ElementModP {
     return pad powP secretKey.key
 }
 
-/** Compute the share of the decryption from the secret key. */
-fun ElGamalCiphertext.computeShare(secretKey: ElementModQ): ElementModP {
-    compatibleContextOrFail(pad, data, secretKey)
-    return pad powP secretKey
-}
-
-/** Compute the share of the decryption from the secret key. */
-fun ElementModP.computeShare(secretKey: ElementModQ): ElementModP {
-    compatibleContextOrFail(this, secretKey)
-    return this powP secretKey
-}
-
 fun ElGamalCiphertext.decryptWithShares(publicKey: ElGamalPublicKey, shares: Iterable<ElementModP>): Int? {
     val sharesList = shares.toList()
     val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray()))
@@ -212,9 +200,7 @@ fun Iterable<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext =
     // an exception on that, and otherwise we're fine.
     asSequence()
         .let {
-            it.ifEmpty {
-                throw ArithmeticException("Cannot sum an empty list of ciphertexts")
-            }
+            it.ifEmpty { throw ArithmeticException("Cannot sum an empty list of ciphertexts") }
                 .reduce { a, b -> a + b }
         }
 

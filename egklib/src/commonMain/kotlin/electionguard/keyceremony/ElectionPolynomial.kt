@@ -77,3 +77,22 @@ fun GroupContext.generatePolynomial(
     }
     return ElectionPolynomial(guardianId, coefficients, commitments, proofs)
 }
+
+fun GroupContext.regeneratePolynomial(
+    guardianId: String,
+    guardianXCoord: Int,
+    coefficients : List<ElementModQ>,
+): ElectionPolynomial {
+    val commitments = mutableListOf<ElementModP>()
+    val proofs = mutableListOf<SchnorrProof>()
+
+    var coeffIdx = 0
+    coefficients.forEach { privateKey ->
+        val publicKey = this.gPowP(privateKey)
+        val keypair: ElGamalKeypair = ElGamalKeypair(ElGamalSecretKey(privateKey), ElGamalPublicKey(publicKey))
+        commitments.add(keypair.publicKey.key)
+        proofs.add(keypair.schnorrProof(guardianXCoord, coeffIdx))
+        coeffIdx++
+    }
+    return ElectionPolynomial(guardianId, coefficients, commitments, proofs)
+}

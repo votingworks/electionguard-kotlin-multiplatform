@@ -232,6 +232,8 @@ interface Element {
 
     /** Converts from any [Element] to a big-endian [ByteArray] representation. */
     fun byteArray(): ByteArray
+
+    fun toHex() : String = byteArray().toHex()
 }
 
 interface ElementModQ : Element, Comparable<ElementModQ> {
