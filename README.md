@@ -142,6 +142,9 @@ methods.
 ## Input Validation
 * [Input Validation](docs/InputValidation.md)
 
+## Test Vectors
+* [Test Vectors](docs/TestVectors.md)
+
 ## Authors
 - [John Caron](https://github.com/JohnLCaron)
 - [Dan S. Wallach](https://www.cs.rice.edu/~dwallach/)
