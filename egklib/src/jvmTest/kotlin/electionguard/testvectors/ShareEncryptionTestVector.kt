@@ -29,26 +29,26 @@ class ShareEncryptionTestVector {
     data class GuardianJson(
         val name: String,
         val coordinate: Int,
-        val polynomial_coefficients: List<String>,
+        val polynomial_coefficients: List<ElementModQJson>,
     )
 
     @Serializable
     data class GuardianSharesJson(
         val name: String,
-        val share_nonces: Map<String, String>,
+        val share_nonces: Map<String, ElementModQJson>,
         val task1: String,
         val expected_shares: List<KeyShareJson>,
         val task2: String,
-        val expected_my_share_of_secret: String,
-    ) {
-        internal fun makeGuardianShares(group : GroupContext) =
+        val expected_my_share_of_secret: ElementModQJson,
+    )
+
+    internal fun GuardianSharesJson.import(group : GroupContext) =
             GuardianShares(
                 name,
-                share_nonces.mapValues { group.base16ToElementModQ(it.value)!! },
-                expected_shares.map { it.makePrivateKeyShare(group) },
-                group.base16ToElementModQ(expected_my_share_of_secret)!!,
+                share_nonces.mapValues { it.value.import(group) },
+                expected_shares.map { it.import(group) },
+                expected_my_share_of_secret.import(group),
             )
-    }
 
     internal data class GuardianShares(
         val name: String,
@@ -62,46 +62,46 @@ class ShareEncryptionTestVector {
         val ownerXcoord: Int, // guardian i xCoordinate
         val polynomialOwner: String, // guardian i name
         val secretShareFor: String, // guardian l name
-        val yCoordinate: String, // ElementModQ, // my polynomial's y value at the other's x coordinate = Pi(ℓ)
+        val yCoordinate: ElementModQJson, // ElementModQ, // my polynomial's y value at the other's x coordinate = Pi(ℓ)
         val encryptedCoordinate: HashedElGamalCiphertextJson, // El(Pi_(ℓ))
-    ) {
-        internal constructor(keyShare : PrivateKeyShare) :
-            this(
-                keyShare.ownerXcoord,
-                keyShare.polynomialOwner,
-                keyShare.secretShareFor,
-                keyShare.yCoordinate.toHex(),
-                HashedElGamalCiphertextJson(keyShare.encryptedCoordinate),
-        )
+    )
 
-        internal fun makePrivateKeyShare(group : GroupContext) =
-            PrivateKeyShare(
-                ownerXcoord,
-                polynomialOwner,
-                secretShareFor,
-                encryptedCoordinate.makeHashedElGamalCiphertext(group),
-                group.base16ToElementModQ(yCoordinate)!!,
-            )
-    }
+    internal fun PrivateKeyShare.publishJson() =
+        KeyShareJson(
+            this.ownerXcoord,
+            this.polynomialOwner,
+            this.secretShareFor,
+            this.yCoordinate.publishJson(),
+            this.encryptedCoordinate.publishJson(),
+    )
+
+    internal fun KeyShareJson.import(group : GroupContext) =
+        PrivateKeyShare(
+            ownerXcoord,
+            polynomialOwner,
+            secretShareFor,
+            encryptedCoordinate.import(group),
+            yCoordinate.import(group),
+        )
 
     @Serializable
     data class HashedElGamalCiphertextJson(
-        val c0: String, // ElementModP,
+        val c0: ElementModPJson, // ElementModP,
         val c1: String, // ByteArray,
-        val c2: String, // UInt256,
+        val c2: UInt256Json, // UInt256,
         val numBytes: Int
-    ) {
-        constructor(org : HashedElGamalCiphertext) :
-            this(org.c0.toHex(), org.c1.toHex(), org.c2.toHex(), org.numBytes)
+    )
 
-        internal fun makeHashedElGamalCiphertext(group : GroupContext) =
-            HashedElGamalCiphertext(
-                group.base16ToElementModP(c0)!!,
-                c1.fromHex()!!,
-                UInt256(c2.fromHex()!!),
-                numBytes,
-            )
-    }
+    fun HashedElGamalCiphertext.publishJson() =
+            HashedElGamalCiphertextJson(this.c0.publishJson(), this.c1.toHex(), this.c2.publishJson(), this.numBytes)
+
+    fun HashedElGamalCiphertextJson.import(group : GroupContext) =
+        HashedElGamalCiphertext(
+            c0.import(group),
+            c1.fromHex()!!,
+            c2.import(),
+            numBytes,
+        )
 
     @Serializable
     data class ShareEncryptionTestVector(
@@ -129,18 +129,18 @@ class ShareEncryptionTestVector {
             GuardianJson(
                 trustee.id,
                 trustee.xCoordinate,
-                trustee.polynomial.coefficients.map { it.toHex() },
+                trustee.polynomial.coefficients.map { it.publishJson() },
             )
         }
 
         val guardianShares = trustees.map { trustee ->
             GuardianSharesJson(
                 trustee.id,
-                trustee.shareNonces.mapValues { it.value.toHex()},
+                trustee.shareNonces.mapValues { it.value.publishJson()},
                 "Generate this guardian's shares for other guardians (Pi(ℓ) = yCoordinate, El(Pi(ℓ) = encryptedCoordinate), eq 17",
-                trustee.myShareOfOthers.values.map { KeyShareJson(it) },
+                trustee.myShareOfOthers.values.map { it.publishJson() },
                 "Generate this guardian's share of the secret key, eq 66",
-                trustee.keyShare().toHex(),
+                trustee.keyShare().publishJson(),
             )
         }
 
@@ -158,19 +158,19 @@ class ShareEncryptionTestVector {
     }
 
     fun readShareEncryptionTestVector() {
-        var fileSystem = FileSystems.getDefault()
-        var fileSystemProvider = fileSystem.provider()
+        val fileSystem = FileSystems.getDefault()
+        val fileSystemProvider = fileSystem.provider()
         val shareEncryptionTestVector: ShareEncryptionTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
                 Json.decodeFromStream<ShareEncryptionTestVector>(inp)
             }
 
         val guardians = shareEncryptionTestVector.guardians
-        val guardianShares = shareEncryptionTestVector.expected_guardian_shares.map { it.makeGuardianShares(group) }
+        val guardianShares = shareEncryptionTestVector.expected_guardian_shares.map { it.import(group) }
         assertTrue(guardians.size == guardianShares.size)
 
         val trustees = guardians.zip(guardianShares).map { (guardianJson, share) ->
-            val coefficients = guardianJson.polynomial_coefficients.map { group.safeBase16ToElementModQ(it) }
+            val coefficients = guardianJson.polynomial_coefficients.map { it.import(group) }
             val polynomial = group.regeneratePolynomial(
                 guardianJson.name,
                 guardianJson.coordinate,
@@ -220,9 +220,9 @@ private class KeyCeremonyTrusteeSaveNonces(
     override fun shareEncryption(
         Pil: ElementModQ,
         other: PublicKeys,
-        nonce: ElementModQ,
+        nonce: ElementModQ // An overriding function is not allowed to specify default values for its parameters
     ) : HashedElGamalCiphertext {
-        val nonce: ElementModQ = group.randomElementModQ(minimum = 2)
+        // val nonce: ElementModQ = group.randomElementModQ(minimum = 2)
         shareNonces[other.guardianId] = nonce
         return super.shareEncryption(Pil, other, nonce)
     }
@@ -240,9 +240,9 @@ private class KeyCeremonyTrusteeWithNonces(
     override fun shareEncryption(
         Pil: ElementModQ,
         other: PublicKeys,
-        nonce: ElementModQ,
+        nonce: ElementModQ, // ignored
     ) : HashedElGamalCiphertext {
-        val nonce: ElementModQ = shareNonces[other.guardianId]!!
-        return super.shareEncryption(Pil, other, nonce)
+        val useNonce: ElementModQ = shareNonces[other.guardianId]!!
+        return super.shareEncryption(Pil, other, useNonce)
     }
 }

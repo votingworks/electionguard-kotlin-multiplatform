@@ -7,7 +7,7 @@ package electionguard.ballot
  */
 data class PlaintextBallot(
     val ballotId: String,       // a unique ballot ID created by the external system
-    val ballotStyleId: String,  // matches a Manifest.BallotStyle
+    val ballotStyle: String,    // matches a Manifest.BallotStyle
     val contests: List<Contest>,
     val errors: String? = null, // error messages from processing, eg when invalid
 ) {
@@ -16,7 +16,7 @@ data class PlaintextBallot(
     }
 
     constructor(org: PlaintextBallot, errors: String):
-        this(org.ballotId, org.ballotStyleId, org.contests, errors)
+        this(org.ballotId, org.ballotStyle, org.contests, errors)
 
     /** The plaintext representation of a voter's selections for one contest. */
     data class Contest(

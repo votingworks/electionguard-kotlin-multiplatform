@@ -12,11 +12,12 @@ data class Manifest(
     val geopoliticalUnits: List<GeopoliticalUnit>,
     val parties: List<Party>,
     val candidates: List<Candidate>,
-    val contests: List<ContestDescription>,
+    override val contests: List<ContestDescription>,
     val ballotStyles: List<BallotStyle>,
     val name: List<Language>,
     val contactInformation: ContactInformation?,
-) {
+) : ManifestIF {
+
     /** Map of ballotStyleId to all Contests that use it. */
     val styleToContestsMap : Map<String, List<ContestDescription>> by
     lazy {
@@ -34,6 +35,10 @@ data class Manifest(
         }
         result
     }
+    override fun contestsForBallotStyle(ballotStyle : String) :  List<ManifestIF.Contest> {
+        return styleToContestsMap[ballotStyle]!!
+    }
+
 
     /** Map of contestId to contest limit. */
     val contestIdToLimit : Map<String, Int> by
@@ -275,7 +280,7 @@ data class Manifest(
         other
     }
 
-    /** Classifies a set of contests by their set of parties and geopolitical units */
+    /** Classifies contests by their geopolitical units. see styleToContestsMap. */
     data class BallotStyle(
         val ballotStyleId: String,
         val geopoliticalUnitIds: List<String>,
@@ -346,25 +351,25 @@ data class Manifest(
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/contest)
      */
     data class ContestDescription(
-        val contestId: String,
-        val sequenceOrder: Int,
+        override val contestId: String,
+        override val sequenceOrder: Int,
         val geopoliticalUnitId: String,
         val voteVariation: VoteVariationType,
         val numberElected: Int,
-        val votesAllowed: Int,
+        override val votesAllowed: Int,
         val name: String,
-        val selections: List<SelectionDescription>,
+        override val selections: List<SelectionDescription>,
         val ballotTitle: String?,
         val ballotSubtitle: String?,
-    )
+    ) : ManifestIF.Contest
 
     /**
      * A ballot selection for a specific candidate in a contest.
      * @see [Civics Common Standard Data Specification](https://developers.google.com/elections-data/reference/ballot-selection)
      */
     data class SelectionDescription(
-        val selectionId: String,
-        val sequenceOrder: Int,
+        override val selectionId: String,
+        override val sequenceOrder: Int,
         val candidateId: String,
-    )
+    ) : ManifestIF.Selection
 }

@@ -177,7 +177,7 @@ fun batchEncryption(
             invalidBallots.add(PlaintextBallot(it, mess.toString()))
             false
         } else {
-            countEncryptions += styleCount[it.ballotStyleId] ?: 0
+            countEncryptions += styleCount[it.ballotStyle] ?: 0
             true
         }
     }

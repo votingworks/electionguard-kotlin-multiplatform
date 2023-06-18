@@ -34,19 +34,19 @@ class ParametersTestVector {
         val task : String,
         val protocolVersion : String,
         val primes : PrimesJson,
-        val expected : String,
+        val expected : UInt256Json,
     )
 
     @Serializable
     data class ElectionBaseHash(
         val task : String,
-        val parameterBaseHash : String,
+        val parameterBaseHash : UInt256Json,
         val numberOfGuardians: Int,
         val quorum: Int,
         val date : String,
         val jurisdiction_info : String,
-        val manifest_hash : String,
-        val expected : String,
+        val manifest_hash : UInt256Json,
+        val expected : UInt256Json,
     )
 
     @Serializable
@@ -69,7 +69,7 @@ class ParametersTestVector {
             "Generate parameter base hash. spec 1.9, p 15, eq 4",
             protocolVersion,
             primesJson,
-            expectedParameterBaseHash.toHex())
+            expectedParameterBaseHash.publishJson())
 
         val n = 6
         val k = 4
@@ -78,10 +78,10 @@ class ParametersTestVector {
         val HM = UInt256.random()
         val electionBaseHash = ElectionBaseHash(
             "Generate election base hash. spec 1.9, p 17, eq 6",
-            expectedParameterBaseHash.toHex(),
-            n, k, date, info, HM.toHex(),
+            expectedParameterBaseHash.publishJson(),
+            n, k, date, info, HM.publishJson(),
             // fun electionBaseHash(Hp: UInt256, n : Int, k : Int, date : String, info : String, HM: UInt256) : UInt256 {
-            electionBaseHash(expectedParameterBaseHash, n, k, date, info, HM).toHex(),
+            electionBaseHash(expectedParameterBaseHash, n, k, date, info, HM).publishJson(),
         )
 
         val parametersTestVector = ParametersTestVector(
@@ -97,8 +97,8 @@ class ParametersTestVector {
     }
 
     fun readParametersTestVector() {
-        var fileSystem = FileSystems.getDefault()
-        var fileSystemProvider = fileSystem.provider()
+        val fileSystem = FileSystems.getDefault()
+        val fileSystemProvider = fileSystem.provider()
         val parametersTestVector : ParametersTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
                 Json.decodeFromStream<ParametersTestVector>(inp)
@@ -114,18 +114,18 @@ class ParametersTestVector {
             parameterV.primes.small_prime.fromHex()!!,
             parameterV.primes.generator.fromHex()!!,
         )
-        assertEquals(UInt256(parameterV.expected.fromHex()!!), actualHp)
+        assertEquals(parameterV.expected.import(), actualHp)
 
         val electionV = parametersTestVector.election_base_hash
         val actualHb = electionBaseHash(
-            UInt256(electionV.parameterBaseHash.fromHex()!!),
+            electionV.parameterBaseHash.import(),
             electionV.numberOfGuardians,
             electionV.quorum,
             electionV.date,
             electionV.jurisdiction_info,
-            UInt256(electionV.manifest_hash.fromHex()!!),
+            electionV.manifest_hash.import(),
         )
-        assertEquals(UInt256(electionV.expected.fromHex()!!), actualHb)
+        assertEquals(electionV.expected.import(), actualHb)
     }
 
 }
