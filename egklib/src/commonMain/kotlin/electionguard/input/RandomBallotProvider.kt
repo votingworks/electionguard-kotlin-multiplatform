@@ -31,11 +31,9 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11, val a
         val nselections = contest.selections.size
 
         for (selection_description in contest.selections) {
-            val selection: PlaintextBallot.Selection = getRandomSelectionFrom(selection_description, nselections)
+            val selection: PlaintextBallot.Selection = getRandomVoteForSelection(selection_description, nselections, voted <= contest.votesAllowed)
+            selections.add(selection)
             voted += selection.vote
-            if (voted <= contest.votesAllowed) {
-                selections.add(selection)
-            }
         }
         val choice = Random.nextInt(nselections)
         val writeins = if (!addWriteIns || choice != 0) emptyList() else {
@@ -50,11 +48,11 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11, val a
     }
 
     companion object {
-        fun getRandomSelectionFrom(description: Manifest.SelectionDescription, nselections: Int): PlaintextBallot.Selection {
+        fun getRandomVoteForSelection(description: Manifest.SelectionDescription, nselections: Int, moreAllowed : Boolean): PlaintextBallot.Selection {
             val choice = Random.nextInt(nselections)
             return PlaintextBallot.Selection(
                 description.selectionId, description.sequenceOrder,
-                if (choice == 0) 1 else 0,
+                if (choice == 0 && moreAllowed) 1 else 0,
             )
         }
     }

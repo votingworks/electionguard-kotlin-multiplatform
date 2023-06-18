@@ -4,9 +4,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.partition
-import electionguard.ballot.EncryptedTally
 import electionguard.ballot.PlaintextBallot
-import electionguard.core.GroupContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -20,7 +18,7 @@ data class PlaintextBallotJson(
 
 fun PlaintextBallot.publish() = PlaintextBallotJson(
         this.ballotId,
-        this.ballotStyleId,
+        this.ballotStyle,
         this.contests.map { it.publish() },
     )
 

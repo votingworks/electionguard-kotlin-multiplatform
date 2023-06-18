@@ -2,19 +2,19 @@ package electionguard.encrypt
 
 import electionguard.ballot.ContestData
 import electionguard.ballot.ContestDataStatus
-import electionguard.ballot.Manifest
+import electionguard.ballot.ManifestIF
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.*
 
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
  * The manifest is expected to have passed manifest validation (see ManifestInputValidation).
- * The input ballots are expected to have passed ballot validation.
+ * The input ballots are expected to have passed ballot validation [TODO and missing contests added?]
  * See RunBatchEncryption and BallotInputValidation to validate ballots before passing them to this class.
  */
 class Encryptor(
     val group: GroupContext,
-    val manifest: Manifest,
+    val manifest: ManifestIF,
     val jointPublicKey: ElGamalPublicKey, // aka K
     val extendedBaseHash: UInt256, // aka He
 ) {
@@ -46,7 +46,7 @@ class Encryptor(
         val plaintextContests = this.contests.associateBy { it.contestId }
 
         val encryptedContests = mutableListOf<CiphertextBallot.Contest>()
-        for (mcontest in manifest.contests) {
+        for (mcontest in manifest.contestsForBallotStyle(this.ballotStyle)) {
             // If no contest on the ballot, create a well formed contest with all zeroes
             val pcontest = plaintextContests[mcontest.contestId] ?: makeZeroContest(mcontest)
             encryptedContests.add( pcontest.encryptContest(mcontest, ballotNonce))
@@ -60,7 +60,7 @@ class Encryptor(
 
         return CiphertextBallot(
             ballotId,
-            ballotStyleId,
+            ballotStyle,
             confirmationCode,
             codeBaux,
             sortedContests,
@@ -70,19 +70,19 @@ class Encryptor(
         )
     }
 
-    private fun makeZeroContest(mcontest: Manifest.ContestDescription): PlaintextBallot.Contest {
-        val selections = mcontest.selections.map { makeZeroSelection(it.selectionId, it.sequenceOrder, false) }
+    private fun makeZeroContest(mcontest: ManifestIF.Contest): PlaintextBallot.Contest {
+        val selections = mcontest.selections.map { makeZeroSelection(it.selectionId, it.sequenceOrder) }
         return PlaintextBallot.Contest(mcontest.contestId, mcontest.sequenceOrder, selections)
     }
 
     private fun PlaintextBallot.Contest.encryptContest(
-        mcontest: Manifest.ContestDescription,
+        mcontest: ManifestIF.Contest,
         ballotNonce: UInt256,
     ): CiphertextBallot.Contest {
         val ballotSelections = this.selections.associateBy { it.selectionId }
 
         val votedFor = mutableListOf<Int>()
-        for (mselection: Manifest.SelectionDescription in mcontest.selections) {
+        for (mselection: ManifestIF.Selection in mcontest.selections) {
             // Find the ballot selection matching the contest description.
             val plaintextSelection = ballotSelections[mselection.selectionId]
             if (plaintextSelection != null && plaintextSelection.vote > 0) {
@@ -97,17 +97,16 @@ class Encryptor(
             else ContestDataStatus.normal
 
         val encryptedSelections = mutableListOf<CiphertextBallot.Selection>()
-        for (mselection: Manifest.SelectionDescription in mcontest.selections) {
+        for (mselection: ManifestIF.Selection in mcontest.selections) {
             var plaintextSelection = ballotSelections[mselection.selectionId]
 
             // Set vote to zero if not in manifest or this contest is overvoted
             if (plaintextSelection == null || (status == ContestDataStatus.over_vote)) {
-                plaintextSelection = makeZeroSelection(mselection.selectionId, mselection.sequenceOrder, false)
+                plaintextSelection = makeZeroSelection(mselection.selectionId, mselection.sequenceOrder)
             }
-            encryptedSelections.add(plaintextSelection.encryptSelection(
+            encryptedSelections.add( plaintextSelection.encryptSelection(
                 ballotNonce,
-                mcontest.contestId,
-                mselection,
+                this.contestId,
             ))
         }
 
@@ -119,34 +118,34 @@ class Encryptor(
 
         val contestDataEncrypted = contestData.encrypt(jointPublicKey, extendedBaseHash, mcontest.contestId, ballotNonce, mcontest.votesAllowed)
 
-        return mcontest.encryptContest(
+        return this.encryptContest(
             group,
             jointPublicKey,
             extendedBaseHashQ,
+            mcontest.votesAllowed,
             if (status == ContestDataStatus.over_vote) 0 else totalVotedFor,
             encryptedSelections.sortedBy { it.sequenceOrder },
             contestDataEncrypted,
         )
     }
 
-    private fun makeZeroSelection(selectionId: String, sequenceOrder: Int, voteFor : Boolean): PlaintextBallot.Selection {
+    private fun makeZeroSelection(selectionId: String, sequenceOrder: Int): PlaintextBallot.Selection {
         return PlaintextBallot.Selection(
             selectionId,
             sequenceOrder,
-            if (voteFor) 1 else 0,
+            0,
         )
     }
 
     private fun PlaintextBallot.Selection.encryptSelection(
         ballotNonce: UInt256,
         contestLabel: String,
-        selectionDescription: Manifest.SelectionDescription,
     ): CiphertextBallot.Selection {
 
         // ξi,j = H(HE ; 20, ξB , Λi , λj ). eq 22
-        val selectionNonce = hashFunction(extendedBaseHashB, 0x20.toByte(), ballotNonce, contestLabel, selectionDescription.selectionId)
+        val selectionNonce = hashFunction(extendedBaseHashB, 0x20.toByte(), ballotNonce, contestLabel, this.selectionId)
 
-        return selectionDescription.encryptSelection(
+        return this.encryptSelection(
             this.vote,
             jointPublicKey,
             extendedBaseHashQ,
@@ -155,11 +154,11 @@ class Encryptor(
     }
 }
 
-////  share with Encryptor, BallotPrecompute, ContestPrecompute
-fun Manifest.ContestDescription.encryptContest(
+fun PlaintextBallot.Contest.encryptContest(
     group: GroupContext,
     jointPublicKey: ElGamalPublicKey,
     extendedBaseHashQ: ElementModQ,
+    votesAllowed: Int, // The number of allowed votes for this contest
     totalVotedFor: Int, // The actual number of selections voted for, for the range proof
     encryptedSelections: List<CiphertextBallot.Selection>,
     extendedDataCiphertext: HashedElGamalCiphertext,
@@ -172,7 +171,7 @@ fun Manifest.ContestDescription.encryptContest(
 
     val proof = ciphertextAccumulation.makeChaumPedersen(
         totalVotedFor,      // (ℓ in the spec)
-        this.votesAllowed,  // (L in the spec)
+        votesAllowed,  // (L in the spec)
         aggNonce,
         jointPublicKey,
         extendedBaseHashQ,
@@ -196,7 +195,7 @@ fun Manifest.ContestDescription.encryptContest(
     )
 }
 
-fun Manifest.SelectionDescription.encryptSelection(
+fun PlaintextBallot.Selection.encryptSelection(
     vote: Int,
     jointPublicKey: ElGamalPublicKey,
     cryptoExtendedBaseHashQ: ElementModQ,

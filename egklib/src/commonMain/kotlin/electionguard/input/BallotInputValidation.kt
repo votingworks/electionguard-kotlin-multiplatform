@@ -16,11 +16,11 @@ class BallotInputValidation(val manifest: Manifest) {
 
     fun validate(ballot: PlaintextBallot): ValidationMessages {
         val ballotMesses = ValidationMessages("Ballot '${ballot.ballotId}'", 0)
-        val ballotStyle: Manifest.BallotStyle? = styles[ballot.ballotStyleId]
+        val ballotStyle: Manifest.BallotStyle? = styles[ballot.ballotStyle]
         
         // Referential integrity of ballot's BallotStyle id
         if (ballotStyle == null) {
-            val msg = "Ballot.A.1 Ballot Style '${ballot.ballotStyleId}' does not exist in election"
+            val msg = "Ballot.A.1 Ballot Style '${ballot.ballotStyle}' does not exist in election"
             ballotMesses.add(msg)
             logger.warn { msg }
         }

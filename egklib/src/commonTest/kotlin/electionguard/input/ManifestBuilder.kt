@@ -147,16 +147,16 @@ class ManifestBuilder(private val manifestName: String = electionScopeId) {
         }
 
         fun build(): Manifest.ContestDescription {
-            // String contestId,
-            //                              String electoral_district_id,
-            //                              int sequence_order,
-            //                              VoteVariationType vote_variation,
-            //                              int number_elected,
-            //                              int votes_allowed,
-            //                              String name,
-            //                              List<SelectionDescription> ballot_selections,
-            //                              @Nullable InternationalizedText ballot_title,
-            //                              @Nullable InternationalizedText ballot_subtitle
+            //         val contestId: String,
+            //        val sequenceOrder: Int,
+            //        val geopoliticalUnitId: String,
+            //        val voteVariation: VoteVariationType,
+            //        val numberElected: Int,
+            //        val votesAllowed: Int,
+            //        val name: String,
+            //        val selections: List<SelectionDescription>,
+            //        val ballotTitle: String?,
+            //        val ballotSubtitle: String?,
             return Manifest.ContestDescription(
                 id, seq, district,
                 type, allowed, number_elected, id,

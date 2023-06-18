@@ -30,7 +30,7 @@ private fun electionguard.protogen.PlaintextBallotSelection.import() =
 fun PlaintextBallot.publishProto() =
     electionguard.protogen.PlaintextBallot(
         this.ballotId,
-        this.ballotStyleId,
+        this.ballotStyle,
         this.contests.map { it.publishProto() },
         this.errors ?: "",
     )

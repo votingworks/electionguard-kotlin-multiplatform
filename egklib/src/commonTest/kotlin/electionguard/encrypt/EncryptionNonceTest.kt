@@ -52,7 +52,7 @@ class EncryptionNonceTest {
 
 fun compareBallots(ballot: PlaintextBallot, decryptedBallot: PlaintextBallot) {
     assertEquals(ballot.ballotId, decryptedBallot.ballotId)
-    assertEquals(ballot.ballotStyleId, decryptedBallot.ballotStyleId)
+    assertEquals(ballot.ballotStyle, decryptedBallot.ballotStyle)
 
     // all non zero votes match
     ballot.contests.forEach { contest1 ->
