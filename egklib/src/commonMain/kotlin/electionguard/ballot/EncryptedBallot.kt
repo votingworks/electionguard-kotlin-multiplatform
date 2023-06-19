@@ -7,21 +7,21 @@ import electionguard.core.*
  * All contests and selections must be present, so that an inspection of an EncryptedBallot reveals no information.
  */
 data class EncryptedBallot(
-    val ballotId: String,
+    override val ballotId: String,
     val ballotStyleId: String,  // matches a Manifest.BallotStyle
     val confirmationCode: UInt256, // tracking code, H(B), eq 59
     val codeBaux: ByteArray, // Baux in eq 59
-    val contests: List<Contest>,
+    override val contests: List<Contest>,
     val timestamp: Long,
-    val state: BallotState,
+    override val state: BallotState,
     val isPreencrypt: Boolean = false,
-) {
+) : EncryptedBallotIF {
     init {
         require(ballotId.isNotEmpty())
         require(contests.isNotEmpty())
     }
 
-    // override because of bytearray
+    // override because of codeBaux: ByteArray
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is EncryptedBallot) return false
@@ -59,15 +59,14 @@ data class EncryptedBallot(
     }
 
     data class Contest(
-        val contestId: String, // matches ContestDescription.contestIdd
-        val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
+        override val contestId: String, // matches ContestDescription.contestIdd
+        override val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
         val contestHash: UInt256, // eq 58
-        val selections: List<Selection>,
+        override val selections: List<Selection>,
         val proof: ChaumPedersenRangeProofKnownNonce,
         val contestData: HashedElGamalCiphertext,
         val preEncryption: PreEncryption? = null, // pre-encrypted ballots only
-
-    )  {
+    ) : EncryptedBallotIF.Contest  {
         init {
             require(contestId.isNotEmpty())
             require(selections.isNotEmpty())
@@ -75,11 +74,11 @@ data class EncryptedBallot(
     }
 
     data class Selection(
-        val selectionId: String, // matches SelectionDescription.selectionId
-        val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
-        val ciphertext: ElGamalCiphertext,
+        override val selectionId: String, // matches SelectionDescription.selectionId
+        override val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
+        override val ciphertext: ElGamalCiphertext,
         val proof: ChaumPedersenRangeProofKnownNonce,
-    )   {
+    ) : EncryptedBallotIF.Selection  {
         init {
             require(selectionId.isNotEmpty())
         }

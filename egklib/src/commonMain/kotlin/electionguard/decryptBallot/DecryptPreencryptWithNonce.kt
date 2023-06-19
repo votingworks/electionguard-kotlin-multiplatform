@@ -5,11 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.ContestDataStatus
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.decryptWithNonceToContestData
+import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.preencrypt.PreEncryptedContest
 import electionguard.preencrypt.PreEncryptedSelection
@@ -18,7 +14,7 @@ import electionguard.preencrypt.PreEncryptor
 /** Decryption of a preencrypted EncryptedBallot using the ballot nonce. */
 class DecryptPreencryptWithNonce(
     val group: GroupContext,
-    val manifest: Manifest,
+    val manifest: ManifestIF,
     val publicKey: ElGamalPublicKey,
     val extendedBaseHash: UInt256,
     sigma : (UInt256) -> String, // hash trimming function Ω

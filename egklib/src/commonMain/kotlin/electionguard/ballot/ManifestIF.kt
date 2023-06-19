@@ -1,6 +1,6 @@
 package electionguard.ballot
 
-// Stripped down manifest for the encryptor
+/** Interface used in the crypto routines for easy mocking. */
 interface ManifestIF {
     val contests: List<Contest>
 
@@ -16,6 +16,10 @@ interface ManifestIF {
         val sequenceOrder: Int
     }
 
-    fun contestsForBallotStyle(ballotStyle : String) :  List<Contest>
+    /** get the list of valid contests for the given ballotStyle */
+    fun contestsForBallotStyle(ballotStyle : String): List<Contest>
+
+    /** get the contest limit (aka votesAllowed) for the given contest id */
+    fun contestLimit(contestId : String): Int
 
 }

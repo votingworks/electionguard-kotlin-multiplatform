@@ -1,18 +1,19 @@
 # 🗳 Test Vectors (proposed)
 
-draft 6/18/2023
+draft 6/19/2023
 
 * These are JSON files that give inputs and expected outputs for the purpose of testing interoperability between implementations.
 * The JSON formats are ad-hoc. Suggestions for improvements are welcome!
 * The Kotlin code generates and reads back the JSON test vectors. From there you can find the implementation of that feature.
 
 
-| Name             | JSON file                                                                         | Kotlin code                                                                                  |
-|------------------|-----------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| Parameters       | [JSON](../egklib/src/commonTest/data/testvectors/ParametersTestVector.json)       | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ParametersTestVector.kt)       |
-| KeyCeremony      | [JSON](../egklib/src/commonTest/data/testvectors/KeyCeremonyTestVector.json)      | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/KeyCeremonyTestVector.kt)      |
-| ShareEncryption  | [JSON](../egklib/src/commonTest/data/testvectors/ShareEncryptionTestVector.json)  | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ShareEncryptionTestVector.kt)  |
-| BallotEncryption | [JSON](../egklib/src/commonTest/data/testvectors/BallotEncryptionTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotEncryptionTestVector.kt) |
-| ConfirmationCode | [JSON](../egklib/src/commonTest/data/testvectors/ConfirmationCodeTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ConfirmationCodeTestVector.kt) |
-| BallotChaining   | [JSON](../egklib/src/commonTest/data/testvectors/BallotChainingTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotChainingTestVector.kt) |
-| ... moar soon    |                                                                                   |                                                                                              |
+| Name              | JSON file                                                                         | Kotlin code                                                                                   |
+|-------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| Parameters        | [JSON](../egklib/src/commonTest/data/testvectors/ParametersTestVector.json)       | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ParametersTestVector.kt)        |
+| KeyCeremony       | [JSON](../egklib/src/commonTest/data/testvectors/KeyCeremonyTestVector.json)      | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/KeyCeremonyTestVector.kt)       |
+| ShareEncryption   | [JSON](../egklib/src/commonTest/data/testvectors/ShareEncryptionTestVector.json)  | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ShareEncryptionTestVector.kt)   |
+| BallotEncryption  | [JSON](../egklib/src/commonTest/data/testvectors/BallotEncryptionTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotEncryptionTestVector.kt)  |
+| ConfirmationCode  | [JSON](../egklib/src/commonTest/data/testvectors/ConfirmationCodeTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ConfirmationCodeTestVector.kt)  |
+| BallotChaining    | [JSON](../egklib/src/commonTest/data/testvectors/BallotChainingTestVector.json)   | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotChainingTestVector.kt)    |
+| BallotAggregation | [JSON](../egklib/src/commonTest/data/testvectors/BallotAggegationTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotAggregationTestVector.kt) |
+| ... moar soon     |                                                                                   |                                                                                               |

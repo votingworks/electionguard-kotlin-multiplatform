@@ -39,17 +39,14 @@ data class Manifest(
         return styleToContestsMap[ballotStyle]!!
     }
 
+    override fun contestLimit(contestId : String) : Int {
+        return contestIdToLimit[contestId]!!
+    }
 
     /** Map of contestId to contest limit. */
     val contestIdToLimit : Map<String, Int> by
     lazy {
         contests.associate { it.contestId to it.votesAllowed}
-    }
-
-    /** Set of "contestId/selectionId" to detect existence. */
-    val contestAndSelectionSet : Set<String> by
-    lazy {
-        contests.map { contest -> contest.selections.map { "${contest.contestId}/${it.selectionId}" } }.flatten().toSet()
     }
 
     /** Map "$contestId/$selectionId" to candidateId. */

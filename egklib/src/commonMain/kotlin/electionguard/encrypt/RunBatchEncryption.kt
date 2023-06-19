@@ -4,10 +4,7 @@ package electionguard.encrypt
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
+import electionguard.ballot.*
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
@@ -249,7 +246,7 @@ private class EncryptionRunner(
     val group: GroupContext,
     val encryptor: Encryptor,
     val ballotNonce: UInt256?,
-    val manifest: Manifest,
+    val manifest: ManifestIF,
     val jointPublicKey: ElementModP,
     val extendedBaseHash: UInt256,
     val check: CheckType,

@@ -1,6 +1,6 @@
 package electionguard.preencrypt
 
-import electionguard.ballot.Manifest
+import electionguard.ballot.ManifestIF
 import electionguard.core.*
 
 /**
@@ -9,7 +9,7 @@ import electionguard.core.*
  */
 class PreEncryptor(
     val group: GroupContext,
-    val manifest: Manifest,
+    val manifest: ManifestIF,
     val publicKey: ElementModP,
     val extendedBaseHash: UInt256,
     val sigma : (UInt256) -> String, // hash trimming function Ω
@@ -30,7 +30,7 @@ class PreEncryptor(
                             codeBaux : ByteArray = ByteArray(0)
     ): PreEncryptedBallot {
 
-        val mcontests = manifest.styleToContestsMap[ballotStyleId]
+        val mcontests = manifest.contestsForBallotStyle(ballotStyleId)
             ?: throw IllegalArgumentException("Unknown ballotStyleId $ballotStyleId")
 
         val preeContests = mcontests.sortedBy { it.sequenceOrder }.map {
@@ -50,7 +50,7 @@ class PreEncryptor(
         )
     }
 
-    private fun Manifest.ContestDescription.preencryptContest(primaryNonce: UInt256): PreEncryptedContest {
+    private fun ManifestIF.Contest.preencryptContest(primaryNonce: UInt256): PreEncryptedContest {
         val preeSelections = mutableListOf<PreEncryptedSelection>()
 
         val selections = this.selections.sortedBy { it.sequenceOrder }

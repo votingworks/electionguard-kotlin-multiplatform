@@ -143,6 +143,7 @@ methods.
 * [Input Validation](docs/InputValidation.md)
 
 ## Test Vectors
+These are JSON files that give inputs and expected outputs for the purpose of testing interoperability between implementations.
 * [Test Vectors](docs/TestVectors.md)
 
 ## Authors

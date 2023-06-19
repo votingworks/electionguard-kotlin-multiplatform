@@ -43,7 +43,7 @@ fun PlaintextBallotJson.import(): PlaintextBallot {
 }
 
 
-class ManifestFacade(ballot : PlaintextBallotJson) : ManifestIF {
+class PlaintextBallotJsonManifestFacade(ballot : PlaintextBallotJson) : ManifestIF {
     override val contests : List<ContestFacade>
     init {
         this.contests = ballot.contests.map { bc ->
@@ -57,6 +57,9 @@ class ManifestFacade(ballot : PlaintextBallotJson) : ManifestIF {
     }
 
     override fun contestsForBallotStyle(ballotStyle : String) = contests
+    override fun contestLimit(contestId: String): Int {
+        return contests.find{ it.contestId == contestId }!!.votesAllowed
+    }
 
     class ContestFacade(
         override val contestId: String,

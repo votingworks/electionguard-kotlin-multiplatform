@@ -1,8 +1,8 @@
 package electionguard.verifier
 
 import com.github.michaelbull.result.*
-import electionguard.ballot.Manifest
 import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.ballot.ManifestIF
 import electionguard.core.*
 import electionguard.core.Base16.toHex
 import kotlin.collections.mutableSetOf
@@ -26,10 +26,13 @@ private const val debug = false
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyDecryption(
     val group: GroupContext,
-    val manifest: Manifest,
+    val manifest: ManifestIF,
     val publicKey: ElGamalPublicKey,
     val extendedBaseHash: ElementModQ,
 ) {
+
+    /** Set of "contestId/selectionId" string to detect existence. */
+    val contestAndSelectionSet : Set<String> = manifest.contests.map { contest -> contest.selections.map { "${contest.contestId}/${it.selectionId}" } }.flatten().toSet()
 
     fun verify(decrypted: DecryptedTallyOrBallot, isBallot: Boolean, stats: Stats): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
@@ -41,7 +44,7 @@ class VerifyDecryption(
         for (contest in decrypted.contests) {
             val where = "${decrypted.id}/${contest.contestId}"
             // (9.C) The contest text label occurs as a contest label in the list of contests in the election manifest.
-            if (manifest.contestIdToLimit[contest.contestId] == null) {
+            if (manifest.contestLimit(contest.contestId) == null) {
                 results.add(Err("    9.C,13.C Ballot contains contest not in manifest: '$where' "))
                 continue
             }
@@ -59,7 +62,7 @@ class VerifyDecryption(
 
                 // (9.D) For each option in the contest, the option text label occurs as an option label for the contest
                 // in the election manifest.
-                if (!manifest.contestAndSelectionSet.contains(here)) {
+                if (!contestAndSelectionSet.contains(here)) {
                     results.add(Err("    9.D,13.D Ballot contains selection not in manifest: '$where2' "))
                     continue
                 }
@@ -85,7 +88,7 @@ class VerifyDecryption(
                 contestVotes += selection.tally
             }
             if (isBallot) {
-                val limit = manifest.contestIdToLimit[contest.contestId]!!
+                val limit = manifest.contestLimit(contest.contestId)
                 if (contestVotes !in (0..limit)) {
                     results.add(Err("     13.B sum of votes ${contestVotes} in contest must be less than $limit: '$where'"))
                 }
@@ -96,7 +99,7 @@ class VerifyDecryption(
         //occurs for a option in the decrypted tally contest.
         // (13.E) For each option text label listed for this contest in the election manifest, the option label
         //occurs for a option in the decrypted spoiled ballot.
-        manifest.contestAndSelectionSet.forEach {
+        contestAndSelectionSet.forEach {
             if (!ballotSelectionSet.contains(it)) {
                 results.add(Err("    9.E,13.E Manifest contains selection not in ballot: '$it' "))
             }
