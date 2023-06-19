@@ -13,4 +13,6 @@ draft 6/18/2023
 | KeyCeremony      | [JSON](../egklib/src/commonTest/data/testvectors/KeyCeremonyTestVector.json)      | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/KeyCeremonyTestVector.kt)      |
 | ShareEncryption  | [JSON](../egklib/src/commonTest/data/testvectors/ShareEncryptionTestVector.json)  | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ShareEncryptionTestVector.kt)  |
 | BallotEncryption | [JSON](../egklib/src/commonTest/data/testvectors/BallotEncryptionTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotEncryptionTestVector.kt) |
+| ConfirmationCode | [JSON](../egklib/src/commonTest/data/testvectors/ConfirmationCodeTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ConfirmationCodeTestVector.kt) |
+| BallotChaining   | [JSON](../egklib/src/commonTest/data/testvectors/BallotChainingTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotChainingTestVector.kt) |
 | ... moar soon    |                                                                                   |                                                                                              |

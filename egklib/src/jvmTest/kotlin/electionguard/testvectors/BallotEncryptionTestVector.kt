@@ -1,16 +1,15 @@
 package electionguard.testvectors
 
 import electionguard.ballot.Manifest
-import electionguard.ballot.ManifestIF
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.*
-import electionguard.core.Base16.fromHex
 import electionguard.encrypt.CiphertextBallot
 import electionguard.encrypt.Encryptor
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -25,44 +24,6 @@ class BallotEncryptionTestVector {
 
     val group = productionGroup()
     val nBallots = 1
-
-    @Serializable
-    data class BallotJson(
-        val ballotId: String,
-        val ballotStyle: String,
-        val contests: List<ContestJson>,
-    )
-
-    @Serializable
-    data class ContestJson(
-        val contestId: String,
-        val sequenceOrder: Int,
-        val votesAllowed: Int,
-        val selections: List<SelectionJson>,
-    )
-
-    @Serializable
-    data class SelectionJson(
-        val selectionId: String,
-        val sequenceOrder: Int,
-        val vote: Int,
-    )
-
-    fun PlaintextBallot.publishJson(): BallotJson {
-        val contests = this.contests.map { contest ->
-            ContestJson(contest.contestId, contest.sequenceOrder, 1,
-                contest.selections.map { SelectionJson(it.selectionId, it.sequenceOrder, it.vote) })
-        }
-        return BallotJson(this.ballotId, this.ballotStyle, contests)
-    }
-
-    fun BallotJson.import(): PlaintextBallot {
-        val contests = this.contests.map { contest ->
-            PlaintextBallot.Contest(contest.contestId, contest.sequenceOrder,
-                contest.selections.map { PlaintextBallot.Selection(it.selectionId, it.sequenceOrder, it.vote) })
-        }
-        return PlaintextBallot(this.ballotId, this.ballotStyle, contests)
-    }
 
     @Serializable
     data class EncryptedBallotJson(
@@ -89,37 +50,6 @@ class BallotEncryptionTestVector {
         val expected_encrypted_vote: ElGamalCiphertextJson,
         val expected_proof: RangeProofJson,
     )
-
-    @Serializable
-    data class RangeProofJson(
-        val proofs: List<ChaumPedersenJson>,
-    )
-
-    fun ChaumPedersenRangeProofKnownNonce.publishJson(u_nonces : List<ElementModQ>, c_nonces : List<ElementModQ>) =
-        RangeProofJson( this.proofs.mapIndexed { idx, it -> it.publishJson(u_nonces[idx], c_nonces[idx]) })
-    fun RangeProofJson.import(group: GroupContext) = ChaumPedersenRangeProofKnownNonce(this.proofs.map { it.import(group) })
-
-    @Serializable
-    data class ChaumPedersenJson(
-        val u_nonce: ElementModQJson, // eq 23
-        val c_nonce: ElementModQJson, // eq 24
-        val expected_challenge: ElementModQJson,
-        val expected_response: ElementModQJson,
-    )
-
-    fun ChaumPedersenProof.publishJson(u_nonce : ElementModQ, c_nonce : ElementModQ, ) =
-            ChaumPedersenJson(u_nonce.publishJson(), c_nonce.publishJson(), this.c.publishJson(), this.r.publishJson(), )
-    fun ChaumPedersenJson.import(group: GroupContext) =
-            ChaumPedersenProof(this.expected_challenge.import(group), this.expected_response.import(group))
-
-    @Serializable
-    data class ElGamalCiphertextJson(
-        val pad: ElementModPJson,
-        val data: ElementModPJson
-    )
-
-    fun ElGamalCiphertext.publishJson() = ElGamalCiphertextJson(this.pad.publishJson(), this.data.publishJson())
-    fun ElGamalCiphertextJson.import(group: GroupContext) = ElGamalCiphertext(this.pad.import(group), this.data.import(group))
 
     fun CiphertextBallot.publishJson(): EncryptedBallotJson {
         val contests = this.contests.map { pcontest ->
@@ -156,11 +86,42 @@ class BallotEncryptionTestVector {
     }
 
     @Serializable
+    data class RangeProofJson(
+        val proofs: List<ChaumPedersenJson>,
+    )
+
+    fun ChaumPedersenRangeProofKnownNonce.publishJson(u_nonces : List<ElementModQ>, c_nonces : List<ElementModQ>) =
+        RangeProofJson( this.proofs.mapIndexed { idx, it -> it.publishJson(u_nonces[idx], c_nonces[idx]) })
+    fun RangeProofJson.import(group: GroupContext) = ChaumPedersenRangeProofKnownNonce(this.proofs.map { it.import(group) })
+
+    @Serializable
+    data class ChaumPedersenJson(
+        val u_nonce: ElementModQJson, // eq 23
+        val c_nonce: ElementModQJson, // eq 24
+        val expected_challenge: ElementModQJson,
+        val expected_response: ElementModQJson,
+    )
+
+    fun ChaumPedersenProof.publishJson(u_nonce : ElementModQ, c_nonce : ElementModQ, ) =
+            ChaumPedersenJson(u_nonce.publishJson(), c_nonce.publishJson(), this.c.publishJson(), this.r.publishJson(), )
+    fun ChaumPedersenJson.import(group: GroupContext) =
+            ChaumPedersenProof(this.expected_challenge.import(group), this.expected_response.import(group))
+
+    @Serializable
+    data class ElGamalCiphertextJson(
+        val pad: ElementModPJson,
+        val data: ElementModPJson
+    )
+
+    fun ElGamalCiphertext.publishJson() = ElGamalCiphertextJson(this.pad.publishJson(), this.data.publishJson())
+    fun ElGamalCiphertextJson.import(group: GroupContext) = ElGamalCiphertext(this.pad.import(group), this.data.import(group))
+
+    @Serializable
     data class BallotEncryptionTestVector(
         val desc: String,
-        val joint_public_key: String,
-        val extended_base_hash: String,
-        val ballots: List<BallotJson>,
+        val joint_public_key: ElementModPJson,
+        val extended_base_hash: UInt256Json,
+        val ballots: List<PlaintextBallotJson>,
         val expected_encrypted_ballots: List<EncryptedBallotJson>,
     )
 
@@ -198,12 +159,12 @@ class BallotEncryptionTestVector {
 
         val ballotEncryptionTestVector = BallotEncryptionTestVector(
             "Test ballot encryption",
-            publicKey.toHex(),
-            extendedBaseHash.toHex(),
+            publicKey.publishJson(),
+            extendedBaseHash.publishJson(),
             useBallots.map { it.publishJson() },
             eballots.map { it.publishJson() },
         )
-        // println(jsonFormat.encodeToString(ballotEncryptionTestVector))
+        println(jsonFormat.encodeToString(ballotEncryptionTestVector))
 
         FileOutputStream(outputFile).use { out ->
             jsonFormat.encodeToStream(ballotEncryptionTestVector, out)
@@ -219,8 +180,8 @@ class BallotEncryptionTestVector {
                 Json.decodeFromStream<BallotEncryptionTestVector>(inp)
             }
 
-        val publicKey = ElGamalPublicKey(group.safeBase16ToElementModP(testVector.joint_public_key))
-        val extendedBaseHash = UInt256(testVector.extended_base_hash.fromHex()!!)
+        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group))
+        val extendedBaseHash = testVector.extended_base_hash.import()
         val ballotsZipped = testVector.ballots.zip(testVector.expected_encrypted_ballots)
 
         ballotsZipped.forEach { (ballot, eballot) ->
@@ -257,10 +218,10 @@ class BallotEncryptionTestVector {
     }
 
     // now check the proofs using the passed in nonces, dont depend on deterministic
-    fun checkProofsEquals(publicKey: ElGamalPublicKey, extendedBaseHash: UInt256, plain : BallotJson, expect : EncryptedBallotJson, actual : CiphertextBallot) {
+    fun checkProofsEquals(publicKey: ElGamalPublicKey, extendedBaseHash: UInt256, plain : PlaintextBallotJson, expect : EncryptedBallotJson, actual : CiphertextBallot) {
 
-        plain.contests.zip(expect.contests).zip(actual.contests).forEach { (pair: Pair<ContestJson, EncryptedContestJson>, actualContest: CiphertextBallot.Contest) ->
-            val plainContest: ContestJson = pair.first
+        plain.contests.zip(expect.contests).zip(actual.contests).forEach { (pair: Pair<PlaintextContestJson, EncryptedContestJson>, actualContest: CiphertextBallot.Contest) ->
+            val plainContest: PlaintextContestJson = pair.first
             val expectContest: EncryptedContestJson = pair.second
 
             val limit = expectContest.expected_proof.proofs.size
@@ -286,7 +247,7 @@ class BallotEncryptionTestVector {
             assertEquals(expectContest.expected_proof.import(group), proofWithNonces)
 
             plainContest.selections.zip(expectContest.selections).zip(actualContest.selections).forEach { (pair2, actualSelection) ->
-                val plainSelection: SelectionJson = pair2.first
+                val plainSelection: PlaintextSelectionJson = pair2.first
                 val expectSelection: EncryptedSelectionJson = pair2.second
 
                 val limit = expectSelection.expected_proof.proofs.size
@@ -308,33 +269,5 @@ class BallotEncryptionTestVector {
 
         }
         println("ballot ${actual.ballotId} proofs are ok")
-    }
-
-    class ManifestFacade(ballot : BallotJson) : ManifestIF {
-        override val contests : List<ContestFacade>
-        init {
-            this.contests = ballot.contests.map { bc ->
-                ContestFacade(
-                    bc.contestId,
-                    bc.sequenceOrder,
-                    bc.votesAllowed,
-                    bc.selections.map { SelectionFacade(it.selectionId, it.sequenceOrder)}
-                )
-            }
-        }
-
-        override fun contestsForBallotStyle(ballotStyle : String) = contests
-
-        class ContestFacade(
-            override val contestId: String,
-            override val sequenceOrder: Int,
-            override val votesAllowed: Int,
-            override val selections: List<ManifestIF.Selection>,
-        ) : ManifestIF.Contest
-
-        class SelectionFacade(
-            override val selectionId: String,
-            override val sequenceOrder: Int) : ManifestIF.Selection
-
     }
 }
