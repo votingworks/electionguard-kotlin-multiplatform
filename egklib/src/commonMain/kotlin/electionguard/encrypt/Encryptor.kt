@@ -9,7 +9,7 @@ import electionguard.core.*
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
  * The manifest is expected to have passed manifest validation (see ManifestInputValidation).
- * The input ballots are expected to have passed ballot validation [TODO and missing contests added?]
+ * The input ballots are expected to have passed ballot validation [TODO missing contests added? overvotes checked?]
  * See RunBatchEncryption and BallotInputValidation to validate ballots before passing them to this class.
  */
 class Encryptor(
@@ -164,8 +164,8 @@ fun PlaintextBallot.Contest.encryptContest(
     extendedDataCiphertext: HashedElGamalCiphertext,
 ): CiphertextBallot.Contest {
 
-    val texts: List<ElGamalCiphertext> = encryptedSelections.map { it.ciphertext }
-    val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
+    val ciphertexts: List<ElGamalCiphertext> = encryptedSelections.map { it.ciphertext }
+    val ciphertextAccumulation: ElGamalCiphertext = ciphertexts.encryptedSum()
     val nonces: Iterable<ElementModQ> = encryptedSelections.map { it.selectionNonce }
     val aggNonce: ElementModQ = with(group) { nonces.addQ() }
 
@@ -179,7 +179,7 @@ fun PlaintextBallot.Contest.encryptContest(
 
     // χl = H(HE ; 23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (58)
     val ciphers = mutableListOf<ElementModP>()
-    texts.forEach {
+    ciphertexts.forEach {
         ciphers.add(it.pad)
         ciphers.add(it.data)
     }

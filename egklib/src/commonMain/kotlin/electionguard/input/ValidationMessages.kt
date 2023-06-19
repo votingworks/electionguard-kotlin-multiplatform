@@ -17,7 +17,7 @@ class ValidationMessages(val id: String, private val level: Int) {
 
     override fun toString(): String {
         if (!hasErrors()) {
-            return "$id all OK%n"
+            return "$id all OK\n"
         }
         val builder = StringBuilder(2000)
         builder.append("$id hasProblems\n")
