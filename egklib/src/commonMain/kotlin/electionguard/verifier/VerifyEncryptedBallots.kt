@@ -4,7 +4,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
+import electionguard.ballot.ManifestIF
 import electionguard.core.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +26,7 @@ private const val debugBallots = false
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyEncryptedBallots(
     val group: GroupContext,
-    val manifest: Manifest,
+    val manifest: ManifestIF,
     val jointPublicKey: ElGamalPublicKey,
     val extendedBaseHash: ElementModQ, // He
     private val nthreads: Int,
@@ -94,7 +94,7 @@ class VerifyEncryptedBallots(
                 ciphertextAccumulation,
                 this.jointPublicKey,
                 this.extendedBaseHash,
-                manifest.contestIdToLimit[contest.contestId]!!
+                manifest.contestLimit(contest.contestId)
             )
             if (cvalid is Err) {
                 results.add(Err("    5. ChaumPedersenProof failed for $where = ${cvalid.error} "))
@@ -164,7 +164,7 @@ class VerifyEncryptedBallots(
             return results.merge()
         }
         val cv = contest.preEncryption
-        val contestLimit = manifest.contestIdToLimit[contest.contestId]!!
+        val contestLimit = manifest.contestLimit(contest.contestId)
         val nselection = contest.selections.size
 
         require(contestLimit == cv.selectedVectors.size)

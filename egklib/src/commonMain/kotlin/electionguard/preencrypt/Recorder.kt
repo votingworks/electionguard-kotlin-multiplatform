@@ -2,7 +2,7 @@ package electionguard.preencrypt
 
 import electionguard.ballot.ContestData
 import electionguard.ballot.ContestDataStatus
-import electionguard.ballot.Manifest
+import electionguard.ballot.ManifestIF
 import electionguard.core.*
 import electionguard.encrypt.CiphertextBallot
 
@@ -13,7 +13,7 @@ import electionguard.encrypt.CiphertextBallot
  */
 class Recorder(
     val group: GroupContext,
-    val manifest: Manifest,
+    val manifest: ManifestIF,
     val publicKey: ElementModP,
     val extendedBaseHash: UInt256,
     sigma : (UInt256) -> String, // hash trimming function Ω

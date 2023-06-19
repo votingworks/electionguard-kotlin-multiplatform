@@ -185,7 +185,7 @@ class BallotEncryptionTestVector {
         val ballotsZipped = testVector.ballots.zip(testVector.expected_encrypted_ballots)
 
         ballotsZipped.forEach { (ballot, eballot) ->
-            val manifest = ManifestFacade(ballot)
+            val manifest = PlaintextBallotJsonManifestFacade(ballot)
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash)
             val ballotNonce = eballot.ballotNonce.import()
             val cyberBallot = encryptor.encrypt(ballot.import(), ballotNonce)
@@ -194,7 +194,6 @@ class BallotEncryptionTestVector {
         }
     }
 
-    // TODO confirmation code
     fun checkEquals(expect : EncryptedBallotJson, actual : CiphertextBallot) {
         assertEquals(expect.ballotId, actual.ballotId)
         assertEquals(expect.contests.size, actual.contests.size)

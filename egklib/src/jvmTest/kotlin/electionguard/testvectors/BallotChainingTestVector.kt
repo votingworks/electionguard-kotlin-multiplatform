@@ -123,7 +123,7 @@ class BallotChainingTestVector {
 
         var prevCode : ByteArray? = null
         ballotsZipped.forEach { (ballot, eballot) ->
-            val manifest = ManifestFacade(ballot)
+            val manifest = PlaintextBallotJsonManifestFacade(ballot)
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash)
             val ballotNonce = eballot.ballotNonce.import()
             val codeBaux : ByteArray = eballot.codeBaux.fromHex()!!

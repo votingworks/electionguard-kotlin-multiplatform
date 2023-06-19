@@ -130,7 +130,7 @@ class ConfirmationCodeTestVector {
         val ballotsZipped = testVector.ballots.zip(testVector.expected_encrypted_ballots)
 
         ballotsZipped.forEach { (ballot, eballot) ->
-            val manifest = ManifestFacade(ballot)
+            val manifest = PlaintextBallotJsonManifestFacade(ballot)
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash)
             val ballotNonce = eballot.ballotNonce.import()
             val codeBaux = eballot.codeBaux.fromHex()!!

@@ -1,23 +1,23 @@
 package electionguard.tally
 
+import electionguard.ballot.EncryptedBallotIF
 import electionguard.ballot.EncryptedTally
-import electionguard.ballot.Manifest
-import electionguard.ballot.EncryptedBallot
+import electionguard.ballot.ManifestIF
+import electionguard.ballot.EncryptedBallot.BallotState
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
-import electionguard.core.UInt256
 import electionguard.core.encryptedSum
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("AccumulateTally")
 
-/** Accumulate the votes of EncryptedBallot's, and return a EncryptedTally. */
-class AccumulateTally(val group : GroupContext, val manifest : Manifest, val name : String) {
-    private val contests = manifest.contests.associate { it.contestId to Contest(it)}
+/** Accumulate the votes of EncryptedBallots, and return an EncryptedTally. */
+class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val name : String) {
+    private val mcontests = manifest.contests.associate { it.contestId to Contest(it)}
     private val castIds = mutableSetOf<String>()
 
-    fun addCastBallot(ballot: EncryptedBallot): Boolean {
-        if (ballot.state != EncryptedBallot.BallotState.CAST) {
+    fun addCastBallot(ballot: EncryptedBallotIF): Boolean {
+        if (ballot.state != BallotState.CAST) {
             logger.warn { "Ballot ${ballot.ballotId} does not have state CAST"}
             return false
         }
@@ -27,18 +27,18 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         }
 
         for (ballotContest in ballot.contests) {
-            val contest = contests[ballotContest.contestId]
-            if (contest == null) {
+            val mcontest = mcontests[ballotContest.contestId]
+            if (mcontest == null) {
                 logger.warn { "Ballot ${ballot.ballotId} has contest ${ballotContest.contestId} not in manifest"}
             } else {
-                contest.accumulate(ballot.ballotId, ballotContest)
+                mcontest.accumulate(ballot.ballotId, ballotContest)
             }
         }
         return true
     }
 
     fun build(): EncryptedTally {
-        val tallyContests = contests.values.map { it.build() }
+        val tallyContests = mcontests.values.map { it.build() }
         return EncryptedTally(this.name, tallyContests)
     }
 
@@ -46,10 +46,10 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         return castIds.toList()
     }
 
-    private inner class Contest(val manifestContest : Manifest.ContestDescription) {
+    private inner class Contest(val manifestContest : ManifestIF.Contest) {
         private val selections = manifestContest.selections.associate { it.selectionId to Selection(it)}
 
-        fun accumulate(ballotId : String, ballotContest: EncryptedBallot.Contest) {
+        fun accumulate(ballotId : String, ballotContest: EncryptedBallotIF.Contest) {
             for (ballotSelection in ballotContest.selections) {
                 val selection = selections[ballotSelection.selectionId]
                 if (selection == null) {
@@ -67,7 +67,7 @@ class AccumulateTally(val group : GroupContext, val manifest : Manifest, val nam
         }
     }
 
-    private inner class Selection(val manifestSelection : Manifest.SelectionDescription) {
+    private inner class Selection(val manifestSelection : ManifestIF.Selection) {
         private val ciphertextAccumulate = ArrayList<ElGamalCiphertext>()
 
         fun accumulate(selection: ElGamalCiphertext) {
