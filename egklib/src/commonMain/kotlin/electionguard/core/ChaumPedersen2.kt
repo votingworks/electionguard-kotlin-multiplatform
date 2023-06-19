@@ -10,7 +10,7 @@ import kotlin.collections.fold
  * will have six internal proof components.
  */
 data class ChaumPedersenRangeProofKnownNonce(
-    val proofs: List<ChaumPedersenProof>,
+    val proofs: List<ChaumPedersenProof>, // L + 1
 )
 
 /**
@@ -55,13 +55,28 @@ fun ElGamalCiphertext.makeChaumPedersen(
         throw ArithmeticException("limit must be at least as big as the plaintext")
     }
 
+    return this.makeChaumPedersenWithNonces(
+        vote,
+        limit,
+        nonce,
+        publicKey,
+        extendedBaseHash,
+        Nonces(nonce, "range-chaum-pedersen-proof").take(limit + 1),
+        Nonces(nonce, "range-chaum-pedersen-proof-constants").take(limit + 1)
+    )
+}
+
+fun ElGamalCiphertext.makeChaumPedersenWithNonces(
+    vote: Int, // ℓ
+    limit: Int,     // L
+    nonce: ElementModQ, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
+    publicKey: ElGamalPublicKey, // K
+    extendedBaseHash: ElementModQ, // He
+    randomUj: List<ElementModQ>, // L + 1
+    randomCj: List<ElementModQ>, // L + 1
+): ChaumPedersenRangeProofKnownNonce {
     val (alpha, beta) = this
     val group = compatibleContextOrFail(pad, nonce, publicKey.key, extendedBaseHash, alpha, beta)
-
-    // random nonces u_j
-    val randomUj = Nonces(nonce, "range-chaum-pedersen-proof").take(limit + 1)
-    // Random challenges c_j
-    val randomCj = Nonces(nonce, "range-chaum-pedersen-proof-constants").take(limit + 1)
 
     // (aℓ , bℓ ) = (g^uℓ mod p, K^uℓ mod p), for j = ℓ (eq 23)
     // (aj , bj ) = (g^uj mod p, K^tj mod p), where tj = (uj +(ℓ−j)cj ), for j != ℓ (eq 24)
