@@ -1,0 +1,51 @@
+{
+    "desc": "Test ballot confirmation code",
+    "joint_public_key": "54FCD27E8AF4B1BC58AE1ECE9B718ACEA3BDCF10B0BBA943717FF2F84904DC3197AD70E97AEF20D92323FE86C8839579AF9278B00A688ABBA3A1E8CFA4EEFEA4684B3C8B911592644905924EED635038FE85D903480F7B7F551402CC68BC090BBAC8B05B28B7225250E66153ADDD214C67AD7D51E1E52CC9A15BCF6E11B43CA64DC88E6E9DF4A6FF43F0695692092E4789A2E167D4AC9D2FE3A558B70555AE2BEE6D9E1C5F4FD931189B4A70BEDD637EEDF55EFBFFD7C34D5D3157E8B7C42EC9D26FC7B3D0401C0C22D00F995CD53CD790E3A40760EA48C93223E7A091A4DA12179DCC3D605FF62383FEA5CC189C69361B4CEB3718B4A408D43935CB3CF40BFB002423AAB1109BBFD7484D6CAC7F2C307A1FD56C025790D9BB06D64ED017CD3375154267270EC740E1FFC380679794E056B2D9CC3F803D7D8EE40EAA998F672F0ABE76EABCB53E4311A4C2A30EF93E95DC1CCDDBCEF941BBFE560AEDCA2722C2B495FEF70F190F0CCF85A9174D25BABE792BBD7167A76B3B05C7DED48B088DB86733A5951F6135DA19EB9E418C09451C32E749E53628C0A9005EBFDD2C2C5BD8BDE27E1A678041351F356B371C6AF7D5B805BA9842288B1D40FEB67BE976C6C502E6F8D0134F6AE55CA8C2E0D141238FC43381FD475C0D1D893676D0D98BEEBE391AB1998C99FF8556D70A0BF09602AA7B80218A8A6409FA75334F16FB46EC12",
+    "extended_base_hash": "FDAAC7C399938F54B740E343E4A8CB392D6774203AA52A5EA9DBBD9E93A9B377",
+    "ballots": [
+        {
+            "ballotId": "ballot-id--1063044156",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 1
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "expected_encrypted_ballots": [
+        {
+            "ballotId": "ballot-id--1063044156",
+            "ballotNonce": "A4C2B585B3BE6C5BFA53E1E81169D23F419D13D3CD20B28A645FFA53E2EDACA5",
+            "codeBaux": "CC6E92F94F78396BCAEFFA",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "EE4FC55F3C9149B5DB3BBF3FC67259E99DFCA9B1F332FD42EEABC274972D5A8C",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "52ED62ED35E26D6A115CA1F448E98FAC2774E7E3DA7E4669509F58B456D09210"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,513 @@
+{
+    "desc": "Test ballot confirmation code chaining, section 3.4.3",
+    "joint_public_key": "6BFAF777371543A7D6AC593CED235A648906677E1164F6BD77192D27EDC3DA836193CFDC119D0B268316292468DBE997F13CCD5C411C0E3F879CBFD455DE8C5E065374AA9CDEE4C814A83F20BEDB512F86D0300073AF0117C1CD415E1EA3AEE85B6DAC74DD5DDCC31B0B5FDBBCC3BB24DEFF81BBAEAF25F81D0205B40232A79C1BD2E1F75FBDC2FDF716B01EA0168EF9EAF0C8BE603883EB50E8F24C2DCEEA3F2A1E9A8E791FE4CF33DE7FFE2A6050C6DD43FA9CFA7EC91F9CBE696AB876AE1162B1D92C8AE7E5973C932EF72AFB38FBA6DF6B3B5316B95BC1AD3DA290695174788E6D49B53E1BF321EF0E72CFA476D7C307D9418C6396987124FEC1324791403896CD413CC4A04059D3F3414FB08CFB778760697F02FD94C6EEADE0FD0E38C347E36D1293AC61E60A73486E7BDB6B85A3D067E142CF81FC9055DB78BFB1803FEEE4415EE27CD05504C0927D5B2B35468EE8E4F04B884F3491449DF6DD6D501F9FD2F0C6290F5E6BAB45C3215A22EE231E5D754DDD02869AE538CC91325C1B45AA3C4F11CA3EE42BC4DC28DECD9116410BF852FA683CD0056B7391B88BA3D115C3DEFA9F0FBB93F7DA67B4F67190B57CE0817C94AC0EBB5B7DF8E2A80B3028640585D96940B4D105796185609EAF14B79B8E8E62DDD52987BE098881C3592699EE66874F02A7EDA01169DA7FC0B984FDB852C9B752AB4724EBDB5E41A3431041",
+    "extended_base_hash": "24A7E09581AC7FF5260105FE238C27D192B7964C7E5339FC48F6198C3C8C1F1E",
+    "ballots": [
+        {
+            "ballotId": "ballot-id--1947321915",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 1
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1466041427",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 1
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1105957481",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 1
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-764130383",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 1
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1401454633",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-1545598554",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-1147471934",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1261585587",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1125608423",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--437075770",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 1
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-1564448405",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 1
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-1748002288",
+            "ballotStyle": "ballotStyle",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "sequenceOrder": 0,
+                    "votesAllowed": 1,
+                    "selections": [
+                        {
+                            "selectionId": "selection1",
+                            "sequenceOrder": 0,
+                            "vote": 1
+                        },
+                        {
+                            "selectionId": "selection2",
+                            "sequenceOrder": 1,
+                            "vote": 0
+                        },
+                        {
+                            "selectionId": "selection3",
+                            "sequenceOrder": 2,
+                            "vote": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "expected_encrypted_ballots": [
+        {
+            "ballotId": "ballot-id--1947321915",
+            "ballotNonce": "56F2DBCCF18010891C430B745D3BBE6BDF28ED660F8B005FE9BA3191B004DCC5",
+            "codeBaux": "4D51D9C7DA3505D80803B20F752E8C8543C16FBB036FE9D900F942CD24C09292",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "4A97C076803DA0965A78F53694A22A366331CCDFCD3889BD84677BE99E96CE36",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "7CFF102AC2713F252BB663721F913F162B61F9BA0BE66FAB3112D4C10BB29347"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1466041427",
+            "ballotNonce": "C8FDB868D0DAC661AE3F0BAF5B70253B32BC235E8DA41338FC0EF1184F367F90",
+            "codeBaux": "4A97C076803DA0965A78F53694A22A366331CCDFCD3889BD84677BE99E96CE36",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "A3645BD7A41F82A503AD2FB0EFF49F417F16C032CA78054021DFD51B5C5D1DEB",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "7D145FAE0EC4A52A4D812A802FED044ADB47AC925CCA0778B90F2601A1E45124"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1105957481",
+            "ballotNonce": "085B991C7518597185DB7F2C0F2B76B213BC851C8CDF76183B6E09C19F5BE9F3",
+            "codeBaux": "A3645BD7A41F82A503AD2FB0EFF49F417F16C032CA78054021DFD51B5C5D1DEB",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "5851206C915B1B8E015CD04569E97955757F9E2E1B27EB9518789EE058D14B92",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "A3E4CCA148E1B81742E55E71B8EFF066062A4A9FBEAAFD9FF31C0E35EB861049"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-764130383",
+            "ballotNonce": "428FF0FF91910492764DB0B4FF4830D8FC3922C2F5C3D56147EC3E1F54A46FB6",
+            "codeBaux": "5851206C915B1B8E015CD04569E97955757F9E2E1B27EB9518789EE058D14B92",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "E4FC21AC009F1974ED92E5D1C8BBA2915227276871A81375B9CBE8E613E30A74",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "76EF61A429870220041D2529F6312C1BAEA5C333CA0A71C2772FB14093FAF02E"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1401454633",
+            "ballotNonce": "589B333985A131166E2331B47A0156628DEE5E6B32DACB4B87EE3EA991F69817",
+            "codeBaux": "E4FC21AC009F1974ED92E5D1C8BBA2915227276871A81375B9CBE8E613E30A74",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "DC41E6E8B3B4831C0DAE4030FD2CCF6D67E853BA4146FFAAFD66D344C149AECD",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "8552D2E765AC26C47BA7B73C7AEDEBE2D187D878B0EA705297A3CF57003238C5"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-1545598554",
+            "ballotNonce": "DBAD887BA645F2662293BB4A0B1D49FF807D1023B4DE87AD5A1FE415500C29AF",
+            "codeBaux": "DC41E6E8B3B4831C0DAE4030FD2CCF6D67E853BA4146FFAAFD66D344C149AECD",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "FF22F197CA3546F60FBBB196B5693D340154A64932FE51051B2273C0ED852695",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "4AE6F42CE6E32EE6B100455FC03FC54EDDC5E1447FDD6C5978A506C134945CC9"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-1147471934",
+            "ballotNonce": "AEA607FC660C41F745E680CF3A5C1E66AB2BEB4193CA71BD7E5C6EBC17DAEF07",
+            "codeBaux": "FF22F197CA3546F60FBBB196B5693D340154A64932FE51051B2273C0ED852695",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "0154F9BEB100BED74C850241583D2402A276BDA06F5AFEE6AB481A49529D0449",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "A07ED203FD40D9AD48543ECBD0BAF8C869B65260999B14C268E8B229DEF1BEF6"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1261585587",
+            "ballotNonce": "19ABF3A518A474016DDB08DDAF8E37EF8527302B5925B97157648FA2324EBB45",
+            "codeBaux": "0154F9BEB100BED74C850241583D2402A276BDA06F5AFEE6AB481A49529D0449",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "1772A4F78C4DDFE263DE7D125D7ED698DB62CE55EF54AF3466F64517C14312B5",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "7EA5AEDF48E59B4C4FEE6E2274533023282D9536EAFEEEA7D0D199D581AA9E95"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--1125608423",
+            "ballotNonce": "0811860EE74ADE3BE1A758200AC653AFFF89A7155973E6730FD1A35CD1F0104B",
+            "codeBaux": "1772A4F78C4DDFE263DE7D125D7ED698DB62CE55EF54AF3466F64517C14312B5",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "F55D02B965228E48AFCA83643627B66F1481F376834F9730904FC616A490F30B",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "A7E64E23AD3EF902D76369610C943D85CD942361B2F038F9CEFD34B2C2CB1964"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id--437075770",
+            "ballotNonce": "BADA4C4AE86E92B0EF1ED75614CF35686271D04EDEE99C63666A59D68987D852",
+            "codeBaux": "F55D02B965228E48AFCA83643627B66F1481F376834F9730904FC616A490F30B",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "5C6F8722524A8B839C7DDEFE4B47736B1C2E15F409135F7504C929DEBC719ED7",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "E03C74C3473AA9FD2D6FC867EB48CB3C6DEE32629DC2FAA93F95959D3F035B66"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-1564448405",
+            "ballotNonce": "60DD0271022FD9C05FDC9EE2F4B2351247E3608B93DFB1F86346D9CC5E5F0022",
+            "codeBaux": "5C6F8722524A8B839C7DDEFE4B47736B1C2E15F409135F7504C929DEBC719ED7",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "0290225DE932BCE145A5A7AD259825327E0C379D27B5BE6E990130D1C3A46EBF",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "D0007D0D9CC1D168B9D55C5EBDD292AE8234E888580D164B6CC91A5A01780760"
+                }
+            ]
+        },
+        {
+            "ballotId": "ballot-id-1748002288",
+            "ballotNonce": "4071904D7BF6053883A523A862169A8E1DAABC6EFFED837A135E885554E73798",
+            "codeBaux": "0290225DE932BCE145A5A7AD259825327E0C379D27B5BE6E990130D1C3A46EBF",
+            "task": "Compute confirmation code (eq 59)",
+            "expected_confirmationCode": "3007C0432E504303481F22BE6E201F12A142E3F0B26BA59450C3EA9A9B999C45",
+            "contests": [
+                {
+                    "contestId": "onlyContest",
+                    "task": "Compute contest hash (eq 58)",
+                    "expected_contestHash": "91F19FA796C9593E3CAAA7A8AA98789FE7977C2887ADF90B028CE50BB44F5FF1"
+                }
+            ]
+        }
+    ]
+}

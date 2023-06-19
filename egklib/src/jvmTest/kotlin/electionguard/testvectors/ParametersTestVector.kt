@@ -51,6 +51,7 @@ class ParametersTestVector {
 
     @Serializable
     data class ParametersTestVector(
+        val desc: String,
         val parameter_base_hash : ParameterBaseHash,
         val election_base_hash : ElectionBaseHash,
     )
@@ -85,6 +86,7 @@ class ParametersTestVector {
         )
 
         val parametersTestVector = ParametersTestVector(
+            "Test hash function, generation of H_P and H_B",
             parameterBaseHash,
             electionBaseHash
         )

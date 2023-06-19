@@ -1,4 +1,5 @@
 {
+    "desc": "Test hash function, generation of H_P and H_B",
     "parameter_base_hash": {
         "task": "Generate parameter base hash. spec 1.9, p 15, eq 4",
         "protocolVersion": "v2.0",
@@ -16,7 +17,7 @@
         "quorum": 4,
         "date": "Nov 2, 1960",
         "jurisdiction_info": "Los Angeles County, general election",
-        "manifest_hash": "1BD9A72D23E7C16D3239698B78576968F641EFC1CE28414A9920EBAA3EAB01C4",
-        "expected": "9A3C49CF939C02AAEE95991159CCC6A5EF35541803D79BB586CA25ED7CE69DBE"
+        "manifest_hash": "B25DC02F14FFF8B240A6B8828A1B61B3B5707939B3A0A125271C51EC97F9E967",
+        "expected": "5302B5323F16F58E68DA713FAB24692B59AB4ACB2862D5F8FC8227540064908F"
     }
 }
