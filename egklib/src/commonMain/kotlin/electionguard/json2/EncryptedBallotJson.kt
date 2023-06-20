@@ -3,6 +3,7 @@ package electionguard.json2
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -37,7 +38,7 @@ data class EncryptedSelectionJson(
     val proof: RangeProofJson,
 )
 
-fun EncryptedBallot.publishJson(primaryNonce : UInt256?): EncryptedBallotJson {
+fun EncryptedBallot.publishJson(primaryNonce : UInt256? = null): EncryptedBallotJson {
     val contests = this.contests.map { econtest ->
 
         EncryptedContestJson(
@@ -68,6 +69,40 @@ fun EncryptedBallot.publishJson(primaryNonce : UInt256?): EncryptedBallotJson {
         this.state.name,
         this.isPreencrypt,
         primaryNonce?.publishJson(),
+    )
+}
+
+fun EncryptedBallotJson.import(group : GroupContext): EncryptedBallot {
+    val contests = this.contests.map { econtest ->
+
+        EncryptedBallot.Contest(
+            econtest.contest_id,
+            econtest.sequence_order,
+            econtest.contest_hash.import(),
+            econtest.selections.map {
+                EncryptedBallot.Selection(
+                    it.selection_id,
+                    it.sequence_order,
+                    it.encrypted_vote.import(group),
+                    it.proof.import(group),
+                )
+            },
+            econtest.proof.import(group),
+            econtest.encrypted_contest_data.import(group),
+            econtest.pre_encryption?.import(group),
+        )
+    }
+
+    return EncryptedBallot(
+        this.ballot_id,
+        this.ballot_style_id,
+        this.confirmation_code.import(),
+        this.code_baux.toByteArray(),
+        contests,
+        this.timestamp,
+        EncryptedBallot.BallotState.CAST, // fromName(this.name),
+        this.is_preencrypt,
+        // this.primary_nonce?.import(group),
     )
 }
 

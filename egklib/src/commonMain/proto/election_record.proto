@@ -63,7 +63,6 @@ message TallyResult {
 message DecryptionResult {
   TallyResult tally_result = 1;
   DecryptedTallyOrBallot decrypted_tally = 2;
-  repeated LagrangeCoordinate lagrange_coordinates = 3;
   map<string, string> metadata = 4;
 }
 

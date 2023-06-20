@@ -1,0 +1,10 @@
+{
+    "config_version": "v2.0",
+    "number_of_guardians": 5,
+    "quorum": 3,
+    "election_date": "date",
+    "jurisdiction_info": "juris",
+    "parameter_base_hash": "AB91D83C3DC3FEB76E57C2783CFE2CA85ADB4BC01FC5123EEAE3124CC3FB6CDE",
+    "manifest_hash": "837F1489FB799C6B3065A8A8411A5F672AD50700ED2B416C7E9789FA6143C818",
+    "election_base_hash": "2F43AF7A46973482884752A6D1B027087AD795027FC025094E4BAABBABE60F22"
+}

@@ -101,7 +101,6 @@ fun runDecryptTally(
         DecryptionResult(
             tallyResult,
             decryptedTally,
-            decryptor.lagrangeCoordinates.values.sortedBy { it.guardianId },
             mapOf(
                 Pair("CreatedBy", createdBy ?: "RunTrustedDecryption"),
                 Pair("CreatedOn", getSystemDate().toString()),

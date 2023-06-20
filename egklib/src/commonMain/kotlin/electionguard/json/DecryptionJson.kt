@@ -10,6 +10,8 @@ import electionguard.decrypt.PartialDecryption
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+// stuff used bu the webapps - maybe move there ??
+
 @Serializable
 data class SetMissingRequestJson(
     val lagrange_coeff: ElementModQJson,

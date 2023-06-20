@@ -7,17 +7,9 @@ import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.json.CoefficientsJson
 import electionguard.json.ConstantsJson
-import electionguard.json.ContextJson
-import electionguard.json.DecryptedTallyJson
-import electionguard.json.DecryptingTrusteeJson
-import electionguard.json.EncryptedTallyJson
-import electionguard.json.GuardianJson
-import electionguard.json.ManifestJson
-import electionguard.json.PlaintextBallotJson
-import electionguard.json.SubmittedBallotJson
 import electionguard.json.import
+import electionguard.json2.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -66,6 +58,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return readElectionConfig(
             fileSystem.getPath(jsonPaths.electionConstantsPath()),
             fileSystem.getPath(jsonPaths.manifestPath()),
+            fileSystem.getPath(jsonPaths.electionConfigPath()),
         )
     }
 
@@ -75,7 +68,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             return Err(config.error)
         }
         return readElectionInitialized(
-            fileSystem.getPath(jsonPaths.electionContextPath()),
+            fileSystem.getPath(jsonPaths.electionInitializedPath()),
             config.unwrap(),
         )
     }
@@ -98,7 +91,6 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
 
         return readDecryptionResult(
-            fileSystem.getPath(jsonPaths.lagrangePath()),
             fileSystem.getPath(jsonPaths.decryptedTallyPath()),
             tally.unwrap()
         )
@@ -158,7 +150,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
     //////// The low level reading functions for protobuf
 
-    private fun readElectionConfig(constantsFile: Path, manifestFile: Path): Result<ElectionConfig, String> {
+    private fun readElectionConfig(constantsFile: Path, manifestFile: Path, configFile: Path,): Result<ElectionConfig, String> {
         return try {
             var constants: ElectionConstants
             fileSystemProvider.newInputStream(constantsFile).use { inp ->
@@ -171,21 +163,16 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 val json = Json.decodeFromStream<ManifestJson>(inp)
                 manifest = json.import()
             }
+            val manifest_bytes = fileSystemProvider.newInputStream(manifestFile).readAllBytes()
 
-            Ok(
-                ElectionConfig(
-                    "TODOtoo",
-                    constants,
-                    ByteArray(0),
-                    manifest,
-                    1, // LOOK these are not in JSON, can we pass them in?
-                    1, // LOOK not in JSON
-                    "N/A",
-                    "N/A",
-                    )
-            )
+            var electionConfig: ElectionConfig
+            fileSystemProvider.newInputStream(configFile).use { inp ->
+                val json = Json.decodeFromStream<ElectionConfigJson>(inp)
+                electionConfig = json.import(constants, manifest_bytes, manifest)
+            }
+            Ok(electionConfig)
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionConfig $constantsFile failed")
+            Err(e.message ?: "readElectionConfig $configFile failed")
         }
     }
 
@@ -194,42 +181,23 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         config: ElectionConfig
     ): Result<ElectionInitialized, String> {
         return try {
-            val guardiansPath = fileSystem.getPath(jsonPaths.guardianDir())
-            val (guardians, errors) = readGuardians(guardiansPath).partition()
-            if (errors.isNotEmpty()) {
-                return Err(errors.joinToString("\n"))
-            } else {
-                var context: ElectionInitialized
-                fileSystemProvider.newInputStream(contextFile).use { inp ->
-                    val json = Json.decodeFromStream<ContextJson>(inp)
-                    context = json.import(group, config, guardians)
-                }
-                Ok(context)
+            var electionInitialized: ElectionInitialized
+            fileSystemProvider.newInputStream(contextFile).use { inp ->
+                val json = Json.decodeFromStream<ElectionInitializedJson>(inp)
+                electionInitialized = json.import(config, group)
             }
+            Ok(electionInitialized)
         } catch (e: Exception) {
             Err(e.message ?: "readElectionInitialized $contextFile failed")
         }
-    }
-
-    private fun readGuardians(guardianDir: Path): List<Result<Guardian, String>> {
-        val result = guardianDir.pathList().map {
-            fileSystemProvider.newInputStream(it).use { inp ->
-                val json = Json.decodeFromStream<GuardianJson>(inp)
-                json.import(group)
-            }
-        }
-        return result
     }
 
     private fun readTallyResult(filename: Path, init: ElectionInitialized): Result<TallyResult, String> {
         return try {
             fileSystemProvider.newInputStream(filename).use { inp ->
                 val json = Json.decodeFromStream<EncryptedTallyJson>(inp)
-                val tallyResult = json.import(group)
-                if (tallyResult is Err)
-                    Err(tallyResult.unwrapError())
-                else
-                    Ok(TallyResult(init, tallyResult.unwrap(), emptyList(), emptyList()))
+                val wncryptedTally = json.import(group)
+                Ok(TallyResult(init, wncryptedTally, emptyList(), emptyList()))
             }
         } catch (e: Exception) {
             Err(e.message ?: "readTallyResult $filename failed")
@@ -237,25 +205,15 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     }
 
     private fun readDecryptionResult(
-        lagrangePath: Path,
         decryptedTallyPath: Path,
         tallyResult: TallyResult
     ): Result<DecryptionResult, String> {
         // all the coefficients in a map in one file
-        var lagrangeCoordinates: List<LagrangeCoordinate>
-        fileSystemProvider.newInputStream(lagrangePath).use { inp ->
-            val json = Json.decodeFromStream<CoefficientsJson>(inp)
-            lagrangeCoordinates = json.import(group)
-        }
-
         return try {
             fileSystemProvider.newInputStream(decryptedTallyPath).use { inp ->
-                val json = Json.decodeFromStream<DecryptedTallyJson>(inp)
-                val dtallyResult = json.import(group)
-                if (dtallyResult is Err)
-                    Err(dtallyResult.unwrapError())
-                else
-                    Ok(DecryptionResult(tallyResult, dtallyResult.unwrap(), lagrangeCoordinates))
+                val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
+                val decryptedTallyOrBallot = json.import(group)
+                Ok(DecryptionResult(tallyResult, decryptedTallyOrBallot))
             }
         } catch (e: Exception) {
             Err(e.message ?: "readDecryptionResult $decryptedTallyPath failed")
@@ -274,15 +232,10 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 val file = pathList[idx++]
                 fileSystemProvider.newInputStream(file).use { inp ->
                     val json = Json.decodeFromStream<PlaintextBallotJson>(inp)
-                    val ballotResult = json.import()
-                    if (ballotResult is Err) {
-                        logger.atWarn().log { "Failed to open ${file} error = ${ballotResult.unwrapError()}" }
-                    } else {
-                        val ballot = ballotResult.unwrap()
-                        if (filter == null || filter.test(ballot)) {
-                            setNext(ballot)
-                            return
-                        }
+                    val plaintextBallot = json.import()
+                    if (filter == null || filter.test(plaintextBallot)) {
+                        setNext(plaintextBallot)
+                        return
                     }
                 }
             }
@@ -302,16 +255,11 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             while (idx < pathList.size) {
                 val file = pathList[idx++]
                 fileSystemProvider.newInputStream(file).use { inp ->
-                    val json = Json.decodeFromStream<SubmittedBallotJson>(inp)
-                    val ballotResult = json.import(group)
-                    if (ballotResult is Err) {
-                        logger.atWarn().log { "Failed to open ${file} error = ${ballotResult.unwrapError()}" }
-                    } else {
-                        val ballot = ballotResult.unwrap()
-                        if (filter == null || filter.test(ballot)) {
-                            setNext(ballot)
-                            return
-                        }
+                    val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
+                    val encryptedBallot = json.import(group)
+                    if (filter == null || filter.test(encryptedBallot)) {
+                        setNext(encryptedBallot)
+                        return
                     }
                 }
             }
@@ -330,14 +278,10 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             while (idx < pathList.size) {
                 val file = pathList[idx++]
                 fileSystemProvider.newInputStream(file).use { inp ->
-                    val json = Json.decodeFromStream<DecryptedTallyJson>(inp)
-                    val tallyResult = json.import(group)
-                    if (tallyResult is Err) {
-                        logger.atWarn().log { "Failed to open ${file} error = ${tallyResult.unwrapError()}" }
-                    } else {
-                        setNext(tallyResult.unwrap())
-                        return
-                    }
+                    val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
+                    val decryptedTallyOrBallot = json.import(group)
+                    setNext(decryptedTallyOrBallot)
+                    return
                 }
             }
             return done()
@@ -347,12 +291,9 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     private fun readTrustee(filePath: Path): Result<DecryptingTrusteeDoerre, String> {
         return try {
             fileSystemProvider.newInputStream(filePath).use { inp ->
-                val json = Json.decodeFromStream<DecryptingTrusteeJson>(inp)
-                val trusteeResult = json.import(group)
-                if (trusteeResult is Err)
-                    Err(trusteeResult.unwrapError())
-                else
-                    Ok(trusteeResult.unwrap())
+                val json = Json.decodeFromStream<TrusteeJson>(inp)
+                val decryptingTrustee = json.importDecryptingTrustee(group)
+                Ok(decryptingTrustee)
             }
         } catch (e: Exception) {
             Err(e.message ?: "readDecryptionResult $filePath failed")

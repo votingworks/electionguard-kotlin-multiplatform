@@ -30,14 +30,9 @@ data class TallyResult(
 data class DecryptionResult(
     val tallyResult: TallyResult,
     val decryptedTally: DecryptedTallyOrBallot,
-    val lagrangeCoordinates: List<LagrangeCoordinate>,
+    // val lagrangeCoordinates: List<LagrangeCoordinate>,
     val metadata: Map<String, String> = emptyMap(),
-) {
-    init {
-        require(lagrangeCoordinates.isNotEmpty())
-        require(lagrangeCoordinates.size >= tallyResult.quorum())
-    }
-}
+)
 
 data class LagrangeCoordinate(
     var guardianId: String,

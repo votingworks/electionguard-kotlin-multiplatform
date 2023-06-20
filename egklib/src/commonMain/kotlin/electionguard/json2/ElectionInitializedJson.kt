@@ -1,5 +1,6 @@
 package electionguard.json2
 
+import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
 import electionguard.core.GroupContext
@@ -9,21 +10,19 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ElectionInitializedJson(
-    val config: ElectionConfigJson, // TODO could argue we dont put this here, but leave as separate file?
     val joint_public_key: ElementModPJson, // aka K
     val extended_base_hash: UInt256Json, // aka He
     val guardians: List<GuardianJson>, // size = number_of_guardians
     val metadata: Map<String, String> = emptyMap(),
 )
 fun ElectionInitialized.publishJson() = ElectionInitializedJson(
-    this.config.publishJson(),
     this.jointPublicKey.publishJson(),
     this.extendedBaseHash.publishJson(),
     this.guardians.map { it.publishJson() },
     )
 
-fun ElectionInitializedJson.import(group: GroupContext) = ElectionInitialized(
-    this.config.import(),
+fun ElectionInitializedJson.import(config: ElectionConfig, group: GroupContext) = ElectionInitialized(
+    config,
     this.joint_public_key.import(group),
     this.extended_base_hash.import(),
     this.guardians.map { it.import(group) },

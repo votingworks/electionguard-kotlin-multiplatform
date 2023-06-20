@@ -599,7 +599,6 @@ public data class TallyResult(
 public data class DecryptionResult(
     val tallyResult: electionguard.protogen.TallyResult? = null,
     val decryptedTally: electionguard.protogen.DecryptedTallyOrBallot? = null,
-    val lagrangeCoordinates: List<electionguard.protogen.LagrangeCoordinate> = emptyList(),
     val metadata: List<electionguard.protogen.DecryptionResult.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -611,7 +610,7 @@ public data class DecryptionResult(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.DecryptionResult = electionguard.protogen.DecryptionResult.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptionResult> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptionResult, *>>(4)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptionResult, *>>(3)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -631,16 +630,6 @@ public data class DecryptionResult(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.DecryptedTallyOrBallot.Companion),
                         jsonName = "decryptedTally",
                         value = electionguard.protogen.DecryptionResult::decryptedTally
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "lagrange_coordinates",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.LagrangeCoordinate>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.LagrangeCoordinate.Companion)),
-                        jsonName = "lagrangeCoordinates",
-                        value = electionguard.protogen.DecryptionResult::lagrangeCoordinates
                     )
                 )
                 add(
@@ -1038,7 +1027,6 @@ private fun DecryptionResult.protoMergeImpl(plus: pbandk.Message?): DecryptionRe
     it.copy(
         tallyResult = tallyResult?.plus(plus.tallyResult) ?: plus.tallyResult,
         decryptedTally = decryptedTally?.plus(plus.decryptedTally) ?: plus.decryptedTally,
-        lagrangeCoordinates = lagrangeCoordinates + plus.lagrangeCoordinates,
         metadata = metadata + plus.metadata,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -1048,19 +1036,17 @@ private fun DecryptionResult.protoMergeImpl(plus: pbandk.Message?): DecryptionRe
 private fun DecryptionResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptionResult {
     var tallyResult: electionguard.protogen.TallyResult? = null
     var decryptedTally: electionguard.protogen.DecryptedTallyOrBallot? = null
-    var lagrangeCoordinates: pbandk.ListWithSize.Builder<electionguard.protogen.LagrangeCoordinate>? = null
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.DecryptionResult.MetadataEntry>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> tallyResult = _fieldValue as electionguard.protogen.TallyResult
             2 -> decryptedTally = _fieldValue as electionguard.protogen.DecryptedTallyOrBallot
-            3 -> lagrangeCoordinates = (lagrangeCoordinates ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.LagrangeCoordinate> }
             4 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.DecryptionResult.MetadataEntry> }
         }
     }
 
-    return DecryptionResult(tallyResult, decryptedTally, pbandk.ListWithSize.Builder.fixed(lagrangeCoordinates), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+    return DecryptionResult(tallyResult, decryptedTally, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export

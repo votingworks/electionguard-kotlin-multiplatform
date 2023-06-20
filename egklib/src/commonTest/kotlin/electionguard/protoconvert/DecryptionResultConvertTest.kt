@@ -25,7 +25,7 @@ class DecryptionResultConvertTest {
 
         assertEquals(roundtrip.tallyResult, electionRecord.tallyResult)
         assertEquals(roundtrip.decryptedTally, electionRecord.decryptedTally)
-        assertEquals(roundtrip.lagrangeCoordinates, electionRecord.lagrangeCoordinates)
+        // assertEquals(roundtrip.lagrangeCoordinates, electionRecord.lagrangeCoordinates)
         assertEquals(roundtrip.metadata, electionRecord.metadata)
 
         assertTrue(roundtrip.equals(electionRecord))
@@ -37,7 +37,7 @@ fun generateDecryptionResult(publisher : Publisher, context: GroupContext): Decr
     return DecryptionResult(
         generateTallyResult(publisher, context),
         DecryptedTallyOrBallotConvertTest.generateFakeTally(0, context),
-        List(4) { generateDecryptingGuardian(context, it) },
+        // List(4) { generateDecryptingGuardian(context, it) },
     )
 }
 
