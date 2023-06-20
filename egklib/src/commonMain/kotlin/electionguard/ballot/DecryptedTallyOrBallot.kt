@@ -8,7 +8,7 @@ import electionguard.core.HashedElGamalCiphertext
 /**
  * The decryption of one encrypted ballot or encrypted tally.
  * The only difference between a decrypted tally and a decrypted ballot is that only a ballot
- * has decryptedContestData.
+ * has DecryptedContestData.
  *
  * @param id matches the tallyId, or the ballotId if its a ballot decryption.
  * @param contests The contests

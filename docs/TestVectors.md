@@ -4,7 +4,7 @@ draft 6/19/2023
 
 * These are JSON files that give inputs and expected outputs for the purpose of testing interoperability between implementations.
 * The JSON formats are ad-hoc. Suggestions for improvements are welcome!
-* The Kotlin code generates and reads back the JSON test vectors. From there you can find the implementation of that feature.
+* The Kotlin code generates and reads back the JSON test vectors. Follow it to find the implementation of that feature. Note that its just my implementation, not guarentted to be right.
 
 
 | Name              | JSON file                                                                         | Kotlin code                                                                                   |
@@ -16,4 +16,5 @@ draft 6/19/2023
 | ConfirmationCode  | [JSON](../egklib/src/commonTest/data/testvectors/ConfirmationCodeTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ConfirmationCodeTestVector.kt)  |
 | BallotChaining    | [JSON](../egklib/src/commonTest/data/testvectors/BallotChainingTestVector.json)   | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotChainingTestVector.kt)    |
 | BallotAggregation | [JSON](../egklib/src/commonTest/data/testvectors/BallotAggegationTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotAggregationTestVector.kt) |
+| TallyDecryption   | [JSON](../egklib/src/commonTest/data/testvectors/TallyDecryptionTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyDecryptionTestVector.kt) |
 | ... moar soon     |                                                                                   |                                                                                               |

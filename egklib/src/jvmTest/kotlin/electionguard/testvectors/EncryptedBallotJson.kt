@@ -46,32 +46,34 @@ fun CiphertextBallot.publishJson(): EncryptedBallotJson {
     return EncryptedBallotJson(this.ballotId, this.ballotNonce.publishJson(), contests)
 }
 
-fun EncryptedBallotJson.import(group: GroupContext): CiphertextBallotFacade {
+fun EncryptedBallotJson.import(group: GroupContext): EncryptedBallotFacade {
     val contests = this.contests.map { contest ->
-        CiphertextContestFacade(contest.contestId, contest.sequenceOrder,
-            contest.selections.map { CiphertextSelectionFacade(it.selectionId, it.sequenceOrder, it.encrypted_vote.import(group)) })
+        EncryptedContestFacade(contest.contestId, contest.sequenceOrder,
+            contest.selections.map { EncryptedSelectionFacade(it.selectionId, it.sequenceOrder, it.encrypted_vote.import(group)) })
     }
-    return CiphertextBallotFacade(this.ballotId, contests, BallotState.CAST)
+    return EncryptedBallotFacade(this.ballotId, contests, BallotState.CAST)
 }
 
-data class CiphertextBallotFacade(
+// a simplified version of as EncryptedBallot, implementing EncryptedBallotIF
+data class EncryptedBallotFacade(
     override val ballotId: String,
-    override val contests: List<CiphertextContestFacade>,
+    override val contests: List<EncryptedContestFacade>,
     override val state: BallotState
 ) : EncryptedBallotIF
 
-data class CiphertextContestFacade(
+data class EncryptedContestFacade(
     override val contestId: String,
     override val sequenceOrder: Int,
-    override val selections: List<CiphertextSelectionFacade>,
+    override val selections: List<EncryptedSelectionFacade>,
 ) : EncryptedBallotIF.Contest
 
-data class CiphertextSelectionFacade(
+data class EncryptedSelectionFacade(
     override val selectionId: String,
     override val sequenceOrder: Int,
     override val ciphertext: ElGamalCiphertext,
 ) : EncryptedBallotIF.Selection
 
+// create a ManifestIF from EncryptedBallotJson
 class EncryptedBallotJsonManifestFacade(ballot : EncryptedBallotJson) : ManifestIF {
     override val contests : List<ContestFacade>
     init {

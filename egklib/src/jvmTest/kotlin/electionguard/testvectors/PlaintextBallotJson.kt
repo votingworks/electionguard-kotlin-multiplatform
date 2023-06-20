@@ -42,7 +42,7 @@ fun PlaintextBallotJson.import(): PlaintextBallot {
     return PlaintextBallot(this.ballotId, this.ballotStyle, contests)
 }
 
-
+// create a ManifestIF from PlaintextBallotJson
 class PlaintextBallotJsonManifestFacade(ballot : PlaintextBallotJson) : ManifestIF {
     override val contests : List<ContestFacade>
     init {
