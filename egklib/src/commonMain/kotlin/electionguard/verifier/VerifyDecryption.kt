@@ -78,7 +78,7 @@ class VerifyDecryption(
 
                 // M = K^t mod p.
                 val tallyQ = selection.tally.toElementModQ(group)
-                if (selection.value != publicKey powP tallyQ) {
+                if (selection.kExpTally != publicKey powP tallyQ) {
                     results.add(Err("    9.B,12.B Tally Decryption M = K^t mod p failed: '$where2'"))
                 }
 
@@ -112,17 +112,17 @@ class VerifyDecryption(
     // this is the verifier proof (box 8)
     private var first = false
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        val Mbar: ElementModP = this.ciphertext.data / this.value // 8.1
+        val Mbar: ElementModP = this.encryptedVote.data / this.kExpTally // 8.1
         val a = group.gPowP(this.proof.r) * (publicKey powP this.proof.c) // 8.2
-        val b = (this.ciphertext.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.3
+        val b = (this.encryptedVote.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.3
 
         // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
-        val challenge = hashFunction(extendedBaseHash.byteArray(), 0x30.toByte(), publicKey.key, this.ciphertext.pad, this.ciphertext.data, a, b, Mbar)
+        val challenge = hashFunction(extendedBaseHash.byteArray(), 0x30.toByte(), publicKey.key, this.encryptedVote.pad, this.encryptedVote.data, a, b, Mbar)
         if (first) {
             println(" verify qbar = $extendedBaseHash")
             println(" jointPublicKey = $publicKey")
-            println(" this.message.pad = ${this.ciphertext.pad}")
-            println(" this.message.data = ${this.ciphertext.data}")
+            println(" this.message.pad = ${this.encryptedVote.pad}")
+            println(" this.message.data = ${this.encryptedVote.data}")
             println(" a= $a")
             println(" b= $b")
             println(" Mbar = $Mbar")

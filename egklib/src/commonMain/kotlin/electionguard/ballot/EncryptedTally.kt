@@ -28,7 +28,7 @@ data class EncryptedTally(
     data class Selection(
         val selectionId: String,                // matches SelectionDescription.selectionId
         val sequenceOrder: Int,                 // matches SelectionDescription.sequenceOrder
-        val ciphertext: ElGamalCiphertext,      // accumulation over all ballots in the tally
+        val encryptedVote: ElGamalCiphertext,   // accumulation over all ballots in the tally
     ) {
         init {
             require(selectionId.isNotEmpty())

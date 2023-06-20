@@ -145,13 +145,13 @@ class TallyDecryptor(
         val response: ElementModQ = with(group) { selectionDecryptions.responses.values.map { it }.addQ() }
         // finally we can create the proof
         val proof = ChaumPedersenProof(selectionDecryptions.collectiveChallenge!!.toElementModQ(group), response)
-        val T = selection.ciphertext.data / selectionDecryptions.M!! // "decrypted value" T = B · M −1
+        val T = selection.encryptedVote.data / selectionDecryptions.M!! // "decrypted value" T = B · M −1
 
         val decrypytedSelection = DecryptedTallyOrBallot.Selection(
             selection.selectionId,
             selectionDecryptions.tally!!,
             T,
-            selection.ciphertext,
+            selection.encryptedVote,
             proof
         )
 
@@ -175,12 +175,12 @@ class TallyDecryptor(
 
     // this is the verifier proof (box 8)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        val M: ElementModP = this.ciphertext.data / this.value // 8.1
+        val M: ElementModP = this.encryptedVote.data / this.kExpTally // 8.1
         val a = group.gPowP(this.proof.r) * (publicKey powP this.proof.c) // 8.2
-        val b = (this.ciphertext.pad powP this.proof.r) * (M powP this.proof.c) // 8.3
+        val b = (this.encryptedVote.pad powP this.proof.r) * (M powP this.proof.c) // 8.3
 
         // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
-        val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey.key, this.ciphertext.pad, this.ciphertext.data, a, b, M)
+        val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey.key, this.encryptedVote.pad, this.encryptedVote.data, a, b, M)
         return (challenge.toElementModQ(group) == this.proof.c)
     }
 

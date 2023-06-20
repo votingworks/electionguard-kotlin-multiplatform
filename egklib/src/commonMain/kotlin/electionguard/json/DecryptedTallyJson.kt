@@ -73,8 +73,8 @@ data class DecryptedTallySelectionJson(
 fun DecryptedTallyOrBallot.Selection.publish() = DecryptedTallySelectionJson(
     this.selectionId,
     this.tally,
-    this.value.publish(),
-    this.ciphertext.publish(),
+    this.kExpTally.publish(),
+    this.encryptedVote.publish(),
     this.proof.publish(),
 )
 

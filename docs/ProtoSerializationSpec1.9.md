@@ -359,7 +359,7 @@ draft 6/15/2023
 |----------------|-----------------------------------|-------------------------------------|
 | selection_id   | string                            | SelectionDescription.selection_id   |
 | sequence_order | uint32                            | SelectionDescription.sequence_order |
-| ciphertext     | ElGamalCiphertext                 |                                     |
+| encrypted_vote | ElGamalCiphertext                 |                                     |
 | proof          | ChaumPedersenRangeProofKnownNonce | proof vote = 0 or 1                 |
 
 #### message ChaumPedersenRangeProofKnownNonce
@@ -405,11 +405,11 @@ draft 6/15/2023
 
 #### message EncryptedTallySelection
 
-| Name                       | Type              | Notes                                                 |
-|----------------------------|-------------------|-------------------------------------------------------|
-| selection_id               | string            | SelectionDescription.selection_id                     |
-| sequence_order             | uint32            | SelectionDescription.sequence_order                   |
-| ciphertext                 | ElGamalCiphertext | accumulation over all cast ballots for this selection |
+| Name            | Type              | Notes                                                 |
+|-----------------|-------------------|-------------------------------------------------------|
+| selection_id    | string            | SelectionDescription.selection_id                     |
+| sequence_order  | uint32            | SelectionDescription.sequence_order                   |
+| encrypted_vote  | ElGamalCiphertext | accumulation over all cast ballots for this selection |
 
 ## decrypted_tally.proto
 
@@ -432,13 +432,13 @@ draft 6/15/2023
 
 ### message DecryptedSelection
 
-| Name         | Type               | Notes                             |
-|--------------|--------------------|-----------------------------------|
-| selection_id | string             | SelectionDescription.selection_id |
-| tally        | int                | decrypted vote count              |
-| value        | ElementModP        | g^tally or M in the spec          |
-| message      | ElGamalCiphertext  | encrypted vote count              |
-| proof        | ChaumPedersenProof |                                   |
+| Name            | Type               | Notes                             |
+|-----------------|--------------------|-----------------------------------|
+| selection_id    | string             | SelectionDescription.selection_id |
+| tally           | int                | decrypted vote count              |
+| k_exp_tally     | ElementModP        | T = K^tally, eq 65                |
+| encrypted_vote  | ElGamalCiphertext  | encrypted vote count              |
+| proof           | ChaumPedersenProof |                                   |
 
 ### message DecryptedContestData
 

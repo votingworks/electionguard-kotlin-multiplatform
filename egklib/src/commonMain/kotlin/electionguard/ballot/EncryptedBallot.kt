@@ -78,7 +78,7 @@ data class EncryptedBallot(
     data class Selection(
         override val selectionId: String, // matches SelectionDescription.selectionId
         override val sequenceOrder: Int, // matches SelectionDescription.sequenceOrder
-        override val ciphertext: ElGamalCiphertext,
+        override val encryptedVote: ElGamalCiphertext,
         val proof: ChaumPedersenRangeProofKnownNonce,
     ) : EncryptedBallotIF.Selection  {
 

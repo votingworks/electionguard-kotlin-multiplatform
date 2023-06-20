@@ -55,7 +55,7 @@ class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val n
                 if (selection == null) {
                     logger.warn { "Ballot $ballotId has illegal selection ${ballotSelection.selectionId} in contest ${ballotContest.contestId}"}
                 } else {
-                    selection.accumulate(ballotSelection.ciphertext)
+                    selection.accumulate(ballotSelection.encryptedVote)
                 }
             }
         }

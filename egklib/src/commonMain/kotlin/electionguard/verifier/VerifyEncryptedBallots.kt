@@ -87,7 +87,7 @@ class VerifyEncryptedBallots(
             }
 
             // Box 5 : contest limit
-            val texts: List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
+            val texts: List<ElGamalCiphertext> = contest.selections.map { it.encryptedVote }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
             val proof: ChaumPedersenRangeProofKnownNonce = contest.proof
             val cvalid = proof.validate2(
@@ -141,7 +141,7 @@ class VerifyEncryptedBallots(
 
         // test that the proof is correct covers 4.A, 4.B, 4.C
         val svalid = selection.proof.validate2(
-            selection.ciphertext,
+            selection.encryptedVote,
             this.jointPublicKey,
             this.extendedBaseHash,
             1,
@@ -181,7 +181,7 @@ class VerifyEncryptedBallots(
         // the pre-encryption selection vectors. However, when a contest has a selection limit greater than
         // one, the resulting selection vector will be a product of multiple pre-encryption selection vectors.
 
-        val selectionVector : List<ElGamalCiphertext> = contest.selections.map { it.ciphertext }
+        val selectionVector : List<ElGamalCiphertext> = contest.selections.map { it.encryptedVote }
         require (contestLimit == cv.selectedVectors.size)
 
         // product of multiple pre-encryption selection vectors. component-wise I think

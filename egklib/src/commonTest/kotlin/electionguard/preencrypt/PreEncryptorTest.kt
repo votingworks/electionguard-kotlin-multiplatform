@@ -233,7 +233,7 @@ internal fun runComplete(
         for (contest in fullEncryptedBallot.contests) {
             println(" contest ${contest.contestId}")
             contest.selections.forEach {
-                println("   selection ${it.selectionId} = ${it.ciphertext}")
+                println("   selection ${it.selectionId} = ${it.encryptedVote}")
             }
             contest.preEncryption?.show()
         }

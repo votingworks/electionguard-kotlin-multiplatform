@@ -111,8 +111,8 @@ public data class DecryptedContest(
 public data class DecryptedSelection(
     val selectionId: String = "",
     val tally: Int = 0,
-    val value: electionguard.protogen.ElementModP? = null,
-    val ciphertext: electionguard.protogen.ElGamalCiphertext? = null,
+    val kExpTally: electionguard.protogen.ElementModP? = null,
+    val encryptedVote: electionguard.protogen.ElGamalCiphertext? = null,
     val proof: electionguard.protogen.ChaumPedersenProof? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -149,21 +149,21 @@ public data class DecryptedSelection(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "value",
+                        name = "k_exp_tally",
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
-                        jsonName = "value",
-                        value = electionguard.protogen.DecryptedSelection::value
+                        jsonName = "kExpTally",
+                        value = electionguard.protogen.DecryptedSelection::kExpTally
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "ciphertext",
+                        name = "encrypted_vote",
                         number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElGamalCiphertext.Companion),
-                        jsonName = "ciphertext",
-                        value = electionguard.protogen.DecryptedSelection::ciphertext
+                        jsonName = "encryptedVote",
+                        value = electionguard.protogen.DecryptedSelection::encryptedVote
                     )
                 )
                 add(
@@ -317,8 +317,8 @@ public fun DecryptedSelection?.orDefault(): electionguard.protogen.DecryptedSele
 
 private fun DecryptedSelection.protoMergeImpl(plus: pbandk.Message?): DecryptedSelection = (plus as? DecryptedSelection)?.let {
     it.copy(
-        value = value?.plus(plus.value) ?: plus.value,
-        ciphertext = ciphertext?.plus(plus.ciphertext) ?: plus.ciphertext,
+        kExpTally = kExpTally?.plus(plus.kExpTally) ?: plus.kExpTally,
+        encryptedVote = encryptedVote?.plus(plus.encryptedVote) ?: plus.encryptedVote,
         proof = proof?.plus(plus.proof) ?: plus.proof,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -328,21 +328,21 @@ private fun DecryptedSelection.protoMergeImpl(plus: pbandk.Message?): DecryptedS
 private fun DecryptedSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptedSelection {
     var selectionId = ""
     var tally = 0
-    var value: electionguard.protogen.ElementModP? = null
-    var ciphertext: electionguard.protogen.ElGamalCiphertext? = null
+    var kExpTally: electionguard.protogen.ElementModP? = null
+    var encryptedVote: electionguard.protogen.ElGamalCiphertext? = null
     var proof: electionguard.protogen.ChaumPedersenProof? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> tally = _fieldValue as Int
-            3 -> value = _fieldValue as electionguard.protogen.ElementModP
-            4 -> ciphertext = _fieldValue as electionguard.protogen.ElGamalCiphertext
+            3 -> kExpTally = _fieldValue as electionguard.protogen.ElementModP
+            4 -> encryptedVote = _fieldValue as electionguard.protogen.ElGamalCiphertext
             5 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
         }
     }
 
-    return DecryptedSelection(selectionId, tally, value, ciphertext,
+    return DecryptedSelection(selectionId, tally, kExpTally, encryptedVote,
         proof, unknownFields)
 }
 

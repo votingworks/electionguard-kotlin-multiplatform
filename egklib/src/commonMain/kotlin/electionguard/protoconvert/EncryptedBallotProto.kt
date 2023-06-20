@@ -137,7 +137,7 @@ private fun electionguard.protogen.EncryptedBallotSelection.import(
         Result<EncryptedBallot.Selection, String> {
     val here = "$where ${this.selectionId}"
 
-    val ciphertext = group.importCiphertext(this.ciphertext)
+    val ciphertext = group.importCiphertext(this.encryptedVote)
         .toResultOr { "CiphertextBallotSelection $here ciphertext was malformed or missing" }
     val proof = group.importRangeProof(here, this.proof)
 
@@ -244,7 +244,7 @@ private fun EncryptedBallot.Selection.publishProto() =
     electionguard.protogen.EncryptedBallotSelection(
         this.selectionId,
         this.sequenceOrder,
-        this.ciphertext.publishProto(),
+        this.encryptedVote.publishProto(),
         this.proof.publishProto(),
     )
 

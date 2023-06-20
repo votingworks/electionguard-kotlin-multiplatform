@@ -27,7 +27,7 @@ class ContestDataTest {
                 consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val manifest: Manifest = electionInit.manifest()
 
-            val builder = BallotInputBuilder(manifest, "ballot_id").setStyle("congress-district-7-arlington")
+            val builder = BallotInputBuilder(manifest, "ballot_id").setStyle("ballotStyle")
             val ballot = builder
                 .addContest(0)
                     .addSelection(0, vote = 1)

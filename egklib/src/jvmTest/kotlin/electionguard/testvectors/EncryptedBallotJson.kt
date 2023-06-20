@@ -70,7 +70,7 @@ data class EncryptedContestFacade(
 data class EncryptedSelectionFacade(
     override val selectionId: String,
     override val sequenceOrder: Int,
-    override val ciphertext: ElGamalCiphertext,
+    override val encryptedVote: ElGamalCiphertext,
 ) : EncryptedBallotIF.Selection
 
 // create a ManifestIF from EncryptedBallotJson

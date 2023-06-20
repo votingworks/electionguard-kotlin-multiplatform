@@ -73,7 +73,7 @@ data class EncryptedTallySelectionJson(
 fun EncryptedTally.Selection.publish() = EncryptedTallySelectionJson(
     this.selectionId,
     this.sequenceOrder,
-    this.ciphertext.publish(),
+    this.encryptedVote.publish(),
 )
 
 fun EncryptedTallySelectionJson.import(group: GroupContext) : Result<EncryptedTally.Selection, String> {

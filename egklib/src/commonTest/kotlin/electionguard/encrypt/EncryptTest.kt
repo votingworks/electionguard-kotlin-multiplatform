@@ -17,7 +17,7 @@ class EncryptTest {
             val group = productionGroup()
             val consumerIn = makeConsumer(input, group)
             val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
-            val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
+            val ballot = makeBallot(electionInit.manifest(), "ballotStyle", 3, 0)
 
             val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
             val result = encryptor.encrypt(ballot)
@@ -42,7 +42,7 @@ class EncryptTest {
             val group = productionGroup()
             val consumerIn = makeConsumer(input, group)
             val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
-            val ballot = makeBallot(electionInit.manifest(), "congress-district-7-arlington", 3, 0)
+            val ballot = makeBallot(electionInit.manifest(), "ballotStyle", 3, 0)
 
             val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
             val nonce1 = UInt256.random()

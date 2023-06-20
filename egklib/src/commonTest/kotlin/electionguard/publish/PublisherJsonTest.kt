@@ -209,8 +209,8 @@ fun Iterable<DecryptedTallyOrBallot>.approxEqualsDecryptedBallots(expected: Iter
                     ?: throw RuntimeException("Cant find ${it.selectionId}")
                 assertEquals(inSelection.selectionId, it.selectionId)
                 assertEquals(inSelection.tally, it.tally)
-                assertEquals(inSelection.value, it.value)
-                assertEquals(inSelection.ciphertext, it.ciphertext)
+                assertEquals(inSelection.kExpTally, it.kExpTally)
+                assertEquals(inSelection.encryptedVote, it.encryptedVote)
                 assertEquals(inSelection.proof, it.proof)
                 assertEquals(inSelection, it)
             }

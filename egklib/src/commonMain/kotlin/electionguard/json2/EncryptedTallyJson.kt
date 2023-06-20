@@ -1,4 +1,4 @@
-package electionguard.testvectors
+package electionguard.json2
 
 import electionguard.ballot.EncryptedTally
 import electionguard.core.GroupContext
@@ -6,20 +6,21 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class EncryptedTallyJson(
+    val tally_id: String,
     val contests: List<EncryptedTallyContestJson>,
 )
 
 @Serializable
 data class EncryptedTallyContestJson(
-    val contestId: String,
-    val sequenceOrder: Int,
+    val contest_id: String,
+    val sequence_order: Int,
     val selections: List<EncryptedTallySelectionJson>,
 )
 
 @Serializable
 data class EncryptedTallySelectionJson(
-    val selectionId: String,
-    val sequenceOrder: Int,
+    val selection_id: String,
+    val sequence_order: Int,
     val encrypted_vote: ElGamalCiphertextJson,
 )
 
@@ -37,22 +38,22 @@ fun EncryptedTally.publishJson(): EncryptedTallyJson {
                 )
             })
     }
-    return EncryptedTallyJson(contests)
+    return EncryptedTallyJson(this.tallyId, contests)
 }
 
 fun EncryptedTallyJson.import(group: GroupContext): EncryptedTally {
     val contests = this.contests.map { pcontest ->
 
         EncryptedTally.Contest(
-            pcontest.contestId,
-            pcontest.sequenceOrder,
+            pcontest.contest_id,
+            pcontest.sequence_order,
             pcontest.selections.map {
                 EncryptedTally.Selection(
-                    it.selectionId,
-                    it.sequenceOrder,
+                    it.selection_id,
+                    it.sequence_order,
                     it.encrypted_vote.import(group),
                 )
             })
     }
-    return EncryptedTally("tallyId", contests)
+    return EncryptedTally(this.tally_id, contests)
 }
