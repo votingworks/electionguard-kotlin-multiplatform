@@ -151,6 +151,13 @@ kotlin {
 val protoGenSource by
     extra("build/generated/source/proto")
 
+/*
+protoc --pbandk_out=./egklib/src/commonMain/kotlin/ --proto_path=./egklib/src/commonMain/proto \
+                    common.proto encrypted_ballot.proto encrypted_tally.proto \
+                    election_record.proto manifest.proto \
+                    plaintext_ballot.proto decrypted_tally.proto \
+                    trustees.proto
+ */
 val compileProtobuf =
     tasks.register("compileProtobuf") {
         doLast {

@@ -14,7 +14,6 @@ import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.electionRecordFromConsumer
 import electionguard.publish.makeConsumer
 import electionguard.tally.AccumulateTally
-import kotlin.test.Test
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
@@ -153,7 +152,7 @@ class AttackEncryptedBallotTest {
         return EncryptedBallot.Selection(
             s1.selectionId,
             s1.sequenceOrder,
-            s2.ciphertext,
+            s2.encryptedVote,
             s2.proof,
         )
     }

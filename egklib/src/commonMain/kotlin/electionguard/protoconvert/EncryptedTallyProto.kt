@@ -32,7 +32,7 @@ private fun electionguard.protogen.EncryptedTallyContest.import(group: GroupCont
 private fun electionguard.protogen.EncryptedTallySelection.import(group: GroupContext):
         Result<EncryptedTally.Selection, String> {
 
-    val ciphertext = group.importCiphertext(this.ciphertext)
+    val ciphertext = group.importCiphertext(this.encryptedVote)
         .toResultOr { "Selection ${this.selectionId} ciphertext missing" }
 
     if (ciphertext is Err) {
@@ -66,5 +66,5 @@ private fun EncryptedTally.Selection.publishProto() =
     electionguard.protogen.EncryptedTallySelection(
         this.selectionId,
         this.sequenceOrder,
-        this.ciphertext.publishProto()
+        this.encryptedVote.publishProto()
     )

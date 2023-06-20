@@ -103,7 +103,7 @@ class DecryptPreencryptWithNonce(
         }
 
         return contest.selections.mapIndexed { idx, selection ->
-            val decodedVote = selection.ciphertext.decryptWithNonce(publicKey, combinedNonces[idx])
+            val decodedVote = selection.encryptedVote.decryptWithNonce(publicKey, combinedNonces[idx])
             PlaintextBallot.Selection(selection.selectionId, selection.sequenceOrder, decodedVote!!)
         }
     }

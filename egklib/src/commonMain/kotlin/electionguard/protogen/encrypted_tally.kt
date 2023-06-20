@@ -111,7 +111,7 @@ public data class EncryptedTallyContest(
 public data class EncryptedTallySelection(
     val selectionId: String = "",
     val sequenceOrder: Int = 0,
-    val ciphertext: electionguard.protogen.ElGamalCiphertext? = null,
+    val encryptedVote: electionguard.protogen.ElGamalCiphertext? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.EncryptedTallySelection = protoMergeImpl(other)
@@ -147,11 +147,11 @@ public data class EncryptedTallySelection(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "ciphertext",
+                        name = "encrypted_vote",
                         number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElGamalCiphertext.Companion),
-                        jsonName = "ciphertext",
-                        value = electionguard.protogen.EncryptedTallySelection::ciphertext
+                        jsonName = "encryptedVote",
+                        value = electionguard.protogen.EncryptedTallySelection::encryptedVote
                     )
                 )
             }
@@ -225,7 +225,7 @@ public fun EncryptedTallySelection?.orDefault(): electionguard.protogen.Encrypte
 
 private fun EncryptedTallySelection.protoMergeImpl(plus: pbandk.Message?): EncryptedTallySelection = (plus as? EncryptedTallySelection)?.let {
     it.copy(
-        ciphertext = ciphertext?.plus(plus.ciphertext) ?: plus.ciphertext,
+        encryptedVote = encryptedVote?.plus(plus.encryptedVote) ?: plus.encryptedVote,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -234,15 +234,15 @@ private fun EncryptedTallySelection.protoMergeImpl(plus: pbandk.Message?): Encry
 private fun EncryptedTallySelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedTallySelection {
     var selectionId = ""
     var sequenceOrder = 0
-    var ciphertext: electionguard.protogen.ElGamalCiphertext? = null
+    var encryptedVote: electionguard.protogen.ElGamalCiphertext? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            4 -> ciphertext = _fieldValue as electionguard.protogen.ElGamalCiphertext
+            4 -> encryptedVote = _fieldValue as electionguard.protogen.ElGamalCiphertext
         }
     }
 
-    return EncryptedTallySelection(selectionId, sequenceOrder, ciphertext, unknownFields)
+    return EncryptedTallySelection(selectionId, sequenceOrder, encryptedVote, unknownFields)
 }

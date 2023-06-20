@@ -18,7 +18,7 @@ interface EncryptedBallotIF {
     interface Selection {
         val selectionId: String
         val sequenceOrder: Int
-        val ciphertext: ElGamalCiphertext
+        val encryptedVote: ElGamalCiphertext
     }
 
 }

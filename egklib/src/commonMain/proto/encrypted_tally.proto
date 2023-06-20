@@ -20,5 +20,5 @@ message EncryptedTallyContest {
 message EncryptedTallySelection {
   string selection_id = 1; // matches SelectionDescription.selection_id
   uint32 sequence_order = 2; // matches SelectionDescription.sequence_order
-  ElGamalCiphertext ciphertext = 4;  // accumulation over all the cast ballots for this selection
+  ElGamalCiphertext encrypted_vote = 4;  // accumulation over all the cast ballots for this selection
 }

@@ -1,0 +1,48 @@
+package electionguard.json2
+
+import electionguard.ballot.ElectionInitialized
+import electionguard.ballot.Guardian
+import electionguard.core.GroupContext
+import electionguard.core.SchnorrProof
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class ElectionInitializedJson(
+    val config: ElectionConfigJson, // TODO could argue we dont put this here, but leave as separate file?
+    val joint_public_key: ElementModPJson, // aka K
+    val extended_base_hash: UInt256Json, // aka He
+    val guardians: List<GuardianJson>, // size = number_of_guardians
+    val metadata: Map<String, String> = emptyMap(),
+)
+fun ElectionInitialized.publishJson() = ElectionInitializedJson(
+    this.config.publishJson(),
+    this.jointPublicKey.publishJson(),
+    this.extendedBaseHash.publishJson(),
+    this.guardians.map { it.publishJson() },
+    )
+
+fun ElectionInitializedJson.import(group: GroupContext) = ElectionInitialized(
+    this.config.import(),
+    this.joint_public_key.import(group),
+    this.extended_base_hash.import(),
+    this.guardians.map { it.import(group) },
+)
+
+@Serializable
+data class GuardianJson(
+    val guardian_id: String,
+    val x_coordinate: Int, // use sequential numbering starting at 1; == i of T_i, K_i
+    val coefficient_proofs: List<SchnorrProofJson> // size = quorum
+)
+fun Guardian.publishJson() = GuardianJson(this.guardianId, this.xCoordinate, this.coefficientProofs.map { it.publishJson() })
+fun GuardianJson.import(group: GroupContext) = Guardian(this.guardian_id, this.x_coordinate, this.coefficient_proofs.map { it.import(group) })
+
+@Serializable
+data class SchnorrProofJson(
+    val public_key : ElementModPJson,
+    val challenge : ElementModQJson,
+    val response : ElementModQJson,
+)
+fun SchnorrProof.publishJson() = SchnorrProofJson(this.publicKey.publishJson(), this.challenge.publishJson(), this.response.publishJson())
+fun SchnorrProofJson.import(group: GroupContext) = SchnorrProof(this.public_key.import(group), this.challenge.import(group), this.response.import(group))

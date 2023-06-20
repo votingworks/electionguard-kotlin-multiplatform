@@ -35,15 +35,15 @@ class VerifyAggregation(
                 // Already did the accumulation, just have to verify it.
                 val accum = aggregator.getAggregateFor(key)
                 if (accum != null) {
-                    if (selection.ciphertext.pad != accum.pad) {
+                    if (selection.encryptedVote.pad != accum.pad) {
                         errors.add(Err("  7.A  Ballot Aggregation does not match: $key"))
                     }
-                    if (selection.ciphertext.data != accum.data) {
+                    if (selection.encryptedVote.data != accum.data) {
                         errors.add(Err("  7.B  Ballot Aggregation does not match: $key"))
                     }
                 } else {
                     // TODO what is it? is it needed? left over from placeholders ??
-                    if (selection.ciphertext.pad != group.ZERO_MOD_P || selection.ciphertext.data != group.ZERO_MOD_P) {
+                    if (selection.encryptedVote.pad != group.ZERO_MOD_P || selection.encryptedVote.data != group.ZERO_MOD_P) {
                         errors.add(Err("    Ballot Aggregation empty does not match $key"))
                     }
                 }
@@ -81,9 +81,9 @@ class SelectionAggregator {
                     val key = "${contest.contestId}.${selection.selectionId}"
                     val total = selectionEncryptions[key]
                     if (total != null) {
-                        selectionEncryptions[key] = total + selection.ciphertext
+                        selectionEncryptions[key] = total + selection.encryptedVote
                     } else {
-                        selectionEncryptions[key] = selection.ciphertext
+                        selectionEncryptions[key] = selection.encryptedVote
                     }
                 }
             }

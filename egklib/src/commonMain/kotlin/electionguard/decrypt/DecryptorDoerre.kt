@@ -163,7 +163,7 @@ class DecryptorDoerre(
                 texts.add(contest.contestData.c0)
             }
             for (selection in contest.selections) {
-                texts.add(selection.ciphertext.pad)
+                texts.add(selection.encryptedVote.pad)
             }
         }
 
@@ -178,7 +178,7 @@ class DecryptorDoerre(
                 trusteeDecryptions.addContestDataResults(contest.contestId, contest.contestData, results[count++])
             }
             for (selection in contest.selections) {
-                trusteeDecryptions.addDecryption(contest.contestId, selection.selectionId, selection.ciphertext, results[count++])
+                trusteeDecryptions.addDecryption(contest.contestId, selection.selectionId, selection.encryptedVote, results[count++])
             }
         }
         return trusteeDecryptions
@@ -236,7 +236,7 @@ private fun EncryptedBallot.convertToTally(): EncryptedTally {
             EncryptedTally.Selection(
                 it.selectionId,
                 it.sequenceOrder,
-                it.ciphertext)
+                it.encryptedVote)
         }
         EncryptedTally.Contest(
             contest.contestId,

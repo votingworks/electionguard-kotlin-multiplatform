@@ -57,7 +57,7 @@ class BallotAggregationTestVector {
                         it.selectionId,
                         it.sequenceOrder,
                         "Compute tally over all encrypted ballots, eq 63",
-                        it.ciphertext.publishJson(),
+                        it.encryptedVote.publishJson(),
                     )
                 })
         }
@@ -134,7 +134,7 @@ class BallotAggregationTestVector {
 
         testVector.expected_encrypted_tally.contests.zip(tally.contests).forEach { (expectContest, actualContest) ->
             expectContest.selections.zip(actualContest.selections).forEach { (expectSelection, actualSelection) ->
-                assertEquals(expectSelection.expected_encrypted_vote.import(group), actualSelection.ciphertext)
+                assertEquals(expectSelection.expected_encrypted_vote.import(group), actualSelection.encryptedVote)
             }
         }
     }

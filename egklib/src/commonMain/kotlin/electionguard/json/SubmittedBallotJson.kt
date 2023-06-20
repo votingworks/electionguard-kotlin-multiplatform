@@ -122,7 +122,7 @@ data class SubmittedSelectionJson(
 fun EncryptedBallot.Selection.publish() = SubmittedSelectionJson(
     this.selectionId,
     this.sequenceOrder,
-    this.ciphertext.publish(),
+    this.encryptedVote.publish(),
     this.proof.publish(),
 )
 
