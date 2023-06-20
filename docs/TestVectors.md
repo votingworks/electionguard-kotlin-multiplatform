@@ -7,14 +7,15 @@ draft 6/19/2023
 * The Kotlin code generates and reads back the JSON test vectors. Follow it to find the implementation of that feature. Note that its just my implementation, not guarentted to be right.
 
 
-| Name              | JSON file                                                                         | Kotlin code                                                                                   |
-|-------------------|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| Parameters        | [JSON](../egklib/src/commonTest/data/testvectors/ParametersTestVector.json)       | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ParametersTestVector.kt)        |
-| KeyCeremony       | [JSON](../egklib/src/commonTest/data/testvectors/KeyCeremonyTestVector.json)      | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/KeyCeremonyTestVector.kt)       |
-| ShareEncryption   | [JSON](../egklib/src/commonTest/data/testvectors/ShareEncryptionTestVector.json)  | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ShareEncryptionTestVector.kt)   |
-| BallotEncryption  | [JSON](../egklib/src/commonTest/data/testvectors/BallotEncryptionTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotEncryptionTestVector.kt)  |
-| ConfirmationCode  | [JSON](../egklib/src/commonTest/data/testvectors/ConfirmationCodeTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ConfirmationCodeTestVector.kt)  |
-| BallotChaining    | [JSON](../egklib/src/commonTest/data/testvectors/BallotChainingTestVector.json)   | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotChainingTestVector.kt)    |
-| BallotAggregation | [JSON](../egklib/src/commonTest/data/testvectors/BallotAggegationTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotAggregationTestVector.kt) |
-| TallyDecryption   | [JSON](../egklib/src/commonTest/data/testvectors/TallyDecryptionTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyDecryptionTestVector.kt) |
-| ... moar soon     |                                                                                   |                                                                                               |
+| Name                   | JSON file                                                                                | Kotlin code                                                                                        |
+|------------------------|------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| Parameters             | [JSON](../egklib/src/commonTest/data/testvectors/ParametersTestVector.json)              | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ParametersTestVector.kt)             |
+| KeyCeremony            | [JSON](../egklib/src/commonTest/data/testvectors/KeyCeremonyTestVector.json)             | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/KeyCeremonyTestVector.kt)            |
+| ShareEncryption        | [JSON](../egklib/src/commonTest/data/testvectors/ShareEncryptionTestVector.json)         | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ShareEncryptionTestVector.kt)        |
+| BallotEncryption       | [JSON](../egklib/src/commonTest/data/testvectors/BallotEncryptionTestVector.json)        | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotEncryptionTestVector.kt)       |
+| ConfirmationCode       | [JSON](../egklib/src/commonTest/data/testvectors/ConfirmationCodeTestVector.json)        | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ConfirmationCodeTestVector.kt)       |
+| BallotChaining         | [JSON](../egklib/src/commonTest/data/testvectors/BallotChainingTestVector.json)          | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotChainingTestVector.kt)         |
+| BallotAggregation      | [JSON](../egklib/src/commonTest/data/testvectors/BallotAggegationTestVector.json)        | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotAggregationTestVector.kt)      |
+| TallyDecryption        | [JSON](../egklib/src/commonTest/data/testvectors/TallyDecryptionTestVector.json)         | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyDecryptionTestVector.kt)        |
+| TallyPartialDecryption | [JSON](../egklib/src/commonTest/data/testvectors/TallyPartialDecryptionTestVector.json)  | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyPartialDecryptionTestVector.kt) |
+| ... moar soon          |                                                                                          |                                                                                                    |
