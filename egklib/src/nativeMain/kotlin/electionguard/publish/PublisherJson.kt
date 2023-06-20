@@ -49,7 +49,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {
-        val fileout = jsonPaths.electionConstantsPath()
+        val fileout = jsonPaths.electionConfigPath()
         val jsonString = jsonFormat.encodeToString(config.constants.publish())
         writeToFile(fileout, jsonString)
 
@@ -59,17 +59,8 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     actual override fun writeElectionInitialized(init: ElectionInitialized) {
         writeElectionConfig(init.config)
 
-        validateOutputDir(jsonPaths.guardianDir())
-        init.guardians.forEach { writeGuardian(it) }
-
-        val fileout = jsonPaths.electionContextPath()
+        val fileout = jsonPaths.electionInitializedPath()
         val jsonString = jsonFormat.encodeToString(init.publish())
-        writeToFile(fileout, jsonString)
-    }
-
-    private fun writeGuardian(guardian: Guardian) {
-        val fileout = jsonPaths.guardianPath(guardian.guardianId)
-        val jsonString = jsonFormat.encodeToString(guardian.publish())
         writeToFile(fileout, jsonString)
     }
 
@@ -93,10 +84,11 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     actual override fun writeDecryptionResult(decryption: DecryptionResult) {
         writeTallyResult(decryption.tallyResult)
 
-        // all the coefficients in a map in one file
+        /* all the coefficients in a map in one file
         val fileout = jsonPaths.lagrangePath()
         val jsonString = jsonFormat.encodeToString(decryption.lagrangeCoordinates.publish())
         writeToFile(fileout, jsonString)
+         */
 
         val fileout2 = jsonPaths.decryptedTallyPath()
         val jsonString2 = jsonFormat.encodeToString(decryption.decryptedTally.publish())

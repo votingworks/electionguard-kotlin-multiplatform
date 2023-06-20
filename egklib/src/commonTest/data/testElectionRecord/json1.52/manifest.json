@@ -1,0 +1,1515 @@
+{
+    "election_scope_id": "StandardManifest",
+    "spec_version": "1.53",
+    "type": "general",
+    "start_date": "start",
+    "end_date": "end",
+    "geopolitical_units": [
+        {
+            "object_id": "district",
+            "name": "districtName",
+            "type": "precinct",
+            "contact_information": null
+        }
+    ],
+    "parties": [
+        {
+            "object_id": "dog",
+            "name": "",
+            "abbreviation": null,
+            "color": null,
+            "logo_uri": null
+        },
+        {
+            "object_id": "cat",
+            "name": "",
+            "abbreviation": null,
+            "color": null,
+            "logo_uri": null
+        }
+    ],
+    "candidates": [
+        {
+            "object_id": "candidate43",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate44",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate41",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate42",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate47",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate48",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate45",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate46",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate49",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate50",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate51",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate54",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate55",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate52",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate53",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate58",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate59",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate56",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate57",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate61",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate62",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate60",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate21",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate22",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate20",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate25",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate26",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate23",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate24",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate29",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate27",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate28",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate32",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate33",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate30",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate31",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate36",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate37",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate34",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate35",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate38",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate39",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate40",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate87",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate88",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate85",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate86",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate89",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate90",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate91",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate94",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate95",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate92",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate93",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate10",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate98",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate11",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate99",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate96",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate97",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate14",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate15",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate12",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate13",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate18",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate19",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate16",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate17",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate65",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate66",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate63",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate64",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate69",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate67",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate68",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate72",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate73",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate70",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate71",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate76",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate77",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate74",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate75",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate78",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate79",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate0",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate2",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate1",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate4",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate3",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate6",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate5",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate8",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate7",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate9",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate80",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate83",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate84",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate81",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        },
+        {
+            "object_id": "candidate82",
+            "name": null,
+            "party_id": null,
+            "image_url": null,
+            "is_write_in": false
+        }
+    ],
+    "contests": [
+        {
+            "object_id": "contest0",
+            "sequence_order": 0,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection0",
+                    "sequence_order": 0,
+                    "candidate_id": "candidate0"
+                },
+                {
+                    "object_id": "selection1",
+                    "sequence_order": 1,
+                    "candidate_id": "candidate1"
+                },
+                {
+                    "object_id": "selection2",
+                    "sequence_order": 2,
+                    "candidate_id": "candidate2"
+                },
+                {
+                    "object_id": "selection3",
+                    "sequence_order": 3,
+                    "candidate_id": "candidate3"
+                },
+                {
+                    "object_id": "selection4",
+                    "sequence_order": 4,
+                    "candidate_id": "candidate4"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest1",
+            "sequence_order": 1,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection5",
+                    "sequence_order": 5,
+                    "candidate_id": "candidate5"
+                },
+                {
+                    "object_id": "selection6",
+                    "sequence_order": 6,
+                    "candidate_id": "candidate6"
+                },
+                {
+                    "object_id": "selection7",
+                    "sequence_order": 7,
+                    "candidate_id": "candidate7"
+                },
+                {
+                    "object_id": "selection8",
+                    "sequence_order": 8,
+                    "candidate_id": "candidate8"
+                },
+                {
+                    "object_id": "selection9",
+                    "sequence_order": 9,
+                    "candidate_id": "candidate9"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest2",
+            "sequence_order": 2,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection10",
+                    "sequence_order": 10,
+                    "candidate_id": "candidate10"
+                },
+                {
+                    "object_id": "selection11",
+                    "sequence_order": 11,
+                    "candidate_id": "candidate11"
+                },
+                {
+                    "object_id": "selection12",
+                    "sequence_order": 12,
+                    "candidate_id": "candidate12"
+                },
+                {
+                    "object_id": "selection13",
+                    "sequence_order": 13,
+                    "candidate_id": "candidate13"
+                },
+                {
+                    "object_id": "selection14",
+                    "sequence_order": 14,
+                    "candidate_id": "candidate14"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest3",
+            "sequence_order": 3,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection15",
+                    "sequence_order": 15,
+                    "candidate_id": "candidate15"
+                },
+                {
+                    "object_id": "selection16",
+                    "sequence_order": 16,
+                    "candidate_id": "candidate16"
+                },
+                {
+                    "object_id": "selection17",
+                    "sequence_order": 17,
+                    "candidate_id": "candidate17"
+                },
+                {
+                    "object_id": "selection18",
+                    "sequence_order": 18,
+                    "candidate_id": "candidate18"
+                },
+                {
+                    "object_id": "selection19",
+                    "sequence_order": 19,
+                    "candidate_id": "candidate19"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest4",
+            "sequence_order": 4,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection20",
+                    "sequence_order": 20,
+                    "candidate_id": "candidate20"
+                },
+                {
+                    "object_id": "selection21",
+                    "sequence_order": 21,
+                    "candidate_id": "candidate21"
+                },
+                {
+                    "object_id": "selection22",
+                    "sequence_order": 22,
+                    "candidate_id": "candidate22"
+                },
+                {
+                    "object_id": "selection23",
+                    "sequence_order": 23,
+                    "candidate_id": "candidate23"
+                },
+                {
+                    "object_id": "selection24",
+                    "sequence_order": 24,
+                    "candidate_id": "candidate24"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest5",
+            "sequence_order": 5,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection25",
+                    "sequence_order": 25,
+                    "candidate_id": "candidate25"
+                },
+                {
+                    "object_id": "selection26",
+                    "sequence_order": 26,
+                    "candidate_id": "candidate26"
+                },
+                {
+                    "object_id": "selection27",
+                    "sequence_order": 27,
+                    "candidate_id": "candidate27"
+                },
+                {
+                    "object_id": "selection28",
+                    "sequence_order": 28,
+                    "candidate_id": "candidate28"
+                },
+                {
+                    "object_id": "selection29",
+                    "sequence_order": 29,
+                    "candidate_id": "candidate29"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest6",
+            "sequence_order": 6,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection30",
+                    "sequence_order": 30,
+                    "candidate_id": "candidate30"
+                },
+                {
+                    "object_id": "selection31",
+                    "sequence_order": 31,
+                    "candidate_id": "candidate31"
+                },
+                {
+                    "object_id": "selection32",
+                    "sequence_order": 32,
+                    "candidate_id": "candidate32"
+                },
+                {
+                    "object_id": "selection33",
+                    "sequence_order": 33,
+                    "candidate_id": "candidate33"
+                },
+                {
+                    "object_id": "selection34",
+                    "sequence_order": 34,
+                    "candidate_id": "candidate34"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest7",
+            "sequence_order": 7,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection35",
+                    "sequence_order": 35,
+                    "candidate_id": "candidate35"
+                },
+                {
+                    "object_id": "selection36",
+                    "sequence_order": 36,
+                    "candidate_id": "candidate36"
+                },
+                {
+                    "object_id": "selection37",
+                    "sequence_order": 37,
+                    "candidate_id": "candidate37"
+                },
+                {
+                    "object_id": "selection38",
+                    "sequence_order": 38,
+                    "candidate_id": "candidate38"
+                },
+                {
+                    "object_id": "selection39",
+                    "sequence_order": 39,
+                    "candidate_id": "candidate39"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest8",
+            "sequence_order": 8,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection40",
+                    "sequence_order": 40,
+                    "candidate_id": "candidate40"
+                },
+                {
+                    "object_id": "selection41",
+                    "sequence_order": 41,
+                    "candidate_id": "candidate41"
+                },
+                {
+                    "object_id": "selection42",
+                    "sequence_order": 42,
+                    "candidate_id": "candidate42"
+                },
+                {
+                    "object_id": "selection43",
+                    "sequence_order": 43,
+                    "candidate_id": "candidate43"
+                },
+                {
+                    "object_id": "selection44",
+                    "sequence_order": 44,
+                    "candidate_id": "candidate44"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest9",
+            "sequence_order": 9,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection45",
+                    "sequence_order": 45,
+                    "candidate_id": "candidate45"
+                },
+                {
+                    "object_id": "selection46",
+                    "sequence_order": 46,
+                    "candidate_id": "candidate46"
+                },
+                {
+                    "object_id": "selection47",
+                    "sequence_order": 47,
+                    "candidate_id": "candidate47"
+                },
+                {
+                    "object_id": "selection48",
+                    "sequence_order": 48,
+                    "candidate_id": "candidate48"
+                },
+                {
+                    "object_id": "selection49",
+                    "sequence_order": 49,
+                    "candidate_id": "candidate49"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest10",
+            "sequence_order": 10,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection50",
+                    "sequence_order": 50,
+                    "candidate_id": "candidate50"
+                },
+                {
+                    "object_id": "selection51",
+                    "sequence_order": 51,
+                    "candidate_id": "candidate51"
+                },
+                {
+                    "object_id": "selection52",
+                    "sequence_order": 52,
+                    "candidate_id": "candidate52"
+                },
+                {
+                    "object_id": "selection53",
+                    "sequence_order": 53,
+                    "candidate_id": "candidate53"
+                },
+                {
+                    "object_id": "selection54",
+                    "sequence_order": 54,
+                    "candidate_id": "candidate54"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest11",
+            "sequence_order": 11,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection55",
+                    "sequence_order": 55,
+                    "candidate_id": "candidate55"
+                },
+                {
+                    "object_id": "selection56",
+                    "sequence_order": 56,
+                    "candidate_id": "candidate56"
+                },
+                {
+                    "object_id": "selection57",
+                    "sequence_order": 57,
+                    "candidate_id": "candidate57"
+                },
+                {
+                    "object_id": "selection58",
+                    "sequence_order": 58,
+                    "candidate_id": "candidate58"
+                },
+                {
+                    "object_id": "selection59",
+                    "sequence_order": 59,
+                    "candidate_id": "candidate59"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest12",
+            "sequence_order": 12,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection60",
+                    "sequence_order": 60,
+                    "candidate_id": "candidate60"
+                },
+                {
+                    "object_id": "selection61",
+                    "sequence_order": 61,
+                    "candidate_id": "candidate61"
+                },
+                {
+                    "object_id": "selection62",
+                    "sequence_order": 62,
+                    "candidate_id": "candidate62"
+                },
+                {
+                    "object_id": "selection63",
+                    "sequence_order": 63,
+                    "candidate_id": "candidate63"
+                },
+                {
+                    "object_id": "selection64",
+                    "sequence_order": 64,
+                    "candidate_id": "candidate64"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest13",
+            "sequence_order": 13,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection65",
+                    "sequence_order": 65,
+                    "candidate_id": "candidate65"
+                },
+                {
+                    "object_id": "selection66",
+                    "sequence_order": 66,
+                    "candidate_id": "candidate66"
+                },
+                {
+                    "object_id": "selection67",
+                    "sequence_order": 67,
+                    "candidate_id": "candidate67"
+                },
+                {
+                    "object_id": "selection68",
+                    "sequence_order": 68,
+                    "candidate_id": "candidate68"
+                },
+                {
+                    "object_id": "selection69",
+                    "sequence_order": 69,
+                    "candidate_id": "candidate69"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest14",
+            "sequence_order": 14,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection70",
+                    "sequence_order": 70,
+                    "candidate_id": "candidate70"
+                },
+                {
+                    "object_id": "selection71",
+                    "sequence_order": 71,
+                    "candidate_id": "candidate71"
+                },
+                {
+                    "object_id": "selection72",
+                    "sequence_order": 72,
+                    "candidate_id": "candidate72"
+                },
+                {
+                    "object_id": "selection73",
+                    "sequence_order": 73,
+                    "candidate_id": "candidate73"
+                },
+                {
+                    "object_id": "selection74",
+                    "sequence_order": 74,
+                    "candidate_id": "candidate74"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest15",
+            "sequence_order": 15,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection75",
+                    "sequence_order": 75,
+                    "candidate_id": "candidate75"
+                },
+                {
+                    "object_id": "selection76",
+                    "sequence_order": 76,
+                    "candidate_id": "candidate76"
+                },
+                {
+                    "object_id": "selection77",
+                    "sequence_order": 77,
+                    "candidate_id": "candidate77"
+                },
+                {
+                    "object_id": "selection78",
+                    "sequence_order": 78,
+                    "candidate_id": "candidate78"
+                },
+                {
+                    "object_id": "selection79",
+                    "sequence_order": 79,
+                    "candidate_id": "candidate79"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest16",
+            "sequence_order": 16,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection80",
+                    "sequence_order": 80,
+                    "candidate_id": "candidate80"
+                },
+                {
+                    "object_id": "selection81",
+                    "sequence_order": 81,
+                    "candidate_id": "candidate81"
+                },
+                {
+                    "object_id": "selection82",
+                    "sequence_order": 82,
+                    "candidate_id": "candidate82"
+                },
+                {
+                    "object_id": "selection83",
+                    "sequence_order": 83,
+                    "candidate_id": "candidate83"
+                },
+                {
+                    "object_id": "selection84",
+                    "sequence_order": 84,
+                    "candidate_id": "candidate84"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest17",
+            "sequence_order": 17,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection85",
+                    "sequence_order": 85,
+                    "candidate_id": "candidate85"
+                },
+                {
+                    "object_id": "selection86",
+                    "sequence_order": 86,
+                    "candidate_id": "candidate86"
+                },
+                {
+                    "object_id": "selection87",
+                    "sequence_order": 87,
+                    "candidate_id": "candidate87"
+                },
+                {
+                    "object_id": "selection88",
+                    "sequence_order": 88,
+                    "candidate_id": "candidate88"
+                },
+                {
+                    "object_id": "selection89",
+                    "sequence_order": 89,
+                    "candidate_id": "candidate89"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest18",
+            "sequence_order": 18,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection90",
+                    "sequence_order": 90,
+                    "candidate_id": "candidate90"
+                },
+                {
+                    "object_id": "selection91",
+                    "sequence_order": 91,
+                    "candidate_id": "candidate91"
+                },
+                {
+                    "object_id": "selection92",
+                    "sequence_order": 92,
+                    "candidate_id": "candidate92"
+                },
+                {
+                    "object_id": "selection93",
+                    "sequence_order": 93,
+                    "candidate_id": "candidate93"
+                },
+                {
+                    "object_id": "selection94",
+                    "sequence_order": 94,
+                    "candidate_id": "candidate94"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        },
+        {
+            "object_id": "contest19",
+            "sequence_order": 19,
+            "electoral_district_id": "district",
+            "vote_variation": "one_of_m",
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "name": "contestName",
+            "ballot_selections": [
+                {
+                    "object_id": "selection95",
+                    "sequence_order": 95,
+                    "candidate_id": "candidate95"
+                },
+                {
+                    "object_id": "selection96",
+                    "sequence_order": 96,
+                    "candidate_id": "candidate96"
+                },
+                {
+                    "object_id": "selection97",
+                    "sequence_order": 97,
+                    "candidate_id": "candidate97"
+                },
+                {
+                    "object_id": "selection98",
+                    "sequence_order": 98,
+                    "candidate_id": "candidate98"
+                },
+                {
+                    "object_id": "selection99",
+                    "sequence_order": 99,
+                    "candidate_id": "candidate99"
+                }
+            ],
+            "ballot_title": null,
+            "ballot_subtitle": "subtitle"
+        }
+    ],
+    "ballot_styles": [
+        {
+            "object_id": "styling",
+            "geopolitical_unit_ids": [
+                "district"
+            ],
+            "party_ids": [
+            ],
+            "image_url": null
+        }
+    ],
+    "name": {
+    },
+    "contact_information": {
+        "address_line": [
+        ],
+        "email": null,
+        "phone": "911",
+        "name": "contact"
+    }
+}

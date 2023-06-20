@@ -283,7 +283,6 @@ draft 6/15/2023
 |----------------------|----------------------------|-------|
 | tally_result         | TallyResult                |       |
 | decrypted_tally      | DecryptedTallyOrBallot     |       |
-| lagrange_coordinates | List\<LagrangeCoordinate\> |       |
 | metadata             | map<string, string>        |       |
 
 #### message LagrangeCoordinate

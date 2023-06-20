@@ -47,7 +47,7 @@ interface ElectionRecord {
     fun tallyResult(): TallyResult?
 
     fun decryptedTally(): DecryptedTallyOrBallot?
-    fun decryptingGuardians(): List<LagrangeCoordinate> // may be empty
+    // fun decryptingGuardians(): List<LagrangeCoordinate> // may be empty
     fun decryptedBallots(): Iterable<DecryptedTallyOrBallot> // may be empty
     fun decryptionResult(): DecryptionResult?
 }

@@ -1,0 +1,19 @@
+{
+    "coefficients": {
+        "guardian1": {
+            "guardian_id": "guardian1",
+            "x_coordinate": 1,
+            "lagrange_coefficient": "7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA4"
+        },
+        "guardian2": {
+            "guardian_id": "guardian2",
+            "x_coordinate": 2,
+            "lagrange_coefficient": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2B"
+        },
+        "guardian5": {
+            "guardian_id": "guardian5",
+            "x_coordinate": 5,
+            "lagrange_coefficient": "D5555555555555555555555555555555555555555555555555555555555554B8"
+        }
+    }
+}

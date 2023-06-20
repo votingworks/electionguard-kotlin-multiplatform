@@ -60,7 +60,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
     }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
-        return readElectionConfig(jsonPaths.electionConstantsPath(), jsonPaths.manifestPath())
+        return readElectionConfig(jsonPaths.electionConfigPath(), jsonPaths.manifestPath())
     }
 
     actual override fun readElectionInitialized(): Result<ElectionInitialized, String> {
@@ -68,7 +68,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
         if (config is Err) {
             return Err(config.error)
         }
-        return readElectionInitialized(jsonPaths.electionContextPath(), config.unwrap())
+        return readElectionInitialized(jsonPaths.electionInitializedPath(), config.unwrap())
     }
 
     actual override fun readTallyResult(): Result<TallyResult, String> {
@@ -170,26 +170,13 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
         }
     }
 
+    // TODO update to version 2
     fun readElectionInitialized(contextFile: String, config: ElectionConfig): Result<ElectionInitialized, String> {
         return try {
-            val (guardians, errors) = readGuardians().partition()
-            if (errors.isNotEmpty()) {
-                return Err(errors.joinToString("\n"))
-            } else {
-                val contextJson = jsonFormat.decodeFromString<ContextJson>(gulp(contextFile).toKString())
-                Ok(contextJson.import(group, config, guardians))
-            }
+            val contextJson = jsonFormat.decodeFromString<ContextJson>(gulp(contextFile).toKString())
+            Ok(contextJson.import(group, config, emptyList()))
         } catch (e: Exception) {
             Err(e.message ?: "readElectionInitialized $contextFile failed")
-        }
-    }
-
-    private fun readGuardians(): List<Result<Guardian, String>> {
-        val fileList = openDir(jsonPaths.guardianDir())
-        return fileList.map {
-            val filename = "${jsonPaths.guardianDir()}/$it"
-            val json = jsonFormat.decodeFromString<GuardianJson>(gulp(filename).toKString())
-            json.import(group)
         }
     }
 
@@ -207,17 +194,13 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
     }
 
     fun readDecryptionResult(filename: String, tallyResult: TallyResult): Result<DecryptionResult, String> {
-        // all the coefficients in a map in one file
-        val jsonCoeff = jsonFormat.decodeFromString<CoefficientsJson>(gulp(jsonPaths.lagrangePath()).toKString())
-        val lagrangeCoordinates = jsonCoeff.import(group)
-
         return try {
             val json = jsonFormat.decodeFromString<DecryptedTallyJson>(gulp(filename).toKString())
             val dtallyResult = json.import(group)
             if (dtallyResult is Err)
                 Err(dtallyResult.unwrapError())
             else
-                Ok(DecryptionResult(tallyResult, dtallyResult.unwrap(), lagrangeCoordinates))
+                Ok(DecryptionResult(tallyResult, dtallyResult.unwrap()))
         } catch (e: Exception) {
             Err(e.message ?: "readDecryptionResult $filename failed")
         }

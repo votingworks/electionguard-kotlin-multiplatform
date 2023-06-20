@@ -114,11 +114,11 @@ fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: ShowSe
 
     val dtally = electionRecord.decryptionResult()
     if (dtally != null) {
-        println(" decryptedTally available=${dtally.lagrangeCoordinates.size}")
+        // println(" decryptedTally available=${dtally.lagrangeCoordinates.size}")
         println(" decryptedTally ${dtally.decryptedTally.show(details, config.manifest)}")
-        if (showSet.has("lagrange")) {
-            print(dtally.lagrangeCoordinates.showLagrange())
-        }
+        //if (showSet.has("lagrange")) {
+        //    print(dtally.lagrangeCoordinates.showLagrange())
+       // }
     }
 }
 

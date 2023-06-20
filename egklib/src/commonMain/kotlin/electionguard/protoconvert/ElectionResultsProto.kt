@@ -33,10 +33,9 @@ fun electionguard.protogen.DecryptionResult.import(group: GroupContext): Result<
     val tallyResult = this.tallyResult?.import(group) ?: Err("Null TallyResult")
     val decryptedTally = this.decryptedTally?.import(group) ?: Err("Null DecryptedTally")
 
-    val (guardians, gerrors) =
-        this.lagrangeCoordinates.map { it.import(group) }.partition()
+    // val (guardians, gerrors) = this.lagrangeCoordinates.map { it.import(group) }.partition()
 
-    val errors = getAllErrors(tallyResult, decryptedTally) + gerrors
+    val errors = getAllErrors(tallyResult, decryptedTally)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -44,7 +43,6 @@ fun electionguard.protogen.DecryptionResult.import(group: GroupContext): Result<
     return Ok(DecryptionResult(
         tallyResult.unwrap(),
         decryptedTally.unwrap(),
-        guardians,
         this.metadata.associate { it.key to it.value }
     ))
 }
@@ -78,7 +76,6 @@ fun DecryptionResult.publishProto() =
     electionguard.protogen.DecryptionResult(
         this.tallyResult.publishProto(),
         this.decryptedTally.publishProto(),
-        this.lagrangeCoordinates.map { it.publishProto() },
         this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value) }
     )
 

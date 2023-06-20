@@ -2,7 +2,7 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.json.publish
-import electionguard.json.publishDecryptingTrusteeJson
+import electionguard.json2.publishJson
 import electionguard.keyceremony.KeyCeremonyTrustee
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -26,7 +26,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeManifest(manifest: Manifest)  : String {
-        val manifestJson = manifest.publish()
+        val manifestJson = manifest.publishJson()
         FileOutputStream(jsonPaths.manifestPath()).use { out ->
             jsonFormat.encodeToStream(manifestJson, out)
             out.close()
@@ -35,32 +35,27 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {
+        writeManifest(config.manifest)
+
         val constantsJson = config.constants.publish()
         FileOutputStream(jsonPaths.electionConstantsPath()).use { out ->
             jsonFormat.encodeToStream(constantsJson, out)
             out.close()
         }
 
-        writeManifest(config.manifest)
+        val configJson = config.publishJson()
+        FileOutputStream(jsonPaths.electionConfigPath()).use { out ->
+            jsonFormat.encodeToStream(configJson, out)
+            out.close()
+        }
     }
 
     actual override fun writeElectionInitialized(init: ElectionInitialized) {
         writeElectionConfig(init.config)
 
-        validateOutputDir(Path.of(jsonPaths.guardianDir()), Formatter())
-        init.guardians.forEach { writeGuardian(it) }
-
-        val contextJson = init.publish()
-        FileOutputStream(jsonPaths.electionContextPath()).use { out ->
+        val contextJson = init.publishJson()
+        FileOutputStream(jsonPaths.electionInitializedPath()).use { out ->
             jsonFormat.encodeToStream(contextJson, out)
-            out.close()
-        }
-    }
-
-    private fun writeGuardian(guardian: Guardian) {
-        val guardianJson = guardian.publish()
-        FileOutputStream(jsonPaths.guardianPath(guardian.guardianId)).use { out ->
-            jsonFormat.encodeToStream(guardianJson, out)
             out.close()
         }
     }
@@ -77,7 +72,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     actual override fun writeTallyResult(tally: TallyResult) {
         writeElectionInitialized(tally.electionInitialized)
 
-        val encryptedTallyJson = tally.encryptedTally.publish()
+        val encryptedTallyJson = tally.encryptedTally.publishJson()
         FileOutputStream(jsonPaths.encryptedTallyPath()).use { out ->
             jsonFormat.encodeToStream(encryptedTallyJson, out)
             out.close()
@@ -87,14 +82,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     actual override fun writeDecryptionResult(decryption: DecryptionResult) {
         writeTallyResult(decryption.tallyResult)
 
-        // all the coefficients in a map in one file
-        val coefficientsJson = decryption.lagrangeCoordinates.publish()
-        FileOutputStream(jsonPaths.lagrangePath()).use { out ->
-            jsonFormat.encodeToStream(coefficientsJson, out)
-            out.close()
-        }
-
-        val decryptedTallyJson = decryption.decryptedTally.publish()
+        val decryptedTallyJson = decryption.decryptedTally.publishJson()
         FileOutputStream(jsonPaths.decryptedTallyPath()).use { out ->
             jsonFormat.encodeToStream(decryptedTallyJson, out)
             out.close()
@@ -106,7 +94,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     private fun writePlaintextBallot(outputDir: String, plaintextBallot: PlaintextBallot) {
-        val plaintextBallotJson = plaintextBallot.publish()
+        val plaintextBallotJson = plaintextBallot.publishJson()
         FileOutputStream(jsonPaths.plaintextBallotPath(outputDir, plaintextBallot.ballotId)).use { out ->
             jsonFormat.encodeToStream(plaintextBallotJson, out)
             out.close()
@@ -114,7 +102,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
-        val decryptingTrusteeJson = trustee.publishDecryptingTrusteeJson()
+        val decryptingTrusteeJson = trustee.publishJson()
         FileOutputStream(jsonPaths.decryptingTrusteePath(trusteeDir, trustee.id)).use { out ->
             jsonFormat.encodeToStream(decryptingTrusteeJson, out)
             out.close()
@@ -128,7 +116,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
     inner class EncryptedBallotSink() : EncryptedBallotSinkIF {
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
-            val ballotJson = ballot.publish()
+            val ballotJson = ballot.publishJson()
             FileOutputStream(jsonPaths.encryptedBallotPath(ballot.ballotId)).use { out ->
                 jsonFormat.encodeToStream(ballotJson, out)
                 out.close()
@@ -145,7 +133,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
     inner class DecryptedTallyOrBallotSink() : DecryptedTallyOrBallotSinkIF {
         override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot) {
-            val tallyJson = tally.publish()
+            val tallyJson = tally.publishJson()
             FileOutputStream(jsonPaths.decryptedBallotPath(tally.id)).use { out ->
                 jsonFormat.encodeToStream(tallyJson, out)
                 out.close()

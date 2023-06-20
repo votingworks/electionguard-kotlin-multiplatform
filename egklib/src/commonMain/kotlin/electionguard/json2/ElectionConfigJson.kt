@@ -2,6 +2,7 @@ package electionguard.json2
 
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionConstants
+import electionguard.ballot.Manifest
 import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
 import io.ktor.utils.io.core.*
@@ -11,10 +12,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ElectionConfigJson(
     val config_version: String,
-    val constants: ElectionConstantsJson,
-    val manifest_file: String,
-    val manifest: ManifestJson,
-
     val number_of_guardians: Int,
     val quorum: Int,
     val election_date: String,
@@ -27,9 +24,6 @@ data class ElectionConfigJson(
 
 fun ElectionConfig.publishJson() = ElectionConfigJson(
     this.configVersion,
-    this.constants.publishJson(),
-    String(this.manifestFile),
-    this.manifest.publishJson(),
     this.numberOfGuardians,
     this.quorum,
     this.electionDate,
@@ -39,12 +33,12 @@ fun ElectionConfig.publishJson() = ElectionConfigJson(
     this.electionBaseHash.publishJson(),
 )
 
-fun ElectionConfigJson.import() : ElectionConfig {
+fun ElectionConfigJson.import(constants: ElectionConstants, manifest_file: ByteArray, manifest: Manifest) : ElectionConfig {
     return ElectionConfig(
         this.config_version,
-        this.constants.import(),
-        this.manifest_file.toByteArray(),
-        this.manifest.import(),
+        constants,
+        manifest_file,
+        manifest,
         this.number_of_guardians,
         this.quorum,
         this.election_date,

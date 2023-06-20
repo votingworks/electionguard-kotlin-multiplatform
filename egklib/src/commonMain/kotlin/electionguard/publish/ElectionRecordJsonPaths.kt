@@ -8,12 +8,11 @@ data class ElectionRecordJsonPaths(val topDir : String) {
         const val DECRYPTING_TRUSTEE_PREFIX = "decryptingTrustee"
         const val MANIFEST_FILE = "manifest$JSON_SUFFIX"
         const val ELECTION_CONSTANTS_FILE = "constants$JSON_SUFFIX"
-        const val ELECTION_CONTEXT_FILE = "context$JSON_SUFFIX"
+        const val ELECTION_CONFIG_FILE = "electionConfig$JSON_SUFFIX"
+        const val ELECTION_INITIALIZED_FILE = "electionInitialized$JSON_SUFFIX"
         const val ENCRYPTED_TALLY_FILE = "encrypted_tally$JSON_SUFFIX"
         const val DECRYPTED_TALLY_FILE = "tally$JSON_SUFFIX"
-        const val COEFFICIENTS_FILE = "coefficients$JSON_SUFFIX"
 
-        const val GUARDIAN_DIR = "guardians"
         const val SUBMITTED_DIR = "submitted_ballots"
     }
 
@@ -25,17 +24,12 @@ data class ElectionRecordJsonPaths(val topDir : String) {
         return "$electionRecordDir/$ELECTION_CONSTANTS_FILE"
     }
 
-    fun electionContextPath(): String {
-        return "$electionRecordDir/$ELECTION_CONTEXT_FILE"
+    fun electionConfigPath(): String {
+        return "$electionRecordDir/$ELECTION_CONFIG_FILE"
     }
 
-    fun guardianPath(guardianId: String): String {
-        val id = guardianId.replace(" ", "_")
-        return "$electionRecordDir/$GUARDIAN_DIR/$id$JSON_SUFFIX"
-    }
-
-    fun guardianDir(): String {
-        return "$electionRecordDir/$GUARDIAN_DIR"
+    fun electionInitializedPath(): String {
+        return "$electionRecordDir/$ELECTION_INITIALIZED_FILE"
     }
 
     fun encryptedTallyPath(): String {
@@ -44,10 +38,6 @@ data class ElectionRecordJsonPaths(val topDir : String) {
 
     fun decryptedTallyPath(): String {
         return "$electionRecordDir/$DECRYPTED_TALLY_FILE"
-    }
-
-    fun lagrangePath(): String {
-        return "$electionRecordDir/$COEFFICIENTS_FILE"
     }
 
     fun plaintextBallotPath(ballotDir: String, ballotId: String): String {
