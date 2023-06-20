@@ -2,6 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.*
 
+/** Interface used in the crypto routines for easy mocking. */
 interface EncryptedBallotIF {
 
     val ballotId: String

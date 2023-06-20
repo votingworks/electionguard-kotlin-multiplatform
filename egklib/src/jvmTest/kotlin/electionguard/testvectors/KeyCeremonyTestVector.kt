@@ -20,6 +20,12 @@ class KeyCeremonyTestVector {
     val quorum = 3
     val group = productionGroup()
 
+    // make some things public for resuse
+    val guardians = mutableListOf<GuardianJson>()
+    var publicKey: ElementModP? = null
+    val electionBaseHash = UInt256.random()
+    var He: UInt256? = null
+
     @Serializable
     data class GuardianJson(
         val name: String,
@@ -29,16 +35,6 @@ class KeyCeremonyTestVector {
         val task: String,
         val expected_proofs: List<SchnorrProofJson>,
     )
-
-    @Serializable
-    data class SchnorrProofJson(
-        val public_key : ElementModPJson,
-        val challenge : ElementModQJson,
-        val response : ElementModQJson,
-    )
-
-    fun SchnorrProof.publishJson() = SchnorrProofJson(this.publicKey.publishJson(), this.challenge.publishJson(), this.response.publishJson())
-    fun SchnorrProofJson.import(group: GroupContext) = SchnorrProof(this.public_key.import(group), this.challenge.import(group), this.response.import(group))
 
     @Serializable
     data class KeyCeremonyTestVector(
@@ -56,8 +52,7 @@ class KeyCeremonyTestVector {
         readKeyCeremonyTestVector()
     }
 
-    fun makeKeyCeremonyTestVector() {
-        val guardians = mutableListOf<GuardianJson>()
+    fun makeKeyCeremonyTestVector(publish : Boolean = true) {
         val publicKeys = mutableListOf<ElementModP>()
         val allCommitments = mutableListOf<ElementModP>()
 
@@ -94,7 +89,6 @@ class KeyCeremonyTestVector {
         }
 
         val expectedPublicKey = publicKeys.reduce { a, b -> a * b }
-        val electionBaseHash = UInt256.random()
         val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), expectedPublicKey, allCommitments)
 
         val keyCeremonyTestVector = KeyCeremonyTestVector(
@@ -107,10 +101,16 @@ class KeyCeremonyTestVector {
         )
         println(jsonFormat.encodeToString(keyCeremonyTestVector))
 
-        FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(keyCeremonyTestVector, out)
-            out.close()
+        if (publish) {
+            FileOutputStream(outputFile).use { out ->
+                jsonFormat.encodeToStream(keyCeremonyTestVector, out)
+                out.close()
+            }
         }
+
+        // make stuff available outside
+        publicKey = expectedPublicKey
+        He = extendedBaseHash
     }
 
     fun readKeyCeremonyTestVector() {

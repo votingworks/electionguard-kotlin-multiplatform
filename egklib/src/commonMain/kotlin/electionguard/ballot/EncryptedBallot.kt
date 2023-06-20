@@ -16,6 +16,7 @@ data class EncryptedBallot(
     override val state: BallotState,
     val isPreencrypt: Boolean = false,
 ) : EncryptedBallotIF {
+
     init {
         require(ballotId.isNotEmpty())
         require(contests.isNotEmpty())
@@ -67,6 +68,7 @@ data class EncryptedBallot(
         val contestData: HashedElGamalCiphertext,
         val preEncryption: PreEncryption? = null, // pre-encrypted ballots only
     ) : EncryptedBallotIF.Contest  {
+
         init {
             require(contestId.isNotEmpty())
             require(selections.isNotEmpty())
@@ -79,6 +81,7 @@ data class EncryptedBallot(
         override val ciphertext: ElGamalCiphertext,
         val proof: ChaumPedersenRangeProofKnownNonce,
     ) : EncryptedBallotIF.Selection  {
+
         init {
             require(selectionId.isNotEmpty())
         }

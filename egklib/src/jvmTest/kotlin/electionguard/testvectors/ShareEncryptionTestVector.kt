@@ -25,6 +25,12 @@ class ShareEncryptionTestVector {
     val quorum = 3
     val group = productionGroup()
 
+    // make some things public for resuse
+    var xtrustees: List<KeyCeremonyTrustee> = emptyList()
+    var publicKey: ElementModP? = null
+    val electionBaseHash = UInt256.random()
+    var He: UInt256? = null
+
     @Serializable
     data class GuardianJson(
         val name: String,
@@ -116,7 +122,7 @@ class ShareEncryptionTestVector {
         readShareEncryptionTestVector()
     }
 
-    fun makeShareEncryptionTestVector() {
+    fun makeShareEncryptionTestVector(publish : Boolean = true) {
 
         val trustees: List<KeyCeremonyTrusteeSaveNonces> = List(numberOfGuardians) {
             val seq = it + 1
@@ -151,10 +157,14 @@ class ShareEncryptionTestVector {
         )
         println(jsonFormat.encodeToString(shareEncryptionTestVector))
 
-        FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(shareEncryptionTestVector, out)
-            out.close()
+        if (publish) {
+            FileOutputStream(outputFile).use { out ->
+                jsonFormat.encodeToStream(shareEncryptionTestVector, out)
+                out.close()
+            }
         }
+
+        xtrustees = trustees
     }
 
     fun readShareEncryptionTestVector() {
