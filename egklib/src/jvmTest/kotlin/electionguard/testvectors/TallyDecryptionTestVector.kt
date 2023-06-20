@@ -11,7 +11,6 @@ import electionguard.input.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
-import electionguard.keyceremony.regeneratePolynomial
 import electionguard.tally.AccumulateTally
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -23,106 +22,31 @@ import java.io.FileOutputStream
 import java.nio.file.FileSystems
 import kotlin.test.Test
 
-class TallyDecryptionTestVector {
+class TallyDecryptionTest {
+
+    @Test
+    fun testTallyDecryptionTestVector() {
+        // all trustees present
+        val testVector1 = TallyDecryptionTestVector(3, 3, listOf(), "testOut/testvectors/TallyDecryptionTestVector.json")
+        testVector1.makeTallyPartialDecryptionTestVector()
+        testVector1.readTallyPartialDecryptionTestVector()
+
+        // 3 of 4 trustees present
+        val testVector2 = TallyDecryptionTestVector(4, 3, listOf(1), "testOut/testvectors/TallyPartialDecryptionTestVector.json")
+        testVector2.makeTallyPartialDecryptionTestVector()
+        testVector2.readTallyPartialDecryptionTestVector()
+    }
+}
+
+class TallyDecryptionTestVector(
+    val numberOfGuardians: Int,
+    val quorum: Int,
+    val missingCoordinates: List<Int>,
+    val outputFile: String
+) {
     private val jsonFormat = Json { prettyPrint = true }
-    private val outputFile = "testOut/testvectors/TallyDecryptionTestVector.json"
-
     val group = productionGroup()
-    val numberOfGuardians = 3
-    val quorum = 3
     val nBallots = 11
-
-    @Serializable
-    data class TrusteeJson(
-        val id: String,
-        val xCoordinate: Int,
-        val polynomial_coefficients: List<ElementModQJson>,
-        val keyShare: ElementModQJson,
-    )
-
-    fun KeyCeremonyTrustee.publishJson(): TrusteeJson {
-        return TrusteeJson(
-            this.id,
-            this.xCoordinate,
-            this.polynomial.coefficients.map { it.publishJson() },
-            this.keyShare().publishJson(),
-            )
-    }
-
-    fun TrusteeJson.import(group: GroupContext): KeyCeremonyTrustee {
-        return KeyCeremonyTrustee(
-            group,
-            this.id,
-            this.xCoordinate,
-            quorum,
-            group.regeneratePolynomial(
-                this.id,
-                this.xCoordinate,
-                this.polynomial_coefficients.map { it.import(group) },
-            )
-        )
-    }
-
-    fun TrusteeJson.importTrustee(group: GroupContext): DecryptingTrusteeDoerre {
-        return DecryptingTrusteeDoerre(this.id,
-            this.xCoordinate,
-            group.gPowP(this.polynomial_coefficients[0].import(group)),
-            this.keyShare.import(group))
-    }
-
-
-    @Serializable
-    data class EncryptedTallyJson(
-        val contests: List<EncryptedTallyContestJson>,
-    )
-
-    @Serializable
-    data class EncryptedTallyContestJson(
-        val contestId: String,
-        val sequenceOrder: Int,
-        val selections: List<EncryptedTallySelectionJson>,
-    )
-
-    @Serializable
-    data class EncryptedTallySelectionJson(
-        val selectionId: String,
-        val sequenceOrder: Int,
-        val encrypted_vote: ElGamalCiphertextJson,
-    )
-
-    fun EncryptedTally.publishJson(): EncryptedTallyJson {
-        val contests = this.contests.map { pcontest ->
-
-            EncryptedTallyContestJson(
-                pcontest.contestId,
-                pcontest.sequenceOrder,
-                pcontest.selections.map {
-                    EncryptedTallySelectionJson(
-                        it.selectionId,
-                        it.sequenceOrder,
-                        it.ciphertext.publishJson(),
-                    )
-                })
-        }
-        return EncryptedTallyJson(contests)
-    }
-
-    fun EncryptedTallyJson.import(group: GroupContext): EncryptedTally {
-        val contests = this.contests.map { pcontest ->
-
-            EncryptedTally.Contest(
-                pcontest.contestId,
-                pcontest.sequenceOrder,
-                pcontest.selections.map {
-                    EncryptedTally.Selection(
-                        it.selectionId,
-                        it.sequenceOrder,
-                        it.encrypted_vote.import(group),
-                    )
-                })
-        }
-        return EncryptedTally("tallyId", contests)
-    }
 
     @Serializable
     data class DecryptedTallyJson(
@@ -159,7 +83,7 @@ class TallyDecryptionTestVector {
 
 
     @Serializable
-    data class TallyDecryptionTestVector(
+    data class TallyPartialDecryptionTestVector(
         val desc: String,
         val joint_public_key: ElementModPJson,
         val extended_base_hash: UInt256Json,
@@ -168,13 +92,7 @@ class TallyDecryptionTestVector {
         val expected_decrypted_tally : DecryptedTallyJson,
     )
 
-    @Test
-    fun testTallyDecryptionTestVector() {
-        makeTallyDecryptionTestVector()
-        readTallyDecryptionTestVector()
-    }
-
-    fun makeTallyDecryptionTestVector() {
+    fun makeTallyPartialDecryptionTestVector() {
         // run the whole workflow
         val keyCeremonyTrustees: List<KeyCeremonyTrustee> = List(numberOfGuardians) {
             val seq = it + 1
@@ -213,7 +131,10 @@ class TallyDecryptionTestVector {
         }
         val encryptedTally = accumulator.build()
 
-        val trustees = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.electionPublicKey(), it.keyShare()) }
+        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.electionPublicKey(), it.keyShare()) }
+        // leave out one of the trustees to make it a partial decryption
+        val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }
+
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }
         val guardiansWrapper = Guardians(group, guardians)
 
@@ -221,40 +142,42 @@ class TallyDecryptionTestVector {
             extendedBaseHash,
             ElGamalPublicKey(publicKey),
             guardiansWrapper,
-            trustees,
+            trusteesMinus1,
         )
         val decryptedTally = with(decryptor) { encryptedTally.decrypt() }
 
-        val tallyDecryptionTestVector = TallyDecryptionTestVector(
-            "Test tally decryption",
+        val tallyPartialDecryptionTestVector = TallyPartialDecryptionTestVector(
+            "Test tally partial decryption",
             publicKey.publishJson(),
             extendedBaseHash.publishJson(),
-            keyCeremonyTrustees.map { it.publishJson() },
+            keyCeremonyTrustees.map { it.publishJson( !missingCoordinates.contains(it.xCoordinate) ) },
             encryptedTally.publishJson(),
             decryptedTally.publishJson(),
         )
-        println(jsonFormat.encodeToString(tallyDecryptionTestVector))
+        println(jsonFormat.encodeToString(tallyPartialDecryptionTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(tallyDecryptionTestVector, out)
+            jsonFormat.encodeToStream(tallyPartialDecryptionTestVector, out)
             out.close()
         }
     }
 
-    fun readTallyDecryptionTestVector() {
+    fun readTallyPartialDecryptionTestVector() {
         val fileSystem = FileSystems.getDefault()
         val fileSystemProvider = fileSystem.provider()
-        val testVector: TallyDecryptionTestVector =
+        val testVector: TallyPartialDecryptionTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<TallyDecryptionTestVector>(inp)
+                Json.decodeFromStream<TallyPartialDecryptionTestVector>(inp)
             }
 
         val extendedBaseHash = testVector.extended_base_hash.import()
         val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group))
         val encryptedTally = testVector.encrypted_tally.import(group)
 
-        val keyCeremonyTrustees =  testVector.trustees.map { it.import(group) }
-        val trustees = testVector.trustees.map { it.importTrustee(group) }
+        val keyCeremonyTrustees =  testVector.trustees.map { it.importKeyCeremonyTrustee(group) }
+        val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group) }
+        // leave out one of the trustees to make it a partial decryption
+        val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }
         val guardiansWrapper = Guardians(group, guardians)
 
@@ -262,7 +185,7 @@ class TallyDecryptionTestVector {
             extendedBaseHash,
             publicKey,
             guardiansWrapper,
-            trustees,
+            trusteesMinus1,
         )
         val decryptedTally = with(decryptor) { encryptedTally.decrypt() }
 
