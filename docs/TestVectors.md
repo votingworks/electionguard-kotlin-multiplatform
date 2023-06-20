@@ -16,6 +16,6 @@ draft 6/19/2023
 | ConfirmationCode       | [JSON](../egklib/src/commonTest/data/testvectors/ConfirmationCodeTestVector.json)        | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/ConfirmationCodeTestVector.kt)       |
 | BallotChaining         | [JSON](../egklib/src/commonTest/data/testvectors/BallotChainingTestVector.json)          | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotChainingTestVector.kt)         |
 | BallotAggregation      | [JSON](../egklib/src/commonTest/data/testvectors/BallotAggegationTestVector.json)        | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/BallotAggregationTestVector.kt)      |
-| TallyDecryption        | [JSON](../egklib/src/commonTest/data/testvectors/TallyDecryptionTestVector.json)         | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyDecryptionTestVector.kt)        |
-| TallyPartialDecryption | [JSON](../egklib/src/commonTest/data/testvectors/TallyPartialDecryptionTestVector.json)  | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyPartialDecryptionTestVector.kt) |
+| TallyDecryption        | [JSON](../egklib/src/commonTest/data/testvectors/TallyDecryptionTestVector.json)         | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyDecryptionTest.kt)        |
+| TallyPartialDecryption | [JSON](../egklib/src/commonTest/data/testvectors/TallyPartialDecryptionTestVector.json)  | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyDecryptionTest.kt) |
 | ... moar soon          |                                                                                          |                                                                                                    |
