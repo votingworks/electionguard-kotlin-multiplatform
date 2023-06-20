@@ -70,7 +70,7 @@ class ElectionRecordTest {
     fun validateTally(jointKey: ElGamalPublicKey, tally: DecryptedTallyOrBallot) {
         for (contest in tally.contests) {
             for (selection in contest.selections) {
-                val actual: Int? = jointKey.dLog(selection.value, 100)
+                val actual: Int? = jointKey.dLog(selection.kExpTally, 100)
                 assertEquals(selection.tally, actual)
             }
         }

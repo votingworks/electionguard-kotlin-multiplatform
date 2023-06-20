@@ -19,9 +19,8 @@ data class Manifest(
 ) : ManifestIF {
 
     /** Map of ballotStyleId to all Contests that use it. */
-    val styleToContestsMap : Map<String, List<ContestDescription>> by
-    lazy {
-        val result = mutableMapOf<String, List<ContestDescription>>() // key = ballotStyleId
+    val styleToContestsMap = mutableMapOf<String, List<ContestDescription>>() // key = ballotStyleId
+    init {
         val gpuToContests: Map<String, List<ContestDescription>> = contests.groupBy { it.geopoliticalUnitId } // key = geopoliticalUnitId
         ballotStyles.forEach { style ->
             val contestSet = mutableSetOf<ContestDescription>()
@@ -31,12 +30,16 @@ data class Manifest(
                     contestSet.addAll(contestList)
                 }
             }
-            result[style.ballotStyleId] = contestSet.toList().sortedBy {it.sequenceOrder}
+            styleToContestsMap[style.ballotStyleId] = contestSet.toList().sortedBy {it.sequenceOrder}
         }
-        result
     }
+
     override fun contestsForBallotStyle(ballotStyle : String) :  List<ManifestIF.Contest> {
-        return styleToContestsMap[ballotStyle]!!
+        val result = styleToContestsMap[ballotStyle]
+        if (result == null) {
+            throw RuntimeException("unknown ballotStyle $ballotStyle")
+        }
+        return result
     }
 
     override fun contestLimit(contestId : String) : Int {
