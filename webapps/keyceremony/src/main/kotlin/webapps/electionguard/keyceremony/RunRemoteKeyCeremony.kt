@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
+import electionguard.ballot.makeElectionConfig
 import electionguard.ballot.protocolVersion
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
@@ -11,7 +12,6 @@ import electionguard.core.productionGroup
 import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
-import electionguard.publish.readManifest
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -106,7 +106,7 @@ fun main(args: Array<String>) {
     var createdFrom : String
 
     val config: ElectionConfig = if (electionManifest != null && nguardians != null && quorum != null) {
-        val manifest = readManifest(electionManifest!!, group)
+        // val manifest = readManifest(electionManifest!!, group)
         createdFrom = electionManifest!!
         println(
             "RunRemoteKeyCeremony\n" +
@@ -115,13 +115,15 @@ fun main(args: Array<String>) {
                     "  outputDir = '$outputDir'\n" +
                     "  sslKeyStore = '$sslKeyStore'\n"
         )
-        ElectionConfig(protocolVersion, group.constants, ByteArray(0), manifest.unwrap(), nguardians!!, quorum!!,
+        makeElectionConfig(protocolVersion, group.constants, nguardians!!, quorum!!,
             electionDate ?: "N/A",
             info ?: "N/A",
+            ByteArray(0), // TODO manifest
             mapOf(
                 Pair("CreatedBy", createdBy ?: "RunRemoteKeyCeremony"),
                 Pair("CreatedFromElectionManifest", electionManifest!!),
-            ))
+            ),
+        )
     } else {
         val consumerIn = makeConsumer(inputDir!!, group)
         createdFrom = inputDir!!

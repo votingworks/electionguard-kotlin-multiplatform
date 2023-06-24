@@ -2,9 +2,7 @@ package electionguard.preencrypt
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.core.*
 import electionguard.decryptBallot.DecryptPreencryptWithNonce
@@ -12,7 +10,7 @@ import electionguard.encrypt.cast
 import electionguard.input.ManifestBuilder
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
-import electionguard.publish.makeConsumer
+import electionguard.publish.readElectionRecord
 import electionguard.verifier.VerifyEncryptedBallots
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
@@ -33,9 +31,9 @@ internal class PreEncryptorTest {
     @Test
     fun testPreencrypt() {
         runTest {
-            val consumerIn = makeConsumer(input, group)
-            val electionInit = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-            val manifest = electionInit.manifest()
+            val electionRecord = readElectionRecord(group, input)
+            val electionInit = electionRecord.electionInit()!!
+            val manifest = electionRecord.manifest()
 
             val preEncryptor =
                 PreEncryptor(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)
@@ -51,10 +49,9 @@ internal class PreEncryptorTest {
     @Test
     fun testRecord() {
         runTest {
-            val consumerIn = makeConsumer(input, group)
-            val electionInit: ElectionInitialized =
-                consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-            val manifest = electionInit.manifest()
+            val electionRecord = readElectionRecord(group, input)
+            val electionInit = electionRecord.electionInit()!!
+            val manifest = electionRecord.manifest()
 
             val preEncryptor =
                 PreEncryptor(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)

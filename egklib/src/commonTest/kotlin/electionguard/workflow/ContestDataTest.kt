@@ -1,13 +1,12 @@
 package electionguard.workflow
 
 import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.encrypt.Encryptor
 import electionguard.input.BallotInputBuilder
-import electionguard.publish.makeConsumer
+import electionguard.publish.readElectionRecord
 import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,19 +14,18 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ContestDataTest {
-    val input = "src/commonTest/data/runWorkflowAllAvailable"
+    val input = "src/commonTest/data/allAvailable"
     val context = productionGroup()
     val keypair = elGamalKeyPairFromRandom(context)
 
     @Test
     fun testEncryptionWithWriteIn() {
         runTest {
-            val consumerIn = makeConsumer(input, context)
-            val electionInit: ElectionInitialized =
-                consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-            val manifest: Manifest = electionInit.manifest()
+            val group = productionGroup()
+            val electionRecord = readElectionRecord(group, input)
+            val electionInit = electionRecord.electionInit()!!
 
-            val builder = BallotInputBuilder(manifest, "ballot_id").setStyle("ballotStyle")
+            val builder = BallotInputBuilder(electionRecord.manifest(), "ballot_id").setStyle("ballotStyle")
             val ballot = builder
                 .addContest(0)
                     .addSelection(0, vote = 1)
@@ -61,7 +59,7 @@ class ContestDataTest {
                 .build()
 
 
-            val encryptor = Encryptor(context, manifest, keypair.publicKey, electionInit.extendedBaseHash)
+            val encryptor = Encryptor(context, electionRecord.manifest(), keypair.publicKey, electionInit.extendedBaseHash)
             val eballot = encryptor.encrypt(ballot)
 
             eballot.contests.forEachIndexed { idx, it ->

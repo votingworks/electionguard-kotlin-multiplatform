@@ -1,7 +1,6 @@
 package electionguard.workflow
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeDoerre
@@ -9,8 +8,8 @@ import electionguard.decrypt.PartialDecryption
 import electionguard.decrypt.computeLagrangeCoefficient
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
-import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
+import electionguard.publish.readElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -45,10 +44,9 @@ fun runFakeKeyCeremony(
     trusteeDir: String,
     nguardians: Int,
     quorum: Int,
-): ElectionInitialized {
-    // just need the manifest from here
-    val consumerIn = makeConsumer(configDir, group)
-    val config: ElectionConfig = consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
+): Pair<Manifest, ElectionInitialized> {
+    val electionRecord = readElectionRecord(group, configDir)
+    val config: ElectionConfig = electionRecord.config()
 
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
@@ -70,28 +68,26 @@ fun runFakeKeyCeremony(
     val commitments: MutableList<ElementModP> = mutableListOf()
     trustees.forEach {
         commitments.addAll(it.coefficientCommitments())
-        println("trustee ${it.id}")
-        it.coefficientCommitments().forEach { println("   ${it.toStringShort()}") }
+        // it.coefficientCommitments().forEach { println("   ${it.toStringShort()}") }
     }
     assertEquals(quorum * nguardians, commitments.size)
 
     val jointPublicKey: ElementModP =
         trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
-    println("jointPublicKey ${jointPublicKey.toStringShort()}")
+    // println("jointPublicKey ${jointPublicKey.toStringShort()}")
 
     // create a new config so the quorum, nguardians can change
-    val newConfig = ElectionConfig(
+    val newConfig = makeElectionConfig(
         protocolVersion,
         config.constants,
-        config.manifestFile,
-        config.manifest,
         nguardians,
         quorum,
         config.electionDate,
         config.jurisdictionInfo,
+        electionRecord.manifestBytes(), // TODO manifest
         mapOf(Pair("Created by", "runFakeKeyCeremony")),
     )
-    println("newConfig.electionBaseHash ${newConfig.electionBaseHash}")
+    // println("newConfig.electionBaseHash ${newConfig.electionBaseHash}")
 
     // He = H(HB ; 12, K, K1,0 , K1,1 , . . . , K1,k−1 , K2,0 , . . . , Kn,k−2 , Kn,k−1 ) spec 1.9 p.22, eq 20.
     val He = hashFunction(newConfig.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey, commitments)
@@ -103,16 +99,16 @@ fun runFakeKeyCeremony(
         He,
         guardians,
     )
-    val publisher = makePublisher(outputDir)
+    val publisher = makePublisher(outputDir, false, electionRecord.isJson())
     publisher.writeElectionInitialized(init)
 
-    val decryptingTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
-    val trusteePublisher = makePublisher(trusteeDir)
+    val trusteePublisher = makePublisher(trusteeDir, false, electionRecord.isJson())
     trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
 
-    testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees, decryptingTrustees.map {it.xCoordinate})
+    // val decryptingTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
+    // testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees, decryptingTrustees.map {it.xCoordinate})
 
-    return init
+    return Pair(electionRecord.manifest(), init)
 }
 
 fun testDoerreDecrypt(group: GroupContext,

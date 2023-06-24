@@ -1,19 +1,16 @@
 package electionguard.core
 
-import electionguard.ballot.ElectionConstants
 import electionguard.core.Base16.fromSafeHex
 import electionguard.core.Base16.toHex
 import electionguard.core.Base64.fromSafeBase64
-import io.kotest.assertions.throwables.shouldNotThrowAny
-import io.kotest.assertions.throwables.shouldThrow
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ConstantsTest {
     @Test
-    fun compatibilityChecks() {
+    fun testGroupIsCompatible() {
         runTest {
             val tinyGroup = tinyGroup()
             val productionGroup1 =
@@ -32,26 +29,22 @@ class ConstantsTest {
                     mode = ProductionMode.Mode3072
                 )
 
-            val tinyDesc = tinyGroup.constants
-            val productionDesc1 = productionGroup1.constants
-            val productionDesc2 = productionGroup2.constants
-            val productionDesc3 = productionGroup3.constants
+            assertTrue(tinyGroup.isCompatible(tinyGroup.constants))
+            assertFalse(tinyGroup.isCompatible(productionGroup1.constants))
 
-            shouldNotThrowAny { tinyDesc.requireCompatible(tinyGroup, tinyDesc) }
-            shouldNotThrowAny { productionDesc1.requireCompatible(productionGroup1, productionDesc1) }
-            shouldNotThrowAny { productionDesc1.requireCompatible(productionGroup2, productionDesc2) }
-            shouldThrow<RuntimeException> { tinyDesc.requireCompatible(productionGroup1, productionDesc1) }
-            shouldThrow<RuntimeException> { productionDesc1.requireCompatible(productionGroup2, productionDesc3) }
-            shouldThrow<RuntimeException> { productionDesc3.requireCompatible(productionGroup1, productionDesc1) }
-        }
-    }
+            assertTrue(productionGroup1.isCompatible(productionGroup1.constants))
+            assertTrue(productionGroup1.isCompatible(productionGroup2.constants))
+            assertFalse(productionGroup1.isCompatible(tinyGroup.constants))
 
-    private fun ElectionConstants.requireCompatible(group: GroupContext, other: ElectionConstants) {
-        if (!group.isCompatible(other)) {
-            val errStr =
-                "other group is incompatible with this group: " +
-                        Json.encodeToString(mapOf("other" to other, "this" to this))
-            throw RuntimeException(errStr)
+            assertTrue(productionGroup2.isCompatible(productionGroup2.constants))
+            assertTrue(productionGroup2.isCompatible(productionGroup1.constants))
+            assertTrue(productionGroup2.isCompatible(productionGroup1.constants))
+            assertFalse(productionGroup2.isCompatible(productionGroup3.constants))
+
+            assertTrue(productionGroup3.isCompatible(productionGroup3.constants))
+            assertFalse(productionGroup3.isCompatible(productionGroup1.constants))
+            assertFalse(productionGroup3.isCompatible(productionGroup2.constants))
+            assertFalse(productionGroup3.isCompatible(tinyGroup.constants))
         }
     }
 

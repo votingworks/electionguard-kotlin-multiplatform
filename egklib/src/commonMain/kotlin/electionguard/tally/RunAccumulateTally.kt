@@ -1,13 +1,12 @@
 package electionguard.tally
 
-import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.EncryptedTally
-import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
+import electionguard.publish.readElectionRecord
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
 import kotlinx.cli.ArgParser
@@ -52,17 +51,18 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
     val starting = getSystemTimeInMillis()
 
     val consumerIn = makeConsumer(inputDir, group)
-    val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
+    val electionRecord = readElectionRecord(consumerIn)
+    val electionInit = electionRecord.electionInit()!!
 
     var count = 0
-    val accumulator = AccumulateTally(group, electionInit.manifest(), name)
+    val accumulator = AccumulateTally(group, electionRecord.manifest(), name)
     for (encryptedBallot in consumerIn.iterateCastBallots() ) {
         accumulator.addCastBallot(encryptedBallot)
         count++
     }
     val tally: EncryptedTally = accumulator.build()
 
-    val publisher = makePublisher(outputDir)
+    val publisher = makePublisher(outputDir, false, electionRecord.isJson())
     publisher.writeTallyResult(
         TallyResult( electionInit, tally, accumulator.ballotIds(), emptyList(),
             mapOf(

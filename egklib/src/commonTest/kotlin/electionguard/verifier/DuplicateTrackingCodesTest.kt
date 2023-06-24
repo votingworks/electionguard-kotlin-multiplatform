@@ -4,18 +4,17 @@ import com.github.michaelbull.result.Err
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.Stats
 import electionguard.core.productionGroup
-import electionguard.publish.electionRecordFromConsumer
-import electionguard.publish.makeConsumer
+import electionguard.publish.readElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class DuplicateTrackingCodesTest {
-    private val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
+    private val inputDir = "src/commonTest/data/allAvailable"
 
     @Test
     fun duplicateTrackingCodes() {
-        val context = productionGroup()
-        val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, context))
+        val group = productionGroup()
+        val electionRecord = readElectionRecord(group, inputDir)
         val mungedBallots = mutableListOf<EncryptedBallot>()
 
         var count = 0

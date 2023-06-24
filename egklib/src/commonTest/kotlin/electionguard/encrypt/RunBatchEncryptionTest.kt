@@ -1,10 +1,9 @@
 package electionguard.encrypt
 
-import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.ElectionInitialized
 import electionguard.core.productionGroup
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makeConsumer
+import electionguard.publish.readElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertContains
 
@@ -12,18 +11,17 @@ class RunBatchEncryptionTest {
     val nthreads = 25
 
     @Test
-    fun testRunBatchEncryptionNonces() {
+    fun testRunBatchEncryptionProto() {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowAllAvailable",
+                "testOut/keyceremony/testKeyCeremonyProto",
                 "-ballots",
-                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "testOut/fakeBallots/proto",
                 "-out",
-                "testOut/testRunBatchEncryptionNoncesTest",
+                "testOut/encrypt/testRunBatchEncryptionProto",
                 "-invalid",
-                "testOut/testRunBatchEncryptionNoncesTest/invalid_ballots",
-                "-fixed",
+                "testOut/encrypt/testRunBatchEncryptionProto/invalid_ballots",
                 "-nthreads",
                 "$nthreads",
             )
@@ -31,17 +29,54 @@ class RunBatchEncryptionTest {
     }
 
     @Test
-    fun testRunBatchEncryption() {
+    fun testRunBatchEncryptionWithJsonBallots() {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowAllAvailable",
+                "testOut/keyceremony/testKeyCeremonyProto",
                 "-ballots",
-                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "testOut/fakeBallots/json",
                 "-out",
-                "testOut/testRunBatchEncryptionTest",
+                "testOut/encrypt/testRunBatchEncryptionWithJsonBallots",
                 "-invalid",
-                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "testOut/encrypt/testRunBatchEncryptionWithJsonBallots/invalid_ballots",
+                "-nthreads",
+                "$nthreads",
+            )
+        )
+    }
+
+
+    @Test
+    fun testRunBatchEncryptionJson() {
+        main(
+            arrayOf(
+                "-in",
+                "testOut/keyceremony/testKeyCeremonyJson",
+                "-ballots",
+                "testOut/fakeBallots/json",
+                "-out",
+                "testOut/encrypt/testRunBatchEncryptionJson",
+                "-invalid",
+                "testOut/encrypt/testRunBatchEncryptionJson/invalid_ballots",
+                "-nthreads",
+                "$nthreads",
+            )
+        )
+    }
+
+    @Test
+    fun testRunBatchEncryptionJsonWithProtoBallots() {
+        main(
+            arrayOf(
+                "-in",
+                "testOut/keyceremony/testKeyCeremonyJson",
+                "-ballots",
+                "testOut/fakeBallots/proto",
+                "-out",
+                "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots",
+                "-invalid",
+                "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots/invalid_ballots",
                 "-nthreads",
                 "$nthreads",
             )
@@ -53,13 +88,13 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowAllAvailable",
+                "testOut/keyceremony/testKeyCeremonyJson",
                 "-ballots",
-                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "testOut/fakeBallots/json",
                 "-out",
-                "testOut/testRunBatchEncryptionChain",
+                "testOut/encrypt/testRunBatchEncryptionChain",
                 "-invalid",
-                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "testOut/encrypt/testRunBatchEncryptionChain/invalid_ballots",
                 "-nthreads",
                 "$nthreads",
                 "-chainCodes",
@@ -72,13 +107,13 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowAllAvailable",
+                "testOut/keyceremony/testKeyCeremonyJson",
                 "-ballots",
-                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "testOut/fakeBallots/json",
                 "-out",
-                "testOut/testRunBatchEncryptionTest",
+                "testOut/encrypt/testRunBatchEncryptionEncryptTwice",
                 "-invalid",
-                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "testOut/encrypt/testRunBatchEncryptionEncryptTwice/invalid_ballots",
                 "-nthreads",
                 "$nthreads",
                 "-check",
@@ -92,13 +127,13 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowAllAvailable",
+                "testOut/keyceremony/testKeyCeremonyJson",
                 "-ballots",
-                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "testOut/fakeBallots/json",
                 "-out",
-                "testOut/testRunBatchEncryptionTest",
+                "testOut/encrypt/testRunBatchEncryptionVerify",
                 "-invalid",
-                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "testOut/encrypt/testRunBatchEncryptionVerify/invalid_ballots",
                 "-nthreads",
                 "$nthreads",
                 "-check",
@@ -112,13 +147,13 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowAllAvailable",
+                "testOut/keyceremony/testKeyCeremonyJson",
                 "-ballots",
-                "src/commonTest/data/runWorkflowAllAvailable/private_data/input",
+                "testOut/fakeBallots/json",
                 "-out",
-                "testOut/testRunBatchEncryptionTest",
+                "testOut/encrypt/testRunBatchEncryptionVerifyDecrypt",
                 "-invalid",
-                "testOut/testRunBatchEncryptionTest/invalid_ballots",
+                "testOut/encrypt/testRunBatchEncryptionVerifyDecrypt/invalid_ballots",
                 "-nthreads",
                 "$nthreads",
                 "-check",
@@ -129,18 +164,17 @@ class RunBatchEncryptionTest {
 
     @Test
     fun testInvalidBallot() {
-        val group = productionGroup()
-        val inputDir = "src/commonTest/data/runWorkflowAllAvailable"
+        val inputDir = "testOut/keyceremony/testKeyCeremonyProto"
         val invalidDir = "testOut/testInvalidBallot"
-        val consumerIn = makeConsumer(inputDir, group)
-        val electionInit: ElectionInitialized =
-            consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-        val ballots = RandomBallotProvider(electionInit.manifest(), 1).ballots("badStyleId")
+
+        val group = productionGroup()
+        val electionRecord = readElectionRecord(group, inputDir)
+        val ballots = RandomBallotProvider(electionRecord.manifest(), 1).ballots("badStyleId")
 
         batchEncryption(
             group,
-            "src/commonTest/data/runWorkflowAllAvailable",
-            "testOut/testInvalidBallot",
+            inputDir,
+            invalidDir,
             ballots,
             invalidDir,
             false,

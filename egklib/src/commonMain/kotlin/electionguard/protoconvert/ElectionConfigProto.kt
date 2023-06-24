@@ -6,12 +6,11 @@ import pbandk.ByteArr
 
 fun electionguard.protogen.ElectionConfig.import(): Result<ElectionConfig, String> {
     val electionConstants = this.constants?.import() ?: Err("Null ElectionConstants")
-    val manifest = this.manifest?.import() ?: Err("Null Manifest")
     val parameterHash = this.parameterBaseHash?.import() ?: Err("Null parameterBaseHash")
     val manifestHash = manifestHash?.import() ?: Err("Null manifestHash")
     val electionHash = this.electionBaseHash?.import() ?: Err("Null electionBaseHash")
 
-    val errors = getAllErrors(electionConstants, manifest, parameterHash, manifestHash, electionHash)
+    val errors = getAllErrors(electionConstants, parameterHash, manifestHash, electionHash)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -19,16 +18,15 @@ fun electionguard.protogen.ElectionConfig.import(): Result<ElectionConfig, Strin
     return Ok(ElectionConfig(
         this.specVersion,
         electionConstants.unwrap(),
-        this.manifestFile.array,
-        manifest.unwrap(),
         this.numberOfGuardians,
         this.quorum,
         this.electionDate,
         this.jurisdictionInfo,
-        this.metadata.associate { it.key to it.value },
         parameterHash.unwrap(),
         manifestHash.unwrap(),
         electionHash.unwrap(),
+        this.manifestBytes.array,
+        this.metadata.associate { it.key to it.value },
     ))
 }
 
@@ -50,8 +48,6 @@ fun ElectionConfig.publishProto() =
     electionguard.protogen.ElectionConfig(
         protocolVersion,
         constants.publishProto(),
-        ByteArr(this.manifestFile),
-        manifest.publishProto(),
         this.numberOfGuardians,
         this.quorum,
         this.electionDate,
@@ -59,6 +55,7 @@ fun ElectionConfig.publishProto() =
         this.parameterBaseHash.publishProto(),
         this.manifestHash.publishProto(),
         this.electionBaseHash.publishProto(),
+        ByteArr(this.manifestBytes),
         this.metadata.entries.map { electionguard.protogen.ElectionConfig.MetadataEntry(it.key, it.value) },
     )
 

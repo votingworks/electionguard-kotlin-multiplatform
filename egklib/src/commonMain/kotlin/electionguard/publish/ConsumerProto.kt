@@ -16,7 +16,9 @@ expect class ConsumerProto (topDir: String, groupContext: GroupContext) : Consum
     override fun topdir() : String
     override fun isJson(): Boolean
 
-    override fun readManifest(filepath : String): Result<Manifest, String>
+    override fun readManifestBytes(filename : String): ByteArray
+    override fun makeManifest(manifestBytes: ByteArray): Manifest
+
     override fun readElectionConfig(): Result<ElectionConfig, String>
     override fun readElectionInitialized(): Result<ElectionInitialized, String>
     override fun readTallyResult(): Result<TallyResult, String>

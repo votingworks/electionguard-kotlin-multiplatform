@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 6/15/2023
+draft 6/21/2023
 
 1. This is the evolving version 2 of the Election Record. It is not backwards compatible with version 1.
 2. All fields must be present unless marked as optional.
@@ -228,8 +228,6 @@ draft 6/15/2023
 |----------------------|------------------------|-----------|
 | spec_version         | string                 | "v2.0.0"  |
 | constants            | ElectionConstants      |           |
-| manifest_file        | bytes                  |           |
-| manifest             | Manifest               |           |
 | number_of_guardians  | uint32                 | n         |
 | election_date        | string                 | k         |
 | quorum               | uint32                 | k         |

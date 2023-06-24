@@ -40,9 +40,8 @@ internal val MAX_RECORD = 1000 * 1000
 
 //// Used by native ConsumerProto
 
-fun readManifestInternal(filename: String): Result<Manifest, String> {
-    val buffer = gulp(filename)
-    val proto = electionguard.protogen.Manifest.decodeFromByteArray(buffer)
+fun makeManifestInternal(manifestBytes: ByteArray): Result<Manifest, String> {
+    val proto = electionguard.protogen.Manifest.decodeFromByteArray(manifestBytes)
     return proto.import()
 }
 

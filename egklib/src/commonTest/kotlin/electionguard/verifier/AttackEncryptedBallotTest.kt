@@ -11,8 +11,7 @@ import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
 import electionguard.decrypt.readDecryptingTrustees
-import electionguard.publish.electionRecordFromConsumer
-import electionguard.publish.makeConsumer
+import electionguard.publish.readElectionRecord
 import electionguard.tally.AccumulateTally
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
@@ -34,14 +33,15 @@ import kotlin.test.assertTrue
 */
 
 class AttackEncryptedBallotTest {
-    private val inputDir   = "src/commonTest/data/runWorkflowAllAvailable"
-    private val trusteeDir = "src/commonTest/data/runWorkflowAllAvailable/private_data/trustees"
+    private val inputDir   = "src/commonTest/data/allAvailable"
+    private val trusteeDir = "src/commonTest/data/allAvailable/private_data/trustees"
     private val showCount = true
 
     // @Test
     fun attackEncryptedBallots() {
-        val context = productionGroup()
-        val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, context))
+        val group = productionGroup()
+        val electionRecord = readElectionRecord(group, inputDir)
+
         val mungedBallots = mutableListOf<EncryptedBallot>()
 
         for (ballot in electionRecord.encryptedBallots { true }) {
@@ -51,7 +51,7 @@ class AttackEncryptedBallotTest {
 
         if (showCount) {
             // sum it up
-            val accumulator = AccumulateTally(context, electionRecord.manifest(), "attackedTally")
+            val accumulator = AccumulateTally(group, electionRecord.manifest(), "attackedTally")
             for (encryptedBallot in mungedBallots ) {
                 accumulator.addCastBallot(encryptedBallot)
             }
@@ -59,8 +59,8 @@ class AttackEncryptedBallotTest {
 
             // decrypt it
             println("decrypt munged tally ")
-            val mungedTally = decryptTally(context, encryptedTally, electionRecord.electionInit()!!,
-                readDecryptingTrustees(context, inputDir, trusteeDir),
+            val mungedTally = decryptTally(group, encryptedTally, electionRecord.electionInit()!!,
+                readDecryptingTrustees(group, inputDir, trusteeDir),
             )
             // println("tally for changed ballots = ${mungedTally.showTallies()}")
 

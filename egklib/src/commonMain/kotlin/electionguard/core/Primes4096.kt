@@ -48,6 +48,7 @@ object Primes4096 {
                 "9FD4A7F5 29FD4A7F 529FD4A7 F529FD4A 7F529FD4 A7F529FD 4A7F529F D4A7F52A"
 
     val rStr = rOrg.filterNot { it.isWhitespace() }
+    val residualNotNormalized = rStr.fromHex()!!
     val residualBytes = rStr.fromHex()!!.normalize(512)
 
     private val gOrg =
@@ -70,5 +71,4 @@ object Primes4096 {
 
     val gStr = gOrg.filterNot { it.isWhitespace() }
     val generatorBytes = gStr.fromHex()!!.normalize(512)
-
 }

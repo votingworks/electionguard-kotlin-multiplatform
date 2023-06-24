@@ -7,6 +7,7 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
+import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Path
 import java.util.*
@@ -35,11 +36,14 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {
-        writeManifest(config.manifest)
-
         val constantsJson = config.constants.publish()
         FileOutputStream(jsonPaths.electionConstantsPath()).use { out ->
             jsonFormat.encodeToStream(constantsJson, out)
+            out.close()
+        }
+
+        FileOutputStream(jsonPaths.manifestPath()).use { out ->
+            out.write(config.manifestBytes)
             out.close()
         }
 

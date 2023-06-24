@@ -3,35 +3,29 @@ package electionguard.publish
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
-import electionguard.ballot.DecryptionResult
+import electionguard.ballot.*
 import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Guardian
-import electionguard.ballot.Manifest
-import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
+import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.json.CoefficientsJson
 import electionguard.json.ConstantsJson
 import electionguard.json.ContextJson
 import electionguard.json.DecryptedTallyJson
 import electionguard.json.DecryptingTrusteeJson
 import electionguard.json.EncryptedTallyJson
-import electionguard.json.GuardianJson
 import electionguard.json.ManifestJson
 import electionguard.json.PlaintextBallotJson
 import electionguard.json.SubmittedBallotJson
 import electionguard.json.import
+import electionguard.json2.import
 import kotlinx.cinterop.toKString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+
+// TODO convert to 1.9
 
 actual class ConsumerJson actual constructor(private val topDir: String, private val group: GroupContext) : Consumer {
     val jsonPaths = ElectionRecordJsonPaths(topDir)
@@ -49,18 +43,17 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
     actual override fun isJson() = true
 
-    actual override fun readManifest(filepath : String): Result<Manifest, String> {
-        return try {
-            val manifestJson = jsonFormat.decodeFromString<ManifestJson>(gulp(filepath).toKString())
-            val manifest = manifestJson.import()
-            Ok(manifest)
-        } catch (e: Exception) {
-            Err(e.message ?: "readManifest $filepath failed")
-        }
+    actual override fun makeManifest(manifestBytes: ByteArray): Manifest {
+        val json = jsonFormat.decodeFromString<ManifestJson>(manifestBytes.toKString())
+        return json.import()
+    }
+
+    actual override fun readManifestBytes(filename : String): ByteArray {
+        return gulp(filename)
     }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
-        return readElectionConfig(jsonPaths.electionConfigPath(), jsonPaths.manifestPath())
+        return readElectionConfig(jsonPaths.electionConstantsPath(), jsonPaths.manifestPath(), jsonPaths.electionConfigPath())
     }
 
     actual override fun readElectionInitialized(): Result<ElectionInitialized, String> {
@@ -146,24 +139,21 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
     ////////////////////////////////////////////////////////////////////////
 
-    fun readElectionConfig(constantsFile: String, manifestFile: String): Result<ElectionConfig, String> {
+    fun readElectionConfig(constantsFile: String, manifestFilename: String, configFile: String,): Result<ElectionConfig, String> {
         return try {
             val constantsJson = jsonFormat.decodeFromString<ConstantsJson>(gulp(constantsFile).toKString())
             val electionConstants = constantsJson.import()
 
-            val manifestJson = jsonFormat.decodeFromString<ManifestJson>(gulp(manifestFile).toKString())
-            val manifest = manifestJson.import()
-
             Ok(
-                ElectionConfig(
+                makeElectionConfig(
                     "TODOtoo",
                     electionConstants,
-                    ByteArray(0),
-                    manifest,
                     1, // LOOK not in JSON
                     1, // LOOK not in JSON
                     "N/A",
-                    "N/A",                )
+                    "N/A",
+                    ByteArray(0), // TODO manifest
+                )
             )
         } catch (e: Exception) {
             Err(e.message ?: "readElectionConfig $constantsFile failed")

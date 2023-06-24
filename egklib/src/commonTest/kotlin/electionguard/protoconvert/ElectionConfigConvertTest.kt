@@ -4,11 +4,8 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.fileReadBytes
 import electionguard.core.productionGroup
-import electionguard.input.buildStandardManifest
-import electionguard.publish.Publisher
-import electionguard.publish.electionRecordFromConsumer
-import electionguard.publish.makeConsumer
-import electionguard.publish.makePublisher
+import electionguard.input.buildTestManifest
+import electionguard.publish.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -19,17 +16,16 @@ private const val ncontests = 20
 private const val nselections = 5
 
 class ElectionConfigConvertTest {
-    val outputDir = "testOut/ElectionConfigConvertTest"
-    val publisher = makePublisher(outputDir, true)
+    val outputDir = "testOut/ElectionConfigConvertTestJson"
+    val publisher = makePublisher(outputDir, true, true)
 
     @Test
     fun roundtripElectionConfig() {
-        val electionConfig = generateElectionConfig(publisher, 6, 4)
+        val (manifest, electionConfig) = generateElectionConfig(publisher, 6, 4)
         val proto = electionConfig.publishProto()
         val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
         assertEquals(roundtrip.constants, electionConfig.constants)
-        assertEquals(roundtrip.manifest, electionConfig.manifest)
         assertEquals(roundtrip.numberOfGuardians, electionConfig.numberOfGuardians)
         assertEquals(roundtrip.quorum, electionConfig.quorum)
         assertEquals(roundtrip.metadata, electionConfig.metadata)
@@ -40,44 +36,42 @@ class ElectionConfigConvertTest {
         publisher.writeElectionConfig(electionConfig)
         println("Wrote to $outputDir")
 
-        val electionRecord = electionRecordFromConsumer(makeConsumer(outputDir, productionGroup()))
-        validateElectionConfigParams(electionRecord.config())
+        val electionRecord = readElectionRecord(productionGroup(), outputDir)
+        val config = electionRecord.config()
+
+        val Hp = parameterBaseHash(config.constants)
+        assertEquals(Hp, config.parameterBaseHash)
+        val Hm = manifestHash(Hp, electionRecord.manifestBytes())
+        assertEquals(Hm, config.manifestHash)
+        assertEquals(
+            electionBaseHash(
+                Hp,
+                config.numberOfGuardians,
+                config.quorum,
+                config.electionDate,
+                config.jurisdictionInfo,
+                Hm
+            ), config.electionBaseHash
+        )
     }
 }
 
-fun validateElectionConfigParams(config : ElectionConfig) {
-    val Hp = parameterBaseHash(config.constants)
-    assertEquals(Hp, config.parameterBaseHash)
-    val Hm = manifestHash(Hp, config.manifestFile)
-    assertEquals(Hm, config.manifestHash)
-    assertEquals(
-        electionBaseHash(
-            Hp,
-            config.numberOfGuardians,
-            config.quorum,
-            config.electionDate,
-            config.jurisdictionInfo,
-            Hm
-        ), config.electionBaseHash
-    )
-}
-
-fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): ElectionConfig {
+fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): Pair<Manifest, ElectionConfig> {
     // write out a manifest
-    val fakeManifest = buildStandardManifest(ncontests, nselections)
+    val fakeManifest = buildTestManifest(ncontests, nselections)
     val filename = publisher.writeManifest(fakeManifest)
 
     // get it back as a file, to store in the ElectionConfig
     val manifestBytes = fileReadBytes(filename)
 
-    return ElectionConfig(
+    val config = makeElectionConfig(
         protocolVersion,
         productionGroup().constants,
-        manifestBytes,
-        fakeManifest,
         nguardians,
         quorum,
         "date",
         "juris",
+        manifestBytes,
     )
+    return Pair(fakeManifest, config)
 }

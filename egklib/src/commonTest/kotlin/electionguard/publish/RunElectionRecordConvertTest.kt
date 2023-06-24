@@ -12,7 +12,7 @@ class RunElectionRecordConvertTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowSomeAvailable",
+                "src/commonTest/data/someAvailable",
                 "-out",
                 "testOut/RunElectionRecordConvertTest",
             )
@@ -21,15 +21,15 @@ class RunElectionRecordConvertTest {
 
     @Test
     fun runElectionRecordConvertRoundtrip() {
-        val orgDir = "src/commonTest/data/runWorkflowSomeAvailable"
+        val orgDir = "src/commonTest/data/someAvailable"
         val jsonDir = "testOut/RunElectionRecordConvertJson"
         val protoDir = "testOut/RunElectionRecordConvertProto"
         val group = productionGroup()
         runElectionRecordConvert(group, orgDir, jsonDir, true)
         runElectionRecordConvert(group, jsonDir, protoDir, true)
 
-        val erOrg = electionRecordFromConsumer(makeConsumer(orgDir, group))
-        val erProto = electionRecordFromConsumer(makeConsumer(protoDir, group))
+        val erOrg = readElectionRecord(group, orgDir)
+        val erProto = readElectionRecord(group, protoDir)
 
         assertEquals(erOrg.stage(), erProto.stage())
         assertEquals(erOrg.constants(), erProto.constants())

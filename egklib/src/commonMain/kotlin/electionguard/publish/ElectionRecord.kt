@@ -1,6 +1,5 @@
 package electionguard.publish
 
-import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionConstants
@@ -20,9 +19,12 @@ interface ElectionRecord {
 
     fun stage() : Stage
     fun topdir() : String
+    fun isJson(): Boolean
 
-    fun constants(): ElectionConstants
+        fun constants(): ElectionConstants
     fun manifest(): Manifest
+    fun manifestBytes(): ByteArray
+
     /** The number of guardians necessary to generate the public key. */
     fun numberOfGuardians(): Int
     /** The quorum of guardians necessary to decrypt an election. Must be <= number_of_guardians. */

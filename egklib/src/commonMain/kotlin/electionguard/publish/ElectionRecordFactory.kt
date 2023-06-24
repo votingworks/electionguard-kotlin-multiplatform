@@ -1,24 +1,23 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.Ok
-import electionguard.ballot.DecryptionResult
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionConstants
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.EncryptedTally
-import electionguard.ballot.Guardian
-import electionguard.ballot.Manifest
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.TallyResult
+import electionguard.ballot.*
 import electionguard.core.ElementModP
+import electionguard.core.GroupContext
 import electionguard.core.UInt256
 
-fun electionRecordFromConsumer(consumer: Consumer) : ElectionRecord {
+
+fun readElectionRecord(group : GroupContext, topDir: String) : ElectionRecord {
+    val consumerIn = makeConsumer(topDir, group)
+    return readElectionRecord(consumerIn)
+}
+
+fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     var decryptionResult : DecryptionResult? = null
     var tallyResult : TallyResult? = null
     var init : ElectionInitialized? = null
     var config : ElectionConfig? = null
+    var manifest : Manifest? = null
     var stage : ElectionRecord.Stage? = null
 
     val decryption = consumer.readDecryptionResult()
@@ -56,17 +55,26 @@ fun electionRecordFromConsumer(consumer: Consumer) : ElectionRecord {
             }
         }
     }
+
+    // Always has to be a config and the original manifest bytes, from which the manifest is parsed
+    require(config != null)
+    require(config.manifestHash == manifestHash(config.parameterBaseHash, config.manifestBytes))
+    manifest = consumer.makeManifest(config.manifestBytes)
+
     if (stage == ElectionRecord.Stage.INIT && consumer.hasEncryptedBallots()) {
         stage = ElectionRecord.Stage.ENCRYPTED
     }
-    return ElectionRecordImpl(consumer, stage!!, decryptionResult, tallyResult, init, config!!)
+    return ElectionRecordImpl(consumer, stage!!, decryptionResult, tallyResult, init, config!!, manifest!!)
 }
 
-private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionRecord.Stage,
+private class ElectionRecordImpl(val consumer: Consumer,
+                                 val stage: ElectionRecord.Stage,
                                  val decryptionResult : DecryptionResult?,
                                  val tallyResult : TallyResult?,
                                  val init : ElectionInitialized?,
-                                 val config : ElectionConfig) : ElectionRecord {
+                                 val config : ElectionConfig,
+                                 val manifest: Manifest
+) : ElectionRecord {
 
     override fun stage(): ElectionRecord.Stage {
         return stage
@@ -76,12 +84,20 @@ private class ElectionRecordImpl(val consumer: Consumer, val stage: ElectionReco
         return consumer.topdir()
     }
 
+    override fun isJson(): Boolean {
+        return consumer.isJson()
+    }
+
     override fun constants(): ElectionConstants {
         return config.constants
     }
 
     override fun manifest(): Manifest {
-        return config.manifest
+        return manifest
+    }
+
+    override fun manifestBytes(): ByteArray {
+        return config.manifestBytes
     }
 
     override fun numberOfGuardians(): Int {
