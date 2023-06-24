@@ -5,16 +5,29 @@ import kotlin.test.Test
 class RunTallyAccumulationTest {
 
     @Test
-    fun runTallyAccumulationTest() {
+    fun runTallyAccumulationTestJson() {
         main(
             arrayOf(
                 "-in",
-                "testOut/testRunBatchEncryptionTest",
-                // "src/commonTest/data/runWorkflowAllAvailable",
+                "testOut/encrypt/testRunBatchEncryptionJson",
                 "-out",
-                "testOut/runTallyAccumulationTest",
+                "testOut/tally/testRunBatchEncryptionJson",
+            )
+        )
+    }
+
+    @Test
+    fun runTallyAccumulationTestProto() {
+        main(
+            arrayOf(
+                "-in",
+                "testOut/encrypt/testRunBatchEncryptionProto",
+                "-out",
+                "testOut/tally/runTallyAccumulationTestProto",
                 "-name",
-                "CountyCook-precinct079-device24358"
+                "CountyCook-precinct079-device24358",
+                "-createdBy",
+                "runTallyAccumulationTestProto",
             )
         )
     }

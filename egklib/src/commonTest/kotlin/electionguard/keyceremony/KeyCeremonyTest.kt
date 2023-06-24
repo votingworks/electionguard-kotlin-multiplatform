@@ -35,15 +35,14 @@ class KeyCeremonyTest {
 
         // makeElectionInitialized
         val fakeManifest = makeFakeManifest()
-        val config = ElectionConfig(
+        val config = makeElectionConfig(
             protocolVersion,
             group.constants,
-            ByteArray(0),
-            fakeManifest,
             3,
             2,
             "no",
             "no",
+            ByteArray(0) // TODO manifest
         )
         val init: ElectionInitialized = kc.makeElectionInitialized(config)
 
@@ -62,7 +61,6 @@ class KeyCeremonyTest {
         assertEquals(strustees.map { makeGuardian(it) }, init.guardians)
         assertNotNull(init.metadata["CreatedBy"])
 
-        assertEquals(fakeManifest, init.manifest())
         assertEquals(ElGamalPublicKey(expectedPublicKey), init.jointPublicKey())
         assertEquals(expectedExtendedBaseHash.toElementModQ(group), init.cryptoExtendedBaseHash())
         assertEquals(config.numberOfGuardians, init.numberOfGuardians())

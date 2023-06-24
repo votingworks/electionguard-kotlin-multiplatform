@@ -12,6 +12,7 @@ import electionguard.ballot.TallyResult
 import electionguard.core.pathExists
 import electionguard.json.publish
 import electionguard.json.publishDecryptingTrusteeJson
+import electionguard.json2.publishJson
 import electionguard.keyceremony.KeyCeremonyTrustee
 import io.ktor.utils.io.core.use
 import kotlinx.cinterop.CPointer
@@ -41,6 +42,15 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         }
     }
 
+    private fun writeToFile(fileout: String, bytes: ByteArray) {
+        val file: CPointer<FILE> = openFile(fileout, "wb")
+        try {
+            writeToFile(file, fileout, bytes)
+        } finally {
+            fclose(file)
+        }
+    }
+
     actual override fun writeManifest(manifest: Manifest) : String {
         val fileout2 = jsonPaths.manifestPath()
         val jsonString2 = jsonFormat.encodeToString(manifest.publish())
@@ -49,11 +59,9 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {
-        val fileout = jsonPaths.electionConfigPath()
-        val jsonString = jsonFormat.encodeToString(config.constants.publish())
-        writeToFile(fileout, jsonString)
-
-        writeManifest(config.manifest)
+        writeToFile(jsonPaths.electionConstantsPath(), jsonFormat.encodeToString(config.constants.publishJson()))
+        writeToFile(jsonPaths.electionConfigPath(), config.manifestBytes)
+        writeToFile(jsonPaths.electionConfigPath(), jsonFormat.encodeToString(config.publishJson()))
     }
 
     actual override fun writeElectionInitialized(init: ElectionInitialized) {

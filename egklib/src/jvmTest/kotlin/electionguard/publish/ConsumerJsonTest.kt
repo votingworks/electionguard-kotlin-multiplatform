@@ -8,7 +8,6 @@ import kotlin.jvm.JvmStatic
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
@@ -26,17 +25,18 @@ class ConsumerJsonTest {
     //@ParameterizedTest
     @MethodSource("params")
     fun readElectionRecord(topdir: String) {
-        val context = productionGroup()
-        val consumerIn = makeConsumer(topdir, context)
-        val initResult = consumerIn.readElectionInitialized()
-        if (initResult is Err) {
-            println("failed $initResult")
+        val group = productionGroup()
+        val electionRecord = readElectionRecord(group, topdir)
+        val electionInit = electionRecord.electionInit()
+
+        if (electionInit == null) {
+            println("readElectionRecord failed $topdir")
         }
-        assertTrue(initResult is Ok)
-        val config = initResult.unwrap().config
-        println("electionRecord.manifest.specVersion = ${config.manifest.specVersion}")
-        assertEquals(electionScopeId, config.manifest.electionScopeId)
-        assertEquals(specVersion, config.manifest.specVersion)
+
+        val manifest = electionRecord.manifest()
+        println("electionRecord.manifest.specVersion = ${manifest.specVersion}")
+        assertEquals(electionScopeId, manifest.electionScopeId)
+        assertEquals(specVersion, manifest.specVersion)
     }
 
     //@ParameterizedTest

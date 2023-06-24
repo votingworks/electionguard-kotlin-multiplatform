@@ -11,7 +11,7 @@ import electionguard.core.SchnorrProof
 import electionguard.core.productionGroup
 import electionguard.publish.Consumer
 import electionguard.publish.ElectionRecord
-import electionguard.publish.electionRecordFromConsumer
+import electionguard.publish.readElectionRecord
 import electionguard.publish.makeConsumer
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -49,7 +49,7 @@ class ShowSet(val want: Set<String>) {
 
 fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: ShowSet, details : Boolean) {
     val consumer = makeConsumer(inputDir, group)
-    val electionRecord = electionRecordFromConsumer(consumer)
+    val electionRecord = readElectionRecord(consumer)
     println("RunElectionRecord from $inputDir, stage = ${electionRecord.stage()}\n")
 
     val config = electionRecord.config()
@@ -61,7 +61,7 @@ fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: ShowSe
 
     }
     if (showSet.has("manifest")) {
-        print(" ${config.manifest.show(details)}")
+        print(" ${electionRecord.manifest().show(details)}")
     }
     println()
 
@@ -115,7 +115,7 @@ fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: ShowSe
     val dtally = electionRecord.decryptionResult()
     if (dtally != null) {
         // println(" decryptedTally available=${dtally.lagrangeCoordinates.size}")
-        println(" decryptedTally ${dtally.decryptedTally.show(details, config.manifest)}")
+        println(" decryptedTally ${dtally.decryptedTally.show(details, electionRecord.manifest())}")
         //if (showSet.has("lagrange")) {
         //    print(dtally.lagrangeCoordinates.showLagrange())
        // }

@@ -105,7 +105,7 @@ fun runDecryptBallots(
         decryptingTrustees,
         )
 
-    val publisher = makePublisher(outputDir)
+    val publisher = makePublisher(outputDir, false, consumerIn.isJson())
     val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
 
     val ballotIter: Iterable<EncryptedBallot> =

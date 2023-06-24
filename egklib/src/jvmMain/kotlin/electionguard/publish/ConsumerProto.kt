@@ -15,12 +15,14 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
+import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.protoconvert.import
 import mu.KotlinLogging
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
+import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -44,6 +46,16 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     }
 
     actual override fun isJson() = false
+
+    actual override fun readManifestBytes(filename : String): ByteArray {
+        return fileReadBytes(filename)
+    }
+
+    actual override fun makeManifest(manifestBytes: ByteArray): Manifest {
+        val result = makeManifestResult(manifestBytes)
+        if (result is Ok) return result.value
+        throw RuntimeException(result.toString())
+    }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
         return readElectionConfig(path.electionConfigPath())
@@ -126,13 +138,13 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
 
     //////// The low level reading functions for protobuf
 
-    actual override fun readManifest(filepath : String): Result<Manifest, String> {
+    private fun makeManifestResult(manifestBytes: ByteArray): Result<Manifest,String> {
         return try {
             var proto: electionguard.protogen.Manifest
-            FileInputStream(filepath).use { inp -> proto = electionguard.protogen.Manifest.decodeFromStream(inp) }
+            ByteArrayInputStream(manifestBytes).use { inp -> proto = electionguard.protogen.Manifest.decodeFromStream(inp) }
             proto.import()
         } catch (e: Exception) {
-            Err(e.message ?: "readManifest $filepath failed")
+            Err(e.message ?: "makeManifestResult failed")
         }
     }
 

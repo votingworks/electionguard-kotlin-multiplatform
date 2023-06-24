@@ -3,7 +3,7 @@ package electionguard.input
 import electionguard.ballot.Manifest
 import electionguard.input.BallotInputBuilder.Companion.styleDef
 
-const val electionScopeId = "StandardManifest"
+const val electionScopeId = "TestManifest"
 const val specVersion = "1.9"
 
 /** Build test Manifests */
@@ -179,8 +179,8 @@ class ManifestBuilder(private val manifestName: String = electionScopeId) {
     }
 }
 
-fun buildStandardManifest(ncontests: Int, nselections: Int) : Manifest {
-    val builder = ManifestBuilder("StandardManifest")
+fun buildTestManifest(ncontests: Int, nselections: Int) : Manifest {
+    val builder = ManifestBuilder("TestManifest")
     var count = 0
     List(ncontests) {
         val contestBuilder = builder.addContest("contest$it")

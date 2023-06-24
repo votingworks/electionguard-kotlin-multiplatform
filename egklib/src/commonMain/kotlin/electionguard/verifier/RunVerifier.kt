@@ -5,7 +5,7 @@ import electionguard.core.Stats
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.sigfig
-import electionguard.publish.electionRecordFromConsumer
+import electionguard.publish.readElectionRecord
 import electionguard.publish.makeConsumer
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -42,7 +42,7 @@ fun main(args: Array<String>) {
 fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime : Boolean = false): Boolean{
     val starting = getSystemTimeInMillis()
 
-    val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, group))
+    val electionRecord = readElectionRecord(group, inputDir)
     val verifier = Verifier( electionRecord, nthreads)
     val stats = Stats()
     val allOk = verifier.verify(stats, showTime)
@@ -58,7 +58,7 @@ fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime :
 fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int) {
     val starting = getSystemTimeInMillis()
 
-    val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, group))
+    val electionRecord = readElectionRecord(group, inputDir)
     val verifier = Verifier(electionRecord, nthreads)
 
     val stats = Stats()
@@ -72,7 +72,7 @@ fun verifyEncryptedBallots(group: GroupContext, inputDir: String, nthreads: Int)
 fun verifyDecryptedTally(group: GroupContext, inputDir: String) {
     val starting = getSystemTimeInMillis()
 
-    val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, group))
+    val electionRecord = readElectionRecord(group, inputDir)
     val verifier = Verifier(electionRecord, 1)
 
     val decryptedTally = electionRecord.decryptedTally() ?: throw IllegalStateException("no decryptedTally ")
@@ -87,7 +87,7 @@ fun verifyDecryptedTally(group: GroupContext, inputDir: String) {
 fun verifySpoiledBallotTallies(group: GroupContext, inputDir: String) {
     val starting = getSystemTimeInMillis()
 
-    val electionRecord = electionRecordFromConsumer(makeConsumer(inputDir, group))
+    val electionRecord = readElectionRecord(group, inputDir)
     val verifier = Verifier(electionRecord, 1)
 
     val stats = Stats()

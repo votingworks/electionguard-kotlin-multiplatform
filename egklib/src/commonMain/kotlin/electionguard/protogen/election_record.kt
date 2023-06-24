@@ -6,8 +6,6 @@ package electionguard.protogen
 public data class ElectionConfig(
     val specVersion: String = "",
     val constants: electionguard.protogen.ElectionConstants? = null,
-    val manifestFile: pbandk.ByteArr = pbandk.ByteArr.empty,
-    val manifest: electionguard.protogen.Manifest? = null,
     val numberOfGuardians: Int = 0,
     val quorum: Int = 0,
     val electionDate: String = "",
@@ -15,6 +13,7 @@ public data class ElectionConfig(
     val parameterBaseHash: electionguard.protogen.UInt256? = null,
     val manifestHash: electionguard.protogen.UInt256? = null,
     val electionBaseHash: electionguard.protogen.UInt256? = null,
+    val manifestBytes: pbandk.ByteArr = pbandk.ByteArr.empty,
     val metadata: List<electionguard.protogen.ElectionConfig.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -26,7 +25,7 @@ public data class ElectionConfig(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConfig = electionguard.protogen.ElectionConfig.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(12)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(11)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -46,16 +45,6 @@ public data class ElectionConfig(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionConstants.Companion),
                         jsonName = "constants",
                         value = electionguard.protogen.ElectionConfig::constants
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "manifest",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.Manifest.Companion),
-                        jsonName = "manifest",
-                        value = electionguard.protogen.ElectionConfig::manifest
                     )
                 )
                 add(
@@ -91,11 +80,11 @@ public data class ElectionConfig(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "manifest_file",
+                        name = "manifest_bytes",
                         number = 7,
                         type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
-                        jsonName = "manifestFile",
-                        value = electionguard.protogen.ElectionConfig::manifestFile
+                        jsonName = "manifestBytes",
+                        value = electionguard.protogen.ElectionConfig::manifestBytes
                     )
                 )
                 add(
@@ -764,7 +753,6 @@ public fun ElectionConfig?.orDefault(): electionguard.protogen.ElectionConfig = 
 private fun ElectionConfig.protoMergeImpl(plus: pbandk.Message?): ElectionConfig = (plus as? ElectionConfig)?.let {
     it.copy(
         constants = constants?.plus(plus.constants) ?: plus.constants,
-        manifest = manifest?.plus(plus.manifest) ?: plus.manifest,
         parameterBaseHash = parameterBaseHash?.plus(plus.parameterBaseHash) ?: plus.parameterBaseHash,
         manifestHash = manifestHash?.plus(plus.manifestHash) ?: plus.manifestHash,
         electionBaseHash = electionBaseHash?.plus(plus.electionBaseHash) ?: plus.electionBaseHash,
@@ -777,8 +765,6 @@ private fun ElectionConfig.protoMergeImpl(plus: pbandk.Message?): ElectionConfig
 private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ElectionConfig {
     var specVersion = ""
     var constants: electionguard.protogen.ElectionConstants? = null
-    var manifestFile: pbandk.ByteArr = pbandk.ByteArr.empty
-    var manifest: electionguard.protogen.Manifest? = null
     var numberOfGuardians = 0
     var quorum = 0
     var electionDate = ""
@@ -786,17 +772,17 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
     var parameterBaseHash: electionguard.protogen.UInt256? = null
     var manifestHash: electionguard.protogen.UInt256? = null
     var electionBaseHash: electionguard.protogen.UInt256? = null
+    var manifestBytes: pbandk.ByteArr = pbandk.ByteArr.empty
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.ElectionConfig.MetadataEntry>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> specVersion = _fieldValue as String
             2 -> constants = _fieldValue as electionguard.protogen.ElectionConstants
-            3 -> manifest = _fieldValue as electionguard.protogen.Manifest
             4 -> numberOfGuardians = _fieldValue as Int
             5 -> quorum = _fieldValue as Int
             6 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.ElectionConfig.MetadataEntry> }
-            7 -> manifestFile = _fieldValue as pbandk.ByteArr
+            7 -> manifestBytes = _fieldValue as pbandk.ByteArr
             8 -> electionDate = _fieldValue as String
             9 -> jurisdictionInfo = _fieldValue as String
             10 -> parameterBaseHash = _fieldValue as electionguard.protogen.UInt256
@@ -805,9 +791,9 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
         }
     }
 
-    return ElectionConfig(specVersion, constants, manifestFile, manifest,
-        numberOfGuardians, quorum, electionDate, jurisdictionInfo,
-        parameterBaseHash, manifestHash, electionBaseHash, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+    return ElectionConfig(specVersion, constants, numberOfGuardians, quorum,
+        electionDate, jurisdictionInfo, parameterBaseHash, manifestHash,
+        electionBaseHash, manifestBytes, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export

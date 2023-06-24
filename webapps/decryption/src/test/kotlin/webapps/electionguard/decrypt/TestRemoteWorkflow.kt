@@ -1,6 +1,5 @@
 package webapps.electionguard.decrypt
 
-import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.GroupContext
@@ -10,7 +9,7 @@ import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.encrypt.batchEncryption
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makePublisher
-import electionguard.publish.electionRecordFromConsumer
+import electionguard.publish.readElectionRecord
 import electionguard.publish.makeConsumer
 import electionguard.tally.runAccumulateBallots
 import electionguard.verifier.Verifier
@@ -34,12 +33,11 @@ class TestRemoteWorkflow {
         val group = productionGroup()
 
         // key ceremony was already run in RunRemoteKeyCeremonyTest
-        val consumerIn = makeConsumer(keyceremonyDir, group)
-        val init: ElectionInitialized = consumerIn.readElectionInitialized().unwrap()
+        val electionRecordIn = readElectionRecord(group, keyceremonyDir)
         println("ElectionInitialized read from $keyceremonyDir")
 
         // create fake ballots
-        val ballotProvider = RandomBallotProvider(init.config.manifest, nballots)
+        val ballotProvider = RandomBallotProvider(electionRecordIn.manifest(), nballots)
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
         val publisher = makePublisher(ballotsDir)
         publisher.writePlaintextBallot(ballotsDir, ballots)
@@ -56,8 +54,8 @@ class TestRemoteWorkflow {
 
         // verify
         println("\nRun Verifier")
-        val record = electionRecordFromConsumer(makeConsumer(workingDir, group))
-        val verifier = Verifier(record)
+        val electionRecord = readElectionRecord(group, workingDir)
+        val verifier = Verifier(electionRecord)
         val stats = Stats()
         val ok = verifier.verify(stats)
         stats.show()
@@ -75,12 +73,11 @@ class TestRemoteWorkflow {
         val group = productionGroup()
 
         // key ceremony was already run in RunRemoteKeyCeremonyTest
-        val consumerIn = makeConsumer(keyceremonyDir, group)
-        val init: ElectionInitialized = consumerIn.readElectionInitialized().unwrap()
+        val electionRecordIn = readElectionRecord(group, keyceremonyDir)
         println("ElectionInitialized read from  $keyceremonyDir")
 
         // create fake ballots
-        val ballotProvider = RandomBallotProvider(init.config.manifest, nballots)
+        val ballotProvider = RandomBallotProvider(electionRecordIn.manifest(), nballots)
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
         val publisher = makePublisher(ballotsDir)
         publisher.writePlaintextBallot(ballotsDir, ballots)
@@ -97,8 +94,8 @@ class TestRemoteWorkflow {
 
         // verify
         println("\nRun Verifier")
-        val record = electionRecordFromConsumer(makeConsumer(workingDir, group))
-        val verifier = Verifier(record)
+        val electionRecord = readElectionRecord(group, workingDir)
+        val verifier = Verifier(electionRecord)
         val stats = Stats()
         val ok = verifier.verify(stats)
         stats.show()

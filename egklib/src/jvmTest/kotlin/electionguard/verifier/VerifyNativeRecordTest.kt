@@ -3,8 +3,7 @@ package electionguard.verifier
 import electionguard.core.Stats
 import electionguard.core.productionGroup
 import electionguard.core.runTest
-import electionguard.publish.electionRecordFromConsumer
-import electionguard.publish.makeConsumer
+import electionguard.publish.readElectionRecord
 import kotlin.test.assertTrue
 
 // run jvm verifier on native election record
@@ -15,7 +14,7 @@ class VerifyNativeRecordTest {
     fun verifyNativeRecordTest() {
         runTest {
             val group = productionGroup()
-            val electionRecord = electionRecordFromConsumer(makeConsumer(nativeDir, group))
+            val electionRecord = readElectionRecord(group, nativeDir)
             val verifier = Verifier(electionRecord)
             val stats = Stats()
             val ok = verifier.verify(stats)

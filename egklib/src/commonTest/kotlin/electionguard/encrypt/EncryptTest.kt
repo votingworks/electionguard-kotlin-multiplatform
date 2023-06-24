@@ -1,25 +1,23 @@
 package electionguard.encrypt
 
-import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.ElectionInitialized
 import electionguard.core.*
-import electionguard.publish.makeConsumer
+import electionguard.publish.readElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EncryptTest {
-    val input = "src/commonTest/data/runWorkflowAllAvailable"
+    val input = "src/commonTest/data/allAvailable"
 
     // sanity check that encryption doesnt barf
     @Test
     fun testEncryption() {
         runTest {
             val group = productionGroup()
-            val consumerIn = makeConsumer(input, group)
-            val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
-            val ballot = makeBallot(electionInit.manifest(), "ballotStyle", 3, 0)
+            val electionRecord = readElectionRecord(group, input)
+            val electionInit = electionRecord.electionInit()!!
+            val ballot = makeBallot(electionRecord.manifest(), "ballotStyle", 3, 0)
 
-            val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
+            val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
             val result = encryptor.encrypt(ballot)
 
             var first = true
@@ -40,11 +38,11 @@ class EncryptTest {
     fun testEncryptionWithBallotNonce() {
         runTest {
             val group = productionGroup()
-            val consumerIn = makeConsumer(input, group)
-            val electionInit: ElectionInitialized = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException( it ) }
-            val ballot = makeBallot(electionInit.manifest(), "ballotStyle", 3, 0)
+            val electionRecord = readElectionRecord(group, input)
+            val electionInit = electionRecord.electionInit()!!
+            val ballot = makeBallot(electionRecord.manifest(), "ballotStyle", 3, 0)
 
-            val encryptor = Encryptor(group, electionInit.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
+            val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
             val nonce1 = UInt256.random()
             val result1 = encryptor.encrypt(ballot, nonce1, 0)
             val result2 = encryptor.encrypt(ballot, nonce1, 0)

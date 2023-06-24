@@ -5,6 +5,7 @@ package electionguard.publish
 import com.github.michaelbull.result.*
 import electionguard.ballot.*
 import electionguard.core.GroupContext
+import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.json.ConstantsJson
@@ -14,6 +15,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
+import java.io.ByteArrayInputStream
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -45,13 +47,15 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
     actual override fun isJson() = true
 
-    actual override fun readManifest(filepath : String): Result<Manifest, String> {
-        var manifest: Manifest
-        fileSystemProvider.newInputStream(fileSystem.getPath(filepath)).use { inp ->
+    actual override fun makeManifest(manifestBytes: ByteArray): Manifest {
+        ByteArrayInputStream(manifestBytes).use { inp ->
             val json = Json.decodeFromStream<ManifestJson>(inp)
-            manifest = json.import()
+            return json.import()
         }
-        return Ok(manifest)
+    }
+
+    actual override fun readManifestBytes(filename : String): ByteArray {
+        return fileReadBytes(filename)
     }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
@@ -158,17 +162,12 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 constants = json.import()
             }
 
-            var manifest: Manifest
-            fileSystemProvider.newInputStream(manifestFile).use { inp ->
-                val json = Json.decodeFromStream<ManifestJson>(inp)
-                manifest = json.import()
-            }
-            val manifest_bytes = fileSystemProvider.newInputStream(manifestFile).readAllBytes()
+            val manifestBytes = fileReadBytes(manifestFile.toString())
 
             var electionConfig: ElectionConfig
             fileSystemProvider.newInputStream(configFile).use { inp ->
                 val json = Json.decodeFromStream<ElectionConfigJson>(inp)
-                electionConfig = json.import(constants, manifest_bytes, manifest)
+                electionConfig = json.import(constants, manifestBytes)
             }
             Ok(electionConfig)
         } catch (e: Exception) {

@@ -10,8 +10,6 @@ const val protocolVersion = "v2.0"
 data class ElectionConfig(
     val configVersion: String,
     val constants: ElectionConstants,
-    val manifestFile: ByteArray, // the exact bytes of the original manifest File
-    val manifest: Manifest, // the parsed objects
 
     /** The number of guardians necessary to generate the public key. */
     val numberOfGuardians: Int,
@@ -22,14 +20,16 @@ data class ElectionConfig(
     /** info string used in hash */
     val jurisdictionInfo : String,
 
+    /** may be calculated or passed in */
+    val parameterBaseHash : UInt256, // Hp
+    val manifestHash : UInt256, // Hm
+    val electionBaseHash : UInt256,  // Hb
+
+    // keep a copy of this to make publishing easier
+    val manifestBytes: ByteArray,
+
     /** arbitrary key/value metadata. */
     val metadata: Map<String, String> = emptyMap(),
-
-    /** may be calculated or passed in */
-    val parameterBaseHash : UInt256 = parameterBaseHash(constants), // Hp
-    val manifestHash : UInt256 = manifestHash(parameterBaseHash, manifestFile), // Hm
-    val electionBaseHash : UInt256 =  // Hb
-        electionBaseHash(parameterBaseHash, numberOfGuardians, quorum, electionDate, jurisdictionInfo, manifestHash),
 ) {
     init {
         require(numberOfGuardians > 0)  { "numberOfGuardians ${numberOfGuardians} <= 0" }
@@ -43,8 +43,6 @@ data class ElectionConfig(
 
         if (configVersion != other.configVersion) return false
         if (constants != other.constants) return false
-        if (!manifestFile.contentEquals(other.manifestFile)) return false
-        if (manifest != other.manifest) return false
         if (numberOfGuardians != other.numberOfGuardians) return false
         if (quorum != other.quorum) return false
         if (electionDate != other.electionDate) return false
@@ -58,8 +56,6 @@ data class ElectionConfig(
     override fun hashCode(): Int {
         var result = configVersion.hashCode()
         result = 31 * result + constants.hashCode()
-        result = 31 * result + manifestFile.contentHashCode()
-        result = 31 * result + manifest.hashCode()
         result = 31 * result + numberOfGuardians
         result = 31 * result + quorum
         result = 31 * result + electionDate.hashCode()
@@ -160,5 +156,36 @@ fun electionBaseHash(Hp: UInt256, n : Int, k : Int, date : String, info : String
         date,
         info,
         HM.bytes,
+    )
+}
+
+/** Make ElectionConfig, calculating Hp, Hm and Hb. */
+fun makeElectionConfig(
+    configVersion: String,
+    constants: ElectionConstants,
+    numberOfGuardians: Int,
+    quorum: Int,
+    electionDate: String,
+    jurisdictionInfo: String,
+    manifestBytes: ByteArray,
+    metadata: Map<String, String> = emptyMap(),
+): ElectionConfig {
+
+    val parameterBaseHash = parameterBaseHash(constants)
+    val manifestHash = manifestHash(parameterBaseHash, manifestBytes)
+    val electionBaseHash = electionBaseHash(parameterBaseHash, numberOfGuardians, quorum, electionDate, jurisdictionInfo, manifestHash)
+
+    return ElectionConfig(
+        configVersion,
+        constants,
+        numberOfGuardians,
+        quorum,
+        electionDate,
+        jurisdictionInfo,
+        parameterBaseHash,
+        manifestHash,
+        electionBaseHash,
+        manifestBytes,
+        metadata,
     )
 }

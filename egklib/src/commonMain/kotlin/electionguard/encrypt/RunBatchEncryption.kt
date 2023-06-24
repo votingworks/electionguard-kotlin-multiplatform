@@ -3,7 +3,6 @@
 package electionguard.encrypt
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
@@ -17,9 +16,7 @@ import electionguard.core.toElementModQ
 import electionguard.decryptBallot.DecryptWithNonce
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
-import electionguard.publish.EncryptedBallotSinkIF
-import electionguard.publish.makeConsumer
-import electionguard.publish.makePublisher
+import electionguard.publish.*
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -53,7 +50,7 @@ fun main(args: Array<String>) {
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
-        description = "Directory containing input ElectionInitialized.protobuf file"
+        description = "Directory containing input election record"
     ).required()
     val ballotDir by parser.option(
         ArgType.String,
@@ -127,8 +124,10 @@ fun batchEncryption(
     invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None,
     chainCodes : Boolean = false
 ) {
-    val consumerIn = makeConsumer(inputDir, group)
-    return batchEncryption(group, inputDir, outputDir, consumerIn.iteratePlaintextBallots(ballotDir, null),
+    // ballots can be in either format
+    val ballotSource = makeInputBallotSource(ballotDir, group)
+
+    return batchEncryption(group, inputDir, outputDir, ballotSource.iteratePlaintextBallots(ballotDir, null),
         invalidDir, fixedNonces, nthreads, createdBy, check, chainCodes)
 }
 
@@ -145,12 +144,11 @@ fun batchEncryption(
     check: CheckType = CheckType.None,
     chainCodes : Boolean = false,
 ) {
-    val consumerIn = makeConsumer(inputDir, group)
-    val electionInit: ElectionInitialized =
-        consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+    val electionRecord = readElectionRecord(group, inputDir)
+    val electionInit = electionRecord.electionInit()!!
 
     // ManifestInputValidation
-    val manifestValidator = ManifestInputValidation(electionInit.manifest())
+    val manifestValidator = ManifestInputValidation(electionRecord.manifest())
     val errors = manifestValidator.validate()
     if (errors.hasErrors()) {
         println("*** ManifestInputValidation FAILED on election record in $inputDir")
@@ -165,7 +163,7 @@ fun batchEncryption(
     // BallotInputValidation
     var countEncryptions = 0
     val invalidBallots = ArrayList<PlaintextBallot>()
-    val ballotValidator = BallotInputValidation(electionInit.manifest())
+    val ballotValidator = BallotInputValidation(electionRecord.manifest())
     val validate: ((PlaintextBallot) -> Boolean) = {
         val mess = ballotValidator.validate(it)
         if (mess.hasErrors()) {
@@ -185,14 +183,14 @@ fun batchEncryption(
     val ballotNonce = if (fixedNonces) UInt256.TWO else null
     val encryptor = Encryptor(
         group,
-        electionInit.manifest(),
+        electionRecord.manifest(),
         ElGamalPublicKey(electionInit.jointPublicKey),
         electionInit.extendedBaseHash
     )
-    val runEncryption = EncryptionRunner(group, encryptor, ballotNonce, electionInit.manifest(),
+    val runEncryption = EncryptionRunner(group, encryptor, ballotNonce, electionRecord.manifest(),
         electionInit.jointPublicKey, electionInit.extendedBaseHash, check, chainCodes)
 
-    val publisher = makePublisher(outputDir)
+    val publisher = makePublisher(outputDir, false, electionRecord.isJson())
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
 
     try {

@@ -36,21 +36,23 @@ fun main(args: Array<String>) {
 
 fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: String, createNew : Boolean) {
     val consumer = makeConsumer(inputDir, group)
-    val producer = makePublisher(outputDir, createNew, !consumer.isJson())
-    val electionRecord = electionRecordFromConsumer(consumer)
+    val publisher = makePublisher(outputDir, createNew, !consumer.isJson())
+    val electionRecord = readElectionRecord(consumer)
 
-    val config = electionRecord.config()
-    producer.writeElectionConfig(config)
+    //publisher.writeManifestFile(electionRecord.manifestFile())
+    //println(" manifestFile written")
+
+    publisher.writeElectionConfig(electionRecord.config())
     println(" config written")
 
     val init = electionRecord.electionInit()
     if (init != null) {
-        producer.writeElectionInitialized(init)
+        publisher.writeElectionInitialized(init)
         println(" electionInit written")
     }
 
     var ecount = 0
-    producer.encryptedBallotSink().use { esink ->
+    publisher.encryptedBallotSink().use { esink ->
         consumer.iterateEncryptedBallots { true }.forEach() {
             esink.writeEncryptedBallot(it)
             ecount++
@@ -60,18 +62,18 @@ fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: S
 
     val tally = electionRecord.tallyResult()
     if (tally != null) {
-        producer.writeTallyResult(tally)
+        publisher.writeTallyResult(tally)
         println(" tally result written")
     }
 
     val dtally = electionRecord.decryptionResult()
     if (dtally != null) {
-        producer.writeDecryptionResult(dtally)
+        publisher.writeDecryptionResult(dtally)
         println(" decrypted tally result written")
     }
 
     var dcount = 0
-    producer.decryptedTallyOrBallotSink().use { dsink ->
+    publisher.decryptedTallyOrBallotSink().use { dsink ->
         consumer.iterateDecryptedBallots().forEach() {
             dsink.writeDecryptedTallyOrBallot(it)
             dcount++

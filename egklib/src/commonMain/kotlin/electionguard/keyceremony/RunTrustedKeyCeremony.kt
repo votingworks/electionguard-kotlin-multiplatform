@@ -6,15 +6,15 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
-import electionguard.ballot.protocolVersion
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
-import electionguard.publish.readManifest
+import electionguard.publish.readElectionRecord
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
+import kotlinx.cli.default
 import kotlinx.cli.required
 
 /**
@@ -27,23 +27,8 @@ fun main(args: Array<String>) {
     val inputDir by parser.option(
         ArgType.String,
         shortName = "in",
-        description = "Directory containing input ElectionConfig record"
-    )
-    val electionManifest by parser.option(
-        ArgType.String,
-        shortName = "manifest",
-        description = "Manifest file or directory (json or protobuf)"
-    )
-    val nguardians by parser.option(
-        ArgType.Int,
-        shortName = "nguardians",
-        description = "number of guardians"
-    )
-    val quorum by parser.option(
-        ArgType.Int,
-        shortName = "quorum",
-        description = "quorum size"
-    )
+        description = "Directory containing input election record"
+    ).required()
     val trusteeDir by parser.option(
         ArgType.String,
         shortName = "trustees",
@@ -58,53 +43,14 @@ fun main(args: Array<String>) {
         ArgType.String,
         shortName = "createdBy",
         description = "who created"
-    )
-    val electionDate by parser.option(
-        ArgType.String,
-        shortName = "electionDate",
-        description = "election date"
-    )
-    val info by parser.option(
-        ArgType.String,
-        shortName = "info",
-        description = "jurisdictional information"
-    )
+    ).default("RunTrustedKeyCeremony")
     parser.parse(args)
     println("RunTrustedKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
     val group = productionGroup()
-    var createdFrom : String
+    val electionRecord = readElectionRecord(group, inputDir)
 
-    // As input, either specify the input directory that contains electionConfig.protobuf file,
-    // OR the election manifest, nguardians and quorum.
-    val config: ElectionConfig = if (electionManifest != null && nguardians != null && quorum != null) {
-        val manifest = readManifest(electionManifest!!, group)
-        createdFrom = electionManifest!!
-        println(
-            "RunRemoteKeyCeremony\n" +
-                    "  electionManifest = '$electionManifest'\n" +
-                    "  nguardians = $nguardians quorum = $quorum\n" +
-                    "  outputDir = '$outputDir'\n"
-        )
-        ElectionConfig(protocolVersion, group.constants, ByteArray(0), manifest.unwrap(), nguardians!!, quorum!!,
-            electionDate ?: "N/A",
-            info ?: "N/A",
-            mapOf(
-                Pair("CreatedBy", createdBy ?: "RunRemoteKeyCeremony"),
-                Pair("CreatedFromElectionManifest", electionManifest!!),
-            ))
-    } else {
-        val consumerIn = makeConsumer(inputDir!!, group)
-        createdFrom = inputDir!!
-        println(
-            "RunRemoteKeyCeremony\n" +
-                    "  inputDir = '$inputDir'\n" +
-                    "  outputDir = '$outputDir'\n"
-        )
-        consumerIn.readElectionConfig().getOrThrow { IllegalStateException(it) }
-    }
-
-    val result = runKeyCeremony(group, createdFrom, config, outputDir, trusteeDir, createdBy)
+    val result = runKeyCeremony(group, inputDir, electionRecord.config(), outputDir, trusteeDir, electionRecord.isJson(), createdBy)
     println("runKeyCeremony result = $result")
     require(result is Ok)
 }
@@ -115,6 +61,7 @@ fun runKeyCeremony(
     config: ElectionConfig,
     outputDir: String,
     trusteeDir: String,
+    isJson: Boolean,
     createdBy: String?
 ): Result<Boolean, String> {
     val starting = getSystemTimeInMillis()
@@ -138,11 +85,11 @@ fun runKeyCeremony(
         )
     )
 
-    val publisher = makePublisher(outputDir)
+    val publisher = makePublisher(outputDir, false, isJson)
     publisher.writeElectionInitialized(electionInitialized)
 
     // store the trustees in some private place.
-    val trusteePublisher = makePublisher(trusteeDir)
+    val trusteePublisher = makePublisher(trusteeDir, false, isJson)
     trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
 
     val took = getSystemTimeInMillis() - starting

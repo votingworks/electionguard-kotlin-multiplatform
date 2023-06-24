@@ -12,18 +12,17 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
-    private val topdir = "src/commonTest/data/runWorkflowAllAvailable"
+    private val topdir = "src/commonTest/data/allAvailable"
 
-    // @Test
+    @Test
     fun readElectionRecord() {
         runTest {
-            val context = productionGroup()
-            val consumerIn = makeConsumer(topdir, context)
-            val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-            val config = init.config
-            println("electionRecord.manifest.specVersion = ${config.manifest.specVersion}")
-            assertEquals(electionScopeId, config.manifest.electionScopeId)
-            assertEquals(specVersion, config.manifest.specVersion)
+            val group = productionGroup()
+            val electionRecord = readElectionRecord(group, topdir)
+            val manifest = electionRecord.manifest()
+            println("electionRecord.manifest.specVersion = ${electionRecord.manifest().specVersion}")
+            assertEquals(electionScopeId, manifest.electionScopeId)
+            assertEquals(specVersion, manifest.specVersion)
         }
     }
 
@@ -87,7 +86,7 @@ class ConsumerTest {
     fun readTrustee() {
         runTest {
             val context = productionGroup()
-            val initDir = "src/commonTest/data/runWorkflowAllAvailable"
+            val initDir = "src/commonTest/data/allAvailable"
             val consumerIn = makeConsumer(initDir, context)
             val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val trusteeDir = "$topdir/private_data/trustees"

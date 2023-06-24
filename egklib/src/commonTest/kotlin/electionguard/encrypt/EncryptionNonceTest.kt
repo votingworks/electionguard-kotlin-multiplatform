@@ -1,12 +1,10 @@
 package electionguard.encrypt
 
-import com.github.michaelbull.result.getOrThrow
-import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.*
 import electionguard.input.RandomBallotProvider
-import electionguard.publish.makeConsumer
+import electionguard.publish.readElectionRecord
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,30 +12,29 @@ import kotlin.test.assertNotNull
 
 /** Verify the embedded nonces in an Encrypted Ballot. */
 class EncryptionNonceTest {
-    val input = "src/commonTest/data/runWorkflowAllAvailable"
+    val input = "src/commonTest/data/allAvailable"
     val nballots = 11
 
     @Test
     fun testEncryptionNonces() {
         val group = productionGroup()
-        val consumerIn = makeConsumer(input, group)
-        val electionInit: ElectionInitialized =
-            consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+        val electionRecord = readElectionRecord(group, input)
+        val electionInit = electionRecord.electionInit()!!
 
         // encrypt
         val encryptor = Encryptor(
             group,
-            electionInit.manifest(),
+            electionRecord.manifest(),
             ElGamalPublicKey(electionInit.jointPublicKey),
             electionInit.extendedBaseHash
         )
 
         val starting = getSystemTimeInMillis()
-        RandomBallotProvider(electionInit.manifest(), nballots).ballots().forEach { ballot ->
+        RandomBallotProvider(electionRecord.manifest(), nballots).ballots().forEach { ballot ->
             val ciphertextBallot = encryptor.encrypt(ballot, null, 0)
 
             // decrypt with nonces
-            val decryptionWithNonce = VerifyEmbeddedNonces(group, electionInit.manifest(), electionInit.jointPublicKey(), electionInit.extendedBaseHash)
+            val decryptionWithNonce = VerifyEmbeddedNonces(group, electionRecord.manifest(), electionInit.jointPublicKey(), electionInit.extendedBaseHash)
             val decryptedBallot = with (decryptionWithNonce) { ciphertextBallot.decrypt() }
             assertNotNull(decryptedBallot)
 

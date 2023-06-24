@@ -4,7 +4,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.Manifest
 import electionguard.core.*
 import electionguard.input.ManifestBuilder
-import electionguard.input.buildStandardManifest
+import electionguard.input.buildTestManifest
 import electionguard.protoconvert.ManifestConvertTest.Companion.generateFakeManifest
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
@@ -24,7 +24,7 @@ class ManifestTest {
 
     @Test
     fun writeManifest() {
-        val manifest = buildStandardManifest(ncontests, nselections)
+        val manifest = buildTestManifest(ncontests, nselections)
         val json = manifest.publish()
         val roundtrip = json.import()
         assertNotNull(roundtrip)

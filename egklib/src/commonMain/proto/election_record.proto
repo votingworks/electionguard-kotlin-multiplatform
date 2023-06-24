@@ -12,8 +12,6 @@ option java_outer_classname = "ElectionRecordProto";
 message ElectionConfig {
   string spec_version = 1; // specification version
   ElectionConstants constants = 2;
-  bytes manifest_file = 7; // the original source of the manifest
-  Manifest manifest = 3;
   uint32 number_of_guardians = 4; // n, the number of guardians necessary to generate the public key
   uint32 quorum = 5; // k, the quorum of guardians necessary to decrypt an election.  Must be <= number_of_guardians.
   string election_date = 8; // for election base hash
@@ -21,6 +19,7 @@ message ElectionConfig {
   UInt256 parameter_base_hash = 10; // Hp
   UInt256 manifest_hash = 11;       // Hm
   UInt256 election_base_hash = 12;  // He
+  bytes manifest_bytes = 7; // the original source of the manifest
   map<string, string> metadata = 6; // arbitrary metadata added by the software
 }
 
@@ -66,6 +65,7 @@ message DecryptionResult {
   map<string, string> metadata = 4;
 }
 
+// TODO not needed
 message LagrangeCoordinate {
   string guardian_id = 1;
   uint32 x_coordinate = 2; // x coordinate in the secret polynomial. must be > 0

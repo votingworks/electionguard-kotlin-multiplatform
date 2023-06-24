@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 1/17/2023
+last update 6/23/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
@@ -8,7 +8,6 @@ last update 1/17/2023
   * [Run Trusted KeyCeremony](#run-trusted-keyceremony)
   * [Run Batch Encryption](#run-batch-encryption)
   * [Run Accumulate Tally](#run-accumulate-tally)
-      * [Timing](#timing)
   * [Run Trusted Tally Decryption](#run-trusted-tally-decryption)
   * [Run Trusted Ballot Decryption](#run-trusted-ballot-decryption)
   * [Run Verifier](#run-verifier)
@@ -20,26 +19,23 @@ last update 1/17/2023
 
 <img src="./images/Workflow.svg" alt="Workflow" width="800"/>
 
-1. **Generate a Manifest record**. The following examples may be useful:
+1. **Create a Manifest record** 
+   1. Generating a real Manifest by election officials is outside the scope of this library.
+   2. Create a manifest in code with the _electionguard.ballot.Manifest_ classes, and write it out
+          with a Publisher. 
+   3. Create a fake manifest for testing with the _electionguard.input.RunCreateTestManifest_ CLI.
+   4. Convert an existing manifest between JSON and Proto with the _electionguard.cli.RunConvertManifest_ CLI.
+      The type (JSON or Proto) of Manifest is used for the rest of the election record.
 
-    1. A synthetic manifest is created in _electionguard.input.ManifestBuilder.buildStandardManifest_(),
-       and a protobuf Manifest is written out by electionguard.protoconvert.ManifestConvertTest.writeManifest.
-    2. A synthetic manifest is created in _electionguard.input.ManifestBuilder.buildStandardManifest_(),
-       and a json Manifest is written out by electionguard.json.ManifestTest.writeManifest.
+2. **Create an ElectionConfig record**.
+   1. Create an ElectionConfig from a Manifest and input parameters using _electionguard.cli.RunCreateElectionConfig_ CLI.
 
-2. **Generate an ElectionConfig protobuf record**. The following examples may be useful:
+3. **Run the KeyCeremony**. 
 
-    1. A synthetic manifest is created in
-       _electionguard.protoconvert.ElectionConfigConvertTest.generateElectionConfig_(),
-       and an ElectionConfig protobuf is written out.
-
-3. **KeyCeremony**. An ElectionConfig record is needed as input, and an ElectionInitialized record is output.
-   The following examples may be useful:
-
-    1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI that will run the entire key ceremony locally in a
+   1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI that will run the entire key ceremony locally in a
        single process. See _electionguard.keyceremony.RunKeyCeremonyTest_ as an example.
 
-    2. To run a keyceremony with remote guardians, using the webapps CLI:
+   2. To run a keyceremony with remote guardians, using the webapps CLI:
 
         1. In _webapps/keyceremonytrustees_, start up _webapps.electionguard.KeyCeremonyRemoteTrustee_, and specify the
            directory to write the private trustee files, using the command line argument:
@@ -49,30 +45,25 @@ last update 1/17/2023
         2. In _webapps/keyceremony_, run _webapps.electionguard.keyceremony.RunRemoteKeyCeremony_ CLI (see
            RunRemoteKeyCeremonyTest as an example of the inputs needed).
 
-4. **Create input plaintext ballots** based on the manifest in ElectionConfig. The following examples may be useful:
-    1. _TestWorkflow_ uses _RandomBallotProvider_ to generate random test ballots.
-    2. _GenerateFakeBallots_ uses _RandomBallotProvider_ to generate random test ballots.
+4. **Create test input plaintext ballots**
+   1._electionguard.workflow.GenerateFakeBallots_ generates random test ballots.
 
-5. **Batch Encryption**. The following examples may be useful:
+5. **Batch Encryption**. 
     1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext
-       ballots, encrypts the
-       ballots and writes out EncryptedBallot protobuf records. If any input plaintext ballot fails validation,
+       ballots, encrypts the ballots and writes out EncryptedBallot records. If any input plaintext ballot fails validation,
        it is annotated and written to a separate directory, and not encrypted.
 
-6. **Accumulate Tally**. The following examples may be useful:
+6. **Accumulate Tally**.
     1. _electionguard.tally.RunAccumulateTally_ is a CLI that reads an ElectionInitialized record and EncryptedBallot
-       records, sums the
-       votes in the encrypted ballots and writes out a _EncryptedTally_ protobuf record.
+       records, sums the votes in the encrypted ballots and writes out a _EncryptedTally_ record.
 
-7. **Decryption**. The following examples may be useful:
+7. **Decryption**.
     1. _electionguard.decrypt.RunTrustedTallyDecryption_ is a CLI for testing, that will run locally in a single
-       process,
-       that reads an EncryptedTally record and local
-       DecryptingTrustee records, decrypts the tally and writes out a _DecryptedTallyOrBallot_ protobuf record.
+       process, reads an EncryptedTally record and local DecryptingTrustee records, decrypts the tally and writes out 
+       a _DecryptedTallyOrBallot_ record for the tally.
     2. _electionguard.decrypt.RunTrustedBallotDecryption_ is a CLI for testing, that will run locally in a single
-       process,
-       that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a
-       _DecryptedTallyOrBallot_ protobuf record that represents the decrypted spoiled ballot.
+       process, that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a
+       _DecryptedTallyOrBallot_ record for the spoiled ballot.
 
     3. To run a decryption using the webapps CLI:
 
@@ -82,18 +73,12 @@ last update 1/17/2023
 
         3. See _webapps.electionguard.decrypt.RunRemoteWorkflow_ in the tests, as an example.
 
-8. **Verify**. The following examples may be useful:
+8. **Verify**. 
     1. _electionguard.verify.VerifyElectionRecord_ is a CLI that reads an election record and verifies it.
 
-9. **Complete test Workflow**. The following examples may be useful:
-    1. A complete test workflow can be run from electionguard.workflow.TestWorkflow in the commonTest module.
+9. **Complete test Workflow**.
+    1. A complete test workflow can be run from electionguard.workflow.TestWorkflow.
 
-    input:
-    * _inputDir_/electionConfig.protobuf
-    
-    output:
-   * _trusteeDir_/decryptingTrustee-_guardianId_.protobuf
-   * _outputDir_/electionInitialized.protobuf
 
 ## Run Trusted KeyCeremony
 
@@ -180,12 +165,7 @@ input:
 output:
 
 * _outputDir_/tallyResult.protobuf
-
-#### Timing
-
-````
-AccumulateTally processed 100 ballots, took 1246 millisecs, 12 msecs per ballot
-````
+* 
 
 ## Run Trusted Tally Decryption
 

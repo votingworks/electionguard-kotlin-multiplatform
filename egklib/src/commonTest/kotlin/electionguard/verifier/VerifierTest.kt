@@ -5,6 +5,21 @@ import kotlin.test.Test
 
 class VerifierTest {
     @Test
+    fun verificationOrg() {
+        runVerifier(productionGroup(), "src/commonTest/data/someAvailable", 11, true)
+    }
+
+    @Test
+    fun verificationJson() {
+        runVerifier(productionGroup(), "testOut/RunElectionRecordConvertJson", 11, true)
+    }
+
+    @Test
+    fun verificationRoundtrip() {
+        runVerifier(productionGroup(), "testOut/RunElectionRecordConvertProto", 11, true)
+    }
+
+    @Test
     fun verification1() {
         runVerifier(productionGroup(), "src/commonTest/data/start", 1, true)
     }
@@ -26,7 +41,7 @@ class VerifierTest {
 
     @Test
     fun readElectionRecordAndValidate() {
-        runVerifier(productionGroup(), "src/commonTest/data/runWorkflowAllAvailable", 11, true)
+        runVerifier(productionGroup(), "src/commonTest/data/allAvailable", 11, true)
     }
 
     @Test
@@ -34,7 +49,7 @@ class VerifierTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/runWorkflowSomeAvailable",
+                "src/commonTest/data/someAvailable",
                 "-nthreads",
                 "25",
                 "--showTime",
@@ -44,16 +59,16 @@ class VerifierTest {
 
     @Test
     fun testVerifyEncryptedBallots() {
-        verifyEncryptedBallots(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable", 11)
+        verifyEncryptedBallots(productionGroup(), "src/commonTest/data/someAvailable", 11)
     }
 
     @Test
     fun verifyDecryptedTallyWithRecoveredShares() {
-        verifyDecryptedTally(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
+        verifyDecryptedTally(productionGroup(), "src/commonTest/data/someAvailable")
     }
 
     @Test
     fun verifySpoiledBallotTallies() {
-        verifySpoiledBallotTallies(productionGroup(), "src/commonTest/data/runWorkflowSomeAvailable")
+        verifySpoiledBallotTallies(productionGroup(), "src/commonTest/data/someAvailable")
     }
 }

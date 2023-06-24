@@ -15,9 +15,6 @@ data class ElectionInitialized(
         require(guardians.size == this.config.numberOfGuardians) { "nguardians ${guardians.size} != ${this.config.numberOfGuardians}" }
     }
 
-    fun manifest(): Manifest {
-        return config.manifest
-    }
     fun jointPublicKey(): ElGamalPublicKey {
         return ElGamalPublicKey(this.jointPublicKey)
     }
