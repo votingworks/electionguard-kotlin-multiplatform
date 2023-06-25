@@ -11,7 +11,7 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11, val a
         val ballots: MutableList<PlaintextBallot> = ArrayList()
         val useStyle = ballotStyleId ?: manifest.ballotStyles[0].ballotStyleId
         for (i in 0 until nballots) {
-            val ballotId = "ballot-id-" + Random.nextInt()
+            val ballotId = "id" + Random.nextInt()
             ballots.add(getFakeBallot(manifest, useStyle, ballotId))
         }
         return ballots

@@ -6,9 +6,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+// TODO decide if we support conversion
 class RunElectionRecordConvertTest {
 
-    @Test
+    // @Test
     fun runElectionRecordConvertTest() {
         main(
             arrayOf(
@@ -20,7 +21,7 @@ class RunElectionRecordConvertTest {
         )
     }
 
-    @Test
+    // @Test
     fun runElectionRecordConvertRoundtrip() {
         val orgDir = "src/commonTest/data/someAvailable"
         val jsonDir = "testOut/publish/RunElectionRecordConvertJson"

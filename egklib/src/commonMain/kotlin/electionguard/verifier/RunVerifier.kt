@@ -6,7 +6,6 @@ import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.sigfig
 import electionguard.publish.readElectionRecord
-import electionguard.publish.makeConsumer
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -84,7 +83,7 @@ fun verifyDecryptedTally(group: GroupContext, inputDir: String) {
     println("verifyDecryptedTally $allOk took $took seconds wallclock")
 }
 
-fun verifySpoiledBallotTallies(group: GroupContext, inputDir: String) {
+fun verifyChallengedBallots(group: GroupContext, inputDir: String) {
     val starting = getSystemTimeInMillis()
 
     val electionRecord = readElectionRecord(group, inputDir)

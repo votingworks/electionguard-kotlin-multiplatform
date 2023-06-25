@@ -16,7 +16,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/keyceremony/testKeyCeremonyProto",
+                "src/commonTest/data/allAvailable",
                 "-ballots",
                 "testOut/fakeBallots/proto",
                 "-out",
@@ -34,7 +34,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/keyceremony/testKeyCeremonyProto",
+                "src/commonTest/data/allAvailableJson",
                 "-ballots",
                 "testOut/fakeBallots/json",
                 "-out",
@@ -53,7 +53,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/keyceremony/testKeyCeremonyJson",
+                "src/commonTest/data/allAvailableJson",
                 "-ballots",
                 "testOut/fakeBallots/json",
                 "-out",
@@ -71,7 +71,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/keyceremony/testKeyCeremonyJson",
+                "src/commonTest/data/allAvailableJson",
                 "-ballots",
                 "testOut/fakeBallots/proto",
                 "-out",
@@ -89,7 +89,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/keyceremony/testKeyCeremonyJson",
+                "src/commonTest/data/allAvailableJson",
                 "-ballots",
                 "testOut/fakeBallots/json",
                 "-out",
@@ -109,7 +109,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/keyceremony/testKeyCeremonyJson",
+                "src/commonTest/data/allAvailableJson",
                 "-ballots",
                 "testOut/fakeBallots/json",
                 "-out",
@@ -129,7 +129,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/keyceremony/testKeyCeremonyJson",
+                "src/commonTest/data/allAvailableJson",
                 "-ballots",
                 "testOut/fakeBallots/json",
                 "-out",
@@ -149,7 +149,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/keyceremony/testKeyCeremonyJson",
+                "src/commonTest/data/allAvailableJson",
                 "-ballots",
                 "testOut/fakeBallots/json",
                 "-out",
@@ -166,7 +166,7 @@ class RunBatchEncryptionTest {
 
     @Test
     fun testInvalidBallot() {
-        val inputDir = "testOut/keyceremony/testKeyCeremonyProto"
+        val inputDir = "src/commonTest/data/allAvailable"
         val invalidDir = "testOut/testInvalidBallot"
 
         val group = productionGroup()

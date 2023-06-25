@@ -6,6 +6,7 @@ import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.json.ConstantsJson
 import electionguard.json.import
+import electionguard.verifier.verifyChallengedBallots
 import electionguard.verifier.verifyEncryptedBallots
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -25,7 +26,7 @@ import kotlin.test.assertTrue
 // run verifier on zipped JSON record, only supported on JVM
 @OptIn(ExperimentalSerializationApi::class)
 class TestZippedJson {
-    val zippedJson = "src/commonTest/data/testElectionRecord/jsonZip/json100.zip"
+    val zippedJson = "src/commonTest/data/testElectionRecord/jsonZip/json25.zip"
     val fs = FileSystems.newFileSystem(Path.of(zippedJson), mutableMapOf<String, String>())
     val fsp = fs.provider()
 
@@ -51,6 +52,7 @@ class TestZippedJson {
     @Test
     fun testVerifyEncryptedBallots() {
         verifyEncryptedBallots(productionGroup(), zippedJson, 11)
+        verifyChallengedBallots(productionGroup(), zippedJson)
     }
 
 }

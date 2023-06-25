@@ -1,6 +1,6 @@
 # ElectionGuard-Kotlin-Multiplatform
 
-_last update 6/15/2023_
+_last update 6/25/2023_
 
 ElectionGuard-Kotlin-Multiplatform (EKM) is an experimental attempt to create a multiplatform Kotlin implementation of 
 [ElectionGuard](https://github.com/microsoft/electionguard), with the eventual goal of running
@@ -15,14 +15,19 @@ EKM is available under an MIT-style open source
 
 *Table of contents*:
 <!-- TOC -->
-* [Implementation of ElectionGuard 2.0](#implementation-of-electionguard-20)
-* [Cool features of EKM](#cool-features-of-ekm)
-* [What about JavaScript?](#what-about-javascript)
-* [API differences from ElectionGuard-Python](#api-differences-from-electionguard-python)
-* [Protobuf Serialization](#protobuf-serialization)
-* [Workflow](#workflow)
-* [Input Validation](#input-validation)
-* [Authors](#authors)
+* [ElectionGuard-Kotlin-Multiplatform](#electionguard-kotlin-multiplatform)
+  * [Implementation of ElectionGuard 2.0](#implementation-of-electionguard-20)
+  * [Cool features of EKM](#cool-features-of-ekm)
+  * [What about JavaScript?](#what-about-javascript)
+  * [API differences from ElectionGuard-Python](#api-differences-from-electionguard-python)
+  * [Serialization](#serialization)
+    * [Protobuf Serialization](#protobuf-serialization)
+    * [JSON Serialization](#json-serialization)
+    * [Previous Serialization specs](#previous-serialization-specs)
+  * [Workflow](#workflow)
+  * [Input Validation](#input-validation)
+  * [Test Vectors](#test-vectors)
+  * [Authors](#authors)
 <!-- TOC -->
 
 ## Implementation of ElectionGuard 2.0
@@ -53,7 +58,7 @@ EKM is available under an MIT-style open source
   that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
   the relevant data formats, which constitutes a well defined and compact schema for EG serialization.
 
-- Currently we have 88% LOC code coverage on the common and jvm core library (5714/6522 LOC) (5721/7728 LOC) BOGUS 
+- Currently we have ~90% LOC code coverage on the common and jvm core library
 
 - Currently we are focusing on just the JVM implementation. We will consider the native and other implementations in the future.
 
@@ -129,13 +134,18 @@ infix notation rather than function calls. We also implemented many
 a period, the IDE's autocomplete menu should offer you a variety of useful
 methods.
 
-## Protobuf Serialization
-* [Protobuf serialization 1.9](docs/ProtoSerializationSpec1.9.md)
-* [JSON serialization 1.9](docs/JsonSerializationSpec1.9.md)
-* [Election Record serialization for private classes](docs/ProtoSerializationPrivate.md)
-* [Election Record protobuf directory and file layout](docs/ElectionRecord.md)
+## Serialization
 
-Older:
+### Protobuf Serialization
+* [Protobuf serialization 1.9](docs/ProtoSerializationSpec1.9.md)
+* [Election Record serialization for private classes](docs/ProtoSerializationPrivate.md)
+* [Election Record protobuf directory and file layout](docs/ElectionRecordProto.md)
+
+### JSON Serialization
+* [JSON serialization 1.9](docs/JsonSerializationSpec1.9.md)
+* [Election Record JSON directory and file layout](docs/ElectionRecordJson.md)
+
+### Previous Serialization specs
 * [Protobuf serialization 1.53](docs/ProtoSerializationSpec1.53.md)
 * [Protobuf serialization (ver 1) and comparison with JSON](docs/ProtoSerializationSpec1.md)
 

@@ -63,13 +63,13 @@ nonce that enables the encryptions to be opened and checked.
     private fun PreContest.makeContest(ballotNonce: UInt256, preeContest: PreEncryptedContest): CiphertextBallot.Contest {
 
         // Find the pre-encryptions corresponding to the selections made by the voter and, using
-        // the encryption nonces derived from the primary nonce, generate proofs of ballot-correctness as in
+        // the encryption nonces derived from the primary nonce, generate proofs of ballot correctness as in
         // standard ElectionGuard section 3.3.5.
         //
         // If a contest selection limit is greater than one, then homomorphically
         // combine the selected pre-encryption vectors corresponding to the selections made to produce a
-        // single vector of encrypted selections. The selected pre-encryption vectors are combined by com-
-        // ponentwise multiplication (modulo p), and the derived encryption nonces are added (modulo q)
+        // single vector of encrypted selections. The selected pre-encryption vectors are combined by component-wise
+        // multiplication (modulo p), and the derived encryption nonces are added (modulo q)
         // to create suitable nonces for this combined pre-encryption vector. These derived nonces will be
         // necessary to form zero-knowledge proofs that the associated encryption vectors are well-formed.
 
