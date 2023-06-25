@@ -9,7 +9,7 @@ class RunCreateConfigTest {
         createConfig(
             arrayOf(
                 "-manifest",
-                "testOut/manifest/testConvertManifestFromJsonToProto",
+                "src/commonTest/data/startManifestProto",
                 "-nguardians", "3",
                 "-quorum", "3",
                 "-createdBy", "3",
@@ -24,7 +24,7 @@ class RunCreateConfigTest {
         createConfig(
             arrayOf(
                 "-manifest",
-                "testOut/manifest/testConvertManifestFromProtoToJson",
+                "src/commonTest/data/startManifestJson",
                 "-nguardians", "3",
                 "-quorum", "3",
                 "-createdBy", "3",
@@ -39,7 +39,7 @@ class RunCreateConfigTest {
         createConfig(
             arrayOf(
                 "-manifest",
-                "testOut/manifest/testConvertManifestFromJsonToProto/manifest.protobuf",
+                "src/commonTest/data/startManifestProto/manifest.protobuf",
                 "-nguardians", "3",
                 "-quorum", "3",
                 "-out",
@@ -53,7 +53,7 @@ class RunCreateConfigTest {
         createConfig(
             arrayOf(
                 "-manifest",
-                "testOut/manifest/testConvertManifestFromProtoToJson/manifest.json",
+                "src/commonTest/data/startManifestJson/manifest.json",
                 "-nguardians", "3",
                 "-quorum", "3",
                 "-out",

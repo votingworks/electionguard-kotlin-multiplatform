@@ -9,7 +9,7 @@ class RunTallyAccumulationTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/encrypt/testRunBatchEncryptionJson",
+                "src/commonTest/data/someAvailableJson",
                 "-out",
                 "testOut/tally/testRunBatchEncryptionJson",
             )
@@ -21,7 +21,7 @@ class RunTallyAccumulationTest {
         main(
             arrayOf(
                 "-in",
-                "testOut/encrypt/testRunBatchEncryptionProto",
+                "src/commonTest/data/someAvailable",
                 "-out",
                 "testOut/tally/runTallyAccumulationTestProto",
                 "-name",

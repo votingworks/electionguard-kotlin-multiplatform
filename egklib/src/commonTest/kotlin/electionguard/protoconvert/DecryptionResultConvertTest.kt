@@ -12,7 +12,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DecryptionResultConvertTest {
-    val outputDir = "testOut/DecryptionResultConvertTest"
+    val outputDir = "testOut/protoconvert/DecryptionResultConvertTest"
     val publisher = makePublisher(outputDir, true)
 
     @Test

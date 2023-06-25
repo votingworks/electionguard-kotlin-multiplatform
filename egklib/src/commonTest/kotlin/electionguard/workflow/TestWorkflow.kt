@@ -27,14 +27,14 @@ import kotlin.test.assertTrue
  *   1. generate with jvm for src/commonTest/data/runWorkflowAll(Some)Available
  *   2. generate with native for src/commonTest/data/testElectionRecord/native/
  *   3. see RunDecryptBallotsTest for another damn thing to do
- *   4. replace src/commonTest/data/runWorkflowSomeAvailable/spoiledBallotTallies.protobuf if needed, which is a
+ *   4. replace src/commonTest/data/someAvailable/spoiledBallotTallies.protobuf if needed, which is a
  *      DecryptedBallotOrTally, by running RunDecryptBallotsTest.testDecryptBallotsSomeFromList and copying that
  *      file.
  *   5. Also RunElectionRecordConvertTest
  */
 class TestWorkflow {
-    private val configDir = "src/commonTest/data/start"
-    private val configDirJson = "src/commonTest/data/startJson"
+    private val configDir = "src/commonTest/data/startConfigProto"
+    private val configDirJson = "src/commonTest/data/startConfigJson"
     private val nballots = 25
     private val nthreads = 25
 
@@ -50,6 +50,9 @@ class TestWorkflow {
         val present = listOf(1, 2, 3) // all guardians present
         val nguardians = present.maxOf { it }.toInt()
         val quorum = present.count()
+
+        // delete current workingDir
+        makePublisher(workingDir, true)
 
         // key ceremony
         val (manifest, init) = runFakeKeyCeremony(group, configDir, workingDir, trusteeDir, nguardians, quorum)
@@ -95,6 +98,9 @@ class TestWorkflow {
         val nguardians = present.maxOf { it }.toInt()
         val quorum = present.count()
 
+        // delete current workingDir
+        makePublisher(workingDir, true)
+
         // key ceremony
         val (manifest, init) = runFakeKeyCeremony(group, configDir, workingDir, trusteeDir, nguardians, quorum)
         println("FakeKeyCeremony created ElectionInitialized, nguardians = $nguardians quorum = $quorum")
@@ -139,6 +145,9 @@ class TestWorkflow {
         val nguardians = present.maxOf { it }.toInt()
         val quorum = present.count()
 
+        // delete current workingDir
+        makePublisher(workingDir, true)
+
         // key ceremony
         val (manifest, init) = runFakeKeyCeremony(group, configDirJson, workingDir, trusteeDir, nguardians, quorum)
         println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
@@ -177,6 +186,9 @@ class TestWorkflow {
         val trusteeDir =  "${privateDir}/trustees"
         val ballotsDir =  "${privateDir}/input"
         val invalidDir =  "${privateDir}/invalid"
+
+        // delete current workingDir
+        makePublisher(workingDir, true)
 
         val group = productionGroup()
         val present = listOf(1, 2, 5) // 3 of 5 guardians present

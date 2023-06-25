@@ -44,7 +44,7 @@ Example:
 
 ````
 java -jar keyceremony/build/libs/keyceremony-all.jar \
-     -in /home/snake/dev/github/electionguard-kotlin-multiplatform/egklib/src/commonTest/data/start \
+     -in /home/snake/dev/github/electionguard-kotlin-multiplatform/egklib/src/commonTest/data/startConfigProto \
      -out testOut/RunRemoteKeyCeremonyTest/ \
      -remoteUrl https://localhost:11183 \
      -keystore keystore.jks \

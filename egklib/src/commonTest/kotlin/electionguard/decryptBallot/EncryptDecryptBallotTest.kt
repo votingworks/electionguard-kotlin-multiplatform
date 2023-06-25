@@ -33,7 +33,7 @@ import kotlin.test.assertTrue
 /** Test KeyCeremony Trustee generation and recovered decryption. */
 class EncryptDecryptBallotTest {
     val group = productionGroup()
-    val configDir = "src/commonTest/data/start"
+    val configDir = "src/commonTest/data/startConfigProto"
     val outputDir = "testOut/RecoveredDecryptionTest"
     val trusteeDir = "testOut/RecoveredDecryptionTest/private_data"
 

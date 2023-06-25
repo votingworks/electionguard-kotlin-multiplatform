@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class TallyResultConvertTest {
-    val outputDir = "testOut/TallyResultConvertTest"
+    val outputDir = "testOut/protoconvert/TallyResultConvertTest"
     val publisher = makePublisher(outputDir, true)
 
     @Test

@@ -22,7 +22,7 @@ class RunDecryptBallotsTest {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/allAvailable"
         val trusteeDir = "src/commonTest/data/allAvailable/private_data/trustees"
-        val outputDir = "testOut/testDecryptingBallotsAll"
+        val outputDir = "testOut/decrypt/testDecryptBallotsAll"
         println("\ntestDecryptBallotsAll")
         val n = runDecryptBallots(
             group,
@@ -40,13 +40,13 @@ class RunDecryptBallotsTest {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/someAvailable"
         val trusteeDir = "src/commonTest/data/someAvailable/private_data/trustees"
-        val outputDir = "testOut/testDecryptBallotsSomeFromList"
+        val outputDir = "testOut/decrypt/testDecryptBallotsSomeFromList"
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
-            "ballot-id--1232080716," +
-                    "ballot-id-1773225402," +
-                    "ballot-id-869783002",
+            "ballot-id-1386973040," +
+                    "ballot-id--211737012," +
+                    "ballot-id--1997964234",
             3,
         )
         assertEquals(3, n)
@@ -58,7 +58,7 @@ class RunDecryptBallotsTest {
         val inputDir = "src/commonTest/data/someAvailable"
         val trusteeDir = "src/commonTest/data/someAvailable/private_data/trustees"
         val wantBallots = "src/commonTest/data/someAvailable/private_data/wantedBallots.txt"
-        val outputDir = "testOut/testDecryptingBallotsSomeFromFile"
+        val outputDir = "testOut/decrypt/testDecryptBallotsSomeFromFile"
         println("\ntestDecryptBallotsSomeFromFile")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "4,5"),
@@ -79,7 +79,7 @@ class RunDecryptBallotsTest {
                 "-trustees",
                 "src/commonTest/data/someAvailable/private_data/trustees",
                 "-out",
-                "testOut/testDecryptingBallotsSome",
+                "testOut/decrypt/testDecryptBallotsMainMultiThreaded",
                 "-spoiled",
                 "all",
                 "-nthreads",
@@ -99,7 +99,7 @@ class RunDecryptBallotsTest {
                 "-trustees",
                 "src/commonTest/data/someAvailable/private_data/trustees",
                 "-out",
-                "testOut/testDecryptingBallotsSome",
+                "testOut/decrypt/testDecryptBallotsMarkedSpoiled",
                 "-nthreads",
                 "1"
             )

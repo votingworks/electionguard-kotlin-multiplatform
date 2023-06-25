@@ -9,7 +9,7 @@ import kotlin.test.Test
 
 /** Generate fake ballots for testing. No actual testing here. */
 class GenerateFakeBallots {
-    val inputDir = "src/commonTest/data/start"
+    val inputDir = "src/commonTest/data/startConfigProto"
     val outputDirJson =  "testOut/fakeBallots/json"
     val outputDirProto =  "testOut/fakeBallots/proto"
 

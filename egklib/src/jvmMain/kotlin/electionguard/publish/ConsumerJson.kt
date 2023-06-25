@@ -36,8 +36,16 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         if (topDir.endsWith(".zip")) {
             val filePath = Path.of(topDir)
             fileSystem = FileSystems.newFileSystem(filePath, emptyMap<String, String>())
+            val wtf = fileSystem.rootDirectories
+            wtf.forEach { root ->
+                Files.walk(root).forEach { path -> println(path) }
+            }
             fileSystemProvider = fileSystem.provider()
             jsonPaths = ElectionRecordJsonPaths("")
+
+            println("electionConstantsPath = ${jsonPaths.electionConstantsPath()} -> ${fileSystem.getPath(jsonPaths.electionConstantsPath())}")
+            println("manifestPath = ${jsonPaths.manifestPath()} -> ${fileSystem.getPath(jsonPaths.manifestPath())}")
+            println("electionConfigPath = ${jsonPaths.electionConfigPath()} -> ${fileSystem.getPath(jsonPaths.electionConfigPath())}")
         }
     }
 
@@ -162,7 +170,13 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 constants = json.import()
             }
 
-            val manifestBytes = fileReadBytes(manifestFile.toString())
+            // need to use fileSystemProvider for zipped files
+            val manifestBytes =
+            fileSystemProvider.newInputStream(manifestFile).use { inp ->
+                inp.readAllBytes()
+            }
+
+            // val manifestBytes = fileReadBytes(manifestFile.toString())
 
             var electionConfig: ElectionConfig
             fileSystemProvider.newInputStream(configFile).use { inp ->

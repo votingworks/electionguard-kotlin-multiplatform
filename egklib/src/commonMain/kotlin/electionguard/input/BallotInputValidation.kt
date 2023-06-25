@@ -118,12 +118,14 @@ class BallotInputValidation(val manifest: Manifest) {
         }
 
         // TODO Need to deal with overvotes, see issue #156
-        // Total votes for contest exceeds allowed limit
+        /* Total votes for contest exceeds allowed limit
         if (total > electionContest.allowed) {
             val msg = "Ballot.C.2 Ballot Selection votes ($total) exceeds limit (${electionContest.allowed})"
             contestMesses.add(msg)
             logger.warn { msg }
         }
+
+         */
     }
 
     class ElectionContest internal constructor(electionContest: Manifest.ContestDescription) {
