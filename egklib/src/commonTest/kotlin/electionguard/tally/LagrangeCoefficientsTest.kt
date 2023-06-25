@@ -1,4 +1,4 @@
-package electionguard.workflow
+package electionguard.tally
 
 import electionguard.core.productionGroup
 import electionguard.decrypt.computeLagrangeCoefficient

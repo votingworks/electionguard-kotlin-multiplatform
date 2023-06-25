@@ -1,34 +1,30 @@
 # 🗳 Election Record JSON serialization (proposed specification)
 
-draft 6/24/2023
-
-1. This is the evolving version 2 of the Election Record. It is not backwards compatible with version 1.
-2. All fields must be present unless marked as optional.
-3. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
-4. proto_version = 1.9.0 [MAJOR.MINOR.PATCH](https://semver.org/)
-
-Differences with JSON 1.53 
-
-* hashing follows the 1.9 spec in section 1.5.1
-* coefficients.json (lagrange coefficients) are no longer needed
-* context.json divided into two parts:
-  1. electionConfig.json has the configuration parameters set before the KeyCeremony
-  2. electionInitialized.json has output of the KeyCeremony, including the guardians (so separate guardian files are not needed)
-* some renaming of fields to match the 1.9 spec vocabulary
-* ContestData
-* Preencrypted Ballots
+draft 6/25/2023
 
 <!-- TOC -->
 * [🗳 Election Record JSON serialization (proposed specification)](#-election-record-json-serialization-proposed-specification)
+    * [Differences with JSON 1.53](#differences-with-json-153)
     * [constants.json](#constantsjson)
     * [manifest.json](#manifestjson)
-    * [electionConfig.json](#electionconfigjson)
-    * [electionInitialized.json](#electioninitializedjson)
-    * [plaintextBallot.json](#plaintextballotjson)
-    * [encryptedBallot.json](#encryptedballotjson)
-    * [encryptedTally.json](#encryptedtallyjson)
-    * [decryptedTalleyOrBallot.json](#decryptedtalleyorballotjson)
+    * [election_config.json](#electionconfigjson)
+    * [election_initialized.json](#electioninitializedjson)
+    * [PlaintextBallot](#plaintextballot)
+    * [EncryptedBallot](#encryptedballot)
+    * [encrypted_tally.json](#encryptedtallyjson)
+    * [decryptedTalleyOrBallot](#decryptedtalleyorballot)
 <!-- TOC -->
+
+### Differences with JSON 1.53
+
+* Hashing follows the 1.9 spec in section 1.5.1.
+* Coefficients.json (lagrange coefficients) are no longer needed and are removed.
+* Context.json divided into two parts:
+  1. election_config.json has the configuration parameters input to the KeyCeremony.
+  2. election_initialized.json is the output of the KeyCeremony, including the guardians (separate guardian files are not needed).
+* Renaming of fields to match the 1.9 spec vocabulary.
+* ContestData is more fully specified
+* Preencrypted Ballots are new
 
 ### constants.json
 
@@ -47,7 +43,7 @@ Differences with JSON 1.53
 
 * unchanged
 
-### electionConfig.json
+### election_config.json
 
 ````
 @Serializable
@@ -81,7 +77,7 @@ Example:
 
 * as specified in section 3.1
 
-### electionInitialized.json
+### election_initialized.json
 
 ````
 @Serializable
@@ -145,7 +141,7 @@ Example:
 }
 ````
 
-### plaintextBallot.json
+### PlaintextBallot
 
 ````
 @Serializable
@@ -239,7 +235,7 @@ Example:
 }
 ````
 
-### encryptedBallot.json
+### EncryptedBallot
 
 ````
 @Serializable
@@ -291,6 +287,20 @@ data class HashedElGamalCiphertextJson(
     val c1: String, // ByteArray,
     val c2: UInt256Json, // UInt256,
     val numBytes: Int // TODO needed?
+)
+
+@Serializable
+data class PreEncryptionJson(
+    val preencryption_hash: UInt256Json,
+    val all_selection_hashes: List<UInt256Json>,
+    val selected_vectors: List<SelectionVectorJson>,
+)
+
+@Serializable
+data class SelectionVectorJson(
+    val selection_hash: UInt256Json,
+    val short_code : String,
+    val encryptions: List<ElGamalCiphertextJson>,
 )
 
 ````
@@ -360,7 +370,72 @@ Example:
 }
 ````
 
-### encryptedTally.json
+Example with ContestData:
+
+````
+{
+    "ballot_id": "ContestDataTest",
+    "ballot_style_id": "ballotStyle",
+    "confirmation_code": "EB73A875DFCE87CFE7EA00E06E1E5827970E740E881924571758C754D34E3410",
+    "code_baux": "",
+    "contests": [
+        {
+            "contest_id": "contest0",
+            "sequence_order": 0,
+            "contest_hash": "C2D6F8D842ED445B502E4B2A1E498D99E7D3F06978F4B25C0965EE45196FFEB6",
+            "selections": [
+                {
+                    "selection_id": "selection0",
+                    "sequence_order": 0,
+                    "encrypted_vote": {
+                        "pad": "53DAF1094B847A1F409242B77E5DF3756D3D409177EE6B0E47FBC74BC4FF31E162B2D127FAFA735F7C055BB4E5AA958BB310B57D6D4EF41996A94764C4DA3357D5D93F671427F17478A0710C6D43F78E1B9E7AA8ABE6D2F39F97970FFA65C7C306AFA13B5C06BDBE2D9DFB385F93A3B032B5FEA77D2E26966B324520CF30A610F7FE8597012A009A4822122A7DFECD9712195766A0C7611D8E5A75D3B31385B1C4046302AA845CD8B1B4D4D1805A963E7349424BFA21D2E9B9451BCB1AF056A1202585F375A7E15074C55B1FC4DD31E23120618E286CE4699510D349E8CFE961599D6ED6AFDEB49CA86DACEC4CFE5A670BFDBE2959FA0B91A33C01BAE77B1B224FA2116D5C6B3F8FFB8A640EEE8469488442DC6D4A1E7EBBEE9802F44E6487664494057C349A13B30482BE3AA6732999B66085DB889FA32F0C5B718EC6D144ADC533EF1E54EE6AA76CA192E67C394FF9BAE40379A168F953897E878901DD5E46E1A677BFD739B9B9D3981EBA8D544905BC519F2C5171D7F40C4FBBC3701A9B6C5569F3D629C6157F3F1DCFFFBEC43D9187DF54A61C54089F4BD90C6C2C7AD31B87C54A2947CF148ABC363391AD69B786CAA15097F094AD3F6FA4FB0EACC2EF50E6682561B6425BC48FAD3B7C788E9D0092F0746452B15FE4C8D12B437E79FBEDE6AF665C5235390B1C2D9A804BED03FC8C92563710C1B5F76A69474ADFFC649D",
+                        "data": "03E69204D62678E9F79D7DA108ABEF0E3CFE37EB14E35163779D50AF59F7245C50E3D2D1C0FA3B3E4FA20D55A4132395A4F296267F9B2024A61FAEC5A8E7D6DC65A47AB7429CC90C862A0E918AC5C396B5FCCDAB628D193017C1609AFFC004518F392716DE57DF4F91209AB01B6242742A4DB9705CCF63AA32FDFDB9B799794601B23AE37E99877E62600F7E4EFAEFD440758919069F0A16B893B6236F957BDE9ED36DC80762AB6B05B5022E3361CB9F8F466D3571B6C2FE92B8F35328D6ACBC476440B7C95E07C1C5B55F6431F42532EF75C9BD2ADBFEE93B813574AC407DA683921E96B84CC9AF0743F0A99E8BD5890D03E421E54EBE357254F82A68C8E69E45E22CACD87D40F02DEB3A3859E7B80EFD6D5768A5A6573E5A67C8AABF1592E836A247B443BE734C7B1B2C24DBFE9678F6729C0DA9A760521D5946D0D039A07C091A1782AD87D550C8365936BD96276AA5C3768781AFFCD795F1AAF57EB13D121F553EBEA9DD89C0FB8D909148BA2E92DB03978C31C8B388365905F613A9DD274EE139347BF2EE5643804A9DE4F24E81A043A3EF7DA2F24407676F795CB56D69DF9FB1BC01CF2BF9F2758488F2E37D94BDB5B4B07352CB4AC3AF61662E160CABE4B2D3DE3788145329F4E9F050B23BE9F182E76C55BBCE0B9CC7E46DF976B3A16662BDE87B9CB51C41BB97FCA5E18AAE4FE8F08FEF776162B6055F453388F8F4"
+                    },
+                    "proof": {
+                        "proofs": [
+                            {
+                                "challenge": "37DA2FCEA79AD8980B9E67A2D1816C0441F6B934E789EA5D859CC9F610B60C77",
+                                "response": "186ED0DE95B16A7B75995191531F0091B8AE98E3D756F836AEAD1A68361336AB"
+                            },
+                            {
+                                "challenge": "19FE418E66EDD26BFB83DF81C271751C09C5AFA43D3122560AEC58A356496DA7",
+                                "response": "C497EBB5623E32389E5E9F62CB79A8B5EAC79927F760822F59319E7A4C3323B2"
+                            }
+                        ]
+                    }
+                },
+		        ...
+            ],
+            "proof": {
+                "proofs": [
+                    {
+                        "challenge": "D0BDA24C2CB194B0BA9B3D0CA400CC80AAD8D9CF6E1122FE4D1F38A8C7DA84EB",
+                        "response": "ED2EAFBF2B1E58DFEA2FE3C1FE16DC80E0EABCE61AA9331D9BE30A4B258DCECB"
+                    },
+                    {
+                        "challenge": "165CC2C233A6815C294B7C94FEC3C0D8FC2A229449D1253B7013D5A9B4BD5DBA",
+                        "response": "47501974E8A7870B1FC45434B457E57B788220D8B354AB618063E17780EBA65A"
+                    }
+                ]
+            },
+            "encrypted_contest_data": {
+                "c0": "F1E18B4FA62D7E6AF36031ED2615A63F154F2891C8E96D23BDFE480BCECBB8A6CB4D64739712DB26543817CE44BF5F454319CDA5BFCB811AFB14CAD42395DB9C9B5EB535DA5329F7735B49060893408782810BE1FAB60A9A3A60247EAEB6E1D703C28180C6DDA0B633EF61691AF32021EACAC3281C5DADFF60A31461B70A97868A155CDED6F3209559EF4124E31909586AAA87098045A8D58F95011C479B433B0E6D16892896BDE86FDEE7ACB420809D777ED0764306790D892948B6078D5936CF7BDFCCD0A3372B94D756C2EFFFA2AC5D8E731753E38270E3159AEC2EA8D5D781A5DF90E5E79F0B18C5979853AE7A2395029226839B9CD254DF8B4ACB206E292CC0B75DC6AF7885636A74E458F82DD91335ECACDC79145600F431FBAA9F3293E189A1A13E34FE2CFDC71853288AE2BB00B9A6748DD7AD4F4370B50BC79D9DA775440B8C56CE8C0C928E4E54C85811E7A1B34CA7029BB8D5BD49E0C701B302B61C9461E14F04C19F4E1E79A203167EFD86A4B5FFB77D48C1541606D717F4AF9E50C49EC6492C4FE23ADA9E7930385506B4A958C236BEF46CE65E56AD650BD9B20ACF3E0DB32D3E0E74DCDB3E6CAFCEC249298E43C239CB7992A91FF18374B7A784E5418FF1F5B8959F1EEA14BFCF08287640043A3A9B683F1C8933E554EF00CC9ACAF1E55674E3ED51BE37ED3B41A85E12E2CD2C5F2F76CFE54A40FE84371F3C",
+                "c1": "DB4CAF27B63CFD59DE7033C7F9556AE59CB453C0AA9D540C4365BD4AE5C7BF373CBB2B9F7983B7C83C72FFBA744D0AC4946EC49158AF66B430E637B6A73223AD",
+                "c2": "C08AD9AA138081ECD4303A35813CF95A1F6410998033700E35E0D3D347A8DF78",
+                "numBytes": 64
+            },
+            "pre_encryption": null
+        }, 
+        ...
+    ],
+    "timestamp": 1687721640,
+    "state": "CAST",
+    "is_preencrypt": false,
+    "primary_nonce": null
+}
+````
+
+### encrypted_tally.json
 
 ````
 @Serializable
@@ -409,7 +484,7 @@ Example:
 }
 ````
 
-### decryptedTalleyOrBallot.json
+### decryptedTalleyOrBallot
 
 ````
 @Serializable
@@ -422,6 +497,7 @@ data class DecryptedTallyOrBallotJson(
 data class DecryptedContestJson(
     val contest_id: String,
     val selections: List<DecryptedSelectionJson>,
+    val decrypted_contest_data: DecryptedContestDataJson?, //  ballot decryption only
 )
 
 @Serializable
@@ -441,9 +517,11 @@ data class DecryptedContestDataJson(
     val beta: ElementModPJson, //  β = C0^s mod p ; needed to verify 10.2
 )
 
-// strawman for contest data (section 3.3.4)
-// "any text written into one or more write-in text fields, information about overvotes, undervotes, and null
-// votes, and possibly other data about voter selections"
+// (incomplete) strawman for contest data (section 3.3.7)
+// "The contest data can contain different kinds of information such as undervote, null vote, and
+// overvote information together with the corresponding selections, the text captured for write-in
+// options and other data associated to the contest."
+
 @Serializable
 data class ContestDataJson(
     val over_votes: List<Int>,  // list of selection sequence_number for this contest

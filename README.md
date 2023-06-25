@@ -149,7 +149,7 @@ methods.
 * [Protobuf serialization 1.53](docs/ProtoSerializationSpec1.53.md)
 * [Protobuf serialization (ver 1) and comparison with JSON](docs/ProtoSerializationSpec1.md)
 
-## Workflow
+## Workflow and Command Line Programs
 * [Workflow and Command Line Programs](docs/CommandLineInterface.md)
 
 ## Input Validation
@@ -158,6 +158,9 @@ methods.
 ## Test Vectors
 These are JSON files that give inputs and expected outputs for the purpose of testing interoperability between implementations.
 * [Test Vectors](docs/TestVectors.md)
+
+## Implementation Notes
+* [Implementation Notes](docs/ImplementationNotes.md)
 
 ## Authors
 - [John Caron](https://github.com/JohnLCaron)

@@ -3,9 +3,10 @@ syntax = "proto3";
 option java_package = "electionguard.protogen";
 option java_outer_classname = "CommonProto";
 
-// strawman for contest data (section 3.3.4)
-// "any text written into one or more write-in text fields, information about overvotes, undervotes, and null
-// votes, and possibly other data about voter selections"
+// (incomplete) strawman for contest data (section 3.3.7)
+// "The contest data can contain different kinds of information such as undervote, null vote, and
+// overvote information together with the corresponding selections, the text captured for write-in
+// options and other data associated to the contest."
 message ContestData {
   enum Status {
     normal = 0;

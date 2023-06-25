@@ -40,7 +40,7 @@ One or more of the above files may be present, depending on the output stage.
 
 * The encrypted_ballots directory contain all ballots, cast or challenged.
 * The challenged_ballots directory contain only challenged ballots.
-
+* DecryptedTallyJson and DecryptedBallotJson use the same schema (DecryptedTallyOrBallotJson)
 
 ## Private files
 encrypt

@@ -66,7 +66,7 @@ class ContestDataEncryptTest {
         //        ballotNonce: UInt256,
         //        votesAllowed: Int
         val ballotNonce = UInt256.random()
-        val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", ballotNonce, 1)
+        val target: HashedElGamalCiphertext = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", ballotNonce, 1)
         assertEquals(64, target.c1.size)
         var took = getSystemTimeInMillis() - starting
         println(" contestData.encrypt took $took millisecs")
