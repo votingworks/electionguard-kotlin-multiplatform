@@ -15,9 +15,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private val group = productionGroup()
-private val configDir = "src/commonTest/data/start"
-private val outputDir = "testOut/RecoveredDecryptionTest"
-private val trusteeDir = "testOut/RecoveredDecryptionTest/private_data"
 
 /** Test KeyCeremony Trustee generation and recovered decryption. */
 class DoerreTest {

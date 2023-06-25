@@ -32,7 +32,7 @@ class ManifestTest {
         assertEquals(roundtrip, manifest)
 
         if (writeout) {
-            val output = "testOut/ManifestConvertTest"
+            val output = "testOut/json/writeManifest"
             val publisher = makePublisher(output, true, true)
             publisher.writeManifest(manifest)
             println("Wrote to $output")

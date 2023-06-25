@@ -16,7 +16,7 @@ private const val ncontests = 20
 private const val nselections = 5
 
 class ElectionConfigConvertTest {
-    val outputDir = "testOut/ElectionConfigConvertTestJson"
+    val outputDir = "testOut/protoconvert/ElectionConfigConvertTestJson"
     val publisher = makePublisher(outputDir, true, true)
 
     @Test

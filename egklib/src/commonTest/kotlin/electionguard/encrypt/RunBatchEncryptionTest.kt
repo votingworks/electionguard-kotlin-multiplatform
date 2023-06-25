@@ -4,6 +4,7 @@ import electionguard.core.productionGroup
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makeConsumer
 import electionguard.publish.readElectionRecord
+import electionguard.verifier.runVerifier
 import kotlin.test.Test
 import kotlin.test.assertContains
 
@@ -100,6 +101,7 @@ class RunBatchEncryptionTest {
                 "-chainCodes",
             )
         )
+        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionChain", 11, true)
     }
 
     @Test

@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 
 class PublisherProtoTest {
     private val input = "src/commonTest/data/someAvailable"
-    private val output = "testOut/PublisherProtoTest"
+    private val output = "testOut/publish/PublisherProtoTest"
 
     val group = productionGroup()
     val publisher = makePublisher(output, true)

@@ -1,0 +1,10 @@
+{
+    "config_version": "v2.0",
+    "number_of_guardians": 5,
+    "quorum": 3,
+    "election_date": "2023-06-23T08:50:25.754853985",
+    "jurisdiction_info": "N/A",
+    "parameter_base_hash": "AB91D83C3DC3FEB76E57C2783CFE2CA85ADB4BC01FC5123EEAE3124CC3FB6CDE",
+    "manifest_hash": "E69B574C48087CF4E4914C3C4CDBBCB9368255F9373EFCF9EE923AF6B23C7CD2",
+    "election_base_hash": "C77FEC703B06EE47F80DC570AA0AB995A108B981982E03916F784556A0755D86"
+}

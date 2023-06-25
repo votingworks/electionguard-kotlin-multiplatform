@@ -3,7 +3,7 @@ package webapps.electionguard.keyceremony
 import kotlin.test.Test
 
 class RunRemoteKeyCeremonyTest {
-    private val configDir = "/home/snake/dev/github/electionguard-kotlin-multiplatform/egklib/src/commonTest/data/start"
+    private val configDir = "/home/snake/dev/github/electionguard-kotlin-multiplatform/egklib/src/commonTest/data/startConfigProto"
 
     @Test
     fun testRemoteKeyCeremonyMain() {

@@ -12,7 +12,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ElectionInitializedConvertTest {
-    val outputDir = "testOut/ElectionInitializedConvertTest"
+    val outputDir = "testOut/protoconvert/ElectionInitializedConvertTest"
     val publisher = makePublisher(outputDir, true)
 
     @Test

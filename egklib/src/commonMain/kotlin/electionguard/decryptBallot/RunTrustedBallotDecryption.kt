@@ -88,7 +88,7 @@ fun runDecryptBallots(
     inputDir: String,
     outputDir: String,
     decryptingTrustees: List<DecryptingTrusteeIF>,
-    decryptSpoiledList: String?,
+    decryptSpoiledList: String?, // comma delimited, no spaces
     nthreads: Int,
 ): Int {
     println(" runDecryptBallots on ballots in ${inputDir} with nthreads = $nthreads")

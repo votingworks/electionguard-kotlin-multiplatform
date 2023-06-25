@@ -17,19 +17,17 @@ class RunTrustedTallyDecryptionTest {
     }
 
     @Test
-    fun testDecryptionJson() {
+    fun testDecryptionAllJson() {
         main(
             arrayOf(
                 "-in",
-                "testOut/tally/testRunBatchEncryptionJson",
+                "src/commonTest/data/allAvailableJson",
                 "-trustees",
-                "testOut/keyceremony/testKeyCeremonyJson/private_data/trustees",
+                "src/commonTest/data/allAvailableJson/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptionJson",
                 "-createdBy",
                 "RunTrustedTallyDecryptionTest",
-                "-missing",
-                "1,4"
             )
         )
     }
@@ -42,6 +40,25 @@ class RunTrustedTallyDecryptionTest {
                 "src/commonTest/data/someAvailable",
                 "-trustees",
                 "src/commonTest/data/someAvailable/private_data/trustees",
+                "-out",
+                "testOut/decrypt/testDecryptionSome",
+                "-createdBy",
+                "RunTrustedTallyDecryptionTest",
+                "-missing",
+                "1,4"
+            )
+        )
+    }
+
+
+    @Test
+    fun testDecryptionSomeJson() {
+        main(
+            arrayOf(
+                "-in",
+                "src/commonTest/data/someAvailableJson",
+                "-trustees",
+                "src/commonTest/data/someAvailableJson/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptionSome",
                 "-createdBy",

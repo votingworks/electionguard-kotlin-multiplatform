@@ -5,43 +5,23 @@ import kotlin.test.Test
 
 class VerifierTest {
     @Test
-    fun verificationOrg() {
+    fun verificationAll() {
+        runVerifier(productionGroup(), "src/commonTest/data/allAvailable", 11, true)
+    }
+
+    @Test
+    fun verificationAllJson() {
+        runVerifier(productionGroup(), "src/commonTest/data/allAvailableJson", 11, true)
+    }
+
+    @Test
+    fun verificationSome() {
         runVerifier(productionGroup(), "src/commonTest/data/someAvailable", 11, true)
     }
 
     @Test
-    fun verificationJson() {
-        runVerifier(productionGroup(), "testOut/RunElectionRecordConvertJson", 11, true)
-    }
-
-    @Test
-    fun verificationRoundtrip() {
-        runVerifier(productionGroup(), "testOut/RunElectionRecordConvertProto", 11, true)
-    }
-
-    @Test
-    fun verification1() {
-        runVerifier(productionGroup(), "src/commonTest/data/start", 1, true)
-    }
-
-    @Test
-    fun verification23() {
-        runVerifier(productionGroup(), "testOut/RunKeyCeremonyTest", 1, true)
-    }
-
-    @Test
-    fun verificationChained() {
-        runVerifier(productionGroup(), "testOut/testRunBatchEncryptionChain", 11, true)
-    }
-
-    @Test
-    fun verificationTally() {
-        runVerifier(productionGroup(), "testOut/runTallyAccumulationTest", 11, true)
-    }
-
-    @Test
-    fun readElectionRecordAndValidate() {
-        runVerifier(productionGroup(), "src/commonTest/data/allAvailable", 11, true)
+    fun verificationSomeJson() {
+        runVerifier(productionGroup(), "src/commonTest/data/someAvailableJson", 11, true)
     }
 
     @Test

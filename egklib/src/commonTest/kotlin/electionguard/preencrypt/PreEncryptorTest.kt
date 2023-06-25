@@ -24,7 +24,7 @@ import kotlin.test.assertTrue
 private val random = Random
 
 internal class PreEncryptorTest {
-    val input = "src/commonTest/data/runWorkflowAllAvailable"
+    val input = "src/commonTest/data/allAvailable"
     val group = productionGroup()
 
     // sanity check that PreEncryptor.preencrypt doesnt barf

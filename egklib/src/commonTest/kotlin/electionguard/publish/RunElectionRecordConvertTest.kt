@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import electionguard.core.productionGroup
+import electionguard.verifier.runVerifier
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -14,7 +15,7 @@ class RunElectionRecordConvertTest {
                 "-in",
                 "src/commonTest/data/someAvailable",
                 "-out",
-                "testOut/RunElectionRecordConvertTest",
+                "testOut/publish/RunElectionRecordConvertTest",
             )
         )
     }
@@ -22,8 +23,8 @@ class RunElectionRecordConvertTest {
     @Test
     fun runElectionRecordConvertRoundtrip() {
         val orgDir = "src/commonTest/data/someAvailable"
-        val jsonDir = "testOut/RunElectionRecordConvertJson"
-        val protoDir = "testOut/RunElectionRecordConvertProto"
+        val jsonDir = "testOut/publish/RunElectionRecordConvertJson"
+        val protoDir = "testOut/publish/RunElectionRecordConvertProto"
         val group = productionGroup()
         runElectionRecordConvert(group, orgDir, jsonDir, true)
         runElectionRecordConvert(group, jsonDir, protoDir, true)
@@ -45,5 +46,8 @@ class RunElectionRecordConvertTest {
         assertEquals(erOrg.tallyResult()!!.encryptedTally, erProto.tallyResult()!!.encryptedTally)
         assertEquals(erOrg.decryptedTally(), erProto.decryptedTally())
         assertEquals(erOrg.decryptionResult()!!.decryptedTally, erProto.decryptionResult()!!.decryptedTally)
+
+        // test rountrip verify
+        runVerifier(productionGroup(), "testOut/publish/RunElectionRecordConvertProto", 11, true)
     }
 }

@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 
 class PublisherJsonTest {
     private val input = "src/commonTest/data/someAvailable"
-    private val output = "testOut/PublisherJsonTest"
+    private val output = "testOut/publish/PublisherJsonTest"
 
     val group = productionGroup()
     val consumerIn = makeConsumer(input, group)

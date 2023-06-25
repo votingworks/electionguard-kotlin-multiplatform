@@ -42,6 +42,9 @@ fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: S
     //publisher.writeManifestFile(electionRecord.manifestFile())
     //println(" manifestFile written")
 
+    // TODO problem is that manifest bytes here are proto
+    //   that is, writeElectionConfig assumes that you are keeping the same type
+    //   manifest bytes must not change change, else  wont validate.
     publisher.writeElectionConfig(electionRecord.config())
     println(" config written")
 
