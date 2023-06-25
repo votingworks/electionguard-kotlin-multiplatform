@@ -25,7 +25,7 @@ data class ElementModQJson(val bytes: ByteArray) {
     override fun toString() = bytes.toHex()
 }
 
-/** External representation of an UInt256. */
+/** External representation of a UInt256. */
 @Serializable(with = UInt256AsStringSerializer::class)
 @SerialName("UInt256")
 data class UInt256Json(val bytes: ByteArray) {
@@ -86,8 +86,8 @@ object UInt256AsStringSerializer : KSerializer<UInt256Json> {
     }
 }
 
-// Note that importXXX() return T?, while publishXXX() return T(Json)
-// Its up to the calling routines to turn that into Result<Boolean, String>
+// Note that Tjson.import([group]) return T, while T.publishJson() returns Tjson
+// TODO use Result?
 
 /** Publishes an ElementModP to its external, serializable form. */
 fun ElementModP.publishJson(): ElementModPJson = ElementModPJson(this.byteArray())

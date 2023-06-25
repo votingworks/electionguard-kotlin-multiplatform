@@ -10,7 +10,6 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
-import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeIF
 
 // implements the public API
@@ -33,8 +32,8 @@ actual class ConsumerProto actual constructor(private val topDir: String, privat
         return makeManifestInternal(manifestBytes).component1()!!
     }
 
-    actual override fun readManifestBytes(filepath : String): ByteArray {
-        return gulp(filepath)
+    actual override fun readManifestBytes(filename : String): ByteArray {
+        return gulp(filename)
     }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {

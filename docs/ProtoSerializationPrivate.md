@@ -14,12 +14,12 @@ draft 6/14/2023
 Information passed from the KeyCeremonyTrustee to the DecryptingTrustee.
 Only the secret_key is actually private. One could store that separately and securely, and add it in when decrypting.
 
-| Name                  | Type        | Notes                           |
-|-----------------------|-------------|---------------------------------|
-| guardian_id           | string      |                                 |
-| guardian_x_coordinate | uint32      | > 0                             |
-| public_key            | ElementModP |                                 |
-| key_share             | ElementModQ | share of the election key, P(i) |
+| Name                  | Type        | Notes                                  |
+|-----------------------|-------------|----------------------------------------|
+| guardian_id           | string      |                                        |
+| guardian_x_coordinate | uint32      | > 0                                    |
+| public_key            | ElementModP |                                        |
+| key_share             | ElementModQ | share of the election key, P(i), eq 66 |
 
 #### message EncryptedKeyShare
 

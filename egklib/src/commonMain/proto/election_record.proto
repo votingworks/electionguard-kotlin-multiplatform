@@ -64,10 +64,3 @@ message DecryptionResult {
   DecryptedTallyOrBallot decrypted_tally = 2;
   map<string, string> metadata = 4;
 }
-
-// TODO not needed
-message LagrangeCoordinate {
-  string guardian_id = 1;
-  uint32 x_coordinate = 2; // x coordinate in the secret polynomial. must be > 0
-  ElementModQ lagrange_coefficient = 3; // wℓ
-}

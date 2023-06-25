@@ -47,20 +47,6 @@ fun electionguard.protogen.DecryptionResult.import(group: GroupContext): Result<
     ))
 }
 
-private fun electionguard.protogen.LagrangeCoordinate.import(group: GroupContext): Result<LagrangeCoordinate, String> {
-
-    val lagrangeCoefficient = group.importElementModQ(this.lagrangeCoefficient)
-        ?: return Err("Failed to translate LagrangeCoordinate from proto")
-
-    return Ok(
-        LagrangeCoordinate(
-            this.guardianId,
-            this.xCoordinate,
-            lagrangeCoefficient,
-        )
-    )
-}
-
 ////////////////////////////////////////////////////////
 
 fun TallyResult.publishProto() =
@@ -77,11 +63,4 @@ fun DecryptionResult.publishProto() =
         this.tallyResult.publishProto(),
         this.decryptedTally.publishProto(),
         this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value) }
-    )
-
-private fun LagrangeCoordinate.publishProto() =
-    electionguard.protogen.LagrangeCoordinate(
-        this.guardianId,
-        this.xCoordinate,
-        this.lagrangeCoefficient.publishProto(),
     )
