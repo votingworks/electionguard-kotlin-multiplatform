@@ -13,7 +13,7 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         const val DECRYPTION_RESULT_FILE = "decryptionResult$PROTO_SUFFIX"
         const val PLAINTEXT_BALLOT_FILE = "plaintextBallots$PROTO_SUFFIX"
         const val ENCRYPTED_BALLOT_FILE = "encryptedBallots$PROTO_SUFFIX"
-        const val SPOILED_BALLOT_FILE = "spoiledBallotTallies$PROTO_SUFFIX"
+        const val CHALLENGED_BALLOT_FILE = "challengedBallots$PROTO_SUFFIX"
     }
 
 
@@ -46,7 +46,7 @@ data class ElectionRecordProtoPaths(val topDir : String) {
     }
 
     fun spoiledBallotPath(): String {
-        return "$electionRecordDir/$SPOILED_BALLOT_FILE"
+        return "$electionRecordDir/$CHALLENGED_BALLOT_FILE"
     }
 
     fun decryptingTrusteePath(trusteeDir: String, guardianId: String): String {

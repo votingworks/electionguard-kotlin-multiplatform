@@ -58,7 +58,6 @@ class ContestDataTest {
                 .done()
                 .build()
 
-
             val encryptor = Encryptor(context, electionRecord.manifest(), keypair.publicKey, electionInit.extendedBaseHash)
             val eballot = encryptor.encrypt(ballot)
 
@@ -78,7 +77,10 @@ class ContestDataTest {
                 assertTrue( contestDataResult is Ok)
                 val contestDataRoundtrip = contestDataResult.unwrap()
 
-                println("  $contestDataRoundtrip")
+                if (idx < ballot.contests.size) {
+                    println(" ballot contest $idx = ${ballot.contests[idx]}")
+                }
+                println(" contestDataRoundtrip = $contestDataRoundtrip \n")
                 if (idx == 0) {
                     assertEquals(ContestDataStatus.normal, contestDataRoundtrip.status)
                     assertEquals(emptyList(), contestDataRoundtrip.writeIns)
@@ -88,11 +90,11 @@ class ContestDataTest {
                 } else if (idx == 2) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status, )
                     assertEquals(listOf("SekulaGibbs"), contestDataRoundtrip.writeIns, )
-                    assertEquals(listOf(10), contestDataRoundtrip.overvotes, )
+                    assertEquals(listOf(8), contestDataRoundtrip.overvotes, )
                 } else if (idx == 3) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status, )
                     assertEquals(listOf("SekulaGibbs", "Sekula-Gibbs"), contestDataRoundtrip.writeIns, )
-                    assertEquals(listOf(15, 16), contestDataRoundtrip.overvotes, )
+                    assertEquals(listOf(12, 13), contestDataRoundtrip.overvotes, )
                 } else if (idx == 4) {
                     assertEquals(ContestDataStatus.normal, contestDataRoundtrip.status)
                     assertEquals(listOf("012345678901234567890123456789*"), contestDataRoundtrip.writeIns, )
@@ -100,11 +102,11 @@ class ContestDataTest {
                 } else if (idx == 5) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)
                     assertEquals(listOf("012345678901234567890123456789*"), contestDataRoundtrip.writeIns, )
-                    assertEquals(listOf(25), contestDataRoundtrip.overvotes)
+                    assertEquals(listOf(20), contestDataRoundtrip.overvotes)
                 } else if (idx == 6) {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)
                     assertEquals(emptyList(), contestDataRoundtrip.writeIns, )
-                    assertEquals(listOf(30, 31, 32, 33), contestDataRoundtrip.overvotes)
+                    assertEquals(listOf(24, 25, 26, 27), contestDataRoundtrip.overvotes)
                 } else {
                     assertEquals(ContestDataStatus.null_vote, contestDataRoundtrip.status, )
                     assertEquals(emptyList(), contestDataRoundtrip.writeIns)

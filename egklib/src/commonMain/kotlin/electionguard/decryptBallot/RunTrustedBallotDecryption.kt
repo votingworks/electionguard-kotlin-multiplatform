@@ -119,13 +119,13 @@ fun runDecryptBallots(
                 consumerIn.iterateEncryptedBallots { true }
             }
             pathExists(decryptSpoiledList) -> {
-                println(" use ballots in file $decryptSpoiledList")
+                println(" use ballots in file '$decryptSpoiledList'")
                 val wanted: List<String> = fileReadLines(decryptSpoiledList)
                 val wantedTrim: List<String> = wanted.map { it.trim() }
                 consumerIn.iterateEncryptedBallots { wantedTrim.contains(it.ballotId) }
             }
             else -> {
-                println(" use ballots in list ${decryptSpoiledList}")
+                println(" use ballots in list '${decryptSpoiledList}'")
                 val wanted: List<String> = decryptSpoiledList.split(",")
                 consumerIn.iterateEncryptedBallots {
                     // println(" ballot ${it.ballotId}")

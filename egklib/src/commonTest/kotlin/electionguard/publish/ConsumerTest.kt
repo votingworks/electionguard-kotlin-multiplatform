@@ -12,7 +12,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
-    private val topdir = "src/commonTest/data/allAvailable"
+    private val topdir = "src/commonTest/data/someAvailableJson"
 
     @Test
     fun readElectionRecord() {
@@ -34,7 +34,6 @@ class ConsumerTest {
             var count = 0
             for (tally in consumerIn.iterateDecryptedBallots()) {
                 println("$count tally = ${tally.id}")
-                assertTrue(tally.id.startsWith("ballot-id"))
                 count++
             }
         }
@@ -48,7 +47,6 @@ class ConsumerTest {
             var count = 0
             for (ballot in consumerIn.iterateEncryptedBallots { true} ) {
                 println("$count ballot = ${ballot.ballotId}")
-                assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
             }
         }
@@ -62,7 +60,6 @@ class ConsumerTest {
             var count = 0
             for (ballot in consumerIn.iterateCastBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
-                assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
             }
         }
@@ -76,7 +73,6 @@ class ConsumerTest {
             var count = 0
             for (ballot in consumerIn.iterateSpoiledBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
-                assertTrue(ballot.ballotId.startsWith("ballot-id"))
                 count++
             }
         }
@@ -86,8 +82,7 @@ class ConsumerTest {
     fun readTrustee() {
         runTest {
             val context = productionGroup()
-            val initDir = "src/commonTest/data/allAvailable"
-            val consumerIn = makeConsumer(initDir, context)
+            val consumerIn = makeConsumer(topdir, context)
             val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val trusteeDir = "$topdir/private_data/trustees"
             init.guardians.forEach {

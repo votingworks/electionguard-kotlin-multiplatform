@@ -49,6 +49,6 @@ class VerifierTest {
 
     @Test
     fun verifySpoiledBallotTallies() {
-        verifySpoiledBallotTallies(productionGroup(), "src/commonTest/data/someAvailable")
+        verifyChallengedBallots(productionGroup(), "src/commonTest/data/someAvailable")
     }
 }

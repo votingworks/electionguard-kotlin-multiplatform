@@ -7,7 +7,7 @@ import electionguard.protoconvert.publishProto
 import electionguard.publish.ElectionRecordProtoPaths.Companion.DECRYPTION_RESULT_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_CONFIG_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_INITIALIZED_FILE
-import electionguard.publish.ElectionRecordProtoPaths.Companion.SPOILED_BALLOT_FILE
+import electionguard.publish.ElectionRecordProtoPaths.Companion.CHALLENGED_BALLOT_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ENCRYPTED_BALLOT_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.MANIFEST_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.TALLY_RESULT_FILE
@@ -60,7 +60,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
     }
 
     fun spoiledBallotPath(): Path {
-        return electionRecordDir.resolve(SPOILED_BALLOT_FILE).toAbsolutePath()
+        return electionRecordDir.resolve(CHALLENGED_BALLOT_FILE).toAbsolutePath()
     }
 
     fun encryptedBallotPath(): Path {
