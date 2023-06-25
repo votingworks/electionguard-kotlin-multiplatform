@@ -77,9 +77,10 @@ fun DecryptedTallyOrBallot.DecryptedContestData.publishJson() = DecryptedContest
 fun DecryptedContestDataJson.import(group: GroupContext) = DecryptedTallyOrBallot.DecryptedContestData(
     this.contest_data.import(), this.encrypted_contest_data.import(group), this.proof.import(group), this.beta.import(group), )
 
-// strawman for contest data (section 3.3.4)
-// "any text written into one or more write-in text fields, information about overvotes, undervotes, and null
-// votes, and possibly other data about voter selections"
+// (incomplete) strawman for contest data (section 3.3.7)
+// "The contest data can contain different kinds of information such as undervote, null vote, and
+// overvote information together with the corresponding selections, the text captured for write-in
+// options and other data associated to the contest."
 @Serializable
 data class ContestDataJson(
     val over_votes: List<Int>,  // list of selection sequence_number for this contest

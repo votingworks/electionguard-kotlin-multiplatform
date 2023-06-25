@@ -1,11 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 6/21/2023
-
-1. This is the evolving version 2 of the Election Record. It is not backwards compatible with version 1.
-2. All fields must be present unless marked as optional.
-3. A missing (optional) String should be internally encoded as null (not empty string), to agree with python hashing.
-4. proto_version = 1.9.0 [MAJOR.MINOR.PATCH](https://semver.org/)
+draft 6/25/2023
 
 **Table of Contents**
  
@@ -37,7 +32,6 @@ draft 6/21/2023
       * [message Guardian](#message-guardian)
       * [message TallyResult](#message-tallyresult)
       * [message DecryptionResult](#message-decryptionresult)
-      * [message LagrangeCoordinate](#message-lagrangecoordinate)
   * [plaintext_ballot.proto](#plaintextballotproto)
       * [message PlaintextBallot](#message-plaintextballot)
       * [message PlaintextBallotContest](#message-plaintextballotcontest)
