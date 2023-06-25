@@ -9,7 +9,6 @@ import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
-import electionguard.core.normalize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

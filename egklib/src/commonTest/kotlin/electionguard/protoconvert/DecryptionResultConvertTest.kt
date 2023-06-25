@@ -40,7 +40,3 @@ fun generateDecryptionResult(publisher : Publisher, context: GroupContext): Decr
         // List(4) { generateDecryptingGuardian(context, it) },
     )
 }
-
-fun generateDecryptingGuardian(context: GroupContext, seq: Int): LagrangeCoordinate {
-    return LagrangeCoordinate("aguardian $seq", seq + 1, generateElementModQ(context))
-}

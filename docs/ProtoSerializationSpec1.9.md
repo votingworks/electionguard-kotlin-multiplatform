@@ -224,18 +224,19 @@ draft 6/21/2023
 
 #### message ElectionConfig
 
-| Name                 | Type                   | Notes     |
-|----------------------|------------------------|-----------|
-| spec_version         | string                 | "v2.0.0"  |
-| constants            | ElectionConstants      |           |
-| number_of_guardians  | uint32                 | n         |
-| election_date        | string                 | k         |
-| quorum               | uint32                 | k         |
-| jurisdiction_info    | string                 | k         |
-| parameter_base_hash  | UInt256                | Hp        |
-| manifest_hash        | UInt256                | Hm        |
-| election_base_hash   | UInt256                | He        |
-| metadata             | map\<string, string\>  | arbitrary |
+| Name                | Type                  | Notes     |
+|---------------------|-----------------------|-----------|
+| spec_version        | string                | "v2.0.0"  |
+| constants           | ElectionConstants     |           |
+| number_of_guardians | uint32                | n         |
+| quorum              | uint32                | k         |
+| election_date       | string                | k         |
+| jurisdiction_info   | string                | k         |
+| parameter_base_hash | UInt256               | Hp        |
+| manifest_hash       | UInt256               | Hm        |
+| election_base_hash  | UInt256               | He        |
+| manifest_bytes      | bytes                 |           |
+| metadata            | map\<string, string\> | arbitrary |
 
 #### message ElectionConstants
 
@@ -282,14 +283,6 @@ draft 6/21/2023
 | tally_result         | TallyResult                |       |
 | decrypted_tally      | DecryptedTallyOrBallot     |       |
 | metadata             | map<string, string>        |       |
-
-#### message LagrangeCoordinate
-
-| Name                 | Type        | Notes                             |
-|----------------------|-------------|-----------------------------------|
-| guardian_id          | string      |                                   |
-| x_coordinate         | string      | x_coordinate in the polynomial, ℓ |
-| lagrange_coefficient | ElementModQ | w_ℓ, see 10A                      |
 
 ## plaintext_ballot.proto
 
