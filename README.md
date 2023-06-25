@@ -131,9 +131,12 @@ methods.
 
 ## Protobuf Serialization
 * [Protobuf serialization 1.9](docs/ProtoSerializationSpec1.9.md)
-* [Protobuf serialization 1.53](docs/ProtoSerializationSpec1.53.md)
+* [JSON serialization 1.9](docs/JsonSerializationSpec1.9.md)
 * [Election Record serialization for private classes](docs/ProtoSerializationPrivate.md)
 * [Election Record protobuf directory and file layout](docs/ElectionRecord.md)
+
+Older:
+* [Protobuf serialization 1.53](docs/ProtoSerializationSpec1.53.md)
 * [Protobuf serialization (ver 1) and comparison with JSON](docs/ProtoSerializationSpec1.md)
 
 ## Workflow
