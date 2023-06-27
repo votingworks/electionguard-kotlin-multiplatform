@@ -3,9 +3,11 @@ package webapps.electionguard.routes
 import webapps.electionguard.groupContext
 import webapps.electionguard.models.*
 import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
-import electionguard.json.*
+import electionguard.json2.*
+import electionguard.keyceremony.EncryptedKeyShare
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -45,7 +47,7 @@ fun Route.trusteeRouting() {
                 val result = rguardian.publicKeys()
                 if (result is Ok) {
                     val pk = result.unwrap()
-                    call.respond(pk.publish())
+                    call.respond(pk.publishJson())
                 } else {
                     call.respondText(
                         "RemoteKeyTrustee ${rguardian.id} publicKeys failed ${result.unwrapError()}",
@@ -65,7 +67,7 @@ fun Route.trusteeRouting() {
                         status = HttpStatusCode.NotFound
                     )
                 val publicKeysJson = call.receive<PublicKeysJson>()
-                val publicKeysResult = publicKeysJson.import(groupContext)
+                val publicKeysResult = publicKeysJson.importResult(groupContext)
                 if (publicKeysResult is Ok) {
                     val publicKeys = publicKeysResult.unwrap()
                     val result = rguardian.receivePublicKeys(publicKeys)
@@ -102,9 +104,9 @@ fun Route.trusteeRouting() {
                     "Missing from id",
                     status = HttpStatusCode.BadRequest
                 )
-                val result = rguardian.encryptedKeyShareFor(from)
+                val result: Result<EncryptedKeyShare, String> = rguardian.encryptedKeyShareFor(from)
                 if (result is Ok) {
-                    call.respond(result.unwrap().publish())
+                    call.respond(result.unwrap().publishJson())
                 } else {
                     call.respondText(
                         "RemoteKeyTrustee ${rguardian.id} sendSecretKeyShare from ${from} failed ${result.unwrapError()}",
@@ -154,7 +156,7 @@ fun Route.trusteeRouting() {
                 )
                 val result = rguardian.keyShareFor(from)
                 if (result is Ok) {
-                    call.respond(result.unwrap().publish())
+                    call.respond(result.unwrap().publishJson())
                 } else {
                     call.respondText(
                         "RemoteKeyTrustee ${rguardian.id} sendSecretKeyShare from ${from} failed ${result.unwrapError()}",
@@ -230,7 +232,7 @@ fun Route.trusteeRouting() {
                         status = HttpStatusCode.NotFound
                     )
                 val result = rguardian.keyShare()
-                call.respond(result.publish())
+                call.respond(result.publishJson())
             }
         }
     }

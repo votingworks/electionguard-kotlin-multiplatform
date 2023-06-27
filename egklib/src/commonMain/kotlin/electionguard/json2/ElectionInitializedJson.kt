@@ -1,5 +1,8 @@
 package electionguard.json2
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
@@ -20,7 +23,7 @@ fun ElectionInitialized.publishJson() = ElectionInitializedJson(
     this.guardians.map { it.publishJson() },
     )
 
-fun ElectionInitializedJson.import(config: ElectionConfig, group: GroupContext) = ElectionInitialized(
+fun ElectionInitializedJson.import(group: GroupContext, config: ElectionConfig) = ElectionInitialized(
     config,
     this.joint_public_key.import(group),
     this.extended_base_hash.import(),
@@ -44,3 +47,9 @@ data class SchnorrProofJson(
 )
 fun SchnorrProof.publishJson() = SchnorrProofJson(this.publicKey.publishJson(), this.challenge.publishJson(), this.response.publishJson())
 fun SchnorrProofJson.import(group: GroupContext) = SchnorrProof(this.public_key.import(group), this.challenge.import(group), this.response.import(group))
+fun SchnorrProofJson.importResult(group: GroupContext): Result<SchnorrProof, String> {
+    val p = this.public_key.import(group)
+    val c = this.challenge.import(group)
+    val r = this.response.import(group)
+    return if (p == null || c == null || r == null) Err("failed to import SchnorrProofJson") else Ok(SchnorrProof(p, c, r))
+}

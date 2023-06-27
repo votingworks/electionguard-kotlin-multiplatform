@@ -9,9 +9,7 @@ import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
 import electionguard.ballot.TallyResult
 import electionguard.core.pathExists
-import electionguard.json.publish
-import electionguard.json.publishDecryptingTrusteeJson
-import electionguard.json2.publishJson
+import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 import io.ktor.utils.io.core.use
 import kotlinx.cinterop.CPointer
@@ -52,7 +50,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
     actual override fun writeManifest(manifest: Manifest) : String {
         val fileout2 = jsonPaths.manifestPath()
-        val jsonString2 = jsonFormat.encodeToString(manifest.publish())
+        val jsonString2 = jsonFormat.encodeToString(manifest.publishJson())
         writeToFile(fileout2, jsonString2)
         return fileout2
     }
@@ -67,7 +65,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         writeElectionConfig(init.config)
 
         val fileout = jsonPaths.electionInitializedPath()
-        val jsonString = jsonFormat.encodeToString(init.publish())
+        val jsonString = jsonFormat.encodeToString(init.publishJson())
         writeToFile(fileout, jsonString)
     }
 
@@ -84,7 +82,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         writeElectionInitialized(tally.electionInitialized)
 
         val fileout = jsonPaths.encryptedTallyPath()
-        val jsonString = jsonFormat.encodeToString(tally.encryptedTally.publish())
+        val jsonString = jsonFormat.encodeToString(tally.encryptedTally.publishJson())
         writeToFile(fileout, jsonString)
     }
 
@@ -93,12 +91,12 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
         /* all the coefficients in a map in one file
         val fileout = jsonPaths.lagrangePath()
-        val jsonString = jsonFormat.encodeToString(decryption.lagrangeCoordinates.publish())
+        val jsonString = jsonFormat.encodeToString(decryption.lagrangeCoordinates.publishJson())
         writeToFile(fileout, jsonString)
          */
 
         val fileout2 = jsonPaths.decryptedTallyPath()
-        val jsonString2 = jsonFormat.encodeToString(decryption.decryptedTally.publish())
+        val jsonString2 = jsonFormat.encodeToString(decryption.decryptedTally.publishJson())
         writeToFile(fileout2, jsonString2)
     }
 
@@ -108,13 +106,13 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
     private fun writePlaintextBallot(outputDir: String, plaintextBallot: PlaintextBallot) {
         val fileout = jsonPaths.plaintextBallotPath(outputDir, plaintextBallot.ballotId)
-        val jsonString = jsonFormat.encodeToString(plaintextBallot.publish())
+        val jsonString = jsonFormat.encodeToString(plaintextBallot.publishJson())
         writeToFile(fileout, jsonString)
     }
 
     actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
         val fileout = jsonPaths.decryptingTrusteePath(trusteeDir, trustee.id)
-        val jsonString = jsonFormat.encodeToString(trustee.publishDecryptingTrusteeJson())
+        val jsonString = jsonFormat.encodeToString(trustee.publishJson())
         writeToFile(fileout, jsonString)
     }
 
@@ -126,7 +124,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     private inner class EncryptedBallotSink : EncryptedBallotSinkIF {
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val fileout = jsonPaths.encryptedBallotPath(ballot.ballotId)
-            val jsonString = jsonFormat.encodeToString(ballot.publish())
+            val jsonString = jsonFormat.encodeToString(ballot.publishJson())
             writeToFile(fileout, jsonString)
         }
 
@@ -142,7 +140,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     private inner class DecryptedTallyOrBallotSink : DecryptedTallyOrBallotSinkIF {
         override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot) {
             val fileout = jsonPaths.decryptedBallotPath(tally.id)
-            val jsonString = jsonFormat.encodeToString(tally.publish())
+            val jsonString = jsonFormat.encodeToString(tally.publishJson())
             writeToFile(fileout, jsonString)
         }
 

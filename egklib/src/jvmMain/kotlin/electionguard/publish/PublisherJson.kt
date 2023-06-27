@@ -1,7 +1,6 @@
 package electionguard.publish
 
 import electionguard.ballot.*
-import electionguard.json.publish
 import electionguard.json2.publishJson
 import electionguard.keyceremony.KeyCeremonyTrustee
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -35,7 +34,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {
-        val constantsJson = config.constants.publish()
+        val constantsJson = config.constants.publishJson()
         FileOutputStream(jsonPaths.electionConstantsPath()).use { out ->
             jsonFormat.encodeToStream(constantsJson, out)
             out.close()

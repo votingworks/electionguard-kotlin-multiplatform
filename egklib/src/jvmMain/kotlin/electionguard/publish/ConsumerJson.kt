@@ -8,8 +8,6 @@ import electionguard.core.GroupContext
 import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.json.ConstantsJson
-import electionguard.json.import
 import electionguard.json2.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -166,7 +164,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return try {
             var constants: ElectionConstants
             fileSystemProvider.newInputStream(constantsFile).use { inp ->
-                val json = Json.decodeFromStream<ConstantsJson>(inp)
+                val json = Json.decodeFromStream<ElectionConstantsJson>(inp)
                 constants = json.import()
             }
 
@@ -197,7 +195,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             var electionInitialized: ElectionInitialized
             fileSystemProvider.newInputStream(contextFile).use { inp ->
                 val json = Json.decodeFromStream<ElectionInitializedJson>(inp)
-                electionInitialized = json.import(config, group)
+                electionInitialized = json.import(group, config)
             }
             Ok(electionInitialized)
         } catch (e: Exception) {

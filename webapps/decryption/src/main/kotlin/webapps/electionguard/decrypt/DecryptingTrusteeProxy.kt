@@ -10,7 +10,7 @@ import electionguard.decrypt.ChallengeRequest
 import electionguard.decrypt.ChallengeResponse
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.PartialDecryption
-import electionguard.json.*
+import electionguard.json2.*
 
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -58,7 +58,7 @@ class DecryptingTrusteeProxy(
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
                 }
-                setBody(DecryptRequest(texts).publish())
+                setBody(DecryptRequest(texts).publishJson())
             }
             val decryptResponseJson: DecryptResponseJson = response.body()
             val decryptResponses = decryptResponseJson.import(groupContext)
@@ -81,7 +81,7 @@ class DecryptingTrusteeProxy(
                 headers {
                     append(HttpHeaders.ContentType, "application/json")
                 }
-                setBody(ChallengeRequests(challenges).publish())
+                setBody(ChallengeRequests(challenges).publishJson())
             }
             println("DecryptingTrusteeProxy challenge $id = ${response.status}")
             val challengeResponsesJson: ChallengeResponsesJson = response.body()
