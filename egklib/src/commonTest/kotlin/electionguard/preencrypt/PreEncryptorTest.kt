@@ -357,9 +357,8 @@ internal fun markBallotToLimit(manifest: Manifest, pballot: PreEncryptedBallot):
         val selections = mutableListOf<String>()
         val nselections = pcontest.selections.size
         val doneIdx = mutableSetOf<Int>()
-        val nvotes = random.nextInt(pcontest.votesAllowed + 1)
 
-        while (doneIdx.size < nvotes) {
+        while (doneIdx.size < pcontest.votesAllowed) {
             val idx = random.nextInt(nselections)
             if (!doneIdx.contains(idx)) {
                 shortCodes.add(sigma(pcontest.selections[idx].selectionHash.toUInt256()))

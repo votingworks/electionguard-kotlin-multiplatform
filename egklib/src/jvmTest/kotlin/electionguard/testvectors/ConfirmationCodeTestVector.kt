@@ -10,6 +10,7 @@ import electionguard.encrypt.Encryptor
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestBuilder
 import electionguard.input.RandomBallotProvider
+import electionguard.json2.*
 import io.kotest.property.arbitrary.single
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString

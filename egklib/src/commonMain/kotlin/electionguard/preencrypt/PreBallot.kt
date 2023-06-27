@@ -57,11 +57,12 @@ internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBal
         val markedContest = this.contests.find { it.contestId == preeContest.contestId }
             ?: throw IllegalArgumentException("Cant find ${preeContest.contestId}")
 
-        // find the selected selections
+        // find the selected selections by their shortCode
         val selected = mutableListOf<PreEncryptedSelection>()
         markedContest.selectedCodes.map { selectedShortCode ->
-            val selection = preeContest.selections.find { it.shortCode == selectedShortCode } ?: throw RuntimeException()
-            if (selection != null) selected.add(selection)
+            val selection = preeContest.selections.find { it.shortCode == selectedShortCode } ?:
+                throw RuntimeException()
+            selected.add(selection)
         }
 
         val nselections = preeContest.selections.size - preeContest.votesAllowed

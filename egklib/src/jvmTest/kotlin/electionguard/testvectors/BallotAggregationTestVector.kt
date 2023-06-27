@@ -2,10 +2,9 @@ package electionguard.testvectors
 
 import electionguard.ballot.*
 import electionguard.core.*
-import electionguard.encrypt.CiphertextBallot
+import electionguard.json2.*
 import electionguard.encrypt.Encryptor
 import electionguard.encrypt.cast
-import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.tally.AccumulateTally
@@ -69,7 +68,7 @@ class BallotAggregationTestVector {
         val desc: String,
         val joint_public_key: ElementModPJson,
         val extended_base_hash: UInt256Json,
-        val encrypted_ballots: List<EncryptedBallotJson>,
+        val encrypted_ballots: List<EEncryptedBallotJson>,
         val expected_encrypted_tally : EncryptedTallyJson,
     )
 
