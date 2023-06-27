@@ -1,6 +1,6 @@
 # 🗳 Election Record JSON serialization (proposed specification)
 
-draft 6/25/2023
+draft 6/26/2023
 
 <!-- TOC -->
 * [🗳 Election Record JSON serialization (proposed specification)](#-election-record-json-serialization-proposed-specification)
@@ -12,7 +12,7 @@ draft 6/25/2023
     * [PlaintextBallot](#plaintextballot)
     * [EncryptedBallot](#encryptedballot)
     * [encrypted_tally.json](#encryptedtallyjson)
-    * [decryptedTalleyOrBallot](#decryptedtalleyorballot)
+    * [decryptedTallyOrBallot](#decryptedtallyorballot)
 <!-- TOC -->
 
 ### Differences with JSON 1.53
@@ -22,9 +22,9 @@ draft 6/25/2023
 * Context.json divided into two parts:
   1. election_config.json has the configuration parameters input to the KeyCeremony.
   2. election_initialized.json is the output of the KeyCeremony, including the guardians (separate guardian files are not needed).
-* Renaming of fields to match the 1.9 spec vocabulary.
-* ContestData is more fully specified
-* Preencrypted Ballots are new
+* Renaming of fields to closer match the 1.9 spec vocabulary.
+* ContestData is more fully specified.
+* Preencrypted Ballots are new.
 
 ### constants.json
 
@@ -419,7 +419,10 @@ Example:
 }
 ````
 
-### decryptedTalleyOrBallot
+### decryptedTallyOrBallot
+
+The only difference between a DecryptedTally and a DecryptedBallot is the presence of
+decrypted_contest_data for the ballot.
 
 ````
 @Serializable
@@ -432,7 +435,7 @@ data class DecryptedTallyOrBallotJson(
 data class DecryptedContestJson(
     val contest_id: String,
     val selections: List<DecryptedSelectionJson>,
-    val decrypted_contest_data: DecryptedContestDataJson?, //  ballot decryption only
+    val decrypted_contest_data: decrypted_contest_data?, //  ballot decryption only
 )
 
 @Serializable

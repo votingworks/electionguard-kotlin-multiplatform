@@ -151,7 +151,7 @@ class TallyDecryptionTestVector(
             "Test tally partial decryption",
             publicKey.publishJson(),
             extendedBaseHash.publishJson(),
-            keyCeremonyTrustees.map { it.publishJson( !missingCoordinates.contains(it.xCoordinate) ) },
+            keyCeremonyTrustees.map { it.publishJsonE( !missingCoordinates.contains(it.xCoordinate) ) },
             encryptedTally.publishJson(),
             decryptedTally.publishJson(),
         )

@@ -20,12 +20,12 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11, val a
     fun getFakeBallot(manifest: Manifest, ballotStyleId: String, ballotId: String): PlaintextBallot {
         val contests: MutableList<PlaintextBallot.Contest> = ArrayList()
         for (contestp in manifest.contests) {
-            contests.add(getRandomContestFrom(contestp))
+            contests.add(makeContestFrom(contestp))
         }
         return PlaintextBallot(ballotId, ballotStyleId, contests)
     }
 
-    fun getRandomContestFrom(contest: Manifest.ContestDescription): PlaintextBallot.Contest {
+    fun makeContestFrom(contest: Manifest.ContestDescription): PlaintextBallot.Contest {
         var voted = 0
         val selections: MutableList<PlaintextBallot.Selection> = ArrayList()
         val nselections = contest.selections.size

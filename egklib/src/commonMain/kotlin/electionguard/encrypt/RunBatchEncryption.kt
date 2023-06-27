@@ -251,12 +251,11 @@ private class EncryptionRunner(
     val chainCodes : Boolean,
 ) {
     val publicKeyEG = ElGamalPublicKey(jointPublicKey)
-    val extendedBaseHashQ = extendedBaseHash.toElementModQ(group)
 
     val verifier: VerifyEncryptedBallots?
     init {
         verifier = if (check == CheckType.Verify) VerifyEncryptedBallots(group, manifest,
-            publicKeyEG, extendedBaseHashQ, 1)
+            publicKeyEG, extendedBaseHash, 1)
         else null
     }
 
@@ -288,7 +287,7 @@ private class EncryptionRunner(
             val primaryNonce = ciphertextBallot.ballotNonce
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 
-            val decryptionWithPrimaryNonce = DecryptWithNonce(group, manifest, publicKeyEG, extendedBaseHash)
+            val decryptionWithPrimaryNonce = DecryptWithNonce(group, publicKeyEG, extendedBaseHash)
             val decryptResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(primaryNonce) }
             if (decryptResult is Err) {
                 logger.warn { "encrypted ballot fails decryption = $decryptResult" }

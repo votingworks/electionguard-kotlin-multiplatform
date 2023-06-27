@@ -65,7 +65,7 @@ class ConfirmationCodeTestVector {
         val desc: String,
         val joint_public_key: String,
         val extended_base_hash: String,
-        val ballots: List<PlaintextBallotJson>,
+        val ballots: List<PlaintextBallotJsonV>,
         val expected_encrypted_ballots: List<EncryptedBallotJson>,
     )
 
@@ -107,7 +107,7 @@ class ConfirmationCodeTestVector {
             "Test ballot confirmation code",
             publicKey.toHex(),
             extendedBaseHash.toHex(),
-            useBallots.map { it.publishJson() },
+            useBallots.map { it.publishJsonE() },
             eballots.map { it.publishJson() },
         )
         println(jsonFormat.encodeToString(confirmationCodeTestVector))

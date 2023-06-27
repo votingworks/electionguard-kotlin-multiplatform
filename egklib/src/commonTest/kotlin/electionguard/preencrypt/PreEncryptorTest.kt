@@ -240,7 +240,7 @@ internal fun runComplete(
     // verify
     val stats = Stats()
     val verifier =
-        VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar.toElementModQ(group), 1)
+        VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar, 1)
     val results = verifier.verifyEncryptedBallot(fullEncryptedBallot, stats)
     if (show || results !is Ok) {
         println("VerifyEncryptedBallots $results\n")

@@ -26,49 +26,12 @@ class BallotAggregationTestVector {
     val nBallots = 11
 
     @Serializable
-    data class EncryptedTallyJson(
-        val contests: List<EncryptedTallyContestJson>,
-    )
-
-    @Serializable
-    data class EncryptedTallyContestJson(
-        val contestId: String,
-        val sequenceOrder: Int,
-        val selections: List<EncryptedTallySelectionJson>,
-    )
-
-    @Serializable
-    data class EncryptedTallySelectionJson(
-        val selectionId: String,
-        val sequenceOrder: Int,
-        val task: String,
-        val expected_encrypted_vote: ElGamalCiphertextJson,
-    )
-
-    fun EncryptedTally.publishJson(): EncryptedTallyJson {
-        val contests = this.contests.map { pcontest ->
-
-            EncryptedTallyContestJson(
-                pcontest.contestId,
-                pcontest.sequenceOrder,
-                pcontest.selections.map {
-                    EncryptedTallySelectionJson(
-                        it.selectionId,
-                        it.sequenceOrder,
-                        "Compute tally over all encrypted ballots, eq 63",
-                        it.encryptedVote.publishJson(),
-                    )
-                })
-        }
-        return EncryptedTallyJson(contests)
-    }
-
-    @Serializable
     data class BallotAggregationTestVector(
         val desc: String,
         val joint_public_key: ElementModPJson,
         val extended_base_hash: UInt256Json,
-        val encrypted_ballots: List<EEncryptedBallotJson>,
+        val encrypted_ballots: List<EncryptedBallotJsonV>,
+        val task: String,
         val expected_encrypted_tally : EncryptedTallyJson,
     )
 
@@ -82,7 +45,7 @@ class BallotAggregationTestVector {
         val publicKey = group.gPowP(group.randomElementModQ())
         val extendedBaseHash = UInt256.random()
 
-        val ebuilder = ManifestBuilder("makeBallotEncryptionTestVector")
+        val ebuilder = ManifestBuilder("makeBallotAggregationTestVector")
         val manifest: Manifest = ebuilder.addContest("onlyContest")
             .addSelection("selection1", "candidate1")
             .addSelection("selection2", "candidate2")
@@ -105,7 +68,8 @@ class BallotAggregationTestVector {
             "Test ballot aggregation",
             publicKey.publishJson(),
             extendedBaseHash.publishJson(),
-            eballots.map { it.publishJson() },
+            eballots.map { it.publishJsonE() },
+            "Compute tally over all encrypted ballots, eq 63",
             tally.publishJson()
         )
         println(jsonFormat.encodeToString(ballotAggregationTestVector))
@@ -133,7 +97,7 @@ class BallotAggregationTestVector {
 
         testVector.expected_encrypted_tally.contests.zip(tally.contests).forEach { (expectContest, actualContest) ->
             expectContest.selections.zip(actualContest.selections).forEach { (expectSelection, actualSelection) ->
-                assertEquals(expectSelection.expected_encrypted_vote.import(group), actualSelection.encryptedVote)
+                assertEquals(expectSelection.encrypted_vote.import(group), actualSelection.encryptedVote)
             }
         }
     }

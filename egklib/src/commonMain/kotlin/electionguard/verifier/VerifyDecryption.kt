@@ -28,7 +28,7 @@ class VerifyDecryption(
     val group: GroupContext,
     val manifest: ManifestIF,
     val publicKey: ElGamalPublicKey,
-    val extendedBaseHash: ElementModQ,
+    val extendedBaseHash: UInt256,
 ) {
 
     /** Set of "contestId/selectionId" string to detect existence. */
@@ -110,14 +110,16 @@ class VerifyDecryption(
     }
 
     // this is the verifier proof (box 8)
-    private var first = false
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
+        return this.proof.validate2(publicKey.key, extendedBaseHash, this.kExpTally, this.encryptedVote)
+
+        /*
         val Mbar: ElementModP = this.encryptedVote.data / this.kExpTally // 8.1
         val a = group.gPowP(this.proof.r) * (publicKey powP this.proof.c) // 8.2
         val b = (this.encryptedVote.pad powP this.proof.r) * (Mbar powP this.proof.c) // 8.3
 
         // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
-        val challenge = hashFunction(extendedBaseHash.byteArray(), 0x30.toByte(), publicKey.key, this.encryptedVote.pad, this.encryptedVote.data, a, b, Mbar)
+        val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey.key, this.encryptedVote.pad, this.encryptedVote.data, a, b, Mbar)
         if (first) {
             println(" verify qbar = $extendedBaseHash")
             println(" jointPublicKey = $publicKey")
@@ -130,10 +132,13 @@ class VerifyDecryption(
             first = false
         }
         return (challenge.toElementModQ(group) == this.proof.c)
+
+         */
     }
 
     // Verification 10 (Correctness of decryptions of contest data)
     private fun verifyContestData(where: String, decryptedContestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
+        /*
         val proof = decryptedContestData.proof
         val hashedCiphertext = decryptedContestData.encryptedContestData
         // a = g^v * K^c  (10.1,14.1)
@@ -142,21 +147,26 @@ class VerifyDecryption(
         // b = C0^v * β^c (10.2,14.2)
         val b = (hashedCiphertext.c0 powP proof.r) * (decryptedContestData.beta powP proof.c)
 
-        val results = mutableListOf<Result<Boolean, String>>()
 
-        // (10.A,14.A) The given value v is in the set Zq.
-        if (!proof.r.inBounds()) {
-            results.add(Err("     (10.A,14.A) The value v is not in the set Zq.: '$where'"))
-        }
 
         // (10.B) The challenge value c satisfies c = H(HE ; 31, K, C0 , C1 , C2 , a, b, β).
-        val challenge = hashFunction(extendedBaseHash.byteArray(), 0x31.toByte(), publicKey.key,
+        val challenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), publicKey.key,
             hashedCiphertext.c0,
             hashedCiphertext.c1.toHex(),
             hashedCiphertext.c2,
             a, b, decryptedContestData.beta)
 
-        if (challenge != proof.c.toUInt256()) {
+         */
+
+        val results = mutableListOf<Result<Boolean, String>>()
+
+        // (10.A,14.A) The given value v is in the set Zq.
+        if (!decryptedContestData.proof.r.inBounds()) {
+            results.add(Err("     (10.A,14.A) The value v is not in the set Zq.: '$where'"))
+        }
+
+        val challengeOk = decryptedContestData.proof.validate2(publicKey.key, extendedBaseHash, decryptedContestData.beta, decryptedContestData.encryptedContestData)
+        if (challengeOk) {
             results.add(Err("     (10.B,14.B) The challenge value is wrong: '$where'"))
         }
         return results.merge()

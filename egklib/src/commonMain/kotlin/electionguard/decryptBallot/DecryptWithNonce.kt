@@ -9,25 +9,16 @@ import electionguard.ballot.*
 import electionguard.core.*
 
 /** Decryption of an EncryptedBallot using the ballot nonce. */
-class DecryptWithNonce(val group : GroupContext, val manifest: ManifestIF, val publicKey: ElGamalPublicKey,
-                       val extendedBaseHash: UInt256) {
+class DecryptWithNonce(val group : GroupContext, val publicKey: ElGamalPublicKey, val extendedBaseHash: UInt256) {
 
     fun EncryptedBallot.decrypt(ballotNonce: UInt256): Result<PlaintextBallot, String> {
         require(!this.isPreencrypt)
 
-        val (plaintextContests, cerrors) = this.contests.map {
-            // TODO only use of manifest is to check contest existance
-            val mcontest = manifest.contests.find { tcontest -> it.contestId == tcontest.contestId}
-            if (mcontest == null) {
-                Err("Cant find contest ${it.contestId} in manifest")
-            } else {
-                decryptContestWithPrimaryNonce(ballotNonce, it)
-            }
-        }.partition()
-
+        val (plaintextContests, cerrors) = this.contests.map { decryptContestWithPrimaryNonce(ballotNonce, it) }.partition()
         if (cerrors.isNotEmpty()) {
             return Err(cerrors.joinToString("\n"))
         }
+
         return Ok(PlaintextBallot(
             this.ballotId,
             this.ballotStyleId,

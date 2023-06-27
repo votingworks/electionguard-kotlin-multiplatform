@@ -86,7 +86,7 @@ nonce that enables the encryptions to be opened and checked.
             preeContest.votesAllowed,  // (L in the spec)
             aggNonce,
             publicKeyEG,
-            extendedBaseHashQ,
+            extendedBaseHash,
         )
 
         val contestData = ContestData(
@@ -148,7 +148,7 @@ nonce that enables the encryptions to be opened and checked.
                 1,
                 combinedNonces[idx],
                 publicKeyEG,
-                extendedBaseHashQ
+                extendedBaseHash
             )
             result.add( CiphertextBallot.Selection(selection.selectionId, selection.sequenceOrder, encryption, proof, combinedNonces[idx]))
         }

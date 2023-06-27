@@ -38,7 +38,7 @@ class SimpleBallotBenchmark {
 
                             val encryptionTimeMs = measureTimeMillis {
                                 (0 until numBallots).asIterable().toList()
-                                    .map { ballots[it].encrypt(context, keypair, nonces[it]) }
+                                    .map { ballots[it].encrypt(keypair, nonces[it]) }
                             }
                             val encryptionTime = encryptionTimeMs / 1000.0
 
@@ -60,7 +60,6 @@ class SimpleBallotBenchmark {
     )
 
     fun SimplePlaintextBallot.encrypt(
-        context: GroupContext,
         keypair: ElGamalKeypair,
         seed: ElementModQ,
         limit : Int = 1,
@@ -72,7 +71,7 @@ class SimpleBallotBenchmark {
         val selectionsAndProofs = plaintextWithNonceAndCiphertext.mapIndexed { i, (p, n, c) ->
             Pair(
                 c,
-                c.makeChaumPedersen(p, 1, n, keypair.publicKey, proofNonces[i])
+                c.makeChaumPedersen(p, 1, n, keypair.publicKey, proofNonces[i].toUInt256())
             )
         }
         val encryptedSum = selectionsAndProofs.map { it.first }.encryptedSum()
@@ -83,7 +82,7 @@ class SimpleBallotBenchmark {
             limit,
             nonceSum,
             keypair.publicKey,
-            seed,
+            seed.toUInt256(),
         )
 
         return SimpleEncryptedBallot(selectionsAndProofs, sumProof)

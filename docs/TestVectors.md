@@ -1,6 +1,6 @@
 # 🗳 Test Vectors (proposed)
 
-draft 6/26/2023
+draft 6/27/2023
 
 * These are JSON files that give inputs and expected outputs for the purpose of testing interoperability between implementations.
 * The JSON formats are ad-hoc. Suggestions for improvements are welcome!
@@ -20,4 +20,6 @@ draft 6/26/2023
 | TallyPartialDecryption | [JSON](../egklib/src/commonTest/data/testvectors/TallyPartialDecryptionTestVector.json) | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/TallyDecryptionTestVector.kt)       |
 | PreEncryption          | [JSON](../egklib/src/commonTest/data/testvectors/PreEncryptionTestVector.json)          | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/PreEncryptionTestVector.kt)         |
 | PreEncryptionRecorded  | [JSON](../egklib/src/commonTest/data/testvectors/PreEncryptionRecordedTestVector.json)  | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/PreEncryptionRecordedTestVector.kt) |
+| DecryptWithNonce       | [JSON](../egklib/src/commonTest/data/testvectors/DecryptWithNonceTestVector.json)       | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/DecryptWithNonceTestVector.kt)      |
+| DecryptBallot          | [JSON](../egklib/src/commonTest/data/testvectors/DecryptBallotTestVector.json)          | [code](../egklib/src/jvmTest/kotlin/electionguard/testvectors/DecryptBallotTestVector.kt)         |
 | ... moar soon          |                                                                                         |                                                                                                   |

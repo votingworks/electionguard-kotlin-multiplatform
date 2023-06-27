@@ -26,8 +26,8 @@ class ChaumPedersen2Test {
             val nonce = context.TWO_MOD_Q
             val message0 = 0.encrypt(keypair, nonce)
             val message1 = 1.encrypt(keypair, nonce)
-            val extendedBaseHash = context.ONE_MOD_Q
-            val extendedBaseHash2 = context.TWO_MOD_Q
+            val extendedBaseHash = UInt256.ONE
+            val extendedBaseHash2 = UInt256.TWO
 
             val goodProof =
                 message0.makeChaumPedersen(
@@ -79,22 +79,6 @@ class ChaumPedersen2Test {
             assertTrue(badProof3.validate2(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
         }
     }
-    
-    /*
-fun ChaumPedersenRangeProofKnownNonce.validate2(
-    ciphertext: ElGamalCiphertext,
-    publicKey: ElGamalPublicKey,
-    qbar: ElementModQ,
-    limit: Int
-): Result<Boolean, String> {
-
-fun ChaumPedersenRangeProofKnownNonce.validate2(
-    ciphertext: ElGamalCiphertext,
-    publicKey: ElGamalPublicKey, // K
-    extendedBaseHash: ElementModQ, // He
-    limit: Int
-): Result<Boolean, String> {
-     */
 
     @Test
     fun testCCProofsKnownNonce() {
@@ -103,10 +87,9 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
             checkAll(
                 elGamalKeypairs(context),
                 elementsModQNoZero(context),
-                elementsModQ(context),
                 Arb.int(min=0, max=100),
                 Arb.int(min=0, max=100)
-            ) { keypair, nonce, seed, constant, constant2 ->
+            ) { keypair, nonce, constant, constant2 ->
                 // we need the constants to be different
                 val badConstant = if (constant == constant2) constant + 1 else constant2
 
@@ -119,13 +102,13 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
                         limit = constant,
                         nonce = nonce,
                         publicKey = keypair.publicKey,
-                        extendedBaseHash = context.ONE_MOD_Q
+                        extendedBaseHash = UInt256.ONE
                     )
                 assertTrue(
                     proof.validate2(
                         message,
                         keypair.publicKey,
-                        context.ONE_MOD_Q,
+                        UInt256.ONE,
                         limit = constant
                     )  is Ok,
                     "first proof is valid"
@@ -134,13 +117,13 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
                     proof.validate2(
                         message,
                         keypair.publicKey,
-                        context.ONE_MOD_Q,
+                        UInt256.ONE,
                         limit = constant + 1
                     ) is Ok,
                     "modified constant invalidates proof"
                 )
                 assertFalse(
-                    proof.validate2(badMessage, keypair.publicKey, context.ONE_MOD_Q, 1) is Ok,
+                    proof.validate2(badMessage, keypair.publicKey, UInt256.ONE, 1) is Ok,
                     "modified message invalidates proof"
                 )
 
@@ -150,10 +133,10 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
                         limit = constant,
                         nonce = nonce,
                         publicKey = keypair.publicKey,
-                        extendedBaseHash = context.ONE_MOD_Q
+                        extendedBaseHash = UInt256.ONE
                     )
                 assertFalse(
-                    badProof.validate2(badMessage, keypair.publicKey, context.ONE_MOD_Q, 1) is Ok,
+                    badProof.validate2(badMessage, keypair.publicKey, UInt256.ONE, 1) is Ok,
                     "modified proof with consistent message is invalid"
                 )
 
@@ -163,10 +146,10 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
                         limit = badConstant,
                         nonce = nonce,
                         publicKey = keypair.publicKey,
-                        extendedBaseHash = context.ONE_MOD_Q
+                        extendedBaseHash = UInt256.ONE
                     )
                 assertFalse(
-                    badProof2.validate2(message, keypair.publicKey, context.ONE_MOD_Q, 1) is Ok,
+                    badProof2.validate2(message, keypair.publicKey, UInt256.ONE, 1) is Ok,
                     "modified proof with inconsistent message is invalid"
                 )
 
@@ -188,8 +171,8 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
             val badMessage0 = 0.encrypt(keypair, context.TWO_MOD_Q)
             val badMessage1 = 1.encrypt(keypair, context.TWO_MOD_Q)
 
-            val hashHeader = context.ONE_MOD_Q
-            val badHashHeader = context.TWO_MOD_Q
+            val hashHeader = UInt256.ONE
+            val badHashHeader = UInt256.TWO
             val goodProof0 =
                 message0.makeChaumPedersen(
                     0,
@@ -270,9 +253,8 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
                 Arb.int(min=0, max=1),
                 elementsModQNoZero(context),
                 elGamalKeypairs(context),
-                elementsModQ(context),
-                elementsModQ(context),
-            ) { constant, nonce, keypair, seed, hashHeader ->
+                uint256s(),
+            ) { constant, nonce, keypair, hashHeader ->
                 val ciphertext = constant.encrypt(keypair, nonce)
                 val proof =
                     ciphertext.makeChaumPedersen(
@@ -286,7 +268,7 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
                 assertTrue(proof.validate2(ciphertext, keypair.publicKey, hashHeader, 1) is Ok)
 
                 // now, swap the proofs around and verify it fails
-                val mutated = listOf(proof.proofs.get(1), proof.proofs.get(0), proof.proofs.get(1))
+                val mutated = listOf(proof.proofs[1], proof.proofs[0], proof.proofs[1])
                 val badProof = proof.copy(proofs = mutated)
 
                 assertFalse(badProof.validate2(ciphertext, keypair.publicKey, hashHeader, 1) is Ok)
@@ -301,7 +283,7 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
             val constant = 42
             val key = context.ONE_MOD_P
             val nonce = context.TWO_MOD_Q
-            val hashHeader = context.ONE_MOD_Q
+            val hashHeader = UInt256.ONE
             val publicKey = ElGamalPublicKey(key)
 
             val vote0 = 0.encrypt(publicKey, nonce)
@@ -339,17 +321,17 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
             val context = productionGroup()
             val constant = 42
             val contestNonce = context.randomElementModQ(2)
-            val hashHeader = context.randomElementModQ(2)
+            val hashHeader = UInt256.random()
             val keyPair = elGamalKeyPairFromSecret(context.randomElementModQ(2))
             val publicKey = keyPair.publicKey
 
             val randomQ = context.randomElementModQ(2)
             val nonceSequence = Nonces(randomQ, contestNonce)
 
-            val vote0 = 0.encrypt(publicKey, nonceSequence.get(0))
-            val vote1 = 1.encrypt(publicKey, nonceSequence.get(1))
-            val vote41 = 41.encrypt(publicKey, nonceSequence.get(2))
-            val nonceAccum = nonceSequence.get(0) + nonceSequence.get(1) + nonceSequence.get(2)
+            val vote0 = 0.encrypt(publicKey, nonceSequence[0])
+            val vote1 = 1.encrypt(publicKey, nonceSequence[1])
+            val vote41 = 41.encrypt(publicKey, nonceSequence[2])
+            val nonceAccum = nonceSequence[0] + nonceSequence[1] + nonceSequence[2]
 
             val texts: List<ElGamalCiphertext> = listOf(vote0, vote1, vote41)
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
@@ -382,7 +364,7 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
         val keypair = elGamalKeyPairFromSecret(secretKey)
         val publicKey = keypair.publicKey
         val nonce = 3.toElementModQ(context)
-        val qbar = 42.toElementModQ(context)
+        val qbar = UInt256.random()
         val ciphertext0 = 0.encrypt(keypair, nonce)
         val ciphertext2 = 2.encrypt(keypair, nonce)
 
@@ -419,7 +401,7 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
                 Arb.int(0, 5),
                 elementsModQNoZero(context),
                 elGamalKeypairs(context),
-                elementsModQ(context)
+                uint256s(),
             ) { p0, p1, nonce, keypair, qbar ->
                 val plaintext = min(p0, p1)
                 val rangeLimit = max(p0, p1)
@@ -448,23 +430,22 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
                 Arb.int(1, 5),
                 elementsModQNoZero(context),
                 elGamalKeypairs(context),
-                elementsModQ(context)
+                uint256s(),
             ) { p0, p1, nonce, keypair, qbar ->
                 // we're deliberately making the plaintext greater than the range limit!
-                val rangeLimit = p0
                 val plaintext = p0 + p1
 
                 val ciphertext = plaintext.encrypt(keypair, nonce)
                 val proof = ciphertext.makeChaumPedersen(
                     plaintext,
-                    rangeLimit,
+                    p0,
                     nonce,
                     keypair.publicKey,
                     qbar,
                     true // disables checks that would otherwise reject this proof
                 )
 
-                val proofValidation = proof.validate2(ciphertext, keypair.publicKey, qbar, rangeLimit)
+                val proofValidation = proof.validate2(ciphertext, keypair.publicKey, qbar, p0)
                 assertTrue(proofValidation is Err)
             }
         }
