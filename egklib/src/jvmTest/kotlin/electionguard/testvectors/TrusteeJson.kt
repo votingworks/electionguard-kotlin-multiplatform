@@ -2,6 +2,7 @@ package electionguard.testvectors
 
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeDoerre
+import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.regeneratePolynomial
 import kotlinx.serialization.Serializable

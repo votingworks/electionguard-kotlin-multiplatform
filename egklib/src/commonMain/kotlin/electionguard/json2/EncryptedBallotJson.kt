@@ -63,7 +63,7 @@ fun EncryptedBallot.publishJson(primaryNonce : UInt256? = null): EncryptedBallot
         this.ballotId,
         this.ballotStyleId,
         this.confirmationCode.publishJson(),
-        io.ktor.utils.io.core.String(this.codeBaux),
+        String(this.codeBaux),
         contests,
         this.timestamp,
         this.state.name,
@@ -109,8 +109,8 @@ fun EncryptedBallotJson.import(group : GroupContext): EncryptedBallot {
 @Serializable
 data class PreEncryptionJson(
     val preencryption_hash: UInt256Json,
-    val all_selection_hashes: List<UInt256Json>,
-    val selected_vectors: List<SelectionVectorJson>,
+    val all_selection_hashes: List<UInt256Json>, // size = nselections + limit, sorted numerically
+    val selected_vectors: List<SelectionVectorJson>, // size = limit, sorted numerically
 )
 
 fun EncryptedBallot.PreEncryption.publishJson(): PreEncryptionJson {
@@ -133,7 +133,7 @@ fun PreEncryptionJson.import(group: GroupContext): EncryptedBallot.PreEncryption
 data class SelectionVectorJson(
     val selection_hash: UInt256Json,
     val short_code : String,
-    val encryptions: List<ElGamalCiphertextJson>,
+    val encryptions: List<ElGamalCiphertextJson>, // Ej, size = nselections, in order by sequence_order
 )
 
 fun EncryptedBallot.SelectionVector.publishJson(): SelectionVectorJson {

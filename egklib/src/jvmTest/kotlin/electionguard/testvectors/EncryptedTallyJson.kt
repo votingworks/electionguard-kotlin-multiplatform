@@ -2,6 +2,7 @@ package electionguard.testvectors
 
 import electionguard.ballot.EncryptedTally
 import electionguard.core.GroupContext
+import electionguard.json2.*
 import kotlinx.serialization.Serializable
 
 @Serializable

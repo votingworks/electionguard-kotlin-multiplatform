@@ -9,6 +9,7 @@ import electionguard.encrypt.Encryptor
 import electionguard.encrypt.cast
 import electionguard.input.ManifestBuilder
 import electionguard.input.RandomBallotProvider
+import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.tally.AccumulateTally
