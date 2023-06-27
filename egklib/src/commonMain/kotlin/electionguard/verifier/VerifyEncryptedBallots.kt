@@ -20,7 +20,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
 
 private const val debugBallots = false
-// private val logger = KotlinLogging.logger("VerifyEncryptedBallots")
 
 /** Box 4,5,6,16,17. Can be multithreaded. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -28,7 +27,7 @@ class VerifyEncryptedBallots(
     val group: GroupContext,
     val manifest: ManifestIF,
     val jointPublicKey: ElGamalPublicKey,
-    val extendedBaseHash: ElementModQ, // He
+    val extendedBaseHash: UInt256, // He
     private val nthreads: Int,
 ) {
     val aggregator = SelectionAggregator() // for box 7
@@ -89,8 +88,7 @@ class VerifyEncryptedBallots(
             // Box 5 : contest limit
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.encryptedVote }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
-            val proof: ChaumPedersenRangeProofKnownNonce = contest.proof
-            val cvalid = proof.validate2(
+            val cvalid = contest.proof.validate2(
                 ciphertextAccumulation,
                 this.jointPublicKey,
                 this.extendedBaseHash,
@@ -107,7 +105,7 @@ class VerifyEncryptedBallots(
                 ciphers.add(it.pad)
                 ciphers.add(it.data)
             }
-            val contestHash = hashFunction(extendedBaseHash.byteArray(), 0x23.toByte(), contest.contestId, jointPublicKey.key, ciphers)
+            val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.contestId, jointPublicKey.key, ciphers)
             if (contestHash != contest.contestHash) {
                 results.add(Err("    6.A. Incorrect contest hash for contest ${contest.contestId} "))
             }
@@ -121,7 +119,7 @@ class VerifyEncryptedBallots(
             // TODO specify use chain in manifest and verify (6D-G)
             // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
             val contestHashes = ballot.contests.map { it.contestHash }
-            val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x24.toByte(), contestHashes, ballot.codeBaux)
+            val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, ballot.codeBaux)
             if (confirmationCode != ballot.confirmationCode) {
                 results.add(Err("    6.B. Incorrect ballot confirmation code for ballot ${ballot.ballotId} "))
             }
@@ -209,21 +207,21 @@ class VerifyEncryptedBallots(
             val cv = contest.preEncryption
             for (sv in cv.selectedVectors) {
                 val hashVector: List<ElementModP> = sv.encryptions.map{ listOf(it.pad, it.data) }.flatten()
-                val selectionHash = hashFunction(extendedBaseHash.byteArray(), 0x40.toByte(), jointPublicKey.key, hashVector)
+                val selectionHash = hashFunction(extendedBaseHash.bytes, 0x40.toByte(), jointPublicKey.key, hashVector)
                 if (selectionHash != sv.selectionHash) {
                     errors.add("    17.A. Incorrect selectionHash for selection shortCode=${sv.shortCode} contest=${contest.contestId} ballot='${ballot.ballotId}' ")
                 }
             }
 
             // χl = H(HE ; 41, Λl , K, ψσ(1) , ψσ(2) , . . . , ψσ(m+L) )
-            val preencryptionHash = hashFunction(extendedBaseHash.byteArray(), 0x41.toByte(), contest.contestId, jointPublicKey.key, cv.allSelectionHashes)
+            val preencryptionHash = hashFunction(extendedBaseHash.bytes, 0x41.toByte(), contest.contestId, jointPublicKey.key, cv.allSelectionHashes)
             if (preencryptionHash != cv.preencryptionHash) {
                 errors.add("    17.B. Incorrect contestHash for ${contest.contestId} ballot='${ballot.ballotId}' ")
             }
             contestHashes.add(preencryptionHash)
         }
 
-        val confirmationCode = hashFunction(extendedBaseHash.byteArray(), 0x42.toByte(), contestHashes, ballot.codeBaux)
+        val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x42.toByte(), contestHashes, ballot.codeBaux)
         if (confirmationCode != ballot.confirmationCode) {
             errors.add("    17.C. Incorrect confirmationCode ballot='${ballot.ballotId}' ")
         }

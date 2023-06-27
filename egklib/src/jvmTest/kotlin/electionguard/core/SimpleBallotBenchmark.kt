@@ -22,7 +22,7 @@ fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair
     val plaintextWithNonce = selections.mapIndexed { i, s -> Pair(s, encryptionNonces[i]) }
     val plaintextWithNonceAndCiphertext = plaintextWithNonce.map { (p, n) -> Triple(p, n, p.encrypt(keypair, n))}
     val selectionsAndProofs = plaintextWithNonceAndCiphertext.mapIndexed { i, (p, n, c) ->
-        Pair(c, c.makeChaumPedersen(p, 1, n, keypair.publicKey, proofNonces[i]))
+        Pair(c, c.makeChaumPedersen(p, 1, n, keypair.publicKey, proofNonces[i].toUInt256()))
     }
     val encryptedSum = selectionsAndProofs.map { it.first }.encryptedSum()
     val nonceSum = plaintextWithNonce.map { it.second }.reduce { a, b -> a + b }
@@ -42,7 +42,7 @@ fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair
     // * @param publicKey The ElGamal public key for the election
     // * @param seed Used to generate other random values here
     // * @param qbar The election extended base hash (Q')
-    val sumProof = encryptedSum.makeChaumPedersen(plaintextSum, limit, nonceSum, keypair.publicKey, seed)
+    val sumProof = encryptedSum.makeChaumPedersen(plaintextSum, limit, nonceSum, keypair.publicKey, seed.toUInt256())
 
     return SimpleEncryptedBallot(selectionsAndProofs, sumProof)
 }

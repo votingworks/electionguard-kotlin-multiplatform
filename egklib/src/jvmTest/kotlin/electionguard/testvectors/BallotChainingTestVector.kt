@@ -63,7 +63,7 @@ class BallotChainingTestVector {
         val desc: String,
         val joint_public_key: String,
         val extended_base_hash: String,
-        val ballots: List<PlaintextBallotJson>,
+        val ballots: List<PlaintextBallotJsonV>,
         val expected_encrypted_ballots: List<EncryptedBallotJson>,
     )
 
@@ -94,7 +94,7 @@ class BallotChainingTestVector {
             "Test ballot confirmation code chaining, section 3.4.3",
             publicKey.toHex(),
             extendedBaseHash.toHex(),
-            ballots.map { it.publishJson() },
+            ballots.map { it.publishJsonE() },
             eballots.map { it.publishJson() },
         )
         println(jsonFormat.encodeToString(confirmationCodeTestVector))

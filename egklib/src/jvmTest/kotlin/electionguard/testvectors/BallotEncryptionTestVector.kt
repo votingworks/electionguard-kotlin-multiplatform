@@ -66,7 +66,7 @@ class BallotEncryptionTestVector {
                 pcontest.contestId,
                 pcontest.sequenceOrder,
                 "Compute contest range proof, spec 1.9 section 3.3.8",
-                pcontest.proof.publishJson(uc_nonces, cc_nonces),
+                pcontest.proof.publishJsonE(uc_nonces, cc_nonces),
                 pcontest.selections.map {
                     // we rely on deterministic generation of the proof nonces, to publish
                     val limit = it.proof.proofs.size
@@ -79,7 +79,7 @@ class BallotEncryptionTestVector {
                         "Compute selection nonce (eq 22), encrypted vote (eq 21), and associated range proof (Section 3.3.5)",
                         it.selectionNonce.publishJson(),
                         it.ciphertext.publishJson(),
-                        it.proof.publishJson(u_nonces, c_nonces),
+                        it.proof.publishJsonE(u_nonces, c_nonces),
                     )
                 })
         }
@@ -91,7 +91,7 @@ class BallotEncryptionTestVector {
         val desc: String,
         val joint_public_key: ElementModPJson,
         val extended_base_hash: UInt256Json,
-        val ballots: List<PlaintextBallotJson>,
+        val ballots: List<PlaintextBallotJsonV>,
         val expected_encrypted_ballots: List<EncryptedBallotJson>,
     )
 
@@ -131,7 +131,7 @@ class BallotEncryptionTestVector {
             "Test ballot encryption",
             publicKey.publishJson(),
             extendedBaseHash.publishJson(),
-            useBallots.map { it.publishJson() },
+            useBallots.map { it.publishJsonE() },
             eballots.map { it.publishJson() },
         )
         println(jsonFormat.encodeToString(ballotEncryptionTestVector))
@@ -187,10 +187,10 @@ class BallotEncryptionTestVector {
     }
 
     // now check the proofs using the passed in nonces, dont depend on deterministic
-    fun checkProofsEquals(publicKey: ElGamalPublicKey, extendedBaseHash: UInt256, plain : PlaintextBallotJson, expect : EncryptedBallotJson, actual : CiphertextBallot) {
+    fun checkProofsEquals(publicKey: ElGamalPublicKey, extendedBaseHash: UInt256, plain : PlaintextBallotJsonV, expect : EncryptedBallotJson, actual : CiphertextBallot) {
 
-        plain.contests.zip(expect.contests).zip(actual.contests).forEach { (pair: Pair<PlaintextContestJson, EncryptedContestJson>, actualContest: CiphertextBallot.Contest) ->
-            val plainContest: PlaintextContestJson = pair.first
+        plain.contests.zip(expect.contests).zip(actual.contests).forEach { (pair: Pair<PlaintextContestJsonV, EncryptedContestJson>, actualContest: CiphertextBallot.Contest) ->
+            val plainContest: PlaintextContestJsonV = pair.first
             val expectContest: EncryptedContestJson = pair.second
 
             val limit = expectContest.expected_proof.proofs.size
@@ -208,7 +208,7 @@ class BallotEncryptionTestVector {
                 limit,
                 aggNonce,
                 publicKey,
-                extendedBaseHash.toElementModQ(group),
+                extendedBaseHash,
                 randomUj,
                 randomCj
             )
@@ -216,7 +216,7 @@ class BallotEncryptionTestVector {
             assertEquals(expectContest.expected_proof.import(group), proofWithNonces)
 
             plainContest.selections.zip(expectContest.selections).zip(actualContest.selections).forEach { (pair2, actualSelection) ->
-                val plainSelection: PlaintextSelectionJson = pair2.first
+                val plainSelection: PlaintextSelectionJsonV = pair2.first
                 val expectSelection: EncryptedSelectionJson = pair2.second
 
                 val limit = expectSelection.expected_proof.proofs.size
@@ -228,7 +228,7 @@ class BallotEncryptionTestVector {
                     limit,
                     actualSelection.selectionNonce, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
                     publicKey,
-                    extendedBaseHash.toElementModQ(group),
+                    extendedBaseHash,
                     randomUj,
                     randomCj
                 )

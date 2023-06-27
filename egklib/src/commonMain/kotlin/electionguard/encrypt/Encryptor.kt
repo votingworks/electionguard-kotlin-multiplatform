@@ -19,7 +19,6 @@ class Encryptor(
     val extendedBaseHash: UInt256, // aka He
 ) {
     private val extendedBaseHashB = extendedBaseHash.bytes
-    private val extendedBaseHashQ = extendedBaseHash.toElementModQ(group)
 
     /** Encrypt ballots in a chain with starting codeSeed, and random ballotNonce */
     fun encryptChain(ballots: Iterable<PlaintextBallot>, codeSeed: UInt256): List<CiphertextBallot> {
@@ -121,7 +120,7 @@ class Encryptor(
         return this.encryptContest(
             group,
             jointPublicKey,
-            extendedBaseHashQ,
+            extendedBaseHash,
             mcontest.votesAllowed,
             if (status == ContestDataStatus.over_vote) 0 else totalVotedFor,
             encryptedSelections.sortedBy { it.sequenceOrder },
@@ -148,7 +147,7 @@ class Encryptor(
         return this.encryptSelection(
             this.vote,
             jointPublicKey,
-            extendedBaseHashQ,
+            extendedBaseHash,
             selectionNonce.toElementModQ(group),
         )
     }
@@ -157,7 +156,7 @@ class Encryptor(
 fun PlaintextBallot.Contest.encryptContest(
     group: GroupContext,
     jointPublicKey: ElGamalPublicKey,
-    extendedBaseHashQ: ElementModQ,
+    extendedBaseHash: UInt256,
     votesAllowed: Int, // The number of allowed votes for this contest
     totalVotedFor: Int, // The actual number of selections voted for, for the range proof
     encryptedSelections: List<CiphertextBallot.Selection>,
@@ -174,7 +173,7 @@ fun PlaintextBallot.Contest.encryptContest(
         votesAllowed,  // (L in the spec)
         aggNonce,
         jointPublicKey,
-        extendedBaseHashQ,
+        extendedBaseHash,
     )
 
     // χl = H(HE ; 23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (58)
@@ -183,7 +182,7 @@ fun PlaintextBallot.Contest.encryptContest(
         ciphers.add(it.pad)
         ciphers.add(it.data)
     }
-    val contestHash = hashFunction(extendedBaseHashQ.byteArray(), 0x23.toByte(), this.contestId, jointPublicKey.key, ciphers)
+    val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), this.contestId, jointPublicKey.key, ciphers)
 
     return CiphertextBallot.Contest(
         this.contestId,
@@ -198,7 +197,7 @@ fun PlaintextBallot.Contest.encryptContest(
 fun PlaintextBallot.Selection.encryptSelection(
     vote: Int,
     jointPublicKey: ElGamalPublicKey,
-    cryptoExtendedBaseHashQ: ElementModQ,
+    cryptoExtendedBaseHash: UInt256,
     selectionNonce: ElementModQ,
 ): CiphertextBallot.Selection {
     val elgamalEncryption: ElGamalCiphertext = vote.encrypt(jointPublicKey, selectionNonce)
@@ -208,7 +207,7 @@ fun PlaintextBallot.Selection.encryptSelection(
         1,
         selectionNonce,
         jointPublicKey,
-        cryptoExtendedBaseHashQ
+        cryptoExtendedBaseHash
     )
 
     return CiphertextBallot.Selection(

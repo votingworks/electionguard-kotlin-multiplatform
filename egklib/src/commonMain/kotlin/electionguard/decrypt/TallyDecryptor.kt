@@ -175,6 +175,9 @@ class TallyDecryptor(
 
     // this is the verifier proof (box 8)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
+        return this.proof.validate2(publicKey.key, extendedBaseHash, this.kExpTally, this.encryptedVote)
+
+        /*
         val M: ElementModP = this.encryptedVote.data / this.kExpTally // 8.1
         val a = group.gPowP(this.proof.r) * (publicKey powP this.proof.c) // 8.2
         val b = (this.encryptedVote.pad powP this.proof.r) * (M powP this.proof.c) // 8.3
@@ -182,6 +185,8 @@ class TallyDecryptor(
         // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
         val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey.key, this.encryptedVote.pad, this.encryptedVote.data, a, b, M)
         return (challenge.toElementModQ(group) == this.proof.c)
+
+         */
     }
 
     // Verify with spec 1.9 eq 75, 76

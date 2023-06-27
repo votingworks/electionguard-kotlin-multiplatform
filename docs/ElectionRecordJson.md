@@ -33,10 +33,10 @@ One or more of the above files may be present, depending on the output stage.
 | manifest.json             | ManifestJson            | start               |
 | election_config.json      | ElectionConfigJson      | key ceremony input  |
 | election_initialized.json | ElectionInitializedJson | key ceremony output |
-| eballot-<ballotId>.json   | EncryptedBallotJson     | encryption output   |
+| eballot-\<ballotId>.json  | EncryptedBallotJson     | encryption output   |
 | encrypted_tally.json      | EncryptedTallyJson      | tally output        |
-| tally.json                | DecryptedTallyJson      | tally output        |
-| dballot-<ballotId>.json   | DecryptedBallotJson     | decryption output   |
+| tally.json                | DecryptedTallyJson      | decryption output   |
+| dballot-\<ballotId>.json  | DecryptedBallotJson     | decryption output   |
 
 * The encrypted_ballots directory contain all ballots, cast or challenged.
 * The challenged_ballots directory contain only challenged ballots.

@@ -16,7 +16,7 @@ data class TrusteeJson(
     val missing: Boolean,
 )
 
-fun KeyCeremonyTrustee.publishJson(missing : Boolean): TrusteeJson {
+fun KeyCeremonyTrustee.publishJsonE(missing : Boolean): TrusteeJson {
     return TrusteeJson(
         this.id,
         this.xCoordinate,

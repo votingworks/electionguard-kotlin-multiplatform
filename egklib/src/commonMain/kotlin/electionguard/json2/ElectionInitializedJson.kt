@@ -5,7 +5,6 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
 import electionguard.core.GroupContext
 import electionguard.core.SchnorrProof
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable

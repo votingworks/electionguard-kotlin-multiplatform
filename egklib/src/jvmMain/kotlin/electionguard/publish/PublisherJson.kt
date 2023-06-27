@@ -7,7 +7,6 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
-import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Path
 import java.util.*

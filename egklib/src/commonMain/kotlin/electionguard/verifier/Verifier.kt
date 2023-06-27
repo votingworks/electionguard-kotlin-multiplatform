@@ -10,18 +10,18 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
     val group: GroupContext
     val manifest: ManifestIF
     val jointPublicKey: ElGamalPublicKey
-    val He: ElementModQ
+    val He: UInt256
 
     init {
         group = productionGroup()
         manifest = record.manifest()
 
         if (record.stage() < ElectionRecord.Stage.INIT) { // fake
-            He = group.ONE_MOD_Q
+            He = UInt256.random()
             jointPublicKey = ElGamalPublicKey(group.ONE_MOD_P)
         } else {
             jointPublicKey = ElGamalPublicKey(record.jointPublicKey()!!)
-            He = record.extendedBaseHash()!!.toElementModQ(group)
+            He = record.extendedBaseHash()!!
         }
     }
 
@@ -161,7 +161,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         // spec 1.9, eq 20
         // HE = H(HB ; 12, K, K1,0 , K1,1 , . . . , K1,k−1 , K2,0 , . . . , Kn,k−2 , Kn,k−1 )
         val computeHe = hashFunction(record.electionBaseHash().bytes, 0x12.toByte(), jointPublicKey.key, commitments)
-        if (He != computeHe.toElementModQ(group)) {
+        if (He != computeHe) {
             errors.add(Err("  3.B extendedBaseHash does not match computed"))
             println("extendedBaseHash $He != computed $computeHe")
         }

@@ -1,6 +1,8 @@
 package electionguard.core
 
 import com.github.michaelbull.result.*
+import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.core.Base16.toHex
 import kotlin.collections.fold
 
 /**
@@ -42,7 +44,7 @@ fun ElGamalCiphertext.makeChaumPedersen(
     limit: Int,     // L
     nonce: ElementModQ, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
     publicKey: ElGamalPublicKey, // K
-    extendedBaseHash: ElementModQ, // He
+    extendedBaseHash: UInt256, // He
     overrideErrorChecks: Boolean = false
 ): ChaumPedersenRangeProofKnownNonce {
     if (!overrideErrorChecks && vote < 0) {
@@ -71,12 +73,12 @@ fun ElGamalCiphertext.makeChaumPedersenWithNonces(
     limit: Int,     // L
     nonce: ElementModQ, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
     publicKey: ElGamalPublicKey, // K
-    extendedBaseHash: ElementModQ, // He
+    extendedBaseHash: UInt256, // He
     randomUj: List<ElementModQ>, // L + 1
     randomCj: List<ElementModQ>, // L + 1
 ): ChaumPedersenRangeProofKnownNonce {
     val (alpha, beta) = this
-    val group = compatibleContextOrFail(pad, nonce, publicKey.key, extendedBaseHash, alpha, beta)
+    val group = compatibleContextOrFail(pad, nonce, publicKey.key, alpha, beta)
 
     // (aℓ , bℓ ) = (g^uℓ mod p, K^uℓ mod p), for j = ℓ (eq 23)
     // (aj , bj ) = (g^uj mod p, K^tj mod p), where tj = (uj +(ℓ−j)cj ), for j != ℓ (eq 24)
@@ -102,7 +104,7 @@ fun ElGamalCiphertext.makeChaumPedersenWithNonces(
     val abList: List<ElementModP> = aList.zip(bList).flatMap { listOf(it.first, it.second) }
 
     // c = H(HE ; 21, K, α, β, a0 , b0 , a1 , b1 , . . . , aL , bL ). eq 25
-    val c = hashFunction(extendedBaseHash.byteArray(), 0x21.toByte(), publicKey.key, alpha, beta, abList).toElementModQ(group)
+    val c = hashFunction(extendedBaseHash.bytes, 0x21.toByte(), publicKey.key, alpha, beta, abList).toElementModQ(group)
 
     // cl = (c − (c0 + · · · + cℓ−1 + cℓ+1 + · · · + cL )) mod q. eq 26
     val cl = c -
@@ -129,10 +131,10 @@ fun ElGamalCiphertext.makeChaumPedersenWithNonces(
 fun ChaumPedersenRangeProofKnownNonce.validate2(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey, // K
-    extendedBaseHash: ElementModQ, // He
+    extendedBaseHash: UInt256, // He
     limit: Int
 ): Result<Boolean, String> {
-    val group = compatibleContextOrFail(this.proofs[0].c, ciphertext.pad, publicKey.key, extendedBaseHash)
+    val group = compatibleContextOrFail(this.proofs[0].c, ciphertext.pad, publicKey.key)
     val results = mutableListOf<Result<Boolean, String>>()
 
     if (limit + 1 != proofs.size) {
@@ -165,7 +167,7 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
     val abList = expandedProofs.flatMap { listOf(it.a, it.b) }
 
     // c = H(HE ; 21, K, α, β, a0 , b0 , a1 , b1 , . . . , aL , bL ). eq 25, 4.5
-    val c = hashFunction(extendedBaseHash.byteArray(), 0x21.toByte(), publicKey.key, alpha, beta, abList).toElementModQ(group)
+    val c = hashFunction(extendedBaseHash.bytes, 0x21.toByte(), publicKey.key, alpha, beta, abList).toElementModQ(group)
 
     val cSum = this.proofs.fold(group.ZERO_MOD_Q) { a, b -> a + b.c }
     results.add(
@@ -173,4 +175,40 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
     )
 
     return results.merge()
+}
+
+fun ChaumPedersenProof.validate2(
+    publicKey: ElementModP, // K
+    extendedBaseHash: UInt256, // He
+    kExpTally: ElementModP,
+    encryptedVote: ElGamalCiphertext,
+): Boolean {
+    val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, kExpTally)
+    val Mbar: ElementModP = encryptedVote.data / kExpTally // 8.1
+    val a = group.gPowP(this.r) * (publicKey powP this.c) // 8.2
+    val b = (encryptedVote.pad powP this.r) * (Mbar powP this.c) // 8.3
+
+    // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
+    val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey, encryptedVote.pad, encryptedVote.data, a, b, Mbar)
+    return (challenge.toElementModQ(group) == this.c)
+}
+
+
+fun ChaumPedersenProof.validate2(
+    publicKey: ElementModP, // K
+    extendedBaseHash: UInt256, // He
+    beta: ElementModP,
+    hashedCiphertext: HashedElGamalCiphertext,
+): Boolean {
+    val group = compatibleContextOrFail(publicKey, hashedCiphertext.c0, beta)
+    val a = group.gPowP(this.r) * (publicKey powP this.c) // 10.1
+    val b = (hashedCiphertext.c0 powP this.r) * (beta powP this.c) // 10.2
+
+    // The challenge value c satisfies c = H(HE ; 31, K, C0 , C1 , C2 , a, b, β). (10.B)
+    val challenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), publicKey,
+        hashedCiphertext.c0,
+        hashedCiphertext.c1.toHex(),
+        hashedCiphertext.c2,
+        a, b, beta)
+    return (challenge.toElementModQ(group) == this.c)
 }

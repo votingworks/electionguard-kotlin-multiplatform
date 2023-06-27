@@ -10,44 +10,44 @@ import electionguard.json2.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EEncryptedBallotJson(
+data class EncryptedBallotJsonV(
     val ballotId: String,
     val ballotNonce: UInt256Json,
-    val contests: List<EEncryptedContestJson>,
+    val contests: List<EncryptedContestJsonV>,
 )
 
 @Serializable
-data class EEncryptedContestJson(
+data class EncryptedContestJsonV(
     val contestId: String,
     val sequenceOrder: Int,
-    val selections: List<EEncryptedSelectionJson>,
+    val selections: List<EncryptedSelectionJsonV>,
 )
 
 @Serializable
-data class EEncryptedSelectionJson(
+data class EncryptedSelectionJsonV(
     val selectionId: String,
     val sequenceOrder: Int,
     val encrypted_vote: ElGamalCiphertextJson,
 )
 
-fun CiphertextBallot.publishJson(): EEncryptedBallotJson {
+fun CiphertextBallot.publishJsonE(): EncryptedBallotJsonV {
     val contests = this.contests.map { pcontest ->
 
-        EEncryptedContestJson(
+        EncryptedContestJsonV(
             pcontest.contestId,
             pcontest.sequenceOrder,
             pcontest.selections.map {
-                EEncryptedSelectionJson(
+                EncryptedSelectionJsonV(
                     it.selectionId,
                     it.sequenceOrder,
                     it.ciphertext.publishJson(),
                 )
             })
     }
-    return EEncryptedBallotJson(this.ballotId, this.ballotNonce.publishJson(), contests)
+    return EncryptedBallotJsonV(this.ballotId, this.ballotNonce.publishJson(), contests)
 }
 
-fun EEncryptedBallotJson.import(group: GroupContext): EncryptedBallotFacade {
+fun EncryptedBallotJsonV.import(group: GroupContext): EncryptedBallotFacade {
     val contests = this.contests.map { contest ->
         EncryptedContestFacade(contest.contestId, contest.sequenceOrder,
             contest.selections.map { EncryptedSelectionFacade(it.selectionId, it.sequenceOrder, it.encrypted_vote.import(group)) })
@@ -75,7 +75,7 @@ data class EncryptedSelectionFacade(
 ) : EncryptedBallotIF.Selection
 
 // create a ManifestIF from EncryptedBallotJson
-class EncryptedBallotJsonManifestFacade(ballot : EEncryptedBallotJson) : ManifestIF {
+class EncryptedBallotJsonManifestFacade(ballot : EncryptedBallotJsonV) : ManifestIF {
     override val contests : List<ContestFacade>
     init {
         this.contests = ballot.contests.map { bc ->
