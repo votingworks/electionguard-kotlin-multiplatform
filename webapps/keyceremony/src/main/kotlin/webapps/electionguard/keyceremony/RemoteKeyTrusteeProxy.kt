@@ -3,13 +3,11 @@ package webapps.electionguard.keyceremony
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.unwrap
-import com.github.michaelbull.result.unwrapError
 import electionguard.core.ElementModP
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.SchnorrProof
-import electionguard.json.*
+import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrusteeIF
 import electionguard.keyceremony.KeyShare
 import electionguard.keyceremony.PublicKeys
@@ -71,13 +69,11 @@ class RemoteKeyTrusteeProxy(
                 Err("$url error = ${response.status}")
             } else {
                 val publicKeysJson: PublicKeysJson = response.body()
-                val publicKeyResult = publicKeysJson.import(group)
-                if (publicKeyResult is Ok) {
-                    publicKeys = publicKeyResult.unwrap()
-                } else {
-                    println("$id publicKeys = ${response.status} err = ${publicKeyResult.unwrapError()}")
+                val publicKeys = publicKeysJson.import(group)
+                if (publicKeys == null) {
+                    Err("$id error getting publicKeys = ${response.status}")
                 }
-                publicKeyResult
+                Ok(publicKeys)
             }
         }
     }
@@ -90,7 +86,7 @@ class RemoteKeyTrusteeProxy(
                     append(HttpHeaders.ContentType, "application/json")
                     basicAuth("electionguard", certPassword)
                 }
-                setBody(publicKeys.publish())
+                setBody(publicKeys.publishJson())
             }
             println("$id receivePublicKeys for ${publicKeys.guardianId} = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
@@ -129,7 +125,7 @@ class RemoteKeyTrusteeProxy(
                     append(HttpHeaders.ContentType, "application/json")
                     basicAuth("electionguard", certPassword)
                 }
-                setBody(share.publish())
+                setBody(share.publishJson())
             }
             println("$id receiveEncryptedKeyShare from ${share.polynomialOwner} = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
@@ -165,7 +161,7 @@ class RemoteKeyTrusteeProxy(
                     append(HttpHeaders.ContentType, "application/json")
                     basicAuth("electionguard", certPassword)
                 }
-                setBody(keyShare.publish())
+                setBody(keyShare.publishJson())
             }
             println("$id receiveKeyShare from ${keyShare.polynomialOwner} = ${response.status}")
             if (response.status == HttpStatusCode.OK) Ok(true) else Err(response.toString())
@@ -214,7 +210,7 @@ class RemoteKeyTrusteeProxy(
             }
             println("$id keyShare ${xcoord} = ${response.status}")
             val keyShareJson : ElementModQJson = response.body()
-            keyShareJson.import(group)!!
+            keyShareJson.import(group)
         }
     }
 

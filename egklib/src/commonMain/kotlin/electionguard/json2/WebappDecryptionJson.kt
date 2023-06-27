@@ -1,4 +1,4 @@
-package electionguard.json
+package electionguard.json2
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -10,7 +10,7 @@ import electionguard.decrypt.PartialDecryption
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// stuff used bu the webapps - maybe move there ??
+// stuff used by the webapps - maybe move there ??
 
 @Serializable
 data class SetMissingRequestJson(
@@ -23,8 +23,8 @@ data class SetMissingRequest(
     val missing: List<String>
 )
 
-fun SetMissingRequest.publish() = SetMissingRequestJson(
-    this.lagrangeCoeff.publish(),
+fun SetMissingRequest.publishJson() = SetMissingRequestJson(
+    this.lagrangeCoeff.publishJson(),
     this.missing
 )
 
@@ -49,8 +49,8 @@ data class DecryptRequest(
     val texts: List<ElementModP>
 )
 
-fun DecryptRequest.publish() = DecryptRequestJson(
-    this.texts.map { it.publish() }
+fun DecryptRequest.publishJson() = DecryptRequestJson(
+    this.texts.map { it.publishJson() }
 )
 
 fun DecryptRequestJson.import(group: GroupContext): Result<DecryptRequest, String> {
@@ -73,8 +73,8 @@ data class DecryptResponse(
     val shares: List<PartialDecryption>
 )
 
-fun DecryptResponse.publish() = DecryptResponseJson(
-    this.shares.map { it.publish() }
+fun DecryptResponse.publishJson() = DecryptResponseJson(
+    this.shares.map { it.publishJson() }
 )
 
 fun DecryptResponseJson.import(group: GroupContext): Result<DecryptResponse, String> {
@@ -97,12 +97,12 @@ data class PartialDecryptionJson(
     val b: ElementModPJson,
 )
 
-fun PartialDecryption.publish() = PartialDecryptionJson(
+fun PartialDecryption.publishJson() = PartialDecryptionJson(
     this.guardianId,
-    this.Mi.publish(),
-    this.u.publish(),
-    this.a.publish(),
-    this.b.publish(),
+    this.Mi.publishJson(),
+    this.u.publishJson(),
+    this.a.publishJson(),
+    this.b.publishJson(),
 )
 
 fun PartialDecryptionJson.import(group: GroupContext): PartialDecryption? {
@@ -126,8 +126,8 @@ data class ChallengeRequests(
     val challenges: List<ChallengeRequest>
 )
 
-fun ChallengeRequests.publish() = ChallengeRequestsJson(
-    this.challenges.map { it.publish() }
+fun ChallengeRequests.publishJson() = ChallengeRequestsJson(
+    this.challenges.map { it.publishJson() }
 )
 
 fun ChallengeRequestsJson.import(group: GroupContext) : Result<ChallengeRequests, String> {
@@ -148,10 +148,10 @@ data class ChallengeRequestJson(
     val nonce: ElementModQJson,
 )
 
-fun ChallengeRequest.publish() = ChallengeRequestJson(
+fun ChallengeRequest.publishJson() = ChallengeRequestJson(
     this.id,
-    this.challenge.publish(),
-    this.nonce.publish(),
+    this.challenge.publishJson(),
+    this.nonce.publishJson(),
 )
 
 fun ChallengeRequestJson.import(group: GroupContext) : ChallengeRequest? {
@@ -173,8 +173,8 @@ data class ChallengeResponses(
     val responses: List<ChallengeResponse>
 )
 
-fun ChallengeResponses.publish() = ChallengeResponsesJson(
-    this.responses.map { it.publish() }
+fun ChallengeResponses.publishJson() = ChallengeResponsesJson(
+    this.responses.map { it.publishJson() }
 )
 
 fun ChallengeResponsesJson.import(group: GroupContext): Result<ChallengeResponses, String> {
@@ -194,9 +194,9 @@ data class ChallengeResponseJson(
     val response: ElementModQJson,
 )
 
-fun ChallengeResponse.publish() = ChallengeResponseJson(
+fun ChallengeResponse.publishJson() = ChallengeResponseJson(
     this.id,
-    this.response.publish(),
+    this.response.publishJson(),
 )
 
 fun ChallengeResponseJson.import(group: GroupContext): ChallengeResponse? {

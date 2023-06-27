@@ -1,4 +1,4 @@
-package electionguard.json
+package electionguard.json2
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
@@ -21,7 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class DecryptionTest {
+class WebappDecryptionTest {
 
     @Test
     fun testSetMissingRequest() {
@@ -41,7 +41,7 @@ class DecryptionTest {
                 val miss = List(nmissing) { name + it }
                 val org = SetMissingRequest(lc, miss)
 
-                assertEquals(org, org.publish().import(group))
+                assertEquals(org, org.publishJson().import(group))
             }
         }
     }
@@ -61,7 +61,7 @@ class DecryptionTest {
             ) {  nrequests ->
                 val qList = List(nrequests) { elementsModP(group, minimum = 2).single() }
                 val org = DecryptRequest(qList)
-                val request = org.publish().import(group)
+                val request = org.publishJson().import(group)
                 assertTrue(request is Ok)
                 assertEquals(org, request.unwrap())
             }
@@ -92,7 +92,7 @@ class DecryptionTest {
                     )
                 }
                 val org = DecryptResponse(partials)
-                val response = org.publish().import(group)
+                val response = org.publishJson().import(group)
                 assertTrue(response is Ok)
                 assertEquals(org, response.unwrap())
             }
@@ -121,7 +121,7 @@ class DecryptionTest {
                     )
                 }
                 val org = ChallengeRequests(crs)
-                val challenges = org.publish().import(group)
+                val challenges = org.publishJson().import(group)
                 assertTrue(challenges is Ok)
                 assertEquals(org, challenges.unwrap())
             }
@@ -150,7 +150,7 @@ class DecryptionTest {
                     )
                 }
                 val org = ChallengeResponses(crs)
-                val responses = org.publish().import(group)
+                val responses = org.publishJson().import(group)
                 assertTrue(responses is Ok)
                 assertEquals(org, responses.unwrap())
             }

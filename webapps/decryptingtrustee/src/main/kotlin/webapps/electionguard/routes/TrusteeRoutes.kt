@@ -4,7 +4,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import webapps.electionguard.groupContext
 import webapps.electionguard.models.*
-import electionguard.json.*
+import electionguard.json2.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -53,7 +53,7 @@ fun Route.trusteeRouting() {
                 val decryptions = trustee.decrypt(decryptRequest.unwrap().texts)
                 val response = DecryptResponse(decryptions)
                 println("RemoteDecryptingTrustee ${trustee.id()} decrypt")
-                call.respond(response.publish())
+                call.respond(response.publishJson())
             } else {
                 call.respondText("RemoteDecryptingTrustee $id decrypt failed", status = HttpStatusCode.InternalServerError)
             }
@@ -75,7 +75,7 @@ fun Route.trusteeRouting() {
                 val responses = trustee.challenge(requests.unwrap().challenges)
                 val response = ChallengeResponses(responses)
                 println("RemoteDecryptingTrustee ${trustee.id()} challenge")
-                call.respond(response.publish())
+                call.respond(response.publishJson())
             } else {
                 call.respondText("RemoteDecryptingTrustee $id challenge failed", status = HttpStatusCode.InternalServerError)
             }
