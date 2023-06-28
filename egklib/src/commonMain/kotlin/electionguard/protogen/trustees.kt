@@ -44,7 +44,7 @@ public data class DecryptingTrustee(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "public_key",
-                        number = 5,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
                         jsonName = "publicKey",
                         value = electionguard.protogen.DecryptingTrustee::publicKey
@@ -54,7 +54,7 @@ public data class DecryptingTrustee(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "key_share",
-                        number = 6,
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "keyShare",
                         value = electionguard.protogen.DecryptingTrustee::keyShare
@@ -92,8 +92,18 @@ public data class EncryptedKeyShare(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "polynomial_owner",
+                        name = "owner_xcoord",
                         number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
+                        jsonName = "ownerXcoord",
+                        value = electionguard.protogen.EncryptedKeyShare::ownerXcoord
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "polynomial_owner",
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "polynomialOwner",
                         value = electionguard.protogen.EncryptedKeyShare::polynomialOwner
@@ -103,7 +113,7 @@ public data class EncryptedKeyShare(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "secret_share_for",
-                        number = 2,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "secretShareFor",
                         value = electionguard.protogen.EncryptedKeyShare::secretShareFor
@@ -113,20 +123,10 @@ public data class EncryptedKeyShare(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "encrypted_coordinate",
-                        number = 5,
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.HashedElGamalCiphertext.Companion),
                         jsonName = "encryptedCoordinate",
                         value = electionguard.protogen.EncryptedKeyShare::encryptedCoordinate
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "owner_xcoord",
-                        number = 6,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
-                        jsonName = "ownerXcoord",
-                        value = electionguard.protogen.EncryptedKeyShare::ownerXcoord
                     )
                 )
             }
@@ -163,8 +163,8 @@ private fun DecryptingTrustee.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
         when (_fieldNumber) {
             1 -> guardianId = _fieldValue as String
             2 -> guardianXCoordinate = _fieldValue as Int
-            5 -> publicKey = _fieldValue as electionguard.protogen.ElementModP
-            6 -> keyShare = _fieldValue as electionguard.protogen.ElementModQ
+            3 -> publicKey = _fieldValue as electionguard.protogen.ElementModP
+            4 -> keyShare = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
 
@@ -191,10 +191,10 @@ private fun EncryptedKeyShare.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> polynomialOwner = _fieldValue as String
-            2 -> secretShareFor = _fieldValue as String
-            5 -> encryptedCoordinate = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
-            6 -> ownerXcoord = _fieldValue as Int
+            1 -> ownerXcoord = _fieldValue as Int
+            2 -> polynomialOwner = _fieldValue as String
+            3 -> secretShareFor = _fieldValue as String
+            4 -> encryptedCoordinate = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
         }
     }
 

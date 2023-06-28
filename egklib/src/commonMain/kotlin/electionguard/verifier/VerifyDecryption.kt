@@ -78,7 +78,7 @@ class VerifyDecryption(
 
                 // M = K^t mod p.
                 val tallyQ = selection.tally.toElementModQ(group)
-                if (selection.kExpTally != publicKey powP tallyQ) {
+                if (selection.bOverM != publicKey powP tallyQ) {
                     results.add(Err("    9.B,12.B Tally Decryption M = K^t mod p failed: '$where2'"))
                 }
 
@@ -111,7 +111,7 @@ class VerifyDecryption(
 
     // this is the verifier proof (box 8)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        return this.proof.validate2(publicKey.key, extendedBaseHash, this.kExpTally, this.encryptedVote)
+        return this.proof.validate2(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
     }
 
     // Verification 10 (Correctness of decryptions of contest data)

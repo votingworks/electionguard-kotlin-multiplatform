@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package electionguard.testvectors
 
 import electionguard.ballot.*
@@ -12,6 +14,7 @@ import electionguard.input.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -142,10 +145,10 @@ class DecryptBallotTestVector {
         testVector.expected_decrypted_ballot.contests.zip(decryptedBallot.contests).forEach { (expectContest, actualContest) ->
             expectContest.selections.zip(actualContest.selections).forEach { (expectSelection, actualSelection) ->
                 assertEquals(expectSelection.tally, actualSelection.tally)
-                assertEquals(expectSelection.k_exp_tally.import(group), actualSelection.kExpTally)
+                assertEquals(expectSelection.b_over_m.import(group), actualSelection.bOverM)
                 assertEquals(expectSelection.encrypted_vote.import(group), actualSelection.encryptedVote)
-                assertTrue(actualSelection.proof.validate2(publicKey.key, extendedBaseHash, actualSelection.kExpTally, actualSelection.encryptedVote))
-                assertTrue(actualSelection.proof.validate2(publicKey.key, extendedBaseHash, expectSelection.k_exp_tally.import(group), expectSelection.encrypted_vote.import(group)))
+                assertTrue(actualSelection.proof.validate2(publicKey.key, extendedBaseHash, actualSelection.bOverM, actualSelection.encryptedVote))
+                assertTrue(actualSelection.proof.validate2(publicKey.key, extendedBaseHash, expectSelection.b_over_m.import(group), expectSelection.encrypted_vote.import(group)))
             }
 
             val expectedDecryptedContestData = expectContest.decrypted_contest_data!!.import(group)

@@ -90,7 +90,7 @@ public data class EncryptedTallyContest(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "selections",
-                        number = 4,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptedTallySelection>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedTallySelection.Companion)),
                         jsonName = "selections",
                         value = electionguard.protogen.EncryptedTallyContest::selections
@@ -148,7 +148,7 @@ public data class EncryptedTallySelection(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "encrypted_vote",
-                        number = 4,
+                        number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElGamalCiphertext.Companion),
                         jsonName = "encryptedVote",
                         value = electionguard.protogen.EncryptedTallySelection::encryptedVote
@@ -212,7 +212,7 @@ private fun EncryptedTallyContest.Companion.decodeWithImpl(u: pbandk.MessageDeco
         when (_fieldNumber) {
             1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedTallySelection> }
+            3 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedTallySelection> }
         }
     }
 
@@ -240,7 +240,7 @@ private fun EncryptedTallySelection.Companion.decodeWithImpl(u: pbandk.MessageDe
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            4 -> encryptedVote = _fieldValue as electionguard.protogen.ElGamalCiphertext
+            3 -> encryptedVote = _fieldValue as electionguard.protogen.ElGamalCiphertext
         }
     }
 

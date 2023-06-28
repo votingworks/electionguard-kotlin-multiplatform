@@ -180,16 +180,16 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
 fun ChaumPedersenProof.validate2(
     publicKey: ElementModP, // K
     extendedBaseHash: UInt256, // He
-    kExpTally: ElementModP,
+    bOverM: ElementModP,
     encryptedVote: ElGamalCiphertext,
 ): Boolean {
-    val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, kExpTally)
-    val Mbar: ElementModP = encryptedVote.data / kExpTally // 8.1
+    val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, bOverM)
+    val M: ElementModP = encryptedVote.data / bOverM // eq 8.1
     val a = group.gPowP(this.r) * (publicKey powP this.c) // 8.2
-    val b = (encryptedVote.pad powP this.r) * (Mbar powP this.c) // 8.3
+    val b = (encryptedVote.pad powP this.r) * (M powP this.c) // 8.3
 
-    // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ). 8.B, eq 72
-    val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey, encryptedVote.pad, encryptedVote.data, a, b, Mbar)
+    // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ); eq 8.B
+    val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey, encryptedVote.pad, encryptedVote.data, a, b, M)
     return (challenge.toElementModQ(group) == this.c)
 }
 

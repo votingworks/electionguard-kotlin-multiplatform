@@ -20,15 +20,17 @@ import kotlin.test.assertTrue
 
 /**
  * Run complete workflow starting from ElectionConfig in the start directory, all the way through verify.
- * (See ElectionConfigConvertTest to regenerate ElectionConfig)
- * (Uses RunFakeKeyCeremonyTest, not real KeyCeremony).
+ * (See RunCreateConfigTest/RunCreateElectionConfig to regenerate ElectionConfig)
+ * TestWorkflow uses RunFakeKeyCeremonyTest, not real KeyCeremony.
  *  1. The results can be copied to the test data sets "src/commonTest/data/all(some)Available(Json)" whenever the
  *     election record changes.
  *  2. Then see RunDecryptBallotsTest for more damn things to do
  *  3. Replace src/commonTest/data/someAvailable/challengedBallotTallies.protobuf, by running
  *     RunDecryptBallotsTest.testDecryptBallotsSomeFromList and copying that file.
- *   4. Replace src/commonTest/data/someAvailableJson/challenged_ballots/dballot-*.json by running
+ *  4. Replace src/commonTest/data/someAvailableJson/challenged_ballots/dballot-*.json by running
  *      RunDecryptBallotsJsonTest.testDecryptBallotsSomeFromList and copying that directory.
+ *  5. Replace src/commonTest/data/testElectionRecord/jsonZip/json25.zip by going inside
+ *      testOut/workflow/allAvailableJson and zipping that directory, and copying that file.
  */
 class TestWorkflow {
     private val configDir = "src/commonTest/data/startConfigProto"

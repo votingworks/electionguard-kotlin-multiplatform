@@ -416,13 +416,13 @@ draft 6/25/2023
 
 ### message DecryptedSelection
 
-| Name            | Type               | Notes                             |
-|-----------------|--------------------|-----------------------------------|
-| selection_id    | string             | SelectionDescription.selection_id |
-| tally           | int                | decrypted vote count              |
-| k_exp_tally     | ElementModP        | T = K^tally, eq 65                |
-| encrypted_vote  | ElGamalCiphertext  | encrypted vote count              |
-| proof           | ChaumPedersenProof |                                   |
+| Name           | Type               | Notes                            |
+|----------------|--------------------|----------------------------------|
+| selection_id   | string             | SelectionDescription.selection_id |
+| tally          | int                | decrypted vote count             |
+| b_over_m       | ElementModP        | T = (B/M), eq 65                 |
+| encrypted_vote | ElGamalCiphertext  | encrypted vote count             |
+| proof          | ChaumPedersenProof |                                  |
 
 ### message DecryptedContestData
 

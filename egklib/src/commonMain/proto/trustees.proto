@@ -8,15 +8,15 @@ option java_outer_classname = "TrusteeProto";
 message DecryptingTrustee {
   string guardian_id = 1;
   uint32 guardian_x_coordinate = 2; // my x coefficient (aka sequence_order), must be > 0
-  ElementModP public_key = 5;      // my public key
-  ElementModQ key_share = 6;       // P(i) = my share of the secret key s = (s1 + s2 + · · · + sn ), eq 66
+  ElementModP public_key = 3;      // my public key
+  ElementModQ key_share = 4;       // P(i) = my share of the secret key s = (s1 + s2 + · · · + sn ), eq 66
 }
 
 message EncryptedKeyShare {
-  uint32 owner_xcoord = 6; // guardian i (owns the polynomial Pi) x coord
-  string polynomial_owner = 1; // guardian i (owns the polynomial Pi) name
-  string secret_share_for = 2; // The id of the guardian to receive this (ℓ)
+  uint32 owner_xcoord = 1; // guardian i (owns the polynomial Pi) x coord
+  string polynomial_owner = 2; // guardian i (owns the polynomial Pi) name
+  string secret_share_for = 3; // The id of the guardian to receive this (ℓ)
   // Pi(ℓ)= The generatingGuardian's polynomial value at designatedGuardianXCoordinate
   // This is the encryption = Eℓ (Pi(ℓ)), see spec 1.9 eq 17.
-  HashedElGamalCiphertext encrypted_coordinate = 5;
+  HashedElGamalCiphertext encrypted_coordinate = 4;
 }

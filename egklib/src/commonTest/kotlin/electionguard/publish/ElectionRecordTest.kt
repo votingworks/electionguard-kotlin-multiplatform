@@ -63,14 +63,12 @@ class ElectionRecordTest {
         assertEquals(init.guardians.size, tallyResult.numberOfGuardians())
 
         assertEquals(init.guardians.size, config.numberOfGuardians)
-        // assertTrue(tallyResult.quorum() <= decryption.lagrangeCoordinates.size)
-        // assertTrue(tallyResult.numberOfGuardians() >= decryption.lagrangeCoordinates.size)
     }
 
     fun validateTally(jointKey: ElGamalPublicKey, tally: DecryptedTallyOrBallot) {
         for (contest in tally.contests) {
             for (selection in contest.selections) {
-                val actual: Int? = jointKey.dLog(selection.kExpTally, 100)
+                val actual: Int? = jointKey.dLog(selection.bOverM, 100)
                 assertEquals(selection.tally, actual)
             }
         }

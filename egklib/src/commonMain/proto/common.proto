@@ -38,10 +38,8 @@ message ElGamalCiphertext {
 }
 
 message ChaumPedersenProof {
-  reserved 1;
-  reserved 2;
-  ElementModQ challenge = 3; // c in the spec
-  ElementModQ response = 4; // v in the spec
+  ElementModQ challenge = 1; // c in the spec
+  ElementModQ response = 2; // v in the spec
 }
 
 message HashedElGamalCiphertext {

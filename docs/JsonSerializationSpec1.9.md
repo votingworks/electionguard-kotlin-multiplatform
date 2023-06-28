@@ -442,7 +442,7 @@ data class DecryptedContestJson(
 data class DecryptedSelectionJson(
     val selection_id: String,
     val tally: Int,
-    val k_exp_tally: ElementModPJson, // eq 65
+    val b_over_m: ElementModPJson, // eq 65
     val encrypted_vote: ElGamalCiphertextJson,
     val proof: ChaumPedersenJson,
 )

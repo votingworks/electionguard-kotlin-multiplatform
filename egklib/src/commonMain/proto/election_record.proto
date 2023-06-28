@@ -3,7 +3,6 @@ syntax = "proto3";
 import "encrypted_tally.proto";
 import "common.proto";
 import "decrypted_tally.proto";
-import "manifest.proto";
 
 option java_package = "electionguard.protogen";
 option java_outer_classname = "ElectionRecordProto";
@@ -12,15 +11,15 @@ option java_outer_classname = "ElectionRecordProto";
 message ElectionConfig {
   string spec_version = 1; // specification version
   ElectionConstants constants = 2;
-  uint32 number_of_guardians = 4; // n, the number of guardians necessary to generate the public key
-  uint32 quorum = 5; // k, the quorum of guardians necessary to decrypt an election.  Must be <= number_of_guardians.
-  string election_date = 8; // for election base hash
-  string jurisdiction_info = 9; // for election base hash
-  UInt256 parameter_base_hash = 10; // Hp
-  UInt256 manifest_hash = 11;       // Hm
-  UInt256 election_base_hash = 12;  // He
-  bytes manifest_bytes = 7; // the original source of the manifest
-  map<string, string> metadata = 6; // arbitrary metadata added by the software
+  uint32 number_of_guardians = 3; // n, the number of guardians necessary to generate the public key
+  uint32 quorum = 4; // k, the quorum of guardians necessary to decrypt an election.  Must be <= number_of_guardians.
+  string election_date = 5; // for election base hash
+  string jurisdiction_info = 6; // for election base hash
+  UInt256 parameter_base_hash = 7; // Hp
+  UInt256 manifest_hash = 8;       // Hm
+  UInt256 election_base_hash = 9;  // He
+  bytes manifest_bytes = 10; // the original source of the manifest
+  map<string, string> metadata = 11; // arbitrary metadata added by the software
 }
 
 // The constants for mathematical functions during the election.
@@ -36,19 +35,16 @@ message ElectionConstants {
 message ElectionInitialized {
   ElectionConfig config = 1;
   ElementModP joint_public_key = 2; // K
-  reserved 3;
-  UInt256 extended_base_hash = 4; // He
-  repeated Guardian guardians = 5; // public information about the Guardians / Trustees
-  map<string, string> metadata = 6; // arbitrary metadata added by the software
-  reserved 7;
+  UInt256 extended_base_hash = 3; // He
+  repeated Guardian guardians = 4; // public information about the Guardians / Trustees
+  map<string, string> metadata = 5; // arbitrary metadata added by the software
 }
 
 // Public info for Guardians
 message Guardian {
   string guardian_id = 1;     // guardian id
   uint32 x_coordinate = 2;    // x coordinate in the secret polynomial. must be > 0
-  reserved 3;  // was coefficient_commitments, now directly in the proofs
-  repeated SchnorrProof coefficient_proofs = 4;  // size = quorum (k)
+  repeated SchnorrProof coefficient_proofs = 3;  // size = quorum (k)
 }
 
 message TallyResult {
@@ -62,5 +58,5 @@ message TallyResult {
 message DecryptionResult {
   TallyResult tally_result = 1;
   DecryptedTallyOrBallot decrypted_tally = 2;
-  map<string, string> metadata = 4;
+  map<string, string> metadata = 3;
 }
