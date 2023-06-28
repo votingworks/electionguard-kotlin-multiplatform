@@ -55,7 +55,7 @@ class PublisherProtoTest {
 
     @Test
     fun testRoundtripElectionInit() {
-        val (manifest, config) = generateElectionConfig(publisher, 6, 4)
+        val (_, config) = generateElectionConfig(publisher, 6, 4)
         publisher.writeElectionConfig(config)
 
         val init = ElectionInitialized(
@@ -122,7 +122,7 @@ class PublisherProtoTest {
                     throw RuntimeException("Cant find ${it.selectionId}")
                     assertEquals(inSelection.selectionId, it.selectionId)
                     assertEquals(inSelection.tally, it.tally)
-                    assertEquals(inSelection.kExpTally, it.kExpTally)
+                    assertEquals(inSelection.bOverM, it.bOverM)
                     assertEquals(inSelection.encryptedVote, it.encryptedVote)
                     assertEquals(inSelection.proof, it.proof)
                     assertEquals(inSelection, it)

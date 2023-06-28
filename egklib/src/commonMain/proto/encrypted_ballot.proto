@@ -15,14 +15,14 @@ message EncryptedBallot {
 
   string ballot_id = 1; // a unique Ballot ID created by the external system
   string ballot_style_id = 2; // The ballot_style_id of the BallotStyle in the Election Manifest
-  UInt256 confirmation_code = 5; // ballot tracking code, H(B), eq 59 or eq 96 for preencrypt
+  UInt256 confirmation_code = 3; // ballot tracking code, H(B), eq 59 or eq 96 for preencrypt
   bytes code_baux = 4; // Baux in eq 59
-  repeated EncryptedBallotContest contests = 6;
-  int64 timestamp = 7; // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
-  BallotState state = 9;
+  repeated EncryptedBallotContest contests = 5;
+  int64 timestamp = 6; // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
+  BallotState state = 7;
 
-  bool is_preencrypt = 10;
-  UInt256 primary_nonce = 11; // only when uncast ?
+  bool is_preencrypt = 8;
+  UInt256 primary_nonce = 9; // only when uncast ?
 }
 
 // Encrypted selections for a specific contest.
@@ -31,18 +31,18 @@ message EncryptedBallotContest {
   uint32 sequence_order = 2; // matches the ContestDescription.sequence_order
   UInt256 contest_hash = 3; // eq 58
   repeated EncryptedBallotSelection selections = 4;
-  ChaumPedersenRangeProofKnownNonce proof = 6;  // Proof the sum of the selections does not exceed the maximum
-  HashedElGamalCiphertext encrypted_contest_data = 7; // see 3.3.4
+  ChaumPedersenRangeProofKnownNonce proof = 5;  // Proof the sum of the selections does not exceed the maximum
+  HashedElGamalCiphertext encrypted_contest_data = 6; // see 3.3.4
 
-  PreEncryption pre_encryption = 8; // only for pre-encryptions
+  PreEncryption pre_encryption = 7; // only for pre-encryptions
 }
 
 // Encryption of a specific selection.
 message EncryptedBallotSelection {
   string selection_id = 1; // matches the SelectionDescription.selection_id
   uint32 sequence_order = 2; // matches the SelectionDescription.sequence_order
-  ElGamalCiphertext encrypted_vote = 4; // The encrypted representation of the vote field
-  ChaumPedersenRangeProofKnownNonce proof = 6; // Proof the selection is an encryption of 0 or 1
+  ElGamalCiphertext encrypted_vote = 3; // The encrypted representation of the vote field
+  ChaumPedersenRangeProofKnownNonce proof = 4; // Proof the selection is an encryption of 0 or 1
 }
 
 message ChaumPedersenRangeProofKnownNonce {

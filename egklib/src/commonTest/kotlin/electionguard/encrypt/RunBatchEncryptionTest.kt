@@ -47,7 +47,6 @@ class RunBatchEncryptionTest {
         )
     }
 
-
     @Test
     fun testRunBatchEncryptionJson() {
         main(

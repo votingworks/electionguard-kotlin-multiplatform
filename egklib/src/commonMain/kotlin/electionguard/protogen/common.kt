@@ -228,7 +228,7 @@ public data class ChaumPedersenProof(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "challenge",
-                        number = 3,
+                        number = 1,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "challenge",
                         value = electionguard.protogen.ChaumPedersenProof::challenge
@@ -238,7 +238,7 @@ public data class ChaumPedersenProof(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "response",
-                        number = 4,
+                        number = 2,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "response",
                         value = electionguard.protogen.ChaumPedersenProof::response
@@ -541,8 +541,8 @@ private fun ChaumPedersenProof.Companion.decodeWithImpl(u: pbandk.MessageDecoder
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            3 -> challenge = _fieldValue as electionguard.protogen.ElementModQ
-            4 -> response = _fieldValue as electionguard.protogen.ElementModQ
+            1 -> challenge = _fieldValue as electionguard.protogen.ElementModQ
+            2 -> response = _fieldValue as electionguard.protogen.ElementModQ
         }
     }
 

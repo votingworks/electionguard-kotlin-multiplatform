@@ -20,7 +20,7 @@ message DecryptedContest {
 message DecryptedSelection {
   string selection_id = 1; // matches SelectionDescription.selection_id
   uint32 tally = 2;        // decrypted vote
-  ElementModP k_exp_tally = 3;   // T = K^tally eq 65
+  ElementModP b_over_m = 3;   // T = (B / M) eq 65
   ElGamalCiphertext encrypted_vote = 4; // same as EncryptedTally.Selection.encrypted_vote
   ChaumPedersenProof proof = 5;
 }

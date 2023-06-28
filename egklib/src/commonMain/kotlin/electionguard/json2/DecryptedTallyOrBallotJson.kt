@@ -23,7 +23,7 @@ data class DecryptedContestJson(
 data class DecryptedSelectionJson(
     val selection_id: String,
     val tally: Int,
-    val k_exp_tally: ElementModPJson, // eq 65
+    val b_over_m: ElementModPJson, // eq 65
     val encrypted_vote: ElGamalCiphertextJson,
     val proof: ChaumPedersenJson,
 )
@@ -37,7 +37,7 @@ fun DecryptedTallyOrBallot.publishJson() = DecryptedTallyOrBallotJson(
                 DecryptedSelectionJson(
                     selection.selectionId,
                     selection.tally,
-                    selection.kExpTally.publishJson(),
+                    selection.bOverM.publishJson(),
                     selection.encryptedVote.publishJson(),
                     selection.proof.publishJson(),
                 ) },
@@ -55,7 +55,7 @@ fun DecryptedTallyOrBallotJson.import(group: GroupContext) = DecryptedTallyOrBal
                 DecryptedTallyOrBallot.Selection(
                     selection.selection_id,
                     selection.tally,
-                    selection.k_exp_tally.import(group),
+                    selection.b_over_m.import(group),
                     selection.encrypted_vote.import(group),
                     selection.proof.import(group),
                 ) },

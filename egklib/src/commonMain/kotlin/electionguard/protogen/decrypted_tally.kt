@@ -111,7 +111,7 @@ public data class DecryptedContest(
 public data class DecryptedSelection(
     val selectionId: String = "",
     val tally: Int = 0,
-    val kExpTally: electionguard.protogen.ElementModP? = null,
+    val bOverM: electionguard.protogen.ElementModP? = null,
     val encryptedVote: electionguard.protogen.ElGamalCiphertext? = null,
     val proof: electionguard.protogen.ChaumPedersenProof? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -149,11 +149,11 @@ public data class DecryptedSelection(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "k_exp_tally",
+                        name = "b_over_m",
                         number = 3,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModP.Companion),
-                        jsonName = "kExpTally",
-                        value = electionguard.protogen.DecryptedSelection::kExpTally
+                        jsonName = "bOverM",
+                        value = electionguard.protogen.DecryptedSelection::bOverM
                     )
                 )
                 add(
@@ -317,7 +317,7 @@ public fun DecryptedSelection?.orDefault(): electionguard.protogen.DecryptedSele
 
 private fun DecryptedSelection.protoMergeImpl(plus: pbandk.Message?): DecryptedSelection = (plus as? DecryptedSelection)?.let {
     it.copy(
-        kExpTally = kExpTally?.plus(plus.kExpTally) ?: plus.kExpTally,
+        bOverM = bOverM?.plus(plus.bOverM) ?: plus.bOverM,
         encryptedVote = encryptedVote?.plus(plus.encryptedVote) ?: plus.encryptedVote,
         proof = proof?.plus(plus.proof) ?: plus.proof,
         unknownFields = unknownFields + plus.unknownFields
@@ -328,7 +328,7 @@ private fun DecryptedSelection.protoMergeImpl(plus: pbandk.Message?): DecryptedS
 private fun DecryptedSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder): DecryptedSelection {
     var selectionId = ""
     var tally = 0
-    var kExpTally: electionguard.protogen.ElementModP? = null
+    var bOverM: electionguard.protogen.ElementModP? = null
     var encryptedVote: electionguard.protogen.ElGamalCiphertext? = null
     var proof: electionguard.protogen.ChaumPedersenProof? = null
 
@@ -336,13 +336,13 @@ private fun DecryptedSelection.Companion.decodeWithImpl(u: pbandk.MessageDecoder
         when (_fieldNumber) {
             1 -> selectionId = _fieldValue as String
             2 -> tally = _fieldValue as Int
-            3 -> kExpTally = _fieldValue as electionguard.protogen.ElementModP
+            3 -> bOverM = _fieldValue as electionguard.protogen.ElementModP
             4 -> encryptedVote = _fieldValue as electionguard.protogen.ElGamalCiphertext
             5 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenProof
         }
     }
 
-    return DecryptedSelection(selectionId, tally, kExpTally, encryptedVote,
+    return DecryptedSelection(selectionId, tally, bOverM, encryptedVote,
         proof, unknownFields)
 }
 

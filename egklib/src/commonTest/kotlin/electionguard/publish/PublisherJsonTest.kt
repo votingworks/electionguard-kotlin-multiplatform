@@ -61,7 +61,7 @@ class PublisherJsonTest {
         val publisher = makePublisher(output2, true, true)
         val consumerOut = makeConsumer(output2, group, true)
 
-        val (manifest, config) = generateElectionConfig(publisher, 6, 4)
+        val (_, config) = generateElectionConfig(publisher, 6, 4)
         publisher.writeElectionConfig(config)
 
         val init = ElectionInitialized(
@@ -209,7 +209,7 @@ fun Iterable<DecryptedTallyOrBallot>.approxEqualsDecryptedBallots(expected: Iter
                     ?: throw RuntimeException("Cant find ${it.selectionId}")
                 assertEquals(inSelection.selectionId, it.selectionId)
                 assertEquals(inSelection.tally, it.tally)
-                assertEquals(inSelection.kExpTally, it.kExpTally)
+                assertEquals(inSelection.bOverM, it.bOverM)
                 assertEquals(inSelection.encryptedVote, it.encryptedVote)
                 assertEquals(inSelection.proof, it.proof)
                 assertEquals(inSelection, it)

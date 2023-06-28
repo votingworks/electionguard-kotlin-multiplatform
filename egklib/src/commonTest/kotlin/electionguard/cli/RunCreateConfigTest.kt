@@ -12,7 +12,7 @@ class RunCreateConfigTest {
                 "src/commonTest/data/startManifestProto",
                 "-nguardians", "3",
                 "-quorum", "3",
-                "-createdBy", "3",
+                "-createdBy", "testCreateConfigDirectoryProto",
                 "-out",
                 "testOut/config/testCreateFromDirectoryProto",
             )
@@ -27,7 +27,7 @@ class RunCreateConfigTest {
                 "src/commonTest/data/startManifestJson",
                 "-nguardians", "3",
                 "-quorum", "3",
-                "-createdBy", "3",
+                "-createdBy", "testCreateConfigDirectoryJson",
                 "-out",
                 "testOut/config/testCreateConfigDirectoryJson",
             )
