@@ -1,7 +1,6 @@
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
-import electionguard.core.Base64.toBase64
 import electionguard.ballot.ElectionConstants
 import hacl.*
 import kotlinx.cinterop.*
@@ -20,7 +19,7 @@ private val productionGroups4096 : Map<PowRadixOption, ProductionGroupContext> =
             powRadixOption = it,
             productionMode = ProductionMode.Mode4096,
             numPBits = Primes4096.nbits.toUInt(),
-            numPBytes = Primes4096.nbits.toUInt() / 8U,
+            numPBytes = Primes4096.nbytes.toUInt(),
             numPLWords = Primes4096.nbits.toUInt() / 64U,
         )
     }
@@ -37,7 +36,7 @@ private val productionGroups3072 =
             powRadixOption = it,
             productionMode = ProductionMode.Mode3072,
             numPBits = Primes3072.nbits.toUInt(),
-            numPBytes = Primes3072.nbits.toUInt() / 8U,
+            numPBytes = Primes3072.nbytes.toUInt(),
             numPLWords = Primes3072.nbits.toUInt() / 64U,
         )
     }
@@ -125,7 +124,7 @@ internal fun ByteArray.toHaclBignumQ(doubleMemory: Boolean = false): HaclBignumQ
         size == HaclBignumQ_Bytes + 1 && this[0] == 0.toByte() ->
             ByteArray(HaclBignumQ_Bytes) { i -> this[i+1] }
         size > HaclBignumQ_Bytes ->
-            throw IllegalArgumentException("ByteArray size $size is too big for $HaclBignumQ_Bytes")
+            throw IllegalArgumentException("toHaclBignumQ ByteArray size $size is too big for $HaclBignumQ_Bytes")
 
         else -> {
             // leading padding with zero
@@ -179,7 +178,7 @@ internal fun ByteArray.toHaclBignumP(
         size == numBytes + 1 && this[0] == 0.toByte() ->
             ByteArray(numBytes) { i -> this[i+1] }
         size > numBytes ->
-            throw IllegalArgumentException("ByteArray size $size is too big for $numBytes ($mode)")
+            throw IllegalArgumentException("toHaclBignumP ByteArray size $size is too big for $numBytes ($mode)")
 
         else -> {
             // leading padding with zero
@@ -324,6 +323,7 @@ class ProductionGroupContext(
         }
 
         dlogger = DLog(gModP)
+
     }
 
     override val constants: ElectionConstants by lazy {
@@ -422,6 +422,9 @@ class ProductionGroupContext(
             // But if we've got more than 256 bits, we need a fallback solution.
 
             if (b.size > MAX_BYTES_Q) {
+                println("safeBinaryToElementModQ ${b.size} > $MAX_BYTES_Q")
+                println("hashFunction ${hashFunction(b)}")
+                println("toElementModQ ${hashFunction(b).toElementModQ(this)}")
                 return hashFunction(b).toElementModQ(this) // TODO check this
             }
 
@@ -668,7 +671,7 @@ class ProductionElementModQ(val element: HaclBignumQ, val groupContext: Producti
 
     override fun hashCode() = element.contentHashCode()
 
-    override fun toString() = base64()  // unpleasant, but available
+    override fun toString() = base16()
 }
 
 open class ProductionElementModP(val element: HaclBignumP, val groupContext: ProductionGroupContext): ElementModP,
@@ -770,7 +773,7 @@ open class ProductionElementModP(val element: HaclBignumP, val groupContext: Pro
 
     override fun hashCode() = element.contentHashCode()
 
-    override fun toString() = base64()  // unpleasant, but available
+    override fun toString() = base16()
 
     override fun acceleratePow() : ElementModP =
         AcceleratedElementModP(this)

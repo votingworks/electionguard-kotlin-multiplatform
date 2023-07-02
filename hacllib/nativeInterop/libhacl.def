@@ -14,7 +14,7 @@ staticLibraries = libhacl.a
 libraryPaths = build
 
 linkerOpts.osx = --library hacl --library-path hacllib/build
-linkerOpts.linux = --library hacl --library-path hacllib/build
+linkerOpts.linux = --library hacl --library-path /home/stormy/dev/github/electionguard-kotlin-multiplatform/hacllib/build/
 
 compilerOpts.osx = -Ilibhacl/include
 compilerOpts.linux = -Ilibhacl/include -O2

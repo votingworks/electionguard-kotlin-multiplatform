@@ -59,7 +59,7 @@ fun ByteArray.normalize(want: Int): ByteArray {
         val leading = size - want
         for (idx in 0 until leading) {
             if (this[idx].compareTo(0) != 0) {
-                throw IllegalArgumentException("Input has $size bytes; UInt256 only supports 32")
+                throw IllegalArgumentException("ByteArray.normalize has $size bytes, only want $want, leading zeroes stop at $idx")
             }
         }
         this.copyOfRange(leading, this.size)
@@ -68,7 +68,6 @@ fun ByteArray.normalize(want: Int): ByteArray {
         leftPad + this
     }
 }
-
 
 /**
  * Safely converts a [UInt256] to an [ElementModQ], wrapping values outside the range back to the
