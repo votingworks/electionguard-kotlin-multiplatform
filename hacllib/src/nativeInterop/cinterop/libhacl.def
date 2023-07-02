@@ -14,7 +14,7 @@ staticLibraries = libhacl.a
 libraryPaths = /home/stormy/install/libhacl
 
 compilerOpts.osx = -Ilibhacl/include
-compilerOpts.linux = -I/usr/include -I/usr/include/x86_64-linux-gnu -I/home/stormy/install/libhacl/include -O2
+compilerOpts.linux = -I/usr/include -I/usr/include/x86_64-linux-gnu -I/usr/include/x86_64-linux-gnu/libhacl -O2
 
 linkerOpts.osx = --library hacl --library-path hacllib/build
-linkerOpts.linux = --library hacl --library-path /home/stormy/install/libhacl -lhacl
+linkerOpts.linux = --library hacl --library-path /usr/lib/x86_64-linux-gnu
