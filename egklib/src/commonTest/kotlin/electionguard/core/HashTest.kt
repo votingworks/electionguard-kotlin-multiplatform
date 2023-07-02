@@ -1,6 +1,7 @@
 package electionguard.core
 
 import electionguard.core.Base16.fromSafeHex
+import electionguard.core.Base16.toHex
 import io.kotest.property.checkAll
 import io.kotest.property.forAll
 import io.ktor.utils.io.core.*
@@ -43,8 +44,8 @@ class HashTest {
             val ballotNonce = "13E7A2F4253E6CCE42ED5576CF7B01A06BE07835227E7AFE5F538FB94E9A9B73".fromSafeHex()
                 .toUInt256().toElementModQ(group)
             val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
-            val nonce0 = nonceSequence[0]
-            println(" nonce seed in hex = ${nonceSequence.internalSeed}")
+            val nonce0: ElementModQ = nonceSequence[0]
+            println(" nonce seed in hex = ${nonceSequence.internalSeed.toHex()}")
             println(" nonce0 in hex = ${nonce0}")
             val expect = "ACDE405F255D4C3101A895AE80863EA4639A889593D557EB5AD5B855684D5B50".fromSafeHex()
                 .toUInt256().toElementModQ(group)

@@ -63,4 +63,19 @@ class TestConstants {
         assertEquals(b64TestR, rr)
         assertEquals(b64TestP, pp)
     }
+
+
+    @Test
+    fun p256minusQBase64() {
+        val p256 = BigInteger.valueOf(1) shl 256
+        val q = Primes4096.smallPrimeBytes.toBigInteger()
+        val p256minusQ = (p256 - q).toByteArray()
+        assertEquals(2, p256minusQ.size)
+
+        val p256minusQBase64 = p256minusQ.toBase64()
+        assertEquals(p256minusQBase64, b64Production4096P256MinusQ)
+
+        val p256minusQBytes = b64Production4096P256MinusQ.fromSafeBase64()
+        assertEquals(2, p256minusQBytes.size)
+    }
 }

@@ -47,4 +47,25 @@ class TestConstants {
         assertContentEquals(ig, g, "G")
         assertContentEquals(ir, r, "R")
     }
+
+    @Test
+    fun testProductionGroups4096() {
+        println("testProductionGroups4096")
+        val mode = PowRadixOption.LOW_MEMORY_USE
+        val productionGroups4096 =
+            ProductionGroupContext(
+                pBytes = Primes4096.largePrimeBytes,
+                qBytes = Primes4096.smallPrimeBytes,
+                gBytes = Primes4096.generatorBytes,
+                rBytes = Primes4096.residualBytes,
+                p256minusQBytes = b64Production4096P256MinusQ.fromSafeBase64(),
+                name = "production group, ${mode.description}, 4096 bits",
+                powRadixOption = mode,
+                productionMode = ProductionMode.Mode4096,
+                numPBits = Primes4096.nbits.toUInt(),
+                numPBytes = Primes4096.nbits.toUInt() / 8U,
+                numPLWords = Primes4096.nbits.toUInt() / 64U,
+            )
+    }
+
 }

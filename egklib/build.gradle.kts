@@ -59,17 +59,17 @@ kotlin {
             else -> throw GradleException("Host OS is not supported.")
         }
 
+    /*
     nativeTarget.apply {
         binaries {
-            executable("RunBatchEncryption") {
-                entryPoint = "electionguard.encrypt.main"
-            }
             sharedLib() {
                 baseName = "ekm" // on Linux and macOS
                 // baseName = "libekm // on Windows
             }
         }
     }
+
+     */
 
     sourceSets {
         all { languageSettings.optIn("kotlin.RequiresOptIn") }

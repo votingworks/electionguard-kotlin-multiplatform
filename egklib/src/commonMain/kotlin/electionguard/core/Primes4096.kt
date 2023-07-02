@@ -5,6 +5,7 @@ import electionguard.core.Base16.fromHex
 // copied from the ElectionGuard 1.9 spec 3.1.1
 object Primes4096 {
     val nbits = 4096
+    val nbytes = nbits/8
 
     private val pOrg =
         "FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF" +
@@ -25,7 +26,7 @@ object Primes4096 {
                 "FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF"
 
      val pStr = pOrg.filterNot { it.isWhitespace() }
-     val largePrimeBytes = pStr.fromHex()!!.normalize(512)
+     val largePrimeBytes = pStr.fromHex()!!.normalize(nbytes)
 
     val qStr = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF43"
     val smallPrimeBytes = qStr.fromHex()!!.normalize(32)
@@ -49,7 +50,7 @@ object Primes4096 {
 
     val rStr = rOrg.filterNot { it.isWhitespace() }
     val residualNotNormalized = rStr.fromHex()!!
-    val residualBytes = rStr.fromHex()!!.normalize(512)
+    val residualBytes = rStr.fromHex()!!.normalize(nbytes)
 
     private val gOrg =
         "36036FED 214F3B50 DC566D3A 312FE413 1FEE1C2B CE6D02EA 39B477AC 05F7F885" +
@@ -70,5 +71,5 @@ object Primes4096 {
                 "E7EBA151 BA486094 D68722B0 54633FEC 51CA3F29 B31E77E3 17B178B6 B9D8AE0F"
 
     val gStr = gOrg.filterNot { it.isWhitespace() }
-    val generatorBytes = gStr.fromHex()!!.normalize(512)
+    val generatorBytes = gStr.fromHex()!!.normalize(nbytes)
 }
