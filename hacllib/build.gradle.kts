@@ -34,17 +34,14 @@ kotlin {
             cinterops {
                 val libhacl by
                 creating {
-                    defFile(project.file("nativeInterop/libhacl.def"))
                     packageName("hacl")
-                    compilerOpts("-Ilibhacl/include")
-                    includeDirs.allHeaders("${System.getProperty("user.dir")}/libhacl/include")
                 }
             }
         }
     }
 }
 
-// create build/libhacl.a
+/* create build/libhacl.a
 tasks.register("libhaclBuild") {
     doLast {
         exec {
@@ -65,3 +62,5 @@ tasks.register("libhaclBuild") {
 
 // hack to make sure that we've compiled the library prior to running cinterop on it
 tasks["cinteropLibhaclNative"].dependsOn("libhaclBuild")
+
+ */

@@ -1,0 +1,20 @@
+headers = \
+  Hacl_Bignum64.h \
+  Hacl_Bignum256.h \
+  Hacl_Bignum4096.h \
+  Hacl_HMAC.h \
+  Hacl_HMAC_DRBG.h \
+  Hacl_GenericField64.h \
+  Hacl_IntTypes_Intrinsics.h \
+  Hacl_Streaming_SHA2.h \
+  Lib_RandomBuffer_System.h
+
+# headerFilter = Hacl*.h
+staticLibraries = libhacl.a
+libraryPaths = /home/stormy/install/libhacl
+
+compilerOpts.osx = -Ilibhacl/include
+compilerOpts.linux = -I/usr/include -I/usr/include/x86_64-linux-gnu -I/usr/include/x86_64-linux-gnu/libhacl -O2
+
+linkerOpts.osx = --library hacl --library-path hacllib/build
+linkerOpts.linux = --library hacl --library-path /usr/lib/x86_64-linux-gnu
