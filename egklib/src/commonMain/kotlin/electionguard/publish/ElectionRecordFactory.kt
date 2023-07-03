@@ -17,7 +17,7 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     var tallyResult : TallyResult? = null
     var init : ElectionInitialized? = null
     var config : ElectionConfig? = null
-    var manifest : Manifest? = null
+    var manifest : Manifest?
     var stage : ElectionRecord.Stage? = null
 
     val decryption = consumer.readDecryptionResult()
@@ -64,7 +64,7 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     if (stage == ElectionRecord.Stage.INIT && consumer.hasEncryptedBallots()) {
         stage = ElectionRecord.Stage.ENCRYPTED
     }
-    return ElectionRecordImpl(consumer, stage!!, decryptionResult, tallyResult, init, config!!, manifest!!)
+    return ElectionRecordImpl(consumer, stage!!, decryptionResult, tallyResult, init, config, manifest)
 }
 
 private class ElectionRecordImpl(val consumer: Consumer,

@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalKotest::class)
+
 package electionguard.core
 
+import io.kotest.common.ExperimentalKotest
 import io.kotest.property.Arb
 import io.kotest.property.PropTestConfig
 import io.kotest.property.ShrinkingMode

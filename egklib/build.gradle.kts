@@ -232,3 +232,9 @@ publishing {
 }
 
  */
+
+tasks.register("showConfigurations") {
+    configurations.forEach {
+        println(it.name)
+    }
+}
