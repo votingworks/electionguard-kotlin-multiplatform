@@ -6,7 +6,7 @@ buildscript {
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     kotlin("multiplatform") version providers.gradleProperty("kotlinVersion").get()
-    id("electionguard.common-conventions")
+    // id("electionguard.common-conventions")
 
     // for some reason we need these, else get error
     // "Cannot add task 'commonizeNativeDistribution' as a task with that name already exists."

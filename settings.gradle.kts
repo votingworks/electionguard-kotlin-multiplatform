@@ -109,7 +109,7 @@ dependencyResolutionManagement {
 
 include ("egklib")
 include ("hacllib")
-include ("webapps:decryptingtrustee")
-include ("webapps:decryption")
-include ("webapps:keyceremony")
-include ("webapps:keyceremonytrustee")
+//include ("webapps:decryptingtrustee")
+//include ("webapps:decryption")
+//include ("webapps:keyceremony")
+//include ("webapps:keyceremonytrustee")

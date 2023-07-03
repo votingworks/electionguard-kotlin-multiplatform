@@ -1,11 +1,22 @@
 
 buildscript {
     repositories {
-        google()
         mavenCentral()
     }
 }
 
+plugins {
+    kotlin("multiplatform") version providers.gradleProperty("kotlinVersion").get()
+
+    // cross-platform serialization support
+    alias(libs.plugins.serialization)
+}
+
+repositories {
+    mavenCentral()
+}
+
+/*
 val kotlinVersion : String = providers.gradleProperty("kotlinVersion").get()
 println("Read kotlinVersion from gradle.properties = $kotlinVersion")
 
@@ -24,6 +35,8 @@ plugins {
 
     id("maven-publish")
 }
+
+ */
 
 group = "electionguard-kotlin-multiplatform"
 version = "2.0.0-SNAPSHOT"
@@ -105,8 +118,8 @@ kotlin {
         val commonTest by
             getting {
                 dependencies {
-                    implementation(kotlin("test-common", kotlinVersion))
-                    implementation(kotlin("test-annotations-common", kotlinVersion))
+                    implementation(kotlin("test-common"))
+                    implementation(kotlin("test-annotations-common"))
 
                     // runTest() for running suspend functions in tests
                     implementation(libs.kotlinx.coroutines.test)
@@ -118,7 +131,7 @@ kotlin {
         val jvmMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-jdk8", kotlinVersion)) }
+                    implementation(kotlin("stdlib-jdk8")) }
             }
         val jvmTest by
             getting {
@@ -190,7 +203,7 @@ tasks.withType<Test> { testLogging { showStandardStreams = true } }
 // Workaround the Gradle bug resolving multi-platform dependencies.
 // Fix courtesy of https://github.com/square/okio/issues/647
 configurations.forEach {
-    if (it.name.toLowerCase().contains("kapt") || it.name.toLowerCase().contains("proto")) {
+    if (it.name.lowercase().contains("kapt") || it.name.lowercase().contains("proto")) {
         it.attributes
             .attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, Usage.JAVA_RUNTIME))
     }
@@ -199,6 +212,7 @@ configurations.forEach {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
     .configureEach { kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn" }
 
+/*
 publishing {
     repositories {
         maven {
@@ -216,3 +230,5 @@ publishing {
         }
     }
 }
+
+ */
