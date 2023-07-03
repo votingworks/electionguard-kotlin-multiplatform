@@ -27,8 +27,8 @@ class HashTest {
         runTest {
             val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
             checkAll(propTestFastConfig, elementsModQ(context), elementsModQ(context)) { q1, q2 ->
-                val h1 = hashFunction(q1.byteArray())
-                val h2 = hashFunction(q2.byteArray())
+                val h1 = hashFunction(q1.byteArray(), q1)
+                val h2 = hashFunction(q2.byteArray(), q2)
                 if (q1 == q2) assertEquals(h1, h2) else assertNotEquals(h1, h2)
             }
         }
@@ -84,8 +84,8 @@ class HashTest {
             val s2q = "000C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromSafeHex()
                 .toUInt256().toElementModQ(group).base16()
             assertEquals(s1q, s2q)
-            assertEquals(hashFunction(s1q.toByteArray()), hashFunction(s2q.toByteArray()))
-            assertEquals(s1q, s2q)
+            assertEquals(s1q.toByteArray().size, s2q.toByteArray().size)
+            assertEquals(hashFunction(s1q.toByteArray(), s1q), hashFunction(s2q.toByteArray(), s2q))
             println("  len = ${s1q.length} hex = ${s1q}")
             assertEquals(64, s1q.length)
         }

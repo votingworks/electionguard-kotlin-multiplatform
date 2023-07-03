@@ -101,12 +101,7 @@ class EncryptedBallotIterator(
     private val protoFilter: ((electionguard.protogen.EncryptedBallot) -> Boolean)?,
     private val filter: ((EncryptedBallot) -> Boolean)?,
 ) : AbstractIterator<EncryptedBallot>() {
-
     private val file = openFile(filename, "rb")
-
-    init {
-        println("EncryptedBallotIterator open $filename $file")
-    }
 
     override fun computeNext() {
         while (true) {
@@ -115,7 +110,6 @@ class EncryptedBallotIterator(
                 fclose(file)
                 return done()
             }
-            println("  readFromFile vlen = $length")
             val message = readFromFile(file, length.toULong(), filename)
             val ballotProto = electionguard.protogen.EncryptedBallot.decodeFromByteArray(message)
             if (protoFilter?.invoke(ballotProto) == false) {

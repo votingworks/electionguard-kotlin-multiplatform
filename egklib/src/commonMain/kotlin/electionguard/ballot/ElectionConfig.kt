@@ -2,7 +2,7 @@ package electionguard.ballot
 
 import electionguard.core.*
 import electionguard.core.Base16.toHex
-import io.ktor.utils.io.core.*
+import io.ktor.utils.io.core.toByteArray
 
 const val protocolVersion = "v2.0"
 
@@ -137,12 +137,12 @@ fun parameterBaseHash(primes : ElectionConstants) : UInt256 {
     )
 }
 
-fun manifestHash(Hp: UInt256, manifestFile : ByteArray) : UInt256 {
+fun manifestHash(Hp: UInt256, manifestBytes : ByteArray) : UInt256 {
     // HM = H(HP ; 01, manifest).   spec 1.9, p 16, eq 5
     return hashFunction(
         Hp.bytes,
         0x01.toByte(),
-        manifestFile,
+        manifestBytes,
     )
 }
 

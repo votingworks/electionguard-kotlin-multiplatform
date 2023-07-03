@@ -10,7 +10,7 @@ import java.io.FileOutputStream
 import java.nio.file.Path
 import java.util.*
 
-/** Publishes the Manifest Record to protobuf files.  */
+/** Publishes the Election Record to JSON files.  */
 @OptIn(ExperimentalSerializationApi::class)
 actual class PublisherJson actual constructor(topDir: String, createNew: Boolean) : Publisher {
     private var jsonPaths: ElectionRecordJsonPaths = ElectionRecordJsonPaths(topDir)

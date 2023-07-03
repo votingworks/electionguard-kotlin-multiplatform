@@ -1,6 +1,6 @@
 package electionguard.core
 
-import io.ktor.utils.io.core.*
+import io.ktor.utils.io.core.toByteArray
 
 /**
  * The hash function H used in ElectionGuard is HMAC-SHA-256, i.e. HMAC instantiated with SHA-25639 .
@@ -29,6 +29,7 @@ fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
 
 // identical to hashFunction, made separate to follow the spec.
 fun hmacFunction(key: ByteArray, vararg elements: Any): UInt256 {
+    require(elements.size > 0)
     val hmac = HmacSha256(key)
     elements.forEach { hmac.addToHash(it) }
     return hmac.finish()

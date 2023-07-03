@@ -14,8 +14,6 @@ import kotlinx.cinterop.toKString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-// TODO convert to 1.9
-
 actual class ConsumerJson actual constructor(private val topDir: String, private val group: GroupContext) : Consumer {
     val jsonPaths = ElectionRecordJsonPaths(topDir)
     val jsonFormat = Json { prettyPrint = true }
@@ -133,19 +131,14 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             val constantsJson = jsonFormat.decodeFromString<ElectionConstantsJson>(gulp(constantsFile).toKString())
             val electionConstants = constantsJson.import()
 
-            Ok(
-                makeElectionConfig(
-                    "TODOtoo",
-                    electionConstants,
-                    1, // LOOK not in JSON
-                    1, // LOOK not in JSON
-                    "N/A",
-                    "N/A",
-                    ByteArray(0), // TODO manifest
-                )
-            )
+            val manifestBytes = readManifestBytes(manifestFilename)
+
+            val configJson: ElectionConfigJson = jsonFormat.decodeFromString<ElectionConfigJson>(gulp(configFile).toKString())
+            val config = configJson.import(electionConstants, manifestBytes)
+            Ok(config)
+
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionConfig $constantsFile failed")
+            Err(e.message ?: "readElectionConfig $configFile failed")
         }
     }
 
@@ -220,6 +213,8 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             while (idx < fileList.size) {
                 val filename = "$dirname/${fileList[idx++]}"
                 val json = jsonFormat.decodeFromString<EncryptedBallotJson>(gulp(filename).toKString())
+                println("Read jsonBallot ${json.ballot_id} code_baux='${json.code_baux}'")
+
                 val ballot = json.import(group)
                 if (ballot == null) {
                     logger.warn { "Failed to read EncryptedBallotJson ${filename}" }
