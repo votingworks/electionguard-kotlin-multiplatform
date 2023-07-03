@@ -176,7 +176,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
             val buffer = ballotProto.encodeToByteArray()
 
             val length = writeVlen(file, fileout, buffer.size)
-            println("  writeEncryptedBallotProto ${buffer.size} $length")
             if (length <= 0) {
                 fclose(file)
                 throw IOException("write failed on $fileout")

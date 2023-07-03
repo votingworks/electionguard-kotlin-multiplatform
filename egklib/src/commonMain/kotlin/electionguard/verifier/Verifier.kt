@@ -92,7 +92,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
     }
 
     // Verification 1 (Parameter validation)
-    private fun verifyParameters(config : ElectionConfig, manifestFile: ByteArray): Result<Boolean, String> {
+    private fun verifyParameters(config : ElectionConfig, manifestBytes: ByteArray): Result<Boolean, String> {
         val check: MutableList<Result<Boolean, String>> = mutableListOf()
         val constants = config.constants
 
@@ -116,7 +116,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         if (Hp != config.parameterBaseHash) {
             check.add(Err("  1.E The parameter base hash does not match eq 4"))
         }
-        val Hm = manifestHash(Hp, manifestFile)
+        val Hm = manifestHash(Hp, manifestBytes)
         if (Hm != config.manifestHash) {
             check.add(Err("  1.F The manifest hash does not match eq 5"))
         }

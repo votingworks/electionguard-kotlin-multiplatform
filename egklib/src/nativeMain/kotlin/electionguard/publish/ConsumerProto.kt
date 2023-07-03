@@ -1,5 +1,6 @@
 package electionguard.publish
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Result
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.ElectionConfig
@@ -37,19 +38,35 @@ actual class ConsumerProto actual constructor(private val topDir: String, privat
     }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
-        return readElectionConfig(path.electionConfigPath())
+        return try {
+            readElectionConfig(path.electionConfigPath())
+        } catch (e: Exception) {
+            Err(e.message ?: "readElectionConfig ${path.electionConfigPath()} failed")
+        }
     }
 
     actual override fun readElectionInitialized(): Result<ElectionInitialized, String> {
-        return groupContext.readElectionInitialized(path.electionInitializedPath())
+        return try {
+            groupContext.readElectionInitialized(path.electionInitializedPath())
+        } catch (e: Exception) {
+            Err(e.message ?: "readElectionInitialized ${path.electionInitializedPath()} failed")
+        }
     }
 
     actual override fun readTallyResult(): Result<TallyResult, String> {
-        return groupContext.readTallyResult(path.tallyResultPath())
+        return try {
+            groupContext.readTallyResult(path.tallyResultPath())
+        } catch (e: Exception) {
+            Err(e.message ?: "readTallyResult ${path.tallyResultPath()} failed")
+        }
     }
 
     actual override fun readDecryptionResult(): Result<DecryptionResult, String> {
-        return groupContext.readDecryptionResult(path.decryptionResultPath())
+        return try {
+            groupContext.readDecryptionResult(path.decryptionResultPath())
+        } catch (e: Exception) {
+            Err(e.message ?: "readDecryptionResult ${path.decryptionResultPath()} failed")
+        }
     }
 
     actual override fun hasEncryptedBallots(): Boolean {

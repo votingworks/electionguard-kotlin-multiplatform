@@ -18,7 +18,7 @@ import kotlinx.serialization.json.Json
 import platform.posix.FILE
 import platform.posix.fclose
 
-/** Write the Election Record as protobuf files.  */
+/** Write the Election Record as JSON files.  */
 actual class PublisherJson actual constructor(topDir: String, createNew: Boolean) : Publisher {
     private var jsonPaths: ElectionRecordJsonPaths = ElectionRecordJsonPaths(topDir)
     private val jsonFormat = Json { prettyPrint = true }
@@ -89,12 +89,6 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     actual override fun writeDecryptionResult(decryption: DecryptionResult) {
         writeTallyResult(decryption.tallyResult)
 
-        /* all the coefficients in a map in one file
-        val fileout = jsonPaths.lagrangePath()
-        val jsonString = jsonFormat.encodeToString(decryption.lagrangeCoordinates.publishJson())
-        writeToFile(fileout, jsonString)
-         */
-
         val fileout2 = jsonPaths.decryptedTallyPath()
         val jsonString2 = jsonFormat.encodeToString(decryption.decryptedTally.publishJson())
         writeToFile(fileout2, jsonString2)
@@ -124,7 +118,10 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     private inner class EncryptedBallotSink : EncryptedBallotSinkIF {
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val fileout = jsonPaths.encryptedBallotPath(ballot.ballotId)
-            val jsonString = jsonFormat.encodeToString(ballot.publishJson())
+            println("ballot.codeBaux ${ballot.codeBaux.contentToString()}")
+            val jsonBallot = ballot.publishJson()
+            println("Write jsonBallot ${jsonBallot.ballot_id} code_baux='${jsonBallot.code_baux}'")
+            val jsonString = jsonFormat.encodeToString(jsonBallot)
             writeToFile(fileout, jsonString)
         }
 

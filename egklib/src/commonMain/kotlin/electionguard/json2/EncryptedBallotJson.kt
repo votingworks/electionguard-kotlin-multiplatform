@@ -1,9 +1,10 @@
 package electionguard.json2
 
 import electionguard.ballot.EncryptedBallot
+import electionguard.core.Base16.fromSafeHex
+import electionguard.core.Base16.toHex
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
-import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -63,7 +64,7 @@ fun EncryptedBallot.publishJson(primaryNonce : UInt256? = null): EncryptedBallot
         this.ballotId,
         this.ballotStyleId,
         this.confirmationCode.publishJson(),
-        String(this.codeBaux),
+        this.codeBaux.toHex(),
         contests,
         this.timestamp,
         this.state.name,
@@ -97,7 +98,7 @@ fun EncryptedBallotJson.import(group : GroupContext): EncryptedBallot {
         this.ballot_id,
         this.ballot_style_id,
         this.confirmation_code.import(),
-        this.code_baux.toByteArray(),
+        this.code_baux.fromSafeHex(),
         contests,
         this.timestamp,
         EncryptedBallot.BallotState.CAST, // fromName(this.name),

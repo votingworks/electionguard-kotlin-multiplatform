@@ -21,7 +21,7 @@ import java.util.function.Predicate
 
 private val logger = KotlinLogging.logger("ConsumerJson")
 
-/** Can read both zipped and unzipped election record */
+/** Can read both zipped and unzipped JSON election record */
 actual class ConsumerJson actual constructor(val topDir: String, val group: GroupContext) : Consumer {
     var fileSystem = FileSystems.getDefault()
     var fileSystemProvider = fileSystem.provider()
@@ -61,7 +61,13 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     }
 
     actual override fun readManifestBytes(filename : String): ByteArray {
-        return fileReadBytes(filename)
+        // need to use fileSystemProvider for zipped files
+        val manifestPath = fileSystem.getPath(filename)
+        val manifestBytes =
+            fileSystemProvider.newInputStream(manifestPath).use { inp ->
+                inp.readAllBytes()
+            }
+        return manifestBytes
     }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
@@ -158,7 +164,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return readTrustee(fileSystem.getPath(filename)).unwrap()
     }
 
-    //////// The low level reading functions for protobuf
+    //////// The low level reading functions
 
     private fun readElectionConfig(constantsFile: Path, manifestFile: Path, configFile: Path,): Result<ElectionConfig, String> {
         return try {
@@ -168,13 +174,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 constants = json.import()
             }
 
-            // need to use fileSystemProvider for zipped files
-            val manifestBytes =
-            fileSystemProvider.newInputStream(manifestFile).use { inp ->
-                inp.readAllBytes()
-            }
-
-            // val manifestBytes = fileReadBytes(manifestFile.toString())
+            val manifestBytes = readManifestBytes(manifestFile.toString())
 
             var electionConfig: ElectionConfig
             fileSystemProvider.newInputStream(configFile).use { inp ->

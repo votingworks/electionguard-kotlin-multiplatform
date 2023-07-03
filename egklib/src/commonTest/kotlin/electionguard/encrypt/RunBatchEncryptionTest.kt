@@ -3,6 +3,7 @@ package electionguard.encrypt
 import electionguard.core.productionGroup
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
 import electionguard.verifier.runVerifier
 import kotlin.test.Test
@@ -85,6 +86,9 @@ class RunBatchEncryptionTest {
 
     @Test
     fun testRunBatchEncryptionChain() {
+        val workingDir = "testOut/encrypt/testRunBatchEncryptionChain"
+        // delete current workingDir
+        makePublisher(workingDir, true)
         main(
             arrayOf(
                 "-in",
@@ -92,7 +96,7 @@ class RunBatchEncryptionTest {
                 "-ballots",
                 "src/commonTest/data/fakeBallots/json",
                 "-out",
-                "testOut/encrypt/testRunBatchEncryptionChain",
+                workingDir,
                 "-invalid",
                 "testOut/encrypt/testRunBatchEncryptionChain/invalid_ballots",
                 "-nthreads",

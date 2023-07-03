@@ -18,7 +18,7 @@ fun absPath(filename: String): String {
             if (cwd == null) {
                 checkErrno { mess -> throw IOException("Fail getcwd $mess") }
             }
-            println("++++++++++cwd '${cwd?.toKString()}'")
+            if (debug) println("++++++++++cwd '${cwd?.toKString()}'")
         }
 
         // realpath(
@@ -115,7 +115,7 @@ fun createDirectories(dir: String): Boolean {
     subdirs.forEach {
         have += it
         if (!exists(have)) {
-            println("create directory = '$have'")
+            if (debug) println("create directory = '$have'")
             if (!createDirectory(have)) {
                 return false
             }
@@ -225,7 +225,6 @@ fun fgetsFile(filename: String): List<String> {
         while (fgets(linep, bufferLength, file) != null) {
             val s = linep.getPointer(memScope)
             val ks = s.toKString()
-            println("read line = $ks")
             result.add(ks)
         }
 

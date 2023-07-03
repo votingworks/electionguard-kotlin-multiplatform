@@ -62,10 +62,10 @@ class RunDecryptBallotsJsonTest {
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
-            "id-902513100," +
-                    "id1896285314," +
-                    "id-420999504," +
-                    "id314658123,",
+            "id-1423442691," +
+                    "id822115866," +
+                    "id-1423774858," +
+                    "id-1469219587,",
             3,
         )
         assertEquals(4, n)
