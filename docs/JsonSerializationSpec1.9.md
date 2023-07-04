@@ -1,6 +1,6 @@
 # 🗳 Election Record JSON serialization (proposed specification)
 
-draft 6/26/2023
+draft 7/4/2023
 
 <!-- TOC -->
 * [🗳 Election Record JSON serialization (proposed specification)](#-election-record-json-serialization-proposed-specification)
@@ -377,6 +377,7 @@ Example:
 data class EncryptedTallyJson(
     val tally_id: String,
     val contests: List<EncryptedTallyContestJson>,
+    val cast_ballot_ids: List<String>,
 )
 
 @Serializable
@@ -416,6 +417,15 @@ Example:
             ]
         },
         ...
+    "cast_ballot_ids": [
+        "id1343738539",
+        "id-939995991",
+        "id-1698682164",
+        "id-1254440059",
+        "id287012309",
+        "id-712320552",
+        ...
+    ]
 }
 ````
 

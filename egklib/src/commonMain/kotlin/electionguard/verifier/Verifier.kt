@@ -65,7 +65,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             return true
         }
 
-        // tally accumulation, box 7 and 9F
+        // tally accumulation, box 7 and 9E
         val verifyAggregation = VerifyAggregation(group, verifyBallots.aggregator)
         val aggResult = verifyAggregation.verify(record.encryptedTally()!!, showTime)
         println(" 7. verifyBallotAggregation $aggResult")
@@ -188,5 +188,25 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         val verifyTally = VerifyDecryption(group, manifest, jointPublicKey, He)
         return verifyTally.verifySpoiledBallotTallies(record.decryptedBallots(), nthreads, stats, true)
     }
+
+    fun verifyTallyBallotIds(): Boolean {
+        var allOk = true
+        val encryptedBallotIds = record.encryptedBallots{ it.state == EncryptedBallot.BallotState.CAST }.map { it.ballotId }.toSet()
+        val tallyBallotIds = record.encryptedTally()!!.castBallotIds.toSet()
+        encryptedBallotIds.forEach {
+            if (!tallyBallotIds.contains(it)) {
+                println("  tallyBallotIds doesnt contain $it")
+                allOk = false
+            }
+        }
+        tallyBallotIds.forEach {
+            if (!encryptedBallotIds.contains(it)) {
+                println("  encryptedBallotIds doesnt contain $it")
+                allOk = false
+            }
+        }
+        return allOk
+    }
+
 
 }

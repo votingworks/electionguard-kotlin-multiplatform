@@ -50,7 +50,7 @@ message Guardian {
 message TallyResult {
   ElectionInitialized election_init = 1;
   EncryptedTally encrypted_tally = 2;
-  repeated string ballot_ids = 3;
+  reserved 3;
   repeated string tally_ids = 4;
   map<string, string> metadata = 5;
 }

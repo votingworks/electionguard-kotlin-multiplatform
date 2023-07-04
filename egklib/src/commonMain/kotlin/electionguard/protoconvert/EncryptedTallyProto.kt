@@ -15,7 +15,7 @@ fun electionguard.protogen.EncryptedTally.import(group: GroupContext): Result<En
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
-    return Ok(EncryptedTally(this.tallyId, contests))
+    return Ok(EncryptedTally(this.tallyId, contests, this.castBallotIds))
 }
 
 private fun electionguard.protogen.EncryptedTallyContest.import(group: GroupContext):
@@ -52,7 +52,8 @@ private fun electionguard.protogen.EncryptedTallySelection.import(group: GroupCo
 fun EncryptedTally.publishProto() =
     electionguard.protogen.EncryptedTally(
         this.tallyId,
-        this.contests.map { it.publishProto() }
+        this.contests.map { it.publishProto() },
+        this.castBallotIds,
     )
 
 private fun EncryptedTally.Contest.publishProto() =

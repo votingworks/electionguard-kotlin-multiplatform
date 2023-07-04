@@ -51,4 +51,13 @@ class VerifierTest {
     fun verifySpoiledBallotTallies() {
         verifyChallengedBallots(productionGroup(), "src/commonTest/data/someAvailable")
     }
+
+    // • Ordered lists of the ballots encrypted by each device. spec 1.9, p.42
+    @Test
+    fun testVerifyTallyBallotIds() {
+        verifyTallyBallotIds(productionGroup(), "testOut/workflow/allAvailable")
+        verifyTallyBallotIds(productionGroup(), "testOut/workflow/someAvailable")
+        verifyTallyBallotIds(productionGroup(), "testOut/workflow/allAvailableJson")
+        verifyTallyBallotIds(productionGroup(), "testOut/workflow/someAvailableJson")
+    }
 }

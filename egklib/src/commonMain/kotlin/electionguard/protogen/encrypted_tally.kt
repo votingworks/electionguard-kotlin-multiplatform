@@ -6,6 +6,7 @@ package electionguard.protogen
 public data class EncryptedTally(
     val tallyId: String = "",
     val contests: List<electionguard.protogen.EncryptedTallyContest> = emptyList(),
+    val castBallotIds: List<String> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.EncryptedTally = protoMergeImpl(other)
@@ -16,7 +17,7 @@ public data class EncryptedTally(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedTally = electionguard.protogen.EncryptedTally.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedTally> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedTally, *>>(2)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedTally, *>>(3)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -36,6 +37,16 @@ public data class EncryptedTally(
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptedTallyContest>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedTallyContest.Companion)),
                         jsonName = "contests",
                         value = electionguard.protogen.EncryptedTally::contests
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "cast_ballot_ids",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "castBallotIds",
+                        value = electionguard.protogen.EncryptedTally::castBallotIds
                     )
                 )
             }
@@ -172,6 +183,7 @@ public fun EncryptedTally?.orDefault(): electionguard.protogen.EncryptedTally = 
 private fun EncryptedTally.protoMergeImpl(plus: pbandk.Message?): EncryptedTally = (plus as? EncryptedTally)?.let {
     it.copy(
         contests = contests + plus.contests,
+        castBallotIds = castBallotIds + plus.castBallotIds,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -180,15 +192,17 @@ private fun EncryptedTally.protoMergeImpl(plus: pbandk.Message?): EncryptedTally
 private fun EncryptedTally.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedTally {
     var tallyId = ""
     var contests: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptedTallyContest>? = null
+    var castBallotIds: pbandk.ListWithSize.Builder<String>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> tallyId = _fieldValue as String
             2 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedTallyContest> }
+            3 -> castBallotIds = (castBallotIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
         }
     }
 
-    return EncryptedTally(tallyId, pbandk.ListWithSize.Builder.fixed(contests), unknownFields)
+    return EncryptedTally(tallyId, pbandk.ListWithSize.Builder.fixed(contests), pbandk.ListWithSize.Builder.fixed(castBallotIds), unknownFields)
 }
 
 @pbandk.Export

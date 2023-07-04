@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 6/25/2023
+draft 7/4/2023
 
 **Table of Contents**
  
@@ -266,7 +266,6 @@ draft 6/25/2023
 |-----------------|-----------------------|---------------------|
 | election_init   | ElectionInitialized   |                     |
 | encrypted_tally | EncryptedTally        |                     |
-| ballot_ids      | List\<string\>        | included ballot ids |
 | tally_ids       | List\<string\>        | included tally ids  |
 | metadata        | map\<string, string\> |                     |
 
@@ -374,10 +373,11 @@ draft 6/25/2023
 
 #### message EncryptedTally
 
-| Name     | Type                          | Notes |
-|----------|-------------------------------|-------|
-| tally_id | string                        |       |
-| contests | List\<EncryptedTallyContest\> |       | 
+| Name            | Type                          | Notes               |
+|-----------------|-------------------------------|---------------------|
+| tally_id        | string                        |                     |
+| contests        | List\<EncryptedTallyContest\> |                     | 
+| cast_ballot_ids | List\<string\>                | included ballot ids |
 
 #### message EncryptedTallyContest
 

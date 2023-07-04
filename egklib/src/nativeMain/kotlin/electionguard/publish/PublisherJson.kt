@@ -118,9 +118,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     private inner class EncryptedBallotSink : EncryptedBallotSinkIF {
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val fileout = jsonPaths.encryptedBallotPath(ballot.ballotId)
-            println("ballot.codeBaux ${ballot.codeBaux.contentToString()}")
             val jsonBallot = ballot.publishJson()
-            println("Write jsonBallot ${jsonBallot.ballot_id} code_baux='${jsonBallot.code_baux}'")
             val jsonString = jsonFormat.encodeToString(jsonBallot)
             writeToFile(fileout, jsonString)
         }

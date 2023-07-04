@@ -7,7 +7,8 @@ import electionguard.core.UInt256
 /** The encrypted representation of the summed votes for a collection of ballots */
 data class EncryptedTally(
     val tallyId: String,
-    val contests: List<Contest>
+    val contests: List<Contest>,
+    val castBallotIds: List<String>,
 ) {
     init {
         require(contests.isNotEmpty())

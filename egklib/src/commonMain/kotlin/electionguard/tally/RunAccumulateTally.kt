@@ -33,7 +33,7 @@ fun main(args: Array<String>) {
     val name by parser.option(
         ArgType.String,
         shortName = "name",
-        description = "Name of accumulation"
+        description = "Name of tally"
     )
     val createdBy by parser.option(
         ArgType.String,
@@ -64,7 +64,7 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
 
     val publisher = makePublisher(outputDir, false, electionRecord.isJson())
     publisher.writeTallyResult(
-        TallyResult( electionInit, tally, accumulator.ballotIds(), emptyList(),
+        TallyResult( electionInit, tally, listOf(name),
             mapOf(
                 Pair("CreatedBy", createdBy),
                 Pair("CreatedOn", getSystemDate().toString()),

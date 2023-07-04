@@ -462,7 +462,6 @@ public data class Guardian(
 public data class TallyResult(
     val electionInit: electionguard.protogen.ElectionInitialized? = null,
     val encryptedTally: electionguard.protogen.EncryptedTally? = null,
-    val ballotIds: List<String> = emptyList(),
     val tallyIds: List<String> = emptyList(),
     val metadata: List<electionguard.protogen.TallyResult.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -475,7 +474,7 @@ public data class TallyResult(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.TallyResult = electionguard.protogen.TallyResult.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.TallyResult> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.TallyResult, *>>(5)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.TallyResult, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -495,16 +494,6 @@ public data class TallyResult(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedTally.Companion),
                         jsonName = "encryptedTally",
                         value = electionguard.protogen.TallyResult::encryptedTally
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "ballot_ids",
-                        number = 3,
-                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
-                        jsonName = "ballotIds",
-                        value = electionguard.protogen.TallyResult::ballotIds
                     )
                 )
                 add(
@@ -893,7 +882,6 @@ private fun TallyResult.protoMergeImpl(plus: pbandk.Message?): TallyResult = (pl
     it.copy(
         electionInit = electionInit?.plus(plus.electionInit) ?: plus.electionInit,
         encryptedTally = encryptedTally?.plus(plus.encryptedTally) ?: plus.encryptedTally,
-        ballotIds = ballotIds + plus.ballotIds,
         tallyIds = tallyIds + plus.tallyIds,
         metadata = metadata + plus.metadata,
         unknownFields = unknownFields + plus.unknownFields
@@ -904,7 +892,6 @@ private fun TallyResult.protoMergeImpl(plus: pbandk.Message?): TallyResult = (pl
 private fun TallyResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): TallyResult {
     var electionInit: electionguard.protogen.ElectionInitialized? = null
     var encryptedTally: electionguard.protogen.EncryptedTally? = null
-    var ballotIds: pbandk.ListWithSize.Builder<String>? = null
     var tallyIds: pbandk.ListWithSize.Builder<String>? = null
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.TallyResult.MetadataEntry>? = null
 
@@ -912,14 +899,12 @@ private fun TallyResult.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Tall
         when (_fieldNumber) {
             1 -> electionInit = _fieldValue as electionguard.protogen.ElectionInitialized
             2 -> encryptedTally = _fieldValue as electionguard.protogen.EncryptedTally
-            3 -> ballotIds = (ballotIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
             4 -> tallyIds = (tallyIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
             5 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.TallyResult.MetadataEntry> }
         }
     }
 
-    return TallyResult(electionInit, encryptedTally, pbandk.ListWithSize.Builder.fixed(ballotIds), pbandk.ListWithSize.Builder.fixed(tallyIds),
-        pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+    return TallyResult(electionInit, encryptedTally, pbandk.ListWithSize.Builder.fixed(tallyIds), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export

@@ -245,5 +245,5 @@ private fun EncryptedBallot.convertToTally(): EncryptedTally {
             contest.contestData,
         )
     }
-    return EncryptedTally(this.ballotId, contests)
+    return EncryptedTally(this.ballotId, contests, emptyList())
 }
