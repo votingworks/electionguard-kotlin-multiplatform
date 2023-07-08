@@ -26,6 +26,8 @@ fun electionguard.protogen.ElectionConfig.import(): Result<ElectionConfig, Strin
         manifestHash.unwrap(),
         electionHash.unwrap(),
         this.manifestBytes.array,
+        this.baux0.array,
+        this.device,
         this.metadata.associate { it.key to it.value },
     ))
 }
@@ -56,6 +58,8 @@ fun ElectionConfig.publishProto() =
         this.manifestHash.publishProto(),
         this.electionBaseHash.publishProto(),
         ByteArr(this.manifestBytes),
+        ByteArr(this.baux0),
+        this.device,
         this.metadata.entries.map { electionguard.protogen.ElectionConfig.MetadataEntry(it.key, it.value) },
     )
 

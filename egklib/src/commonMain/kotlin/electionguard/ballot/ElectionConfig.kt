@@ -20,13 +20,15 @@ data class ElectionConfig(
     /** info string used in hash */
     val jurisdictionInfo : String,
 
-    /** may be calculated or passed in */
     val parameterBaseHash : UInt256, // Hp
     val manifestHash : UInt256, // Hm
     val electionBaseHash : UInt256,  // Hb
-
-    // keep a copy of this to make publishing easier
+    // the raw bytes of the manifest. You must regenerate the manifest from this.
+    // TODO may need to specify serialization form, or detect it.
     val manifestBytes: ByteArray,
+
+    val baux0: ByteArray, // B_aux,0 from eq 59,60
+    val device: String, // the device information from eq 61, and section 3.7
 
     /** arbitrary key/value metadata. */
     val metadata: Map<String, String> = emptyMap(),
@@ -168,6 +170,8 @@ fun makeElectionConfig(
     electionDate: String,
     jurisdictionInfo: String,
     manifestBytes: ByteArray,
+    baux0: ByteArray, // B_aux,0 from eq 59,60
+    device: String, // the device information from eq 61, and section 3.7
     metadata: Map<String, String> = emptyMap(),
 ): ElectionConfig {
 
@@ -186,6 +190,8 @@ fun makeElectionConfig(
         manifestHash,
         electionBaseHash,
         manifestBytes,
+        baux0,
+        device,
         metadata,
     )
 }

@@ -57,7 +57,7 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     }
 
     // Always has to be a config and the original manifest bytes, from which the manifest is parsed
-    require(config != null) {"no election config file found"}
+    require(config != null) { "no election config file found" }
     require(config.manifestHash == manifestHash(config.parameterBaseHash, config.manifestBytes))
     manifest = consumer.makeManifest(config.manifestBytes)
 

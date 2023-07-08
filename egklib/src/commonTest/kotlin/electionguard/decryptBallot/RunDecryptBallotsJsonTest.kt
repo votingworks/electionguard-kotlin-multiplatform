@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
  * Note that when the election record changes, the test dataset must be regenerated. For this test, we need to:
  *   1. run showBallotIds() test to see what the possible ballot ids are
  *   2. modify inputDir/private_data/wantedBallots.txt and add 2 valid ballot ids
- *   3. modify testDecryptBallotsSome() and add 3 valid ballot ids to the command line argument
+ *   3. modify testDecryptBallotsSome() and add 4 valid ballot ids to the command line argument
  */
 class RunDecryptBallotsJsonTest {
     val nthreads = 25
@@ -32,7 +32,7 @@ class RunDecryptBallotsJsonTest {
             "ALL",
             nthreads,
         )
-        assertEquals(25, n)
+        assertEquals(11, n)
     }
 
     @Test
@@ -50,7 +50,7 @@ class RunDecryptBallotsJsonTest {
             "ALL",
             nthreads,
         )
-        assertEquals(25, n)
+        assertEquals(11, n)
     }
 
     @Test
@@ -62,10 +62,10 @@ class RunDecryptBallotsJsonTest {
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
-            "id-1423442691," +
-                    "id822115866," +
-                    "id-1423774858," +
-                    "id-1469219587,",
+            "id-2102571590," +
+                    "id-1939830917," +
+                    "id-1793634899," +
+                    "id-820757874,",
             3,
         )
         assertEquals(4, n)

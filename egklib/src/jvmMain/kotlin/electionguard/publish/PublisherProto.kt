@@ -148,7 +148,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         EncryptedBallotSink(encryptedBallotPath().toString())
 
     inner class EncryptedBallotSink(path: String) : EncryptedBallotSinkIF {
-        val out: FileOutputStream = FileOutputStream(path)
+        val out: FileOutputStream = FileOutputStream(path, true) // append
 
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val ballotProto: pbandk.Message = ballot.publishProto()
@@ -164,7 +164,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         DecryptedTallyOrBallotSink(spoiledBallotPath().toString())
 
     inner class DecryptedTallyOrBallotSink(path: String) : DecryptedTallyOrBallotSinkIF {
-        val out: FileOutputStream = FileOutputStream(path)
+        val out: FileOutputStream = FileOutputStream(path, true) // append
 
         override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot){
             val ballotProto: pbandk.Message = tally.publishProto()
@@ -181,6 +181,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         proto.encodeToStream(bb)
         writeVlen(bb.size(), output)
         output.write(bb.toByteArray())
+        output.flush()
     }
 
     fun writeVlen(input: Int, output: OutputStream) {

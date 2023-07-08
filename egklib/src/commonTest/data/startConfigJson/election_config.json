@@ -2,9 +2,30 @@
     "config_version": "v2.0",
     "number_of_guardians": 3,
     "quorum": 3,
-    "election_date": "2023-06-28T12:29:31.491241865",
+    "election_date": "2023-07-08T10:03:21.866816846",
     "jurisdiction_info": "N/A",
     "parameter_base_hash": "AB91D83C3DC3FEB76E57C2783CFE2CA85ADB4BC01FC5123EEAE3124CC3FB6CDE",
     "manifest_hash": "E69B574C48087CF4E4914C3C4CDBBCB9368255F9373EFCF9EE923AF6B23C7CD2",
-    "election_base_hash": "E99BB94F94107BDDF4FE238288B415C5473CACB69C509C26F982F022E45064C0"
+    "election_base_hash": "C7C5EC51E7CB411F4CDCEDF891203B1B6A18DEF7178B1584A30F8578C611801D",
+    "baux0": [
+        100,
+        101,
+        118,
+        105,
+        99,
+        101,
+        32,
+        105,
+        110,
+        102,
+        111,
+        114,
+        109,
+        97,
+        116,
+        105,
+        111,
+        110
+    ],
+    "device": "device information"
 }

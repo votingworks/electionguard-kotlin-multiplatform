@@ -1,6 +1,6 @@
 # 🗳 Election Record JSON serialization (proposed specification)
 
-draft 7/4/2023
+draft 7/8/2023
 
 <!-- TOC -->
 * [🗳 Election Record JSON serialization (proposed specification)](#-election-record-json-serialization-proposed-specification)
@@ -57,6 +57,9 @@ data class ElectionConfigJson(
     val parameter_base_hash: UInt256Json, // Hp
     val manifest_hash: UInt256Json, // Hm
     val election_base_hash: UInt256Json, // Hb
+
+    val baux0: ByteArray, // B_aux,0 from eq 59,60
+    val device: String, // the device information from eq 61, and section 3.7
 )
 ````
 
@@ -65,13 +68,15 @@ Example:
 ````
 {
     "config_version": "v2.0",
-    "number_of_guardians": 5,
+    "number_of_guardians": 3,
     "quorum": 3,
-    "election_date": "date",
-    "jurisdiction_info": "juris",
+    "election_date": "2023-07-08T10:03:21.866816846",
+    "jurisdiction_info": "N/A",
     "parameter_base_hash": "AB91D83C3DC3FEB76E57C2783CFE2CA85ADB4BC01FC5123EEAE3124CC3FB6CDE",
-    "manifest_hash": "837F1489FB799C6B3065A8A8411A5F672AD50700ED2B416C7E9789FA6143C818",
-    "election_base_hash": "2F43AF7A46973482884752A6D1B027087AD795027FC025094E4BAABBABE60F22"
+    "manifest_hash": "E69B574C48087CF4E4914C3C4CDBBCB9368255F9373EFCF9EE923AF6B23C7CD2",
+    "election_base_hash": "C7C5EC51E7CB411F4CDCEDF891203B1B6A18DEF7178B1584A30F8578C611801D",
+    "baux0": [ 100, 101, 118, 105, 99, 101, 32, 105, 110, 102, 111, 114, 109, 97, 116, 105, 111, 110 ],
+    "device": "device information"
 }
 ````
 

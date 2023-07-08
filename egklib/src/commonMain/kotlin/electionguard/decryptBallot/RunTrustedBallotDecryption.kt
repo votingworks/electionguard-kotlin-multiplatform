@@ -105,6 +105,7 @@ fun runDecryptBallots(
         decryptingTrustees,
         )
 
+    // TODO you often want to put the decryption results in the same directory, but sinks now are append-only.
     val publisher = makePublisher(outputDir, false, consumerIn.isJson())
     val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
 

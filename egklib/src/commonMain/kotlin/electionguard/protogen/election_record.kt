@@ -14,6 +14,8 @@ public data class ElectionConfig(
     val manifestHash: electionguard.protogen.UInt256? = null,
     val electionBaseHash: electionguard.protogen.UInt256? = null,
     val manifestBytes: pbandk.ByteArr = pbandk.ByteArr.empty,
+    val baux0: pbandk.ByteArr = pbandk.ByteArr.empty,
+    val device: String = "",
     val metadata: List<electionguard.protogen.ElectionConfig.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -25,7 +27,7 @@ public data class ElectionConfig(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConfig = electionguard.protogen.ElectionConfig.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(11)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(13)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -135,6 +137,26 @@ public data class ElectionConfig(
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.ElectionConfig.MetadataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElectionConfig.MetadataEntry.Companion)),
                         jsonName = "metadata",
                         value = electionguard.protogen.ElectionConfig::metadata
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "baux0",
+                        number = 12,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
+                        jsonName = "baux0",
+                        value = electionguard.protogen.ElectionConfig::baux0
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "device",
+                        number = 13,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "device",
+                        value = electionguard.protogen.ElectionConfig::device
                     )
                 )
             }
@@ -704,6 +726,8 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
     var manifestHash: electionguard.protogen.UInt256? = null
     var electionBaseHash: electionguard.protogen.UInt256? = null
     var manifestBytes: pbandk.ByteArr = pbandk.ByteArr.empty
+    var baux0: pbandk.ByteArr = pbandk.ByteArr.empty
+    var device = ""
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.ElectionConfig.MetadataEntry>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
@@ -719,12 +743,15 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
             9 -> electionBaseHash = _fieldValue as electionguard.protogen.UInt256
             10 -> manifestBytes = _fieldValue as pbandk.ByteArr
             11 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.ElectionConfig.MetadataEntry> }
+            12 -> baux0 = _fieldValue as pbandk.ByteArr
+            13 -> device = _fieldValue as String
         }
     }
 
     return ElectionConfig(specVersion, constants, numberOfGuardians, quorum,
         electionDate, jurisdictionInfo, parameterBaseHash, manifestHash,
-        electionBaseHash, manifestBytes, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+        electionBaseHash, manifestBytes, baux0, device,
+        pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export

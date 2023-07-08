@@ -48,7 +48,7 @@ fun generateElectionInitialized(publisher: Publisher, context: GroupContext): El
     //    val cryptoExtendedBaseHash: UInt256, // qbar
     //    val guardians: List<Guardian>,
     //    val metadata: Map<String, String>
-    val (manifest, config) = generateElectionConfig(publisher, 6, 4)
+    val (_, config) = generateElectionConfig(publisher, 6, 4)
     return ElectionInitialized(
         config,
         generateElementModP(context),

@@ -5,6 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
 import electionguard.ballot.*
 import electionguard.core.*
+import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -33,8 +34,6 @@ class KeyCeremonyTest {
             assertEquals(2, it.otherPublicKeys.size)
         }
 
-        // makeElectionInitialized
-        val fakeManifest = makeFakeManifest()
         val config = makeElectionConfig(
             protocolVersion,
             group.constants,
@@ -42,7 +41,9 @@ class KeyCeremonyTest {
             2,
             "no",
             "no",
-            ByteArray(0) // TODO manifest
+            ByteArray(0),
+            "device".toByteArray(),
+            "device"
         )
         val init: ElectionInitialized = kc.makeElectionInitialized(config)
 

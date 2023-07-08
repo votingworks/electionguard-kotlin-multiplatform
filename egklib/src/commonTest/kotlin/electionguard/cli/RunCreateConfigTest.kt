@@ -15,6 +15,8 @@ class RunCreateConfigTest {
                 "-createdBy", "testCreateConfigDirectoryProto",
                 "-out",
                 "testOut/config/testCreateFromDirectoryProto",
+                "-device",
+                "device information"
             )
         )
     }
@@ -30,6 +32,8 @@ class RunCreateConfigTest {
                 "-createdBy", "testCreateConfigDirectoryJson",
                 "-out",
                 "testOut/config/testCreateConfigDirectoryJson",
+                "-device",
+                "device information",
             )
         )
     }
@@ -44,6 +48,8 @@ class RunCreateConfigTest {
                 "-quorum", "3",
                 "-out",
                 "testOut/config/testCreateConfigProto",
+                "-device",
+                "device information",
             )
         )
     }
@@ -58,6 +64,8 @@ class RunCreateConfigTest {
                 "-quorum", "3",
                 "-out",
                 "testOut/config/testCreateConfigJson",
+                "-device",
+                "device information",
             )
         )
     }

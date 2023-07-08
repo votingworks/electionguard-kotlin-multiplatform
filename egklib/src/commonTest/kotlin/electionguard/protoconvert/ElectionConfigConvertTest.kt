@@ -6,6 +6,7 @@ import electionguard.core.fileReadBytes
 import electionguard.core.productionGroup
 import electionguard.input.buildTestManifest
 import electionguard.publish.*
+import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -21,7 +22,7 @@ class ElectionConfigConvertTest {
 
     @Test
     fun roundtripElectionConfig() {
-        val (manifest, electionConfig) = generateElectionConfig(publisher, 6, 4)
+        val (_, electionConfig) = generateElectionConfig(publisher, 6, 4)
         val proto = electionConfig.publishProto()
         val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
         assertNotNull(roundtrip)
@@ -72,6 +73,8 @@ fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): 
         "date",
         "juris",
         manifestBytes,
-    )
+        "device".toByteArray(),
+        "device",
+        )
     return Pair(fakeManifest, config)
 }

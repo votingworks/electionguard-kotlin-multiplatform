@@ -5,6 +5,7 @@ import electionguard.ballot.protocolVersion
 import electionguard.core.productionGroup
 import electionguard.publish.makePublisher
 import electionguard.publish.readAndCheckManifestBytes
+import io.ktor.utils.io.core.*
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -51,6 +52,11 @@ fun createConfig(args: Array<String>) {
         shortName = "info",
         description = "jurisdictional information"
     ).default("N/A")
+    val device by parser.option(
+        ArgType.String,
+        shortName = "device",
+        description = "device information"
+    ).required()
     parser.parse(args)
 
     val currentMoment : Instant = Clock.System.now()
@@ -64,7 +70,8 @@ fun createConfig(args: Array<String>) {
             "   output = $outputDir\n" +
             "   createdBy = $createdBy\n" +
             "   electionDate = $useDate\n" +
-            "   info = $info"
+            "   info = $info" +
+            "   device = $device"
     )
 
     val group = productionGroup()
@@ -81,6 +88,8 @@ fun createConfig(args: Array<String>) {
             useDate,
             info,
             manifestBytes,
+            device.toByteArray(),
+            device,
             mapOf(
                 Pair("CreatedBy", createdBy),
             ),
