@@ -33,7 +33,6 @@ fun generateTallyResult(publisher : Publisher, context: GroupContext): TallyResu
     return TallyResult(
         generateElectionInitialized(publisher, context),
         EncryptedTallyConvertTest.generateFakeTally(context),
-        listOf("ballotID1", "ballotsId42"),
         listOf("precinct342342", "precinct3423333"),
     )
 }

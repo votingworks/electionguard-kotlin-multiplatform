@@ -32,7 +32,7 @@ class RunDecryptBallotsTest {
             "ALL",
             nthreads,
         )
-        assertEquals(25, n)
+        assertEquals(11, n)
     }
 
     @Test
@@ -44,9 +44,9 @@ class RunDecryptBallotsTest {
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
-            "id859587413," +
-                    "id-663637492," +
-                    "id810445605",
+            "id1335156536," +
+                    "id-315053235," +
+                    "id1563075974",
             3,
         )
         assertEquals(3, n)

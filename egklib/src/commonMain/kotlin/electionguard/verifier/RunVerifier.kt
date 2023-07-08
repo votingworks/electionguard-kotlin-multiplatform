@@ -96,3 +96,12 @@ fun verifyChallengedBallots(group: GroupContext, inputDir: String) {
     val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
     println("verifyRecoveredShares $allOk took $took seconds wallclock")
 }
+
+fun verifyTallyBallotIds(group: GroupContext, inputDir: String) {
+    val electionRecord = readElectionRecord(group, inputDir)
+    println("$inputDir stage=${electionRecord.stage()} ncast_ballots=${electionRecord.encryptedTally()!!.castBallotIds.size}")
+
+    val verifier = Verifier(electionRecord, 1)
+    val allOk = verifier.verifyTallyBallotIds()
+    println("   verifyTallyBallotIds= $allOk")
+}

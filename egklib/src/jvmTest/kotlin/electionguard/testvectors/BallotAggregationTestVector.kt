@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package electionguard.testvectors
 
 import electionguard.ballot.*
@@ -8,6 +10,7 @@ import electionguard.encrypt.cast
 import electionguard.input.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.tally.AccumulateTally
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

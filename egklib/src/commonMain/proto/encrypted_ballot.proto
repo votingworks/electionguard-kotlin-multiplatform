@@ -16,7 +16,7 @@ message EncryptedBallot {
   string ballot_id = 1; // a unique Ballot ID created by the external system
   string ballot_style_id = 2; // The ballot_style_id of the BallotStyle in the Election Manifest
   UInt256 confirmation_code = 3; // ballot tracking code, H(B), eq 59 or eq 96 for preencrypt
-  bytes code_baux = 4; // Baux in eq 59
+  bytes code_baux = 4; // B_aux in eq 59
   repeated EncryptedBallotContest contests = 5;
   int64 timestamp = 6; // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
   BallotState state = 7;

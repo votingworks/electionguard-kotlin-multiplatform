@@ -13,17 +13,11 @@ class ShareEncryptDecryptTest {
     @Test
     fun ShareEncryptDecryptFuzzTest() {
         runTest {
-            // we need the production mode, not the test mode, because 32-bit keys are too small
-            val group =
-                productionGroup(
-                    acceleration = PowRadixOption.LOW_MEMORY_USE,
-                    mode = ProductionMode.Mode3072
-                )
+            val group = productionGroup()
             checkAll(
                 Arb.int(min=1, max=100),
                 elementsModQ(group, minimum = 2)
             ) { xcoord, pil ->
-                val group = productionGroup()
                 val trustee1 = KeyCeremonyTrustee(group, "id1", xcoord, 4)
                 val trustee2 = KeyCeremonyTrustee(group, "id2", xcoord+1, 4)
 

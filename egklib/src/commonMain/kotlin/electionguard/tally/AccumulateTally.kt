@@ -39,11 +39,7 @@ class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val n
 
     fun build(): EncryptedTally {
         val tallyContests = mcontests.values.map { it.build() }
-        return EncryptedTally(this.name, tallyContests)
-    }
-
-    fun ballotIds(): List<String> {
-        return castIds.toList()
+        return EncryptedTally(this.name, tallyContests, castIds.toList())
     }
 
     private inner class Contest(val manifestContest : ManifestIF.Contest) {

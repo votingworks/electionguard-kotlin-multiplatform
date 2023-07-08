@@ -3,9 +3,7 @@
 package electionguard.core
 
 import electionguard.core.Base64.fromSafeBase64
-import kotlin.test.Test
-import kotlin.test.assertContentEquals
-import kotlin.test.assertFalse
+import kotlin.test.*
 import kotlin.test.assertTrue
 
 class TestConstants {
@@ -66,6 +64,8 @@ class TestConstants {
                 numPBytes = Primes4096.nbits.toUInt() / 8U,
                 numPLWords = Primes4096.nbits.toUInt() / 64U,
             )
+        assertTrue(productionGroups4096.isProductionStrength())
+        assertEquals(ProductionMode.Mode4096, productionGroups4096.productionMode)
     }
 
 }

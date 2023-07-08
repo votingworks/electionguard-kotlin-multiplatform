@@ -9,6 +9,7 @@ option java_outer_classname = "EncryptedTallyProto";
 message EncryptedTally {
   string tally_id = 1;
   repeated EncryptedTallyContest contests = 2;
+  repeated string cast_ballot_ids = 3;
 }
 
 message EncryptedTallyContest {

@@ -161,8 +161,7 @@ kotlin {
     }
 }
 
-val protoGenSource by
-    extra("build/generated/source/proto")
+// val protoGenSource by extra("build/generated/source/proto")
 
 /*
 protoc --pbandk_out=./egklib/src/commonMain/kotlin/ --proto_path=./egklib/src/commonMain/proto \

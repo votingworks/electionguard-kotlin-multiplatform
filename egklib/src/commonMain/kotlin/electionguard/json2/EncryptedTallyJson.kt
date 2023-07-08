@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 data class EncryptedTallyJson(
     val tally_id: String,
     val contests: List<EncryptedTallyContestJson>,
+    val cast_ballot_ids: List<String>,
 )
 
 @Serializable
@@ -38,7 +39,7 @@ fun EncryptedTally.publishJson(): EncryptedTallyJson {
                 )
             })
     }
-    return EncryptedTallyJson(this.tallyId, contests)
+    return EncryptedTallyJson(this.tallyId, contests, this.castBallotIds)
 }
 
 fun EncryptedTallyJson.import(group: GroupContext): EncryptedTally {
@@ -55,5 +56,5 @@ fun EncryptedTallyJson.import(group: GroupContext): EncryptedTally {
                 )
             })
     }
-    return EncryptedTally(this.tally_id, contests)
+    return EncryptedTally(this.tally_id, contests, this.cast_ballot_ids)
 }

@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 6/25/2023
+draft 7/8/2023
 
 **Table of Contents**
  
@@ -218,19 +218,21 @@ draft 6/25/2023
 
 #### message ElectionConfig
 
-| Name                | Type                  | Notes     |
-|---------------------|-----------------------|-----------|
-| spec_version        | string                | "v2.0.0"  |
-| constants           | ElectionConstants     |           |
-| number_of_guardians | uint32                | n         |
-| quorum              | uint32                | k         |
-| election_date       | string                | k         |
-| jurisdiction_info   | string                | k         |
-| parameter_base_hash | UInt256               | Hp        |
-| manifest_hash       | UInt256               | Hm        |
-| election_base_hash  | UInt256               | He        |
-| manifest_bytes      | bytes                 |           |
-| metadata            | map\<string, string\> | arbitrary |
+| Name                | Type                  | Notes                                              |
+|---------------------|-----------------------|----------------------------------------------------|
+| spec_version        | string                | "v2.0.0"                                           |
+| constants           | ElectionConstants     |                                                    |
+| number_of_guardians | uint32                | n                                                  |
+| quorum              | uint32                | k                                                  |
+| election_date       | string                | k                                                  |
+| jurisdiction_info   | string                | k                                                  |
+| parameter_base_hash | UInt256               | Hp                                                 |
+| manifest_hash       | UInt256               | Hm                                                 |
+| election_base_hash  | UInt256               | He                                                 |
+| manifest_bytes      | bytes                 |                                                    |
+| baux0               | bytes                 | B_aux,0 from eq 59,60                              |
+| device              | string                | the device information from eq 61, and section 3.7 |
+| metadata            | map\<string, string\> | arbitrary                                          |
 
 #### message ElectionConstants
 
@@ -266,7 +268,6 @@ draft 6/25/2023
 |-----------------|-----------------------|---------------------|
 | election_init   | ElectionInitialized   |                     |
 | encrypted_tally | EncryptedTally        |                     |
-| ballot_ids      | List\<string\>        | included ballot ids |
 | tally_ids       | List\<string\>        | included tally ids  |
 | metadata        | map\<string, string\> |                     |
 
@@ -374,10 +375,11 @@ draft 6/25/2023
 
 #### message EncryptedTally
 
-| Name     | Type                          | Notes |
-|----------|-------------------------------|-------|
-| tally_id | string                        |       |
-| contests | List\<EncryptedTallyContest\> |       | 
+| Name            | Type                          | Notes               |
+|-----------------|-------------------------------|---------------------|
+| tally_id        | string                        |                     |
+| contests        | List\<EncryptedTallyContest\> |                     | 
+| cast_ballot_ids | List\<string\>                | included ballot ids |
 
 #### message EncryptedTallyContest
 

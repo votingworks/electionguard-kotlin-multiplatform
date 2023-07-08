@@ -116,7 +116,7 @@ internal class PreEncryptorOutputTest {
     }
 
     // pick all selections 0..limit-1
-    internal fun markBallotToLimit(manifest: Manifest, pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
+    internal fun markBallotToLimit(pballot: PreEncryptedBallot): MarkedPreEncryptedBallot {
         val pcontests = mutableListOf<MarkedPreEncryptedContest>()
         for (pcontest in pballot.contests) {
             val shortCodes = mutableListOf<String>()

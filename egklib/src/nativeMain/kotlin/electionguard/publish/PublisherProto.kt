@@ -232,6 +232,7 @@ fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArray) {
         if (nwrite != buffer.size.toULong()) {
             throw IOException("Fail fwrite $nwrite != ${buffer.size}  on $filename")
         }
+        // TODO add fflush()
     }
 }
 

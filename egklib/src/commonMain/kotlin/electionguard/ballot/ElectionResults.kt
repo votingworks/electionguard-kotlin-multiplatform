@@ -8,7 +8,6 @@ import electionguard.core.UInt256
 data class TallyResult(
     val electionInitialized: ElectionInitialized,
     val encryptedTally: EncryptedTally,
-    val ballotIds: List<String>,
     val tallyIds: List<String>,
     val metadata: Map<String, String> = emptyMap(),
 ) {

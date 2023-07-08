@@ -158,7 +158,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             if (tallyResult == null)
                 Err("failed to read EncryptedTallyJson")
             else
-                Ok(TallyResult(init, tallyResult, emptyList(), emptyList()))
+                Ok(TallyResult(init, tallyResult, emptyList()))
         } catch (e: Exception) {
             Err(e.message ?: "readTallyResult $filename failed")
         }
@@ -213,7 +213,6 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             while (idx < fileList.size) {
                 val filename = "$dirname/${fileList[idx++]}"
                 val json = jsonFormat.decodeFromString<EncryptedBallotJson>(gulp(filename).toKString())
-                println("Read jsonBallot ${json.ballot_id} code_baux='${json.code_baux}'")
 
                 val ballot = json.import(group)
                 if (ballot == null) {

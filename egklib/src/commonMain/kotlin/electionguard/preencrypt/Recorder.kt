@@ -9,7 +9,15 @@ import electionguard.encrypt.CiphertextBallot
 /**
  * The crypto part of the "The Recording Tool".
  * The encrypting/decrypting primaryNonce is done external.
+ *
  * TODO :  uncast (implicitly or explicitly challenged) aka SPOILED
+ *    "For each uncast (implicitly or explicitly challenged) ballot, the recording tool returns the primary
+ *  nonce that enables the encryptions to be opened and checked."
+ *    "For an uncast ballot, the wrapper computes the short codes for all possible selections and posts
+ *  in the election record the full set of pre-encryption vectors, selection hashes, and short codes for
+ *  each possible selection."
+ *    "The decryptions of all pre-encryptions correspond to the plaintext values indicated in the
+ *  election manifest."
  */
 class Recorder(
     val group: GroupContext,
@@ -27,7 +35,7 @@ class Recorder(
     primary nonce ξ and, for a cast ballot, all the selections made by the voter.
 
     For each uncast (implicitly or explicitly challenged) ballot, the recording tool returns the primary
-nonce that enables the encryptions to be opened and checked.
+    nonce that enables the encryptions to be opened and checked.
      */
     internal fun MarkedPreEncryptedBallot.record(ballotNonce: UInt256, codeBaux : ByteArray = ByteArray(0)): Pair<RecordedPreBallot, CiphertextBallot> {
         // uses the primary nonce ξ to regenerate all of the encryptions on the ballot

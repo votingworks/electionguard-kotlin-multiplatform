@@ -50,11 +50,11 @@ class VerifyAggregation(
             }
         }
 
-        // (9.F) For each contest text label that occurs in at least one submitted ballot, that contest text
+        // (9.E) For each contest text label that occurs in at least one submitted ballot, that contest text
         // label occurs in the list of contests in the corresponding tally..
         aggregator.contestIdSet.forEach { contestId ->
             if (null == encryptedTally.contests.find { it.contestId == contestId}) {
-                errors.add(Err("   9.F Contest '$contestId' found in cast ballots not found in tally"))
+                errors.add(Err("   9.E Contest '$contestId' found in cast ballots not found in tally"))
             }
         }
 

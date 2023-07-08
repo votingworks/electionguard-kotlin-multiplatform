@@ -4,7 +4,6 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getAllErrors
-import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.GroupContext
@@ -22,7 +21,6 @@ fun electionguard.protogen.TallyResult.import(group: GroupContext): Result<Tally
     return Ok(TallyResult(
         electionInitialized.unwrap(),
         encryptedTally.unwrap(),
-        this.ballotIds,
         this.tallyIds,
         this.metadata.associate { it.key to it.value }
     ))
@@ -53,7 +51,6 @@ fun TallyResult.publishProto() =
     electionguard.protogen.TallyResult(
         this.electionInitialized.publishProto(),
         this.encryptedTally.publishProto(),
-        this.ballotIds,
         this.tallyIds,
         this.metadata.entries.map { electionguard.protogen.TallyResult.MetadataEntry(it.key, it.value) }
     )

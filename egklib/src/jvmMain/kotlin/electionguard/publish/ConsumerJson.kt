@@ -207,8 +207,8 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return try {
             fileSystemProvider.newInputStream(filename).use { inp ->
                 val json = Json.decodeFromStream<EncryptedTallyJson>(inp)
-                val wncryptedTally = json.import(group)
-                Ok(TallyResult(init, wncryptedTally, emptyList(), emptyList()))
+                val encryptedTally = json.import(group)
+                Ok(TallyResult(init, encryptedTally, emptyList()))
             }
         } catch (e: Exception) {
             Err(e.message ?: "readTallyResult $filename failed")

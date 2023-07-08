@@ -35,13 +35,13 @@ import kotlin.test.assertTrue
 class TestWorkflow {
     private val configDir = "src/commonTest/data/startConfigProto"
     private val configDirJson = "src/commonTest/data/startConfigJson"
-    private val nballots = 25
-    private val nthreads = 25
+    private val nballots = 11
+    private val nthreads = 11
 
     @Test
     fun runWorkflowAllAvailable() {
         val workingDir =  "testOut/workflow/allAvailable"
-        val privateDir =  "testOut/workflow/allAvailable/private_data"
+        val privateDir =  "$workingDir/private_data"
         val trusteeDir =  "${privateDir}/trustees"
         val ballotsDir =  "${privateDir}/input"
         val invalidDir =  "${privateDir}/invalid"

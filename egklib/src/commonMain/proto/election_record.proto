@@ -19,6 +19,8 @@ message ElectionConfig {
   UInt256 manifest_hash = 8;       // Hm
   UInt256 election_base_hash = 9;  // He
   bytes manifest_bytes = 10; // the original source of the manifest
+  bytes baux0 = 12; // B_aux,0 from eq 59,60
+  string device = 13; // the device information from eq 61, and section 3.7
   map<string, string> metadata = 11; // arbitrary metadata added by the software
 }
 
@@ -50,7 +52,7 @@ message Guardian {
 message TallyResult {
   ElectionInitialized election_init = 1;
   EncryptedTally encrypted_tally = 2;
-  repeated string ballot_ids = 3;
+  reserved 3;
   repeated string tally_ids = 4;
   map<string, string> metadata = 5;
 }
