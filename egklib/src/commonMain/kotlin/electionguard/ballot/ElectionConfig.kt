@@ -29,6 +29,7 @@ data class ElectionConfig(
 
     val baux0: ByteArray, // B_aux,0 from eq 59,60
     val device: String, // the device information from eq 61, and section 3.7
+    val chainConfirmationCodes: Boolean = false,
 
     /** arbitrary key/value metadata. */
     val metadata: Map<String, String> = emptyMap(),
@@ -38,7 +39,7 @@ data class ElectionConfig(
         require(numberOfGuardians >= quorum) { "numberOfGuardians ${numberOfGuardians} != $quorum" }
     }
 
-    // overrride because of the byte array
+    // override because of the byte arrays
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ElectionConfig) return false
@@ -49,10 +50,14 @@ data class ElectionConfig(
         if (quorum != other.quorum) return false
         if (electionDate != other.electionDate) return false
         if (jurisdictionInfo != other.jurisdictionInfo) return false
-        if (metadata != other.metadata) return false
         if (parameterBaseHash != other.parameterBaseHash) return false
         if (manifestHash != other.manifestHash) return false
-        return electionBaseHash == other.electionBaseHash
+        if (electionBaseHash != other.electionBaseHash) return false
+        if (!manifestBytes.contentEquals(other.manifestBytes)) return false
+        if (!baux0.contentEquals(other.baux0)) return false
+        if (device != other.device) return false
+        if (chainConfirmationCodes != other.chainConfirmationCodes) return false
+        return metadata == other.metadata
     }
 
     override fun hashCode(): Int {
@@ -62,10 +67,14 @@ data class ElectionConfig(
         result = 31 * result + quorum
         result = 31 * result + electionDate.hashCode()
         result = 31 * result + jurisdictionInfo.hashCode()
-        result = 31 * result + metadata.hashCode()
         result = 31 * result + parameterBaseHash.hashCode()
         result = 31 * result + manifestHash.hashCode()
         result = 31 * result + electionBaseHash.hashCode()
+        result = 31 * result + manifestBytes.contentHashCode()
+        result = 31 * result + baux0.contentHashCode()
+        result = 31 * result + device.hashCode()
+        result = 31 * result + chainConfirmationCodes.hashCode()
+        result = 31 * result + metadata.hashCode()
         return result
     }
 
@@ -89,6 +98,7 @@ data class ElectionConstants(
 ) {
     val hp = parameterBaseHash(this)
 
+    // override because of the byte arrays
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -172,6 +182,7 @@ fun makeElectionConfig(
     manifestBytes: ByteArray,
     baux0: ByteArray, // B_aux,0 from eq 59,60
     device: String, // the device information from eq 61, and section 3.7
+    chainConfirmationCodes: Boolean = false,
     metadata: Map<String, String> = emptyMap(),
 ): ElectionConfig {
 
@@ -192,6 +203,7 @@ fun makeElectionConfig(
         manifestBytes,
         baux0,
         device,
+        chainConfirmationCodes,
         metadata,
     )
 }

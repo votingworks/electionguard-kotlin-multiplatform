@@ -5,7 +5,6 @@ import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.publish.ElectionRecord
 
-// since there's no verification spec 2.0 yet, this is approximate
 class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
     val group: GroupContext
     val manifest: ManifestIF
@@ -53,7 +52,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         }
 
         // encryption and vote limits 4, 5, 6
-        val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, nthreads)
+        val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, record.config(), nthreads)
         // Note we are validating all ballots, not just CAST
         val ballotResult = verifyBallots.verify(record.encryptedBallots { true }, stats, showTime)
         println(" 4,5,6,16,17. verifyEncryptedBallots $ballotResult")
@@ -170,12 +169,12 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
     }
 
     fun verifyEncryptedBallots(stats : Stats): Result<Boolean, String> {
-        val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, nthreads)
+        val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, record.config(), nthreads)
         return verifyBallots.verify(record.encryptedBallots { true }, stats)
     }
 
     fun verifyEncryptedBallots(ballots: Iterable<EncryptedBallot>, stats : Stats): Result<Boolean, String> {
-        val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, nthreads)
+        val verifyBallots = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, record.config(), nthreads)
         return verifyBallots.verify(ballots, stats)
     }
 

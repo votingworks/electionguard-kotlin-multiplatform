@@ -17,44 +17,92 @@ private const val ncontests = 20
 private const val nselections = 5
 
 class ElectionConfigConvertTest {
-    val outputDir = "testOut/protoconvert/ElectionConfigConvertTestJson"
-    val publisher = makePublisher(outputDir, true, true)
 
     @Test
     fun roundtripElectionConfig() {
+        val outputDir = "testOut/protoconvert/roundtripElectionConfig"
+        val publisher = makePublisher(outputDir, true, true)
+
         val (_, electionConfig) = generateElectionConfig(publisher, 6, 4)
-        val proto = electionConfig.publishProto()
-        val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
-        assertNotNull(roundtrip)
-        assertEquals(roundtrip.constants, electionConfig.constants)
-        assertEquals(roundtrip.numberOfGuardians, electionConfig.numberOfGuardians)
-        assertEquals(roundtrip.quorum, electionConfig.quorum)
-        assertEquals(roundtrip.metadata, electionConfig.metadata)
-
-        assertTrue(roundtrip.equals(electionConfig))
-        assertEquals(roundtrip, electionConfig)
-
-        publisher.writeElectionConfig(electionConfig)
-        println("Wrote to $outputDir")
-
-        val electionRecord = readElectionRecord(productionGroup(), outputDir)
-        val config = electionRecord.config()
-
-        val Hp = parameterBaseHash(config.constants)
-        assertEquals(Hp, config.parameterBaseHash)
-        val Hm = manifestHash(Hp, electionRecord.manifestBytes())
-        assertEquals(Hm, config.manifestHash)
-        assertEquals(
-            electionBaseHash(
-                Hp,
-                config.numberOfGuardians,
-                config.quorum,
-                config.electionDate,
-                config.jurisdictionInfo,
-                Hm
-            ), config.electionBaseHash
-        )
+        val roundtrip = roundtripProtoPublishJson(electionConfig, outputDir, true)
+        compareElectionConfig(electionConfig, roundtrip)
     }
+
+    @Test
+    fun roundtripWithChain() {
+        val outputDir = "testOut/protoconvert/roundtripWithChain"
+        // clear output dir
+        val publisher = makePublisher(outputDir, true, false)
+        // write out a manifest
+        val fakeManifest = buildTestManifest(ncontests, nselections)
+        val filename = publisher.writeManifest(fakeManifest)
+
+        // get it back as a file, to store in the ElectionConfig
+        val manifestBytes = fileReadBytes(filename)
+
+        val electionConfig = makeElectionConfig(
+            protocolVersion,
+            productionGroup().constants,
+            11,
+            7,
+            "date",
+            "juris",
+            manifestBytes,
+            "device".toByteArray(),
+            "device",
+            true,
+            mapOf(
+                Pair("Created by", "roundtripWithChain"),
+                Pair("Created for", "testing"),
+                Pair("Created on", "9/9/1999"),
+                ),
+            )
+
+        val roundtrip = roundtripProtoPublishJson(electionConfig, outputDir, false)
+        compareElectionConfig(electionConfig, roundtrip)
+    }
+}
+
+fun roundtripProtoPublishJson(electionConfig: ElectionConfig, outputDir: String, isJson: Boolean): ElectionConfig {
+    // roundtrip proto
+    val proto = electionConfig.publishProto()
+    val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
+    compareElectionConfig(electionConfig, roundtrip)
+
+    // publish json
+    val publisher = makePublisher(outputDir, true, isJson)
+    publisher.writeElectionConfig(roundtrip)
+
+    val electionRecord = readElectionRecord(productionGroup(), outputDir)
+    return electionRecord.config()
+}
+
+fun compareElectionConfig(expected: ElectionConfig, actual: ElectionConfig, ) {
+
+    assertEquals(expected.constants, actual.constants)
+    assertEquals(expected.numberOfGuardians, actual.numberOfGuardians)
+    assertEquals(expected.quorum, actual.quorum)
+    assertEquals(expected.metadata, actual.metadata)
+    assertEquals(expected.chainConfirmationCodes, actual.chainConfirmationCodes)
+    println("chainConfirmationCodes = ${actual.chainConfirmationCodes}")
+
+    val Hp = parameterBaseHash(actual.constants)
+    assertEquals(expected.parameterBaseHash, Hp)
+    val Hm = manifestHash(Hp, actual.manifestBytes)
+    assertEquals(expected.manifestHash, Hm)
+    assertEquals(
+        expected.electionBaseHash,
+        electionBaseHash(
+            Hp,
+            actual.numberOfGuardians,
+            actual.quorum,
+            actual.electionDate,
+            actual.jurisdictionInfo,
+            Hm
+        )
+    )
+    assertTrue(expected.equals(actual))
+    assertEquals(expected, actual)
 }
 
 fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): Pair<Manifest, ElectionConfig> {
@@ -75,6 +123,8 @@ fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): 
         manifestBytes,
         "device".toByteArray(),
         "device",
+        false,
+        mapOf(Pair("Created by", "generateElectionConfig")),
         )
     return Pair(fakeManifest, config)
 }

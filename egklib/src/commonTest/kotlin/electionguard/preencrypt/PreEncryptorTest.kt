@@ -3,7 +3,10 @@ package electionguard.preencrypt
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
+import electionguard.ballot.ElectionConfig
 import electionguard.ballot.Manifest
+import electionguard.ballot.makeElectionConfig
+import electionguard.ballot.protocolVersion
 import electionguard.core.*
 import electionguard.decryptBallot.DecryptPreencryptWithNonce
 import electionguard.encrypt.cast
@@ -15,6 +18,7 @@ import electionguard.verifier.VerifyEncryptedBallots
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
+import io.ktor.utils.io.core.*
 import kotlin.math.min
 import kotlin.random.Random
 import kotlin.test.Test
@@ -239,8 +243,9 @@ internal fun runComplete(
 
     // verify
     val stats = Stats()
+    val fakeConfig = makeFakeConfig()
     val verifier =
-        VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar, 1)
+        VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar, fakeConfig, 1)
     val results = verifier.verifyEncryptedBallot(fullEncryptedBallot, stats)
     if (show || results !is Ok) {
         println("VerifyEncryptedBallots $results\n")
@@ -380,5 +385,19 @@ internal fun markBallotToLimit(manifest: Manifest, pballot: PreEncryptedBallot):
         pballot.ballotId,
         pballot.ballotStyleId,
         pcontests,
+    )
+}
+
+fun makeFakeConfig() : ElectionConfig {
+    return makeElectionConfig(
+        protocolVersion,
+        productionGroup().constants,
+        3,
+        3,
+        "date",
+        "juris",
+        "manifest".toByteArray(),
+        "device".toByteArray(),
+        "device",
     )
 }

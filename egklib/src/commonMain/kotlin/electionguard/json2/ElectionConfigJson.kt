@@ -20,6 +20,8 @@ data class ElectionConfigJson(
 
     val baux0: ByteArray, // B_aux,0 from eq 59,60
     val device: String, // the device information from eq 61, and section 3.7
+    val chain_confirmation_codes: Boolean,
+    val metadata: Map<String, String> = emptyMap(), // arbitrary key, value pairs
 )
 
 fun ElectionConfig.publishJson() = ElectionConfigJson(
@@ -33,6 +35,8 @@ fun ElectionConfig.publishJson() = ElectionConfigJson(
     this.electionBaseHash.publishJson(),
     this.baux0,
     this.device,
+    this.chainConfirmationCodes,
+    this.metadata,
 )
 
 fun ElectionConfigJson.import(constants: ElectionConstants, manifestBytes: ByteArray) : ElectionConfig {
@@ -49,6 +53,8 @@ fun ElectionConfigJson.import(constants: ElectionConstants, manifestBytes: ByteA
         manifestBytes,
         this.baux0,
         this.device,
+        this.chain_confirmation_codes,
+        this.metadata,
     )
 }
 

@@ -1,12 +1,14 @@
 package electionguard.workflow
 
 import electionguard.ballot.ElectionInitialized
+import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.GroupContext
 import electionguard.core.Stats
 import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.runDecryptTally
+import electionguard.encrypt.AddEncryptedBallot
 import electionguard.encrypt.batchEncryption
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makePublisher
@@ -21,7 +23,7 @@ import kotlin.test.assertTrue
 /**
  * Run complete workflow starting from ElectionConfig in the start directory, all the way through verify.
  * (See RunCreateConfigTest/RunCreateElectionConfig to regenerate ElectionConfig)
- * TestWorkflow uses RunFakeKeyCeremonyTest, not real KeyCeremony.
+ * Note that TestWorkflow uses RunFakeKeyCeremonyTest, not real KeyCeremony.
  *  1. The results can be copied to the test data sets "src/commonTest/data/all(some)Available(Json)" whenever the
  *     election record changes.
  *  2. Then see RunDecryptBallotsTest for more damn things to do
@@ -34,7 +36,9 @@ import kotlin.test.assertTrue
  */
 class TestWorkflow {
     private val configDir = "src/commonTest/data/startConfigProto"
+    private val chainConfigDir = "src/commonTest/data/startChainConfigProto"
     private val configDirJson = "src/commonTest/data/startConfigJson"
+    private val chainConfigDirJson = "src/commonTest/data/startChainConfigJson"
     private val nballots = 11
     private val nthreads = 11
 
@@ -72,10 +76,75 @@ class TestWorkflow {
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
         // decrypt tally
-        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, false), "createdBy")
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, false), "runWorkflowAllAvailable")
 
         // verify
         println("\nRun Verifier")
+        val record = readElectionRecord(group, workingDir)
+        val verifier = Verifier(record)
+        val stats = Stats()
+        val ok = verifier.verify(stats)
+        stats.show()
+        println("Verify is $ok")
+        assertTrue(ok)
+    }
+
+    @Test
+    fun runWorkflowChained() {
+        val workingDir =  "testOut/workflow/chainedProto"
+        val privateDir =  "$workingDir/private_data"
+        val trusteeDir =  "${privateDir}/trustees"
+        val ballotsDir =  "${privateDir}/input"
+        val invalidDir =  "${privateDir}/invalid"
+
+        val group = productionGroup()
+        val present = listOf(1, 2, 3) // all guardians present
+        val nguardians = present.maxOf { it }.toInt()
+        val quorum = present.count()
+
+        // delete current workingDir
+        makePublisher(workingDir, true)
+
+        // key ceremony
+        val (manifest, electionInit) = runFakeKeyCeremony(group, chainConfigDir, workingDir, trusteeDir, nguardians, quorum)
+        println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
+
+        // create fake ballots
+        val ballotProvider = RandomBallotProvider(manifest, nballots)
+        val ballots: List<PlaintextBallot> = ballotProvider.ballots()
+        val publisher = makePublisher(ballotsDir)
+        publisher.writePlaintextBallot(ballotsDir, ballots)
+        println("RandomBallotProvider created ${ballots.size} ballots")
+
+        // encrypt
+        val encryptor = AddEncryptedBallot(
+            group,
+            manifest,
+            electionInit,
+            electionInit.config.baux0,
+            true,
+            workingDir,
+            invalidDir,
+            false,
+            false,
+        )
+
+        ballots.forEach { ballot ->
+            val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST) // TODO spoil some
+            println(" write ${ballot.ballotId}")
+            assertTrue(isOk)
+        }
+       val Hbar =  encryptor.closeChain() // TODO where do we store this ??
+        encryptor.close()
+
+        // tally
+        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
+
+        // decrypt tally
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, electionInit, present, false), "runWorkflowChained")
+
+        // verify
+        println("\nRun Verifier on $workingDir")
         val record = readElectionRecord(group, workingDir)
         val verifier = Verifier(record)
         val stats = Stats()
@@ -119,7 +188,7 @@ class TestWorkflow {
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
         // decrypt
-        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, false), null)
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, false), "runWorkflowSomeAvailable")
 
         // verify
         println("\nRun Verifier")
@@ -166,7 +235,54 @@ class TestWorkflow {
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
         // decrypt tally
-        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, true), "createdBy")
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, true), "runWorkflowAllAvailableJson")
+
+        // verify
+        println("\nRun Verifier")
+        val record = readElectionRecord(group, workingDir)
+        val verifier = Verifier(record)
+        val stats = Stats()
+        val ok = verifier.verify(stats)
+        stats.show()
+        println("Verify is $ok")
+        assertTrue(ok)
+    }
+
+    @Test
+    fun runWorkflowChainedJson() {
+        val workingDir =  "testOut/workflow/chainedJson"
+        val privateDir =  "$workingDir/private_data"
+        val trusteeDir =  "${privateDir}/trustees"
+        val ballotsDir =  "${privateDir}/input"
+        val invalidDir =  "${privateDir}/invalid"
+
+        val group = productionGroup()
+        val present = listOf(1, 2, 3) // all guardians present
+        val nguardians = present.maxOf { it }.toInt()
+        val quorum = present.count()
+
+        // delete current workingDir
+        makePublisher(workingDir, true)
+
+        // key ceremony
+        val (manifest, init) = runFakeKeyCeremony(group, chainConfigDirJson, workingDir, trusteeDir, nguardians, quorum)
+        println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
+
+        // create fake ballots
+        val ballotProvider = RandomBallotProvider(manifest, nballots)
+        val ballots: List<PlaintextBallot> = ballotProvider.ballots()
+        val publisher = makePublisher(ballotsDir, false, true)
+        publisher.writePlaintextBallot(ballotsDir, ballots)
+        println("RandomBallotProvider created ${ballots.size} ballots")
+
+        // encrypt
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
+
+        // tally
+        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
+
+        // decrypt tally
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, true), "runWorkflowChainedJson")
 
         // verify
         println("\nRun Verifier")
@@ -213,7 +329,7 @@ class TestWorkflow {
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
         // decrypt
-        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, true), null)
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, true), "runWorkflowSomeAvailableJson")
 
         // verify
         println("\nRun Verifier")

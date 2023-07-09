@@ -12,9 +12,7 @@ import kotlinx.cli.default
 import kotlinx.cli.required
 import kotlinx.datetime.*
 
-/**
- * Run Create Election Configuration CLI.
- */
+/** Run Create Election Configuration CLI. */
 fun createConfig(args: Array<String>) {
     val parser = ArgParser("RunCreateElectionConfig")
     val electionManifest by parser.option(
@@ -57,6 +55,11 @@ fun createConfig(args: Array<String>) {
         shortName = "device",
         description = "device information"
     ).required()
+    val chainCodes by parser.option(
+        ArgType.Boolean,
+        shortName = "chainCodes",
+        description = "chain conformation codes"
+    ).default(false)
     parser.parse(args)
 
     val currentMoment : Instant = Clock.System.now()
@@ -90,6 +93,7 @@ fun createConfig(args: Array<String>) {
             manifestBytes,
             device.toByteArray(),
             device,
+            chainCodes,
             mapOf(
                 Pair("CreatedBy", createdBy),
             ),

@@ -26,11 +26,12 @@ class AddEncryptedBallotTest {
             group,
             electionRecord.manifest(),
             electionInit,
+            electionRecord.config().baux0,
+            false,
             outputDir,
             "${outputDir}/invalidDir",
             false,
             false,
-            true
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -66,11 +67,12 @@ class AddEncryptedBallotTest {
                 group,
                 electionRecord.manifest(),
                 electionInit,
+                electionRecord.config().baux0,
+                false,
                 "${outputDir}M",
                 "${outputDir}M/invalidDir",
                 false,
                 false,
-                false
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -101,11 +103,12 @@ class AddEncryptedBallotTest {
             group,
             electionRecord.manifest(),
             electionInit,
+            electionRecord.config().baux0,
+            false,
             outputDirJson,
             "${outputDirJson}/invalidDir",
             true,
             false,
-            true
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -141,11 +144,12 @@ class AddEncryptedBallotTest {
                 group,
                 electionRecord.manifest(),
                 electionInit,
+                electionRecord.config().baux0,
+                false,
                 "${outputDirJson}M",
                 "${outputDirJson}M/invalidDir",
                 true,
                 false,
-                false
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
