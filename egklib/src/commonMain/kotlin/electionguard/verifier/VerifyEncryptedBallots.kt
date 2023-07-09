@@ -3,6 +3,7 @@ package electionguard.verifier
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import electionguard.ballot.ElectionConfig
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.ManifestIF
 import electionguard.core.*
@@ -28,6 +29,7 @@ class VerifyEncryptedBallots(
     val manifest: ManifestIF,
     val jointPublicKey: ElGamalPublicKey,
     val extendedBaseHash: UInt256, // He
+    val config: ElectionConfig,
     private val nthreads: Int,
 ) {
     val aggregator = SelectionAggregator() // for box 7
@@ -61,12 +63,48 @@ class VerifyEncryptedBallots(
             checkDuplicates[it.code] = it.ballotId
         }
 
+        if (config.chainConfirmationCodes) {
+            verifyConfirmationChain(config, extendedBaseHash, ballots)
+        }
+
         if (showTime) {
             val took = getSystemTimeInMillis() - starting
             val perBallot = if (count == 0) 0 else (took.toDouble() / count).sigfig()
             println("   VerifyEncryptedBallots with $nthreads threads took $took millisecs wallclock for $count ballots = $perBallot msecs/ballot")
         }
         return allResults.merge()
+    }
+
+    // TODO find the chain by matching Baux = H(Bj−1 ) ∥ Baux,0
+
+    fun verifyConfirmationChain(config: ElectionConfig, extendedBaseHash: UInt256, ballots: Iterable<EncryptedBallot>) {
+        println(" verifyConfirmationChain baux0=${config.baux0.contentToString()}")
+
+        // (6.D) The initial hash code H0 satisfies H0 = H(HE ; 24, Baux,0 )
+        // and Baux,0 contains the unique voting device information as specified in the election manifest file.
+        val H0 = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.baux0).bytes // eq 60
+
+        // (6.E) For all 1 ≤ j ≤ ℓ, the additional input byte array used to compute Hj = H(Bj ) is equal to Baux = H(Bj−1 ) ∥ Baux,0 .
+        var prevBaux = H0
+        var first = true
+        ballots.forEach {ballot ->
+            val expectedBaux = if (first) hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.baux0).bytes // eq 60
+                                else hashFunction(prevBaux, config.baux0).bytes // eq 61
+            first = false
+            // println("    ${ballot.ballotId} expectedBaux=${expectedBaux.contentToString()}")
+            if (!expectedBaux.contentEquals(ballot.codeBaux)) {
+                // println("                     actualBaux=${ballot.codeBaux.contentToString()}")
+                allResults.add(Err("    6.E. additional input byte array Baux != H(Bj−1 ) ∥ Baux,0 for ballot=${ballot.ballotId}"))
+            }
+            prevBaux = ballot.confirmationCode.bytes
+        }
+
+
+        // (6.F) The final additional input byte array is equal to Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") and
+        // H(Bℓ ) is the final confirmation code on this device.
+
+        //(6.G) The closing hash is correctly computed as H = H(HE ; 24, Baux ).
+
     }
 
     fun verifyEncryptedBallot(ballot: EncryptedBallot, stats: Stats): Result<Boolean, String> {
@@ -116,7 +154,6 @@ class VerifyEncryptedBallots(
         }
 
         if (!ballot.isPreencrypt) {
-            // TODO specify use chain in manifest and verify (6D-G)
             // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
             val contestHashes = ballot.contests.map { it.contestHash }
             val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, ballot.codeBaux)

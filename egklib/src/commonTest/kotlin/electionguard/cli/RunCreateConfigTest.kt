@@ -5,6 +5,73 @@ import kotlin.test.Test
 class RunCreateConfigTest {
 
     @Test
+    fun testCreateConfigProto() {
+        createConfig(
+            arrayOf(
+                "-manifest",
+                "src/commonTest/data/startManifestProto/manifest.protobuf",
+                "-nguardians", "3",
+                "-quorum", "3",
+                "-out",
+                "testOut/config/testCreateConfigProto",
+                "-device",
+                "device information",
+            )
+        )
+    }
+
+    @Test
+    fun testCreateConfigJson() {
+        createConfig(
+            arrayOf(
+                "-manifest",
+                "src/commonTest/data/startManifestJson/manifest.json",
+                "-nguardians", "3",
+                "-quorum", "3",
+                "-out",
+                "testOut/config/testCreateConfigJson",
+                "-device",
+                "device information",
+            )
+        )
+    }
+
+    @Test
+    fun testCreateChainConfigProto() {
+        createConfig(
+            arrayOf(
+                "-manifest",
+                "src/commonTest/data/startManifestProto/manifest.protobuf",
+                "-nguardians", "3",
+                "-quorum", "3",
+                "-out",
+                "testOut/config/testCreateChainConfigProto",
+                "-device",
+                "device information",
+                "-chainCodes",
+            )
+        )
+    }
+
+    @Test
+    fun testCreateChainConfigJson() {
+        createConfig(
+            arrayOf(
+                "-manifest",
+                "src/commonTest/data/startManifestJson/manifest.json",
+                "-nguardians", "3",
+                "-quorum", "3",
+                "-out",
+                "testOut/config/testCreateChainConfigJson",
+                "-device",
+                "device information",
+                "-chainCodes",
+            )
+        )
+    }
+
+
+    @Test
     fun testCreateConfigDirectoryProto() {
         createConfig(
             arrayOf(
@@ -32,38 +99,6 @@ class RunCreateConfigTest {
                 "-createdBy", "testCreateConfigDirectoryJson",
                 "-out",
                 "testOut/config/testCreateConfigDirectoryJson",
-                "-device",
-                "device information",
-            )
-        )
-    }
-
-    @Test
-    fun testCreateConfigProto() {
-        createConfig(
-            arrayOf(
-                "-manifest",
-                "src/commonTest/data/startManifestProto/manifest.protobuf",
-                "-nguardians", "3",
-                "-quorum", "3",
-                "-out",
-                "testOut/config/testCreateConfigProto",
-                "-device",
-                "device information",
-            )
-        )
-    }
-
-    @Test
-    fun testCreateConfigJson() {
-        createConfig(
-            arrayOf(
-                "-manifest",
-                "src/commonTest/data/startManifestJson/manifest.json",
-                "-nguardians", "3",
-                "-quorum", "3",
-                "-out",
-                "testOut/config/testCreateConfigJson",
                 "-device",
                 "device information",
             )

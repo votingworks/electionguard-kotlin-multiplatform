@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 7/8/2023
+draft 7/9/2023
 
 **Table of Contents**
  
@@ -218,21 +218,22 @@ draft 7/8/2023
 
 #### message ElectionConfig
 
-| Name                | Type                  | Notes                                              |
-|---------------------|-----------------------|----------------------------------------------------|
-| spec_version        | string                | "v2.0.0"                                           |
-| constants           | ElectionConstants     |                                                    |
-| number_of_guardians | uint32                | n                                                  |
-| quorum              | uint32                | k                                                  |
-| election_date       | string                | k                                                  |
-| jurisdiction_info   | string                | k                                                  |
-| parameter_base_hash | UInt256               | Hp                                                 |
-| manifest_hash       | UInt256               | Hm                                                 |
-| election_base_hash  | UInt256               | He                                                 |
-| manifest_bytes      | bytes                 |                                                    |
-| baux0               | bytes                 | B_aux,0 from eq 59,60                              |
-| device              | string                | the device information from eq 61, and section 3.7 |
-| metadata            | map\<string, string\> | arbitrary                                          |
+| Name                       | Type                  | Notes                                              |
+|----------------------------|-----------------------|----------------------------------------------------|
+| spec_version               | string                | "v2.0.0"                                           |
+| constants                  | ElectionConstants     |                                                    |
+| number_of_guardians        | uint32                | n                                                  |
+| quorum                     | uint32                | k                                                  |
+| election_date              | string                | k                                                  |
+| jurisdiction_info          | string                | k                                                  |
+| parameter_base_hash        | UInt256               | Hp                                                 |
+| manifest_hash              | UInt256               | Hm                                                 |
+| election_base_hash         | UInt256               | He                                                 |
+| manifest_bytes             | bytes                 |                                                    |
+| baux0                      | bytes                 | B_aux,0 from eq 59,60                              |
+| device                     | string                | the device information from eq 61, and section 3.7 |
+| chain_confirmation_codes   | bool                  |                                                    |
+| metadata                   | map\<string, string\> | arbitrary                                          |
 
 #### message ElectionConstants
 

@@ -75,7 +75,6 @@ fun runFakeKeyCeremony(
 
     val jointPublicKey: ElementModP =
         trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
-    // println("jointPublicKey ${jointPublicKey.toStringShort()}")
 
     // create a new config so the quorum, nguardians can change
     val newConfig = makeElectionConfig(
@@ -86,8 +85,9 @@ fun runFakeKeyCeremony(
         config.electionDate,
         config.jurisdictionInfo,
         electionRecord.manifestBytes(),
-        "device".toByteArray(),
-        "device",
+        config.baux0,
+        config.device,
+        config.chainConfirmationCodes,
         mapOf(Pair("Created by", "runFakeKeyCeremony")),
     )
     // println("newConfig.electionBaseHash ${newConfig.electionBaseHash}")

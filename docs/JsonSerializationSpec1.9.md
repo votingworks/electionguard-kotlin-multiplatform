@@ -1,6 +1,6 @@
 # 🗳 Election Record JSON serialization (proposed specification)
 
-draft 7/8/2023
+draft 7/9/2023
 
 <!-- TOC -->
 * [🗳 Election Record JSON serialization (proposed specification)](#-election-record-json-serialization-proposed-specification)
@@ -60,6 +60,8 @@ data class ElectionConfigJson(
 
     val baux0: ByteArray, // B_aux,0 from eq 59,60
     val device: String, // the device information from eq 61, and section 3.7
+    val chain_confirmation_codes: Boolean,
+    val metadata: Map<String, String> = emptyMap(), // arbitrary key, value pairs
 )
 ````
 
