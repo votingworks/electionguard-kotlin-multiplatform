@@ -49,11 +49,11 @@ class VerifyEncryptedBallots(
                     ) { ballot -> verifyEncryptedBallot(ballot, stats) })
             }
 
-            // wait for all verifications to be done, then close everything
+            // wait for all verifications to be done
             joinAll(*verifierJobs.toTypedArray())
         }
 
-        // check duplicate confirmation codes (6.C): LOOK what if multiple records for the election?
+        // check duplicate confirmation codes (6.C): LOOK what if there are multiple records for the election?
         // LOOK what about checking for duplicate ballot ids?
         val checkDuplicates = mutableMapOf<UInt256, String>()
         confirmationCodes.forEach {
@@ -75,38 +75,6 @@ class VerifyEncryptedBallots(
         return allResults.merge()
     }
 
-    // TODO find the chain by matching Baux = H(Bj−1 ) ∥ Baux,0
-
-    fun verifyConfirmationChain(config: ElectionConfig, extendedBaseHash: UInt256, ballots: Iterable<EncryptedBallot>) {
-        println(" verifyConfirmationChain baux0=${config.baux0.contentToString()}")
-
-        // (6.D) The initial hash code H0 satisfies H0 = H(HE ; 24, Baux,0 )
-        // and Baux,0 contains the unique voting device information as specified in the election manifest file.
-        val H0 = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.baux0).bytes // eq 60
-
-        // (6.E) For all 1 ≤ j ≤ ℓ, the additional input byte array used to compute Hj = H(Bj ) is equal to Baux = H(Bj−1 ) ∥ Baux,0 .
-        var prevBaux = H0
-        var first = true
-        ballots.forEach {ballot ->
-            val expectedBaux = if (first) hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.baux0).bytes // eq 60
-                                else hashFunction(prevBaux, config.baux0).bytes // eq 61
-            first = false
-            // println("    ${ballot.ballotId} expectedBaux=${expectedBaux.contentToString()}")
-            if (!expectedBaux.contentEquals(ballot.codeBaux)) {
-                // println("                     actualBaux=${ballot.codeBaux.contentToString()}")
-                allResults.add(Err("    6.E. additional input byte array Baux != H(Bj−1 ) ∥ Baux,0 for ballot=${ballot.ballotId}"))
-            }
-            prevBaux = ballot.confirmationCode.bytes
-        }
-
-
-        // (6.F) The final additional input byte array is equal to Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") and
-        // H(Bℓ ) is the final confirmation code on this device.
-
-        //(6.G) The closing hash is correctly computed as H = H(HE ; 24, Baux ).
-
-    }
-
     fun verifyEncryptedBallot(ballot: EncryptedBallot, stats: Stats): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
         val results = mutableListOf<Result<Boolean, String>>()
@@ -123,9 +91,21 @@ class VerifyEncryptedBallots(
                 results.add(verifySelection(where, it))
             }
 
-            // Box 5 : contest limit
+            // Verification 5 (Adherence to vote limits)
+            // For each contest on each cast ballot, an election verifier must compute the contest totals Q
+            //  (5.1) ᾱ = Qi αi mod p,
+            //  (5.2) β̄ = i βi mod p,
+            // where the (αi , βi ) represent all possible selections for the contest, as well as the values
+            //  (5.3) aj = g vj · ᾱcj mod p for all 0 ≤ j ≤ L,
+            //  (5.4) bj = K wj · β̄ cj mod p, where wj = (vj − jcj ) mod q for all 0 ≤ j ≤ L,
+            //  (5.5) c = H(HE ; 21, K, ᾱ, β̄, a0 , b0 , a1 , b1 , . . . , aL , bL ).
+            // An election verifier must then confirm the following:
+            //  (5.A) The given values αi and βi are each in Zrp .
+            //  (5.B) The given values cj and vj are each in Zq for all 0 ≤ j ≤ L.
+            //  (5.C) The equation c = (c0 + c1 + · · · + cL ) mod q is satisfied.
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.encryptedVote }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
+            // test that the proof is correct covers 5.A, 5.B, 5.C
             val cvalid = contest.proof.validate2(
                 ciphertextAccumulation,
                 this.jointPublicKey,
@@ -154,7 +134,8 @@ class VerifyEncryptedBallots(
         }
 
         if (!ballot.isPreencrypt) {
-            // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
+            // (6.B) The ballot confirmation code H(B) has been correctly computed from the contest hashes and Baux as
+            //   H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
             val contestHashes = ballot.contests.map { it.contestHash }
             val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, ballot.codeBaux)
             if (confirmationCode != ballot.confirmationCode) {
@@ -169,7 +150,17 @@ class VerifyEncryptedBallots(
         return results.merge()
     }
 
-    // Box 4
+    // Verification 4 (Correctness of selection encryptions)
+    // For each possible selection on each cast ballot, an election verifier must compute the values
+    //  (4.3) aj = g vj · αcj mod p for all 0 ≤ j ≤ L,
+    //  (4.4) bj = K wj · β cj mod p, where wj = (vj − jcj ) mod q for all 0 ≤ j ≤ L,
+    //  (4.5) c = H(HE ; 21, K, α, β, a0 , b0 , a1 , b1 , . . . , aL , bL ),
+    // where L is the selection limit. An election verifier must then confirm the following:
+    //  (4.A) The given values α and β are in the set Zrp . A value x is in Zrp if and only if x is an integer
+    //       such that 0 ≤ x < p and xq mod p = 1.
+    //  (4.B) The given values cj and vj are each in the set Zq for all 0 ≤ j ≤ L. A value x is in Zq if and only
+    //       if x is an integer such that 0 ≤ x < q.
+    //  (4.C) The equation c = (c0 + c1 + · · · + cL ) mod q is satisfied.
     private fun verifySelection(where: String, selection: EncryptedBallot.Selection): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
         val here = "${where}/${selection.selectionId}"
@@ -187,10 +178,83 @@ class VerifyEncryptedBallots(
         return errors.merge()
     }
 
+    // Note that this assumes that the ballots are in order. But why should they be? Esp json.
+    // TODO find the chain by matching Baux = H(Bj−1 ) ∥ Baux,0 ??
+
+    // If the election manifest file specifies a hash chain, an election verifier must confirm the following
+    //   TODO for each voting device:
+    // (6.D) The initial hash code H0 satisfies H0 = H(HE ; 24, Baux,0 ) and Baux,0 contains the unique
+    //   voting device information as specified in the election manifest file.
+    // (6.E) For all 1 ≤ j ≤ ℓ, the additional input byte array used to compute Hj = H(Bj ) is equal to
+    //   Baux = H(Bj−1 ) ∥ Baux,0 .
+    // (6.F) The final additional input byte array is equal to Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") and
+    //   H(Bℓ ) is the final confirmation code on this device.
+    // (6.G) The closing hash is correctly computed as H = H(HE ; 24, Baux ).
+
+    fun verifyConfirmationChain(config: ElectionConfig, extendedBaseHash: UInt256, ballots: Iterable<EncryptedBallot>) {
+        println(" verifyConfirmationChain baux0=${config.baux0.contentToString()}")
+
+        // (6.D) The initial hash code H0 satisfies H0 = H(HE ; 24, Baux,0 )
+        // and Baux,0 contains the unique voting device information as specified in the election manifest file.
+        val H0 = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.baux0).bytes // eq 60
+
+        // (6.E) For all 1 ≤ j ≤ ℓ, the additional input byte array used to compute Hj = H(Bj ) is equal to Baux = H(Bj−1 ) ∥ Baux,0 .
+        var prevBaux = H0
+        var first = true
+        ballots.forEach {ballot ->
+            val expectedBaux = if (first) hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.baux0).bytes // eq 60
+            else hashFunction(prevBaux, config.baux0).bytes // eq 61
+            first = false
+            // println("    ${ballot.ballotId} expectedBaux=${expectedBaux.contentToString()}")
+            if (!expectedBaux.contentEquals(ballot.codeBaux)) {
+                // println("                     actualBaux=${ballot.codeBaux.contentToString()}")
+                allResults.add(Err("    6.E. additional input byte array Baux != H(Bj−1 ) ∥ Baux,0 for ballot=${ballot.ballotId}"))
+            }
+            prevBaux = ballot.confirmationCode.bytes
+        }
+
+
+        // (6.F) The final additional input byte array is equal to Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") and
+        // H(Bℓ ) is the final confirmation code on this device.
+
+        //(6.G) The closing hash is correctly computed as H = H(HE ; 24, Baux ).
+
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // pre-encryption
+
     // TODO specify sigma in manifest
     private fun sigma(hash : UInt256) : String = hash.toHex().substring(0, 5)
 
+    /*
+    For every pre-encrypted cast ballot contained in the election record:
+    • The ballot confirmation code correctly matches the hash of all contest hashes on the ballot (listed sequentially).
+    • Each contest hash correctly matches the hash of all selection hashes (including null selection
+      hashes) within that contest (sorted within each contest).
+    • All short codes shown to voters are correctly computed from selection hashes in the election record which are,
+      in turn, correctly computed from the pre-encryption vectors published in the election record.
+    • For contests with selection limit greater than 1, the selection vectors published in the election
+      record match the product of the pre-encryptions associated with the short codes listed as selected.
+
+    For every pre-encrypted ballot listed in the election record as uncast:
+    • The ballot confirmation code correctly matches the hash of all contest hashes on the ballot (listed sequentially).
+    • Each contest hash correctly matches the hash of all selection hashes (including null selection
+      hashes) within that contest (sorted within each contest).
+    • All short codes on the ballot are correctly computed from the selection hashes in the election
+      record which are, in turn, correctly computed from the pre-encryption vectors published in the election record.
+    • The decryptions of all pre-encryptions correspond to the plaintext values indicated in the
+      election manifest.
+     */
+
+    // Box 14 == Box 4, Box 15 == Box 5
+
     // Verification 16 (Validation of short codes in pre-encrypted ballots)
+    // An election verifier must confirm for every short code ω in the election record that ω = Ω(ψ) where
+    // ψ is the associated selection hash.
+    // For cast ballots, this includes all short codes that are published in the election record whose associated
+    // selection hashes correspond to selection vectors that are accumulated to form tallies.
+    // TODO For spoiled ballots, this includes all selection vectors on the ballot.
     private fun verifyPreencryption(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val results = mutableListOf<Result<Boolean, String>>()
 
@@ -232,6 +296,31 @@ class VerifyEncryptedBallots(
     }
 
     // Verification 17 (Validation of confirmation codes in pre-encrypted ballots)
+    // An election verifier must confirm the following for each pre-encrypted ballot B:
+    // (17.A) For each selection in each contest on the ballot and the corresponding selection vector
+    //    Ψi,m = ⟨E1 , E2 , . . . , Em ⟩ consisting of the selection encryptions Ej = (αj , βj ), the selection
+    //    hash ψi satisfies ψi = H(HE ; 40, λi , K, α1 , β1 , α2 , β2 , . . . , αm , βm ).
+    // (17.B) The contest hash χl for the l-th contest on the ballot for all 1 ≤ l ≤ mB has been correctly
+    //    computed from the selection hashes ψi as
+    //     χl = H(HE ; 41, Λl , K, ψσ(1) , ψσ(2) , . . . , ψσ(m+L) ),
+    //     where σ is a permutation and ψσ(1) < ψσ(2) < · · · < ψσ(m+L) .
+    // (17.C) The ballot confirmation code H(B) has been correctly computed from the (sequentially ordered) contest
+    //     hashes and if specified in the election manifest file from the additional byte array Baux as
+    //     H(B) = H(HE ; 42, χ1 , χ2 , . . . , χmB , Baux ).
+    //
+    // (17.D) There are no duplicate confirmation codes, i.e. among the set of submitted (cast and challenged) ballots,
+    //     no two have the same confirmation code.
+    //
+    // TODO Additionally, if the election manifest file specifies a hash chain, an election verifier must confirm the
+    //  following for each pre-encrypted ballot generation device:
+    // (17.E) The initial hash code H0 satisfies H0 = H(HE ; 42, Baux,0 ) and Baux,0 contains the unique
+    //     device information for the device generating the pre-encrypted ballots as specified in the
+    //     election manifest file.
+    // (17.F) For all 1 ≤ i ≤ ℓ, the additional input byte array used to compute Hi = H(Bi ) is equal to
+    //     Baux = H(Bi−1 ) ∥ Baux,0 .
+    // (17.G) The final additional input byte array is equal to Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") and
+    //     H(Bℓ ) is the final confirmation code on this device.
+    // (17.H) The closing hash is correctly computed as H = H(HE ; 42, Baux ).
     private fun verifyPreencryptedCode(ballot: EncryptedBallot): Result<Boolean, String> {
         val errors = mutableListOf<String>()
 

@@ -35,10 +35,11 @@ class EncryptedBallotConvertTest {
         return EncryptedBallot(
             "ballotId $seq",
             "ballotIdStyle",
-            generateUInt256(context),
-            ByteArray(0),
-            contests,
+            "device",
             42,
+            ByteArray(0),
+            generateUInt256(context),
+            contests,
             if (Random.nextBoolean())
                 EncryptedBallot.BallotState.CAST
             else
@@ -51,6 +52,7 @@ class EncryptedBallotConvertTest {
         return EncryptedBallot.Contest(
             "contest" + cseq,
             cseq,
+            1,
             generateUInt256(context),
             selections,
             generateRangeChaumPedersenProofKnownNonce(context),

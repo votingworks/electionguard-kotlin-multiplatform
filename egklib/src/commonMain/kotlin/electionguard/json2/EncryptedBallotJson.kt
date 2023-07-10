@@ -11,10 +11,11 @@ import kotlinx.serialization.Serializable
 data class EncryptedBallotJson(
     val ballot_id: String,
     val ballot_style_id: String,
-    val confirmation_code: UInt256Json,
-    val code_baux: String, // Baux in eq 59
-    val contests: List<EncryptedContestJson>,
+    val voting_device: String,
     val timestamp: Long, // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
+    val code_baux: String, // Baux in eq 59
+    val confirmation_code: UInt256Json,
+    val contests: List<EncryptedContestJson>,
     val state: String, // BallotState
     val is_preencrypt: Boolean,
     val primary_nonce: UInt256Json?, // only when uncast
@@ -24,6 +25,7 @@ data class EncryptedBallotJson(
 data class EncryptedContestJson(
     val contest_id: String,
     val sequence_order: Int,
+    val votes_allowed: Int,
     val contest_hash: UInt256Json,
     val selections: List<EncryptedSelectionJson>,
     val proof: RangeProofJson,
@@ -45,6 +47,7 @@ fun EncryptedBallot.publishJson(primaryNonce : UInt256? = null): EncryptedBallot
         EncryptedContestJson(
             econtest.contestId,
             econtest.sequenceOrder,
+            econtest.votesAllowed,
             econtest.contestHash.publishJson(),
             econtest.selections.map {
                 EncryptedSelectionJson(
@@ -63,10 +66,11 @@ fun EncryptedBallot.publishJson(primaryNonce : UInt256? = null): EncryptedBallot
     return EncryptedBallotJson(
         this.ballotId,
         this.ballotStyleId,
-        this.confirmationCode.publishJson(),
-        this.codeBaux.toHex(),
-        contests,
+        this.votingDevice,
         this.timestamp,
+        this.codeBaux.toHex(),
+        this.confirmationCode.publishJson(),
+        contests,
         this.state.name,
         this.isPreencrypt,
         primaryNonce?.publishJson(),
@@ -79,6 +83,7 @@ fun EncryptedBallotJson.import(group : GroupContext): EncryptedBallot {
         EncryptedBallot.Contest(
             econtest.contest_id,
             econtest.sequence_order,
+            econtest.votes_allowed,
             econtest.contest_hash.import(),
             econtest.selections.map {
                 EncryptedBallot.Selection(
@@ -97,10 +102,11 @@ fun EncryptedBallotJson.import(group : GroupContext): EncryptedBallot {
     return EncryptedBallot(
         this.ballot_id,
         this.ballot_style_id,
-        this.confirmation_code.import(),
-        this.code_baux.fromSafeHex(),
-        contests,
+        this.voting_device,
         this.timestamp,
+        this.code_baux.fromSafeHex(),
+        this.confirmation_code.import(),
+        contests,
         EncryptedBallot.BallotState.CAST, // fromName(this.name),
         this.is_preencrypt,
         // this.primary_nonce?.import(group),

@@ -26,7 +26,8 @@ class EncryptionNonceTest {
             group,
             electionRecord.manifest(),
             ElGamalPublicKey(electionInit.jointPublicKey),
-            electionInit.extendedBaseHash
+            electionInit.extendedBaseHash,
+            "device"
         )
 
         val starting = getSystemTimeInMillis()

@@ -13,7 +13,6 @@ import electionguard.encrypt.batchEncryption
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
-import electionguard.publish.makeConsumer
 import electionguard.publish.makeTrusteeSource
 import electionguard.tally.runAccumulateBallots
 import electionguard.verifier.Verifier
@@ -70,7 +69,7 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
@@ -121,6 +120,7 @@ class TestWorkflow {
             group,
             manifest,
             electionInit,
+            "device",
             electionInit.config.baux0,
             true,
             workingDir,
@@ -182,7 +182,7 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
@@ -229,7 +229,7 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
@@ -276,7 +276,7 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
@@ -323,7 +323,7 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, true, nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")

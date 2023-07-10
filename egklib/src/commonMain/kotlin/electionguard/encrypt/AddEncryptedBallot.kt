@@ -18,6 +18,7 @@ class AddEncryptedBallot(
     val group: GroupContext,
     val manifest: Manifest,
     val electionInit: ElectionInitialized,
+    val device : String,
     val baux0 : ByteArray,
     val chainCodes : Boolean,
     val outputDir: String, // write ballots here, must not have multiple writers to same directory
@@ -30,7 +31,8 @@ class AddEncryptedBallot(
         group,
         manifest,
         ElGamalPublicKey(electionInit.jointPublicKey),
-        electionInit.extendedBaseHash
+        electionInit.extendedBaseHash,
+        device,
     )
     val ballotValidator = BallotInputValidation(manifest)
     val publisher = makePublisher(outputDir, createNew, isJson)

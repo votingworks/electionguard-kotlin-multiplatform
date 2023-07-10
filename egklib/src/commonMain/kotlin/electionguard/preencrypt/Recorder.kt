@@ -24,6 +24,7 @@ class Recorder(
     val manifest: ManifestIF,
     val publicKey: ElementModP,
     val extendedBaseHash: UInt256,
+    val votingDevice: String,
     sigma : (UInt256) -> String, // hash trimming function Ω
 ) {
     val publicKeyEG = ElGamalPublicKey(publicKey)
@@ -56,10 +57,11 @@ class Recorder(
         val ciphertextBallot =  CiphertextBallot(
             ballotId,
             ballotStyleId,
-            preEncryptedBallot.confirmationCode,
-            codeBaux,
-            contests,
+            votingDevice,
             timestamp,
+            codeBaux,
+            preEncryptedBallot.confirmationCode,
+            contests,
             ballotNonce,
             true,
         )
@@ -114,8 +116,8 @@ class Recorder(
         }
         val contestHash = hashFunction(extendedBaseHashQ.byteArray(), 0x23.toByte(), this.contestId, publicKey, ciphers)
 
-        return CiphertextBallot.Contest(preeContest.contestId, preeContest.sequenceOrder, contestHash,
-            selections, proof, contestDataEncrypted)
+        return CiphertextBallot.Contest(preeContest.contestId, preeContest.sequenceOrder, preeContest.votesAllowed,
+            contestHash, selections, proof, contestDataEncrypted)
     }
 
     private fun PreContest.makeSelections(preeContest: PreEncryptedContest): List<CiphertextBallot.Selection> {

@@ -131,7 +131,7 @@ fun testEncryptDecryptVerify(
     println("present $present")
 
     val available = trustees.filter { present.contains(it.xCoordinate()) }
-    val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash)
+    val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
     val decryptor = DecryptorDoerre(group, extendedBaseHash, publicKey, guardians, available)
     val verifier = VerifyDecryption(group, manifest, publicKey, extendedBaseHash)
 

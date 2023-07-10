@@ -36,10 +36,11 @@ fun electionguard.protogen.EncryptedBallot.import(group: GroupContext):
         EncryptedBallot(
             this.ballotId,
             this.ballotStyleId,
-            confirmationCode.unwrap(),
-            this.codeBaux.array,
-            contests,
+            this.votingDevice,
             this.timestamp,
+            this.codeBaux.array,
+            confirmationCode.unwrap(),
+            contests,
             ballotState.unwrap(),
             this.isPreencrypt,
         )
@@ -75,6 +76,7 @@ private fun electionguard.protogen.EncryptedBallotContest.import(
         EncryptedBallot.Contest(
             this.contestId,
             this.sequenceOrder,
+            this.votesAllowed,
             contestHash.unwrap(),
             selections,
             proof.unwrap(),
@@ -160,15 +162,16 @@ private fun electionguard.protogen.EncryptedBallotSelection.import(
 // preencrypt
 
 fun EncryptedBallot.publishProto(recordedPreBallot: RecordedPreBallot) = electionguard.protogen.EncryptedBallot(
-            this.ballotId,
-            this.ballotStyleId,
-            this.confirmationCode.publishProto(),
-            ByteArr(this.codeBaux),
-            this.contests.map { it.publishProto(recordedPreBallot) },
-            this.timestamp,
-            this.state.publishProto(),
-            true,
-        )
+    this.ballotId,
+    this.ballotStyleId,
+    this.votingDevice,
+    this.timestamp,
+    ByteArr(this.codeBaux),
+    this.confirmationCode.publishProto(),
+    this.contests.map { it.publishProto(recordedPreBallot) },
+    this.state.publishProto(),
+    true,
+)
 
 private fun EncryptedBallot.Contest.publishProto(recordedPreBallot: RecordedPreBallot):
         electionguard.protogen.EncryptedBallotContest {
@@ -180,6 +183,7 @@ private fun EncryptedBallot.Contest.publishProto(recordedPreBallot: RecordedPreB
         .EncryptedBallotContest(
             this.contestId,
             this.sequenceOrder,
+            this.votesAllowed,
             this.contestHash.publishProto(),
             this.selections.map { it.publishProto() },
             this.proof.publishProto(),
@@ -215,10 +219,11 @@ fun EncryptedBallot.publishProto() =
     electionguard.protogen.EncryptedBallot(
         this.ballotId,
         this.ballotStyleId,
-        this.confirmationCode.publishProto(),
-        ByteArr(this.codeBaux),
-        this.contests.map { it.publishProto() },
+        this.votingDevice,
         this.timestamp,
+        ByteArr(this.codeBaux),
+        this.confirmationCode.publishProto(),
+        this.contests.map { it.publishProto() },
         this.state.publishProto()
     )
 
@@ -234,6 +239,7 @@ private fun EncryptedBallot.Contest.publishProto() =
     electionguard.protogen.EncryptedBallotContest(
         this.contestId,
         this.sequenceOrder,
+        this.votesAllowed,
         this.contestHash.publishProto(),
         this.selections.map { it.publishProto() },
         this.proof.publishProto(),

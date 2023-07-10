@@ -182,7 +182,7 @@ class RunBatchEncryptionTest {
             invalidDir,
             ballots,
             invalidDir,
-            false,
+            "device",
             1,
             "testInvalidBallot",
         )

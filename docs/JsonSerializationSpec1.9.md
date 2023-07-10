@@ -1,6 +1,6 @@
 # 🗳 Election Record JSON serialization (proposed specification)
 
-draft 7/9/2023
+draft 7/10/2023
 
 <!-- TOC -->
 * [🗳 Election Record JSON serialization (proposed specification)](#-election-record-json-serialization-proposed-specification)
@@ -59,7 +59,7 @@ data class ElectionConfigJson(
     val election_base_hash: UInt256Json, // Hb
 
     val baux0: ByteArray, // B_aux,0 from eq 59,60
-    val device: String, // the device information from eq 61, and section 3.7
+    val voting_device: String, // the device information from eq 61, and section 3.7
     val chain_confirmation_codes: Boolean,
     val metadata: Map<String, String> = emptyMap(), // arbitrary key, value pairs
 )
@@ -249,10 +249,11 @@ Example:
 data class EncryptedBallotJson(
     val ballot_id: String,
     val ballot_style_id: String,
-    val confirmation_code: UInt256Json,
-    val code_baux: String, // Baux in eq 59
-    val contests: List<EncryptedContestJson>,
+    val voting_device: String,
     val timestamp: Long, // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
+    val code_baux: String, // Baux in eq 59
+    val confirmation_code: UInt256Json,
+    val contests: List<EncryptedContestJson>,
     val state: String, // BallotState
     val is_preencrypt: Boolean,
     val primary_nonce: UInt256Json?, // only when uncast
@@ -262,6 +263,7 @@ data class EncryptedBallotJson(
 data class EncryptedContestJson(
     val contest_id: String,
     val sequence_order: Int,
+    val votes_allowed: Int,
     val contest_hash: UInt256Json,
     val selections: List<EncryptedSelectionJson>,
     val proof: RangeProofJson,

@@ -9,10 +9,11 @@ import electionguard.core.*
 data class EncryptedBallot(
     override val ballotId: String,
     val ballotStyleId: String,  // matches a Manifest.BallotStyle
-    val confirmationCode: UInt256, // tracking code, H(B), eq 59
-    val codeBaux: ByteArray, // Baux in eq 59
-    override val contests: List<Contest>,
+    val votingDevice: String,
     val timestamp: Long,
+    val codeBaux: ByteArray, // Baux in eq 59
+    val confirmationCode: UInt256, // tracking code, H(B), eq 59
+    override val contests: List<Contest>,
     override val state: BallotState,
     val isPreencrypt: Boolean = false,
 ) : EncryptedBallotIF {
@@ -62,6 +63,7 @@ data class EncryptedBallot(
     data class Contest(
         override val contestId: String, // matches ContestDescription.contestIdd
         override val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
+        val votesAllowed: Int, // matches ContestDescription.votesAllowed
         val contestHash: UInt256, // eq 58
         override val selections: List<Selection>,
         val proof: ChaumPedersenRangeProofKnownNonce,

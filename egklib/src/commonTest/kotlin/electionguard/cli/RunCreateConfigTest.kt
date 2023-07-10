@@ -36,6 +36,7 @@ class RunCreateConfigTest {
         )
     }
 
+    // LOOK could read in config and change chaining flag instead
     @Test
     fun testCreateChainConfigProto() {
         createConfig(
