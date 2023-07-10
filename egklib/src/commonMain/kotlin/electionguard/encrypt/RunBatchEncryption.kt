@@ -67,11 +67,6 @@ fun main(args: Array<String>) {
         shortName = "invalid",
         description = "Directory to write invalid input ballots to"
     )
-    val fixedNonces by parser.option(
-        ArgType.Boolean,
-        shortName = "fixed",
-        description = "Encrypt with fixed nonces and timestamp"
-    ).default( false)
     val check by parser.option(
         ArgType.Choice<CheckType>(),
         shortName = "check",
@@ -87,12 +82,17 @@ fun main(args: Array<String>) {
         shortName = "createdBy",
         description = "who created"
     )
+    val device by parser.option(
+        ArgType.String,
+        shortName = "device",
+        description = "voting device information"
+    ).required()
 
     parser.parse(args)
 
     println("RunBatchEncryption starting\n   input= $inputDir\n   ballots = $ballotDir\n   output = $outputDir" +
+            "\n   device = $device" +
             "\n   nthreads = $nthreads" +
-            "\n   fixedNonces = $fixedNonces" +
             "\n   check = $check"
     )
 
@@ -102,7 +102,7 @@ fun main(args: Array<String>) {
         outputDir,
         ballotDir,
         invalidDir,
-        fixedNonces,
+        device,
         nthreads,
         createdBy,
         check,
@@ -113,14 +113,21 @@ enum class CheckType { None, Verify, EncryptTwice, DecryptNonce }
 
 // encrypt ballots in inputDir
 fun batchEncryption(
-    group: GroupContext, inputDir: String, outputDir: String, ballotDir: String,
-    invalidDir: String?, fixedNonces: Boolean, nthreads: Int, createdBy: String?, check: CheckType = CheckType.None,
+    group: GroupContext,
+    inputDir: String,
+    outputDir: String,
+    ballotDir: String,
+    invalidDir: String?,
+    device: String,
+    nthreads: Int,
+    createdBy: String?,
+    check: CheckType = CheckType.None,
 ) {
     // ballots can be in either format
     val ballotSource = makeInputBallotSource(ballotDir, group)
 
     return batchEncryption(group, inputDir, outputDir, ballotSource.iteratePlaintextBallots(ballotDir, null),
-        invalidDir, fixedNonces, nthreads, createdBy, check)
+        invalidDir, device, nthreads, createdBy, check)
 }
 
 // encrypt the ballots in Iterable<PlaintextBallot>
@@ -130,7 +137,7 @@ fun batchEncryption(
     outputDir: String,
     ballots: Iterable<PlaintextBallot>,
     invalidDir: String?,
-    fixedNonces: Boolean,
+    device: String,
     nthreads: Int,
     createdBy: String?,
     check: CheckType = CheckType.None,
@@ -169,14 +176,14 @@ fun batchEncryption(
     }
     val starting = getSystemTimeInMillis() // start timing here
 
-    val ballotNonce = if (fixedNonces) UInt256.TWO else null
     val encryptor = Encryptor(
         group,
         electionRecord.manifest(),
         ElGamalPublicKey(electionInit.jointPublicKey),
-        electionInit.extendedBaseHash
+        electionInit.extendedBaseHash,
+        device,
     )
-    val runEncryption = EncryptionRunner(group, encryptor, ballotNonce, electionRecord.manifest(), electionRecord.config(),
+    val runEncryption = EncryptionRunner(group, encryptor, null, electionRecord.manifest(), electionRecord.config(),
         electionInit.jointPublicKey, electionInit.extendedBaseHash, check)
 
     val publisher = makePublisher(outputDir, false, electionRecord.isJson())

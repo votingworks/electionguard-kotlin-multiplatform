@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 7/9/2023
+draft 7/10/2023
 
 **Table of Contents**
  
@@ -218,22 +218,22 @@ draft 7/9/2023
 
 #### message ElectionConfig
 
-| Name                       | Type                  | Notes                                              |
-|----------------------------|-----------------------|----------------------------------------------------|
-| spec_version               | string                | "v2.0.0"                                           |
-| constants                  | ElectionConstants     |                                                    |
-| number_of_guardians        | uint32                | n                                                  |
-| quorum                     | uint32                | k                                                  |
-| election_date              | string                | k                                                  |
-| jurisdiction_info          | string                | k                                                  |
-| parameter_base_hash        | UInt256               | Hp                                                 |
-| manifest_hash              | UInt256               | Hm                                                 |
-| election_base_hash         | UInt256               | He                                                 |
-| manifest_bytes             | bytes                 |                                                    |
-| baux0                      | bytes                 | B_aux,0 from eq 59,60                              |
-| device                     | string                | the device information from eq 61, and section 3.7 |
-| chain_confirmation_codes   | bool                  |                                                    |
-| metadata                   | map\<string, string\> | arbitrary                                          |
+| Name                     | Type                  | Notes                                          |
+|--------------------------|-----------------------|------------------------------------------------|
+| spec_version             | string                | "v2.0.0"                                       |
+| constants                | ElectionConstants     |                                                |
+| number_of_guardians      | uint32                | n                                              |
+| quorum                   | uint32                | k                                              |
+| election_date            | string                | k                                              |
+| jurisdiction_info        | string                | k                                              |
+| parameter_base_hash      | UInt256               | Hp                                             |
+| manifest_hash            | UInt256               | Hm                                             |
+| election_base_hash       | UInt256               | He                                             |
+| manifest_bytes           | bytes                 |                                                |
+| baux0                    | bytes                 | B_aux,0 from eq 59,60                          |
+| voting_device            | string                | voting device information, section 3.4.3, 3.7  |
+| chain_confirmation_codes | bool                  |                                                |
+| metadata                 | map\<string, string\> | arbitrary                                      |
 
 #### message ElectionConstants
 
@@ -316,28 +316,30 @@ draft 7/9/2023
 
 #### message EncryptedBallot
 
-| Name              | Type                           | Notes                            |
-|-------------------|--------------------------------|----------------------------------|
-| ballot_id         | string                         | PlaintextBallot.ballot_id        |
-| ballot_style_id   | string                         | BallotStyle.ballot_style_id      |
-| confirmation_code | UInt256                        | tracking code, H_i               |
-| code_baux         | bytes                          | B_aux in eq 96                   |
-| contests          | List\<EncryptedBallotContest\> |                                  |
-| timestamp         | int64                          | seconds since the unix epoch UTC |
-| state             | enum BallotState               | CAST, SPOILED                    |
-| is_preencrypt     | bool                           |                                  |
+| Name              | Type                           | Notes                                         |
+|-------------------|--------------------------------|-----------------------------------------------|
+| ballot_id         | string                         | PlaintextBallot.ballot_id                     |
+| ballot_style_id   | string                         | BallotStyle.ballot_style_id                   |
+| voting_device     | string                         | voting device information, section 3.4.3, 3.7 |
+| confirmation_code | UInt256                        | tracking code, H_i                            |
+| code_baux         | bytes                          | B_aux in eq 96                                |
+| contests          | List\<EncryptedBallotContest\> |                                               |
+| timestamp         | int64                          | seconds since the unix epoch UTC              |
+| state             | enum BallotState               | CAST, SPOILED                                 |
+| is_preencrypt     | bool                           |                                               |
 
 #### message EncryptedBallotContest
 
-| Name                   | Type                               | Notes                             |
-|------------------------|------------------------------------|-----------------------------------|
-| contest_id             | string                             | ContestDescription.contest_id     |
-| sequence_order         | uint32                             | ContestDescription.sequence_order |
-| contest_hash           | UInt256                            | eq 58                             |                                                                     |
-| selections             | List\<EncryptedBallotSelection\>   |                                   |
-| proof                  | ChaumPedersenRangeProofKnownNonce  | proof of votes <= limit           |
-| encrypted_contest_data | HashedElGamalCiphertext            |                                   |
-| pre_encryption         | PreEncryption                      |                                   |
+| Name                   | Type                               | Notes                              |
+|------------------------|------------------------------------|------------------------------------|
+| contest_id             | string                             | ContestDescription.contest_id      |
+| sequence_order         | uint32                             | ContestDescription.sequence_order  |
+| votes_allowed          | uint32                             | ContestDescription.votes_allowed   |
+| contest_hash           | UInt256                            | eq 58                              |
+| selections             | List\<EncryptedBallotSelection\>   |                                    |
+| proof                  | ChaumPedersenRangeProofKnownNonce  | proof of votes <= limit            |
+| encrypted_contest_data | HashedElGamalCiphertext            |                                    |
+| pre_encryption         | PreEncryption                      |                                    |
 
 #### message EncryptedBallotSelection
 

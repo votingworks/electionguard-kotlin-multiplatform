@@ -70,7 +70,7 @@ internal class PreEncryptorTest {
             mballot.show()
 
             val recorder =
-                Recorder(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, ::sigma)
+                Recorder(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, "device", ::sigma)
 
             with(recorder) {
                 mballot.record(primaryNonce)
@@ -204,7 +204,7 @@ internal fun runComplete(
     if (show) markedBallot.show()
 
     // record
-    val recorder = Recorder(group, manifest, publicKey, qbar, ::sigma)
+    val recorder = Recorder(group, manifest, publicKey, qbar, "device", ::sigma)
     val (recordedBallot, ciphertextBallot) = with(recorder) {
         markedBallot.record(primaryNonce)
     }

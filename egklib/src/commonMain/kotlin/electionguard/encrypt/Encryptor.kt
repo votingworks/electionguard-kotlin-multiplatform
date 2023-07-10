@@ -17,6 +17,7 @@ class Encryptor(
     val manifest: ManifestIF,
     val jointPublicKey: ElGamalPublicKey, // aka K
     val extendedBaseHash: UInt256, // aka He
+    val votingDevice: String,
 ) {
     private val extendedBaseHashB = extendedBaseHash.bytes
 
@@ -60,10 +61,11 @@ class Encryptor(
         return CiphertextBallot(
             ballotId,
             ballotStyle,
-            confirmationCode,
-            codeBaux,
-            sortedContests,
+            votingDevice,
             timestamp,
+            codeBaux,
+            confirmationCode,
+            sortedContests,
             ballotNonce,
             codeOverride != null,
         )
@@ -187,6 +189,7 @@ fun PlaintextBallot.Contest.encryptContest(
     return CiphertextBallot.Contest(
         this.contestId,
         this.sequenceOrder,
+        votesAllowed,
         contestHash,
         encryptedSelections,
         proof,

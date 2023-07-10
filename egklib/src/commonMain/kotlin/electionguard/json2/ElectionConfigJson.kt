@@ -19,7 +19,7 @@ data class ElectionConfigJson(
     val election_base_hash: UInt256Json, // Hb
 
     val baux0: ByteArray, // B_aux,0 from eq 59,60
-    val device: String, // the device information from eq 61, and section 3.7
+    val voting_device: String, // the device information from eq 61, and section 3.7
     val chain_confirmation_codes: Boolean,
     val metadata: Map<String, String> = emptyMap(), // arbitrary key, value pairs
 )
@@ -52,7 +52,7 @@ fun ElectionConfigJson.import(constants: ElectionConstants, manifestBytes: ByteA
         this.election_base_hash.import(),
         manifestBytes,
         this.baux0,
-        this.device,
+        this.voting_device,
         this.chain_confirmation_codes,
         this.metadata,
     )

@@ -15,7 +15,7 @@ public data class ElectionConfig(
     val electionBaseHash: electionguard.protogen.UInt256? = null,
     val manifestBytes: pbandk.ByteArr = pbandk.ByteArr.empty,
     val baux0: pbandk.ByteArr = pbandk.ByteArr.empty,
-    val device: String = "",
+    val votingDevice: String = "",
     val chainConfirmationCodes: Boolean = false,
     val metadata: List<electionguard.protogen.ElectionConfig.MetadataEntry> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -153,11 +153,11 @@ public data class ElectionConfig(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "device",
+                        name = "voting_device",
                         number = 13,
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "device",
-                        value = electionguard.protogen.ElectionConfig::device
+                        jsonName = "votingDevice",
+                        value = electionguard.protogen.ElectionConfig::votingDevice
                     )
                 )
                 add(
@@ -492,6 +492,143 @@ public data class Guardian(
 }
 
 @pbandk.Export
+public data class EncryptedBallotChain(
+    val votingDevice: String = "",
+    val baux0: pbandk.ByteArr = pbandk.ByteArr.empty,
+    val chainConfirmationCodes: Boolean = false,
+    val encryptedBallots: List<electionguard.protogen.EncryptedBallot> = emptyList(),
+    val closingHash: List<electionguard.protogen.UInt256> = emptyList(),
+    val metadata: List<electionguard.protogen.EncryptedBallotChain.MetadataEntry> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): electionguard.protogen.EncryptedBallotChain = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedBallotChain> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<electionguard.protogen.EncryptedBallotChain> {
+        public val defaultInstance: electionguard.protogen.EncryptedBallotChain by lazy { electionguard.protogen.EncryptedBallotChain() }
+        override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedBallotChain = electionguard.protogen.EncryptedBallotChain.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedBallotChain> by lazy {
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedBallotChain, *>>(6)
+            fieldsList.apply {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "voting_device",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "votingDevice",
+                        value = electionguard.protogen.EncryptedBallotChain::votingDevice
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "baux0",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
+                        jsonName = "baux0",
+                        value = electionguard.protogen.EncryptedBallotChain::baux0
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "chain_confirmation_codes",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(),
+                        jsonName = "chainConfirmationCodes",
+                        value = electionguard.protogen.EncryptedBallotChain::chainConfirmationCodes
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "encrypted_ballots",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptedBallot>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedBallot.Companion)),
+                        jsonName = "encryptedBallots",
+                        value = electionguard.protogen.EncryptedBallotChain::encryptedBallots
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "closing_hash",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.UInt256>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion)),
+                        jsonName = "closingHash",
+                        value = electionguard.protogen.EncryptedBallotChain::closingHash
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "metadata",
+                        number = 11,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptedBallotChain.MetadataEntry>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedBallotChain.MetadataEntry.Companion)),
+                        jsonName = "metadata",
+                        value = electionguard.protogen.EncryptedBallotChain::metadata
+                    )
+                )
+            }
+            pbandk.MessageDescriptor(
+                fullName = "EncryptedBallotChain",
+                messageClass = electionguard.protogen.EncryptedBallotChain::class,
+                messageCompanion = this,
+                fields = fieldsList
+            )
+        }
+    }
+
+    public data class MetadataEntry(
+        override val key: String = "",
+        override val value: String = "",
+        override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+    ) : pbandk.Message, Map.Entry<String, String> {
+        override operator fun plus(other: pbandk.Message?): electionguard.protogen.EncryptedBallotChain.MetadataEntry = protoMergeImpl(other)
+        override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedBallotChain.MetadataEntry> get() = Companion.descriptor
+        override val protoSize: Int by lazy { super.protoSize }
+        public companion object : pbandk.Message.Companion<electionguard.protogen.EncryptedBallotChain.MetadataEntry> {
+            public val defaultInstance: electionguard.protogen.EncryptedBallotChain.MetadataEntry by lazy { electionguard.protogen.EncryptedBallotChain.MetadataEntry() }
+            override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedBallotChain.MetadataEntry = electionguard.protogen.EncryptedBallotChain.MetadataEntry.decodeWithImpl(u)
+
+            override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedBallotChain.MetadataEntry> by lazy {
+                val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedBallotChain.MetadataEntry, *>>(2)
+                fieldsList.apply {
+                    add(
+                        pbandk.FieldDescriptor(
+                            messageDescriptor = this@Companion::descriptor,
+                            name = "key",
+                            number = 1,
+                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                            jsonName = "key",
+                            value = electionguard.protogen.EncryptedBallotChain.MetadataEntry::key
+                        )
+                    )
+                    add(
+                        pbandk.FieldDescriptor(
+                            messageDescriptor = this@Companion::descriptor,
+                            name = "value",
+                            number = 2,
+                            type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                            jsonName = "value",
+                            value = electionguard.protogen.EncryptedBallotChain.MetadataEntry::value
+                        )
+                    )
+                }
+                pbandk.MessageDescriptor(
+                    fullName = "EncryptedBallotChain.MetadataEntry",
+                    messageClass = electionguard.protogen.EncryptedBallotChain.MetadataEntry::class,
+                    messageCompanion = this,
+                    fields = fieldsList
+                )
+            }
+        }
+    }
+}
+
+@pbandk.Export
 public data class TallyResult(
     val electionInit: electionguard.protogen.ElectionInitialized? = null,
     val encryptedTally: electionguard.protogen.EncryptedTally? = null,
@@ -738,7 +875,7 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
     var electionBaseHash: electionguard.protogen.UInt256? = null
     var manifestBytes: pbandk.ByteArr = pbandk.ByteArr.empty
     var baux0: pbandk.ByteArr = pbandk.ByteArr.empty
-    var device = ""
+    var votingDevice = ""
     var chainConfirmationCodes = false
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.ElectionConfig.MetadataEntry>? = null
 
@@ -756,14 +893,14 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
             10 -> manifestBytes = _fieldValue as pbandk.ByteArr
             11 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.ElectionConfig.MetadataEntry> }
             12 -> baux0 = _fieldValue as pbandk.ByteArr
-            13 -> device = _fieldValue as String
+            13 -> votingDevice = _fieldValue as String
             14 -> chainConfirmationCodes = _fieldValue as Boolean
         }
     }
 
     return ElectionConfig(specVersion, constants, numberOfGuardians, quorum,
         electionDate, jurisdictionInfo, parameterBaseHash, manifestHash,
-        electionBaseHash, manifestBytes, baux0, device,
+        electionBaseHash, manifestBytes, baux0, votingDevice,
         chainConfirmationCodes, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
@@ -912,6 +1049,68 @@ private fun Guardian.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Guardia
     }
 
     return Guardian(guardianId, xCoordinate, pbandk.ListWithSize.Builder.fixed(coefficientProofs), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForEncryptedBallotChain")
+public fun EncryptedBallotChain?.orDefault(): electionguard.protogen.EncryptedBallotChain = this ?: EncryptedBallotChain.defaultInstance
+
+private fun EncryptedBallotChain.protoMergeImpl(plus: pbandk.Message?): EncryptedBallotChain = (plus as? EncryptedBallotChain)?.let {
+    it.copy(
+        encryptedBallots = encryptedBallots + plus.encryptedBallots,
+        closingHash = closingHash + plus.closingHash,
+        metadata = metadata + plus.metadata,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun EncryptedBallotChain.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedBallotChain {
+    var votingDevice = ""
+    var baux0: pbandk.ByteArr = pbandk.ByteArr.empty
+    var chainConfirmationCodes = false
+    var encryptedBallots: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptedBallot>? = null
+    var closingHash: pbandk.ListWithSize.Builder<electionguard.protogen.UInt256>? = null
+    var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptedBallotChain.MetadataEntry>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> votingDevice = _fieldValue as String
+            2 -> baux0 = _fieldValue as pbandk.ByteArr
+            3 -> chainConfirmationCodes = _fieldValue as Boolean
+            4 -> encryptedBallots = (encryptedBallots ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallot> }
+            5 -> closingHash = (closingHash ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.UInt256> }
+            11 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallotChain.MetadataEntry> }
+        }
+    }
+
+    return EncryptedBallotChain(votingDevice, baux0, chainConfirmationCodes, pbandk.ListWithSize.Builder.fixed(encryptedBallots),
+        pbandk.ListWithSize.Builder.fixed(closingHash), pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForEncryptedBallotChainMetadataEntry")
+public fun EncryptedBallotChain.MetadataEntry?.orDefault(): electionguard.protogen.EncryptedBallotChain.MetadataEntry = this ?: EncryptedBallotChain.MetadataEntry.defaultInstance
+
+private fun EncryptedBallotChain.MetadataEntry.protoMergeImpl(plus: pbandk.Message?): EncryptedBallotChain.MetadataEntry = (plus as? EncryptedBallotChain.MetadataEntry)?.let {
+    it.copy(
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun EncryptedBallotChain.MetadataEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedBallotChain.MetadataEntry {
+    var key = ""
+    var value = ""
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> key = _fieldValue as String
+            2 -> value = _fieldValue as String
+        }
+    }
+
+    return EncryptedBallotChain.MetadataEntry(key, value, unknownFields)
 }
 
 @pbandk.Export

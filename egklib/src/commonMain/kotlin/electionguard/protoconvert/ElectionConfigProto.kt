@@ -27,7 +27,7 @@ fun electionguard.protogen.ElectionConfig.import(): Result<ElectionConfig, Strin
         electionHash.unwrap(),
         this.manifestBytes.array,
         this.baux0.array,
-        this.device,
+        this.votingDevice,
         this.chainConfirmationCodes,
         this.metadata.associate { it.key to it.value },
     ))

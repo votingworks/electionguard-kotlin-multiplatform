@@ -17,7 +17,7 @@ class EncryptTest {
             val electionInit = electionRecord.electionInit()!!
             val ballot = makeBallot(electionRecord.manifest(), "ballotStyle", 3, 0)
 
-            val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
+            val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash, "device")
             val result = encryptor.encrypt(ballot)
 
             var first = true
@@ -42,7 +42,7 @@ class EncryptTest {
             val electionInit = electionRecord.electionInit()!!
             val ballot = makeBallot(electionRecord.manifest(), "ballotStyle", 3, 0)
 
-            val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash)
+            val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash, "device")
             val nonce1 = UInt256.random()
             val result1 = encryptor.encrypt(ballot, nonce1, 0)
             val result2 = encryptor.encrypt(ballot, nonce1, 0)

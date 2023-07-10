@@ -24,7 +24,7 @@ class DecryptionWithNonceTest {
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
         val init = electionRecord.electionInit()!!
-        val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(init.jointPublicKey), init.extendedBaseHash)
+        val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(init.jointPublicKey), init.extendedBaseHash, "device")
 
         RandomBallotProvider(electionRecord.manifest(), nballots).ballots().forEach { ballot ->
             val primaryNonce = UInt256.random()
@@ -74,7 +74,7 @@ class DecryptionWithNonceTest {
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
         val init = electionRecord.electionInit()!!
-        val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(init.jointPublicKey), init.extendedBaseHash)
+        val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(init.jointPublicKey), init.extendedBaseHash, "device")
 
         val nb = 100
         RandomBallotProvider(electionRecord.manifest(), nb, true).ballots().forEach { ballot ->

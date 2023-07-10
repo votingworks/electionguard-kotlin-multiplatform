@@ -80,7 +80,7 @@ class DecryptBallotTestVector {
             .done()
             .build()
 
-        val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash)
+        val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash, "device")
         val ciphertextBallot = RandomBallotProvider(manifest, nBallots).ballots().map { ballot ->
             encryptor.encrypt(ballot)
         }.first()

@@ -15,10 +15,11 @@ message EncryptedBallot {
 
   string ballot_id = 1; // a unique Ballot ID created by the external system
   string ballot_style_id = 2; // The ballot_style_id of the BallotStyle in the Election Manifest
-  UInt256 confirmation_code = 3; // ballot tracking code, H(B), eq 59 or eq 96 for preencrypt
-  bytes code_baux = 4; // B_aux in eq 59
-  repeated EncryptedBallotContest contests = 5;
+  string voting_device = 10; // voting device information, section 3.4.3, 3.7
   int64 timestamp = 6; // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
+  bytes code_baux = 4; // B_aux in eq 59
+  UInt256 confirmation_code = 3; // ballot tracking code, H(B), eq 59 or eq 96 for preencrypt
+  repeated EncryptedBallotContest contests = 5;
   BallotState state = 7;
 
   bool is_preencrypt = 8;
@@ -29,6 +30,7 @@ message EncryptedBallot {
 message EncryptedBallotContest {
   string contest_id = 1; // matches the ContestDescription.contest_id
   uint32 sequence_order = 2; // matches the ContestDescription.sequence_order
+  uint32 votes_allowed = 8; // matches the ContestDescription.votes_allowed
   UInt256 contest_hash = 3; // eq 58
   repeated EncryptedBallotSelection selections = 4;
   ChaumPedersenRangeProofKnownNonce proof = 5;  // Proof the sum of the selections does not exceed the maximum

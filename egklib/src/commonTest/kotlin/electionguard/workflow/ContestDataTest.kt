@@ -61,7 +61,7 @@ class ContestDataTest {
             .done()
             .build()
 
-        val encryptor = Encryptor(context, electionRecord.manifest(), keypair.publicKey, electionInit.extendedBaseHash)
+        val encryptor = Encryptor(context, electionRecord.manifest(), keypair.publicKey, electionInit.extendedBaseHash, "device")
         val eballot = encryptor.encrypt(ballot)
 
         eballot.contests.forEachIndexed { idx, it ->

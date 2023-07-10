@@ -79,7 +79,7 @@ class PreEncryptionRecordedTestVector {
         val votedFor = markedBallot.contests.associate { it.contestId to it.selectedCodes }
 
         // record
-        val recorder = Recorder(group, manifest, publicKey, extendedBaseHash, ::sigma)
+        val recorder = Recorder(group, manifest, publicKey, extendedBaseHash, "device", ::sigma)
         val (recordedBallot, ciphertextBallot) = with(recorder) {
             markedBallot.record(primaryNonce)
         }
@@ -127,7 +127,7 @@ class PreEncryptionRecordedTestVector {
         val markedBallot = markBallotFromVotedFor(pballot, testVector.selected_codes)
 
         // record
-        val recorder = Recorder(group, manifest, publicKey, extendedBaseHash, ::sigma)
+        val recorder = Recorder(group, manifest, publicKey, extendedBaseHash, "device", ::sigma)
         val (recordedBallot, ciphertextBallot) = with(recorder) {
             markedBallot.record(primaryNonce)
         }

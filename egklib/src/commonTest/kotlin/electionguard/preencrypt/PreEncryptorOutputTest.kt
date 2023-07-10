@@ -74,7 +74,7 @@ internal class PreEncryptorOutputTest {
         if (show) markedBallot.show()
 
         // record
-        val recorder = Recorder(group, manifest, publicKey, extendedBaseHash, ::sigma)
+        val recorder = Recorder(group, manifest, publicKey, extendedBaseHash, "device", ::sigma)
         val (recordedBallot, ciphertextBallot) = with(recorder) {
             markedBallot.record(primaryNonce)
         }

@@ -113,7 +113,7 @@ class BallotEncryptionTestVector {
             .done()
             .build()
 
-        val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash)
+        val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash, "device")
         val validator = BallotInputValidation(manifest)
 
         val useBallots = mutableListOf<PlaintextBallot>()
@@ -156,7 +156,7 @@ class BallotEncryptionTestVector {
 
         ballotsZipped.forEach { (ballot, eballot) ->
             val manifest = PlaintextBallotJsonManifestFacade(ballot)
-            val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash)
+            val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
             val ballotNonce = eballot.ballotNonce.import()
             val cyberBallot = encryptor.encrypt(ballot.import(), ballotNonce)
             checkEquals(eballot, cyberBallot)

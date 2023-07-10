@@ -85,7 +85,7 @@ class BallotChainingTestVector {
             .done()
             .build()
 
-        val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash)
+        val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash, "device")
         val ballots = RandomBallotProvider(manifest, nBallots).ballots()
         val codeSeed = UInt256.random()
         val eballots = encryptor.encryptChain(ballots, codeSeed)
@@ -120,7 +120,7 @@ class BallotChainingTestVector {
         var prevCode : ByteArray? = null
         ballotsZipped.forEach { (ballot, eballot) ->
             val manifest = PlaintextBallotJsonManifestFacade(ballot)
-            val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash)
+            val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
             val ballotNonce = eballot.ballotNonce.import()
             val codeBaux : ByteArray = eballot.codeBaux.fromHex()!!
             val cyberBallot = encryptor.encrypt(ballot.import(), ballotNonce, null, codeBaux)

@@ -7,16 +7,18 @@ import electionguard.core.*
 data class CiphertextBallot(
     val ballotId: String,
     val ballotStyleId: String,
-    val confirmationCode: UInt256, // tracking code, H(B), eq 59
-    val codeBaux: ByteArray, // Baux in eq 59
-    val contests: List<Contest>,
+    val votingDevice: String,
     val timestamp: Long,
+    val codeBaux: ByteArray, // Baux in eq 59
+    val confirmationCode: UInt256, // tracking code, H(B), eq 59
+    val contests: List<Contest>,
     val ballotNonce: UInt256,
     val isPreEncrypt: Boolean = false,
 ) {
     data class Contest(
         val contestId: String, // matches ContestDescription.contestIdd
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
+        val votesAllowed: Int,
         val contestHash: UInt256, // eq 58
         val selections: List<Selection>,
         val proof: ChaumPedersenRangeProofKnownNonce,
@@ -44,10 +46,11 @@ fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot
     return EncryptedBallot(
         this.ballotId,
         this.ballotStyleId,
-        this.confirmationCode,
-        this.codeBaux,
-        this.contests.map { it.submit() },
+        this.votingDevice,
         this.timestamp,
+        this.codeBaux,
+        this.confirmationCode,
+        this.contests.map { it.submit() },
         state,
         this.isPreEncrypt,
     )
@@ -57,6 +60,7 @@ fun CiphertextBallot.Contest.submit(): EncryptedBallot.Contest {
     return EncryptedBallot.Contest(
         this.contestId,
         this.sequenceOrder,
+        this.votesAllowed,
         this.contestHash,
         this.selections.map { it.submit() },
         this.proof,

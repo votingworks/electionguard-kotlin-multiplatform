@@ -98,10 +98,11 @@ class AttackEncryptedBallotTest {
         return EncryptedBallot(
             ballot.ballotId,
             ballot.ballotStyleId,
-            UInt256.random(),
-            ByteArray(0),
-            ccontests,
+            "device",
             ballot.timestamp,
+            ByteArray(0),
+            UInt256.random(),
+            ccontests,
             ballot.state
         )
     }
@@ -137,6 +138,7 @@ class AttackEncryptedBallotTest {
         return EncryptedBallot.Contest(
             contest.contestId,
             contest.sequenceOrder,
+            contest.votesAllowed,
             contest.contestHash,
             selections2,
             contest.proof,
