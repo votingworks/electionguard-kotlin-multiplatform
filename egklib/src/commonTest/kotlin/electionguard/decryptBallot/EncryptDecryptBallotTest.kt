@@ -33,7 +33,7 @@ class EncryptDecryptBallotTest {
     val group = productionGroup()
     val configDir = "src/commonTest/data/startConfigProto"
     val outputDir = "testOut/RecoveredDecryptionTest"
-    val trusteeDir = "testOut/RecoveredDecryptionTest/private_data"
+    val trusteeDir = "$outputDir/private_data"
 
     @Test
     fun testAllPresent() {

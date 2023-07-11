@@ -31,7 +31,7 @@ class VerifierTest {
                 "-in",
                 "src/commonTest/data/workflow/someAvailableProto",
                 "-nthreads",
-                "25",
+                "11",
                 "--showTime",
             )
         )
@@ -49,7 +49,8 @@ class VerifierTest {
 
     @Test
     fun verifySpoiledBallotTallies() {
-        verifyChallengedBallots(productionGroup(), "src/commonTest/data/workflow/someAvailableProto")
+        verifyChallengedBallots(productionGroup(), "src/commonTest/data/workflow/chainedProto")
+        verifyChallengedBallots(productionGroup(), "src/commonTest/data/workflow/chainedJson")
     }
 
     // • Ordered lists of the ballots encrypted by each device. spec 1.9, p.42
