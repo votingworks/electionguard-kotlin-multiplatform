@@ -2,8 +2,7 @@ package electionguard.protoconvert
 
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
-import electionguard.core.GroupContext
-import electionguard.core.tinyGroup
+import electionguard.core.*
 import electionguard.publish.Publisher
 import electionguard.publish.makePublisher
 import kotlin.test.Test

@@ -9,8 +9,8 @@ class RunTrustedTallyDecryptionTest {
     @Test
     fun testDecryptionAll() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/allAvailable"
-        val trusteeDir = "src/commonTest/data/allAvailable/private_data/trustees"
+        val inputDir = "src/commonTest/data/workflow/allAvailableProto"
+        val trusteeDir = "$inputDir/private_data/trustees"
         val outputDir = "testOut/decrypt/testDecryptionAll"
         println("testDecryptionAll input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
         runDecryptTally(group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir), "createdBy")
@@ -21,9 +21,9 @@ class RunTrustedTallyDecryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailableJson",
+                "src/commonTest/data/workflow/allAvailableJson",
                 "-trustees",
-                "src/commonTest/data/allAvailableJson/private_data/trustees",
+                "src/commonTest/data/workflow/allAvailableJson/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptionJson",
                 "-createdBy",
@@ -37,9 +37,9 @@ class RunTrustedTallyDecryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/someAvailable",
+                "src/commonTest/data/workflow/someAvailableProto",
                 "-trustees",
-                "src/commonTest/data/someAvailable/private_data/trustees",
+                "src/commonTest/data/workflow/someAvailableProto/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptionSome",
                 "-createdBy",
@@ -56,9 +56,9 @@ class RunTrustedTallyDecryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/someAvailableJson",
+                "src/commonTest/data/workflow/someAvailableJson",
                 "-trustees",
-                "src/commonTest/data/someAvailableJson/private_data/trustees",
+                "src/commonTest/data/workflow/someAvailableJson/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptionSome",
                 "-createdBy",

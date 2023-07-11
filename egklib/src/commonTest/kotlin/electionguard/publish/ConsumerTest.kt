@@ -12,7 +12,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
-    private val topdir = "src/commonTest/data/someAvailableJson"
+    private val topdir = "src/commonTest/data/workflow/someAvailableJson"
 
     @Test
     fun readElectionRecord() {

@@ -6,7 +6,7 @@ package electionguard.protogen
 public data class EncryptedBallot(
     val ballotId: String = "",
     val ballotStyleId: String = "",
-    val votingDevice: String = "",
+    val encryptingDevice: String = "",
     val timestamp: Long = 0L,
     val codeBaux: pbandk.ByteArr = pbandk.ByteArr.empty,
     val confirmationCode: electionguard.protogen.UInt256? = null,
@@ -49,38 +49,18 @@ public data class EncryptedBallot(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "confirmation_code",
+                        name = "encrypting_device",
                         number = 3,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "confirmationCode",
-                        value = electionguard.protogen.EncryptedBallot::confirmationCode
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "code_baux",
-                        number = 4,
-                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
-                        jsonName = "codeBaux",
-                        value = electionguard.protogen.EncryptedBallot::codeBaux
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "contests",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptedBallotContest>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedBallotContest.Companion)),
-                        jsonName = "contests",
-                        value = electionguard.protogen.EncryptedBallot::contests
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
+                        jsonName = "encryptingDevice",
+                        value = electionguard.protogen.EncryptedBallot::encryptingDevice
                     )
                 )
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "timestamp",
-                        number = 6,
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Primitive.Int64(),
                         jsonName = "timestamp",
                         value = electionguard.protogen.EncryptedBallot::timestamp
@@ -89,8 +69,38 @@ public data class EncryptedBallot(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "state",
+                        name = "code_baux",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bytes(),
+                        jsonName = "codeBaux",
+                        value = electionguard.protogen.EncryptedBallot::codeBaux
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "confirmation_code",
+                        number = 6,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "confirmationCode",
+                        value = electionguard.protogen.EncryptedBallot::confirmationCode
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "contests",
                         number = 7,
+                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptedBallotContest>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedBallotContest.Companion)),
+                        jsonName = "contests",
+                        value = electionguard.protogen.EncryptedBallot::contests
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "state",
+                        number = 8,
                         type = pbandk.FieldDescriptor.Type.Enum(enumCompanion = electionguard.protogen.EncryptedBallot.BallotState.Companion),
                         jsonName = "state",
                         value = electionguard.protogen.EncryptedBallot::state
@@ -100,7 +110,7 @@ public data class EncryptedBallot(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "is_preencrypt",
-                        number = 8,
+                        number = 9,
                         type = pbandk.FieldDescriptor.Type.Primitive.Bool(),
                         jsonName = "isPreencrypt",
                         value = electionguard.protogen.EncryptedBallot::isPreencrypt
@@ -110,20 +120,10 @@ public data class EncryptedBallot(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "primary_nonce",
-                        number = 9,
+                        number = 10,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
                         jsonName = "primaryNonce",
                         value = electionguard.protogen.EncryptedBallot::primaryNonce
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "voting_device",
-                        number = 10,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "votingDevice",
-                        value = electionguard.protogen.EncryptedBallot::votingDevice
                     )
                 )
             }
@@ -199,8 +199,18 @@ public data class EncryptedBallotContest(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "contest_hash",
+                        name = "votes_allowed",
                         number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
+                        jsonName = "votesAllowed",
+                        value = electionguard.protogen.EncryptedBallotContest::votesAllowed
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "contest_hash",
+                        number = 4,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
                         jsonName = "contestHash",
                         value = electionguard.protogen.EncryptedBallotContest::contestHash
@@ -210,7 +220,7 @@ public data class EncryptedBallotContest(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "selections",
-                        number = 4,
+                        number = 5,
                         type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.EncryptedBallotSelection>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.EncryptedBallotSelection.Companion)),
                         jsonName = "selections",
                         value = electionguard.protogen.EncryptedBallotContest::selections
@@ -220,7 +230,7 @@ public data class EncryptedBallotContest(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "proof",
-                        number = 5,
+                        number = 6,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ChaumPedersenRangeProofKnownNonce.Companion),
                         jsonName = "proof",
                         value = electionguard.protogen.EncryptedBallotContest::proof
@@ -230,7 +240,7 @@ public data class EncryptedBallotContest(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "encrypted_contest_data",
-                        number = 6,
+                        number = 7,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.HashedElGamalCiphertext.Companion),
                         jsonName = "encryptedContestData",
                         value = electionguard.protogen.EncryptedBallotContest::encryptedContestData
@@ -240,20 +250,10 @@ public data class EncryptedBallotContest(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "pre_encryption",
-                        number = 7,
+                        number = 8,
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.PreEncryption.Companion),
                         jsonName = "preEncryption",
                         value = electionguard.protogen.EncryptedBallotContest::preEncryption
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "votes_allowed",
-                        number = 8,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
-                        jsonName = "votesAllowed",
-                        value = electionguard.protogen.EncryptedBallotContest::votesAllowed
                     )
                 )
             }
@@ -505,7 +505,7 @@ private fun EncryptedBallot.protoMergeImpl(plus: pbandk.Message?): EncryptedBall
 private fun EncryptedBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): EncryptedBallot {
     var ballotId = ""
     var ballotStyleId = ""
-    var votingDevice = ""
+    var encryptingDevice = ""
     var timestamp = 0L
     var codeBaux: pbandk.ByteArr = pbandk.ByteArr.empty
     var confirmationCode: electionguard.protogen.UInt256? = null
@@ -518,18 +518,18 @@ private fun EncryptedBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): 
         when (_fieldNumber) {
             1 -> ballotId = _fieldValue as String
             2 -> ballotStyleId = _fieldValue as String
-            3 -> confirmationCode = _fieldValue as electionguard.protogen.UInt256
-            4 -> codeBaux = _fieldValue as pbandk.ByteArr
-            5 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallotContest> }
-            6 -> timestamp = _fieldValue as Long
-            7 -> state = _fieldValue as electionguard.protogen.EncryptedBallot.BallotState
-            8 -> isPreencrypt = _fieldValue as Boolean
-            9 -> primaryNonce = _fieldValue as electionguard.protogen.UInt256
-            10 -> votingDevice = _fieldValue as String
+            3 -> encryptingDevice = _fieldValue as String
+            4 -> timestamp = _fieldValue as Long
+            5 -> codeBaux = _fieldValue as pbandk.ByteArr
+            6 -> confirmationCode = _fieldValue as electionguard.protogen.UInt256
+            7 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallotContest> }
+            8 -> state = _fieldValue as electionguard.protogen.EncryptedBallot.BallotState
+            9 -> isPreencrypt = _fieldValue as Boolean
+            10 -> primaryNonce = _fieldValue as electionguard.protogen.UInt256
         }
     }
 
-    return EncryptedBallot(ballotId, ballotStyleId, votingDevice, timestamp,
+    return EncryptedBallot(ballotId, ballotStyleId, encryptingDevice, timestamp,
         codeBaux, confirmationCode, pbandk.ListWithSize.Builder.fixed(contests), state,
         isPreencrypt, primaryNonce, unknownFields)
 }
@@ -564,12 +564,12 @@ private fun EncryptedBallotContest.Companion.decodeWithImpl(u: pbandk.MessageDec
         when (_fieldNumber) {
             1 -> contestId = _fieldValue as String
             2 -> sequenceOrder = _fieldValue as Int
-            3 -> contestHash = _fieldValue as electionguard.protogen.UInt256
-            4 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallotSelection> }
-            5 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenRangeProofKnownNonce
-            6 -> encryptedContestData = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
-            7 -> preEncryption = _fieldValue as electionguard.protogen.PreEncryption
-            8 -> votesAllowed = _fieldValue as Int
+            3 -> votesAllowed = _fieldValue as Int
+            4 -> contestHash = _fieldValue as electionguard.protogen.UInt256
+            5 -> selections = (selections ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallotSelection> }
+            6 -> proof = _fieldValue as electionguard.protogen.ChaumPedersenRangeProofKnownNonce
+            7 -> encryptedContestData = _fieldValue as electionguard.protogen.HashedElGamalCiphertext
+            8 -> preEncryption = _fieldValue as electionguard.protogen.PreEncryption
         }
     }
 

@@ -20,10 +20,10 @@ message ElectionConfig {
   UInt256 manifest_hash = 8;       // Hm
   UInt256 election_base_hash = 9;  // He
   bytes manifest_bytes = 10; // the original source of the manifest
-  bytes baux0 = 12; // B_aux,0 from eq 59,60
-  string voting_device = 13; // voting device information, section 3.4.3, 3.7
-  bool chain_confirmation_codes = 14;
-  map<string, string> metadata = 11; // arbitrary metadata added by the software
+  bool chain_confirmation_codes = 11;
+  bytes baux0 = 12; // B_aux,0 from eq 59,60 if chain_confirmation_codes = false
+
+  map<string, string> metadata = 20; // arbitrary metadata added by the software
 }
 
 // The constants for mathematical functions during the election.
@@ -51,13 +51,12 @@ message Guardian {
   repeated SchnorrProof coefficient_proofs = 3;  // size = quorum (k)
 }
 
-// strawman
-message EncryptedBallotChain {
-  string voting_device = 1; // voting device information, section 3.4.3, 3.7
-  bytes baux0 = 2; // B_aux,0 from eq 59,60
-  bool chain_confirmation_codes = 3;
-  repeated EncryptedBallot encrypted_ballots = 4; // in order
-  repeated UInt256 closing_hash = 5; // eq 62
+// one for each encryption device
+message EncryptedBallots {
+  string encrypting_device = 1; // encrypting device device information, section 3.4.3, 3.7
+  bytes baux0 = 2; // B_aux,0 from eq 59,60 if chain_confirmation_codes = true
+  repeated EncryptedBallot encrypted_ballots = 3; // in order
+  UInt256 closing_hash = 4; // eq 62, if chained
   map<string, string> metadata = 11; // arbitrary metadata added by the software
 }
 

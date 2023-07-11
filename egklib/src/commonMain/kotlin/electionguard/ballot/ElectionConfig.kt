@@ -27,9 +27,8 @@ data class ElectionConfig(
     // TODO may need to specify serialization form, or detect it.
     val manifestBytes: ByteArray,
 
-    val baux0: ByteArray, // B_aux,0 from eq 59,60
-    val device: String, // the device information from eq 61, and section 3.7
     val chainConfirmationCodes: Boolean = false,
+    val baux0: ByteArray, // B_aux,0 from eq 59,60 if chain_confirmation_codes = false
 
     /** arbitrary key/value metadata. */
     val metadata: Map<String, String> = emptyMap(),
@@ -55,7 +54,6 @@ data class ElectionConfig(
         if (electionBaseHash != other.electionBaseHash) return false
         if (!manifestBytes.contentEquals(other.manifestBytes)) return false
         if (!baux0.contentEquals(other.baux0)) return false
-        if (device != other.device) return false
         if (chainConfirmationCodes != other.chainConfirmationCodes) return false
         return metadata == other.metadata
     }
@@ -72,7 +70,6 @@ data class ElectionConfig(
         result = 31 * result + electionBaseHash.hashCode()
         result = 31 * result + manifestBytes.contentHashCode()
         result = 31 * result + baux0.contentHashCode()
-        result = 31 * result + device.hashCode()
         result = 31 * result + chainConfirmationCodes.hashCode()
         result = 31 * result + metadata.hashCode()
         return result
@@ -180,9 +177,8 @@ fun makeElectionConfig(
     electionDate: String,
     jurisdictionInfo: String,
     manifestBytes: ByteArray,
+    chainConfirmationCodes: Boolean,
     baux0: ByteArray, // B_aux,0 from eq 59,60
-    device: String, // the device information from eq 61, and section 3.7
-    chainConfirmationCodes: Boolean = false,
     metadata: Map<String, String> = emptyMap(),
 ): ElectionConfig {
 
@@ -201,9 +197,8 @@ fun makeElectionConfig(
         manifestHash,
         electionBaseHash,
         manifestBytes,
-        baux0,
-        device,
         chainConfirmationCodes,
+        baux0,
         metadata,
     )
 }

@@ -31,7 +31,7 @@ internal class PreEncryptorOutputTest {
             .build()
 
         runCompleteOutput(group,
-            "src/commonTest/data/allAvailable",
+            "src/commonTest/data/workflow/allAvailableProto",
             "testOut/preencrypt/PreEncryptorOutputProto",
             "testPreencrypt",
             manifest,
@@ -39,7 +39,7 @@ internal class PreEncryptorOutputTest {
                 true)
 
         runCompleteOutput(group,
-            "src/commonTest/data/allAvailableJson",
+            "src/commonTest/data/workflow/allAvailableJson",
             "testOut/preencrypt/PreEncryptorOutputJson",
             "testPreencrypt",
             manifest,

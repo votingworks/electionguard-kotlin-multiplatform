@@ -14,12 +14,12 @@ import kotlin.test.assertTrue
 class ElectionRecordTest {
     @Test
     fun readElectionRecordAllAvailable() {
-        readElectionRecordAndValidate("src/commonTest/data/allAvailable")
+        readElectionRecordAndValidate("src/commonTest/data/workflow/allAvailableProto")
     }
 
     @Test
     fun readElectionRecordSomeAvailable() {
-        readElectionRecordAndValidate("src/commonTest/data/someAvailable")
+        readElectionRecordAndValidate("src/commonTest/data/workflow/someAvailableProto")
     }
 
     // @Test

@@ -54,7 +54,7 @@ fun createConfig(args: Array<String>) {
         ArgType.String,
         shortName = "device",
         description = "device information"
-    ).required()
+    ).default("device")
     val chainCodes by parser.option(
         ArgType.Boolean,
         shortName = "chainCodes",
@@ -91,9 +91,8 @@ fun createConfig(args: Array<String>) {
             useDate,
             info,
             manifestBytes,
-            device.toByteArray(),
-            device,
             chainCodes,
+            device.toByteArray(),
             mapOf(
                 Pair("CreatedBy", createdBy),
             ),

@@ -18,9 +18,8 @@ data class ElectionConfigJson(
     val manifest_hash: UInt256Json, // Hm
     val election_base_hash: UInt256Json, // Hb
 
-    val baux0: ByteArray, // B_aux,0 from eq 59,60
-    val voting_device: String, // the device information from eq 61, and section 3.7
     val chain_confirmation_codes: Boolean,
+    val baux0: ByteArray, // B_aux,0 from eq 59,60
     val metadata: Map<String, String> = emptyMap(), // arbitrary key, value pairs
 )
 
@@ -33,9 +32,8 @@ fun ElectionConfig.publishJson() = ElectionConfigJson(
     this.parameterBaseHash.publishJson(),
     this.manifestHash.publishJson(),
     this.electionBaseHash.publishJson(),
-    this.baux0,
-    this.device,
     this.chainConfirmationCodes,
+    this.baux0,
     this.metadata,
 )
 
@@ -51,9 +49,8 @@ fun ElectionConfigJson.import(constants: ElectionConstants, manifestBytes: ByteA
         this.manifest_hash.import(),
         this.election_base_hash.import(),
         manifestBytes,
-        this.baux0,
-        this.voting_device,
         this.chain_confirmation_codes,
+        this.baux0,
         this.metadata,
     )
 }

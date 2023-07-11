@@ -5,7 +5,7 @@ import kotlin.test.Test
 
 // run native verifier on jvm election record
 class ReadElectionRecordTest {
-    val jvmDir = "src/commonTest/data/someAvailable"
+    val jvmDir = "src/commonTest/data/workflow/someAvailableProto"
 
     @Test
     fun readElectionRecordTest() {

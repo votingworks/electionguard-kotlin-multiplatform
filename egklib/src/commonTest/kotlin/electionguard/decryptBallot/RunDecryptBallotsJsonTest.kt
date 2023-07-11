@@ -20,8 +20,8 @@ class RunDecryptBallotsJsonTest {
     @Test
     fun testDecryptBallotsAll() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/allAvailableJson"
-        val trusteeDir = "src/commonTest/data/allAvailableJson/private_data/trustees"
+        val inputDir = "src/commonTest/data/workflow/allAvailableJson"
+        val trusteeDir = "$inputDir/private_data/trustees"
         val outputDir = "testOut/decrypt/testDecryptBallotsAllJson"
         println("\ntestDecryptBallotsAll")
         val n = runDecryptBallots(
@@ -38,8 +38,8 @@ class RunDecryptBallotsJsonTest {
     @Test
     fun testDecryptBallotsSome() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/someAvailableJson"
-        val trusteeDir = "src/commonTest/data/someAvailableJson/private_data/trustees"
+        val inputDir = "src/commonTest/data/workflow/someAvailableJson"
+        val trusteeDir = "$inputDir/private_data/trustees"
         val outputDir = "testOut/decrypt/testDecryptBallotsSomeJson"
         println("\ntestDecryptBallotsAll")
         val n = runDecryptBallots(
@@ -56,16 +56,16 @@ class RunDecryptBallotsJsonTest {
     @Test
     fun testDecryptBallotsSomeFromList() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/someAvailableJson"
-        val trusteeDir = "src/commonTest/data/someAvailableJson/private_data/trustees"
+        val inputDir = "src/commonTest/data/workflow/someAvailableJson"
+        val trusteeDir = "$inputDir/private_data/trustees"
         val outputDir = "testOut/decrypt/testDecryptBallotsSomeFromListJson"
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
-            "id-2102571590," +
-                    "id-1939830917," +
-                    "id-1793634899," +
-                    "id-820757874,",
+            "id-6," +
+                    "id-7," +
+                    "id-10," +
+                    "id-1,",
             3,
         )
         assertEquals(4, n)
@@ -74,8 +74,8 @@ class RunDecryptBallotsJsonTest {
     @Test
     fun showBallotIds() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/someAvailableJson"
-        val ballotDir = "src/commonTest/data/someAvailableJson/private_data/input/"
+        val inputDir = "src/commonTest/data/workflow/someAvailableJson"
+        val ballotDir = "$inputDir/private_data/input/"
         val consumerIn = makeConsumer(inputDir, group)
 
         consumerIn.iteratePlaintextBallots(ballotDir, null).forEach {

@@ -17,7 +17,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailable",
+                "src/commonTest/data/workflow/allAvailableProto",
                 "-ballots",
                 "src/commonTest/data/fakeBallots/proto",
                 "-out",
@@ -35,7 +35,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailableJson",
+                "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots",
                 "src/commonTest/data/fakeBallots/json",
                 "-out",
@@ -53,7 +53,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailableJson",
+                "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots",
                 "src/commonTest/data/fakeBallots/json",
                 "-out",
@@ -71,7 +71,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailableJson",
+                "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots",
                 "src/commonTest/data/fakeBallots/proto",
                 "-out",
@@ -92,7 +92,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailableJson",
+                "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots",
                 "src/commonTest/data/fakeBallots/json",
                 "-out",
@@ -112,7 +112,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailableJson",
+                "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots",
                 "src/commonTest/data/fakeBallots/json",
                 "-out",
@@ -132,7 +132,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailableJson",
+                "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots",
                 "src/commonTest/data/fakeBallots/json",
                 "-out",
@@ -152,7 +152,7 @@ class RunBatchEncryptionTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/allAvailableJson",
+                "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots",
                 "src/commonTest/data/fakeBallots/json",
                 "-out",
@@ -169,7 +169,7 @@ class RunBatchEncryptionTest {
 
     @Test
     fun testInvalidBallot() {
-        val inputDir = "src/commonTest/data/allAvailable"
+        val inputDir = "src/commonTest/data/workflow/allAvailableProto"
         val invalidDir = "testOut/testInvalidBallot"
 
         val group = productionGroup()

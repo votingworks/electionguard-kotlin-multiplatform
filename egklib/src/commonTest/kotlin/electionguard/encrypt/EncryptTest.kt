@@ -6,7 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EncryptTest {
-    val input = "src/commonTest/data/allAvailable"
+    val input = "src/commonTest/data/workflow/allAvailableProto"
 
     // sanity check that encryption doesnt barf
     @Test

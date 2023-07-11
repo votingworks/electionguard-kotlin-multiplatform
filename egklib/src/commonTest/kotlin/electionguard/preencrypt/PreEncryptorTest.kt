@@ -28,7 +28,7 @@ import kotlin.test.assertTrue
 private val random = Random
 
 internal class PreEncryptorTest {
-    val input = "src/commonTest/data/allAvailable"
+    val input = "src/commonTest/data/workflow/allAvailableProto"
     val group = productionGroup()
 
     // sanity check that PreEncryptor.preencrypt doesnt barf
@@ -397,7 +397,7 @@ fun makeFakeConfig() : ElectionConfig {
         "date",
         "juris",
         "manifest".toByteArray(),
+        false,
         "device".toByteArray(),
-        "device",
     )
 }

@@ -23,10 +23,10 @@ import kotlin.test.assertTrue
  * Run complete workflow starting from ElectionConfig in the start directory, all the way through verify.
  * (See RunCreateConfigTest/RunCreateElectionConfig to regenerate ElectionConfig)
  * Note that TestWorkflow uses RunFakeKeyCeremonyTest, not real KeyCeremony.
- *  1. The results can be copied to the test data sets "src/commonTest/data/all(some)Available(Json)" whenever the
+ *  1. The results can be copied to the test data sets "src/commonTest/data/workflow" whenever the
  *     election record changes.
  *  2. Then see RunDecryptBallotsTest for more damn things to do
- *  3. Replace src/commonTest/data/someAvailable/challengedBallotTallies.protobuf, by running
+ *  3. Replace src/commonTest/data/someAvailableProto/challengedBallot.protobuf, by running
  *     RunDecryptBallotsTest.testDecryptBallotsSomeFromList and copying that file.
  *  4. Replace src/commonTest/data/someAvailableJson/challenged_ballots/dballot-*.json by running
  *      RunDecryptBallotsJsonTest.testDecryptBallotsSomeFromList and copying that directory.
@@ -34,16 +34,14 @@ import kotlin.test.assertTrue
  *      testOut/workflow/allAvailableJson and zipping that directory, and copying that file.
  */
 class TestWorkflow {
-    private val configDir = "src/commonTest/data/startConfigProto"
-    private val chainConfigDir = "src/commonTest/data/startChainConfigProto"
+    private val configDirProto = "src/commonTest/data/startConfigProto"
     private val configDirJson = "src/commonTest/data/startConfigJson"
-    private val chainConfigDirJson = "src/commonTest/data/startChainConfigJson"
     private val nballots = 11
     private val nthreads = 11
 
     @Test
     fun runWorkflowAllAvailable() {
-        val workingDir =  "testOut/workflow/allAvailable"
+        val workingDir =  "testOut/workflow/allAvailableProto"
         val privateDir =  "$workingDir/private_data"
         val trusteeDir =  "${privateDir}/trustees"
         val ballotsDir =  "${privateDir}/input"
@@ -58,18 +56,18 @@ class TestWorkflow {
         makePublisher(workingDir, true)
 
         // key ceremony
-        val (manifest, init) = runFakeKeyCeremony(group, configDir, workingDir, trusteeDir, nguardians, quorum)
+        val (manifest, init) = runFakeKeyCeremony(group, configDirProto, workingDir, trusteeDir, nguardians, quorum, false)
         println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
 
         // create fake ballots
-        val ballotProvider = RandomBallotProvider(manifest, nballots)
+        val ballotProvider = RandomBallotProvider(manifest, nballots).withSequentialIds()
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
         val publisher = makePublisher(ballotsDir)
         publisher.writePlaintextBallot(ballotsDir, ballots)
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "runWorkflowAllAvailable", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
@@ -105,11 +103,11 @@ class TestWorkflow {
         makePublisher(workingDir, true)
 
         // key ceremony
-        val (manifest, electionInit) = runFakeKeyCeremony(group, chainConfigDir, workingDir, trusteeDir, nguardians, quorum)
+        val (manifest, electionInit) = runFakeKeyCeremony(group, configDirProto, workingDir, trusteeDir, nguardians, quorum, true)
         println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
 
         // create fake ballots
-        val ballotProvider = RandomBallotProvider(manifest, nballots)
+        val ballotProvider = RandomBallotProvider(manifest, nballots).withSequentialIds()
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
         val publisher = makePublisher(ballotsDir)
         publisher.writePlaintextBallot(ballotsDir, ballots)
@@ -120,7 +118,7 @@ class TestWorkflow {
             group,
             manifest,
             electionInit,
-            "device",
+            "runWorkflowChained",
             electionInit.config.baux0,
             true,
             workingDir,
@@ -128,13 +126,12 @@ class TestWorkflow {
             false,
             false,
         )
-
         ballots.forEach { ballot ->
             val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST) // TODO spoil some
             println(" write ${ballot.ballotId}")
             assertTrue(isOk)
         }
-       val Hbar =  encryptor.closeChain() // TODO where do we store this ??
+        val Hbar =  encryptor.closeChain() // TODO where do we store this ??
         encryptor.close()
 
         // tally
@@ -156,8 +153,8 @@ class TestWorkflow {
 
     @Test
     fun runWorkflowSomeAvailable() {
-        val workingDir =  "testOut/workflow/someAvailable"
-        val privateDir =  "testOut/workflow/someAvailable/private_data"
+        val workingDir =  "testOut/workflow/someAvailableProto"
+        val privateDir =  "$workingDir/private_data"
         val trusteeDir =  "${privateDir}/trustees"
         val ballotsDir =  "${privateDir}/input"
         val invalidDir =  "${privateDir}/invalid"
@@ -171,18 +168,18 @@ class TestWorkflow {
         makePublisher(workingDir, true)
 
         // key ceremony
-        val (manifest, init) = runFakeKeyCeremony(group, configDir, workingDir, trusteeDir, nguardians, quorum)
+        val (manifest, init) = runFakeKeyCeremony(group, configDirProto, workingDir, trusteeDir, nguardians, quorum, false)
         println("FakeKeyCeremony created ElectionInitialized, nguardians = $nguardians quorum = $quorum")
 
         // create fake ballots
-        val ballotProvider = RandomBallotProvider(manifest, nballots)
+        val ballotProvider = RandomBallotProvider(manifest, nballots).withSequentialIds()
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
         val publisher = makePublisher(ballotsDir)
         publisher.writePlaintextBallot(ballotsDir, ballots)
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "runWorkflowSomeAvailable", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
@@ -218,18 +215,18 @@ class TestWorkflow {
         makePublisher(workingDir, true)
 
         // key ceremony
-        val (manifest, init) = runFakeKeyCeremony(group, configDirJson, workingDir, trusteeDir, nguardians, quorum)
+        val (manifest, init) = runFakeKeyCeremony(group, configDirJson, workingDir, trusteeDir, nguardians, quorum, false)
         println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
 
         // create fake ballots
-        val ballotProvider = RandomBallotProvider(manifest, nballots)
+        val ballotProvider = RandomBallotProvider(manifest, nballots).withSequentialIds()
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
         val publisher = makePublisher(ballotsDir, false, true)
         publisher.writePlaintextBallot(ballotsDir, ballots)
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "runWorkflowAllAvailableJson", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
@@ -265,24 +262,42 @@ class TestWorkflow {
         makePublisher(workingDir, true)
 
         // key ceremony
-        val (manifest, init) = runFakeKeyCeremony(group, chainConfigDirJson, workingDir, trusteeDir, nguardians, quorum)
+        val (manifest, electionInit) = runFakeKeyCeremony(group, configDirJson, workingDir, trusteeDir, nguardians, quorum, true)
         println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
 
         // create fake ballots
-        val ballotProvider = RandomBallotProvider(manifest, nballots)
+        val ballotProvider = RandomBallotProvider(manifest, nballots).withSequentialIds()
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
         val publisher = makePublisher(ballotsDir, false, true)
         publisher.writePlaintextBallot(ballotsDir, ballots)
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
+        val encryptor = AddEncryptedBallot(
+            group,
+            manifest,
+            electionInit,
+            "runWorkflowChainedJson",
+            electionInit.config.baux0,
+            true,
+            workingDir,
+            invalidDir,
+            true,
+            false,
+        )
+        ballots.forEach { ballot ->
+            val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST) // TODO spoil some
+            println(" write ${ballot.ballotId}")
+            assertTrue(isOk)
+        }
+        val Hbar =  encryptor.closeChain() // TODO where do we store this ??
+        encryptor.close()
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
         // decrypt tally
-        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, true), "runWorkflowChainedJson")
+        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, electionInit, present, true), "runWorkflowChainedJson")
 
         // verify
         println("\nRun Verifier")
@@ -312,18 +327,18 @@ class TestWorkflow {
         val quorum = present.count()
 
         // key ceremony
-        val (manifest, init) = runFakeKeyCeremony(group, configDirJson, workingDir, trusteeDir, nguardians, quorum)
+        val (manifest, init) = runFakeKeyCeremony(group, configDirJson, workingDir, trusteeDir, nguardians, quorum, false)
         println("FakeKeyCeremony created ElectionInitialized, nguardians = $nguardians quorum = $quorum")
 
         // create fake ballots
-        val ballotProvider = RandomBallotProvider(manifest, nballots)
+        val ballotProvider = RandomBallotProvider(manifest, nballots).withSequentialIds()
         val ballots: List<PlaintextBallot> = ballotProvider.ballots()
         val publisher = makePublisher(ballotsDir, false, true)
         publisher.writePlaintextBallot(ballotsDir, ballots)
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "device", nthreads, "createdBy")
+        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "runWorkflowSomeAvailableJson", nthreads, "createdBy")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")

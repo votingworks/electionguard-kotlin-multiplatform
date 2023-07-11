@@ -33,8 +33,8 @@ import kotlin.test.assertTrue
 */
 
 class AttackEncryptedBallotTest {
-    private val inputDir   = "src/commonTest/data/allAvailable"
-    private val trusteeDir = "src/commonTest/data/allAvailable/private_data/trustees"
+    private val inputDir   = "src/commonTest/data/workflow/allAvailableProto"
+    private val trusteeDir = "$inputDir/private_data/trustees"
     private val showCount = true
 
     // @Test

@@ -5,13 +5,26 @@ import electionguard.ballot.PlaintextBallot
 import kotlin.random.Random
 
 /** Create nballots randomly generated fake Ballots, used for testing.  */
-class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11, val addWriteIns: Boolean = false) {
+class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11) {
+    var addWriteIns = false
+    var useSequential = false
+    var sequentialId = 1
+
+    fun withWriteIns() : RandomBallotProvider {
+        this.addWriteIns = true
+        return this
+    }
+
+    fun withSequentialIds(): RandomBallotProvider {
+        this.useSequential = true
+        return this
+    }
 
     fun ballots(ballotStyleId: String? = null): List<PlaintextBallot> {
         val ballots: MutableList<PlaintextBallot> = ArrayList()
         val useStyle = ballotStyleId ?: manifest.ballotStyles[0].ballotStyleId
         for (i in 0 until nballots) {
-            val ballotId = "id" + Random.nextInt()
+            val ballotId = if (useSequential) "id-" + sequentialId++ else "id" + Random.nextInt()
             ballots.add(getFakeBallot(manifest, useStyle, ballotId))
         }
         return ballots
@@ -19,7 +32,7 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11, val a
 
     fun makeBallot(): PlaintextBallot {
         val useStyle = manifest.ballotStyles[0].ballotStyleId
-        val ballotId = "id" + Random.nextInt()
+        val ballotId = if (useSequential) "id-" + sequentialId++ else "id" + Random.nextInt()
         return getFakeBallot(manifest, useStyle, ballotId)
     }
 

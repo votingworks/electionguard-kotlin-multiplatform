@@ -17,7 +17,7 @@ class EncryptedBallotConvertTest {
         val proto = ballot.publishProto()
         val roundtrip = proto.import(context)
         assertTrue(roundtrip is Ok)
-        assertEquals(roundtrip.unwrap(), ballot)
+        assertEquals(ballot, roundtrip.unwrap())
     }
 
     @Test
@@ -27,7 +27,7 @@ class EncryptedBallotConvertTest {
         val proto = ballot.publishProto()
         val roundtrip = proto.import(context)
         assertTrue(roundtrip is Ok)
-        assertEquals(roundtrip.unwrap(), ballot)
+        assertEquals(ballot, roundtrip.unwrap())
     }
 
     fun generateEncryptedBallot(seq: Int, context: GroupContext): EncryptedBallot {
@@ -79,6 +79,6 @@ class EncryptedBallotConvertTest {
         val proto = ballot.publishProto()
         val roundtrip = proto.import(context)
         assertTrue(roundtrip is Ok)
-        assertEquals(roundtrip.unwrap(), ballot)
+        assertEquals(ballot, roundtrip.unwrap())
     }
 }

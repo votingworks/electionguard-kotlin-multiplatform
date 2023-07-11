@@ -20,8 +20,8 @@ class RunDecryptBallotsTest {
     @Test
     fun testDecryptBallotsAll() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/allAvailable"
-        val trusteeDir = "src/commonTest/data/allAvailable/private_data/trustees"
+        val inputDir = "src/commonTest/data/workflow/allAvailableProto"
+        val trusteeDir = "$inputDir/private_data/trustees"
         val outputDir = "testOut/decrypt/testDecryptBallotsAll"
         println("\ntestDecryptBallotsAll")
         val n = runDecryptBallots(
@@ -38,15 +38,15 @@ class RunDecryptBallotsTest {
     @Test
     fun testDecryptBallotsSomeFromList() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/someAvailable"
-        val trusteeDir = "src/commonTest/data/someAvailable/private_data/trustees"
+        val inputDir = "src/commonTest/data/workflow/someAvailableProto"
+        val trusteeDir = "$inputDir/private_data/trustees"
         val outputDir = "testOut/decrypt/testDecryptBallotsSomeFromList"
         println("\ntestDecryptBallotsSomeFromList")
         val n = runDecryptBallots(
             group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir, "5"),
-            "id1335156536," +
-                    "id-315053235," +
-                    "id1563075974",
+            "id-1," +
+                    "id-3," +
+                    "id-2",
             3,
         )
         assertEquals(3, n)
@@ -55,9 +55,9 @@ class RunDecryptBallotsTest {
     @Test
     fun testDecryptBallotsSomeFromFile() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/someAvailable"
-        val trusteeDir = "src/commonTest/data/someAvailable/private_data/trustees"
-        val wantBallots = "src/commonTest/data/someAvailable/private_data/wantedBallots.txt"
+        val inputDir = "src/commonTest/data/workflow/someAvailableProto"
+        val trusteeDir = "$inputDir/private_data/trustees"
+        val wantBallots = "$inputDir/private_data/wantedBallots.txt"
         val outputDir = "testOut/decrypt/testDecryptBallotsSomeFromFile"
         println("\ntestDecryptBallotsSomeFromFile")
         val n = runDecryptBallots(
@@ -75,9 +75,9 @@ class RunDecryptBallotsTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/someAvailable",
+                "src/commonTest/data/workflow/someAvailableProto",
                 "-trustees",
-                "src/commonTest/data/someAvailable/private_data/trustees",
+                "src/commonTest/data/workflow/someAvailableProto/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptBallotsMainMultiThreaded",
                 "-spoiled",
@@ -95,9 +95,9 @@ class RunDecryptBallotsTest {
         main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/someAvailable",
+                "src/commonTest/data/workflow/someAvailableProto",
                 "-trustees",
-                "src/commonTest/data/someAvailable/private_data/trustees",
+                "src/commonTest/data/workflow/someAvailableProto/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptBallotsMarkedSpoiled",
                 "-nthreads",
@@ -109,8 +109,8 @@ class RunDecryptBallotsTest {
     @Test
     fun showBallotIds() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/someAvailable"
-        val ballotDir = "src/commonTest/data/someAvailable/private_data/input/"
+        val inputDir = "src/commonTest/data/workflow/someAvailableProto"
+        val ballotDir = "$inputDir/private_data/input/"
         val consumerIn = makeConsumer(inputDir, group)
 
         consumerIn.iteratePlaintextBallots(ballotDir, null).forEach {

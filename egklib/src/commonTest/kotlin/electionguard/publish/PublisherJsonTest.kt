@@ -4,12 +4,10 @@ import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedBallot
-import electionguard.core.productionGroup
+import electionguard.core.*
 import electionguard.input.ManifestInputValidation
 import electionguard.protoconvert.generateElectionConfig
-import electionguard.protoconvert.generateElementModP
 import electionguard.protoconvert.generateGuardian
-import electionguard.protoconvert.generateUInt256
 import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +15,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PublisherJsonTest {
-    private val input = "src/commonTest/data/someAvailable"
+    private val input = "src/commonTest/data/workflow/someAvailableProto"
     private val output = "testOut/publish/PublisherJsonTest"
 
     val group = productionGroup()

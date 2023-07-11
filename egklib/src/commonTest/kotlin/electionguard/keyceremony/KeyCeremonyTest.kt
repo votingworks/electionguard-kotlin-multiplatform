@@ -42,8 +42,8 @@ class KeyCeremonyTest {
             "no",
             "no",
             ByteArray(0),
+            false,
             "device".toByteArray(),
-            "device"
         )
         val init: ElectionInitialized = kc.makeElectionInitialized(config)
 
