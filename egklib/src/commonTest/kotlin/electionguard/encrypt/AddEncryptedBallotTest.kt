@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 class AddEncryptedBallotTest {
     val input = "src/commonTest/data/workflow/allAvailableProto"
     val outputDir = "testOut/encrypt/addEncryptedBallot"
-    val outputDirJson = "testOut/encrypt/addEncryptedBallotJson"
+    val outputDirJson = "$outputDir/addEncryptedBallotJson"
 
     val nballots = 4
 

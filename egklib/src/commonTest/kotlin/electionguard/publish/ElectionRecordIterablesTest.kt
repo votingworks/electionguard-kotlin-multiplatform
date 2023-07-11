@@ -13,12 +13,13 @@ class ElectionRecordIterablesTest {
 
     @Test
     fun testElectionRecordIterablesProto() {
-        readBallots("testOut/workflow/chainedProto")
+        readBallots("src/commonTest/data/workflow/chainedProto")
+
     }
 
     @Test
     fun testElectionRecordIterablesJson() {
-        readBallots("testOut/workflow/chainedJson")
+        readBallots("src/commonTest/data/workflow/chainedJson")
     }
 
     fun readBallots(topdir: String) {

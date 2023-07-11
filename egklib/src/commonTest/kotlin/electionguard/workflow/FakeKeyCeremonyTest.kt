@@ -22,7 +22,7 @@ class RunFakeKeyCeremonyTest {
         val group = productionGroup()
         val configDir = "src/commonTest/data/startConfigProto"
         val outputDir = "testOut/keyceremony/runFakeKeyCeremonyAll"
-        val trusteeDir = "testOut/keyceremony/runFakeKeyCeremonyAll/private_data"
+        val trusteeDir = "$outputDir/private_data/trustees"
 
         runFakeKeyCeremony(group, configDir, outputDir, trusteeDir, 3, 3, false)
     }
@@ -32,7 +32,7 @@ class RunFakeKeyCeremonyTest {
         val group = productionGroup()
         val configDir = "src/commonTest/data/startConfigProto"
         val outputDir = "testOut/keyceremony/runFakeKeyCeremonySome"
-        val trusteeDir = "testOut/keyceremony/runFakeKeyCeremonySome/private_data"
+        val trusteeDir = "$outputDir/private_data/trustees"
 
         runFakeKeyCeremony(group, configDir, outputDir, trusteeDir, 5, 3, false)
     }
