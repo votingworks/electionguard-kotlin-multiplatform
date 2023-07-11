@@ -21,7 +21,7 @@ class PublisherProtoTest {
 
     @Test
     fun testRoundtripElectionConfig() {
-        val publisher = makePublisher("{$output/1}", true)
+        val publisher = makePublisher("$output/1", true)
         val (manifest, config) = generateElectionConfig(publisher, 6, 4)
 
         // ManifestInputValidation
@@ -34,7 +34,7 @@ class PublisherProtoTest {
         }
 
         publisher.writeElectionConfig(config)
-        val consumerOut = makeConsumer("{$output/1}", group)
+        val consumerOut = makeConsumer("$output/1", group)
 
         val roundtripResult = consumerOut.readElectionConfig()
         assertNotNull(roundtripResult)
@@ -55,7 +55,7 @@ class PublisherProtoTest {
 
     @Test
     fun testRoundtripElectionInit() {
-        val publisher = makePublisher("{$output/2}", true)
+        val publisher = makePublisher("$output/2", true)
         val (_, config) = generateElectionConfig(publisher, 6, 4)
         publisher.writeElectionConfig(config)
 
@@ -67,7 +67,7 @@ class PublisherProtoTest {
         )
         publisher.writeElectionInitialized(init)
 
-        val consumerOut = makeConsumer("{$output/2}", group)
+        val consumerOut = makeConsumer("$output/2", group)
         val roundtripResult = consumerOut.readElectionInitialized()
         assertNotNull(roundtripResult)
         if (roundtripResult is Err) {
@@ -81,7 +81,7 @@ class PublisherProtoTest {
 
     @Test
     fun testWriteEncryptions() {
-        val publisher = makePublisher("{$output/3}", true)
+        val publisher = makePublisher("$output/3", true)
         runTest {
             val initResult = consumerIn.readElectionInitialized()
             assertTrue(initResult is Ok)
@@ -89,7 +89,7 @@ class PublisherProtoTest {
 
             publisher.writeEncryptions(init, consumerIn.iterateEncryptedBallots { true })
 
-            val consumerOut = makeConsumer("{$output/3}", group)
+            val consumerOut = makeConsumer("$output/3", group)
             val rtResult = consumerOut.readElectionInitialized()
             if (rtResult is Err) {
                 println("testWriteEncryptions = $rtResult")
@@ -109,7 +109,7 @@ class PublisherProtoTest {
 
     @Test
     fun testWriteSpoiledBallots() {
-        val publisher = makePublisher("{$output/4}", true)
+        val publisher = makePublisher("$output/4", true)
         publisher.decryptedTallyOrBallotSink().use { sink ->
             consumerIn.iterateDecryptedBallots().forEach {
                 sink.writeDecryptedTallyOrBallot(it)
@@ -117,7 +117,7 @@ class PublisherProtoTest {
         }
 
         val inBallots = consumerIn.iterateDecryptedBallots().associateBy { it.id }
-        val consumerOut = makeConsumer("{$output/4}", group)
+        val consumerOut = makeConsumer("$output/4", group)
 
         consumerOut.iterateDecryptedBallots().forEach {
             val inBallot = inBallots[it.id] ?: throw RuntimeException("Cant find ${it.id}")
