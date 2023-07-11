@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class AddEncryptedBallotTest {
-    val input = "src/commonTest/data/allAvailable"
+    val input = "src/commonTest/data/workflow/allAvailableProto"
     val outputDir = "testOut/encrypt/addEncryptedBallot"
     val outputDirJson = "testOut/encrypt/addEncryptedBallotJson"
 

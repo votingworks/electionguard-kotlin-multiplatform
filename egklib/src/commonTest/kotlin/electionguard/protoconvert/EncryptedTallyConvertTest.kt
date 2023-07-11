@@ -3,8 +3,7 @@ package electionguard.protoconvert
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedTally
-import electionguard.core.GroupContext
-import electionguard.core.tinyGroup
+import electionguard.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

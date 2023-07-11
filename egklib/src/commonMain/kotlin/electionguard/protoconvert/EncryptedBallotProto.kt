@@ -36,7 +36,7 @@ fun electionguard.protogen.EncryptedBallot.import(group: GroupContext):
         EncryptedBallot(
             this.ballotId,
             this.ballotStyleId,
-            this.votingDevice,
+            this.encryptingDevice,
             this.timestamp,
             this.codeBaux.array,
             confirmationCode.unwrap(),
@@ -164,7 +164,7 @@ private fun electionguard.protogen.EncryptedBallotSelection.import(
 fun EncryptedBallot.publishProto(recordedPreBallot: RecordedPreBallot) = electionguard.protogen.EncryptedBallot(
     this.ballotId,
     this.ballotStyleId,
-    this.votingDevice,
+    this.encryptingDevice,
     this.timestamp,
     ByteArr(this.codeBaux),
     this.confirmationCode.publishProto(),
@@ -219,7 +219,7 @@ fun EncryptedBallot.publishProto() =
     electionguard.protogen.EncryptedBallot(
         this.ballotId,
         this.ballotStyleId,
-        this.votingDevice,
+        this.encryptingDevice,
         this.timestamp,
         ByteArr(this.codeBaux),
         this.confirmationCode.publishProto(),

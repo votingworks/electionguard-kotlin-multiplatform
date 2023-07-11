@@ -9,7 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class DuplicateTrackingCodesTest {
-    private val inputDir = "src/commonTest/data/allAvailable"
+    private val inputDir = "src/commonTest/data/workflow/allAvailableProto"
 
     @Test
     fun duplicateTrackingCodes() {

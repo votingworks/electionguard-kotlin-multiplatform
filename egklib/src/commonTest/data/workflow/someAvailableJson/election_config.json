@@ -1,0 +1,34 @@
+{
+    "config_version": "v2.0",
+    "number_of_guardians": 5,
+    "quorum": 3,
+    "election_date": "2023-07-11T07:54:01.810626616",
+    "jurisdiction_info": "N/A",
+    "parameter_base_hash": "AB91D83C3DC3FEB76E57C2783CFE2CA85ADB4BC01FC5123EEAE3124CC3FB6CDE",
+    "manifest_hash": "E69B574C48087CF4E4914C3C4CDBBCB9368255F9373EFCF9EE923AF6B23C7CD2",
+    "election_base_hash": "E1C1EE66F8F186698AB23815EF18C6AFDCACC186C91B26192FCB7E933BECA6DC",
+    "chain_confirmation_codes": false,
+    "baux0": [
+        100,
+        101,
+        118,
+        105,
+        99,
+        101,
+        32,
+        105,
+        110,
+        102,
+        111,
+        114,
+        109,
+        97,
+        116,
+        105,
+        111,
+        110
+    ],
+    "metadata": {
+        "Created by": "runFakeKeyCeremony"
+    }
+}

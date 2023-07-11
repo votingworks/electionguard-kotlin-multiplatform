@@ -13,7 +13,7 @@ class RunCreateConfigTest {
                 "-nguardians", "3",
                 "-quorum", "3",
                 "-out",
-                "testOut/config/testCreateConfigProto",
+                "testOut/config/startConfigProto",
                 "-device",
                 "device information",
             )
@@ -29,48 +29,12 @@ class RunCreateConfigTest {
                 "-nguardians", "3",
                 "-quorum", "3",
                 "-out",
-                "testOut/config/testCreateConfigJson",
+                "testOut/config/startConfigJson",
                 "-device",
                 "device information",
             )
         )
     }
-
-    // LOOK could read in config and change chaining flag instead
-    @Test
-    fun testCreateChainConfigProto() {
-        createConfig(
-            arrayOf(
-                "-manifest",
-                "src/commonTest/data/startManifestProto/manifest.protobuf",
-                "-nguardians", "3",
-                "-quorum", "3",
-                "-out",
-                "testOut/config/testCreateChainConfigProto",
-                "-device",
-                "device information",
-                "-chainCodes",
-            )
-        )
-    }
-
-    @Test
-    fun testCreateChainConfigJson() {
-        createConfig(
-            arrayOf(
-                "-manifest",
-                "src/commonTest/data/startManifestJson/manifest.json",
-                "-nguardians", "3",
-                "-quorum", "3",
-                "-out",
-                "testOut/config/testCreateChainConfigJson",
-                "-device",
-                "device information",
-                "-chainCodes",
-            )
-        )
-    }
-
 
     @Test
     fun testCreateConfigDirectoryProto() {

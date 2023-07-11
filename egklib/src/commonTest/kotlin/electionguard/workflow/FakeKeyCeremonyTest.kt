@@ -24,7 +24,7 @@ class RunFakeKeyCeremonyTest {
         val outputDir = "testOut/keyceremony/runFakeKeyCeremonyAll"
         val trusteeDir = "testOut/keyceremony/runFakeKeyCeremonyAll/private_data"
 
-        runFakeKeyCeremony(group, configDir, outputDir, trusteeDir, 3, 3)
+        runFakeKeyCeremony(group, configDir, outputDir, trusteeDir, 3, 3, false)
     }
 
     @Test
@@ -34,7 +34,7 @@ class RunFakeKeyCeremonyTest {
         val outputDir = "testOut/keyceremony/runFakeKeyCeremonySome"
         val trusteeDir = "testOut/keyceremony/runFakeKeyCeremonySome/private_data"
 
-        runFakeKeyCeremony(group, configDir, outputDir, trusteeDir, 5, 3)
+        runFakeKeyCeremony(group, configDir, outputDir, trusteeDir, 5, 3, false)
     }
 }
 
@@ -45,9 +45,10 @@ fun runFakeKeyCeremony(
     trusteeDir: String,
     nguardians: Int,
     quorum: Int,
+    chained: Boolean,
 ): Pair<Manifest, ElectionInitialized> {
     val electionRecord = readElectionRecord(group, configDir)
-    val config: ElectionConfig = electionRecord.config()
+    val config: ElectionConfig = electionRecord.config().copy(chainConfirmationCodes = chained)
 
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
@@ -85,9 +86,8 @@ fun runFakeKeyCeremony(
         config.electionDate,
         config.jurisdictionInfo,
         electionRecord.manifestBytes(),
+        chained,
         config.baux0,
-        config.device,
-        config.chainConfirmationCodes,
         mapOf(Pair("Created by", "runFakeKeyCeremony")),
     )
     // println("newConfig.electionBaseHash ${newConfig.electionBaseHash}")

@@ -2,13 +2,10 @@ package electionguard.publish
 
 import com.github.michaelbull.result.*
 import electionguard.ballot.ElectionInitialized
-import electionguard.core.productionGroup
-import electionguard.core.runTest
+import electionguard.core.*
 import electionguard.input.ManifestInputValidation
 import electionguard.protoconvert.generateElectionConfig
-import electionguard.protoconvert.generateElementModP
 import electionguard.protoconvert.generateGuardian
-import electionguard.protoconvert.generateUInt256
 import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,7 +13,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PublisherProtoTest {
-    private val input = "src/commonTest/data/someAvailable"
+    private val input = "src/commonTest/data/workflow/someAvailableProto"
     private val output = "testOut/publish/PublisherProtoTest"
 
     val group = productionGroup()

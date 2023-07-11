@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 data class EncryptedBallotJson(
     val ballot_id: String,
     val ballot_style_id: String,
-    val voting_device: String,
+    val encrypting_device: String,
     val timestamp: Long, // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
     val code_baux: String, // Baux in eq 59
     val confirmation_code: UInt256Json,
@@ -66,7 +66,7 @@ fun EncryptedBallot.publishJson(primaryNonce : UInt256? = null): EncryptedBallot
     return EncryptedBallotJson(
         this.ballotId,
         this.ballotStyleId,
-        this.votingDevice,
+        this.encryptingDevice,
         this.timestamp,
         this.codeBaux.toHex(),
         this.confirmationCode.publishJson(),
@@ -102,12 +102,12 @@ fun EncryptedBallotJson.import(group : GroupContext): EncryptedBallot {
     return EncryptedBallot(
         this.ballot_id,
         this.ballot_style_id,
-        this.voting_device,
+        this.encrypting_device,
         this.timestamp,
         this.code_baux.fromSafeHex(),
         this.confirmation_code.import(),
         contests,
-        EncryptedBallot.BallotState.CAST, // fromName(this.name),
+        EncryptedBallot.BallotState.valueOf(this.state),
         this.is_preencrypt,
         // this.primary_nonce?.import(group),
     )

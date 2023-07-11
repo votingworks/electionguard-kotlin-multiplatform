@@ -15,7 +15,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 
 class DecryptionWithNonceTest {
-    val input = "src/commonTest/data/allAvailable"
+    val input = "src/commonTest/data/workflow/allAvailableProto"
     private val nballots = 20
 
     /** test DecryptionWithPrimaryNonce: encrypt ballot, decrypt with master nonce, check match. */
@@ -77,7 +77,7 @@ class DecryptionWithNonceTest {
         val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(init.jointPublicKey), init.extendedBaseHash, "device")
 
         val nb = 100
-        RandomBallotProvider(electionRecord.manifest(), nb, true).ballots().forEach { ballot ->
+        RandomBallotProvider(electionRecord.manifest(), nb).withWriteIns().ballots().forEach { ballot ->
             val primaryNonce = UInt256.random()
             val ciphertextBallot = encryptor.encrypt(ballot, primaryNonce, 0)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)

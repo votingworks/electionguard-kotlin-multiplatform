@@ -48,9 +48,8 @@ class ElectionConfigConvertTest {
             "date",
             "juris",
             manifestBytes,
-            "device".toByteArray(),
-            "device",
             true,
+            "device".toByteArray(),
             mapOf(
                 Pair("Created by", "roundtripWithChain"),
                 Pair("Created for", "testing"),
@@ -121,9 +120,8 @@ fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): 
         "date",
         "juris",
         manifestBytes,
-        "device".toByteArray(),
-        "device",
         false,
+        "device".toByteArray(),
         mapOf(Pair("Created by", "generateElectionConfig")),
         )
     return Pair(fakeManifest, config)

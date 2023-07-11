@@ -9,7 +9,7 @@ import electionguard.core.*
 data class EncryptedBallot(
     override val ballotId: String,
     val ballotStyleId: String,  // matches a Manifest.BallotStyle
-    val votingDevice: String,
+    val encryptingDevice: String,
     val timestamp: Long,
     val codeBaux: ByteArray, // Baux in eq 59
     val confirmationCode: UInt256, // tracking code, H(B), eq 59

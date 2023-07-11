@@ -12,7 +12,7 @@ import kotlin.test.assertNotNull
 
 /** Verify the embedded nonces in an Encrypted Ballot. */
 class EncryptionNonceTest {
-    val input = "src/commonTest/data/allAvailable"
+    val input = "src/commonTest/data/workflow/allAvailableProto"
     val nballots = 11
 
     @Test
