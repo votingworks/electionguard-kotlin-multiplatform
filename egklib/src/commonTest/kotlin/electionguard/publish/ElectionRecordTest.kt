@@ -13,23 +13,33 @@ import kotlin.test.assertTrue
 // Test election records that have been fully decrypted
 class ElectionRecordTest {
     @Test
-    fun readElectionRecordAllAvailable() {
+    fun allAvailableProto() {
         readElectionRecordAndValidate("src/commonTest/data/workflow/allAvailableProto")
     }
 
     @Test
-    fun readElectionRecordSomeAvailable() {
+    fun someAvailableProto() {
         readElectionRecordAndValidate("src/commonTest/data/workflow/someAvailableProto")
     }
 
-    // @Test
-    fun readElectionRecordJson() {
-        readElectionRecordAndValidate("src/commonTest/data/testElectionRecord/convertJson")
+    @Test
+    fun allAvailableJson() {
+        readElectionRecordAndValidate("src/commonTest/data/workflow/allAvailableJson")
     }
 
-    // @Test
-    fun readElectionRecordRoundtrip() {
-        readElectionRecordAndValidate("src/commonTest/data/testElectionRecord/roundtripProto")
+    @Test
+    fun someAvailableJson() {
+        readElectionRecordAndValidate("src/commonTest/data/workflow/someAvailableJson")
+    }
+
+    @Test
+    fun chainedProto() {
+        readElectionRecordAndValidate("src/commonTest/data/workflow/chainedProto")
+    }
+
+    @Test
+    fun chainedJson() {
+        readElectionRecordAndValidate("src/commonTest/data/workflow/chainedJson")
     }
 
     fun readElectionRecordAndValidate(topdir: String) {

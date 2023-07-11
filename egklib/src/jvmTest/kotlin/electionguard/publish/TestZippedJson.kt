@@ -9,18 +9,33 @@ import electionguard.verifier.verifyEncryptedBallots
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.spi.FileSystemProvider
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.test.Test
-
 
 // run verifier on zipped JSON record, only supported on JVM
 @OptIn(ExperimentalSerializationApi::class)
 class TestZippedJson {
-    val zippedJson = "src/commonTest/data/testElectionRecord/jsonZip/json25.zip"
-    val fs = FileSystems.newFileSystem(Path.of(zippedJson), mutableMapOf<String, String>())
-    val fsp = fs.provider()
+    val inputDir = "src/commonTest/data/workflow/allAvailableJson"
+    val zippedJson = "testOut/allAvailableJson.zip"
+    val fs: FileSystem
+    val fsp: FileSystemProvider
+
+    init {
+        zipFolder(File(inputDir), File(zippedJson))
+        fs = FileSystems.newFileSystem(Path.of(zippedJson), mutableMapOf<String, String>())
+        fsp = fs.provider()
+    }
+
+
 
     @Test
     fun showEntryPaths() {
@@ -46,5 +61,17 @@ class TestZippedJson {
         verifyEncryptedBallots(productionGroup(), zippedJson, 11)
         verifyChallengedBallots(productionGroup(), zippedJson)
     }
+}
 
+
+fun zipFolder(unzipped: File, zipped: File) {
+    if (!unzipped.exists() || !unzipped.isDirectory) return
+    ZipOutputStream(BufferedOutputStream(FileOutputStream(zipped))).use { zos ->
+        unzipped.walkTopDown().filter { it.absolutePath != unzipped.absolutePath }.forEach { file ->
+            val zipFileName = file.absolutePath.removePrefix(unzipped.absolutePath).removePrefix(File.separator)
+            val entry = ZipEntry("$zipFileName${(if (file.isDirectory) "/" else "" )}")
+            zos.putNextEntry(entry)
+            if (file.isFile) file.inputStream().use { it.copyTo(zos) }
+        }
+    }
 }

@@ -8,6 +8,7 @@ import electionguard.core.Stats
 import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.runDecryptTally
+import electionguard.decryptBallot.runDecryptBallots
 import electionguard.encrypt.AddEncryptedBallot
 import electionguard.encrypt.batchEncryption
 import electionguard.input.RandomBallotProvider
@@ -26,12 +27,6 @@ import kotlin.test.assertTrue
  *  1. The results can be copied to the test data sets "src/commonTest/data/workflow" whenever the
  *     election record changes.
  *  2. Then see RunDecryptBallotsTest for more damn things to do
- *  3. Replace src/commonTest/data/someAvailableProto/challengedBallot.protobuf, by running
- *     RunDecryptBallotsTest.testDecryptBallotsSomeFromList and copying that file.
- *  4. Replace src/commonTest/data/someAvailableJson/challenged_ballots/dballot-*.json by running
- *      RunDecryptBallotsJsonTest.testDecryptBallotsSomeFromList and copying that directory.
- *  5. Replace src/commonTest/data/testElectionRecord/jsonZip/json25.zip by going inside
- *      testOut/workflow/allAvailableJson and zipping that directory, and copying that file.
  */
 class TestWorkflow {
     private val configDirProto = "src/commonTest/data/startConfigProto"
@@ -126,10 +121,13 @@ class TestWorkflow {
             false,
             false,
         )
+        var count = 1
         ballots.forEach { ballot ->
-            val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST) // TODO spoil some
+            val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
+            val isOk = encryptor.encryptAndAdd(ballot, state)
             println(" write ${ballot.ballotId}")
             assertTrue(isOk)
+            count++
         }
         val Hbar =  encryptor.closeChain() // TODO where do we store this ??
         encryptor.close()
@@ -138,7 +136,12 @@ class TestWorkflow {
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
 
         // decrypt tally
-        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, electionInit, present, false), "runWorkflowChained")
+        val trustees = readDecryptingTrustees(group, trusteeDir, electionInit, present, false)
+        runDecryptTally(group, workingDir, workingDir, trustees, "runWorkflowChained")
+
+        // decrypt spoiled ballots
+        val decryptedBallots = runDecryptBallots(group, workingDir, workingDir, trustees,null, nthreads)
+        println(" Number of decryptedBallots $decryptedBallots")
 
         // verify
         println("\nRun Verifier on $workingDir")
@@ -285,19 +288,27 @@ class TestWorkflow {
             true,
             false,
         )
+        var count = 1
         ballots.forEach { ballot ->
-            val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST) // TODO spoil some
+            val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
+            val isOk = encryptor.encryptAndAdd(ballot, state)
             println(" write ${ballot.ballotId}")
             assertTrue(isOk)
+            count++
         }
         val Hbar =  encryptor.closeChain() // TODO where do we store this ??
         encryptor.close()
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
+        runAccumulateBallots(group, workingDir, workingDir, "runWorkflowChainedJson", "runWorkflowChainedJson")
 
         // decrypt tally
-        runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, electionInit, present, true), "runWorkflowChainedJson")
+        val trustees = readDecryptingTrustees(group, trusteeDir, electionInit, present, true)
+        runDecryptTally(group, workingDir, workingDir, trustees, "runWorkflowChainedJson")
+
+        // decrypt spoiled ballots
+        val decryptedBallots = runDecryptBallots(group, workingDir, workingDir, trustees,null, nthreads)
+        println(" Number of decryptedBallots $decryptedBallots")
 
         // verify
         println("\nRun Verifier")

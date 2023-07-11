@@ -18,7 +18,6 @@ class ConsumerJsonTest {
         @JvmStatic
         fun params(): Stream<Arguments> = Stream.of(
             Arguments.of("src/commonTest/data/testElectionRecord/convertJson"),
-            Arguments.of("src/commonTest/data/testElectionRecord/jsonZip/test100j.zip")
         )
     }
 

@@ -9,21 +9,27 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 
 class ElectionRecordIterablesTest {
-    private val kotlinDir = "src/commonTest/data/workflow/someAvailableProto"
-    // private val kotlinDir = "testOut/RunElectionRecordConvertProto"
+    val context = productionGroup()
 
     @Test
-    fun readBallotsWrittenByKotlin() {
-        println("readBallotsWrittenByKotlin $kotlinDir")
-        val context = productionGroup()
-            readBallots(context, kotlinDir, 11)
-            readCastBallots(context, kotlinDir, 11)
-            readSpoiledBallots(context, kotlinDir, 0)
-            readSpoiledBallotTallies(context, kotlinDir, 3)
+    fun testElectionRecordIterablesProto() {
+        readBallots("testOut/workflow/chainedProto")
+    }
+
+    @Test
+    fun testElectionRecordIterablesJson() {
+        readBallots("testOut/workflow/chainedJson")
+    }
+
+    fun readBallots(topdir: String) {
+        println("readBallots $topdir")
+        readBallots(context, topdir, 11)
+        readCastBallots(context, topdir, 8)
+        readSpoiledBallots(context, topdir, 3)
+        readDecryptedBallots(context, topdir, 3) // when do we decrypt spoiled ballots ??
     }
 
     fun readBallots(context: GroupContext, topdir: String, expected: Int) {
-        println("readBallots $topdir")
         val consumerIn = makeConsumer(topdir, context)
         val iterator = consumerIn.iterateEncryptedBallots { true } .iterator()
         var count = 0
@@ -56,7 +62,7 @@ class ElectionRecordIterablesTest {
         assertEquals(expected, count)
     }
 
-    fun readSpoiledBallotTallies(context: GroupContext, topdir: String, expected: Int) {
+    fun readDecryptedBallots(context: GroupContext, topdir: String, expected: Int) {
         val consumerIn = makeConsumer(topdir, context)
         val iterator = consumerIn.iterateDecryptedBallots().iterator()
         var count = 0
