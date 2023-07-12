@@ -51,6 +51,11 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
         return readElectionInitialized(jsonPaths.electionInitializedPath(), config.unwrap())
     }
 
+    actual override fun encryptingDevices(): List<String> = emptyList()
+    actual override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String> = Err("not implemented")
+    actual override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> = emptyList()
+    actual override fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> = emptyList()
+
     actual override fun readTallyResult(): Result<TallyResult, String> {
         val init = readElectionInitialized()
         if (init is Err) {

@@ -1,10 +1,6 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
-import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.*
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 
@@ -31,8 +27,6 @@ fun electionguard.protogen.DecryptionResult.import(group: GroupContext): Result<
     val tallyResult = this.tallyResult?.import(group) ?: Err("Null TallyResult")
     val decryptedTally = this.decryptedTally?.import(group) ?: Err("Null DecryptedTally")
 
-    // val (guardians, gerrors) = this.lagrangeCoordinates.map { it.import(group) }.partition()
-
     val errors = getAllErrors(tallyResult, decryptedTally)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
@@ -44,20 +38,3 @@ fun electionguard.protogen.DecryptionResult.import(group: GroupContext): Result<
         this.metadata.associate { it.key to it.value }
     ))
 }
-
-////////////////////////////////////////////////////////
-
-fun TallyResult.publishProto() =
-    electionguard.protogen.TallyResult(
-        this.electionInitialized.publishProto(),
-        this.encryptedTally.publishProto(),
-        this.tallyIds,
-        this.metadata.entries.map { electionguard.protogen.TallyResult.MetadataEntry(it.key, it.value) }
-    )
-
-fun DecryptionResult.publishProto() =
-    electionguard.protogen.DecryptionResult(
-        this.tallyResult.publishProto(),
-        this.decryptedTally.publishProto(),
-        this.metadata.entries.map { electionguard.protogen.DecryptionResult.MetadataEntry(it.key, it.value) }
-    )

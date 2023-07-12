@@ -1,14 +1,7 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.Result
-import electionguard.ballot.DecryptionResult
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
-import electionguard.ballot.TallyResult
+import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 
@@ -23,6 +16,11 @@ expect class ConsumerProto (topDir: String, groupContext: GroupContext) : Consum
     override fun readElectionInitialized(): Result<ElectionInitialized, String>
     override fun readTallyResult(): Result<TallyResult, String>
     override fun readDecryptionResult(): Result<DecryptionResult, String>
+
+    override fun encryptingDevices(): List<String>
+    override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String>
+    override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
+    override fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
 
     override fun hasEncryptedBallots() : Boolean
     override fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>

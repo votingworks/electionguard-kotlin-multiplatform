@@ -6,34 +6,29 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
-import electionguard.ballot.DecryptionResult
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
-import electionguard.ballot.TallyResult
+import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.protoconvert.import
+import electionguard.protoconvert.publishProto
 import mu.KotlinLogging
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
-import java.io.ByteArrayInputStream
-import java.io.FileInputStream
-import java.io.InputStream
+import java.io.*
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 import java.util.function.Predicate
+import java.util.stream.Stream
+import kotlin.io.path.name
 
 private val logger = KotlinLogging.logger("ElectionRecord")
 
 actual class ConsumerProto actual constructor(val topDir: String, val groupContext: GroupContext): Consumer {
-    val path = ElectionRecordProtoPaths(topDir)
+    val protoPaths = ElectionRecordProtoPaths(topDir)
 
     init {
         if (!Files.exists(Path.of(topDir))) {
@@ -58,26 +53,123 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     }
 
     actual override fun readElectionConfig(): Result<ElectionConfig, String> {
-        return readElectionConfig(path.electionConfigPath())
+        return readElectionConfig(protoPaths.electionConfigPath())
     }
 
     actual override fun readElectionInitialized(): Result<ElectionInitialized, String> {
-        return groupContext.readElectionInitialized(path.electionInitializedPath())
+        return groupContext.readElectionInitialized(protoPaths.electionInitializedPath())
     }
 
     actual override fun readTallyResult(): Result<TallyResult, String> {
-        return groupContext.readTallyResult(path.tallyResultPath())
+        return groupContext.readTallyResult(protoPaths.tallyResultPath())
     }
 
     actual override fun readDecryptionResult(): Result<DecryptionResult, String> {
-        return groupContext.readDecryptionResult(path.decryptionResultPath())
+        return groupContext.readDecryptionResult(protoPaths.decryptionResultPath())
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+
+    actual override fun encryptingDevices(): List<String> {
+        val topBallotPath = Path.of(protoPaths.encryptedBallotDir())
+        if (!Files.exists(topBallotPath)) {
+            return emptyList()
+        }
+        val deviceDirs: Stream<Path> = Files.list(topBallotPath)
+        return deviceDirs.map { it.getName( it.nameCount - 1).toString() }.toList() // last name in the path
+    }
+
+    actual override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String> {
+        val ballotChain = protoPaths.encryptedBallotChain(device)
+        if (!Files.exists(Path.of(ballotChain))) {
+            return Err("not exist")
+        }
+        return try {
+            var proto: electionguard.protogen.EncryptedBallotChain
+            FileInputStream(ballotChain).use { inp ->
+                proto = electionguard.protogen.EncryptedBallotChain.decodeFromStream(inp)
+            }
+            proto.import()
+        } catch (e: Exception) {
+            Err("failed")
+        }
+    }
+
+    actual override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> {
+        val deviceDirName: String = protoPaths.encryptedBallotDir(device)
+        if (!Files.exists(Path.of(deviceDirName))) {
+            throw RuntimeException("$deviceDirName doesnt exist")
+        }
+        val chainResult = readEncryptedBallotChain(device)
+        if (chainResult is Err) {
+            throw RuntimeException("$device error reading EncryptedBallotChain= $chainResult")
+        }
+        val chain = chainResult.unwrap()
+        return Iterable { EncryptedBallotDeviceIterator(device, chain.ballotIds.iterator(), filter) }
+    }
+
+    private inner class EncryptedBallotDeviceIterator(
+        val device: String,
+        val ballotIds: Iterator<String>,
+        private val filter: Predicate<EncryptedBallot>?,
+    ) : AbstractIterator<EncryptedBallot>() {
+
+        override fun computeNext() {
+            while (true) {
+                if (ballotIds.hasNext()) {
+                    val ballotFile = protoPaths.encryptedBallotPath(device, ballotIds.next())
+                    var proto: electionguard.protogen.EncryptedBallot
+                    FileInputStream(ballotFile).use { inp ->
+                        proto = electionguard.protogen.EncryptedBallot.decodeFromStream(inp)
+                    }
+                    val result = proto.import(groupContext)
+                    if (result is Err) {
+                        println("Error importing $ballotFile")
+                        continue
+                    } else {
+                        val eballot: EncryptedBallot = result.unwrap()
+                        if (filter != null && !filter.test(eballot)) {
+                            continue // skip it
+                        }
+                        return setNext(eballot)
+                    }
+                } else {
+                    return done()
+                }
+            }
+        }
+    }
+
+    actual override fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> {
+        val devices = encryptingDevices()
+        return Iterable { DeviceIterator(devices.iterator(), filter) }
+    }
+
+    private inner class DeviceIterator(
+        val devices: Iterator<String>,
+        private val filter : ((EncryptedBallot) -> Boolean)?,
+    ) : AbstractIterator<EncryptedBallot>() {
+        var innerIterator: Iterator<EncryptedBallot>? = null
+
+        override fun computeNext() {
+            while (true) {
+                if (innerIterator != null && innerIterator!!.hasNext()) {
+                    return setNext(innerIterator!!.next())
+                }
+                if (devices.hasNext()) {
+                    innerIterator = iterateEncryptedBallots(devices.next(), filter).iterator()
+                } else {
+                    return done()
+                }
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
     // all submitted ballots, cast or spoiled
-    actual override fun iterateEncryptedBallots(
-        filter: ((EncryptedBallot) -> Boolean)?
-    ): Iterable<EncryptedBallot> {
-        val filename = path.encryptedBallotPath()
+    actual override fun iterateEncryptedBallots(filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
+        val filename = protoPaths.encryptedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
@@ -85,12 +177,12 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     }
 
     actual override fun hasEncryptedBallots(): Boolean {
-        return Files.exists(Path.of(path.encryptedBallotPath()))
+        return Files.exists(Path.of(protoPaths.encryptedBallotPath()))
     }
 
     // only EncryptedBallot that are CAST
     actual override fun iterateCastBallots(): Iterable<EncryptedBallot> {
-        val filename = path.encryptedBallotPath()
+        val filename = protoPaths.encryptedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
@@ -101,7 +193,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
 
     // only EncryptedBallot that are SPOILED
     actual override fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
-        val filename = path.encryptedBallotPath()
+        val filename = protoPaths.encryptedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
@@ -112,7 +204,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
 
     // all tallies in the SPOILED_BALLOT_FILE file
     actual override fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot> {
-        val filename = path.spoiledBallotPath()
+        val filename = protoPaths.spoiledBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
@@ -124,15 +216,15 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         ballotDir: String,
         filter: ((PlaintextBallot) -> Boolean)?
     ): Iterable<PlaintextBallot> {
-        if (!Files.exists(Path.of(path.plaintextBallotPath(ballotDir)))) {
+        if (!Files.exists(Path.of(protoPaths.plaintextBallotPath(ballotDir)))) {
             return emptyList()
         }
-        return Iterable { PlaintextBallotIterator(path.plaintextBallotPath(ballotDir), filter) }
+        return Iterable { PlaintextBallotIterator(protoPaths.plaintextBallotPath(ballotDir), filter) }
     }
 
     // trustee in given directory for given guardianId
     actual override fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {
-        val filename = path.decryptingTrusteePath(trusteeDir, guardianId)
+        val filename = protoPaths.decryptingTrusteePath(trusteeDir, guardianId)
         return groupContext.readTrustee(filename)
     }
 

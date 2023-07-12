@@ -7,7 +7,7 @@ import electionguard.core.*
 data class CiphertextBallot(
     val ballotId: String,
     val ballotStyleId: String,
-    val votingDevice: String,
+    val encryptingDevice: String,
     val timestamp: Long,
     val codeBaux: ByteArray, // Baux in eq 59
     val confirmationCode: UInt256, // tracking code, H(B), eq 59
@@ -46,7 +46,7 @@ fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot
     return EncryptedBallot(
         this.ballotId,
         this.ballotStyleId,
-        this.votingDevice,
+        this.encryptingDevice,
         this.timestamp,
         this.codeBaux,
         this.confirmationCode,

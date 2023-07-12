@@ -33,7 +33,7 @@ fun ElectionConfig.publishJson() = ElectionConfigJson(
     this.manifestHash.publishJson(),
     this.electionBaseHash.publishJson(),
     this.chainConfirmationCodes,
-    this.baux0,
+    this.configBaux0,
     this.metadata,
 )
 

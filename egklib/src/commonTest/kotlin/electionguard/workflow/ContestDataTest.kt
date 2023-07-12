@@ -62,7 +62,7 @@ class ContestDataTest {
             .build()
 
         val encryptor = Encryptor(context, electionRecord.manifest(), keypair.publicKey, electionInit.extendedBaseHash, "device")
-        val eballot = encryptor.encrypt(ballot)
+        val eballot = encryptor.encrypt(ballot, ByteArray(0))
 
         eballot.contests.forEachIndexed { idx, it ->
             assertNotNull(it.contestData)

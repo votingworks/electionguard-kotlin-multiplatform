@@ -97,7 +97,7 @@ class ConfirmationCodeTestVector {
             println(msgs)
             if ( !msgs.hasErrors() ) {
                 val codeBaux = byteArrays(11).single()
-                val eballot = encryptor.encrypt(ballot, null, null, codeBaux)
+                val eballot = encryptor.encrypt(ballot, codeBaux)
                 eballots.add(eballot)
                 useBallots.add(ballot)
             }
@@ -135,7 +135,7 @@ class ConfirmationCodeTestVector {
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
             val ballotNonce = eballot.ballotNonce.import()
             val codeBaux = eballot.codeBaux.fromHex()!!
-            val cyberBallot = encryptor.encrypt(ballot.import(), ballotNonce, null, codeBaux)
+            val cyberBallot = encryptor.encrypt(ballot.import(), codeBaux, ballotNonce)
             checkEquals(eballot, cyberBallot)
         }
     }

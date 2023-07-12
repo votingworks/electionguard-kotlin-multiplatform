@@ -21,7 +21,7 @@ message ElectionConfig {
   UInt256 election_base_hash = 9;  // He
   bytes manifest_bytes = 10; // the original source of the manifest
   bool chain_confirmation_codes = 11;
-  bytes baux0 = 12; // B_aux,0 from eq 59,60 if chain_confirmation_codes = false
+  bytes config_baux0 = 12; // B_aux,0 from eq 59,60 if chain_confirmation_codes = false
 
   map<string, string> metadata = 20; // arbitrary metadata added by the software
 }
@@ -52,11 +52,13 @@ message Guardian {
 }
 
 // one for each encryption device
-message EncryptedBallots {
+message EncryptedBallotChain {
   string encrypting_device = 1; // encrypting device device information, section 3.4.3, 3.7
   bytes baux0 = 2; // B_aux,0 from eq 59,60 if chain_confirmation_codes = true
-  repeated EncryptedBallot encrypted_ballots = 3; // in order
-  UInt256 closing_hash = 4; // eq 62, if chained
+  repeated string ballot_ids = 3; // in order
+  repeated UInt256 confirmation_codes = 4; // in order
+  bool chaining = 5;
+  UInt256 closing_hash = 6; // eq 62, if chainCodes == true
   map<string, string> metadata = 11; // arbitrary metadata added by the software
 }
 

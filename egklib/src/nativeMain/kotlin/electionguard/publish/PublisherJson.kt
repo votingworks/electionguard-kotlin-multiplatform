@@ -1,13 +1,6 @@
 package electionguard.publish
 
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.DecryptionResult
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.TallyResult
+import electionguard.ballot.*
 import electionguard.core.pathExists
 import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrustee
@@ -110,7 +103,14 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         writeToFile(fileout, jsonString)
     }
 
+    actual override fun writeEncryptedBallotChain(closing: EncryptedBallotChain) {}
+
     actual override fun encryptedBallotSink(): EncryptedBallotSinkIF {
+        validateOutputDir(jsonPaths.encryptedBallotDir())
+        return EncryptedBallotSink()
+    }
+
+    actual override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF {
         validateOutputDir(jsonPaths.encryptedBallotDir())
         return EncryptedBallotSink()
     }

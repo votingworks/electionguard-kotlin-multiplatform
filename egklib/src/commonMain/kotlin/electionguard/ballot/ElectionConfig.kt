@@ -28,7 +28,7 @@ data class ElectionConfig(
     val manifestBytes: ByteArray,
 
     val chainConfirmationCodes: Boolean = false,
-    val baux0: ByteArray, // B_aux,0 from eq 59,60 if chain_confirmation_codes = false
+    val configBaux0: ByteArray, // B_aux,0 from eq 59,60 if chain_confirmation_codes = false
 
     /** arbitrary key/value metadata. */
     val metadata: Map<String, String> = emptyMap(),
@@ -53,7 +53,7 @@ data class ElectionConfig(
         if (manifestHash != other.manifestHash) return false
         if (electionBaseHash != other.electionBaseHash) return false
         if (!manifestBytes.contentEquals(other.manifestBytes)) return false
-        if (!baux0.contentEquals(other.baux0)) return false
+        if (!configBaux0.contentEquals(other.configBaux0)) return false
         if (chainConfirmationCodes != other.chainConfirmationCodes) return false
         return metadata == other.metadata
     }
@@ -69,7 +69,7 @@ data class ElectionConfig(
         result = 31 * result + manifestHash.hashCode()
         result = 31 * result + electionBaseHash.hashCode()
         result = 31 * result + manifestBytes.contentHashCode()
-        result = 31 * result + baux0.contentHashCode()
+        result = 31 * result + configBaux0.contentHashCode()
         result = 31 * result + chainConfirmationCodes.hashCode()
         result = 31 * result + metadata.hashCode()
         return result

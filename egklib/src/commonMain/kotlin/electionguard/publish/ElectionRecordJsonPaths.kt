@@ -17,7 +17,6 @@ data class ElectionRecordJsonPaths(val topDir : String) {
         const val DECRYPTED_BALLOT_PREFIX = "dballot-"
         const val PLAINTEXT_BALLOT_PREFIX = "pballot-"
 
-
         const val ENCRYPTED_DIR = "encrypted_ballots"
         const val CHALLENGED_DIR = "challenged_ballots"
     }

@@ -14,6 +14,9 @@ interface Publisher {
     fun writeDecryptionResult(decryption: DecryptionResult)
 
     fun encryptedBallotSink(): EncryptedBallotSinkIF
+    fun encryptedBallotSink(device: String): EncryptedBallotSinkIF
+    fun writeEncryptedBallotChain(closing: EncryptedBallotChain)
+
     fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF
 
     fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)

@@ -89,6 +89,11 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         )
     }
 
+    actual override fun encryptingDevices(): List<String> = emptyList()
+    actual override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String> = Err("not implemented")
+    actual override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> = emptyList()
+    actual override fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> = emptyList()
+
     actual override fun readTallyResult(): Result<TallyResult, String> {
         val init = readElectionInitialized()
         if (init is Err) {
@@ -117,9 +122,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     }
 
     // all submitted ballots, with filter
-    actual override fun iterateEncryptedBallots(
-        filter: ((EncryptedBallot) -> Boolean)?
-    ): Iterable<EncryptedBallot> {
+    actual override fun iterateEncryptedBallots(filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
         val dirPath = fileSystem.getPath(jsonPaths.encryptedBallotDir())
         if (!Files.exists(dirPath)) {
             return emptyList()

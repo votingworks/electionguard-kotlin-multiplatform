@@ -1,14 +1,7 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.Result
-import electionguard.ballot.DecryptionResult
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
-import electionguard.ballot.TallyResult
+import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.isDirectory
 import electionguard.core.pathExists
@@ -27,6 +20,11 @@ interface Consumer {
     fun readElectionInitialized(): Result<ElectionInitialized, String>
     fun readTallyResult(): Result<TallyResult, String>
     fun readDecryptionResult(): Result<DecryptionResult, String>
+
+    fun encryptingDevices(): List<String>
+    fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String>
+    fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
+    fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
 
     //// Use iterators, so that we never have to read in all objects at once.
     fun hasEncryptedBallots() : Boolean

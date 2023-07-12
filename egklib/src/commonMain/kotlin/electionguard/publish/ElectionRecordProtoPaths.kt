@@ -14,8 +14,11 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         const val PLAINTEXT_BALLOT_FILE = "plaintextBallots$PROTO_SUFFIX"
         const val ENCRYPTED_BALLOT_FILE = "encryptedBallots$PROTO_SUFFIX"
         const val CHALLENGED_BALLOT_FILE = "challengedBallots$PROTO_SUFFIX"
-    }
 
+        const val ENCRYPTED_DIR = "encrypted_ballots"
+        const val ENCRYPTED_BALLOT_PREFIX = "eballot-"
+        const val ENCRYPTED_BALLOT_CHAIN = "ballotChain"
+    }
 
     fun manifestPath(): String {
         return "$electionRecordDir/$MANIFEST_FILE"
@@ -37,6 +40,7 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         return "$electionRecordDir/$DECRYPTION_RESULT_FILE"
     }
 
+    // TODO resolve ??
     fun plaintextBallotPath(ballotDir: String): String {
         return "$ballotDir/$PLAINTEXT_BALLOT_FILE"
     }
@@ -49,7 +53,27 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         return "$electionRecordDir/$CHALLENGED_BALLOT_FILE"
     }
 
+    // TODO resolve ??
     fun decryptingTrusteePath(trusteeDir: String, guardianId: String): String {
         return "$trusteeDir/$DECRYPTING_TRUSTEE_PREFIX-$guardianId$PROTO_SUFFIX"
+    }
+
+    fun encryptedBallotDir(): String {
+        return "$electionRecordDir/$ENCRYPTED_DIR/"
+    }
+
+    fun encryptedBallotDir(device: String): String {
+        val useDevice = device.replace(" ", "_")
+        return "$electionRecordDir/$ENCRYPTED_DIR/$useDevice/"
+    }
+
+    fun encryptedBallotPath(device: String, ballotId: String): String {
+        val useDevice = device.replace(" ", "_")
+        val id = ballotId.replace(" ", "_")
+        return "$electionRecordDir/$ENCRYPTED_DIR/$useDevice/${ENCRYPTED_BALLOT_PREFIX}$id${PROTO_SUFFIX}"
+    }
+
+    fun encryptedBallotChain(device: String): String {
+        return "${encryptedBallotDir(device)}/${ENCRYPTED_BALLOT_CHAIN}${PROTO_SUFFIX}"
     }
 }

@@ -111,7 +111,14 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         }
     }
 
+    actual override fun writeEncryptedBallotChain(closing: EncryptedBallotChain) {}
+
     actual override fun encryptedBallotSink(): EncryptedBallotSinkIF {
+        validateOutputDir(Path.of(jsonPaths.encryptedBallotDir()), Formatter())
+        return EncryptedBallotSink()
+    }
+
+    actual override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF {
         validateOutputDir(Path.of(jsonPaths.encryptedBallotDir()), Formatter())
         return EncryptedBallotSink()
     }

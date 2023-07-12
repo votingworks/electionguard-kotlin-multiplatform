@@ -96,13 +96,14 @@ dependencyResolutionManagement {
             library("ktor-server-tests-jvm", "io.ktor", "ktor-server-tests-jvm").versionRef("ktor-version")
 
             // property based testing
-            library("kotest-property", "io.kotest", "kotest-property").version("5.5.4")
+            library("kotest-property", "io.kotest", "kotest-property").version("5.6.2")
 
             //// jvm only
-            // uses junit:junit:4.13.2
-            library("mockk", "io.mockk", "mockk").version("1.13.2")
+            library("mockk", "io.mockk", "mockk").version("1.13.5")
             library("kotlin-test-junit5", "org.jetbrains.kotlin", "kotlin-test-junit5").versionRef("kotlin-version")
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin-version")
+            // use ParameterizedTest feature feature
+            library("junit-jupiter-params", "org.junit.jupiter:junit-jupiter-params:5.9.3")
         }
     }
 }
