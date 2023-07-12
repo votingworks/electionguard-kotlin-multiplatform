@@ -138,10 +138,8 @@ fun testEncryptDecryptVerify(
     var encryptTime = 0L
     var decryptTime = 0L
     RandomBallotProvider(manifest, nballots).withWriteIns().ballots().forEach { ballot ->
-        val masterNonce = UInt256.random()
-
         val startEncrypt = getSystemTimeInMillis()
-        val ciphertextBallot = encryptor.encrypt(ballot, masterNonce, 0)
+        val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0))
         val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
         encryptTime += getSystemTimeInMillis() - startEncrypt
 

@@ -1,6 +1,5 @@
 package electionguard.json2
 
-import com.github.michaelbull.result.unwrap
 import electionguard.core.*
 import electionguard.core.schnorrProof
 import electionguard.keyceremony.PublicKeys

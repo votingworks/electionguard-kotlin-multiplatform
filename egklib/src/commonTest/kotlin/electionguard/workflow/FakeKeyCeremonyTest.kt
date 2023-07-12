@@ -10,7 +10,6 @@ import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
-import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -87,7 +86,7 @@ fun runFakeKeyCeremony(
         config.jurisdictionInfo,
         electionRecord.manifestBytes(),
         chained,
-        config.baux0,
+        config.configBaux0,
         mapOf(Pair("Created by", "runFakeKeyCeremony")),
     )
     // println("newConfig.electionBaseHash ${newConfig.electionBaseHash}")

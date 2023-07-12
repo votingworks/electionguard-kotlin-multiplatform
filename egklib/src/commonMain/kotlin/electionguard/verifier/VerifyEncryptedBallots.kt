@@ -192,18 +192,18 @@ class VerifyEncryptedBallots(
     // (6.G) The closing hash is correctly computed as H = H(HE ; 24, Baux ).
 
     fun verifyConfirmationChain(config: ElectionConfig, extendedBaseHash: UInt256, ballots: Iterable<EncryptedBallot>) {
-        println(" verifyConfirmationChain baux0=${config.baux0.contentToString()}")
+        println(" verifyConfirmationChain baux0=${config.configBaux0.contentToString()}")
 
         // (6.D) The initial hash code H0 satisfies H0 = H(HE ; 24, Baux,0 )
         // and Baux,0 contains the unique voting device information as specified in the election manifest file.
-        val H0 = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.baux0).bytes // eq 60
+        val H0 = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.configBaux0).bytes // eq 60
 
         // (6.E) For all 1 ≤ j ≤ ℓ, the additional input byte array used to compute Hj = H(Bj ) is equal to Baux = H(Bj−1 ) ∥ Baux,0 .
         var prevBaux = H0
         var first = true
         ballots.forEach {ballot ->
-            val expectedBaux = if (first) hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.baux0).bytes // eq 60
-            else hashFunction(prevBaux, config.baux0).bytes // eq 61
+            val expectedBaux = if (first) hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.configBaux0).bytes // eq 60
+            else hashFunction(prevBaux, config.configBaux0).bytes // eq 61
             first = false
             // println("    ${ballot.ballotId} expectedBaux=${expectedBaux.contentToString()}")
             if (!expectedBaux.contentEquals(ballot.codeBaux)) {

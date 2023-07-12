@@ -122,7 +122,7 @@ class BallotEncryptionTestVector {
             val msgs = validator.validate(ballot)
             println(msgs)
             if ( !msgs.hasErrors() ) {
-                eballots.add(encryptor.encrypt(ballot))
+                eballots.add(encryptor.encrypt(ballot, ByteArray(0)))
                 useBallots.add(ballot)
             }
         }
@@ -158,7 +158,7 @@ class BallotEncryptionTestVector {
             val manifest = PlaintextBallotJsonManifestFacade(ballot)
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
             val ballotNonce = eballot.ballotNonce.import()
-            val cyberBallot = encryptor.encrypt(ballot.import(), ballotNonce)
+            val cyberBallot = encryptor.encrypt(ballot.import(), ByteArray(0), ballotNonce)
             checkEquals(eballot, cyberBallot)
             checkProofsEquals(publicKey, extendedBaseHash, ballot, eballot, cyberBallot)
         }

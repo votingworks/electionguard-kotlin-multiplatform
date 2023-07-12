@@ -168,6 +168,11 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
     actual override fun encryptedBallotSink(): EncryptedBallotSinkIF =
         EncryptedBallotSink(path.encryptedBallotPath())
 
+    actual override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF =
+        EncryptedBallotSink(path.encryptedBallotPath())
+
+    actual override fun writeEncryptedBallotChain(closing: EncryptedBallotChain) {}
+
     private inner class EncryptedBallotSink(val fileout: String) : EncryptedBallotSinkIF {
         val file: CPointer<FILE> = openFile(fileout, "wb")
 

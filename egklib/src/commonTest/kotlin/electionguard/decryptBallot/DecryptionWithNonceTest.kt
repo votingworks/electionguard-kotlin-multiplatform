@@ -28,7 +28,7 @@ class DecryptionWithNonceTest {
 
         RandomBallotProvider(electionRecord.manifest(), nballots).ballots().forEach { ballot ->
             val primaryNonce = UInt256.random()
-            val ciphertextBallot = encryptor.encrypt(ballot, primaryNonce, 0)
+            val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0), primaryNonce, 0)
             assertEquals(primaryNonce, ciphertextBallot.ballotNonce)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 
@@ -79,7 +79,7 @@ class DecryptionWithNonceTest {
         val nb = 100
         RandomBallotProvider(electionRecord.manifest(), nb).withWriteIns().ballots().forEach { ballot ->
             val primaryNonce = UInt256.random()
-            val ciphertextBallot = encryptor.encrypt(ballot, primaryNonce, 0)
+            val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0), primaryNonce, 0)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 
             // decrypt with primary nonce

@@ -123,7 +123,7 @@ class BallotChainingTestVector {
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
             val ballotNonce = eballot.ballotNonce.import()
             val codeBaux : ByteArray = eballot.codeBaux.fromHex()!!
-            val cyberBallot = encryptor.encrypt(ballot.import(), ballotNonce, null, codeBaux)
+            val cyberBallot = encryptor.encrypt(ballot.import(), codeBaux, ballotNonce)
             checkEquals(eballot, cyberBallot)
             if (prevCode != null) {
                 assertTrue(prevCode.contentEquals(codeBaux))

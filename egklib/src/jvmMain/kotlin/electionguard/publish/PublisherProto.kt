@@ -23,7 +23,7 @@ import java.util.*
 /** Publishes the Manifest Record to protobuf files.  */
 actual class PublisherProto actual constructor(topDir: String, createNew: Boolean) : Publisher {
     private val electionRecordDir = Path.of(topDir)
-    private var path: ElectionRecordProtoPaths = ElectionRecordProtoPaths(topDir)
+    private val protoPaths: ElectionRecordProtoPaths = ElectionRecordProtoPaths(topDir)
 
     init {
         if (createNew) {
@@ -71,11 +71,10 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         return electionRecordDir.resolve(TALLY_RESULT_FILE).toAbsolutePath()
     }
 
-    actual override fun writeManifest(manifest: Manifest) : String {
+    actual override fun writeManifest(manifest: Manifest): String {
         val proto = manifest.publishProto()
         FileOutputStream(manifestPath().toFile()).use { out ->
             proto.encodeToStream(out)
-            out.close()
         }
         return manifestPath().toString()
     }
@@ -84,7 +83,6 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         val proto = config.publishProto()
         FileOutputStream(electionConfigPath().toFile()).use { out ->
             proto.encodeToStream(out)
-            out.close()
         }
     }
 
@@ -92,7 +90,6 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         val proto = init.publishProto()
         FileOutputStream(electionInitializedPath().toFile()).use { out ->
             proto.encodeToStream(out)
-            out.close()
         }
     }
 
@@ -110,7 +107,6 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         val proto = tally.publishProto()
         FileOutputStream(tallyResultPath().toFile()).use { out ->
             proto.encodeToStream(out)
-            out.close()
         }
     }
 
@@ -118,31 +114,58 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         val proto = decryption.publishProto()
         FileOutputStream(decryptionResultPath().toFile()).use { out ->
             proto.encodeToStream(out)
-            out.close()
         }
     }
 
     actual override fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>) {
         if (plaintextBallots.isNotEmpty()) {
-            val fileout = path.plaintextBallotPath(outputDir)
+            val fileout = protoPaths.plaintextBallotPath(outputDir)
             FileOutputStream(fileout).use { out ->
                 for (ballot in plaintextBallots) {
                     val ballotProto = ballot.publishProto()
                     writeDelimitedTo(ballotProto, out)
                 }
-                out.close()
             }
         }
     }
 
     actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
         val proto = trustee.publishDecryptingTrusteeProto()
-        val fileout = path.decryptingTrusteePath(trusteeDir, trustee.id)
+        val fileout = protoPaths.decryptingTrusteePath(trusteeDir, trustee.id)
         FileOutputStream(fileout).use { out ->
             proto.encodeToStream(out)
-            out.close()
         }
     }
+
+    ////////////////////////////////////////////////
+
+    actual override fun writeEncryptedBallotChain(closing: EncryptedBallotChain) {
+        val proto = closing.publishProto()
+        val filename = protoPaths.encryptedBallotChain(closing.encryptingDevice)
+
+        FileOutputStream(filename).use { out ->
+            proto.encodeToStream(out)
+        }
+    }
+
+    actual override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF {
+        val ballotDir = protoPaths.encryptedBallotDir(device)
+        validateOutputDir(Path.of(ballotDir), Formatter())
+        return EncryptedBallotDeviceSink(device)
+    }
+
+    inner class EncryptedBallotDeviceSink(val device: String) : EncryptedBallotSinkIF {
+        override fun writeEncryptedBallot(ballot: EncryptedBallot) {
+            val ballotFile = protoPaths.encryptedBallotPath(device, ballot.ballotId)
+            val ballotProto: pbandk.Message = ballot.publishProto()
+            FileOutputStream(ballotFile).use { out -> ballotProto.encodeToStream(out) }
+        }
+
+        override fun close() {
+        }
+    }
+
+    /////////////////////////////////////////////////////////////
 
     actual override fun encryptedBallotSink(): EncryptedBallotSinkIF =
         EncryptedBallotSink(encryptedBallotPath().toString())
@@ -210,8 +233,8 @@ fun removeAllFiles(path: Path) {
         .forEach { f: File -> f.delete() }
 }
 
-/** Make sure output dir exists and is writeable.  */
-fun validateOutputDir(path: Path, error: java.util.Formatter): Boolean {
+/** Make sure output directories exists and are writeable.  */
+fun validateOutputDir(path: Path, error: Formatter): Boolean {
     if (!Files.exists(path)) {
         Files.createDirectories(path)
     }

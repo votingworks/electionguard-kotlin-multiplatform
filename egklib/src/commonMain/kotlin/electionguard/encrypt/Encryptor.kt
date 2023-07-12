@@ -17,31 +17,30 @@ class Encryptor(
     val manifest: ManifestIF,
     val jointPublicKey: ElGamalPublicKey, // aka K
     val extendedBaseHash: UInt256, // aka He
-    val votingDevice: String,
+    val encryptingDevice: String,
 ) {
     private val extendedBaseHashB = extendedBaseHash.bytes
 
-    /** Encrypt ballots in a chain with starting codeSeed, and random ballotNonce */
+    /** TODO get rid of this */
     fun encryptChain(ballots: Iterable<PlaintextBallot>, codeSeed: UInt256): List<CiphertextBallot> {
         var previousTrackingHash = codeSeed
         val encryptedBallots = mutableListOf<CiphertextBallot>()
         for (ballot in ballots) {
-            val encryptedBallot = ballot.encryptBallot(UInt256.random(), null, null, previousTrackingHash.bytes)
+            val encryptedBallot = ballot.encryptBallot(previousTrackingHash.bytes, UInt256.random(), null)
             encryptedBallots.add(encryptedBallot)
             previousTrackingHash = encryptedBallot.confirmationCode
         }
         return encryptedBallots
     }
 
-    fun encrypt(ballot: PlaintextBallot, ballotNonce: UInt256? = null, timestampOverride: Long? = null, codeBaux : ByteArray = ByteArray(0)): CiphertextBallot {
-        return ballot.encryptBallot( ballotNonce ?: UInt256.random(), null, timestampOverride, codeBaux)
+    fun encrypt(ballot: PlaintextBallot, codeBaux : ByteArray, ballotNonce: UInt256? = null, timestampOverride: Long? = null): CiphertextBallot {
+        return ballot.encryptBallot(codeBaux, ballotNonce ?: UInt256.random(), timestampOverride)
     }
 
     private fun PlaintextBallot.encryptBallot(
+        codeBaux : ByteArray,
         ballotNonce: UInt256,
-        codeOverride: UInt256? = null, // non-null for preencrypt; if null, calculate from spec
         timestampOverride: Long? = null,
-        codeBaux : ByteArray = ByteArray(0),
     ): CiphertextBallot {
         val plaintextContests = this.contests.associateBy { it.contestId }
 
@@ -55,19 +54,19 @@ class Encryptor(
 
         // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
         val contestHashes = sortedContests.map { it.contestHash }
-        val confirmationCode = codeOverride ?: hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, codeBaux)
+        val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, codeBaux)
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000) // secs since epoch
 
         return CiphertextBallot(
             ballotId,
             ballotStyle,
-            votingDevice,
+            encryptingDevice,
             timestamp,
             codeBaux,
             confirmationCode,
             sortedContests,
             ballotNonce,
-            codeOverride != null,
+            false,
         )
     }
 

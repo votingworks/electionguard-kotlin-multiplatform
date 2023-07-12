@@ -2,14 +2,7 @@ package electionguard.publish
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Result
-import electionguard.ballot.DecryptionResult
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.PlaintextBallot
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Manifest
-import electionguard.ballot.TallyResult
+import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 
@@ -52,6 +45,11 @@ actual class ConsumerProto actual constructor(private val topDir: String, privat
             Err(e.message ?: "readElectionInitialized ${path.electionInitializedPath()} failed")
         }
     }
+
+    actual override fun encryptingDevices(): List<String> = emptyList()
+    actual override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String> = Err("not implemented")
+    actual override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> = emptyList()
+    actual override fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> = emptyList()
 
     actual override fun readTallyResult(): Result<TallyResult, String> {
         return try {

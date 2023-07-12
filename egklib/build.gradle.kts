@@ -56,7 +56,7 @@ kotlin {
                 // More info: https://www.jvt.me/posts/2021/03/11/gradle-speed-parallel/
                 systemProperties["junit.jupiter.execution.parallel.enabled"] = "true"
                 systemProperties["junit.jupiter.execution.parallel.mode.default"] = "concurrent"
-                systemProperties["junit.jupiter.execution.parallel.mode.classes.default"] = "concurrent"
+                systemProperties["junit.jupiter.execution.parallel.mode.classes.default"] = "same_thread"
             }
     }
 
@@ -149,7 +149,7 @@ kotlin {
                     implementation(libs.logback.classic)
 
                     // use ParameterizedTest feature
-                    implementation("org.junit.jupiter:junit-jupiter-params:5.1.0")
+                    implementation(libs.junit.jupiter.params)
                 }
             }
         val nativeMain by getting {

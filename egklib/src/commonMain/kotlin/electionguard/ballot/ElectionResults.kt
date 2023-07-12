@@ -4,6 +4,17 @@ import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModQ
 import electionguard.core.UInt256
 
+// one for each encryption device
+data class EncryptedBallotChain(
+    val encryptingDevice: String,
+    val baux0: ByteArray,
+    val ballotIds: List<String>,
+    val confirmationCodes: List<UInt256>,
+    val chaining: Boolean,
+    val closingHash: UInt256?, // only if chaining == true
+    val metadata: Map<String, String> = emptyMap(),
+)
+
 /** Results of tallying some collection of ballots, namely an EncryptedTally. */
 data class TallyResult(
     val electionInitialized: ElectionInitialized,

@@ -183,7 +183,7 @@ fun batchEncryption(
         electionInit.extendedBaseHash,
         device,
     )
-    val runEncryption = EncryptionRunner(group, encryptor, null, electionRecord.manifest(), electionRecord.config(),
+    val runEncryption = EncryptionRunner(group, encryptor, electionRecord.manifest(), electionRecord.config(),
         electionInit.jointPublicKey, electionInit.extendedBaseHash, check)
 
     val publisher = makePublisher(outputDir, false, electionRecord.isJson())
@@ -239,7 +239,6 @@ private var codeBaux = ByteArray(0)
 private class EncryptionRunner(
     val group: GroupContext,
     val encryptor: Encryptor,
-    val ballotNonce: UInt256?,
     val manifest: ManifestIF,
     val config: ElectionConfig,
     val jointPublicKey: ElementModP,
@@ -256,23 +255,23 @@ private class EncryptionRunner(
     }
 
     fun encrypt(ballot: PlaintextBallot): EncryptedBallot {
-        val ciphertextBallot = encryptor.encrypt(ballot, ballotNonce)
+        val ciphertextBallot = encryptor.encrypt(ballot, config.configBaux0)
 
         // experiments in testing the encryption
-        if (check == CheckType.EncryptTwice && ballotNonce != null) {
-            val encrypted2 = encryptor.encrypt(ballot, ballotNonce)
+        if (check == CheckType.EncryptTwice) {
+            val encrypted2 = encryptor.encrypt(ballot, config.configBaux0, ciphertextBallot.ballotNonce)
             if (encrypted2.confirmationCode != ciphertextBallot.confirmationCode) {
-                logger.warn { "encrypted.confirmationCode doesnt match" }
+                logger.warn { "CheckType.EncryptTwice: encrypted.confirmationCode doesnt match" }
             }
             if (encrypted2 != ciphertextBallot) {
-                logger.warn { "encrypted doesnt match" }
+                logger.warn { "CheckType.EncryptTwice: encrypted doesnt match" }
             }
         } else if (check == CheckType.Verify && verifier != null) {
             // VerifyEncryptedBallots may be doing more work than actually needed
             val submitted = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
             val verifyResults = verifier.verifyEncryptedBallot(submitted, Stats())
             if (verifyResults is Err) {
-                logger.warn { "encrypted doesnt verify = ${verifyResults}" }
+                logger.warn { "CheckType.Verify: encrypted doesnt verify = ${verifyResults}" }
             }
         } else if (check == CheckType.DecryptNonce) {
             // Decrypt with Nonce to ensure encryption worked
@@ -282,7 +281,7 @@ private class EncryptionRunner(
             val decryptionWithPrimaryNonce = DecryptWithNonce(group, publicKeyEG, extendedBaseHash)
             val decryptResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(primaryNonce) }
             if (decryptResult is Err) {
-                logger.warn { "encrypted ballot fails decryption = $decryptResult" }
+                logger.warn { "CheckType.DecryptNonce: encrypted ballot fails decryption = $decryptResult" }
             }
         }
 
@@ -292,6 +291,7 @@ private class EncryptionRunner(
 }
 
 // the ballot reading is in its own coroutine
+@ExperimentalCoroutinesApi
 private fun CoroutineScope.produceBallots(producer: Iterable<PlaintextBallot>): ReceiveChannel<PlaintextBallot> =
     produce {
         for (ballot in producer) {
