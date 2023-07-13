@@ -1,6 +1,6 @@
 # 🗳 Election Record JSON directory and file layout
 
-draft 6/25/2023
+draft 7/13/2023
 
 ## Public Election Record files
 
@@ -13,10 +13,18 @@ topdir/
     manifest.json
     tally.json
     encrypted_ballots/
-       eballot-<ballotId>.json
-       eballot-<ballotId>.json
-       eballot-<ballotId>.json
-       ...
+       deviceName1/
+          ballot_chain.json
+          eballot-ballotId1.json
+          eballot-ballotId2.json
+          eballot-ballotId3.json
+          ...
+        deviceName2/
+          eballot-ballotId1.json
+          eballot-ballotId2.json
+          eballot-ballotId3.json
+        deviceName3/
+        ...
     challenged_ballots/
        dballot-<ballotId>.json
        dballot-<ballotId>.json

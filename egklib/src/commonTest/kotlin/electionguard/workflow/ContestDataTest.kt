@@ -10,6 +10,7 @@ import electionguard.input.BallotInputBuilder
 import electionguard.publish.Publisher
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
+import io.ktor.utils.io.core.*
 import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -126,9 +127,15 @@ class ContestDataTest {
         }
 
         val publisherProto = makePublisher(output, true, false)
-        publisherProto.writeEncryptions(electionInit, listOf(eballot.cast()))
+        publisherProto.writeElectionInitialized(electionInit)
+        publisherProto.encryptedBallotSink("testWriteEncryptions").use { sink ->
+            sink.writeEncryptedBallot(eballot.cast())
+        }
 
         val publisherJson = makePublisher(output + "Json", true, true)
-        publisherJson.writeEncryptions(electionInit, listOf(eballot.cast()))
+        publisherJson.writeElectionInitialized(electionInit)
+        publisherJson.encryptedBallotSink("testWriteEncryptions").use { sink ->
+            sink.writeEncryptedBallot(eballot.cast())
+        }
     }
 }

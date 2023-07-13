@@ -16,113 +16,73 @@ class RunBatchEncryptionTest {
     fun testRunBatchEncryptionProto() {
         main(
             arrayOf(
-                "-in",
-                "src/commonTest/data/workflow/allAvailableProto",
-                "-ballots",
-                "src/commonTest/data/fakeBallots/proto",
-                "-out",
-                "testOut/encrypt/testRunBatchEncryptionProto",
-                "-invalid",
-                "testOut/encrypt/testRunBatchEncryptionProto/invalid_ballots",
-                "-nthreads",
-                "$nthreads",
+                "-in", "src/commonTest/data/workflow/allAvailableProto",
+                "-ballots", "src/commonTest/data/fakeBallots/proto",
+                "-out", "testOut/encrypt/testRunBatchEncryptionProto",
+                "-invalid", "testOut/encrypt/testRunBatchEncryptionProto/invalid_ballots",
+                "-nthreads", "$nthreads",
+                "-device", "device0",
             )
         )
+        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionProto", 11)
     }
 
     @Test
     fun testRunBatchEncryptionWithJsonBallots() {
         main(
             arrayOf(
-                "-in",
-                "src/commonTest/data/workflow/allAvailableJson",
-                "-ballots",
-                "src/commonTest/data/fakeBallots/json",
-                "-out",
-                "testOut/encrypt/testRunBatchEncryptionWithJsonBallots",
-                "-invalid",
-                "testOut/encrypt/testRunBatchEncryptionWithJsonBallots/invalid_ballots",
-                "-nthreads",
-                "$nthreads",
+                "-in", "src/commonTest/data/workflow/allAvailableJson",
+                "-ballots", "src/commonTest/data/fakeBallots/json",
+                "-out", "testOut/encrypt/testRunBatchEncryptionWithJsonBallots",
+                "-invalid", "testOut/encrypt/testRunBatchEncryptionWithJsonBallots/invalid_ballots",
+                "-nthreads", "$nthreads",
+                "-device", "device2",
             )
         )
+        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionWithJsonBallots", 11)
     }
 
     @Test
     fun testRunBatchEncryptionJson() {
         main(
             arrayOf(
-                "-in",
-                "src/commonTest/data/workflow/allAvailableJson",
-                "-ballots",
-                "src/commonTest/data/fakeBallots/json",
-                "-out",
-                "testOut/encrypt/testRunBatchEncryptionJson",
-                "-invalid",
-                "testOut/encrypt/testRunBatchEncryptionJson/invalid_ballots",
-                "-nthreads",
-                "$nthreads",
+                "-in", "src/commonTest/data/workflow/allAvailableJson",
+                "-ballots", "src/commonTest/data/fakeBallots/json",
+                "-out", "testOut/encrypt/testRunBatchEncryptionJson",
+                "-invalid", "testOut/encrypt/testRunBatchEncryptionJson/invalid_ballots",
+                "-nthreads", "$nthreads",
+                "-device", "device2",
             )
         )
+        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionJson", 11)
     }
 
     @Test
     fun testRunBatchEncryptionJsonWithProtoBallots() {
         main(
             arrayOf(
-                "-in",
-                "src/commonTest/data/workflow/allAvailableJson",
-                "-ballots",
-                "src/commonTest/data/fakeBallots/proto",
-                "-out",
-                "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots",
-                "-invalid",
-                "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots/invalid_ballots",
-                "-nthreads",
-                "$nthreads",
+                "-in", "src/commonTest/data/workflow/allAvailableJson",
+                "-ballots", "src/commonTest/data/fakeBallots/proto",
+                "-out", "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots",
+                "-invalid", "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots/invalid_ballots",
+                "-nthreads", "$nthreads",
+                "-device", "device3",
             )
         )
-    }
-
-    @Test
-    fun testRunBatchEncryptionChain() {
-        val workingDir = "testOut/encrypt/testRunBatchEncryptionChain"
-        // delete current workingDir
-        makePublisher(workingDir, true)
-        main(
-            arrayOf(
-                "-in",
-                "src/commonTest/data/workflow/allAvailableJson",
-                "-ballots",
-                "src/commonTest/data/fakeBallots/json",
-                "-out",
-                workingDir,
-                "-invalid",
-                "testOut/encrypt/testRunBatchEncryptionChain/invalid_ballots",
-                "-nthreads",
-                "$nthreads",
-                "-chainCodes",
-            )
-        )
-        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionChain", 11, true)
+        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots", 11)
     }
 
     @Test
     fun testRunBatchEncryptionEncryptTwice() {
         main(
             arrayOf(
-                "-in",
-                "src/commonTest/data/workflow/allAvailableJson",
-                "-ballots",
-                "src/commonTest/data/fakeBallots/json",
-                "-out",
-                "testOut/encrypt/testRunBatchEncryptionEncryptTwice",
-                "-invalid",
-                "testOut/encrypt/testRunBatchEncryptionEncryptTwice/invalid_ballots",
-                "-nthreads",
-                "$nthreads",
-                "-check",
-                "EncryptTwice"
+                "-in", "src/commonTest/data/workflow/allAvailableJson",
+                "-ballots", "src/commonTest/data/fakeBallots/json",
+                "-out", "testOut/encrypt/testRunBatchEncryptionEncryptTwice",
+                "-invalid", "testOut/encrypt/testRunBatchEncryptionEncryptTwice/invalid_ballots",
+                "-nthreads", "$nthreads",
+                "-device", "device4",
+                "-check", "EncryptTwice"
             )
         )
     }
@@ -131,18 +91,13 @@ class RunBatchEncryptionTest {
     fun testRunBatchEncryptionVerify() {
         main(
             arrayOf(
-                "-in",
-                "src/commonTest/data/workflow/allAvailableJson",
-                "-ballots",
-                "src/commonTest/data/fakeBallots/json",
-                "-out",
-                "testOut/encrypt/testRunBatchEncryptionVerify",
-                "-invalid",
-                "testOut/encrypt/testRunBatchEncryptionVerify/invalid_ballots",
-                "-nthreads",
-                "$nthreads",
-                "-check",
-                "Verify",
+                "-in", "src/commonTest/data/workflow/allAvailableJson",
+                "-ballots", "src/commonTest/data/fakeBallots/json",
+                "-out", "testOut/encrypt/testRunBatchEncryptionVerify",
+                "-invalid", "testOut/encrypt/testRunBatchEncryptionVerify/invalid_ballots",
+                "-nthreads", "$nthreads",
+                "-device", "device35",
+                "-check", "Verify",
             )
         )
     }
@@ -151,18 +106,13 @@ class RunBatchEncryptionTest {
     fun testRunBatchEncryptionVerifyDecrypt() {
         main(
             arrayOf(
-                "-in",
-                "src/commonTest/data/workflow/allAvailableJson",
-                "-ballots",
-                "src/commonTest/data/fakeBallots/json",
-                "-out",
-                "testOut/encrypt/testRunBatchEncryptionVerifyDecrypt",
-                "-invalid",
-                "testOut/encrypt/testRunBatchEncryptionVerifyDecrypt/invalid_ballots",
-                "-nthreads",
-                "$nthreads",
-                "-check",
-                "DecryptNonce",
+                "-in", "src/commonTest/data/workflow/allAvailableJson",
+                "-ballots", "src/commonTest/data/fakeBallots/json",
+                "-out", "testOut/encrypt/testRunBatchEncryptionVerifyDecrypt",
+                "-invalid", "testOut/encrypt/testRunBatchEncryptionVerifyDecrypt/invalid_ballots",
+                "-nthreads", "$nthreads",
+                "-device", "device42",
+                "-check", "DecryptNonce",
             )
         )
     }

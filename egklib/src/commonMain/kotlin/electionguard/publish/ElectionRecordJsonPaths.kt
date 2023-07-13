@@ -19,6 +19,8 @@ data class ElectionRecordJsonPaths(val topDir : String) {
 
         const val ENCRYPTED_DIR = "encrypted_ballots"
         const val CHALLENGED_DIR = "challenged_ballots"
+        const val ENCRYPTED_BALLOT_CHAIN = "ballot_chain"
+
     }
 
     fun manifestPath(): String {
@@ -55,10 +57,6 @@ data class ElectionRecordJsonPaths(val topDir : String) {
         return "${encryptedBallotDir()}/$ENCRYPTED_BALLOT_PREFIX$id$JSON_SUFFIX"
     }
 
-    fun encryptedBallotDir(): String {
-        return "$electionRecordDir/$ENCRYPTED_DIR/"
-    }
-
     fun decryptedBallotPath(ballotId : String): String {
         val id = ballotId.replace(" ", "_")
         return "${decryptedBallotDir()}/$DECRYPTED_BALLOT_PREFIX$id$JSON_SUFFIX"
@@ -71,5 +69,26 @@ data class ElectionRecordJsonPaths(val topDir : String) {
     fun decryptingTrusteePath(trusteeDir: String, guardianId: String): String {
         val id = guardianId.replace(" ", "_")
         return "$trusteeDir/$DECRYPTING_TRUSTEE_PREFIX-$id$JSON_SUFFIX"
+    }
+
+    //////////////////////////////////////
+
+    fun encryptedBallotDir(): String {
+        return "$electionRecordDir/$ENCRYPTED_DIR/"
+    }
+
+    fun encryptedBallotDir(device: String): String {
+        val useDevice = device.replace(" ", "_")
+        return "${encryptedBallotDir()}/$useDevice/"
+    }
+
+    fun encryptedBallotPath(device: String, ballotId: String): String {
+        val useDevice = device.replace(" ", "_")
+        val id = ballotId.replace(" ", "_")
+        return "${encryptedBallotDir(device)}/${ENCRYPTED_BALLOT_PREFIX}$id${JSON_SUFFIX}"
+    }
+
+    fun encryptedBallotChain(device: String): String {
+        return "${encryptedBallotDir(device)}/${ENCRYPTED_BALLOT_CHAIN}${JSON_SUFFIX}"
     }
 }

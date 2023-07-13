@@ -87,7 +87,10 @@ class PublisherProtoTest {
             assertTrue(initResult is Ok)
             val init = initResult.unwrap()
 
-            publisher.writeEncryptions(init, consumerIn.iterateEncryptedBallots { true })
+            publisher.writeElectionInitialized(init)
+            publisher.encryptedBallotSink("testWriteEncryptions").use { sink ->
+                consumerIn.iterateAllEncryptedBallots { true }.forEach{ sink.writeEncryptedBallot(it) }
+            }
 
             val consumerOut = makeConsumer("$output/3", group)
             val rtResult = consumerOut.readElectionInitialized()
@@ -98,8 +101,8 @@ class PublisherProtoTest {
             val rtInit = rtResult.unwrap()
             assertEquals(init, rtInit)
 
-            val inBallots = consumerIn.iterateEncryptedBallots{ true }.associateBy { it.ballotId }
-            consumerOut.iterateEncryptedBallots{ true }.forEach {
+            val inBallots = consumerIn.iterateAllEncryptedBallots{ true }.associateBy { it.ballotId }
+            consumerOut.iterateAllEncryptedBallots{ true }.forEach {
                 val inBallot = inBallots[it.ballotId] ?: RuntimeException("Cant find ${it.ballotId}")
                 assertEquals(it, inBallot)
                 println(" Ballot ${it.ballotId} OK")

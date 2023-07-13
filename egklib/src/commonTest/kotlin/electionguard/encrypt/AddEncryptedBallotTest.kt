@@ -15,15 +15,17 @@ import kotlin.test.assertTrue
 
 class AddEncryptedBallotTest {
     val input = "src/commonTest/data/workflow/allAvailableProto"
-    val outputDir = "testOut/encrypt/addEncryptedBallot"
+    val outputDirProto = "testOut/encrypt/addEncryptedBallot"
 
     val nballots = 4
 
     @Test
-    fun testAddEncryptedBallot() {
+    fun testJustOne() {
+        val outputDir = "$outputDirProto/testJustOne"
+        val device = "device0"
+
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
-        val device = "device0"
         val electionInit = electionRecord.electionInit()!!
             val encryptor = AddEncryptedBallot(
                 group,
@@ -32,8 +34,8 @@ class AddEncryptedBallotTest {
                 device,
                 electionRecord.config().configBaux0,
                 false,
-            outputDir,
-            "${outputDir}/invalidDir",
+                outputDir,
+                "${outputDir}/invalidDir",
                 false,
                 true,
             )
@@ -57,8 +59,10 @@ class AddEncryptedBallotTest {
     }
 
     @Test
-    fun testAddEncryptedBallotCallMultipleTimes() {
-        val outputDir = "$outputDir-M"
+    fun testCallMultipleTimes() {
+        val outputDir = "$outputDirProto/testCallMultipleTimes"
+        val device = "device1"
+
         // clear output directory
         makePublisher(outputDir, true, false)
 
@@ -71,7 +75,7 @@ class AddEncryptedBallotTest {
                 group,
                 electionRecord.manifest(),
                 electionInit,
-                "device1",
+                device,
                 electionRecord.config().configBaux0,
                 false,
                 outputDir,
@@ -92,7 +96,7 @@ class AddEncryptedBallotTest {
 
         val result = makeConsumer(outputDir, group, false)
         var count = 0
-        result.iterateAllEncryptedBallots { it.state == EncryptedBallot.BallotState.CAST }.forEach {
+        result.iterateEncryptedBallots(device) { it.state == EncryptedBallot.BallotState.CAST }.forEach {
             println(" read ${it.ballotId}")
             count++
         }
@@ -100,8 +104,8 @@ class AddEncryptedBallotTest {
     }
 
     @Test
-    fun testAddEncryptedBallotMultipleDevices() {
-        val outputDir = "$outputDir-D"
+    fun testMultipleDevices() {
+        val outputDir = "$outputDirProto/testMultipleDevices"
 
         // clear output directory
         makePublisher(outputDir, true, false)
@@ -118,7 +122,7 @@ class AddEncryptedBallotTest {
                 "device$it",
                 electionRecord.config().configBaux0,
                 false,
-                "outputDir",
+                outputDir,
                 "$outputDir/invalidDir",
                 false,
                 false,
@@ -144,11 +148,12 @@ class AddEncryptedBallotTest {
     }
 
     @Test
-    fun testAddEncryptedBallotWithChain() {
-        val outputDir = "$outputDir-chain"
+    fun testOneWithChain() {
+        val outputDir = "$outputDirProto/testOneWithChain"
+        val device = "device0"
+
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
-        val device = "device0"
         val electionInit = electionRecord.electionInit()!!
         val encryptor = AddEncryptedBallot(
             group,
@@ -190,9 +195,10 @@ class AddEncryptedBallotTest {
     }
 
     @Test
-    fun testAddEncryptedBallotCallMultipleTimesChained() {
-        val outputDir = "$outputDir-Mchain"
+    fun testCallMultipleTimesChaining() {
+        val outputDir = "$outputDirProto/testCallMultipleTimesChaining"
         val device = "device1"
+
         // clear output directory
         makePublisher(outputDir, true, false)
 
@@ -226,7 +232,7 @@ class AddEncryptedBallotTest {
 
         val consumer = makeConsumer(outputDir, group, false)
         var count = 0
-        consumer.iterateAllEncryptedBallots { it.state == EncryptedBallot.BallotState.CAST }.forEach {
+        consumer.iterateEncryptedBallots(device) { it.state == EncryptedBallot.BallotState.CAST }.forEach {
             println(" read ${it.ballotId}")
             count++
         }
@@ -242,8 +248,8 @@ class AddEncryptedBallotTest {
     }
 
     @Test
-    fun testAddEncryptedBallotMultipleDevicesChained() {
-        val outputDir = "$outputDir-Dchained"
+    fun testMultipleDevicesChaining() {
+        val outputDir = "$outputDirProto/testMultipleDevicesChaining"
 
         // clear output directory
         makePublisher(outputDir, true, false)

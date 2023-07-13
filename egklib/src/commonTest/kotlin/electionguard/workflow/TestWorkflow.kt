@@ -125,11 +125,10 @@ class TestWorkflow {
         ballots.forEach { ballot ->
             val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
             val isOk = encryptor.encryptAndAdd(ballot, state)
-            println(" write ${ballot.ballotId}")
+            println(" write ${ballot.ballotId} $state")
             assertTrue(isOk)
             count++
         }
-        val Hbar =  encryptor.closeChain() // TODO where do we store this ??
         encryptor.close()
 
         // tally
@@ -296,7 +295,6 @@ class TestWorkflow {
             assertTrue(isOk)
             count++
         }
-        val Hbar =  encryptor.closeChain() // TODO where do we store this ??
         encryptor.close()
 
         // tally

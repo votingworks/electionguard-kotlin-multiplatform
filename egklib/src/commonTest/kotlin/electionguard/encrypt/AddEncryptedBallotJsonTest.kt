@@ -1,5 +1,6 @@
 package electionguard.encrypt
 
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import electionguard.input.RandomBallotProvider
@@ -11,14 +12,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class AddEncryptedBallotJsonTest {
-    val input = "src/commonTest/data/workflow/allAvailableProto"
-    val outputDir = "testOut/encrypt/addEncryptedBallot"
-    val outputDirJson = "$outputDir/addEncryptedBallotJson"
+    val input = "src/commonTest/data/workflow/allAvailableJson"
+    val outputDirJson = "testOut/encrypt/addEncryptedBallotJson"
 
     val nballots = 4
 
     @Test
-    fun testAddEncryptedBallotToJson() {
+    fun testJustOne() {
+        val outputDir = "$outputDirJson/testJustOne"
+        val device = "device0"
+
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
@@ -26,13 +29,13 @@ class AddEncryptedBallotJsonTest {
             group,
             electionRecord.manifest(),
             electionInit,
-            "device",
+            device,
             electionRecord.config().configBaux0,
             false,
-            outputDirJson,
-            "${outputDirJson}/invalidDir",
+            outputDir,
+            "${outputDir}/invalidDir",
             true,
-            false,
+            true,
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -44,9 +47,9 @@ class AddEncryptedBallotJsonTest {
         }
         encryptor.close()
 
-        val result = makeConsumer(outputDirJson, group, true)
+        val result = makeConsumer(outputDir, group, true)
         var count = 0
-        result.iterateEncryptedBallots { it.state == EncryptedBallot.BallotState.CAST }.forEach {
+        result.iterateEncryptedBallots(device) { it.state == EncryptedBallot.BallotState.CAST }.forEach {
             println(" read ${it.ballotId}")
             count++
         }
@@ -54,10 +57,12 @@ class AddEncryptedBallotJsonTest {
     }
 
     @Test
-    fun testAddEncryptedBallotJsonMultiple() {
+    fun testCallMultipleTimes() {
+        val outputDir = "$outputDirJson/testCallMultipleTimes"
+        val device = "device1"
 
         // clear output directory
-        makePublisher("${outputDirJson}M", true, true)
+        makePublisher(outputDir, true, true)
 
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
@@ -68,11 +73,11 @@ class AddEncryptedBallotJsonTest {
                 group,
                 electionRecord.manifest(),
                 electionInit,
-                "device",
+                device,
                 electionRecord.config().configBaux0,
                 false,
-                "${outputDirJson}M",
-                "${outputDirJson}M/invalidDir",
+                outputDir,
+                "outputDir/invalidDir",
                 true,
                 false,
             )
@@ -87,12 +92,209 @@ class AddEncryptedBallotJsonTest {
             encryptor.close()
         }
 
-        val result = makeConsumer("${outputDirJson}M", group, true)
+        val result = makeConsumer(outputDir, group, true)
         var count = 0
-        result.iterateEncryptedBallots { it.state == EncryptedBallot.BallotState.CAST }.forEach {
+        result.iterateEncryptedBallots(device) { it.state == EncryptedBallot.BallotState.CAST }.forEach {
             println(" read ${it.ballotId}")
             count++
         }
         assertEquals(3 * nballots, count)
+    }
+
+    @Test
+    fun testMultipleDevices() {
+        val outputDir = "$outputDirJson/testMultipleDevices"
+
+        // clear output directory
+        makePublisher(outputDir, true, true)
+
+        val group = productionGroup()
+        val electionRecord = readElectionRecord(group, input)
+        val electionInit = electionRecord.electionInit()!!
+
+        repeat(3) { it ->
+            val encryptor = AddEncryptedBallot(
+                group,
+                electionRecord.manifest(),
+                electionInit,
+                "device$it",
+                electionRecord.config().configBaux0,
+                false,
+                outputDir,
+                "$outputDir/invalidDir",
+                true,
+                false,
+            )
+            val ballotProvider = RandomBallotProvider(electionRecord.manifest())
+
+            repeat(nballots) {
+                val ballot = ballotProvider.makeBallot()
+                val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST)
+                println(" write ${ballot.ballotId}")
+                assertTrue(isOk)
+            }
+            encryptor.close()
+        }
+
+        val result = makeConsumer(outputDir, group, true)
+        var count = 0
+        result.iterateAllEncryptedBallots { it.state == EncryptedBallot.BallotState.CAST }.forEach {
+            println(" read ${it.ballotId}")
+            count++
+        }
+        assertEquals(3 * nballots, count)
+    }
+
+    @Test
+    fun testOneWithChain() {
+        val outputDir = "$outputDirJson/testOneWithChain"
+        val device = "device0"
+
+        val group = productionGroup()
+        val electionRecord = readElectionRecord(group, input)
+        val electionInit = electionRecord.electionInit()!!
+        val encryptor = AddEncryptedBallot(
+            group,
+            electionRecord.manifest(),
+            electionInit,
+            device,
+            electionRecord.config().configBaux0,
+            true,
+            outputDir,
+            "${outputDir}/invalidDir",
+            true,
+            true,
+        )
+        val ballotProvider = RandomBallotProvider(electionRecord.manifest())
+
+        repeat(nballots) {
+            val ballot = ballotProvider.makeBallot()
+            val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST)
+            println(" write ${ballot.ballotId}")
+            assertTrue(isOk)
+        }
+        encryptor.close()
+
+        val consumer = makeConsumer(outputDir, group, true)
+        var count = 0
+        consumer.iterateEncryptedBallots(device) { it.state == EncryptedBallot.BallotState.CAST }.forEach {
+            println(" read ${it.ballotId}")
+            count++
+        }
+        assertEquals(nballots, count)
+
+        // test the chain
+        val chain = consumer.readEncryptedBallotChain(device).unwrap()
+        consumer.iterateEncryptedBallots(device, null).forEach { eballot ->
+            assertTrue(chain.ballotIds.contains(eballot.ballotId))
+            assertTrue(chain.confirmationCodes.contains(eballot.confirmationCode))
+            println(" ${eballot.ballotId} has code ${eballot.confirmationCode}")
+        }
+    }
+
+    @Test
+    fun testCallMultipleTimesChaining() {
+        val outputDir = "$outputDirJson/testCallMultipleTimesChaining"
+        val device = "device1"
+
+        // clear output directory
+        makePublisher(outputDir, true, true)
+
+        val group = productionGroup()
+        val electionRecord = readElectionRecord(group, input)
+        val electionInit = electionRecord.electionInit()!!
+
+        repeat(3) {
+            val encryptor = AddEncryptedBallot(
+                group,
+                electionRecord.manifest(),
+                electionInit,
+                device,
+                electionRecord.config().configBaux0,
+                true,
+                outputDir,
+                "outputDir/invalidDir",
+                true,
+                false,
+            )
+            val ballotProvider = RandomBallotProvider(electionRecord.manifest())
+
+            repeat(nballots) {
+                val ballot = ballotProvider.makeBallot()
+                val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST)
+                println(" write ${ballot.ballotId}")
+                assertTrue(isOk)
+            }
+            encryptor.close()
+        }
+
+        val consumer = makeConsumer(outputDir, group, true)
+        var count = 0
+        consumer.iterateEncryptedBallots(device) { it.state == EncryptedBallot.BallotState.CAST }.forEach {
+            println(" read ${it.ballotId}")
+            count++
+        }
+        assertEquals(3 * nballots, count)
+
+        // test the chain
+        val chain = consumer.readEncryptedBallotChain(device).unwrap()
+        consumer.iterateEncryptedBallots(device, null).forEach { eballot ->
+            assertTrue(chain.ballotIds.contains(eballot.ballotId))
+            assertTrue(chain.confirmationCodes.contains(eballot.confirmationCode))
+            println(" ${eballot.ballotId} has code ${eballot.confirmationCode}")
+        }
+    }
+
+    @Test
+    fun testMultipleDevicesChaining() {
+        val outputDir = "$outputDirJson/testMultipleDevicesChaining"
+
+        // clear output directory
+        makePublisher(outputDir, true, true)
+
+        val group = productionGroup()
+        val electionRecord = readElectionRecord(group, input)
+        val electionInit = electionRecord.electionInit()!!
+
+        repeat(3) { it ->
+            val encryptor = AddEncryptedBallot(
+                group,
+                electionRecord.manifest(),
+                electionInit,
+                "device$it",
+                electionRecord.config().configBaux0,
+                true,
+                outputDir,
+                "$outputDir/invalidDir",
+                true,
+                false,
+            )
+            val ballotProvider = RandomBallotProvider(electionRecord.manifest())
+
+            repeat(nballots) {
+                val ballot = ballotProvider.makeBallot()
+                val isOk = encryptor.encryptAndAdd(ballot, EncryptedBallot.BallotState.CAST)
+                println(" write ${ballot.ballotId}")
+                assertTrue(isOk)
+            }
+            encryptor.close()
+        }
+
+        val consumer = makeConsumer(outputDir, group, true)
+        var count = 0
+        consumer.iterateAllEncryptedBallots { it.state == EncryptedBallot.BallotState.CAST }.forEach {
+            println(" read ${it.ballotId}")
+            count++
+        }
+        assertEquals(3 * nballots, count)
+
+        consumer.encryptingDevices().forEach { device ->
+            val chain = consumer.readEncryptedBallotChain(device).unwrap()
+            consumer.iterateEncryptedBallots(device, null).forEach { eballot ->
+                assertTrue(chain.ballotIds.contains(eballot.ballotId))
+                assertTrue(chain.confirmationCodes.contains(eballot.confirmationCode))
+                println(" ${eballot.ballotId} has code ${eballot.confirmationCode}")
+            }
+        }
     }
 }

@@ -70,7 +70,7 @@ class ConsumerJsonTest {
         val context = productionGroup()
         val consumerIn = makeConsumer(topdir, context)
         var count = 0
-        for (ballot in consumerIn.iterateCastBallots()) {
+        for (ballot in consumerIn.iterateAllCastBallots()) {
             println("$count ballot = ${ballot.ballotId}")
             assertTrue(ballot.ballotId.startsWith("ballot-id"))
             count++
@@ -83,7 +83,7 @@ class ConsumerJsonTest {
         val context = productionGroup()
         val consumerIn = makeConsumer(topdir, context)
         var count = 0
-        for (ballot in consumerIn.iterateSpoiledBallots()) {
+        for (ballot in consumerIn.iterateAllSpoiledBallots()) {
             println("$count ballot = ${ballot.ballotId}")
             assertTrue(ballot.ballotId.startsWith("ballot-id"))
             count++

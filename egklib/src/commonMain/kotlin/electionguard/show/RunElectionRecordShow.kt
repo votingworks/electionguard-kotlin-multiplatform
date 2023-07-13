@@ -91,7 +91,7 @@ fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: ShowSe
         return
     }
 
-    val ecount = consumer.iterateEncryptedBallots{ true}.count()
+    val ecount = consumer.iterateAllEncryptedBallots{ true}.count()
     println(" $ecount encryptedBallots")
     println()
 

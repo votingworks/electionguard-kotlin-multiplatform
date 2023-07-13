@@ -73,16 +73,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         }
     }
 
-    actual override fun writeEncryptions(
-        init: ElectionInitialized,
-        ballots: Iterable<EncryptedBallot>
-    ) {
-        writeElectionInitialized(init)
-        encryptedBallotSink().use { sink ->
-            ballots.forEach { sink.writeEncryptedBallot(it) }
-        }
-    }
-
     actual override fun writeTallyResult(tally: TallyResult) {
         val proto = tally.publishProto()
         val buffer = proto.encodeToByteArray()
@@ -165,11 +155,8 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         }
     }
 
-    actual override fun encryptedBallotSink(): EncryptedBallotSinkIF =
-        EncryptedBallotSink(path.encryptedBallotPath())
-
-    actual override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF =
-        EncryptedBallotSink(path.encryptedBallotPath())
+    actual override fun encryptedBallotSink(device: String, batched: Boolean): EncryptedBallotSinkIF =
+        EncryptedBallotSink(path.encryptedBallotBatched(device))
 
     actual override fun writeEncryptedBallotChain(closing: EncryptedBallotChain) {}
 

@@ -32,7 +32,7 @@ class ElectionRecordIterablesTest {
 
     fun readBallots(context: GroupContext, topdir: String, expected: Int) {
         val consumerIn = makeConsumer(topdir, context)
-        val iterator = consumerIn.iterateEncryptedBallots { true } .iterator()
+        val iterator = consumerIn.iterateAllEncryptedBallots { true } .iterator()
         var count = 0
         for (ballot in iterator) {
             println("  $count iterateEncryptedBallots ${ballot.ballotId} ${ballot.state}")
@@ -43,7 +43,7 @@ class ElectionRecordIterablesTest {
 
     fun readCastBallots(context: GroupContext, topdir: String, expected: Int) {
         val consumerIn = makeConsumer(topdir, context)
-        val iterator = consumerIn.iterateCastBallots().iterator()
+        val iterator = consumerIn.iterateAllCastBallots().iterator()
         var count = 0
         for (ballot in iterator) {
             logger.debug { "  $count readCastBallots ${ballot.ballotId} ${ballot.state}" }
@@ -54,7 +54,7 @@ class ElectionRecordIterablesTest {
 
     fun readSpoiledBallots(context: GroupContext, topdir: String, expected: Int) {
         val consumerIn = makeConsumer(topdir, context)
-        val iterator = consumerIn.iterateSpoiledBallots().iterator()
+        val iterator = consumerIn.iterateAllSpoiledBallots().iterator()
         var count = 0
         for (ballot in iterator) {
             logger.debug { "  $count readSpoiledBallots ${ballot.ballotId} ${ballot.state}" }
