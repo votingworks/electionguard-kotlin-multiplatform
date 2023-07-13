@@ -111,8 +111,10 @@ internal class PreEncryptorOutputTest {
             println()
         }
 
-        val publisherProto = makePublisher(output, true, electionRecord.isJson())
-        publisherProto.writeEncryptions(electionRecord.electionInit()!!, listOf(fullEncryptedBallot))
+        val publisher = makePublisher(output, true, electionRecord.isJson())
+        publisher.writeElectionInitialized(electionRecord.electionInit()!!)
+        val sink = publisher.encryptedBallotSink("PreEncryptorOutputTest")
+        sink.writeEncryptedBallot(fullEncryptedBallot)
     }
 
     // pick all selections 0..limit-1

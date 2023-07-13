@@ -9,12 +9,10 @@ interface Publisher {
     fun writeManifest(manifest: Manifest) : String // return filename
     fun writeElectionConfig(config: ElectionConfig)
     fun writeElectionInitialized(init: ElectionInitialized)
-    fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<EncryptedBallot>)
     fun writeTallyResult(tally: TallyResult)
     fun writeDecryptionResult(decryption: DecryptionResult)
 
-    fun encryptedBallotSink(): EncryptedBallotSinkIF
-    fun encryptedBallotSink(device: String): EncryptedBallotSinkIF
+    fun encryptedBallotSink(device: String, batched: Boolean = false): EncryptedBallotSinkIF
     fun writeEncryptedBallotChain(closing: EncryptedBallotChain)
 
     fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF

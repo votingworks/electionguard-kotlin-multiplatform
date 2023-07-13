@@ -56,8 +56,9 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
 
     var count = 0
     val accumulator = AccumulateTally(group, electionRecord.manifest(), name)
-    for (encryptedBallot in consumerIn.iterateCastBallots() ) {
+    for (encryptedBallot in consumerIn.iterateAllCastBallots() ) {
         accumulator.addCastBallot(encryptedBallot)
+        println(" accumulate ${encryptedBallot.ballotId}")
         count++
     }
     val tally: EncryptedTally = accumulator.build()

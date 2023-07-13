@@ -12,6 +12,23 @@ topdir/
     tallyResult.protobuf
     decryptionResult.protobuf
     challengedBallots.protobuf
+    encrypted_ballots/
+       deviceName1/
+          ballotChain.protobuf
+          eballot-ballotId1.protobuf
+          eballot-ballotId2.protobuf
+          eballot-ballotId3.protobuf
+          ...
+        deviceName2/
+        deviceName3/
+        batchName1/
+           encryptedBallots.protobuf
+        batchName2/
+           ballotChain.protobuf ??
+           encryptedBallots.protobuf         
+        batchName3/
+        ...
+          
 ````    
 
 One or more of the above files may be present, depending on the output stage. Each output stage is self-contained, 

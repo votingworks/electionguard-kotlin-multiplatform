@@ -62,15 +62,6 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         writeToFile(fileout, jsonString)
     }
 
-    actual override fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<EncryptedBallot>) {
-        writeElectionInitialized(init)
-
-        validateOutputDir(jsonPaths.encryptedBallotDir())
-        encryptedBallotSink().use { sink ->
-            ballots.forEach { sink.writeEncryptedBallot(it) }
-        }
-    }
-
     actual override fun writeTallyResult(tally: TallyResult) {
         writeElectionInitialized(tally.electionInitialized)
 
@@ -105,17 +96,13 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
     actual override fun writeEncryptedBallotChain(closing: EncryptedBallotChain) {}
 
-    actual override fun encryptedBallotSink(): EncryptedBallotSinkIF {
-        validateOutputDir(jsonPaths.encryptedBallotDir())
-        return EncryptedBallotSink()
-    }
-
-    actual override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF {
+    actual override fun encryptedBallotSink(device: String, batched: Boolean): EncryptedBallotSinkIF {
         validateOutputDir(jsonPaths.encryptedBallotDir())
         return EncryptedBallotSink()
     }
 
     private inner class EncryptedBallotSink : EncryptedBallotSinkIF {
+
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val fileout = jsonPaths.encryptedBallotPath(ballot.ballotId)
             val jsonBallot = ballot.publishJson()

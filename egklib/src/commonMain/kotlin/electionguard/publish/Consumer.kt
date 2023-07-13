@@ -25,12 +25,15 @@ interface Consumer {
     fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String>
     fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
-
-    //// Use iterators, so that we never have to read in all objects at once.
+    fun iterateAllCastBallots(): Iterable<EncryptedBallot>  = iterateAllEncryptedBallots{  it.state == EncryptedBallot.BallotState.CAST }
+    fun iterateAllSpoiledBallots(): Iterable<EncryptedBallot>  = iterateAllEncryptedBallots{  it.state == EncryptedBallot.BallotState.SPOILED }
     fun hasEncryptedBallots() : Boolean
+
+    //// TODO: remove
     fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     fun iterateCastBallots(): Iterable<EncryptedBallot>  // encrypted ballots that are CAST
     fun iterateSpoiledBallots(): Iterable<EncryptedBallot> // encrypted ballots that are SPOILED
+
     fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
 
     //// not part of the election record, private data

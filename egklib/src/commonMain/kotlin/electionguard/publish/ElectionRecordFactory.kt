@@ -137,7 +137,7 @@ private class ElectionRecordImpl(val consumer: Consumer,
     }
 
     override fun encryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
-        return consumer.iterateEncryptedBallots(filter)
+        return consumer.iterateAllEncryptedBallots(filter)
     }
 
     override fun encryptedTally(): EncryptedTally? {
@@ -151,13 +151,6 @@ private class ElectionRecordImpl(val consumer: Consumer,
     override fun decryptedTally(): DecryptedTallyOrBallot? {
         return decryptionResult?.decryptedTally
     }
-
-    /*
-    override fun decryptingGuardians(): List<LagrangeCoordinate> {
-        return decryptionResult?.lagrangeCoordinates ?: emptyList()
-    }
-
-     */
 
     override fun decryptedBallots(): Iterable<DecryptedTallyOrBallot> {
         return consumer.iterateDecryptedBallots()

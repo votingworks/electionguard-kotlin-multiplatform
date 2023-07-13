@@ -187,7 +187,7 @@ fun batchEncryption(
         electionInit.jointPublicKey, electionInit.extendedBaseHash, check)
 
     val publisher = makePublisher(outputDir, false, electionRecord.isJson())
-    val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink()
+    val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(device, true)
 
     try {
         runBlocking {

@@ -56,8 +56,8 @@ fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: S
     }
 
     var ecount = 0
-    publisher.encryptedBallotSink().use { esink ->
-        consumer.iterateEncryptedBallots { true }.forEach() {
+    publisher.encryptedBallotSink("fake").use { esink ->
+        consumer.iterateAllEncryptedBallots { true }.forEach() {
             esink.writeEncryptedBallot(it)
             ecount++
         }

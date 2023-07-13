@@ -8,12 +8,10 @@ expect class PublisherProto(topDir: String, createNew: Boolean = false) : Publis
     override fun writeManifest(manifest: Manifest) : String
     override fun writeElectionConfig(config: ElectionConfig)
     override fun writeElectionInitialized(init: ElectionInitialized)
-    override fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<EncryptedBallot>)
     override fun writeTallyResult(tally: TallyResult)
     override fun writeDecryptionResult(decryption: DecryptionResult)
 
-    override fun encryptedBallotSink(): EncryptedBallotSinkIF
-    override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF
+    override fun encryptedBallotSink(device: String, batched: Boolean): EncryptedBallotSinkIF
     override fun writeEncryptedBallotChain(closing: EncryptedBallotChain)
 
     override fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF

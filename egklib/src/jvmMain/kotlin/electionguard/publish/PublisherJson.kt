@@ -62,15 +62,6 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         }
     }
 
-    actual override fun writeEncryptions(init: ElectionInitialized, ballots: Iterable<EncryptedBallot>) {
-        writeElectionInitialized(init)
-
-        validateOutputDir(Path.of(jsonPaths.encryptedBallotDir()), Formatter())
-        encryptedBallotSink().use { sink ->
-            ballots.forEach { sink.writeEncryptedBallot(it) }
-        }
-    }
-
     actual override fun writeTallyResult(tally: TallyResult) {
         writeElectionInitialized(tally.electionInitialized)
 
@@ -111,29 +102,38 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         }
     }
 
-    actual override fun writeEncryptedBallotChain(closing: EncryptedBallotChain) {}
+    ////////////////////////////////////////////////
 
-    actual override fun encryptedBallotSink(): EncryptedBallotSinkIF {
-        validateOutputDir(Path.of(jsonPaths.encryptedBallotDir()), Formatter())
-        return EncryptedBallotSink()
+    actual override fun writeEncryptedBallotChain(closing: EncryptedBallotChain) {
+        val jsonChain = closing.publishJson()
+        val filename = jsonPaths.encryptedBallotChain(closing.encryptingDevice)
+        FileOutputStream(filename).use { out ->
+            jsonFormat.encodeToStream(jsonChain, out)
+            out.close()
+        }
     }
 
-    actual override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF {
-        validateOutputDir(Path.of(jsonPaths.encryptedBallotDir()), Formatter())
-        return EncryptedBallotSink()
+    actual override fun encryptedBallotSink(device: String, batched: Boolean): EncryptedBallotSinkIF {
+        val ballotDir = jsonPaths.encryptedBallotDir(device)
+        validateOutputDir(Path.of(ballotDir), Formatter())
+        return EncryptedBallotDeviceSink(device)
     }
 
-    inner class EncryptedBallotSink() : EncryptedBallotSinkIF {
+    inner class EncryptedBallotDeviceSink(val device: String) : EncryptedBallotSinkIF {
+
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
-            val ballotJson = ballot.publishJson()
-            FileOutputStream(jsonPaths.encryptedBallotPath(ballot.ballotId)).use { out ->
-                jsonFormat.encodeToStream(ballotJson, out)
+            val ballotFile = jsonPaths.encryptedBallotPath(device, ballot.ballotId)
+            val json = ballot.publishJson()
+            FileOutputStream(ballotFile).use { out ->
+                jsonFormat.encodeToStream(json, out)
                 out.close()
             }
         }
         override fun close() {
         }
     }
+
+    /////////////////////////////////////////////////////////////
 
     actual override fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF {
         validateOutputDir(Path.of(jsonPaths.decryptedBallotDir()), Formatter())

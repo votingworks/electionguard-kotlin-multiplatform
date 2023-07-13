@@ -8,7 +8,6 @@ import electionguard.publish.ElectionRecordProtoPaths.Companion.DECRYPTION_RESUL
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_CONFIG_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_INITIALIZED_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.CHALLENGED_BALLOT_FILE
-import electionguard.publish.ElectionRecordProtoPaths.Companion.ENCRYPTED_BALLOT_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.MANIFEST_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.TALLY_RESULT_FILE
 import pbandk.encodeToStream
@@ -63,10 +62,6 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         return electionRecordDir.resolve(CHALLENGED_BALLOT_FILE).toAbsolutePath()
     }
 
-    fun encryptedBallotPath(): Path {
-        return electionRecordDir.resolve(ENCRYPTED_BALLOT_FILE).toAbsolutePath()
-    }
-
     fun tallyResultPath(): Path {
         return electionRecordDir.resolve(TALLY_RESULT_FILE).toAbsolutePath()
     }
@@ -90,16 +85,6 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         val proto = init.publishProto()
         FileOutputStream(electionInitializedPath().toFile()).use { out ->
             proto.encodeToStream(out)
-        }
-    }
-
-    actual override fun writeEncryptions(
-        init: ElectionInitialized,
-        ballots: Iterable<EncryptedBallot>
-    ) {
-        writeElectionInitialized(init)
-        encryptedBallotSink().use { sink ->
-            ballots.forEach { sink.writeEncryptedBallot(it) }
         }
     }
 
@@ -148,13 +133,15 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         }
     }
 
-    actual override fun encryptedBallotSink(device: String): EncryptedBallotSinkIF {
+    actual override fun encryptedBallotSink(device: String, batched: Boolean): EncryptedBallotSinkIF {
         val ballotDir = protoPaths.encryptedBallotDir(device)
         validateOutputDir(Path.of(ballotDir), Formatter())
-        return EncryptedBallotDeviceSink(device)
+        return if (batched) EncryptedBallotBatchedSink(device, protoPaths.encryptedBallotBatched(device))
+               else EncryptedBallotDeviceSink(device)
     }
 
     inner class EncryptedBallotDeviceSink(val device: String) : EncryptedBallotSinkIF {
+
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val ballotFile = protoPaths.encryptedBallotPath(device, ballot.ballotId)
             val ballotProto: pbandk.Message = ballot.publishProto()
@@ -165,12 +152,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         }
     }
 
-    /////////////////////////////////////////////////////////////
-
-    actual override fun encryptedBallotSink(): EncryptedBallotSinkIF =
-        EncryptedBallotSink(encryptedBallotPath().toString())
-
-    inner class EncryptedBallotSink(path: String) : EncryptedBallotSinkIF {
+    inner class EncryptedBallotBatchedSink(val device: String, path: String) : EncryptedBallotSinkIF {
         val out: FileOutputStream = FileOutputStream(path, true) // append
 
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
@@ -182,6 +164,8 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
             out.close()
         }
     }
+
+    /////////////////////////////////////////////////////////////
 
     actual override fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF =
         DecryptedTallyOrBallotSink(spoiledBallotPath().toString())

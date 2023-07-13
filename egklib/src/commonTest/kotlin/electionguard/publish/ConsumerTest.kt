@@ -45,7 +45,7 @@ class ConsumerTest {
             val context = productionGroup()
             val consumerIn = makeConsumer(topdir, context)
             var count = 0
-            for (ballot in consumerIn.iterateEncryptedBallots { true} ) {
+            for (ballot in consumerIn.iterateAllEncryptedBallots { true} ) {
                 println("$count ballot = ${ballot.ballotId}")
                 count++
             }
@@ -58,7 +58,7 @@ class ConsumerTest {
             val context = productionGroup()
             val consumerIn = makeConsumer(topdir, context)
             var count = 0
-            for (ballot in consumerIn.iterateCastBallots()) {
+            for (ballot in consumerIn.iterateAllCastBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
                 count++
             }
@@ -71,7 +71,7 @@ class ConsumerTest {
             val context = productionGroup()
             val consumerIn = makeConsumer(topdir, context)
             var count = 0
-            for (ballot in consumerIn.iterateSpoiledBallots()) {
+            for (ballot in consumerIn.iterateAllSpoiledBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
                 count++
             }

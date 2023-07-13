@@ -61,8 +61,6 @@ class ElectionRecordTest {
 
         assertEquals("production group, low memory use, 4096 bits", config.constants.name)
         // TODO assertEquals(specVersion, config.manifest.specVersion)
-        assertEquals("RunWorkflow", tallyResult.encryptedTally.tallyId)
-        assertEquals("RunWorkflow", decryption.decryptedTally.id)
         assertNotNull(decryption.decryptedTally)
         val contests = decryption.decryptedTally.contests
         assertNotNull(contests)

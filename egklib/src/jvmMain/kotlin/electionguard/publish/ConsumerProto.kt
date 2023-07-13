@@ -11,8 +11,12 @@ import electionguard.core.GroupContext
 import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.json2.EncryptedBallotJson
+import electionguard.json2.import
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
@@ -96,19 +100,26 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     }
 
     actual override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> {
-        val deviceDirName: String = protoPaths.encryptedBallotDir(device)
-        if (!Files.exists(Path.of(deviceDirName))) {
-            throw RuntimeException("$deviceDirName doesnt exist")
+        val dirPath = Path.of(protoPaths.encryptedBallotDir(device))
+        if (!Files.exists(dirPath)) {
+            throw RuntimeException("$dirPath doesnt exist")
         }
+        // use ballotChain if it exists
         val chainResult = readEncryptedBallotChain(device)
-        if (chainResult is Err) {
-            throw RuntimeException("$device error reading EncryptedBallotChain= $chainResult")
+        if (chainResult is Ok) {
+            val chain = chainResult.unwrap()
+            return Iterable { EncryptedBallotChainIterator(device, chain.ballotIds.iterator(), filter) }
         }
-        val chain = chainResult.unwrap()
-        return Iterable { EncryptedBallotDeviceIterator(device, chain.ballotIds.iterator(), filter) }
+        // use batch (all in one protobuf) if it exists
+        val batchedFileName: String = protoPaths.encryptedBallotBatched(device)
+        if (Files.exists(Path.of(batchedFileName))) {
+            return Iterable { EncryptedBallotIterator(batchedFileName, groupContext, null, filter) }
+        }
+        // just read individual files
+        return Iterable { EncryptedBallotFileIterator(dirPath, groupContext, filter) }
     }
 
-    private inner class EncryptedBallotDeviceIterator(
+    private inner class EncryptedBallotChainIterator(
         val device: String,
         val ballotIds: Iterator<String>,
         private val filter: Predicate<EncryptedBallot>?,
@@ -137,6 +148,33 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
                     return done()
                 }
             }
+        }
+    }
+
+    private inner class EncryptedBallotFileIterator(
+        ballotDir: Path,
+        private val group: GroupContext,
+        private val filter: Predicate<EncryptedBallot>?,
+    ) : AbstractIterator<EncryptedBallot>() {
+        val pathList = ballotDir.pathList()
+        var idx = 0
+
+        override fun computeNext() {
+            while (idx < pathList.size) {
+                val ballotFile = pathList[idx++]
+                var proto: electionguard.protogen.EncryptedBallot
+                FileInputStream(ballotFile.toString()).use { inp ->
+                    proto = electionguard.protogen.EncryptedBallot.decodeFromStream(inp)
+                }
+                val result = proto.import(groupContext)
+                if (result is Ok) { // TODO error message
+                    val encryptedBallot = result.unwrap()
+                    if (filter == null || filter.test(encryptedBallot)) {
+                        return setNext(encryptedBallot)
+                    }
+                }
+            }
+            return done()
         }
     }
 

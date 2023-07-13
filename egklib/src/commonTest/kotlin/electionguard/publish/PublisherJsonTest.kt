@@ -93,7 +93,10 @@ class PublisherJsonTest {
         assertTrue(initResult is Ok)
         val init = initResult.unwrap()
 
-        publisher.writeEncryptions(init, consumerIn.iterateEncryptedBallots { true })
+        publisher.writeElectionInitialized(init)
+        publisher.encryptedBallotSink("testWriteEncryptions").use { sink ->
+            consumerIn.iterateAllEncryptedBallots { true }.forEach{ sink.writeEncryptedBallot(it) }
+        }
 
         val rtResult = consumerOut.readElectionInitialized()
         if (rtResult is Err) {
@@ -104,7 +107,7 @@ class PublisherJsonTest {
 
         assertTrue(roundtrip.approxEquals(init))
 
-        assertTrue(consumerOut.iterateEncryptedBallots { true }.approxEqualsEncryptedBallots(consumerIn.iterateEncryptedBallots { true }))
+        assertTrue(consumerOut.iterateAllEncryptedBallots { true }.approxEqualsEncryptedBallots(consumerIn.iterateAllEncryptedBallots { true }))
     }
 
     @Test
