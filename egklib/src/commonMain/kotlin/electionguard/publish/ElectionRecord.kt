@@ -1,15 +1,7 @@
 package electionguard.publish
 
-import electionguard.ballot.DecryptionResult
-import electionguard.ballot.ElectionConfig
-import electionguard.ballot.ElectionConstants
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.EncryptedTally
-import electionguard.ballot.Guardian
-import electionguard.ballot.Manifest
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.TallyResult
+import com.github.michaelbull.result.Result
+import electionguard.ballot.*
 import electionguard.core.ElementModP
 import electionguard.core.UInt256
 
@@ -21,7 +13,7 @@ interface ElectionRecord {
     fun topdir() : String
     fun isJson(): Boolean
 
-        fun constants(): ElectionConstants
+    fun constants(): ElectionConstants
     fun manifest(): Manifest
     fun manifestBytes(): ByteArray
 
@@ -43,7 +35,10 @@ interface ElectionRecord {
     fun guardians(): List<Guardian> // may be empty
     fun electionInit(): ElectionInitialized?
 
-    fun encryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> // may be empty
+    fun encryptingDevices(): List<String>
+    fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String>
+    fun encryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> // may be empty
+    fun encryptedAllBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> // may be empty
 
     fun encryptedTally(): EncryptedTally?
     fun tallyResult(): TallyResult?

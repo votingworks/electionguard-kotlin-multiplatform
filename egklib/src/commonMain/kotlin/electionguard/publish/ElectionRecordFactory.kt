@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.ballot.*
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
@@ -136,7 +137,19 @@ private class ElectionRecordImpl(val consumer: Consumer,
         return init
     }
 
-    override fun encryptedBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
+    override fun encryptingDevices(): List<String> {
+        return consumer.encryptingDevices()
+    }
+
+    override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String> {
+        return consumer.readEncryptedBallotChain(device)
+    }
+
+    override fun encryptedBallots(device: String, filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
+        return consumer.iterateEncryptedBallots(device, filter)
+    }
+
+    override fun encryptedAllBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
         return consumer.iterateAllEncryptedBallots(filter)
     }
 
