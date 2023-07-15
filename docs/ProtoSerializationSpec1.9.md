@@ -1,6 +1,6 @@
 # 🗳 Election Record KMP serialization (proposed specification)
 
-draft 7/10/2023
+draft 7/15/2023
 
 **Table of Contents**
  
@@ -30,6 +30,7 @@ draft 7/10/2023
       * [message ElectionConstants](#message-electionconstants)
       * [message ElectionInitialized](#message-electioninitialized)
       * [message Guardian](#message-guardian)
+      * [message EncryptedBallotChain](#message-encryptedballotchain)
       * [message TallyResult](#message-tallyresult)
       * [message DecryptionResult](#message-decryptionresult)
   * [plaintext_ballot.proto](#plaintextballotproto)
@@ -262,6 +263,18 @@ draft 7/10/2023
 | guardian_id        | string               |                                       |
 | x_coordinate       | uint32               | x_coordinate in the polynomial, ℓ = i |
 | coefficient_proofs | List\<SchnorrProof\> | j = 0..k-1                            |
+
+#### message EncryptedBallotChain
+
+| Name                    | Type                  | Notes               |
+|-------------------------|-----------------------|---------------------|
+| encrypting_device       | string                |                     |
+| baux0                   | bytes                 | eq 59               |
+| ballot_ids              | List\<string\>        | ballot ids in order |
+| last_confirmation_code  | UInt256               | last in chain       |
+| chaining                | bool                  | if chaining         |
+| closing_hash            | UInt256               | eq 62               |
+| metadata                | map\<string, string\> | arbitrary           |
 
 #### message TallyResult
 

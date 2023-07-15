@@ -1,17 +1,18 @@
 # ElectionGuard-Kotlin-Multiplatform
 
-_last update 6/27/2023_
+_last update 7/15/2023_
 
-ElectionGuard-Kotlin-Multiplatform (EKM) is an experimental attempt to create a multiplatform Kotlin implementation of 
-[ElectionGuard](https://github.com/microsoft/electionguard), with the eventual goal of running
-"everywhere" (Android / JVM, iOS, Unix native, and possibly JavaScript-in-browser and/or WASM).
-
-EKM is targeting the ElectionGuard 2.0 spec, currently in beta.
-Note that EKM is *not* compatible with ElectionGuard-Python or any other
-ElectionGuard 1.0 implementation. 
-
-EKM is available under an MIT-style open source 
+ElectionGuard-Kotlin-Multiplatform (EKM) is a multiplatform Kotlin implementation of 
+[ElectionGuard](https://github.com/microsoft/electionguard), version 2.0, available under an MIT-style open source 
 [License](LICENSE).
+
+EKM can use both JSON and [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers) for serialization. 
+Protobuf is a binary format that takes roughly half the space of JSON for the same information. 
+EKM includes `.proto` files for all the relevant data formats, which constitutes a well defined 
+and compact schema for EG serialization.
+
+Currently we have ~85% LOC code coverage on the common and jvm core library (8428/9889 LOC). We are focusing on just 
+the JVM implementation, and will consider native and other implementations in the future.
 
 *Table of contents*:
 <!-- TOC -->
@@ -31,6 +32,12 @@ EKM is available under an MIT-style open source
 <!-- TOC -->
 
 ## Implementation of ElectionGuard 2.0
+
+- EKM uses Kotlin's "multiplatform" features to support both JVM platforms (including
+ Android) and "native" platforms, including iOS. The primary
+ difference between these is how big integers are handled. On the JVM, we
+ use [java.math.BigInteger](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/math/BigInteger.html).
+ On native platforms, we use [Microsoft HACL*](https://www.microsoft.com/en-us/research/publication/hacl-a-verified-modern-cryptographic-library/).
 
 - EKM uses an optimized encoding of an encrypted ElGamal counter, proposed by [Pereira](https://perso.uclouvain.be/olivier.pereira/). Where 
   ElectionGuard 1.0 defines $\mathrm{Encrypt}(g^a, r, m) = \left(g^r, g^{ar}g^m\right)$,
@@ -53,30 +60,11 @@ EKM is available under an MIT-style open source
   For serialization, the output of `UInt256` type is identical to `ElementModQ`, so this is an internal 
   difference compatible with other implementations.
 
-- EKM can use both JSON and [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers) for serialization. 
-  Protobuf is a binary format
-  that takes roughly half the space of JSON for the same information. EKM includes `.proto` files for all
-  the relevant data formats, which constitutes a well defined and compact schema for EG serialization.
-
-- Currently we have ~85% LOC code coverage on the common and jvm core library (8428/9889 LOC).
-
-- Currently we are focusing on just the JVM implementation. We will consider the native and other implementations in the future.
-
-## Cool features of EKM
-
-EKM uses Kotlin's "multiplatform" features to support JVM platforms, including
-Android, and also to support "native" platforms, including iOS. The primary
-difference between these is how big integers are handled. On the JVM, we
-use [java.math.BigInteger](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/math/BigInteger.html).
-On native platforms, we use [Microsoft HACL*](https://www.microsoft.com/en-us/research/publication/hacl-a-verified-modern-cryptographic-library/). 
-With both platforms, we use a variety of optimizations: 
-
 - Pereira's "pow-radix" precomputation, used for common bases like
   the group generator or a public key, replaces modular exponentiation with
   table lookups and multiplies. We support three table sizes. Batch computations
   might then use larger tables and gain greater speedups, while memory-limited
   computations would use smaller tables.
-
 
 - In this table, we transform the numbers to [Montgomery form](https://en.wikipedia.org/wiki/Montgomery_modular_multiplication), allowing us
   to avoid an expensive modulo operation after each multiply. HACL* has native support
