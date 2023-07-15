@@ -485,7 +485,7 @@ public data class EncryptedBallotChain(
     val encryptingDevice: String = "",
     val baux0: pbandk.ByteArr = pbandk.ByteArr.empty,
     val ballotIds: List<String> = emptyList(),
-    val confirmationCodes: List<electionguard.protogen.UInt256> = emptyList(),
+    val lastConfirmationCode: electionguard.protogen.UInt256? = null,
     val chaining: Boolean = false,
     val closingHash: electionguard.protogen.UInt256? = null,
     val metadata: List<electionguard.protogen.EncryptedBallotChain.MetadataEntry> = emptyList(),
@@ -534,11 +534,11 @@ public data class EncryptedBallotChain(
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
-                        name = "confirmation_codes",
+                        name = "last_confirmation_code",
                         number = 4,
-                        type = pbandk.FieldDescriptor.Type.Repeated<electionguard.protogen.UInt256>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion)),
-                        jsonName = "confirmationCodes",
-                        value = electionguard.protogen.EncryptedBallotChain::confirmationCodes
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "lastConfirmationCode",
+                        value = electionguard.protogen.EncryptedBallotChain::lastConfirmationCode
                     )
                 )
                 add(
@@ -1056,7 +1056,7 @@ public fun EncryptedBallotChain?.orDefault(): electionguard.protogen.EncryptedBa
 private fun EncryptedBallotChain.protoMergeImpl(plus: pbandk.Message?): EncryptedBallotChain = (plus as? EncryptedBallotChain)?.let {
     it.copy(
         ballotIds = ballotIds + plus.ballotIds,
-        confirmationCodes = confirmationCodes + plus.confirmationCodes,
+        lastConfirmationCode = lastConfirmationCode?.plus(plus.lastConfirmationCode) ?: plus.lastConfirmationCode,
         closingHash = closingHash?.plus(plus.closingHash) ?: plus.closingHash,
         metadata = metadata + plus.metadata,
         unknownFields = unknownFields + plus.unknownFields
@@ -1068,7 +1068,7 @@ private fun EncryptedBallotChain.Companion.decodeWithImpl(u: pbandk.MessageDecod
     var encryptingDevice = ""
     var baux0: pbandk.ByteArr = pbandk.ByteArr.empty
     var ballotIds: pbandk.ListWithSize.Builder<String>? = null
-    var confirmationCodes: pbandk.ListWithSize.Builder<electionguard.protogen.UInt256>? = null
+    var lastConfirmationCode: electionguard.protogen.UInt256? = null
     var chaining = false
     var closingHash: electionguard.protogen.UInt256? = null
     var metadata: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptedBallotChain.MetadataEntry>? = null
@@ -1078,14 +1078,14 @@ private fun EncryptedBallotChain.Companion.decodeWithImpl(u: pbandk.MessageDecod
             1 -> encryptingDevice = _fieldValue as String
             2 -> baux0 = _fieldValue as pbandk.ByteArr
             3 -> ballotIds = (ballotIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
-            4 -> confirmationCodes = (confirmationCodes ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.UInt256> }
+            4 -> lastConfirmationCode = _fieldValue as electionguard.protogen.UInt256
             5 -> chaining = _fieldValue as Boolean
             6 -> closingHash = _fieldValue as electionguard.protogen.UInt256
             11 -> metadata = (metadata ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.EncryptedBallotChain.MetadataEntry> }
         }
     }
 
-    return EncryptedBallotChain(encryptingDevice, baux0, pbandk.ListWithSize.Builder.fixed(ballotIds), pbandk.ListWithSize.Builder.fixed(confirmationCodes),
+    return EncryptedBallotChain(encryptingDevice, baux0, pbandk.ListWithSize.Builder.fixed(ballotIds), lastConfirmationCode,
         chaining, closingHash, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 

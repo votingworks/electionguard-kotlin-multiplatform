@@ -1,34 +1,31 @@
 package electionguard.encrypt
 
-import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import electionguard.input.RandomBallotProvider
-import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
-import electionguard.verifier.VerifyEncryptedBallots
+import kotlin.random.Random
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class AddEncryptedBallotTest {
+class AddEncryptedVariationsTest {
     val group = productionGroup()
-    val input = "src/commonTest/data/workflow/allAvailableProto"
-    val outputDirProto = "testOut/encrypt/addEncryptedBallot"
+    val input = "src/commonTest/data/workflow/allAvailableJson"
+    val outputDirProto = "testOut/encrypt/AddEncryptedUnorderedTest"
 
-    val nballots = 4
+    val nballots = 3
 
     @Test
-    fun testJustOne() {
+    fun testJustOneDevice() {
         val outputDir = "$outputDirProto/testJustOne"
         val device = "device0"
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         val encryptor = AddEncryptedBallot(
@@ -40,57 +37,23 @@ class AddEncryptedBallotTest {
             false,
             outputDir,
             "${outputDir}/invalidDir",
-            false,
+            true,
             false,
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
+        val cballots = mutableListOf<CiphertextBallot>()
         repeat(nballots) {
             val ballot = ballotProvider.makeBallot()
             val result = encryptor.encrypt(ballot)
             assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+            cballots.add(result.unwrap())
         }
+        cballots.shuffle()
+        cballots.forEach { encryptor.submit(it.ballotId, EncryptedBallot.BallotState.CAST) }
         encryptor.close()
 
         checkOutput(group, outputDir, nballots, false)
-    }
-
-    @Test
-    fun testCallMultipleTimes() {
-        val outputDir = "$outputDirProto/testCallMultipleTimes"
-        val device = "device1"
-
-        val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
-        publisher.writeElectionInitialized(electionInit)
-
-        repeat(3) {
-            val encryptor = AddEncryptedBallot(
-                group,
-                electionRecord.manifest(),
-                electionInit,
-                device,
-                electionRecord.config().configBaux0,
-                false,
-                outputDir,
-                "outputDir/invalidDir",
-                false,
-                false,
-            )
-            val ballotProvider = RandomBallotProvider(electionRecord.manifest())
-
-            repeat(nballots) {
-                val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
-            }
-            encryptor.close()
-        }
-
-        checkOutput(group, outputDir, 3 * nballots, false)
     }
 
     @Test
@@ -99,7 +62,7 @@ class AddEncryptedBallotTest {
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         repeat(3) { it ->
@@ -112,17 +75,20 @@ class AddEncryptedBallotTest {
                 false,
                 outputDir,
                 "$outputDir/invalidDir",
-                false,
+                true,
                 false,
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
+            val cballots = mutableListOf<CiphertextBallot>()
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
                 val result = encryptor.encrypt(ballot)
                 assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+                cballots.add(result.unwrap())
             }
+            cballots.shuffle()
+            cballots.forEach { encryptor.submit(it.ballotId, EncryptedBallot.BallotState.CAST) }
             encryptor.close()
         }
 
@@ -136,7 +102,7 @@ class AddEncryptedBallotTest {
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         val encryptor = AddEncryptedBallot(
@@ -148,57 +114,23 @@ class AddEncryptedBallotTest {
             true,
             outputDir,
             "${outputDir}/invalidDir",
-            false,
+            true,
             false,
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
+        val cballots = mutableListOf<CiphertextBallot>()
         repeat(nballots) {
             val ballot = ballotProvider.makeBallot()
             val result = encryptor.encrypt(ballot)
             assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+            cballots.add(result.unwrap())
         }
+        cballots.shuffle()
+        cballots.forEach { encryptor.submit(it.ballotId, EncryptedBallot.BallotState.CAST) }
         encryptor.close()
 
         checkOutput(group, outputDir, nballots, true)
-    }
-
-    @Test
-    fun testCallMultipleTimesChaining() {
-        val outputDir = "$outputDirProto/testCallMultipleTimesChaining"
-        val device = "device1"
-
-        val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
-        publisher.writeElectionInitialized(electionInit)
-
-        repeat(4) {
-            val encryptor = AddEncryptedBallot(
-                group,
-                electionRecord.manifest(),
-                electionInit,
-                device,
-                electionRecord.config().configBaux0,
-                true,
-                outputDir,
-                "outputDir/invalidDir",
-                false,
-                false,
-            )
-            val ballotProvider = RandomBallotProvider(electionRecord.manifest())
-
-            repeat(nballots) {
-                val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
-            }
-            encryptor.close()
-        }
-
-        checkOutput(group, outputDir, 4 * nballots, true)
     }
 
     @Test
@@ -207,7 +139,7 @@ class AddEncryptedBallotTest {
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         repeat(3) { it ->
@@ -220,52 +152,86 @@ class AddEncryptedBallotTest {
                 true,
                 outputDir,
                 "$outputDir/invalidDir",
-                false,
+                true,
                 false,
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
+            val cballots = mutableListOf<CiphertextBallot>()
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
                 val result = encryptor.encrypt(ballot)
                 assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+                cballots.add(result.unwrap())
             }
+            cballots.shuffle()
+            cballots.forEach { encryptor.submit(it.ballotId, EncryptedBallot.BallotState.CAST) }
             encryptor.close()
         }
 
         checkOutput(group, outputDir, 3 * nballots, true)
     }
-}
 
-fun checkOutput(group : GroupContext, outputDir: String, expectedCount: Int, chained : Boolean = false) {
-    val consumer = makeConsumer(outputDir, group, false)
-    var count = 0
-    consumer.iterateAllEncryptedBallots { true }.forEach {
-        count++
-    }
-    assertEquals(expectedCount, count)
-
-    consumer.encryptingDevices().forEach { device ->
-        val chain = consumer.readEncryptedBallotChain(device).unwrap()
-        var lastConfirmationCode: UInt256? = null
-        consumer.iterateEncryptedBallots(device, null).forEach { eballot ->
-            assertTrue(chain.ballotIds.contains(eballot.ballotId))
-            lastConfirmationCode = eballot.confirmationCode
-        }
-        assertEquals(lastConfirmationCode, chain.lastConfirmationCode)
+    @Test
+    fun testCallMultipleTimes() {
+        val outputDir = "$outputDirProto/testCallMultipleTimes"
+        testMultipleCalls(outputDir, true, true, false)
+        testMultipleCalls(outputDir, false, true, false)
+        testMultipleCalls(outputDir, true, false, false)
+        testMultipleCalls(outputDir, false, false, false)
+        testMultipleCalls(outputDir, true, true, true)
+        testMultipleCalls(outputDir, false, true, true)
+        testMultipleCalls(outputDir, true, false, true)
+        testMultipleCalls(outputDir, false, false, true)
     }
 
-    val record = readElectionRecord(consumer)
-    val verifier = VerifyEncryptedBallots(group, record.manifest(),
-        ElGamalPublicKey(record.jointPublicKey()!!),
-        record.extendedBaseHash()!!,
-        record.config(), 1)
-    if (chained) {
-        val result = verifier.verifyConfirmationChain(record)
-        if (result is Err) {
-            println("FAIL $result")
+    fun testMultipleCalls(outputDir: String, shuffle: Boolean, skip: Boolean, chained: Boolean) {
+        val device = "deviceM"
+
+        val electionRecord = readElectionRecord(group, input)
+        val electionInit = electionRecord.electionInit()!!
+        val publisher = makePublisher(outputDir, true, true)
+        publisher.writeElectionInitialized(electionInit)
+
+        println("shuffle=$shuffle skip=$skip chained=$chained")
+        repeat(3) {
+            val encryptor = AddEncryptedBallot(
+                group,
+                electionRecord.manifest(),
+                electionInit,
+                device,
+                electionRecord.config().configBaux0,
+                chained,
+                outputDir,
+                "${outputDir}/invalidDir",
+                true,
+                false,
+            )
+            val ballotProvider = RandomBallotProvider(electionRecord.manifest())
+
+            val cballots = mutableListOf<CiphertextBallot>()
+            repeat(nballots) {
+                val ballot = ballotProvider.makeBallot()
+                val result = encryptor.encrypt(ballot)
+                assertTrue(result is Ok)
+                cballots.add(result.unwrap())
+            }
+            if (shuffle) {
+                cballots.shuffle()
+            }
+
+            cballots.forEach {
+                val random = Random.nextInt(10)
+                val state = if (random < 6) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
+                val skip = skip && random < 2 // skip 2 in 10
+                println(" skip $skip state $state")
+                if (!skip) {
+                    encryptor.submit(it.ballotId, state)
+                }
+            }
+            encryptor.close()
         }
-        assertTrue(result is Ok)
+
+        checkOutput(group, outputDir, 3 * nballots, chained)
     }
 }

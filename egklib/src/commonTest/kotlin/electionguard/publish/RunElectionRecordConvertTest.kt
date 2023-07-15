@@ -2,7 +2,6 @@ package electionguard.publish
 
 import electionguard.core.productionGroup
 import electionguard.verifier.runVerifier
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -40,7 +39,7 @@ class RunElectionRecordConvertTest {
           assertTrue(erProto.electionInit()!!.approxEquals(erOrg.electionInit()!!))
         }
 
-        assertTrue(erOrg.encryptedBallots{ true }.approxEqualsEncryptedBallots(erProto.encryptedBallots{ true }))
+        assertTrue(erOrg.encryptedAllBallots{ true }.approxEqualsEncryptedBallots(erProto.encryptedAllBallots{ true }))
         assertTrue(erOrg.decryptedBallots().approxEqualsDecryptedBallots(erProto.decryptedBallots()))
 
         assertEquals(erOrg.encryptedTally(), erProto.encryptedTally())

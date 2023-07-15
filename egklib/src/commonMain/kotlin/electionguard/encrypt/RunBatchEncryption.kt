@@ -12,7 +12,6 @@ import electionguard.core.UInt256
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.core.toElementModQ
 import electionguard.decryptBallot.DecryptWithNonce
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
@@ -249,8 +248,8 @@ private class EncryptionRunner(
 
     val verifier: VerifyEncryptedBallots?
     init {
-        verifier = if (check == CheckType.Verify) VerifyEncryptedBallots(group, manifest,
-            publicKeyEG, extendedBaseHash, config, 1)
+        verifier = if (check == CheckType.Verify)
+            VerifyEncryptedBallots(group, manifest, publicKeyEG, extendedBaseHash, config, 1)
         else null
     }
 

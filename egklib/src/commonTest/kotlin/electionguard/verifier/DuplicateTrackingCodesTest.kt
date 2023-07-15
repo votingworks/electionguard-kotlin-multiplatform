@@ -18,7 +18,7 @@ class DuplicateTrackingCodesTest {
         val mungedBallots = mutableListOf<EncryptedBallot>()
 
         var count = 0
-        for (ballot in electionRecord.encryptedBallots { true }) {
+        for (ballot in electionRecord.encryptedAllBallots { true }) {
             // println(" munged ballot ${ballot.ballotId}")
             mungedBallots.add(ballot)
             if (count % 3 == 0) {

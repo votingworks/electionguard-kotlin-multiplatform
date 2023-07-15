@@ -9,7 +9,7 @@ data class EncryptedBallotChain(
     val encryptingDevice: String,
     val baux0: ByteArray,
     val ballotIds: List<String>,
-    val confirmationCodes: List<UInt256>,
+    val lastConfirmationCode: UInt256,
     val chaining: Boolean,
     val closingHash: UInt256?, // only if chaining == true
     val metadata: Map<String, String> = emptyMap(),

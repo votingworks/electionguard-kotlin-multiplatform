@@ -44,7 +44,7 @@ class AttackEncryptedBallotTest {
 
         val mungedBallots = mutableListOf<EncryptedBallot>()
 
-        for (ballot in electionRecord.encryptedBallots { true }) {
+        for (ballot in electionRecord.encryptedAllBallots { true }) {
             // println(" munged ballot ${ballot.ballotId}")
             mungedBallots.add(mungeBallot(ballot, ElGamalPublicKey(electionRecord.jointPublicKey()!!)))
         }
