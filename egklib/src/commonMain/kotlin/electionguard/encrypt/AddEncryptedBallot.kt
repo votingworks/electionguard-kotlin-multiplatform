@@ -1,6 +1,8 @@
 package electionguard.encrypt
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.ElGamalPublicKey
@@ -40,9 +42,10 @@ class AddEncryptedBallot(
     val publisher = makePublisher(outputDir, createNew, isJson)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(device)
     val ballotIds = mutableListOf<String>()
-    val confirmationCodes = mutableListOf<UInt256>()
+    val pending = mutableMapOf<String, CiphertextBallot>()
     val baux0 : ByteArray
 
+    private var lastConfirmationCode: UInt256 = UInt256.ZERO
     private var first = true
     private var closed = false
 
@@ -56,11 +59,12 @@ class AddEncryptedBallot(
         val consumer = makeConsumer(outputDir, group, isJson)
         val chainResult = consumer.readEncryptedBallotChain(device)
         if (chainResult is Ok) {
+            // this is a restart on an existing chain
             val chain: EncryptedBallotChain = chainResult.unwrap()
             require (chainCodes == chain.chaining)
             baux0 = chain.baux0
             ballotIds.addAll(chain.ballotIds)
-            confirmationCodes.addAll(chain.confirmationCodes)
+            this.lastConfirmationCode = chain.lastConfirmationCode
             first = false
 
             // hmmm you could check EncryptedBallotChain each time, in case of crash
@@ -71,7 +75,8 @@ class AddEncryptedBallot(
         }
     }
 
-    fun encryptAndAdd(ballot: PlaintextBallot, state : EncryptedBallot.BallotState): Boolean {
+    // must be single threaded
+    fun encrypt(ballot: PlaintextBallot): Result<CiphertextBallot, String> {
         if (closed) {
             throw RuntimeException("Adding ballot after chain has been closed")
         }
@@ -80,42 +85,46 @@ class AddEncryptedBallot(
         if (mess.hasErrors()) {
             publisher.writePlaintextBallot(invalidDir, listOf(ballot))
             println(" wrote ${ballot.ballotId} invalid ballots to $invalidDir")
-            return false
+            return Err(" ${ballot.ballotId} did not validate, write to invalidDir= $invalidDir")
         }
 
         val bauxj: ByteArray = if (!chainCodes || first) baux0 else
-                               hashFunction(confirmationCodes.last().bytes, configBaux0).bytes // eq 61
+                               hashFunction(lastConfirmationCode.bytes, configBaux0).bytes // eq 61
         first = false
 
-        // println(" encryptAndAdd ${ballot.ballotId} bauxj=${bauxj.contentToString()}")
         val ciphertextBallot = encryptor.encrypt(ballot, bauxj)
+        ballotIds.add(ciphertextBallot.ballotId)
+        this.lastConfirmationCode = ciphertextBallot.confirmationCode
 
-        val eballot =  ciphertextBallot.submit(state)
+        // hmmm you could write CiphertextBallot to a log, in case of crash
+        pending[ciphertextBallot.ballotId] = ciphertextBallot
+        return Ok(ciphertextBallot)
+    }
+
+    fun submit(ballotId: String, state : EncryptedBallot.BallotState): Boolean {
+        val cballot = pending.remove(ballotId)
+        if (cballot == null) {
+            logger.error{ "Tried to submit Ciphertext ballot $ballotId not pending" }
+            return false
+        }
+        val eballot =  cballot.submit(state)
         sink.writeEncryptedBallot(eballot) // the sink must append
-
-        ballotIds.add(eballot.ballotId)
-        confirmationCodes.add(eballot.confirmationCode)
-
-        // hmmm you could write EncryptedBallotChain each time, in case of crash
         return true
     }
 
     override fun close() {
-
-        // data class EncryptedBallots(
-        //    val encryptingDevice: String,
-        //    val baux0: ByteArray,
-        //    val ballotIds: List<String>,
-        //    val closingHash: UInt256?,
-        //    val metadata: Map<String, String> = emptyMap(),
-        //)
-        val closing = EncryptedBallotChain(device, baux0, ballotIds, confirmationCodes, chainCodes, closeChain())
+        if (pending.isNotEmpty()) {
+            val keys = pending.keys.toList()
+            keys.forEach {
+                logger.error{ "pending Ciphertext ballot ${it} was not submitted" }
+                submit(it, EncryptedBallot.BallotState.UNKNOWN)
+            }
+        }
+        val closing = EncryptedBallotChain(device, baux0, ballotIds, this.lastConfirmationCode, chainCodes, closeChain())
         publisher.writeEncryptedBallotChain(closing)
         sink.close()
     }
 
-    // TODO can we open it again and start adding more to the chain ??
-    // TODO where do we store Hbar ?
     fun closeChain() : UInt256? {
         closed = true
         if (!chainCodes) return null
@@ -123,7 +132,7 @@ class AddEncryptedBallot(
         // Hbar = H(HE ; 24, Baux )
         // Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") (62)
         // H(Bℓ ) is the final confirmation code in the chain
-        val bauxFinal = hashFunction(confirmationCodes.last().bytes, configBaux0, "CLOSE")
+        val bauxFinal = hashFunction(lastConfirmationCode.bytes, configBaux0, "CLOSE")
         return hashFunction(electionInit.extendedBaseHash.bytes, 0x24.toByte(), bauxFinal)
     }
 }

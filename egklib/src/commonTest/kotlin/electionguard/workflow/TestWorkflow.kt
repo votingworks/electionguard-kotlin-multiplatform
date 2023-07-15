@@ -1,5 +1,7 @@
 package electionguard.workflow
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.PlaintextBallot
@@ -124,9 +126,10 @@ class TestWorkflow {
         var count = 1
         ballots.forEach { ballot ->
             val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
-            val isOk = encryptor.encryptAndAdd(ballot, state)
+            val result = encryptor.encrypt(ballot)
+            assertTrue(result is Ok)
+            encryptor.submit(result.unwrap().ballotId, state)
             println(" write ${ballot.ballotId} $state")
-            assertTrue(isOk)
             count++
         }
         encryptor.close()
@@ -290,9 +293,10 @@ class TestWorkflow {
         var count = 1
         ballots.forEach { ballot ->
             val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
-            val isOk = encryptor.encryptAndAdd(ballot, state)
-            println(" write ${ballot.ballotId}")
-            assertTrue(isOk)
+            val result = encryptor.encrypt(ballot)
+            assertTrue(result is Ok)
+            encryptor.submit(result.unwrap().ballotId, state)
+            println(" write ${ballot.ballotId} $state")
             count++
         }
         encryptor.close()

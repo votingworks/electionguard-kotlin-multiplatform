@@ -56,7 +56,7 @@ message EncryptedBallotChain {
   string encrypting_device = 1; // encrypting device device information, section 3.4.3, 3.7
   bytes baux0 = 2; // B_aux,0 from eq 59,60 if chain_confirmation_codes = true
   repeated string ballot_ids = 3; // in order
-  repeated UInt256 confirmation_codes = 4; // in order
+  UInt256 last_confirmation_code = 4;
   bool chaining = 5;
   UInt256 closing_hash = 6; // eq 62, if chainCodes == true
   map<string, string> metadata = 11; // arbitrary metadata added by the software

@@ -184,7 +184,7 @@ class VerifyEncryptedBallots(
         val results = mutableListOf<Result<Boolean, String>>()
 
         consumer.encryptingDevices().forEach { device ->
-            println("verifyConfirmationChain device=$device")
+            // println("verifyConfirmationChain device=$device")
             val ballotChainResult = consumer.readEncryptedBallotChain(device)
             if (ballotChainResult is Err) {
                 results.add(ballotChainResult)
@@ -202,9 +202,7 @@ class VerifyEncryptedBallots(
                 ballots.forEach { ballot ->
                     val expectedBaux = if (first) H0 else hashFunction(prevCC, config.configBaux0).bytes // eq 61
                     first = false
-                    println("    ${ballot.ballotId} confirmationCode=${ballot.confirmationCode}")
                     if (!expectedBaux.contentEquals(ballot.codeBaux)) {
-                        // println("                     actualBaux=${ballot.codeBaux.contentToString()}")
                         results.add(Err("    6.E. additional input byte array Baux != H(Bj−1 ) ∥ Baux,0 for ballot=${ballot.ballotId}"))
                     }
                     prevCC = ballot.confirmationCode.bytes
