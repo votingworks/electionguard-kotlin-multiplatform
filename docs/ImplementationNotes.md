@@ -10,8 +10,8 @@ IN PROGRESS
   2. Selections within contests
 * Sequence numbers are matched across plaintext, encrypted and decrypted ballots and tallies.
 
-### 3.1.4 Election manifest hash
+### 3.1.4 Election manifest bytes
 
 The _original_ manifest file must be kept as part of the election record. Whenever you need the manifest internally,
-you must check that The manifest file matches the config.manifestHash, and then reparse it. Do not serialize your own 
+you must check that the manifest bytes matches the config.manifestHash, and then reparse it. Do not serialize your own 
 version of the manifest, unless you can verify that it matches the original one.

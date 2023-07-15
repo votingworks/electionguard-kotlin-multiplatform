@@ -1,6 +1,6 @@
 # 🗳 Election Record JSON directory and file layout
 
-draft 7/13/2023
+draft 7/15/2023
 
 ## Public Election Record files
 

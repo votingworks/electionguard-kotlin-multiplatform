@@ -1,6 +1,6 @@
 # 🗳 Election Record protobuf directory and file layout
 
-draft 6/25/2023
+draft 7/15/2023
 
 ## Public Election Record files
 
@@ -8,7 +8,6 @@ draft 6/25/2023
 topdir/
     electionConfig.protobuf
     electionInitialized.protobuf
-    encryptedBallots.protobuf
     tallyResult.protobuf
     decryptionResult.protobuf
     challengedBallots.protobuf
@@ -20,11 +19,16 @@ topdir/
           eballot-ballotId3.protobuf
           ...
         deviceName2/
+          ballotChain.protobuf
+          eballot-ballotId1.protobuf
+          eballot-ballotId2.protobuf
+          eballot-ballotId3.protobuf
+          ...   
         deviceName3/
+        ...
         batchName1/
            encryptedBallots.protobuf
         batchName2/
-           ballotChain.protobuf ??
            encryptedBallots.protobuf         
         batchName3/
         ...
@@ -35,14 +39,16 @@ One or more of the above files may be present, depending on the output stage. Ea
 eg ElectionInitialized contains ElectionConfig, TallyResult contains ElectionInitialized, etc. This is different than 
 the JSON election record.
 
-| Name                         | Type                    | Workflow stage      |
-|------------------------------|-------------------------|---------------------|
-| electionConfig.protobuf      | ElectionConfig          | start               |
-| electionInitialized.protobuf | ElectionInitialized     | key ceremony output |
-| encryptedBallots.protobuf    | EncryptedBallot*        | encryption output   |
-| tallyResult.protobuf         | TallyResult             | tally output        |
-| decryptionResult.protobuf    | DecryptionResult        | decryption output   |
-| challengedBallots.protobuf   | DecryptedTallyOrBallot* | decryption output   |
+| Name                         | Type                    | Workflow stage       |
+|------------------------------|-------------------------|----------------------|
+| electionConfig.protobuf      | ElectionConfig          | start                |
+| electionInitialized.protobuf | ElectionInitialized     | key ceremony output  |
+| ballotChain.protobuf         | EncryptedBallotChain    | ballot chaining info |
+| eballot-\<ballotId>.protobuf | EncryptedBallot         | encrypted ballot     |
+| encryptedBallots.protobuf    | EncryptedBallot*        | encrypted ballots    |
+| tallyResult.protobuf         | TallyResult             | tally output         |
+| decryptionResult.protobuf    | DecryptionResult        | decryption output    |
+| challengedBallots.protobuf   | DecryptedTallyOrBallot* | decrypted ballots    |
 
 (*) The files encryptedBallots.protobuf and spoiledBallotTallies.protobuf contain multiple length-delimited proto messages. 
 This allows to read messages one at a time, rather than all into memory at once.
