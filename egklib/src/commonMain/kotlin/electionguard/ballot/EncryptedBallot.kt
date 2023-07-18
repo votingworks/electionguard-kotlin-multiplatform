@@ -90,7 +90,7 @@ data class EncryptedBallot(
     }
 
     data class PreEncryption(
-        val preencryptionHash: UInt256,
+        val preencryptionHash: UInt256, // (eq 95)
         // the selection hashes for every option on the ballot
         val allSelectionHashes: List<UInt256>, // size = nselections + limit, sorted numerically
         // the short codes and selection vectors for all selections on the made by the voter.
@@ -106,8 +106,9 @@ data class EncryptedBallot(
         }
     }
 
+    // Ψi,m = ⟨E1 , E2 , . . . , Em ⟩  (eq 92)
     data class SelectionVector(
-        val selectionHash: UInt256,
+        val selectionHash: UInt256, // ψi (eq 93)
         val shortCode: String,
         val encryptions: List<ElGamalCiphertext>, // Ej, size = nselections, in order by sequence_order
     )
