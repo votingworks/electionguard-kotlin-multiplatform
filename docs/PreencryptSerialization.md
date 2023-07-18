@@ -1,20 +1,20 @@
 # 🗳 Pre-encryption JSON serialization (proposed specification)
 
-draft 6/25/2023
+draft 7/17/2023
 
-## The extra information in the EncryptedBallot
+## The extra information in the EncryptedBallot, for each contest:
 
 ````
 @Serializable
 data class PreEncryptionJson(
-    val preencryption_hash: UInt256Json,
+    val preencryption_hash: UInt256Json, // (eq 95)
     val all_selection_hashes: List<UInt256Json>, // size = nselections + limit, sorted numerically
     val selected_vectors: List<SelectionVectorJson>, // size = limit, sorted numerically
 )
 
 @Serializable
 data class SelectionVectorJson(
-    val selection_hash: UInt256Json,
+    val selection_hash: UInt256Json, // ψi (eq 93)
     val short_code : String,
     val encryptions: List<ElGamalCiphertextJson>, // Ej, size = nselections, in order by sequence_order
 )

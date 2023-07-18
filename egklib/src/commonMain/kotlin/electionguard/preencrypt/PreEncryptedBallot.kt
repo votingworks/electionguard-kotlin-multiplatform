@@ -12,15 +12,15 @@ data class PreEncryptedBallot(
     val ballotStyleId: String,
     val primaryNonce: UInt256,
     val contests: List<PreEncryptedContest>,
-    val confirmationCode: UInt256,
+    val confirmationCode: UInt256, // eq 96
 ) {
     fun show() {
         println("\nPreEncryptedBallot $ballotId code = $confirmationCode")
-        for (contest in this.contests) {
-            println(" contest ${contest.contestId} (votesAllowed=${contest.votesAllowed}) = ${contest.preencryptionHash.toHex()}")
-            for (selection in contest.selections) {
-                println("  selection ${selection.selectionId} (${selection.sequenceOrder}) = ${selection.shortCode}")
-                selection.selectionVector.forEach { println("   encryption ${it}") }
+        for (pcontest in this.contests) {
+            println(" contest ${pcontest.contestId} (votesAllowed=${pcontest.votesAllowed}) = ${pcontest.preencryptionHash.toHex()}")
+            for (pselection in pcontest.selections) {
+                println("  selection ${pselection.selectionId} (${pselection.sequenceOrder}) = ${pselection.shortCode}")
+                pselection.selectionVector.forEach { println("   encryption ${it}") }
             }
         }
         println()
@@ -31,7 +31,7 @@ data class PreEncryptedContest(
     val contestId: String, // could just pass the manifest contest, in case other info is needed
     val sequenceOrder: Int,
     val votesAllowed: Int,
-    val selections: List<PreEncryptedSelection>, // nselections + limit, in sequenceOrder
+    val selections: List<PreEncryptedSelection>, // nselections + limit, in sequenceOrder, eq 93,94
     val preencryptionHash: UInt256, // eq 95
 )
 
@@ -40,6 +40,6 @@ data class PreEncryptedSelection(
     val sequenceOrder: Int,  // matches the Manifest
     val selectionHash: ElementModQ, // allow numerical sorting with ElementModQ, eq 93
     val shortCode: String,
-    val selectionVector: List<ElGamalCiphertext>, // nselections, in sequenceOrder
-    val selectionNonces: List<ElementModQ>, // nselections, in sequenceOrder
+    val selectionVector: List<ElGamalCiphertext>, // nselections, in sequenceOrder, eq 92
+    val selectionNonces: List<ElementModQ>, // nselections, in sequenceOrder (optional)
 )
