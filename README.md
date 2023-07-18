@@ -18,16 +18,17 @@ the JVM implementation, and will consider native and other implementations in th
 <!-- TOC -->
 * [ElectionGuard-Kotlin-Multiplatform](#electionguard-kotlin-multiplatform)
   * [Implementation of ElectionGuard 2.0](#implementation-of-electionguard-20)
-  * [Cool features of EKM](#cool-features-of-ekm)
   * [What about JavaScript?](#what-about-javascript)
   * [API differences from ElectionGuard-Python](#api-differences-from-electionguard-python)
   * [Serialization](#serialization)
     * [Protobuf Serialization](#protobuf-serialization)
     * [JSON Serialization](#json-serialization)
     * [Previous Serialization specs](#previous-serialization-specs)
-  * [Workflow](#workflow)
+  * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
   * [Input Validation](#input-validation)
+  * [Pre-encryption](#pre-encryption)
   * [Test Vectors](#test-vectors)
+  * [Implementation Notes](#implementation-notes)
   * [Authors](#authors)
 <!-- TOC -->
 
@@ -142,6 +143,9 @@ methods.
 
 ## Input Validation
 * [Input Validation](docs/InputValidation.md)
+
+## Pre-encryption
+* [Pre-encryption](docs/Preencryption.md)
 
 ## Test Vectors
 These are JSON files that give inputs and expected outputs for the purpose of testing interoperability between implementations.

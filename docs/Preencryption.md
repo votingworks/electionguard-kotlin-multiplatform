@@ -1,4 +1,4 @@
-# 🗳 Pre-encryption JSON serialization (proposed specification)
+# 🗳 Pre-encryption Workflow
 
 draft 7/17/2023
 
@@ -34,7 +34,7 @@ data class PreEncryptedSelection(
 ````
 
 In the following test vector, you are given the manifest, primaryNonce, etc. The short code (sigma function) is the 
-first 5 digits of the hex representation of the selectionHash. From that you can generate the expected fields in the
+first 5 digits of the hex representation of the selectionHash. From all those you can generate the expected fields in the
 preencrypted_ballot:
 
 [Example PreEncryptedBallot JSON serialization](../egklib/src/commonTest/data/testvectors/PreEncryptionTestVector.json)
@@ -42,17 +42,16 @@ preencrypted_ballot:
 ## 2. Print ballot and vote
 
 Then a printed ballot is made: for each contest: for each selection: show the selection label and short code.
-Allow user to mark the ballot, return reprentation of the voter's choices.
+Allow user to mark the ballot, return representation of the voter's choices.
 
-## 3. "The Ballot Recording Tool": record Preencrypted ballot in the election record
+## 3. "The Ballot Recording Tool": record Pre-encrypted ballot in the election record
 
-Recorder(manifest, sigma, votingDevice).record(ballotId, ballotStyle, primaryNonce, codeBaux, markedBallot) -> EncryptedBallot
+Recorder(manifest, sigma).record(ballotId, ballotStyle, primaryNonce, codeBaux, markedBallot) -> EncryptedBallot
 
 1. The recorder regenerates the PreEncryptedBallot from the primaryNonce and ballotStyleId.
-2. With the regenrated PreEncryptedBallot and the voter's choices, generate an encrypted_ballot for the election record,
-   which has the usual fields plus, for each contest, the PreEncryption data.
+2. With the regenerated PreEncryptedBallot and the voter's choices, generate an encrypted_ballot for the election record,
+   which has the usual fields, plus for each contest, the PreEncryption data.
 3. With these, a verifier can verify the Pre-encryption (spec 1.9, section 4.5).
-
 
 ````
 data class EncryptedBallot(
