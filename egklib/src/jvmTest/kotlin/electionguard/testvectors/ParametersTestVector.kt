@@ -42,11 +42,9 @@ class ParametersTestVector {
     data class ElectionBaseHash(
         val task : String,
         val parameterBaseHash : UInt256Json,
+        val manifest_hash : UInt256Json,
         val numberOfGuardians: Int,
         val quorum: Int,
-        val date : String,
-        val jurisdiction_info : String,
-        val manifest_hash : UInt256Json,
         val expected : UInt256Json,
     )
 
@@ -81,9 +79,9 @@ class ParametersTestVector {
         val electionBaseHash = ElectionBaseHash(
             "Generate election base hash. spec 1.9, p 17, eq 6",
             expectedParameterBaseHash.publishJson(),
-            n, k, date, info, HM.publishJson(),
-            // fun electionBaseHash(Hp: UInt256, n : Int, k : Int, date : String, info : String, HM: UInt256) : UInt256 {
-            electionBaseHash(expectedParameterBaseHash, n, k, date, info, HM).publishJson(),
+            HM.publishJson(),
+            n, k,
+            electionBaseHash(expectedParameterBaseHash, HM, n, k).publishJson(),
         )
 
         val parametersTestVector = ParametersTestVector(
@@ -122,11 +120,9 @@ class ParametersTestVector {
         val electionV = parametersTestVector.election_base_hash
         val actualHb = electionBaseHash(
             electionV.parameterBaseHash.import(),
+            electionV.manifest_hash.import(),
             electionV.numberOfGuardians,
             electionV.quorum,
-            electionV.date,
-            electionV.jurisdiction_info,
-            electionV.manifest_hash.import(),
         )
         assertEquals(electionV.expected.import(), actualHb)
     }

@@ -45,8 +45,6 @@ class ElectionConfigConvertTest {
             productionGroup().constants,
             11,
             7,
-            "date",
-            "juris",
             manifestBytes,
             true,
             "device".toByteArray(),
@@ -93,11 +91,9 @@ fun compareElectionConfig(expected: ElectionConfig, actual: ElectionConfig, ) {
         expected.electionBaseHash,
         electionBaseHash(
             Hp,
+            Hm,
             actual.numberOfGuardians,
             actual.quorum,
-            actual.electionDate,
-            actual.jurisdictionInfo,
-            Hm
         )
     )
     assertTrue(expected.equals(actual))
@@ -117,8 +113,6 @@ fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): 
         productionGroup().constants,
         nguardians,
         quorum,
-        "date",
-        "juris",
         manifestBytes,
         false,
         "device".toByteArray(),

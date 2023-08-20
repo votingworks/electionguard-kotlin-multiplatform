@@ -8,8 +8,6 @@ public data class ElectionConfig(
     val constants: electionguard.protogen.ElectionConstants? = null,
     val numberOfGuardians: Int = 0,
     val quorum: Int = 0,
-    val electionDate: String = "",
-    val jurisdictionInfo: String = "",
     val parameterBaseHash: electionguard.protogen.UInt256? = null,
     val manifestHash: electionguard.protogen.UInt256? = null,
     val electionBaseHash: electionguard.protogen.UInt256? = null,
@@ -27,7 +25,7 @@ public data class ElectionConfig(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.ElectionConfig = electionguard.protogen.ElectionConfig.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.ElectionConfig> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(13)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.ElectionConfig, *>>(11)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -67,26 +65,6 @@ public data class ElectionConfig(
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(),
                         jsonName = "quorum",
                         value = electionguard.protogen.ElectionConfig::quorum
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "election_date",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "electionDate",
-                        value = electionguard.protogen.ElectionConfig::electionDate
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "jurisdiction_info",
-                        number = 6,
-                        type = pbandk.FieldDescriptor.Type.Primitive.String(),
-                        jsonName = "jurisdictionInfo",
-                        value = electionguard.protogen.ElectionConfig::jurisdictionInfo
                     )
                 )
                 add(
@@ -868,8 +846,6 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
     var constants: electionguard.protogen.ElectionConstants? = null
     var numberOfGuardians = 0
     var quorum = 0
-    var electionDate = ""
-    var jurisdictionInfo = ""
     var parameterBaseHash: electionguard.protogen.UInt256? = null
     var manifestHash: electionguard.protogen.UInt256? = null
     var electionBaseHash: electionguard.protogen.UInt256? = null
@@ -884,8 +860,6 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
             2 -> constants = _fieldValue as electionguard.protogen.ElectionConstants
             3 -> numberOfGuardians = _fieldValue as Int
             4 -> quorum = _fieldValue as Int
-            5 -> electionDate = _fieldValue as String
-            6 -> jurisdictionInfo = _fieldValue as String
             7 -> parameterBaseHash = _fieldValue as electionguard.protogen.UInt256
             8 -> manifestHash = _fieldValue as electionguard.protogen.UInt256
             9 -> electionBaseHash = _fieldValue as electionguard.protogen.UInt256
@@ -897,9 +871,8 @@ private fun ElectionConfig.Companion.decodeWithImpl(u: pbandk.MessageDecoder): E
     }
 
     return ElectionConfig(specVersion, constants, numberOfGuardians, quorum,
-        electionDate, jurisdictionInfo, parameterBaseHash, manifestHash,
-        electionBaseHash, manifestBytes, chainConfirmationCodes, configBaux0,
-        pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
+        parameterBaseHash, manifestHash, electionBaseHash, manifestBytes,
+        chainConfirmationCodes, configBaux0, pbandk.ListWithSize.Builder.fixed(metadata), unknownFields)
 }
 
 @pbandk.Export

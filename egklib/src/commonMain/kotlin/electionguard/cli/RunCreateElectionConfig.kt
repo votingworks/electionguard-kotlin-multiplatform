@@ -10,7 +10,6 @@ import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
 import kotlinx.cli.required
-import kotlinx.datetime.*
 
 /** Run Create Election Configuration CLI. */
 fun createConfig(args: Array<String>) {
@@ -40,16 +39,6 @@ fun createConfig(args: Array<String>) {
         shortName = "createdBy",
         description = "who created"
     ).default("RunCreateElectionConfigurationy")
-    val electionDate by parser.option(
-        ArgType.String,
-        shortName = "electionDate",
-        description = "election date"
-    )
-    val info by parser.option(
-        ArgType.String,
-        shortName = "info",
-        description = "jurisdictional information"
-    ).default("N/A")
     val device by parser.option(
         ArgType.String,
         shortName = "device",
@@ -62,18 +51,12 @@ fun createConfig(args: Array<String>) {
     ).default(false)
     parser.parse(args)
 
-    val currentMoment : Instant = Clock.System.now()
-    val currentDate: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
-    val useDate = electionDate ?: currentDate.toString()
-
     println("RunCreateElectionConfig starting\n" +
             "   manifest= $electionManifest\n" +
             "   nguardians= $nguardians\n" +
             "   quorum= $quorum\n" +
             "   output = $outputDir\n" +
             "   createdBy = $createdBy\n" +
-            "   electionDate = $useDate\n" +
-            "   info = $info" +
             "   device = $device"
     )
 
@@ -88,8 +71,6 @@ fun createConfig(args: Array<String>) {
             group.constants,
             nguardians,
             quorum,
-            useDate,
-            info,
             manifestBytes,
             chainCodes,
             device.toByteArray(),

@@ -107,29 +107,29 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             check.add(Err("  1.A The election record specification version '${config.configVersion}' does not match '$protocolVersion'"))
         }
         if (!constants.largePrime.contentEquals(group.constants.largePrime)) {
-            check.add(Err("  1.A The large prime is not equal to p defined in Section 3.1.1"))
+            check.add(Err("  1.B The large prime is not equal to p defined in Section 3.1.1"))
         }
         if (!constants.smallPrime.contentEquals(group.constants.smallPrime)) {
-            check.add(Err("  1.B The small prime is not equal to q defined in Section 3.1.1"))
+            check.add(Err("  1.C The small prime is not equal to q defined in Section 3.1.1"))
         }
         if (!constants.cofactor.contentEquals(group.constants.cofactor)) {
-            check.add(Err("  1.C The cofactor is not equal to r defined in Section 3.1.1"))
+            check.add(Err("  1.D The cofactor is not equal to r defined in Section 3.1.1"))
         }
         if (!constants.generator.contentEquals(group.constants.generator)) {
-            check.add(Err("  1.D The generator is not equal to g defined in Section 3.1.1"))
+            check.add(Err("  1.E The generator is not equal to g defined in Section 3.1.1"))
         }
 
         val Hp = parameterBaseHash(config.constants)
         if (Hp != config.parameterBaseHash) {
-            check.add(Err("  1.E The parameter base hash does not match eq 4"))
+            check.add(Err("  1.F The parameter base hash does not match eq 4"))
         }
         val Hm = manifestHash(Hp, manifestBytes)
         if (Hm != config.manifestHash) {
-            check.add(Err("  1.F The manifest hash does not match eq 5"))
+            check.add(Err("  1.G The manifest hash does not match eq 5"))
         }
-        val Hd = electionBaseHash(Hp, config.numberOfGuardians, config.quorum, config.electionDate, config.jurisdictionInfo, Hm)
+        val Hd = electionBaseHash(Hp, Hm, config.numberOfGuardians, config.quorum)
         if (Hd != config.electionBaseHash) {
-            check.add(Err("  1.G The election base hash does not match eq 6"))
+            check.add(Err("  1.H The election base hash does not match eq 6"))
         }
 
         return check.merge()
