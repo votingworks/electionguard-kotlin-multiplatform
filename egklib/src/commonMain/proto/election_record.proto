@@ -14,8 +14,8 @@ message ElectionConfig {
   ElectionConstants constants = 2;
   uint32 number_of_guardians = 3; // n, the number of guardians necessary to generate the public key
   uint32 quorum = 4; // k, the quorum of guardians necessary to decrypt an election.  Must be <= number_of_guardians.
-  string election_date = 5; // for election base hash
-  string jurisdiction_info = 6; // for election base hash
+  reserved 5;
+  reserved 6;
   UInt256 parameter_base_hash = 7; // Hp
   UInt256 manifest_hash = 8;       // Hm
   UInt256 election_base_hash = 9;  // He

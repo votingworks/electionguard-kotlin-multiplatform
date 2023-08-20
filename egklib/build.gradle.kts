@@ -39,7 +39,7 @@ plugins {
  */
 
 group = "electionguard-kotlin-multiplatform"
-version = "1.9"
+version = "2.0.0-SNAPSHOT"
 
 kotlin {
     jvm {

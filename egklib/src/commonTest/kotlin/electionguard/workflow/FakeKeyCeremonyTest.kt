@@ -82,8 +82,6 @@ fun runFakeKeyCeremony(
         config.constants,
         nguardians,
         quorum,
-        config.electionDate,
-        config.jurisdictionInfo,
         electionRecord.manifestBytes(),
         chained,
         config.configBaux0,

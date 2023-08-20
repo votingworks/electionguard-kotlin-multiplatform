@@ -4,7 +4,7 @@ import electionguard.core.*
 import electionguard.core.Base16.toHex
 import io.ktor.utils.io.core.toByteArray
 
-const val protocolVersion = "v2.0"
+const val protocolVersion = "v2.0.0"
 
 /** Configuration input for KeyCeremony. */
 data class ElectionConfig(
@@ -15,10 +15,6 @@ data class ElectionConfig(
     val numberOfGuardians: Int,
     /** The quorum of guardians necessary to decrypt an election. Must be <= numberOfGuardians. */
     val quorum: Int,
-    /** date string used in hash */
-    val electionDate : String,
-    /** info string used in hash */
-    val jurisdictionInfo : String,
 
     val parameterBaseHash : UInt256, // Hp
     val manifestHash : UInt256, // Hm
@@ -47,8 +43,6 @@ data class ElectionConfig(
         if (constants != other.constants) return false
         if (numberOfGuardians != other.numberOfGuardians) return false
         if (quorum != other.quorum) return false
-        if (electionDate != other.electionDate) return false
-        if (jurisdictionInfo != other.jurisdictionInfo) return false
         if (parameterBaseHash != other.parameterBaseHash) return false
         if (manifestHash != other.manifestHash) return false
         if (electionBaseHash != other.electionBaseHash) return false
@@ -63,8 +57,6 @@ data class ElectionConfig(
         result = 31 * result + constants.hashCode()
         result = 31 * result + numberOfGuardians
         result = 31 * result + quorum
-        result = 31 * result + electionDate.hashCode()
-        result = 31 * result + jurisdictionInfo.hashCode()
         result = 31 * result + parameterBaseHash.hashCode()
         result = 31 * result + manifestHash.hashCode()
         result = 31 * result + electionBaseHash.hashCode()
@@ -130,12 +122,12 @@ data class ElectionConstants(
 }
 
 fun parameterBaseHash(primes : ElectionConstants) : UInt256 {
-    // HP = H(HV ; 00, p, q, g)   spec 1.9, p 15, eq 4
-    // The symbol HV denotes the version byte array that encodes the used version of this specification.
-    // The array has length 32 and contains the UTF-8 encoding of the string "v2.0" followed by 00-
-    // bytes, i.e. HV = 76322E30 ∥ b(0, 28).
+    // HP = H(ver; 0x00, p, q, g) ; spec 2.0.0 p 16, eq 4
+    // The symbol ver denotes the version byte array that encodes the used version of this specification.
+    // The array has length 32 and contains the UTF-8 encoding of the string “v2.0.0” followed by 0x00-
+    // bytes, i.e. ver = 0x76322E302E30 ∥ b(0, 27). FIX should be b(0, 26)
     val version = protocolVersion.toByteArray()
-    val HV = ByteArray(32) { if (it < 4) version[it] else 0 }
+    val HV = ByteArray(32) { if (it < version.size) version[it] else 0 }
 
     return hashFunction(
         HV,
@@ -147,7 +139,7 @@ fun parameterBaseHash(primes : ElectionConstants) : UInt256 {
 }
 
 fun manifestHash(Hp: UInt256, manifestBytes : ByteArray) : UInt256 {
-    // HM = H(HP ; 01, manifest).   spec 1.9, p 16, eq 5
+    // HM = H(HP ; 0x01, manifest). spec 2.0.0 p 19, eq 6
     return hashFunction(
         Hp.bytes,
         0x01.toByte(),
@@ -155,16 +147,14 @@ fun manifestHash(Hp: UInt256, manifestBytes : ByteArray) : UInt256 {
     )
 }
 
-fun electionBaseHash(Hp: UInt256, n : Int, k : Int, date : String, info : String, HM: UInt256) : UInt256 {
-    // HB = H(HP ; 02, n, k, date, info, HM ).   spec 1.9, p 17, eq 6
+fun electionBaseHash(Hp: UInt256, HM: UInt256, n : Int, k : Int) : UInt256 {
+    // HB = H(HP ; 0x02, HM , n, k). spec 2.0.0 p 19, eq 7
     return hashFunction(
         Hp.bytes,
         0x02.toByte(),
+        HM.bytes,
         n.toUShort(),
         k.toUShort(),
-        date,
-        info,
-        HM.bytes,
     )
 }
 
@@ -174,8 +164,6 @@ fun makeElectionConfig(
     constants: ElectionConstants,
     numberOfGuardians: Int,
     quorum: Int,
-    electionDate: String,
-    jurisdictionInfo: String,
     manifestBytes: ByteArray,
     chainConfirmationCodes: Boolean,
     baux0: ByteArray, // B_aux,0 from eq 59,60
@@ -184,15 +172,13 @@ fun makeElectionConfig(
 
     val parameterBaseHash = parameterBaseHash(constants)
     val manifestHash = manifestHash(parameterBaseHash, manifestBytes)
-    val electionBaseHash = electionBaseHash(parameterBaseHash, numberOfGuardians, quorum, electionDate, jurisdictionInfo, manifestHash)
+    val electionBaseHash = electionBaseHash(parameterBaseHash, manifestHash, numberOfGuardians, quorum)
 
     return ElectionConfig(
         configVersion,
         constants,
         numberOfGuardians,
         quorum,
-        electionDate,
-        jurisdictionInfo,
         parameterBaseHash,
         manifestHash,
         electionBaseHash,

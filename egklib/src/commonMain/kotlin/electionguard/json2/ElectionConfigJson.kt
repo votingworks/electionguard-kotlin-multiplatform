@@ -11,8 +11,6 @@ data class ElectionConfigJson(
     val config_version: String,
     val number_of_guardians: Int,
     val quorum: Int,
-    val election_date: String,
-    val jurisdiction_info: String,
 
     val parameter_base_hash: UInt256Json, // Hp
     val manifest_hash: UInt256Json, // Hm
@@ -27,8 +25,6 @@ fun ElectionConfig.publishJson() = ElectionConfigJson(
     this.configVersion,
     this.numberOfGuardians,
     this.quorum,
-    this.electionDate,
-    this.jurisdictionInfo,
     this.parameterBaseHash.publishJson(),
     this.manifestHash.publishJson(),
     this.electionBaseHash.publishJson(),
@@ -43,8 +39,6 @@ fun ElectionConfigJson.import(constants: ElectionConstants, manifestBytes: ByteA
         constants,
         this.number_of_guardians,
         this.quorum,
-        this.election_date,
-        this.jurisdiction_info,
         this.parameter_base_hash.import(),
         this.manifest_hash.import(),
         this.election_base_hash.import(),

@@ -127,7 +127,7 @@ class TestPrimes {
     @Test
     fun parameterBaseHashTest() {
         val parameterBaseHash = parameterBaseHash(productionGroup().constants)
-        assertEquals("AB91D83C3DC3FEB76E57C2783CFE2CA85ADB4BC01FC5123EEAE3124CC3FB6CDE", parameterBaseHash.toHex())
+        assertEquals("2B3B025E50E09C119CBA7E9448ACD1CABC9447EF39BF06327D81C665CDD86296", parameterBaseHash.toHex())
     }
 
 }

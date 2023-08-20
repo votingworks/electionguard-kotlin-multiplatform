@@ -39,8 +39,6 @@ class KeyCeremonyTest {
             group.constants,
             3,
             2,
-            "no",
-            "no",
             ByteArray(0),
             false,
             "device".toByteArray(),

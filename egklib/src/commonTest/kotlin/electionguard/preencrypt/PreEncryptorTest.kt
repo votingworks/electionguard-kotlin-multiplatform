@@ -394,8 +394,6 @@ fun makeFakeConfig() : ElectionConfig {
         productionGroup().constants,
         3,
         3,
-        "date",
-        "juris",
         "manifest".toByteArray(),
         false,
         "device".toByteArray(),
