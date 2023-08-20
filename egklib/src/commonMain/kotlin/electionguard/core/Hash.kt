@@ -3,7 +3,7 @@ package electionguard.core
 import io.ktor.utils.io.core.toByteArray
 
 /**
- * The hash function H used in ElectionGuard is HMAC-SHA-256, i.e. HMAC instantiated with SHA-25639 .
+ * The hash function H used in ElectionGuard is HMAC-SHA-256, i.e. HMAC instantiated with SHA-256.
  * Therefore, H takes two byte arrays as inputs.
  *
  * The first input corresponds to the key in HMAC. The HMAC-SHA-256 specification allows arbitrarily long keys,
@@ -15,11 +15,17 @@ import io.ktor.utils.io.core.toByteArray
  * The second input can have arbitrary length and is only restricted by the maximal input length
  * for SHA-256 and HMAC. Hence we view the function H formally as follows (understanding that
  * HMAC implementations pad the 32-byte keys to exactly 64 bytes by appending 32 00 bytes):
- *    H : B^32 × B* → B^32 , H(B0 ; B1 ) → HMAC-SHA-256(B0 , B1 )  ; spec 1.9 eq 104
+ *    H : B^32 × B* → B^32 , H(B0 ; B1 ) → HMAC-SHA-256(B0 , B1 )  ; spec 2.0.0 eq 105
+ *
+ * ElectionGuard uses HMAC not as a keyed hash function with a secret key or a message authentication code,
+ * but instead uses it as a general purpose hash function to implement a random oracle.
+ * The first input is used to bind hash values to a specific election by including the parameter base
+ * hash Hp , the election base hash Hb or the extended base hash He . The second input consists of
+ * domain separation tags for different use cases and the actual data that is being hashed.
  *
  * @param key HMAC key.
  * @param elements Zero or more elements of any of the accepted types.
- * @return A cryptographic hash of these elements, converted to strings and suitably concatenated.
+ * @return A cryptographic hash of these elements.
  */
 fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
     val hmac = HmacSha256(key)
@@ -45,9 +51,9 @@ private fun HmacSha256.addToHash(element : Any) {
             is UInt256 -> element.bytes
             is Element -> element.byteArray()
             is String -> element.toByteArray()
-            is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
-            is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
-            is Int -> numberToByteArray(element as Number, 4) // only used in Nonces
+            // is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
+            // is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
+            is Int -> intToByteArray(element)
             else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
         }
         this.update(ba)
@@ -56,6 +62,13 @@ private fun HmacSha256.addToHash(element : Any) {
 
 private val U256 = 256.toUShort()
 
+private fun intToByteArray (data: Int) : ByteArray {
+    require (data >= 0) // 0 <= data < 2^31  // LOOK do we need negative numbers??
+    val dataLong = data.toLong()
+    return ByteArray(4) { i -> (dataLong shr (i * 8)).toByte() }
+}
+
+////////////////////////////////////
 //// test concatenation vs update
 
 fun hashFunctionConcat(key: ByteArray, vararg elements: Any): UInt256 {
@@ -91,16 +104,12 @@ private fun hashElementsToByteArray(element : Any) : ByteArray {
             is String -> element.toByteArray()
             is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
             is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
-            is Int -> numberToByteArray(element as Number, 4)
+            is Int -> intToByteArray(element)
             else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
         }
         return ba
     }
 }
-
-private fun numberToByteArray (data: Number, size: Int = 4) : ByteArray =
-    ByteArray (size) {i -> (data.toLong() shr (i*8)).toByte()}
-
 
 ////////////////////////////// KDF
 

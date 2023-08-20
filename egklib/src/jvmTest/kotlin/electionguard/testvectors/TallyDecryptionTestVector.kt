@@ -106,15 +106,13 @@ class TallyDecryptionTestVector(
         keyCeremonyExchange(keyCeremonyTrustees)
 
         val publicKeys = mutableListOf<ElementModP>()
-        val allCommitments = mutableListOf<ElementModP>()
         keyCeremonyTrustees.forEach { trustee ->
             publicKeys.add(trustee.electionPublicKey())
-            allCommitments.addAll(trustee.coefficientCommitments())
         }
 
         val electionBaseHash = UInt256.random()
         val publicKey = publicKeys.reduce { a, b -> a * b }
-        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), publicKey, allCommitments)
+        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), publicKey)
 
         val ebuilder = ManifestBuilder("makeBallotEncryptionTestVector")
         val manifest: Manifest = ebuilder.addContest("onlyContest")

@@ -100,9 +100,7 @@ fun runEncryptDecryptBallot(
 
     //////////////////////////////////////////////////////////
     if (writeout) {
-        val commitments: MutableList<ElementModP> = mutableListOf()
-        trustees.forEach { commitments.addAll(it.coefficientCommitments()) }
-        val extendedBaseHash = hashFunction(config.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey, commitments)
+        val extendedBaseHash = hashFunction(config.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey)
 
         val init = ElectionInitialized(
             config,

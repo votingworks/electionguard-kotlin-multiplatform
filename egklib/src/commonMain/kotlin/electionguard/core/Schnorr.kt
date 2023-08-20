@@ -55,10 +55,10 @@ fun ElGamalKeypair.schnorrProof(
     coeff: Int, // j
     nonce: ElementModQ = context.randomElementModQ() // u_ij
 ): SchnorrProof {
-    // spec 1.9, p 19
+    // spec 2.0.0, eq 12
     val context = compatibleContextOrFail(publicKey.key, secretKey.key, nonce)
     val h = context.gPowP(nonce) // eq 10
-    val c = hashFunction(context.constants.hp.bytes, 0x10.toByte(), guardianXCoord.toUShort(), coeff.toUShort(), publicKey.key, h).toElementModQ(context) // eq 11
+    val c = hashFunction(context.constants.hp.bytes, 0x10.toByte(), guardianXCoord, coeff, publicKey.key, h).toElementModQ(context) // eq 11
     val v = nonce - secretKey.key * c // response
 
     return SchnorrProof(publicKey.key, c, v)

@@ -143,6 +143,7 @@ fun manifestHash(Hp: UInt256, manifestBytes : ByteArray) : UInt256 {
     return hashFunction(
         Hp.bytes,
         0x01.toByte(),
+        manifestBytes.size, // b(len(file), 4) ∥ b(file, len(file)) , section 5.1.5
         manifestBytes,
     )
 }
@@ -153,8 +154,8 @@ fun electionBaseHash(Hp: UInt256, HM: UInt256, n : Int, k : Int) : UInt256 {
         Hp.bytes,
         0x02.toByte(),
         HM.bytes,
-        n.toUShort(),
-        k.toUShort(),
+        n,
+        k,
     )
 }
 
