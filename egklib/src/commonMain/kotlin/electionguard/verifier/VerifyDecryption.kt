@@ -22,7 +22,8 @@ import kotlin.math.roundToInt
 
 private const val debug = false
 
-/** Box 8, 9, 10, 11, 12, 13, 14. verifySpoiledBallotTallies can be multithreaded. */
+/** Box [8, 9, 10, 11] (tally), and [12, 13, 14] (ballot). can be multithreaded. */
+// TODO check 12,13,14 (ballot) are same as 9,10,11 (tally)
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyDecryption(
     val group: GroupContext,
@@ -43,9 +44,9 @@ class VerifyDecryption(
 
         for (contest in decrypted.contests) {
             val where = "${decrypted.id}/${contest.contestId}"
-            // (9.C) The contest text label occurs as a contest label in the list of contests in the election manifest.
+            // (10.B) The contest text label occurs as a contest label in the list of contests in the election manifest.
             if (manifest.contestLimit(contest.contestId) == null) {
-                results.add(Err("    9.C,13.C Ballot contains contest not in manifest: '$where' "))
+                results.add(Err("    10.B,13.C Ballot contains contest not in manifest: '$where' "))
                 continue
             }
 
@@ -60,26 +61,26 @@ class VerifyDecryption(
                 val where2 = "$${decrypted.id}/$here"
                 ballotSelectionSet.add(here)
 
-                // (9.D) For each option in the contest, the option text label occurs as an option label for the contest
+                // (10.C) For each option in the contest, the option text label occurs as an option label for the contest
                 // in the election manifest.
                 if (!contestAndSelectionSet.contains(here)) {
-                    results.add(Err("    9.D,13.D Ballot contains selection not in manifest: '$where2' "))
+                    results.add(Err("    10.C,13.D Ballot contains selection not in manifest: '$where2' "))
                     continue
                 }
 
-                if (!selection.proof.r.inBounds()) {
-                    results.add(Err("    8.A,11.A response out of bounds: '$where2' "))
+                if (!selection.proof.r.inBounds()) { // TODO move to CP validate?
+                    results.add(Err("    9.A,11.A response out of bounds: '$where2' "))
                 }
 
-                // 8.B, 11.B
+                // 9.B, 11.B
                 if (!selection.verifySelection()) {
-                    results.add(Err("    8.B,11.B Challenge does not match: '$where2' "))
+                    results.add(Err("    9.B,11.B Challenge does not match: '$where2' "))
                 }
 
-                // M = K^t mod p.
+                // T = K^t mod p.
                 val tallyQ = selection.tally.toElementModQ(group)
                 if (selection.bOverM != publicKey powP tallyQ) {
-                    results.add(Err("    9.B,12.B Tally Decryption M = K^t mod p failed: '$where2'"))
+                    results.add(Err("    10.A,12.B Tally Decryption M = K^t mod p failed: '$where2'"))
                 }
 
                 if (isBallot && (selection.tally !in (0..1))) {
@@ -95,13 +96,13 @@ class VerifyDecryption(
             }
         }
 
-        // (9.E) For each option text label listed for this contest in the election manifest, the option label
-        //occurs for a option in the decrypted tally contest.
+        // (10.D) For each option text label listed for this contest in the election manifest, the option label
+        // occurs for a option in the decrypted tally contest.
         // (13.E) For each option text label listed for this contest in the election manifest, the option label
         //occurs for a option in the decrypted spoiled ballot.
         contestAndSelectionSet.forEach {
             if (!ballotSelectionSet.contains(it)) {
-                results.add(Err("    9.E,13.E Manifest contains selection not in ballot: '$it' "))
+                results.add(Err("    10.D,13.E Manifest contains selection not in ballot: '$it' "))
             }
         }
 
@@ -109,7 +110,7 @@ class VerifyDecryption(
         return results.merge()
     }
 
-    // this is the verifier proof (box 8)
+    // Verification 9 (Correctness of tally decryptions)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
         return this.proof.validate2(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
     }
