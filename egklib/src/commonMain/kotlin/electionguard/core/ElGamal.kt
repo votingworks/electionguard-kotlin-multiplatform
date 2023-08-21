@@ -108,7 +108,7 @@ data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP) {
  * @throws ArithmeticException if the secret key is less than two
  */
 fun elGamalKeyPairFromSecret(secret: ElementModQ) =
-    ElGamalKeypair(ElGamalSecretKey(secret), ElGamalPublicKey(secret.context.gPowP(secret)))
+    ElGamalKeypair(ElGamalSecretKey(secret), ElGamalPublicKey(secret.context.gPowP(secret))) // eq 10
 
 /** Generates a random ElGamal keypair. */
 fun elGamalKeyPairFromRandom(context: GroupContext) =

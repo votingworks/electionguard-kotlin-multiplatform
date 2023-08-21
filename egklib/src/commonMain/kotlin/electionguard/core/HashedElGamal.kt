@@ -7,7 +7,7 @@ data class HashedElGamalCiphertext(
     val c0: ElementModP,
     val c1: ByteArray,
     val c2: UInt256,
-    val numBytes: Int
+    val numBytes: Int // TODO not sure if this is needed
 ) {
     // override because of the ByteArray
     override fun equals(other: Any?): Boolean {

@@ -34,6 +34,7 @@ fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
 }
 
 // identical to hashFunction, made separate to follow the spec.
+// only called from KeyCeremonyTrustee. doesnt use strings
 fun hmacFunction(key: ByteArray, vararg elements: Any): UInt256 {
     require(elements.size > 0)
     val hmac = HmacSha256(key)
@@ -50,7 +51,7 @@ private fun HmacSha256.addToHash(element : Any) {
             is ByteArray -> element
             is UInt256 -> element.bytes
             is Element -> element.byteArray()
-            is String -> element.toByteArray()
+            is String -> element.toByteArray() // LOOK not adding size
             // is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
             // is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
             is Int -> intToByteArray(element)

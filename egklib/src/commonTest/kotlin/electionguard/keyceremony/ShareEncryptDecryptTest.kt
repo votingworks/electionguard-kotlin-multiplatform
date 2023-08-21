@@ -15,6 +15,7 @@ class ShareEncryptDecryptTest {
         runTest {
             val group = productionGroup()
             checkAll(
+                propTestFastConfig,
                 Arb.int(min=1, max=100),
                 elementsModQ(group, minimum = 2)
             ) { xcoord, pil ->
