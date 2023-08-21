@@ -190,6 +190,8 @@ fun ChaumPedersenProof.validate2(
     val a = group.gPowP(this.r) * (publicKey powP this.c) // 9.2
     val b = (encryptedVote.pad powP this.r) * (M powP this.c) // 9.3
 
+    // TODO 9.A
+
     // The challenge value c satisfies c = H(HE ; 0x30, K, A, B, a, b, M ). eq 9.B
     val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey, encryptedVote.pad, encryptedVote.data, a, b, M)
     return (challenge.toElementModQ(group) == this.c)

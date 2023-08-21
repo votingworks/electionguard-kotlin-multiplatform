@@ -7,14 +7,14 @@ import electionguard.ballot.EncryptedTally
 import electionguard.core.*
 
 /**
- * Verification 7 (Correctness of ballot aggregation)
+ * Verification 8 (Correctness of ballot aggregation)
  * An election verifier must confirm for each (non-placeholder) option in each contest in the election
  * manifest that the aggregate encryption (A, B) satisfies
- * (7.A) A = Prod(αj) mod p,
- * (7.B) B = Prod(βj) mod p,
+ * (8.A) A = Prod(αj) mod p,
+ * (8.B) B = Prod(βj) mod p,
  * where the (αj, βj ) are the corresponding encryptions on all cast ballots in the election record.
  *
- * (9.F) For each contest text label that occurs in at least one submitted ballot, that contest text
+ * (10.F) For each contest text label that occurs in at least one submitted ballot, that contest text
  *   label occurs in the list of contests in the corresponding tally.
  */
 class VerifyAggregation(
@@ -36,10 +36,10 @@ class VerifyAggregation(
                 val accum = aggregator.getAggregateFor(key)
                 if (accum != null) {
                     if (selection.encryptedVote.pad != accum.pad) {
-                        errors.add(Err("  7.A  Ballot Aggregation does not match: $key"))
+                        errors.add(Err("  8.A  Ballot Aggregation does not match: $key"))
                     }
                     if (selection.encryptedVote.data != accum.data) {
-                        errors.add(Err("  7.B  Ballot Aggregation does not match: $key"))
+                        errors.add(Err("  8.B  Ballot Aggregation does not match: $key"))
                     }
                 } else {
                     // TODO what is it? is it needed? left over from placeholders ??
@@ -50,11 +50,11 @@ class VerifyAggregation(
             }
         }
 
-        // (9.E) For each contest text label that occurs in at least one submitted ballot, that contest text
+        // (10.E) For each contest text label that occurs in at least one submitted ballot, that contest text
         // label occurs in the list of contests in the corresponding tally..
         aggregator.contestIdSet.forEach { contestId ->
             if (null == encryptedTally.contests.find { it.contestId == contestId}) {
-                errors.add(Err("   9.E Contest '$contestId' found in cast ballots not found in tally"))
+                errors.add(Err("   10.E Contest '$contestId' found in cast ballots not found in tally"))
             }
         }
 

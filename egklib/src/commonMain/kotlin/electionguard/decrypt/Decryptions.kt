@@ -9,7 +9,7 @@ import electionguard.core.UInt256
 /** One decryption from one Decrypting Trustee */
 data class PartialDecryption(
     val guardianId: String,  // guardian i
-    val Mi: ElementModP, // Mi = A ^ P(i); spec 1.9, eq 67 or C0 ^ P(i); spec 1.9, eq 78
+    val Mi: ElementModP, // Mi = A ^ P(i); spec 2.0.0, eq 66 or = C0 ^ P(i); eq 77
     val u: ElementModQ,  // these are needed for the proof
     val a: ElementModP,
     val b: ElementModP,
@@ -46,13 +46,13 @@ class TrusteeDecryptions(val id : String) {
 
 data class ChallengeRequest(
     val id: String, // "contestId#@selectionId"
-    val challenge: ElementModQ, // spec 1.9, eq 73
+    val challenge: ElementModQ, // eq 72
     val nonce: ElementModQ,
 )
 
 data class ChallengeResponse(
     val id: String, // "contestId#@selectionId"
-    val response: ElementModQ, // spec 1.9, eq 74
+    val response: ElementModQ, // eq 73
 )
 
 data class TrusteeChallengeResponses(
@@ -71,9 +71,9 @@ class DecryptionResults(
     val ciphertext: ElGamalCiphertext, // text to decrypt
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var tally: Int? = null, // the decrypted tally
-    var M: ElementModP? = null, // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 1.9, eq 69
+    var M: ElementModP? = null, // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 2.0.0, eq 69
     var collectiveChallenge: UInt256? = null, // spec 1.9 eq 72
-    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; spec 1.9, eq 74
+    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; eq 73
 )
 
 /**
@@ -85,8 +85,8 @@ class ContestDataResults(
     val ciphertext: HashedElGamalCiphertext, // text to decrypt
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var beta: ElementModP? = null,
-    var collectiveChallenge: UInt256? = null, // spec 1.9 eq 82
-    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; spec 1.9, eq 83
+    var collectiveChallenge: UInt256? = null, // eq 81
+    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; eq 82
 )
 
 /**

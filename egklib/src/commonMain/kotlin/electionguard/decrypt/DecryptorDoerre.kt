@@ -59,7 +59,7 @@ class DecryptorDoerre(
 
         // compute M for each DecryptionResults over all the shares from available guardians
         for ((id, dresults) in decryptions.shares) {
-            // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 1.9, eq 69
+            // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 2.0.0, eq 68
             val weightedProduct = with(group) {
                 dresults.shares.map { (key, value) ->
                     val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
@@ -67,16 +67,16 @@ class DecryptorDoerre(
                 }.multP()
             }
 
-            // T = B · M−1 mod p; spec 1.9, eq 65
+            // T = B · M−1 mod p; spec 2.0.0, eq 64
             val T = dresults.ciphertext.data / weightedProduct
             // T = K^t mod p, take log to get t = tally
             dresults.tally = jointPublicKey.dLog(T, maxDlog) ?: throw RuntimeException("dlog failed on $id")
             dresults.M = weightedProduct
 
-            // compute the collective challenge, needed for the collective proof; spec 1.9 eq 71
+            // compute the collective challenge, needed for the collective proof; spec 2.0.0 eq 70
             val a: ElementModP = with(group) { dresults.shares.values.map { it.a }.multP() }
             val b: ElementModP = with(group) { dresults.shares.values.map { it.b }.multP() }
-            // "collective challenge" c = H(HE ; 30, K, A, B, a, b, M ); spec 1.9 eq 72
+            // "collective challenge" c = H(HE ; 0x30, K, A, B, a, b, M ) ; spec 2.0.0 eq 71
             dresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), jointPublicKey.key, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
 
             if (first) { // temp debug, when a,b dont validate
@@ -96,7 +96,7 @@ class DecryptorDoerre(
         // that means you could get this wrong and encrypt/decrypt would still work, just proof validation would fail
         if (isBallot) {
             for (cresults in decryptions.contestData.values) {
-                // lagrange weighted product of the shares, beta = Prod(M_i^w_i) mod p; spec 1.9, eq 79
+                // lagrange weighted product of the shares, beta = Prod(M_i^w_i) mod p; spec 2.0.0, eq 78
                 val weightedProduct = with(group) {
                     cresults.shares.map { (key, value) ->
                         val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
@@ -105,11 +105,11 @@ class DecryptorDoerre(
                 }
                 cresults.beta = weightedProduct
 
-                // compute the collective challenge, needed for the collective proof; spec 1.9 eq 81
+                // compute the collective challenge, needed for the collective proof; spec 2.0.0 eq 80
                 val a: ElementModP = with(group) { cresults.shares.values.map { it.a }.multP() }
                 val b: ElementModP = with(group) { cresults.shares.values.map { it.b }.multP() }
 
-                // "collective challenge" c = c = H(HE ; 31, K, C0 , C1 , C2 , a, b, β) ; spec 1.9 eq 82
+                // "collective challenge" c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β) ; eq 81
                 cresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), jointPublicKey.key,
                     cresults.ciphertext.c0,
                     cresults.ciphertext.c1.toHex(),
@@ -193,14 +193,14 @@ class DecryptorDoerre(
         val requests: MutableList<ChallengeRequest> = mutableListOf()
         for ((id, results) in this.shares) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            // spec 1.9, eq 73
+            // spec 2.0.0, eq 72
             val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
             requests.add(ChallengeRequest(id, ci, result.u))
         }
         // Get all the challenges from the contestData
         for ((id, results) in this.contestData) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            // spec 1.9, eq 73
+            // spec 2.0.0, eq 72
             val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
             requests.add(ChallengeRequest(id, ci, result.u))
         }
@@ -211,7 +211,7 @@ class DecryptorDoerre(
     }
 }
 
-/** Compute the lagrange coefficient, now that we know which guardians are present; spec 1.9 section 3.6.2, eq 68. */
+/** Compute the lagrange coefficient, now that we know which guardians are present; section 3.6.2, eq 67. */
 fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>): ElementModQ {
     val others: List<Int> = present.filter { it != coordinate }
     if (others.isEmpty()) {
