@@ -35,7 +35,7 @@ class DecryptWithNonce(val group : GroupContext, val publicKey: ElGamalPublicKey
         val decryptions = mutableListOf<PlaintextBallot.Selection>()
         val errors = mutableListOf<String>()
         for (selection in contest.selections) {
-            val dSelection = decryptSelectionWithPrimaryNonce(ballotNonce, contest.contestId, selection)
+            val dSelection = decryptSelectionWithPrimaryNonce(ballotNonce, contest.sequenceOrder, selection)
             if (dSelection == null) {
                 errors.add(" decryption with nonce failed for contest: '${contest.contestId}' selection: '${selection.selectionId}'")
             } else {
@@ -79,11 +79,11 @@ class DecryptWithNonce(val group : GroupContext, val publicKey: ElGamalPublicKey
 
     private fun decryptSelectionWithPrimaryNonce(
         ballotNonce: UInt256,
-        contestLabel: String,
+        contestIndex: Int,
         selection: EncryptedBallot.Selection
     ): PlaintextBallot.Selection? {
 
-        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestLabel, selection.selectionId) // eq 22
+        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestIndex, selection.sequenceOrder) // eq 25
         val decodedVote: Int? = selection.encryptedVote.decryptWithNonce(publicKey, selectionNonce.toElementModQ(group))
 
         return decodedVote?.let {

@@ -58,7 +58,7 @@ class TallyDecryptor(
         contestDataDecryptions: ContestDataResults?, // results for this selection
     ): DecryptedTallyOrBallot.DecryptedContestData? {
         return contestDataDecryptions?.let {
-            // v = Sum(v_i mod q); spec 1.9 eq (86)
+            // v = Sum(v_i mod q); spec 2.0.0 eq (85)
             val response: ElementModQ = with(group) { contestDataDecryptions.responses.values.map { it }.addQ() }
 
             // finally we can create the proof
@@ -104,24 +104,24 @@ class TallyDecryptor(
         }
     }
 
-    // this is the verifier proof (box 10)
+    // this is the verifier proof (box 11)
     private fun verifyContestData(where: String, decryptedContestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
         val proof = decryptedContestData.proof
         val hashedCiphertext = decryptedContestData.encryptedContestData
-        // a = g^v * K^c  (10.1,14.1)
+        // a = g^v * K^c  (11.1,14.1)
         val a = group.gPowP(proof.r) * (publicKey powP proof.c)
 
-        // b = C0^v * β^c (10.2,14.2)
+        // b = C0^v * β^c (11.2,14.2)
         val b = (hashedCiphertext.c0 powP proof.r) * (decryptedContestData.beta powP proof.c)
 
         val results = mutableListOf<Result<Boolean, String>>()
 
-        // (10.A,14.A) The given value v is in the set Zq.
+        // (11.A,14.A) The given value v is in the set Zq.
         if (!proof.r.inBounds()) {
-            results.add(Err("     (10.A,14.A) The value v is not in the set Zq.: '$where'"))
+            results.add(Err("     (11.A,14.A) The value v is not in the set Zq.: '$where'"))
         }
 
-        // (10.B) The challenge value c satisfies c = H(HE ; 31, K, C0 , C1 , C2 , a, b, β).
+        // (11.B) The challenge value c satisfies c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β)
         val challenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), publicKey.key,
             hashedCiphertext.c0,
             hashedCiphertext.c1.toHex(),
@@ -129,7 +129,7 @@ class TallyDecryptor(
             a, b, decryptedContestData.beta)
 
         if (challenge != proof.c.toUInt256()) {
-            results.add(Err("     (10.B,14.B) The challenge value is wrong: '$where'"))
+            results.add(Err("     (11.B,14.B) The challenge value is wrong: '$where'"))
         }
         return results.merge()
     }
@@ -141,11 +141,11 @@ class TallyDecryptor(
         contestId: String,
         stats: Stats,
     ): DecryptedTallyOrBallot.Selection {
-        // v = Sum(v_i mod q); spec 1.9 eq (77)
+        // v = Sum(v_i mod q); spec 2.0.0 eq 76
         val response: ElementModQ = with(group) { selectionDecryptions.responses.values.map { it }.addQ() }
         // finally we can create the proof
         val proof = ChaumPedersenProof(selectionDecryptions.collectiveChallenge!!.toElementModQ(group), response)
-        val T = selection.encryptedVote.data / selectionDecryptions.M!! // "decrypted value" T = B · M −1, eq 65
+        val T = selection.encryptedVote.data / selectionDecryptions.M!! // "decrypted value" T = B · M −1, eq 64
 
         val decrypytedSelection = DecryptedTallyOrBallot.Selection(
             selection.selectionId,
@@ -178,7 +178,7 @@ class TallyDecryptor(
         return this.proof.validate2(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
     }
 
-    // Verify with spec 1.9 eq 75, 76
+    // Verify with spec 2.0.0 eq 75, 76
     private fun DecryptionResults.checkIndividualResponses(): Boolean {
         var ok = true
         for (partialDecryption in this.shares.values) {
@@ -186,16 +186,16 @@ class TallyDecryptor(
             val vi = this.responses[guardianId]
                 ?: throw IllegalStateException("*** response not found for ${guardianId}")
             val wi = lagrangeCoordinates[guardianId]!!.lagrangeCoefficient
-            val ci = wi * this.collectiveChallenge!!.toElementModQ(group) // spec 1.9 eq 73
+            val ci = wi * this.collectiveChallenge!!.toElementModQ(group) // spec 2.0.0 eq 72
 
             val inner = guardians.getGexpP(guardianId)
-            val ap = group.gPowP(vi) * (inner powP ci) // spec 1.9 eq 75
+            val ap = group.gPowP(vi) * (inner powP ci) // eq 74
             if (partialDecryption.a != ap) {
                 println(" ayes dont match for ${guardianId}")
                 ok = false
             }
 
-            val bp = (this.ciphertext.pad powP vi) * (partialDecryption.Mi powP ci) // spec 1.9 eq 76
+            val bp = (this.ciphertext.pad powP vi) * (partialDecryption.Mi powP ci) // eq 75
             if (partialDecryption.b != bp) {
                 println(" bees dont match for ${guardianId}")
                 ok = false

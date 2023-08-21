@@ -13,7 +13,7 @@ data class DecryptingTrusteeDoerre(
     val id: String,
     val xCoordinate: Int,
     val publicKey: ElementModP,
-    val keyShare: ElementModQ, // P(i) = my share of the secret key s = (s1 + s2 + · · · + sn ), eq 66
+    val keyShare: ElementModQ, // P(i) = my share of the secret key s = (s1 + s2 + · · · + sn ), eq 65
 ) : DecryptingTrusteeIF {
 
     init {
@@ -31,9 +31,9 @@ data class DecryptingTrusteeDoerre(
         val results: MutableList<PartialDecryption> = mutableListOf()
         for (text: ElementModP in texts) {
             val u = group.randomElementModQ(2) // random value u in Zq
-            val a = group.gPowP(u)  // (a,b) for the proof, spec 1.9, eq 70
+            val a = group.gPowP(u)  // (a,b) for the proof, spec 2.0.0, eq 69
             val b = text powP u
-            val mi = text powP keyShare // Mi = A ^ P(i), spec 1.9, eq 67
+            val mi = text powP keyShare // Mi = A ^ P(i), spec 2.0.0, eq 66
             results.add( PartialDecryption(id, mi, u, a, b)) // controversial to send u, could cache it here.
         }
         return results
@@ -44,7 +44,7 @@ data class DecryptingTrusteeDoerre(
         challenges: List<ChallengeRequest>,
     ): List<ChallengeResponse> {
         return challenges.map {
-            ChallengeResponse(it.id, it.nonce - it.challenge * keyShare) // spec 1.9, eq 74
+            ChallengeResponse(it.id, it.nonce - it.challenge * keyShare) // spec 2.0.0, eq 73
         }
     }
 }
