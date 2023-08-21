@@ -11,8 +11,8 @@ data class EncryptedBallot(
     val ballotStyleId: String,  // matches a Manifest.BallotStyle
     val encryptingDevice: String,
     val timestamp: Long,
-    val codeBaux: ByteArray, // Baux in eq 59
-    val confirmationCode: UInt256, // tracking code, H(B), eq 59
+    val codeBaux: ByteArray, // Baux in spec 2.0.0 eq 58
+    val confirmationCode: UInt256, // tracking code = H(B) eq 58
     override val contests: List<Contest>,
     override val state: BallotState,
     val isPreencrypt: Boolean = false,

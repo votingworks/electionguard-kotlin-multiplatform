@@ -52,7 +52,7 @@ class Encryptor(
         }
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
 
-        // H(B) = H(HE ; 24, χ1 , χ2 , . . . , χmB , Baux ).  (59)
+        // H(B) = H(HE ; 0x24, χ1 , χ2 , . . . , χmB , Baux ) ;  spec 2.0.0 eq 58
         val contestHashes = sortedContests.map { it.contestHash }
         val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, codeBaux)
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000) // secs since epoch
@@ -106,7 +106,7 @@ class Encryptor(
             }
             encryptedSelections.add( plaintextSelection.encryptSelection(
                 ballotNonce,
-                this.contestId,
+                this.sequenceOrder,
             ))
         }
 
@@ -139,11 +139,11 @@ class Encryptor(
 
     private fun PlaintextBallot.Selection.encryptSelection(
         ballotNonce: UInt256,
-        contestLabel: String,
+        contestIndex: Int,
     ): CiphertextBallot.Selection {
 
-        // ξi,j = H(HE ; 20, ξB , Λi , λj ). eq 22
-        val selectionNonce = hashFunction(extendedBaseHashB, 0x20.toByte(), ballotNonce, contestLabel, this.selectionId)
+        // ξi,j = H(HE ; 0x20, ξB , indc (Λi ), indo (λj )) ; spec 2.0.0 eq 25
+        val selectionNonce = hashFunction(extendedBaseHashB, 0x20.toByte(), ballotNonce, contestIndex, this.sequenceOrder)
 
         return this.encryptSelection(
             this.vote,
@@ -170,20 +170,20 @@ fun PlaintextBallot.Contest.encryptContest(
     val aggNonce: ElementModQ = with(group) { nonces.addQ() }
 
     val proof = ciphertextAccumulation.makeChaumPedersen(
-        totalVotedFor,      // (ℓ in the spec)
+        totalVotedFor, // (ℓ in the spec)
         votesAllowed,  // (L in the spec)
         aggNonce,
         jointPublicKey,
         extendedBaseHash,
     )
 
-    // χl = H(HE ; 23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (58)
+    // χl = H(HE ; 0x23, indc (Λl ), K, α1 , β1 , α2 , β2 . . . , αm , βm ) ; spec 2.0.0 eq 57
     val ciphers = mutableListOf<ElementModP>()
     ciphertexts.forEach {
         ciphers.add(it.pad)
         ciphers.add(it.data)
     }
-    val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), this.contestId, jointPublicKey.key, ciphers)
+    val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), this.sequenceOrder, jointPublicKey.key, ciphers)
 
     return CiphertextBallot.Contest(
         this.contestId,
@@ -202,7 +202,7 @@ fun PlaintextBallot.Selection.encryptSelection(
     cryptoExtendedBaseHash: UInt256,
     selectionNonce: ElementModQ,
 ): CiphertextBallot.Selection {
-    val elgamalEncryption: ElGamalCiphertext = vote.encrypt(jointPublicKey, selectionNonce)
+    val elgamalEncryption: ElGamalCiphertext = vote.encrypt(jointPublicKey, selectionNonce) // eq 24
 
     val proof = elgamalEncryption.makeChaumPedersen(
         vote,

@@ -65,7 +65,7 @@ class BallotEncryptionTestVector {
             EncryptedContestJson(
                 pcontest.contestId,
                 pcontest.sequenceOrder,
-                "Compute contest range proof, spec 1.9 section 3.3.8",
+                "Compute contest range proof, section 3.3.8",
                 pcontest.proof.publishJsonE(uc_nonces, cc_nonces),
                 pcontest.selections.map {
                     // we rely on deterministic generation of the proof nonces, to publish
@@ -76,7 +76,7 @@ class BallotEncryptionTestVector {
                     EncryptedSelectionJson(
                         it.selectionId,
                         it.sequenceOrder,
-                        "Compute selection nonce (eq 22), encrypted vote (eq 21), and associated range proof (Section 3.3.5)",
+                        "Compute selection nonce (eq 25), encrypted vote (eq 24), and associated range proof (Section 3.3.5)",
                         it.selectionNonce.publishJson(),
                         it.ciphertext.publishJson(),
                         it.proof.publishJsonE(u_nonces, c_nonces),
