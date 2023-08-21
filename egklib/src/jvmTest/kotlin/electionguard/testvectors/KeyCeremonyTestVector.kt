@@ -55,7 +55,6 @@ class KeyCeremonyTestVector {
 
     fun makeKeyCeremonyTestVector(publish : Boolean = true) {
         val publicKeys = mutableListOf<ElementModP>()
-        val allCommitments = mutableListOf<ElementModP>()
 
         repeat(numberOfGuardians) {
             val guardianXCoord = it + 1
@@ -76,26 +75,25 @@ class KeyCeremonyTestVector {
             }
 
             publicKeys.add(commitments[0])
-            allCommitments.addAll(commitments)
 
             guardians.add( GuardianJson(
                 "Guardian$guardianXCoord",
                 guardianXCoord,
                 coefficients.map { it.publishJson() },
                 nonces.map { it.publishJson() },
-                "Generate Schnorr proofs for Guardian coefficients. spec 1.9, section 3.2.2",
+                "Generate Schnorr proofs for Guardian coefficients (section 3.2.2)",
                 proofs,
                 )
             )
         }
 
         val expectedPublicKey = publicKeys.reduce { a, b -> a * b }
-        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), expectedPublicKey, allCommitments)
+        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), expectedPublicKey)
 
         val keyCeremonyTestVector = KeyCeremonyTestVector(
             "Test KeyCeremony guardian creation",
             guardians,
-            "Generate joint public key (eq 7) and extended base hash (eq 20)",
+            "Generate joint public key (eq 8) and extended base hash (eq 23)",
             electionBaseHash.publishJson(),
             expectedPublicKey.publishJson(),
             extendedBaseHash.publishJson(),
@@ -123,7 +121,6 @@ class KeyCeremonyTestVector {
             }
 
         val publicKeys = mutableListOf<ElementModP>()
-        val allCommitments = mutableListOf<ElementModP>()
         keyCeremonyTestVector.guardians.forEach { guardianJson ->
             val guardianXCoord = guardianJson.coordinate
             val secretKey = guardianJson.polynomial_coefficients[0].import(group)
@@ -133,7 +130,6 @@ class KeyCeremonyTestVector {
             guardianJson.polynomial_coefficients.forEach {
                 val privateKey = it.import(group)
                 val publicKey = group.gPowP(privateKey)
-                allCommitments.add(publicKey)
 
                 val keypair = ElGamalKeypair(ElGamalSecretKey(privateKey), ElGamalPublicKey(publicKey))
                 val nonce = guardianJson.proof_nonces[coeffIdx].import(group)
@@ -153,7 +149,7 @@ class KeyCeremonyTestVector {
 
         // HE = H(HB ; 12, K, K1,0 , K1,1 , . . . , K1,k−1 , K2,0 , . . . , Kn,k−2 , Kn,k−1 )
         val electionBaseHash = keyCeremonyTestVector.election_base_hash.import()
-        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), publicKey, allCommitments)
+        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), publicKey)
 
         assertEquals(keyCeremonyTestVector.expected_extended_base_hash.import(), extendedBaseHash)
     }

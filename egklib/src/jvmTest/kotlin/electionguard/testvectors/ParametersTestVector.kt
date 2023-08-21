@@ -39,6 +39,14 @@ class ParametersTestVector {
     )
 
     @Serializable
+    data class ManifestHash(
+        val task : String,
+        val parameterBaseHash : UInt256Json,
+        val manifest : String,
+        val expected : UInt256Json,
+    )
+
+    @Serializable
     data class ElectionBaseHash(
         val task : String,
         val parameterBaseHash : UInt256Json,
@@ -52,6 +60,7 @@ class ParametersTestVector {
     data class ParametersTestVector(
         val desc: String,
         val parameter_base_hash : ParameterBaseHash,
+        val manifest_hash : ManifestHash,
         val election_base_hash : ElectionBaseHash,
     )
 
@@ -66,27 +75,35 @@ class ParametersTestVector {
         val primesJson = PrimesJson(constants.largePrime.toHex(), constants.smallPrime.toHex(), constants.generator.toHex(), )
         val expectedParameterBaseHash = parameterBaseHash(constants)
         val parameterBaseHash = ParameterBaseHash(
-            "Generate parameter base hash. spec 1.9, p 15, eq 4",
+            "Generate parameter base hash. spec 2.0.0, eq 4",
             protocolVersion,
             primesJson,
             expectedParameterBaseHash.publishJson())
 
+
+        val fakeManifest = "your manifest goes here"
+        val expectedManifestHash = manifestHash(expectedParameterBaseHash, fakeManifest.toByteArray())
+        val manifestTestVector = ManifestHash(
+            "Generate manifest hash. spec 2.0.0, eq 6",
+            expectedParameterBaseHash.publishJson(),
+            fakeManifest,
+            expectedManifestHash.publishJson(),
+        )
+
         val n = 6
         val k = 4
-        val date = "Nov 2, 1960"
-        val info = "Los Angeles County, general election"
-        val HM = UInt256.random()
         val electionBaseHash = ElectionBaseHash(
-            "Generate election base hash. spec 1.9, p 17, eq 6",
+            "Generate election base hash. spec 2.0.0, eq 7",
             expectedParameterBaseHash.publishJson(),
-            HM.publishJson(),
+            expectedManifestHash.publishJson(),
             n, k,
-            electionBaseHash(expectedParameterBaseHash, HM, n, k).publishJson(),
+            electionBaseHash(expectedParameterBaseHash, expectedManifestHash, n, k).publishJson(),
         )
 
         val parametersTestVector = ParametersTestVector(
-            "Test hash function, generation of H_P and H_B",
+            "Test hash function, generation of Hp, Hm, and Hb",
             parameterBaseHash,
+            manifestTestVector,
             electionBaseHash
         )
         println(jsonFormat.encodeToString(parametersTestVector))
@@ -107,7 +124,7 @@ class ParametersTestVector {
 
         val parameterV = parametersTestVector.parameter_base_hash
         val version = parameterV.protocolVersion.toByteArray()
-        val HV = ByteArray(32) { if (it < 4) version[it] else 0 }
+        val HV = ByteArray(32) { if (it < version.size) version[it] else 0 }
         val actualHp = hashFunction(
             HV,
             0x00.toByte(),
@@ -117,14 +134,36 @@ class ParametersTestVector {
         )
         assertEquals(parameterV.expected.import(), actualHp)
 
+        val electionM = parametersTestVector.manifest_hash
+        val actualM = hashFunction(
+            electionM.parameterBaseHash.import().bytes,
+            0x01.toByte(),
+            electionM.manifest.length,
+            electionM.manifest.toByteArray(),
+        )
+        assertEquals(electionM.expected.import(), actualM)
+        val actualM2 = manifestHash(
+            electionM.parameterBaseHash.import(),
+            electionM.manifest.toByteArray(),
+        )
+        assertEquals(electionM.expected.import(), actualM2)
+
         val electionV = parametersTestVector.election_base_hash
-        val actualHb = electionBaseHash(
+        val actualHb = hashFunction(
+            electionV.parameterBaseHash.import().bytes,
+            0x02.toByte(),
+            electionV.manifest_hash.import().bytes,
+            electionV.numberOfGuardians,
+            electionV.quorum,
+        )
+        assertEquals(electionV.expected.import(), actualHb)
+        val actualHb2 = electionBaseHash(
             electionV.parameterBaseHash.import(),
             electionV.manifest_hash.import(),
             electionV.numberOfGuardians,
             electionV.quorum,
         )
-        assertEquals(electionV.expected.import(), actualHb)
+        assertEquals(electionV.expected.import(), actualHb2)
     }
 
 }

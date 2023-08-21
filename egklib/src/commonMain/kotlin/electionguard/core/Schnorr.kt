@@ -47,7 +47,7 @@ data class SchnorrProof(
 }
 
 /**
- * Given an ElGamal keypair (public and private key), generate a ZNP (zero knowledge proof)
+ * Given an ElGamal keypair (public and private key) for i,j, generate a ZNP (zero knowledge proof)
  * that the author of the proof knows the private key, without revealing it.
  */
 fun ElGamalKeypair.schnorrProof(
@@ -55,11 +55,10 @@ fun ElGamalKeypair.schnorrProof(
     coeff: Int, // j
     nonce: ElementModQ = context.randomElementModQ() // u_ij
 ): SchnorrProof {
-    // spec 1.9, p 19
     val context = compatibleContextOrFail(publicKey.key, secretKey.key, nonce)
-    val h = context.gPowP(nonce) // eq 10
-    val c = hashFunction(context.constants.hp.bytes, 0x10.toByte(), guardianXCoord.toUShort(), coeff.toUShort(), publicKey.key, h).toElementModQ(context) // eq 11
-    val v = nonce - secretKey.key * c // response
+    val h = context.gPowP(nonce) //spec 2.0.0,  eq 11
+    val c = hashFunction(context.constants.hp.bytes, 0x10.toByte(), guardianXCoord, coeff, publicKey.key, h).toElementModQ(context) // eq 12
+    val v = nonce - secretKey.key * c // response value vi,j = (ui,j − ci,j * ai,j ) mod q
 
     return SchnorrProof(publicKey.key, c, v)
 }

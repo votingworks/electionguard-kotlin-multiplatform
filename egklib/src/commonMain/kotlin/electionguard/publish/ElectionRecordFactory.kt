@@ -18,7 +18,7 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     var tallyResult : TallyResult? = null
     var init : ElectionInitialized? = null
     var config : ElectionConfig? = null
-    var manifest : Manifest?
+    val manifest : Manifest?
     var stage : ElectionRecord.Stage? = null
 
     val decryption = consumer.readDecryptionResult()

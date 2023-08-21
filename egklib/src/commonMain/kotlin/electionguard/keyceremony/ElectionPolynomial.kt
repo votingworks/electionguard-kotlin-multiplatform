@@ -2,7 +2,7 @@ package electionguard.keyceremony
 
 import electionguard.core.*
 
-/** Pi(x), spec 1.9, section 3.2.1. Must be kept secret. */
+/** Pi(x), spec 2.0.0, section 3.2.1. Must be kept secret. */
 data class ElectionPolynomial(
     val guardianId: String,  // ith guardian
 
@@ -28,6 +28,7 @@ data class ElectionPolynomial(
         var result: ElementModQ = group.ZERO_MOD_Q
         var xcoordPower: ElementModQ = group.ONE_MOD_Q
 
+        // spec 2.0.0, p 22, eq 9
         for (coefficient in this.coefficients) {
             val term = coefficient * xcoordPower
             result += term
@@ -40,7 +41,7 @@ data class ElectionPolynomial(
 /**
  * Calculate g^Pi(xcoord) mod p = Product ((K_i,j)^xcoord^j) mod p, j = 0, quorum-1.
  * Used to test secret key share by KeyCeremonyTrustee, and verifying results in TallyDecryptor.
- * spec 1.9, sec 3.2.2 eq 19:
+ * spec 2.0.0, sec 3.2.2, p 24, eq 21:
  */
 fun calculateGexpPiAtL(
     xcoord: Int,  // evaluated at xcoord ℓ
@@ -59,7 +60,7 @@ fun calculateGexpPiAtL(
     return result
 }
 
-/** Generate random coefficients for a polynomial of degree quorum-1. spec 1.9, p 19, eq 8 and 9. */
+/** Generate random coefficients for a polynomial of degree quorum-1. spec 2.0.0, p 22, eq 9 and 10. */
 fun GroupContext.generatePolynomial(
     guardianId: String,
     guardianXCoord: Int,
@@ -78,6 +79,7 @@ fun GroupContext.generatePolynomial(
     return ElectionPolynomial(guardianId, coefficients, commitments, proofs)
 }
 
+// possibly only used in testing?
 fun GroupContext.regeneratePolynomial(
     guardianId: String,
     guardianXCoord: Int,

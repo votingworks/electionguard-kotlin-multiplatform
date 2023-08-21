@@ -85,18 +85,18 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
         }
     }
 
-    // spec 1.9, p 21
+    // spec 2.0.0, p 24 "Share verification"
     // If the recipient guardian Gℓ reports not receiving a suitable value Pi (ℓ), it becomes incumbent on the
     // sending guardian Gi to publish this Pi (ℓ) together with the nonce ξi,ℓ it used to encrypt Pi (ℓ)
     // under the public key Kℓ of recipient guardian Gℓ . If guardian Gi fails to produce a suitable Pi (ℓ)
     // and nonce ξi,ℓ that match both the published encryption and the above equation, it should be
-    // excluded from the election and the key generation process should be restarted with an alternate guardian.
-    //   If, however, the published Pi (ℓ) and ξi,ℓ satisfy both the published encryption and the
-    // equation (19) above, the claim of malfeasance is dismissed, and the key generation process continues undeterred.
-    //   It is also permissible to dismiss any guardian that makes a false claim of malfeasance. However, this is not
-    // required as the sensitive information that is released as a result of the claim could have been released by the
-    // claimant in any case.
-    // TODO should KeyShare include ξi,ℓ
+    // excluded from the election and the key generation process should be restarted with an alternate
+    // guardian. If, however, the published Pi (ℓ) and ξi,ℓ satisfy both the published encryption and the
+    // equation above, the claim of malfeasance is dismissed, and the key generation process continues undeterred.
+    // footnote 28 It is also permissible to dismiss any guardian that makes a false claim of malfeasance. However, this is not
+    // required as the sensitive information that is released as a result of the claim could have been released by the claimant
+    // in any case.
+    // TODO KeyShare should include ξi,ℓ
 
     // Phase Two: if any secretKeyShares fail to validate, send and validate KeyShares
     val keyResults: MutableList<Result<Boolean, String>> = mutableListOf()
@@ -145,13 +145,12 @@ data class KeyCeremonyResults(
         config: ElectionConfig,
         metadata: Map<String, String> = emptyMap(),
     ): ElectionInitialized {
+        // spec 2.0.0 p.25, eq 8.
         val jointPublicKey: ElementModP =
             publicKeysSorted.map { it.publicKey().key }.reduce { a, b -> a * b }
 
-        // He = H(HB ; 12, K, K1,0 , K1,1 , . . . , K1,k−1 , K2,0 , . . . , Kn,k−2 , Kn,k−1 ) spec 1.9 p.22, eq 20.
-        val commitments: MutableList<ElementModP> = mutableListOf()
-        publicKeysSorted.forEach { commitments.addAll(it.coefficientCommitments()) }
-        val extendedBaseHash = hashFunction(config.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey, commitments)
+        // He = H(HB ; 0x12, K) ; spec 2.0.0 p.25, eq 23.
+        val extendedBaseHash = hashFunction(config.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey)
 
         val guardians: List<Guardian> = publicKeysSorted.map { makeGuardian(it) }
 
