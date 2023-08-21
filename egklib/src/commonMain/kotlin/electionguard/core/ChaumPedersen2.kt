@@ -36,7 +36,7 @@ data class ExpandedChaumPedersenProof(
     val r: ElementModQ,
 )
 
-// 3.3.5 p 26 eq 23-27
+// spec 2.0.0, section 3.3.5
 // Proves that (α, β) is an encryption of an integer in the range 0, 1, . . . , L.
 // (Requires knowledge of encryption nonce ξ for which (α, β) is an encryption of ℓ.)
 fun ElGamalCiphertext.makeChaumPedersen(
@@ -74,14 +74,14 @@ fun ElGamalCiphertext.makeChaumPedersenWithNonces(
     nonce: ElementModQ, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
     publicKey: ElGamalPublicKey, // K
     extendedBaseHash: UInt256, // He
-    randomUj: List<ElementModQ>, // L + 1
-    randomCj: List<ElementModQ>, // L + 1
+    randomUj: List<ElementModQ>, // size == L + 1
+    randomCj: List<ElementModQ>, // size == L + 1
 ): ChaumPedersenRangeProofKnownNonce {
     val (alpha, beta) = this
     val group = compatibleContextOrFail(pad, nonce, publicKey.key, alpha, beta)
 
-    // (aℓ , bℓ ) = (g^uℓ mod p, K^uℓ mod p), for j = ℓ (eq 23)
-    // (aj , bj ) = (g^uj mod p, K^tj mod p), where tj = (uj +(ℓ−j)cj ), for j != ℓ (eq 24)
+    // (aℓ , bℓ ) = (g^uℓ mod p, K^uℓ mod p), for j = ℓ (eq 44)
+    // (aj , bj ) = (g^uj mod p, K^tj mod p), where tj = (uj +(ℓ−j) * cj ), for j != ℓ (eq 45)
     val aList = randomUj.map { u -> group.gPowP(u) }
     val bList = randomUj.mapIndexed { j, u ->
         if (j == vote) {
@@ -96,26 +96,24 @@ fun ElGamalCiphertext.makeChaumPedersenWithNonces(
             else
                 -((j - vote).toElementModQ(group))
 
-            publicKey powP (plaintextMinusIndex * randomCj[j] + u) // tj = (uj +(ℓ−j)cj )
+            publicKey powP (plaintextMinusIndex * randomCj[j] + u) // K^tj, where tj = (uj +(ℓ−j) * cj )
         }
     }
 
     // (a1, a2, a3) x (b1, b2, b3) ==> (a1, b1, a2, b2, a3, b3, ...)
     val abList: List<ElementModP> = aList.zip(bList).flatMap { listOf(it.first, it.second) }
 
-    // c = H(HE ; 21, K, α, β, a0 , b0 , a1 , b1 , . . . , aL , bL ). eq 25
+    // c = H(HE ; 0x21, K, α, β, a0 , b0 , a1 , b1 , . . . , aR , bR ) ; eq 46
     val c = hashFunction(extendedBaseHash.bytes, 0x21.toByte(), publicKey.key, alpha, beta, abList).toElementModQ(group)
 
-    // cl = (c − (c0 + · · · + cℓ−1 + cℓ+1 + · · · + cL )) mod q. eq 26
+    // cl = (c − (c0 + · · · + cℓ−1 + cℓ+1 + · · · + cR )) mod q ; eq 47
     val cl = c -
             randomCj.filterIndexed { j, _ -> j != vote }
                 .fold(group.ZERO_MOD_Q) { a, b -> a + b }
 
-    // responses are computed for all 0 ≤ j ≤ L as vj = (uj − cj ξ) mod q (eq 27)
+    // responses are computed for all 0 ≤ j ≤ L as vj = (uj − cj * ξ) mod q, eq 48
     val vList = randomUj.zip(randomCj).mapIndexed { j, (uj, cj) ->
         val cjActual = if (j == vote) cl else cj
-
-        // Spec 1.9, page 31, equation 57 (v_j)
         uj - cjActual * nonce
     }
 
@@ -128,6 +126,8 @@ fun ElGamalCiphertext.makeChaumPedersenWithNonces(
     return ChaumPedersenRangeProofKnownNonce(cpgList)
 }
 
+// Verification 5 (Well-formedness of selection encryptions) TODO check complete
+// Verification 6 (Adherence to vote limits) TODO check complete
 fun ChaumPedersenRangeProofKnownNonce.validate2(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey, // K
@@ -144,7 +144,7 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
     val (alpha, beta) = ciphertext
     results.add(
         if (alpha.isValidResidue() && beta.isValidResidue()) Ok(true) else
-            Err("    4.A,5.A invalid residue: alpha = ${alpha.inBounds()} beta = ${beta.inBounds()}")
+            Err("    5.A,6.A invalid residue: alpha = ${alpha.inBounds()} beta = ${beta.inBounds()}")
     )
 
     val expandedProofs = proofs.mapIndexed { j, proof ->
@@ -152,7 +152,7 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
         val (cj, vj) = proof
         results.add(
             if (cj.inBounds() && vj.inBounds()) Ok(true) else
-                Err("    4.B,5.B c = ${cj.inBounds()} v = ${vj.inBounds()} idx=$j")
+                Err("    5.B,6.B c = ${cj.inBounds()} v = ${vj.inBounds()} idx=$j")
         )
 
         val wj = (vj - j.toElementModQ(group) * cj)
@@ -166,17 +166,19 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
     // sum of the proof.c
     val abList = expandedProofs.flatMap { listOf(it.a, it.b) }
 
-    // c = H(HE ; 21, K, α, β, a0 , b0 , a1 , b1 , . . . , aL , bL ). eq 25, 4.5
+    // c = H(HE ; 0x21, K, α, β, a0 , b0 , a1 , b1 , . . . , aR , bR ) ; eq 5.3
     val c = hashFunction(extendedBaseHash.bytes, 0x21.toByte(), publicKey.key, alpha, beta, abList).toElementModQ(group)
 
+    // The equation c = (c0 + c1 + · · · + cR ) mod q is satisfied ; eq 5.D
     val cSum = this.proofs.fold(group.ZERO_MOD_Q) { a, b -> a + b.c }
     results.add(
-        if (cSum == c) Ok(true) else Err("    4.C,5.C challenge sum is invalid")
+        if (cSum == c) Ok(true) else Err("    5.D,6.D challenge sum is invalid")
     )
 
     return results.merge()
 }
 
+// Verification 9 (Correctness of tally decryptions)
 fun ChaumPedersenProof.validate2(
     publicKey: ElementModP, // K
     extendedBaseHash: UInt256, // He
@@ -184,16 +186,16 @@ fun ChaumPedersenProof.validate2(
     encryptedVote: ElGamalCiphertext,
 ): Boolean {
     val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, bOverM)
-    val M: ElementModP = encryptedVote.data / bOverM // eq 8.1
-    val a = group.gPowP(this.r) * (publicKey powP this.c) // 8.2
-    val b = (encryptedVote.pad powP this.r) * (M powP this.c) // 8.3
+    val M: ElementModP = encryptedVote.data / bOverM // eq 9.1
+    val a = group.gPowP(this.r) * (publicKey powP this.c) // 9.2
+    val b = (encryptedVote.pad powP this.r) * (M powP this.c) // 9.3
 
-    // The challenge value c satisfies c = H(HE ; 30, K, A, B, a, b, M ); eq 8.B
+    // The challenge value c satisfies c = H(HE ; 0x30, K, A, B, a, b, M ). eq 9.B
     val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey, encryptedVote.pad, encryptedVote.data, a, b, M)
     return (challenge.toElementModQ(group) == this.c)
 }
 
-
+// Verification 11 (Correctness of decryptions of contest data)
 fun ChaumPedersenProof.validate2(
     publicKey: ElementModP, // K
     extendedBaseHash: UInt256, // He
@@ -201,10 +203,10 @@ fun ChaumPedersenProof.validate2(
     hashedCiphertext: HashedElGamalCiphertext,
 ): Boolean {
     val group = compatibleContextOrFail(publicKey, hashedCiphertext.c0, beta)
-    val a = group.gPowP(this.r) * (publicKey powP this.c) // 10.1
-    val b = (hashedCiphertext.c0 powP this.r) * (beta powP this.c) // 10.2
+    val a = group.gPowP(this.r) * (publicKey powP this.c) // 11.1
+    val b = (hashedCiphertext.c0 powP this.r) * (beta powP this.c) // 11.2
 
-    // The challenge value c satisfies c = H(HE ; 31, K, C0 , C1 , C2 , a, b, β). (10.B)
+    // The challenge value c satisfies c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β) ; (11.B)
     val challenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), publicKey,
         hashedCiphertext.c0,
         hashedCiphertext.c1.toHex(),

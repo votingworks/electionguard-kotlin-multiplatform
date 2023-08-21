@@ -114,12 +114,7 @@ fun elGamalKeyPairFromSecret(secret: ElementModQ) =
 fun elGamalKeyPairFromRandom(context: GroupContext) =
     elGamalKeyPairFromSecret(context.randomElementModQ(minimum = 2))
 
-/**
- * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
- * deterministic, or it will be chosen at random.
- *
- * @throws ArithmeticException if the nonce is zero or if the message is negative
- */
+/** Use an ElGamal public key and nonce to encrypt the integer, see eq 24. */
 fun Int.encrypt(
     publicKey: ElGamalPublicKey,
     nonce: ElementModQ = publicKey.context.randomElementModQ(minimum = 1)
@@ -134,9 +129,8 @@ fun Int.encrypt(
         throw ArithmeticException("Can't encrypt a negative message")
     }
 
-    // We don't have to check if message >= Q, because it's an integer, and Q
-    // is much larger than that.
-    // Enc(σ, ξ) = (α, β) = (g^ξ mod p, K^σ · K^ξ mod p) = (g^ξ mod p, K^σ+ξ mod p). (21)
+    // We don't have to check if message >= Q, because it's an integer, and Q is much larger than that.
+    // Enc(σ, ξ) = (α, β) = (g^ξ mod p, K^σ · K^ξ mod p) = (g^ξ mod p, K^σ+ξ mod p). spec 2.0.0 eq 24
     val pad = context.gPowP(nonce)
     val data = publicKey.key powP (nonce + this.toElementModQ(context))
 

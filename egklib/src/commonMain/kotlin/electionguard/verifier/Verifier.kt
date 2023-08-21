@@ -53,15 +53,15 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         }
 
 
-        // encryption and vote limits 4, 5
+        // encryption and vote limits 5,6,7
         val verifyEncryptions = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, config, nthreads)
         // Note we are validating all ballots, not just CAST
         val ballotResult = verifyEncryptions.verifyBallots(record.encryptedAllBallots { true }, stats, showTime)
-        println(" 4,5,16,17. verifyEncryptedBallots $ballotResult")
+        println(" 5,6,7,16,17. verifyEncryptedBallots $ballotResult")
 
         val chainResults = if (config.chainConfirmationCodes) {
             val chainResult = verifyEncryptions.verifyConfirmationChain(record)
-            println(" 6. verifyConfirmationChain $chainResult")
+            println(" 7. verifyConfirmationChain $chainResult")
             chainResult
         } else Ok(true)
 

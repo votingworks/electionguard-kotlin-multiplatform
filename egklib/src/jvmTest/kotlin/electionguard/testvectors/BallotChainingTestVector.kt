@@ -49,11 +49,11 @@ class BallotChainingTestVector {
             this.ballotId,
             this.ballotNonce.publishJson(),
             this.codeBaux.toHex(),
-            "Compute confirmation code (eq 59)",
+            "Compute confirmation code (eq 58)",
             this.confirmationCode.publishJson(),
             this.contests.map { EncryptedContestJson(
                 it.contestId,
-                "Compute contest hash (eq 58)",
+                "Compute contest hash (eq 57)",
                 it.contestHash.publishJson()) }
         )
     }
