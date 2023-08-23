@@ -24,7 +24,7 @@ internal data class PreBallot(
 
 internal data class PreContest(
     val contestId: String,
-    val preencryptionHash: UInt256,  // (95)
+    val preencryptionHash: UInt256,  // (94)
     val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
     val selectedVectors: List<PreSelectionVector>, // limit number of them, sorted by selectionHash
     val votedFor: List<Boolean> // nselections, in order by sequence_order
@@ -38,7 +38,7 @@ internal data class PreContest(
 
 internal data class PreSelectionVector(
     val selectionId: String, // do not serialize
-    val selectionHash: ElementModQ, // ψi (93)
+    val selectionHash: ElementModQ, // ψi (92)
     val shortCode: String,
     val encryptions: List<ElGamalCiphertext>, // Ej, size = nselections, in order by sequence_order
     val nonces: List<ElementModQ>, // size = nselections, in order by sequence_order, do not serialize

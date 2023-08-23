@@ -65,19 +65,19 @@ class PreEncryptionTestVector {
                         it.selectionId,
                         it.sequenceOrder,
                         it.shortCode,
-                        "Compute selection hash (eq 93,94), vector (eq 92), and nonces (eq 97)",
+                        "Compute selection hash (eq 92,93), vector (eq 92), and nonces (eq 96)",
                         it.selectionHash.publishJson(),
                         it.selectionVector.map { it.publishJson() },
                         it.selectionNonces.map { it.publishJson() },
                     )
                 },
-                "Compute contest preencryptionHash spec 1.9 eq 95",
+                "Compute contest preencryptionHash, eq 94",
                 pcontest.preencryptionHash.publishJson(),
             )
         }
         return PreEncryptedBallotJson(this.ballotId, this.ballotStyleId, this.primaryNonce.publishJson(),
             contests,
-            "Compute ballot confirmation code spec 1.9 eq 96",
+            "Compute ballot confirmation code, eq 95",
             this.confirmationCode.publishJson())
     }
 

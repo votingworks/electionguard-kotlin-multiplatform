@@ -105,10 +105,11 @@ class Recorder(
             ContestDataStatus.normal
         )
 
-        val contestDataEncrypted = contestData.encrypt(publicKeyEG, extendedBaseHash, preeContest.contestId, ballotNonce, preeContest.votesAllowed)
+        val contestDataEncrypted = contestData.encrypt(publicKeyEG, extendedBaseHash, preeContest.contestId,
+            preeContest.sequenceOrder, ballotNonce, preeContest.votesAllowed)
 
-        // we are going to substitute preencryptionHash (eq 95) instead of eq 58 when we validate
-        // χl = H(HE ; 23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (58)
+        // we are going to substitute preencryptionHash (eq 94) instead of eq 57 when we validate TODO WTF?
+        // χl = H(HE ; 0x23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (57)
         val ciphers = mutableListOf<ElementModP>()
         texts.forEach {
             ciphers.add(it.pad)

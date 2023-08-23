@@ -203,38 +203,50 @@ class VerifyEncryptedBallots(
     private fun sigma(hash : UInt256) : String = hash.toHex().substring(0, 5)
 
     /*
-    For every pre-encrypted cast ballot contained in the election record:
-    • The ballot confirmation code correctly matches the hash of all contest hashes on the ballot (listed sequentially).
-    • Each contest hash correctly matches the hash of all selection hashes (including null selection
-      hashes) within that contest (sorted within each contest).
-    • All short codes shown to voters are correctly computed from selection hashes in the election record which are,
-      in turn, correctly computed from the pre-encryption vectors published in the election record.
-    • For contests with selection limit greater than 1, the selection vectors published in the election
-      record match the product of the pre-encryptions associated with the short codes listed as selected.
-
-    For every pre-encrypted ballot listed in the election record as uncast:
-    • The ballot confirmation code correctly matches the hash of all contest hashes on the ballot (listed sequentially).
-    • Each contest hash correctly matches the hash of all selection hashes (including null selection
-      hashes) within that contest (sorted within each contest).
-    • All short codes on the ballot are correctly computed from the selection hashes in the election
-      record which are, in turn, correctly computed from the pre-encryption vectors published in the election record.
-    • The decryptions of all pre-encryptions correspond to the plaintext values indicated in the
-      election manifest.
+    Every step of verification that applies to traditional ElectionGuard ballots also applies to pre-
+    encrypted ballots – with the exception of the process for computing confirmation codes. However,
+    52there are some additional verification steps that must be applied to pre-encrypted ballots. Specifi-
+    cally, the following verifications should be done for every pre-encrypted cast ballot contained in the
+    election record.
+        • The ballot confirmation code correctly matches the hash of all contest hashes on the ballot
+        (listed sequentially).
+        • Each contest hash correctly matches the hash of all selection hashes (including null selection
+        hashes) within that contest (sorted within each contest).
+        • All short codes shown to voters are correctly computed from selection hashes in the election
+        record which are, in turn, correctly computed from the pre-encryption vectors published in
+        the election record.
+        • For contests with selection limit greater than 1, the selection vectors published in the election
+        record match the product of the pre-encryptions associated with the short codes listed as
+        selected.
+    The following verifications should be done for every pre-encrypted ballot listed in the election
+    record as uncast.
+        • The ballot confirmation code correctly matches the hash of all contest hashes on the ballot
+        (listed sequentially).
+        • Each contest hash correctly matches the hash of all selection hashes (including null selection
+        hashes) within that contest (sorted within each contest).
+        • All short codes on the ballot are correctly computed from the selection hashes in the election
+        record which are, in turn, correctly computed from the pre-encryption vectors published in
+        the election record.
+        • The decryptions of all pre-encryptions correspond to the plaintext values indicated in the
+        election manifest.
      */
 
-    // Box 14 == Box 4, Box 15 == Box 5
-
-    // Verification 16 (Validation of short codes in pre-encrypted ballots)
-    // An election verifier must confirm for every short code ω in the election record that ω = Ω(ψ) where
-    // ψ is the associated selection hash.
-    // For cast ballots, this includes all short codes that are published in the election record whose associated
-    // selection hashes correspond to selection vectors that are accumulated to form tallies.
-    // TODO For spoiled ballots, this includes all selection vectors on the ballot.
+    // TODO check
+    // Verification 18 (Validation of short codes in pre-encrypted ballots)
+    // An election verifier must confirm for every selectable option on every pre-encrypted ballot in the
+    //   election record that the short code ω displayed with the selectable option satisfies
+    //     (18.A) ω = Ω(ψ) where ψ is the selection hash associated with the selectable option.
+    //   Specifically, for cast ballots, this includes all short codes that are published in the election record
+    //   whose associated selection hashes correspond to selection vectors that are accumulated to form
+    //   tallies. For spoiled ballots, this includes all selection vectors on the ballot.
+    //   An election verifier must also confirm that for contests with selection limit greater than 1, the se-
+    //   lection vectors published in the election record match the product of the pre-encryptions associated
+    //   with the short codes listed as selected.
     private fun verifyPreencryption(ballotId: String, contest: EncryptedBallot.Contest): Result<Boolean, String> {
         val results = mutableListOf<Result<Boolean, String>>()
 
         if (contest.preEncryption == null) {
-            results.add(Err("    17. Contest ${contest.contestId} for preencrypted '${ballotId}' has no preEncryption"))
+            results.add(Err("    18. Contest ${contest.contestId} for preencrypted '${ballotId}' has no preEncryption"))
             return results.merge()
         }
         val cv = contest.preEncryption
@@ -247,7 +259,7 @@ class VerifyEncryptedBallots(
         // All short codes on the ballot are correctly computed from the pre-encrypted selections associated with each short code
         cv.selectedVectors.forEach { sv ->
             if (sv.shortCode != sigma(sv.selectionHash)) {
-                results.add(Err("    16. Contest ${contest.contestId} shortCode '${sv.shortCode}' has no match"))
+                results.add(Err("    18. Contest ${contest.contestId} shortCode '${sv.shortCode}' has no match"))
             }
         }
 
@@ -263,39 +275,33 @@ class VerifyEncryptedBallots(
             val compList = cv.selectedVectors.map { it.encryptions[idx] }
             val sum = compList.encryptedSum()
             if (sum != selectionVector[idx]) {
-                results.add(Err("    16. Contest ${contest.contestId} (contestLimit=$contestLimit) selectionVector $idx does not match product"))
+                results.add(Err("    18. Contest ${contest.contestId} (contestLimit=$contestLimit) selectionVector $idx does not match product"))
             }
         }
 
         return results.merge()
     }
 
-    // Verification 17 (Validation of confirmation codes in pre-encrypted ballots)
-    // An election verifier must confirm the following for each pre-encrypted ballot B:
-    // (17.A) For each selection in each contest on the ballot and the corresponding selection vector
+    // TODO check
+    // Verification 15 (Well-formedness of selection encryptions in pre-encrypted ballots) == 4?
+    // TODO check
+    // Verification 16 (Adherence to vote limits in pre-encrypted ballots) == 5?
+
+    // TODO check
+    //  Verification 17 (Validation of confirmation codes in pre-encrypted ballots)
+    // An election verifier must confirm the following for each pre-encrypted ballot B.
+    //  (17.A) For each selection in each contest on the ballot and the corresponding selection vector
     //    Ψi,m = ⟨E1 , E2 , . . . , Em ⟩ consisting of the selection encryptions Ej = (αj , βj ), the selection
-    //    hash ψi satisfies ψi = H(HE ; 40, λi , K, α1 , β1 , α2 , β2 , . . . , αm , βm ).
-    // (17.B) The contest hash χl for the l-th contest on the ballot for all 1 ≤ l ≤ mB has been correctly
-    //    computed from the selection hashes ψi as
-    //     χl = H(HE ; 41, Λl , K, ψσ(1) , ψσ(2) , . . . , ψσ(m+L) ),
-    //     where σ is a permutation and ψσ(1) < ψσ(2) < · · · < ψσ(m+L) .
-    // (17.C) The ballot confirmation code H(B) has been correctly computed from the (sequentially ordered) contest
-    //     hashes and if specified in the election manifest file from the additional byte array Baux as
-    //     H(B) = H(HE ; 42, χ1 , χ2 , . . . , χmB , Baux ).
-    //
-    // (17.D) There are no duplicate confirmation codes, i.e. among the set of submitted (cast and challenged) ballots,
-    //     no two have the same confirmation code.
-    //
-    // TODO Additionally, if the election manifest file specifies a hash chain, an election verifier must confirm the
-    //  following for each pre-encrypted ballot generation device:
-    // (17.E) The initial hash code H0 satisfies H0 = H(HE ; 42, Baux,0 ) and Baux,0 contains the unique
-    //     device information for the device generating the pre-encrypted ballots as specified in the
-    //     election manifest file.
-    // (17.F) For all 1 ≤ i ≤ ℓ, the additional input byte array used to compute Hi = H(Bi ) is equal to
-    //     Baux = H(Bi−1 ) ∥ Baux,0 .
-    // (17.G) The final additional input byte array is equal to Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") and
-    //     H(Bℓ ) is the final confirmation code on this device.
-    // (17.H) The closing hash is correctly computed as H = H(HE ; 42, Baux ).
+    //    hash ψi satisfies ψi = H(HE ; 0x40, K, α1 , β1 , α2 , β2 , . . . , αm , βm ).
+    //  (17.B) The contest hash χl for the contest with context index l for all 1 ≤ l ≤ mB has been
+    //    correctly computed from the selection hashes ψi as
+    //    χl = H(HE ; 0x41, l, K, ψσ(1) , ψσ(2) , . . . , ψσ(m+L) ),
+    //    where σ is a permutation and ψσ(1) < ψσ(2) < · · · < ψσ(m+L) .
+    //  (17.C) The ballot confirmation code H(B) has been correctly computed from the (sequentially
+    //    ordered) contest hashes and if specified in the election manifest file from the additional byte
+    //    array Baux as H(B) = H(HE ; 0x42, χ1 , χ2 , . . . , χmB , Baux ).
+    //  (17.D) There are no duplicate confirmation codes, i.e. among the set of submitted (cast and chal-
+    //    lenged) ballots, no two have the same confirmation code.
     private fun verifyPreencryptedCode(ballot: EncryptedBallot): Result<Boolean, String> {
         val errors = mutableListOf<String>()
 

@@ -116,7 +116,8 @@ class Encryptor(
             status
         )
 
-        val contestDataEncrypted = contestData.encrypt(jointPublicKey, extendedBaseHash, mcontest.contestId, ballotNonce, mcontest.votesAllowed)
+        val contestDataEncrypted = contestData.encrypt(jointPublicKey, extendedBaseHash, mcontest.contestId,
+            mcontest.sequenceOrder, ballotNonce, mcontest.votesAllowed)
 
         return this.encryptContest(
             group,

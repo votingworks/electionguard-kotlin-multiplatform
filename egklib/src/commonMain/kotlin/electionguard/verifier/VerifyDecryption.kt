@@ -115,18 +115,27 @@ class VerifyDecryption(
         return this.proof.validate2(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
     }
 
-    // Verification 10 (Correctness of decryptions of contest data)
+    // TODO check
+    // Verification 11 (Correctness of decryptions of contest data)
+    // An election verifier must confirm the correct decryption of the contest data field for each contest by
+    // verifying the conditions analogous to Verification 9 for the corresponding NIZK proof with (A, B)
+    // replaced by (C0 , C1 , C2 ) and Mi by mi as follows. An election verifier must compute the following values.
+    // (11.1) a = g v · K c mod p,
+    // (11.2) b = C0v · β c mod p.
+    // An election verifier must then confirm the following.
+    // (11.A) The given value v is in the set Zq .
+    // (11.B) The challenge value c satisfies c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β).
     private fun verifyContestData(where: String, decryptedContestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
         val results = mutableListOf<Result<Boolean, String>>()
 
-        // (10.A,14.A) The given value v is in the set Zq.
+        // (11.A,14.A) The given value v is in the set Zq.
         if (!decryptedContestData.proof.r.inBounds()) {
-            results.add(Err("     (10.A,14.A) The value v is not in the set Zq.: '$where'"))
+            results.add(Err("     (11.A,14.A) The value v is not in the set Zq.: '$where'"))
         }
 
         val challengeOk = decryptedContestData.proof.validate2(publicKey.key, extendedBaseHash, decryptedContestData.beta, decryptedContestData.encryptedContestData)
         if (challengeOk) {
-            results.add(Err("     (10.B,14.B) The challenge value is wrong: '$where'"))
+            results.add(Err("     (11.B,14.B) The challenge value is wrong: '$where'"))
         }
         return results.merge()
     }

@@ -66,7 +66,7 @@ class ContestDataEncryptTest {
         //        ballotNonce: UInt256,
         //        votesAllowed: Int
         val ballotNonce = UInt256.random()
-        val target: HashedElGamalCiphertext = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", ballotNonce, 1)
+        val target: HashedElGamalCiphertext = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", 42, ballotNonce, 1)
         assertEquals(64, target.c1.size)
         var took = getSystemTimeInMillis() - starting
         println(" contestData.encrypt took $took millisecs")
@@ -78,7 +78,7 @@ class ContestDataEncryptTest {
         // HMAC decryption
         starting = getSystemTimeInMillis()
 
-        val contestDataResult = target.decryptWithNonceToContestData(keypair.publicKey, extendedBaseHash, "contestId", ballotNonce)
+        val contestDataResult = target.decryptWithNonceToContestData(keypair.publicKey, extendedBaseHash, "contestId", 42, ballotNonce)
         assertTrue( contestDataResult is Ok)
         val contestDataRoundtrip = contestDataResult.unwrap()
 
@@ -109,7 +109,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", 42, UInt256.random(), votes)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -130,7 +130,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", 42, UInt256.random(), votes)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -151,7 +151,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 2
-                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", 42, UInt256.random(), votes)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -172,7 +172,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 1
-                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", 42, UInt256.random(), votes)
                 assertEquals((1 + votes) * 32, target.c1.size)
             }
         }
@@ -193,7 +193,7 @@ class ContestDataEncryptTest {
                 if (debug) println("\ncontestData = $contestData")
 
                 val votes = 3
-                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
+                val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", 42, UInt256.random(), votes)
                 if ((1 + votes) * 32 != target.c1.size) {
                     println("${(1 + votes) * 32} != ${target.c1.size}")
                 }
@@ -211,7 +211,7 @@ class ContestDataEncryptTest {
             if (debug) println("\ncontestData = $contestData")
 
             val votes = 1
-            val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", UInt256.random(), votes)
+            val target = contestData.encrypt(keypair.publicKey, extendedBaseHash, "contestId", 42, UInt256.random(), votes)
             if ((1 + votes) * 32 != target.c1.size) {
                 assertEquals((1 + votes) * 32, target.c1.size)
             }

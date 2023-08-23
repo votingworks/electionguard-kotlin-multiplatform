@@ -59,6 +59,7 @@ class DecryptPreencryptWithNonce(
             publicKey,
             extendedBaseHash,
             contest.contestId,
+            contest.sequenceOrder,
             ballotNonce)
 
         if (contestDataResult is Err) {

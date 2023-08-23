@@ -142,7 +142,7 @@ class AttackEncryptedBallotTest {
             contest.contestHash,
             selections2,
             contest.proof,
-            contestData.encrypt(publicKey, UInt256.random(), "contestId", UInt256.random(), 1),
+            contestData.encrypt(publicKey, UInt256.random(), "contestId", 42, UInt256.random(), 1),
         )
     }
 

@@ -51,6 +51,7 @@ class DecryptWithNonce(val group : GroupContext, val publicKey: ElGamalPublicKey
             publicKey,
             extendedBaseHash,
             contest.contestId,
+            contest.sequenceOrder,
             ballotNonce)
 
         if (contestDataResult is Err) {

@@ -24,7 +24,7 @@ data class RecordedPreBallot(
 
 data class RecordedPreEncryption(
     val contestId: String,
-    val preencryptionHash: UInt256,  // (95)
+    val preencryptionHash: UInt256,  // (94)
     val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
     val selectedVectors: List<RecordedSelectionVector>, // limit number of them, sorted by selectionHash
 ) {
@@ -33,7 +33,7 @@ data class RecordedPreEncryption(
 
 data class RecordedSelectionVector(
     val selectionId: String, // do not serialize
-    val selectionHash: ElementModQ, // ψi (93)
+    val selectionHash: ElementModQ, // ψi (92)
     val shortCode: String,
     val encryptions: List<ElGamalCiphertext>, // Ej, size = nselections, in order by sequence_order
 ) {
