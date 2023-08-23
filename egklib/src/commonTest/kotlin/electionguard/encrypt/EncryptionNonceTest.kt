@@ -106,7 +106,7 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
 
         val plaintextSelections = mutableListOf<PlaintextBallot.Selection>()
         for (selection in contest.selections) {
-            val plaintextSelection = verifySelectionNonces(ballotNonce, contest.contestId, selection)
+            val plaintextSelection = verifySelectionNonces(ballotNonce, contest.sequenceOrder, selection)
             assertNotNull(plaintextSelection)
             plaintextSelections.add(plaintextSelection)
         }
@@ -119,10 +119,10 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
 
     private fun verifySelectionNonces(
         ballotNonce: UInt256,
-        contestLabel: String,
+        contestIndex: Int,
         selection: CiphertextBallot.Selection
     ): PlaintextBallot.Selection? {
-        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestLabel, selection.selectionId).toElementModQ(group)
+        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestIndex, selection.selectionId).toElementModQ(group)
         assertEquals(selectionNonce, selection.selectionNonce)
 
         val decodedVote: Int? = selection.ciphertext.decryptWithNonce(publicKey, selection.selectionNonce)
