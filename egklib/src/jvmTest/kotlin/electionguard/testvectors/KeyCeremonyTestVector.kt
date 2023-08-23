@@ -147,7 +147,7 @@ class KeyCeremonyTestVector {
         val publicKey = publicKeys.reduce { a, b -> a * b }
         assertEquals(keyCeremonyTestVector.expected_joint_public_key.import(group), publicKey)
 
-        // HE = H(HB ; 12, K, K1,0 , K1,1 , . . . , K1,k−1 , K2,0 , . . . , Kn,k−2 , Kn,k−1 )
+        // He = H(HB ; 0x12, K) ; spec 2.0.0 p.25, eq 23.
         val electionBaseHash = keyCeremonyTestVector.election_base_hash.import()
         val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), publicKey)
 

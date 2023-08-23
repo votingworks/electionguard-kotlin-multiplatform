@@ -108,7 +108,7 @@ class VerifyEncryptedBallots(
                 ciphers.add(it.pad)
                 ciphers.add(it.data)
             }
-            val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.contestId, jointPublicKey.key, ciphers)
+            val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.sequenceOrder, jointPublicKey.key, ciphers)
             if (contestHash != contest.contestHash) {
                 results.add(Err("    7.A. Incorrect contest hash for contest ${contest.contestId} "))
             }
@@ -320,8 +320,8 @@ class VerifyEncryptedBallots(
                 }
             }
 
-            // χl = H(HE ; 41, Λl , K, ψσ(1) , ψσ(2) , . . . , ψσ(m+L) )
-            val preencryptionHash = hashFunction(extendedBaseHash.bytes, 0x41.toByte(), contest.contestId, jointPublicKey.key, cv.allSelectionHashes)
+            // χl = H(HE ; 0x41, indc (Λl ), K, ψσ(1) , ψσ(2) , . . . , ψσ(m+L) ) ; 94
+            val preencryptionHash = hashFunction(extendedBaseHash.bytes, 0x41.toByte(), contest.sequenceOrder, jointPublicKey.key, cv.allSelectionHashes)
             if (preencryptionHash != cv.preencryptionHash) {
                 errors.add("    17.B. Incorrect contestHash for ${contest.contestId} ballot='${ballot.ballotId}' ")
             }

@@ -122,7 +122,7 @@ class VerifyEmbeddedNonces(val group : GroupContext, val manifest: Manifest, val
         contestIndex: Int,
         selection: CiphertextBallot.Selection
     ): PlaintextBallot.Selection? {
-        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestIndex, selection.selectionId).toElementModQ(group)
+        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestIndex, selection.sequenceOrder).toElementModQ(group) // eq 25
         assertEquals(selectionNonce, selection.selectionNonce)
 
         val decodedVote: Int? = selection.ciphertext.decryptWithNonce(publicKey, selection.selectionNonce)

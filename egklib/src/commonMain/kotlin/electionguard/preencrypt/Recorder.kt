@@ -109,13 +109,14 @@ class Recorder(
             preeContest.sequenceOrder, ballotNonce, preeContest.votesAllowed)
 
         // we are going to substitute preencryptionHash (eq 94) instead of eq 57 when we validate TODO WTF?
-        // χl = H(HE ; 0x23, Λl , K, α1 , β1 , α2 , β2 . . . , αm , βm ). (57)
+        // χl = H(HE ; 0x23, indc (Λl ), K, α1 , β1 , α2 , β2 . . . , αm , βm ) ; spec 2.0.0 eq 57
+
         val ciphers = mutableListOf<ElementModP>()
         texts.forEach {
             ciphers.add(it.pad)
             ciphers.add(it.data)
         }
-        val contestHash = hashFunction(extendedBaseHashQ.byteArray(), 0x23.toByte(), this.contestId, publicKey, ciphers)
+        val contestHash = hashFunction(extendedBaseHashQ.byteArray(), 0x23.toByte(), this.contestIndex, publicKey, ciphers)
 
         return CiphertextBallot.Contest(preeContest.contestId, preeContest.sequenceOrder, preeContest.votesAllowed,
             contestHash, selections, proof, contestDataEncrypted)

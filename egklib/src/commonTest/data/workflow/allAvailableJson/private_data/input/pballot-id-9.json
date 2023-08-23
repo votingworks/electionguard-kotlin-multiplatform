@@ -65,12 +65,12 @@
                 {
                     "selection_id": "selection8",
                     "sequence_order": 8,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection9",
                     "sequence_order": 9,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection10",
@@ -98,7 +98,7 @@
                 {
                     "selection_id": "selection13",
                     "sequence_order": 13,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection14",
@@ -121,12 +121,12 @@
                 {
                     "selection_id": "selection16",
                     "sequence_order": 16,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection17",
                     "sequence_order": 17,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection18",
@@ -149,12 +149,12 @@
                 {
                     "selection_id": "selection20",
                     "sequence_order": 20,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection21",
                     "sequence_order": 21,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection22",
@@ -182,7 +182,7 @@
                 {
                     "selection_id": "selection25",
                     "sequence_order": 25,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection26",
@@ -205,12 +205,12 @@
                 {
                     "selection_id": "selection28",
                     "sequence_order": 28,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection29",
                     "sequence_order": 29,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection30",
@@ -238,7 +238,7 @@
                 {
                     "selection_id": "selection33",
                     "sequence_order": 33,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection34",
@@ -248,7 +248,7 @@
                 {
                     "selection_id": "selection35",
                     "sequence_order": 35,
-                    "vote": 0
+                    "vote": 1
                 }
             ],
             "write_ins": [
@@ -327,7 +327,7 @@
                 {
                     "selection_id": "selection46",
                     "sequence_order": 46,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection47",
@@ -350,7 +350,7 @@
                 {
                     "selection_id": "selection49",
                     "sequence_order": 49,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection50",
@@ -373,7 +373,7 @@
                 {
                     "selection_id": "selection52",
                     "sequence_order": 52,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection53",
@@ -401,12 +401,12 @@
                 {
                     "selection_id": "selection56",
                     "sequence_order": 56,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection57",
                     "sequence_order": 57,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection58",
@@ -485,7 +485,7 @@
                 {
                     "selection_id": "selection68",
                     "sequence_order": 68,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection69",
@@ -541,7 +541,7 @@
                 {
                     "selection_id": "selection76",
                     "sequence_order": 76,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection77",
@@ -551,7 +551,7 @@
                 {
                     "selection_id": "selection78",
                     "sequence_order": 78,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection79",

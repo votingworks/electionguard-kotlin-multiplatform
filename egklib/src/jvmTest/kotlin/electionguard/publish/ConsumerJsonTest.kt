@@ -1,9 +1,9 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.*
+import electionguard.ballot.protocolVersion
 import electionguard.core.productionGroup
 import electionguard.input.electionScopeId
-import electionguard.input.specVersion
 import kotlin.jvm.JvmStatic
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -35,7 +35,7 @@ class ConsumerJsonTest {
         val manifest = electionRecord.manifest()
         println("electionRecord.manifest.specVersion = ${manifest.specVersion}")
         assertEquals(electionScopeId, manifest.electionScopeId)
-        assertEquals(specVersion, manifest.specVersion)
+        assertEquals(protocolVersion, manifest.specVersion)
     }
 
     //@ParameterizedTest
