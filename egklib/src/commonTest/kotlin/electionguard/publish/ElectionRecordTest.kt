@@ -3,7 +3,6 @@ package electionguard.publish
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.*
-import electionguard.input.specVersion
 import electionguard.verifier.runVerifier
 import kotlin.test.Test
 import kotlin.test.assertEquals

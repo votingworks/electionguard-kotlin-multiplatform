@@ -24,7 +24,7 @@
                 {
                     "selection_id": "selection3",
                     "sequence_order": 3,
-                    "vote": 0
+                    "vote": 1
                 }
             ],
             "write_ins": [
@@ -47,12 +47,12 @@
                 {
                     "selection_id": "selection6",
                     "sequence_order": 6,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection7",
                     "sequence_order": 7,
-                    "vote": 0
+                    "vote": 1
                 }
             ],
             "write_ins": [
@@ -70,12 +70,12 @@
                 {
                     "selection_id": "selection9",
                     "sequence_order": 9,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection10",
                     "sequence_order": 10,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection11",
@@ -103,12 +103,12 @@
                 {
                     "selection_id": "selection14",
                     "sequence_order": 14,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection15",
                     "sequence_order": 15,
-                    "vote": 1
+                    "vote": 0
                 }
             ],
             "write_ins": [
@@ -149,12 +149,12 @@
                 {
                     "selection_id": "selection20",
                     "sequence_order": 20,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection21",
                     "sequence_order": 21,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection22",
@@ -177,7 +177,7 @@
                 {
                     "selection_id": "selection24",
                     "sequence_order": 24,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection25",
@@ -187,7 +187,7 @@
                 {
                     "selection_id": "selection26",
                     "sequence_order": 26,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection27",
@@ -215,12 +215,12 @@
                 {
                     "selection_id": "selection30",
                     "sequence_order": 30,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection31",
                     "sequence_order": 31,
-                    "vote": 0
+                    "vote": 1
                 }
             ],
             "write_ins": [
@@ -289,7 +289,7 @@
                 {
                     "selection_id": "selection40",
                     "sequence_order": 40,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection41",
@@ -299,7 +299,7 @@
                 {
                     "selection_id": "selection42",
                     "sequence_order": 42,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection43",
@@ -322,12 +322,12 @@
                 {
                     "selection_id": "selection45",
                     "sequence_order": 45,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection46",
                     "sequence_order": 46,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection47",
@@ -383,7 +383,7 @@
                 {
                     "selection_id": "selection54",
                     "sequence_order": 54,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection55",
@@ -401,7 +401,7 @@
                 {
                     "selection_id": "selection56",
                     "sequence_order": 56,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection57",
@@ -416,7 +416,7 @@
                 {
                     "selection_id": "selection59",
                     "sequence_order": 59,
-                    "vote": 1
+                    "vote": 0
                 }
             ],
             "write_ins": [
@@ -429,7 +429,7 @@
                 {
                     "selection_id": "selection60",
                     "sequence_order": 60,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection61",
@@ -457,7 +457,7 @@
                 {
                     "selection_id": "selection64",
                     "sequence_order": 64,
-                    "vote": 1
+                    "vote": 0
                 },
                 {
                     "selection_id": "selection65",
@@ -485,7 +485,7 @@
                 {
                     "selection_id": "selection68",
                     "sequence_order": 68,
-                    "vote": 0
+                    "vote": 1
                 },
                 {
                     "selection_id": "selection69",
@@ -500,7 +500,7 @@
                 {
                     "selection_id": "selection71",
                     "sequence_order": 71,
-                    "vote": 1
+                    "vote": 0
                 }
             ],
             "write_ins": [

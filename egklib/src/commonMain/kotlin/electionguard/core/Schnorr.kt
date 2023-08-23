@@ -24,7 +24,7 @@ data class SchnorrProof(
 
         val gPowV = context.gPowP(response) // g^v_ij
         val h = gPowV * (publicKey powP challenge) // h_ij (2.1)
-        val c = hashFunction(context.constants.hp.bytes, 0x10.toByte(), guardianXCoord.toUShort(), coeff.toUShort(), publicKey, h).toElementModQ(context) // 2.C
+        val c = hashFunction(context.constants.hp.bytes, 0x10.toByte(), guardianXCoord, coeff, publicKey, h).toElementModQ(context) // 2.C
 
         val inBoundsK = publicKey.isValidResidue() // 2.A
         val inBoundsU = response.inBounds() // 2.B

@@ -1,11 +1,11 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.*
+import electionguard.ballot.protocolVersion
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.input.electionScopeId
-import electionguard.input.specVersion
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -22,7 +22,7 @@ class ConsumerTest {
             val manifest = electionRecord.manifest()
             println("electionRecord.manifest.specVersion = ${electionRecord.manifest().specVersion}")
             assertEquals(electionScopeId, manifest.electionScopeId)
-            assertEquals(specVersion, manifest.specVersion)
+            assertEquals(protocolVersion, manifest.specVersion)
         }
     }
 

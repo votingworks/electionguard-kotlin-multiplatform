@@ -1,6 +1,6 @@
 {
     "election_scope_id": "TestManifest",
-    "spec_version": "1.9",
+    "spec_version": "v2.0.0",
     "type": "general",
     "start_date": "start",
     "end_date": "end",

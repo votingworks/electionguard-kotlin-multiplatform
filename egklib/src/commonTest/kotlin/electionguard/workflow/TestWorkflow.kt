@@ -24,6 +24,7 @@ import kotlin.test.assertTrue
 
 /**
  * Run complete workflow starting from ElectionConfig in the start directory, all the way through verify.
+ * (See RunCreateTestManifestTest to regenerate Manifest)
  * (See RunCreateConfigTest/RunCreateElectionConfig to regenerate ElectionConfig)
  * Note that TestWorkflow uses RunFakeKeyCeremonyTest, not real KeyCeremony.
  *  1. The results can be copied to the test data sets "src/commonTest/data/workflow" whenever the

@@ -89,8 +89,8 @@ fun runFakeKeyCeremony(
     )
     // println("newConfig.electionBaseHash ${newConfig.electionBaseHash}")
 
-    // He = H(HB ; 12, K, K1,0 , K1,1 , . . . , K1,k−1 , K2,0 , . . . , Kn,k−2 , Kn,k−1 ) spec 1.9 p.22, eq 20.
-    val He = hashFunction(newConfig.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey, commitments)
+    // He = H(HB ; 0x12, K) ; spec 2.0.0 p.25, eq 23.
+    val He = hashFunction(newConfig.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey)
 
     val guardians: List<Guardian> = trustees.map { makeGuardian(it) }
     val init = ElectionInitialized(

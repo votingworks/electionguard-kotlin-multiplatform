@@ -24,6 +24,7 @@ internal data class PreBallot(
 
 internal data class PreContest(
     val contestId: String,
+    val contestIndex: Int,
     val preencryptionHash: UInt256,  // (94)
     val allSelectionHashes: List<UInt256>, // nselections + limit, numerically sorted
     val selectedVectors: List<PreSelectionVector>, // limit number of them, sorted by selectionHash
@@ -91,6 +92,7 @@ internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBal
         contests.add(
              PreContest(
                  preeContest.contestId,
+                 preeContest.sequenceOrder,
                  preeContest.preencryptionHash,
                  allSortedSelectedHashes,
                  sortedRecordedVectors,

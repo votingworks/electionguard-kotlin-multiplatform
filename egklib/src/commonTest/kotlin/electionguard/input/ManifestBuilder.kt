@@ -1,10 +1,10 @@
 package electionguard.input
 
 import electionguard.ballot.Manifest
+import electionguard.ballot.protocolVersion
 import electionguard.input.BallotInputBuilder.Companion.styleDef
 
 const val electionScopeId = "TestManifest"
-const val specVersion = "1.9"
 
 /** Build test Manifests */
 class ManifestBuilder(private val manifestName: String = electionScopeId) {
@@ -85,7 +85,7 @@ class ManifestBuilder(private val manifestName: String = electionScopeId) {
         val parties: List<Manifest.Party> = listOf(Manifest.Party("dog"), Manifest.Party("cat"))
         return Manifest(
             manifestName,
-            specVersion,
+            protocolVersion,
             Manifest.ElectionType.general,
             "start",
             "end",
