@@ -18,7 +18,6 @@ import electionguard.verifier.VerifyEncryptedBallots
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
-import io.ktor.utils.io.core.*
 import kotlin.math.min
 import kotlin.random.Random
 import kotlin.test.Test
@@ -394,8 +393,8 @@ fun makeFakeConfig() : ElectionConfig {
         productionGroup().constants,
         3,
         3,
-        "manifest".toByteArray(),
+        "manifest".encodeToByteArray(),
         false,
-        "device".toByteArray(),
+        "device".encodeToByteArray(),
     )
 }

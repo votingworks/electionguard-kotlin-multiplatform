@@ -4,14 +4,7 @@ import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.protoconvert.publishDecryptingTrusteeProto
 import electionguard.protoconvert.publishProto
-import io.ktor.utils.io.core.use
-import io.ktor.utils.io.errors.*
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.CArrayPointer
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.set
+import kotlinx.cinterop.*
 import pbandk.encodeToByteArray
 import platform.posix.FILE
 import platform.posix.fclose
@@ -99,7 +92,6 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         }
     }
 
-    @Throws(IOException::class)
     fun writeSpoiledBallotTallies(spoiledBallots: Iterable<DecryptedTallyOrBallot>): Boolean {
         val fileout = path.spoiledBallotPath()
         val file: CPointer<FILE> = openFile(fileout, "wb")
@@ -132,7 +124,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
                     val length = writeVlen(file, fileout, buffer.size)
                     if (length <= 0) {
                         fclose(file)
-                        throw IOException("write failed on $outputDir")
+                        throw Exception("write failed on $outputDir")
                     }
                     writeToFile(file, fileout, buffer)
                 }
@@ -170,7 +162,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
             val length = writeVlen(file, fileout, buffer.size)
             if (length <= 0) {
                 fclose(file)
-                throw IOException("write failed on $fileout")
+                throw Exception("write failed on $fileout")
             }
             writeToFile(file, fileout, buffer)
         }
@@ -193,7 +185,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
             val length = writeVlen(file, fileout, buffer.size)
             if (length <= 0) {
                 fclose(file)
-                throw IOException("write failed on $fileout")
+                throw Exception("write failed on $fileout")
             }
             writeToFile(file, fileout, buffer)
         }
@@ -204,7 +196,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
     }
 }
 
-@Throws(IOException::class)
+@Throws(Exception::class)
 fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArray) {
     memScoped {
         val bytePtr: CArrayPointer<ByteVar> = allocArray(buffer.size)
@@ -217,18 +209,18 @@ fun writeToFile(file: CPointer<FILE>, filename: String, buffer: ByteArray) {
         //    __n: platform.posix.size_t /* = kotlin.ULong */,
         //    __s: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
         // : kotlin.ULong { /* compiled code */ }
-        val nwrite = fwrite(bytePtr, 1, buffer.size.toULong(), file)
+        val nwrite = fwrite(bytePtr, 1.convert(), buffer.size.toULong(), file)
         if (nwrite < buffer.size.toULong()) {
-            checkErrno { mess -> throw IOException("Fail fwrite $mess on $filename") }
+            checkErrno { mess -> throw Exception("Fail fwrite $mess on $filename") }
         }
         if (nwrite != buffer.size.toULong()) {
-            throw IOException("Fail fwrite $nwrite != ${buffer.size}  on $filename")
+            throw Exception("Fail fwrite $nwrite != ${buffer.size}  on $filename")
         }
         // TODO add fflush()
     }
 }
 
-@Throws(IOException::class)
+@Throws(Exception::class)
 fun writeVlen(file: CPointer<FILE>, filename: String, length: Int): Int {
     var value = length
     var count = 0
@@ -250,19 +242,19 @@ fun writeVlen(file: CPointer<FILE>, filename: String, length: Int): Int {
 
 ////////////////////////////////////////////////////////////
 
-@Throws(IOException::class)
+@Throws(Exception::class)
 private fun writeByte(file: CPointer<FILE>, filename: String, b: Byte) {
     memScoped {
         val bytePtr: CArrayPointer<ByteVar> = allocArray(1)
         // TODO avoid copy
         bytePtr[0] = b
 
-        val nwrite = fwrite(bytePtr, 1, 1, file)
+        val nwrite = fwrite(bytePtr, 1.convert(), 1.convert(), file)
         if (nwrite < 0u) {
-            checkErrno { mess -> throw IOException("Fail writeByte $mess on $filename") }
+            checkErrno { mess -> throw Exception("Fail writeByte $mess on $filename") }
         }
         if (nwrite.compareTo(1u) != 0) {
-            throw IOException("Fail writeByte2 $nwrite on $filename")
+            throw Exception("Fail writeByte2 $nwrite on $filename")
         }
     }
 }

@@ -12,7 +12,6 @@ import electionguard.preencrypt.MarkedPreEncryptedBallot
 import electionguard.preencrypt.MarkedPreEncryptedContest
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
-import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

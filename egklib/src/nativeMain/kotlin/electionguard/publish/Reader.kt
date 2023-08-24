@@ -16,17 +16,7 @@ import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.protoconvert.import
-import io.ktor.utils.io.errors.*
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.CArrayPointer
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.IntVar
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.readBytes
-import kotlinx.cinterop.value
+import kotlinx.cinterop.*
 import mu.KotlinLogging
 import pbandk.decodeFromByteArray
 import platform.posix.FILE
@@ -157,7 +147,6 @@ fun GroupContext.readTrustee(filename: String): DecryptingTrusteeIF {
 }
 
 /** read variable length (base 128) integer from a stream and return as an Int */
-@Throws(IOException::class)
 private fun readVlen(input: CPointer<FILE>, filename: String): Int {
     var ib: Int = readByte(input, filename)
     if (ib == 0) {
@@ -179,13 +168,12 @@ private fun readVlen(input: CPointer<FILE>, filename: String): Int {
 }
 
 /** read a single byte from a stream and return as an Int */
-@Throws(IOException::class)
 private fun readByte(file: CPointer<FILE>, filename: String): Int {
     return memScoped {
         val intPtr = alloc<IntVar>()
-        val nread = fread(intPtr.ptr, 1, 1, file)
+        val nread = fread(intPtr.ptr, 1.convert(), 1.convert(), file)
         if (nread < 0u) {
-            checkErrno { mess -> throw IOException("Fail readByte $mess on $filename") }
+            checkErrno { mess -> throw Exception("Fail readByte $mess on $filename") }
         }
         return@memScoped intPtr.value
     }
@@ -195,7 +183,6 @@ private fun readByte(file: CPointer<FILE>, filename: String): Int {
 //// Used by native ConsumerProto and ConsumerJson
 
 /** Read everything in the file and return as a ByteArray. */
-@Throws(IOException::class)
 fun gulp(filename: String): ByteArray {
     return memScoped {
         val stat = alloc<stat>()
@@ -203,7 +190,7 @@ fun gulp(filename: String): ByteArray {
         //   __buf: kotlinx.cinterop.CValuesRef<platform.posix.stat>?)
         // : kotlin.Int { /* compiled code */ }
         if (lstat(filename, stat.ptr) != 0) {
-            checkErrno {mess -> throw IOException("Fail lstat $mess on $filename")}
+            checkErrno {mess -> throw Exception("Fail lstat $mess on $filename")}
         }
         val size = stat.st_size.toULong()
         val file = openFile(filename, "rb")
@@ -214,7 +201,6 @@ fun gulp(filename: String): ByteArray {
     }
 }
 
-@Throws(IOException::class)
 fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String): ByteArray {
     return memScoped {
         val bytePtr: CArrayPointer<ByteVar> = allocArray(nbytes.toInt())
@@ -225,12 +211,12 @@ fun readFromFile(file: CPointer<FILE>, nbytes : ULong, filename : String): ByteA
         //   __n: platform.posix.size_t /* = kotlin.ULong */,
         //   __stream: kotlinx.cinterop.CValuesRef<platform.posix.FILE /* = platform.posix._IO_FILE */>?)
         //   : kotlin.ULong { /* compiled code */ }
-        val nread = fread(bytePtr, 1, nbytes, file)
+        val nread = fread(bytePtr, 1.convert(), nbytes, file)
         if (nread < 0U) {
-            checkErrno { mess -> throw IOException("Fail read $mess on '$filename'") }
+            checkErrno { mess -> throw Exception("Fail read $mess on '$filename'") }
         }
         if (nread != nbytes) {
-            throw IOException("Fail read $nread != $nbytes on '$filename'")
+            throw Exception("Fail read $nread != $nbytes on '$filename'")
         }
         return@memScoped bytePtr.readBytes(nread.toInt())
     }

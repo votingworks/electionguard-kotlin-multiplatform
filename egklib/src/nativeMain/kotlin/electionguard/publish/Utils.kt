@@ -1,41 +1,9 @@
 package electionguard.publish
 
-import io.ktor.utils.io.errors.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
 private const val debug = false
-
-fun absPath(filename: String): String {
-    memScoped {
-        if (debug) {
-            // getcwd(
-            //    __buf: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>?,
-            //    __size: platform.posix.size_t /* = kotlin.ULong */)
-            // : kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>? { /* compiled code */ }
-            val cwdRef: CArrayPointer<ByteVar> = allocArray(PATH_MAX)
-            val cwd = getcwd(cwdRef, PATH_MAX)
-            if (cwd == null) {
-                checkErrno { mess -> throw IOException("Fail getcwd $mess") }
-            }
-            if (debug) println("++++++++++cwd '${cwd?.toKString()}'")
-        }
-
-        // realpath(
-        //     @kotlinx.cinterop.internal.CCall.CString __name: kotlin.String?,
-        //     __resolved: kotlinx.cinterop.CValuesRef<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>?)
-        //     : kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar /* = kotlinx.cinterop.ByteVarOf<kotlin.Byte> */>?
-        val stringRef: CArrayPointer<ByteVar> = allocArray(PATH_MAX)
-        val abspathPtr = realpath(filename, stringRef)
-        if (abspathPtr == null) {
-            checkErrno { mess -> throw IOException("Fail realpath $mess on $filename") }
-        }
-        if (debug) {
-            println("++++++++++absPath '$filename' to '${abspathPtr?.toKString()}'")
-        }
-        return abspathPtr!!.toKString()
-    }
-}
 
 fun checkErrno(dothis: (mess: String) -> Unit) {
     val perrno: Int = posix_errno()
@@ -144,7 +112,7 @@ fun createDirectory(dirName: String): Boolean {
     // __mode: platform.posix.__mode_t /* = kotlin.UInt */)
     // : kotlin.Int { /* compiled code */ }
     if (mkdir(dirName, convertOctalToDecimal(775).toModeT()) == -1) {
-        checkErrno { mess -> throw IOException("Fail mkdir $mess on $dirName") }
+        checkErrno { mess -> throw Exception("Fail mkdir $mess on $dirName") }
         return false
     }
     return true
@@ -164,7 +132,6 @@ fun convertOctalToDecimal(octal: Int): UInt {
     return decimalNumber.toUInt()
 }
 
-@Throws(IOException::class)
 fun openDir(dirpath: String, suffix: String = ".json"): List<String> {
     memScoped {
         // opendir(
@@ -172,7 +139,7 @@ fun openDir(dirpath: String, suffix: String = ".json"): List<String> {
         // : kotlinx.cinterop.CPointer<platform.posix.DIR /* = cnames.structs.__dirstream */>? { /* compiled code */ }
         val dir: CPointer<DIR>? = opendir(dirpath)
         if (dir == null) {
-            checkErrno { mess -> throw IOException("Fail opendir $mess on $dirpath") }
+            checkErrno { mess -> throw Exception("Fail opendir $mess on $dirpath") }
         }
         if (debug) println(" success opendir $dir from $dirpath")
 
@@ -204,7 +171,7 @@ fun openFile(abspath: String, modes: String): CPointer<FILE> {
         //       : kotlinx.cinterop.CPointer<platform.posix.FILE>?
         val file = fopen(abspath, modes)
         if (file == null) {
-            checkErrno { mess -> throw IOException("Fail open $mess on $abspath") }
+            checkErrno { mess -> throw Exception("Fail open $mess on $abspath") }
         }
         return file!!
     }

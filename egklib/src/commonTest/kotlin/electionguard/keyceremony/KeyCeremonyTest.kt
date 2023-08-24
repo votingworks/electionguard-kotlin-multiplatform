@@ -5,7 +5,6 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
 import electionguard.ballot.*
 import electionguard.core.*
-import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -41,7 +40,7 @@ class KeyCeremonyTest {
             2,
             ByteArray(0),
             false,
-            "device".toByteArray(),
+            "device".encodeToByteArray(),
         )
         val init: ElectionInitialized = kc.makeElectionInitialized(config)
 

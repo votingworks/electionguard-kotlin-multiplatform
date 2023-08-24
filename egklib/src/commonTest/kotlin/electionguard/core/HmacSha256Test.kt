@@ -2,7 +2,6 @@ package electionguard.core
 
 import electionguard.ballot.parameterBaseHash
 import electionguard.ballot.protocolVersion
-import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -32,7 +31,7 @@ class HmacSha256Test {
         // The symbol HV denotes the version byte array that encodes the used version of this specification.
         // The array has length 32 and contains the UTF-8 encoding of the string "v2.0" followed by 00-
         // bytes, i.e. HV = 76322E30 ∥ b(0, 28).
-        val version = protocolVersion.toByteArray()
+        val version = protocolVersion.encodeToByteArray()
         val HV = ByteArray(32) { if (it < version.size ) version[it] else 0 }
 
         val callConcat = hashFunctionConcat(
@@ -68,7 +67,7 @@ class HmacSha256Test {
         val primes = productionGroup().constants
 
         // HP = H(HV ; 00, p, q, g)  ; eq 4
-        val version = protocolVersion.toByteArray()
+        val version = protocolVersion.encodeToByteArray()
         val HV = ByteArray(32) { if (it < version.size ) version[it] else 0 }
 
         val callConcat = hashFunctionConcat(
@@ -95,7 +94,7 @@ class HmacSha256Test {
 
     @Test
     fun domainSeperator() {
-        val sep = "43".toByteArray()
+        val sep = "43".encodeToByteArray()
         println("sep 43 = ${sep.contentToString()}")
 
         val sep2 = "43".toLong(radix = 16)
