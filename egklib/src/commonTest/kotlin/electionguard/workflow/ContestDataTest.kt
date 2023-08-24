@@ -7,10 +7,8 @@ import electionguard.core.*
 import electionguard.encrypt.Encryptor
 import electionguard.encrypt.cast
 import electionguard.input.BallotInputBuilder
-import electionguard.publish.Publisher
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
-import io.ktor.utils.io.core.*
 import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -62,7 +60,8 @@ class ContestDataTest {
             .done()
             .build()
 
-        val encryptor = Encryptor(context, electionRecord.manifest(), keypair.publicKey, electionInit.extendedBaseHash, "device")
+        val encryptor =
+            Encryptor(context, electionRecord.manifest(), keypair.publicKey, electionInit.extendedBaseHash, "device")
         val eballot = encryptor.encrypt(ballot, ByteArray(0))
 
         eballot.contests.forEachIndexed { idx, it ->
@@ -90,35 +89,42 @@ class ContestDataTest {
                     assertEquals(ContestDataStatus.normal, contestDataRoundtrip.status)
                     assertEquals(emptyList(), contestDataRoundtrip.writeIns)
                 }
+
                 1 -> {
                     assertEquals(ContestDataStatus.normal, contestDataRoundtrip.status)
                     assertEquals(listOf("Sekula-Gibbs"), contestDataRoundtrip.writeIns)
                 }
+
                 2 -> {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)
                     assertEquals(listOf("SekulaGibbs"), contestDataRoundtrip.writeIns)
                     assertEquals(listOf(8), contestDataRoundtrip.overvotes)
                 }
+
                 3 -> {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)
                     assertEquals(listOf("SekulaGibbs", "Sekula-Gibbs"), contestDataRoundtrip.writeIns)
                     assertEquals(listOf(12, 13), contestDataRoundtrip.overvotes)
                 }
+
                 4 -> {
                     assertEquals(ContestDataStatus.normal, contestDataRoundtrip.status)
                     assertEquals(listOf("012345678901234567890123456789*"), contestDataRoundtrip.writeIns)
                     assertEquals(emptyList(), contestDataRoundtrip.overvotes)
                 }
+
                 5 -> {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)
                     assertEquals(listOf("012345678901234567890123456789*"), contestDataRoundtrip.writeIns)
                     assertEquals(listOf(20), contestDataRoundtrip.overvotes)
                 }
+
                 6 -> {
                     assertEquals(ContestDataStatus.over_vote, contestDataRoundtrip.status)
                     assertEquals(emptyList(), contestDataRoundtrip.writeIns)
                     assertEquals(listOf(24, 25, 26, 27), contestDataRoundtrip.overvotes)
                 }
+
                 else -> {
                     assertEquals(ContestDataStatus.null_vote, contestDataRoundtrip.status)
                     assertEquals(emptyList(), contestDataRoundtrip.writeIns)
@@ -128,14 +134,14 @@ class ContestDataTest {
 
         val publisherProto = makePublisher(output, true, false)
         publisherProto.writeElectionInitialized(electionInit)
-        publisherProto.encryptedBallotSink("testWriteEncryptions").use { sink ->
-            sink.writeEncryptedBallot(eballot.cast())
-        }
+        val sink = publisherProto.encryptedBallotSink("testWriteEncryptions")
+        sink.writeEncryptedBallot(eballot.cast())
+        sink.close()
 
         val publisherJson = makePublisher(output + "Json", true, true)
         publisherJson.writeElectionInitialized(electionInit)
-        publisherJson.encryptedBallotSink("testWriteEncryptions").use { sink ->
-            sink.writeEncryptedBallot(eballot.cast())
-        }
+        val sink2 = publisherJson.encryptedBallotSink("testWriteEncryptions")
+        sink2.writeEncryptedBallot(eballot.cast())
+        sink2.close()
     }
 }

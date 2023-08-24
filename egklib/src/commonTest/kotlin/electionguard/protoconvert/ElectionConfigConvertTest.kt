@@ -6,10 +6,8 @@ import electionguard.core.fileReadBytes
 import electionguard.core.productionGroup
 import electionguard.input.buildTestManifest
 import electionguard.publish.*
-import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /** Can use this to generate a new ElectionConfig as needed. */
@@ -47,7 +45,7 @@ class ElectionConfigConvertTest {
             7,
             manifestBytes,
             true,
-            "device".toByteArray(),
+            "device".encodeToByteArray(),
             mapOf(
                 Pair("Created by", "roundtripWithChain"),
                 Pair("Created for", "testing"),
@@ -115,7 +113,7 @@ fun generateElectionConfig(publisher: Publisher, nguardians: Int, quorum: Int): 
         quorum,
         manifestBytes,
         false,
-        "device".toByteArray(),
+        "device".encodeToByteArray(),
         mapOf(Pair("Created by", "generateElectionConfig")),
         )
     return Pair(fakeManifest, config)

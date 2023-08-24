@@ -6,7 +6,6 @@ import electionguard.core.*
 import electionguard.input.ManifestInputValidation
 import electionguard.protoconvert.generateElectionConfig
 import electionguard.protoconvert.generateGuardian
-import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -88,9 +87,9 @@ class PublisherProtoTest {
             val init = initResult.unwrap()
 
             publisher.writeElectionInitialized(init)
-            publisher.encryptedBallotSink("testWriteEncryptions").use { sink ->
-                consumerIn.iterateAllEncryptedBallots { true }.forEach{ sink.writeEncryptedBallot(it) }
-            }
+            val sink = publisher.encryptedBallotSink("testWriteEncryptions")
+            consumerIn.iterateAllEncryptedBallots { true }.forEach{ sink.writeEncryptedBallot(it) }
+            sink.close()
 
             val consumerOut = makeConsumer("$output/3", group)
             val rtResult = consumerOut.readElectionInitialized()
@@ -113,10 +112,10 @@ class PublisherProtoTest {
     @Test
     fun testWriteSpoiledBallots() {
         val publisher = makePublisher("$output/4", true)
-        publisher.decryptedTallyOrBallotSink().use { sink ->
+        val sink = publisher.decryptedTallyOrBallotSink()
             consumerIn.iterateDecryptedBallots().forEach {
                 sink.writeDecryptedTallyOrBallot(it)
-            }
+            sink.close()
         }
 
         val inBallots = consumerIn.iterateDecryptedBallots().associateBy { it.id }

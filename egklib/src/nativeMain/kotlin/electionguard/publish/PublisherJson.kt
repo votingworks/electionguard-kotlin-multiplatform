@@ -4,7 +4,6 @@ import electionguard.ballot.*
 import electionguard.core.pathExists
 import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrustee
-import io.ktor.utils.io.core.use
 import kotlinx.cinterop.CPointer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

@@ -4,7 +4,6 @@ import electionguard.core.Base16.fromSafeHex
 import electionguard.core.Base16.toHex
 import io.kotest.property.checkAll
 import io.kotest.property.forAll
-import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -84,8 +83,8 @@ class HashTest {
             val s2q = "000C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromSafeHex()
                 .toUInt256().toElementModQ(group).base16()
             assertEquals(s1q, s2q)
-            assertEquals(s1q.toByteArray().size, s2q.toByteArray().size)
-            assertEquals(hashFunction(s1q.toByteArray(), s1q), hashFunction(s2q.toByteArray(), s2q))
+            assertEquals(s1q.encodeToByteArray().size, s2q.encodeToByteArray().size)
+            assertEquals(hashFunction(s1q.encodeToByteArray(), s1q), hashFunction(s2q.encodeToByteArray(), s2q))
             println("  len = ${s1q.length} hex = ${s1q}")
             assertEquals(64, s1q.length)
         }
@@ -104,8 +103,8 @@ class HashTest {
     @Test
     fun testIterable() {
         runTest {
-            val h1 = hashFunction("hay1".toByteArray(), listOf("hey2", "hey3"))
-            val h2 = hashFunction("hay1".toByteArray(), "hey2", "hey3")
+            val h1 = hashFunction("hay1".encodeToByteArray(), listOf("hey2", "hey3"))
+            val h2 = hashFunction("hay1".encodeToByteArray(), "hey2", "hey3")
             println(" h1 = ${h1}")
             println(" h2 = ${h2}")
             assertEquals(h1, h2)

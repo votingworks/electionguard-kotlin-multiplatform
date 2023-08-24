@@ -2,7 +2,6 @@ package electionguard.core
 
 import electionguard.ballot.parameterBaseHash
 import electionguard.core.Base16.fromHex
-import io.ktor.utils.io.core.*
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals

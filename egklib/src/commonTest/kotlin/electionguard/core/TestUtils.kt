@@ -1,6 +1,5 @@
 package electionguard.core
 
-import io.ktor.utils.io.core.*
 import kotlin.random.Random
 import kotlin.random.nextUInt
 import kotlin.test.Test
@@ -100,7 +99,7 @@ fun generateCiphertext(context: GroupContext): ElGamalCiphertext {
 }
 
 fun generateHashedCiphertext(context: GroupContext): HashedElGamalCiphertext {
-    return HashedElGamalCiphertext(generateElementModP(context), "what".toByteArray(), generateUInt256(context), 42)
+    return HashedElGamalCiphertext(generateElementModP(context), "what".encodeToByteArray(), generateUInt256(context), 42)
 }
 
 fun generateElementModQ(context: GroupContext): ElementModQ {

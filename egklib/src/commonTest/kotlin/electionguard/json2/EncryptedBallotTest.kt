@@ -2,7 +2,6 @@ package electionguard.json2
 
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
-import io.ktor.utils.io.core.*
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,7 +18,7 @@ class EncryptedBallotTest {
         val roundtrip = json.import(context)
         assertNotNull(roundtrip)
         assertEquals(ballot, roundtrip)
-        assertTrue("baux".toByteArray().contentEquals(roundtrip.codeBaux))
+        assertTrue("baux".encodeToByteArray().contentEquals(roundtrip.codeBaux))
     }
 
     @Test
@@ -39,7 +38,7 @@ class EncryptedBallotTest {
             "ballotIdStyle",
             "device",
             42,
-            "baux".toByteArray(),
+            "baux".encodeToByteArray(),
             generateUInt256(context),
             contests,
             if (Random.nextBoolean())
