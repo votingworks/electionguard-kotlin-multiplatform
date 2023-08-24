@@ -37,7 +37,7 @@ class VerifyEncryptedBallots(
 ) {
     val aggregator = SelectionAggregator() // for Verification 8 (Correctness of ballot aggregation)
 
-    fun verifyBallots(ballots: Iterable<EncryptedBallot>, stats: Stats, showTime: Boolean = false): Result<Boolean, String> {
+    fun verifyBallots(ballots: Iterable<EncryptedBallot>, stats: Stats = Stats(), showTime: Boolean = false): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
         runBlocking {

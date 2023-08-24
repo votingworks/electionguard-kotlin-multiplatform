@@ -2,7 +2,6 @@ package electionguard.ballot
 
 import electionguard.core.Base16.toHex
 import electionguard.core.productionGroup
-import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -20,7 +19,7 @@ class ElectionConfigTest {
         // The array has length 32 and contains the UTF-8 encoding of the string "v2.0" followed by 00-
         // bytes, i.e. HV = 76322E30 ∥ b(0, 28).
 
-        val ver = "v2.0.0".toByteArray()
+        val ver = "v2.0.0".encodeToByteArray()
         println("ver = ${ver.toHex()}")
         assertEquals(6, ver.size)
         val HV = ByteArray(32) { if (it < ver.size) ver[it] else 0 }

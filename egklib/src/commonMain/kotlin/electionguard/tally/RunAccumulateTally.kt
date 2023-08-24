@@ -68,7 +68,7 @@ fun runAccumulateBallots(group: GroupContext, inputDir: String, outputDir: Strin
         TallyResult( electionInit, tally, listOf(name),
             mapOf(
                 Pair("CreatedBy", createdBy),
-                Pair("CreatedOn", getSystemDate().toString()),
+                Pair("CreatedOn", getSystemDate()),
                 Pair("CreatedFromDir", inputDir))
             )
     )

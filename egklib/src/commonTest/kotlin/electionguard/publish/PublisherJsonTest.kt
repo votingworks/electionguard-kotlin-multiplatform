@@ -8,7 +8,6 @@ import electionguard.core.*
 import electionguard.input.ManifestInputValidation
 import electionguard.protoconvert.generateElectionConfig
 import electionguard.protoconvert.generateGuardian
-import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -94,8 +93,13 @@ class PublisherJsonTest {
         val init = initResult.unwrap()
 
         publisher.writeElectionInitialized(init)
-        publisher.encryptedBallotSink("testWriteEncryptions").use { sink ->
-            consumerIn.iterateAllEncryptedBallots { true }.forEach{ sink.writeEncryptedBallot(it) }
+        val esink = publisher.encryptedBallotSink("testWriteEncryptions")
+        try {
+            consumerIn.iterateAllEncryptedBallots { true }.forEach() {
+                esink.writeEncryptedBallot(it)
+            }
+        } finally {
+            esink.close()
         }
 
         val rtResult = consumerOut.readElectionInitialized()
@@ -116,11 +120,14 @@ class PublisherJsonTest {
         val publisher = makePublisher(output4, true, true)
         val consumerOut = makeConsumer(output4, group, true)
 
-       publisher.decryptedTallyOrBallotSink().use { sink ->
-           consumerIn.iterateDecryptedBallots().forEach {
-               sink.writeDecryptedTallyOrBallot(it)
-           }
-       }
+        val dsink = publisher.decryptedTallyOrBallotSink()
+        try {
+            consumerIn.iterateDecryptedBallots().forEach() {
+                dsink.writeDecryptedTallyOrBallot(it)
+            }
+        } finally {
+            dsink.close()
+        }
 
         assertTrue(consumerOut.iterateDecryptedBallots().approxEqualsDecryptedBallots(consumerIn.iterateDecryptedBallots()))
     }

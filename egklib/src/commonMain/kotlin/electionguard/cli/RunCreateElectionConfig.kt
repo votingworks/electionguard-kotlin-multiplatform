@@ -5,7 +5,6 @@ import electionguard.ballot.protocolVersion
 import electionguard.core.productionGroup
 import electionguard.publish.makePublisher
 import electionguard.publish.readAndCheckManifestBytes
-import io.ktor.utils.io.core.*
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -73,7 +72,7 @@ fun createConfig(args: Array<String>) {
             quorum,
             manifestBytes,
             chainCodes,
-            device.toByteArray(),
+            device.encodeToByteArray(),
             mapOf(
                 Pair("CreatedBy", createdBy),
             ),

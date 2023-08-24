@@ -106,7 +106,7 @@ fun runDecryptTally(
             decryptedTally,
             mapOf(
                 Pair("CreatedBy", createdBy ?: "RunTrustedTallyDecryption"),
-                Pair("CreatedOn", getSystemDate().toString()),
+                Pair("CreatedOn", getSystemDate()),
                 Pair("CreatedFromDir", inputDir))
         )
     )

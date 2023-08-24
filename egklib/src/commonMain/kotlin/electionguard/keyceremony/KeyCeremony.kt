@@ -156,7 +156,7 @@ data class KeyCeremonyResults(
 
         val metadataAll = mutableMapOf(
             Pair("CreatedBy", "keyCeremonyExchange"),
-            Pair("CreatedOn", getSystemDate().toString()),
+            Pair("CreatedOn", getSystemDate()),
         )
         metadataAll.putAll(metadata)
 

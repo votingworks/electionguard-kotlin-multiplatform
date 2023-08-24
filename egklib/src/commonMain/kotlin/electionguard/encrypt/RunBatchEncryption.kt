@@ -216,7 +216,7 @@ fun batchEncryption(
     publisher.writeElectionInitialized(
         electionInit.addMetadataToCopy(
             Pair("Used", createdBy ?: "RunBatchEncryption"),
-            Pair("UsedOn", getSystemDate().toString()),
+            Pair("UsedOn", getSystemDate()),
             Pair("CreatedFromDir", inputDir)
         )
     )
