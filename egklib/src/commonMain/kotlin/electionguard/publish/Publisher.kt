@@ -2,7 +2,6 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
-import io.ktor.utils.io.core.Closeable
 
 /** Write the Election Record as protobuf or json files. */
 interface Publisher {
@@ -27,6 +26,11 @@ interface EncryptedBallotSinkIF : Closeable {
 
 interface DecryptedTallyOrBallotSinkIF : Closeable {
     fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot)
+}
+
+// copied from io.ktor.utils.io.core.Closeable to break package dependency
+interface Closeable {
+    fun close()
 }
 
 fun makePublisher(

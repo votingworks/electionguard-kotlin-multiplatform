@@ -1,7 +1,5 @@
 package electionguard.core
 
-import io.ktor.utils.io.core.toByteArray
-
 /**
  * The hash function H used in ElectionGuard is HMAC-SHA-256, i.e. HMAC instantiated with SHA-256.
  * Therefore, H takes two byte arrays as inputs.
@@ -51,7 +49,7 @@ private fun HmacSha256.addToHash(element : Any) {
             is ByteArray -> element
             is UInt256 -> element.bytes
             is Element -> element.byteArray()
-            is String -> element.toByteArray() // LOOK not adding size
+            is String -> element.encodeToByteArray() // LOOK not adding size
             // is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
             // is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
             is Int -> intToByteArray(element)
@@ -102,7 +100,7 @@ private fun hashElementsToByteArray(element : Any) : ByteArray {
             is ByteArray -> element
             is UInt256 -> element.bytes
             is Element -> element.byteArray()
-            is String -> element.toByteArray()
+            is String -> element.encodeToByteArray()
             is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
             is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
             is Int -> intToByteArray(element)

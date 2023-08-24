@@ -2,7 +2,6 @@ package electionguard.ballot
 
 import electionguard.core.*
 import electionguard.core.Base16.toHex
-import io.ktor.utils.io.core.toByteArray
 
 const val protocolVersion = "v2.0.0"
 
@@ -126,7 +125,7 @@ fun parameterBaseHash(primes : ElectionConstants) : UInt256 {
     // The symbol ver denotes the version byte array that encodes the used version of this specification.
     // The array has length 32 and contains the UTF-8 encoding of the string “v2.0.0” followed by 0x00-
     // bytes, i.e. ver = 0x76322E302E30 ∥ b(0, 27). FIX should be b(0, 26)
-    val version = protocolVersion.toByteArray()
+    val version = protocolVersion.encodeToByteArray()
     val HV = ByteArray(32) { if (it < version.size) version[it] else 0 }
 
     return hashFunction(

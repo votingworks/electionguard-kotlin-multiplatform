@@ -97,7 +97,7 @@ kotlin {
                     implementation(libs.kotlinx.coroutines.core)
 
                     // Useful, portable routines
-                    implementation(libs.ktor.utils)
+                    // implementation(libs.ktor.utils)
 
                     // Portable logging interface.
                     implementation(libs.microutils.logging)

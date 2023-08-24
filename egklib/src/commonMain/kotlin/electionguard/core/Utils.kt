@@ -2,7 +2,6 @@ package electionguard.core
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import com.github.michaelbull.result.*
@@ -137,9 +136,9 @@ inline fun <reified T : Enum<T>> safeEnumValueOf(name: String?): T? {
     }
 }
 
-fun getSystemDate(): LocalDateTime {
+fun getSystemDate(): String {
     val currentMoment: Instant = Clock.System.now()
-    return currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
+    return currentMoment.toLocalDateTime(TimeZone.currentSystemDefault()).toString()
 }
 
 /**

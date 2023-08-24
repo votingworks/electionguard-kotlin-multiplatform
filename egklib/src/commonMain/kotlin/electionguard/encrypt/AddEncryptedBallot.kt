@@ -12,7 +12,6 @@ import electionguard.core.hashFunction
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
 import electionguard.publish.*
-import io.ktor.utils.io.core.Closeable
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("AddEncryptedBallot")
