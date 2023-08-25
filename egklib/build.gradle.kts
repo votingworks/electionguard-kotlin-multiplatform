@@ -60,29 +60,29 @@ kotlin {
             }
     }
 
-    val hostOs = System.getProperty("os.name")
-    val isMingwX64 = hostOs.startsWith("Windows")
-    val arch = System.getProperty("os.arch")
-    val nativeTarget =
-        when {
-            hostOs == "Mac OS X" && arch == "aarch64" -> macosArm64("native")
-            hostOs == "Mac OS X"-> macosX64("native")
-            hostOs == "Linux" -> linuxX64("native")
-            isMingwX64 -> mingwX64("native")
-            else -> throw GradleException("Host OS is not supported.")
-        }
-
     /*
-    nativeTarget.apply {
-        binaries {
-            sharedLib() {
-                baseName = "ekm" // on Linux and macOS
-                // baseName = "libekm // on Windows
-            }
-        }
+val hostOs = System.getProperty("os.name")
+val isMingwX64 = hostOs.startsWith("Windows")
+val arch = System.getProperty("os.arch")
+val nativeTarget =
+    when {
+        hostOs == "Mac OS X" && arch == "aarch64" -> macosArm64("native")
+        hostOs == "Mac OS X"-> macosX64("native")
+        hostOs == "Linux" -> linuxX64("native")
+        isMingwX64 -> mingwX64("native")
+        else -> throw GradleException("Host OS '$hostOs' arch '$arch' is not supported.")
     }
 
-     */
+nativeTarget.apply {
+    binaries {
+        sharedLib() {
+            baseName = "ekm" // on Linux and macOS
+            // baseName = "libekm // on Windows
+        }
+    }
+}
+
+ */
 
     sourceSets {
         all { languageSettings.optIn("kotlin.RequiresOptIn") }
@@ -152,12 +152,14 @@ kotlin {
                     implementation(libs.junit.jupiter.params)
                 }
             }
-        val nativeMain by getting {
+        /* val nativeMain by getting {
             dependencies {
                 implementation(project(":hacllib"))
             }
         }
         val nativeTest by getting { dependencies {} }
+
+         */
     }
 }
 
@@ -229,8 +231,7 @@ publishing {
         }
     }
 }
-
- */
+*/
 
 tasks.register("showConfigurations") {
     configurations.forEach {
