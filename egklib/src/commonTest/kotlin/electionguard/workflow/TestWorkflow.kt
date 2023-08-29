@@ -129,7 +129,7 @@ class TestWorkflow {
             val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
             val result = encryptor.encrypt(ballot)
             assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().ballotId, state)
+            encryptor.submit(result.unwrap().confirmationCode, state)
             println(" write ${ballot.ballotId} $state")
             count++
         }
@@ -296,7 +296,7 @@ class TestWorkflow {
             val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
             val result = encryptor.encrypt(ballot)
             assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().ballotId, state)
+            encryptor.submit(result.unwrap().confirmationCode, state)
             println(" write ${ballot.ballotId} $state")
             count++
         }

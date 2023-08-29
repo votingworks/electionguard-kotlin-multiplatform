@@ -50,7 +50,7 @@ class AddEncryptedVariationsTest {
             cballots.add(result.unwrap())
         }
         cballots.shuffle()
-        cballots.forEach { encryptor.submit(it.ballotId, EncryptedBallot.BallotState.CAST) }
+        cballots.forEach { encryptor.submit(it.confirmationCode, EncryptedBallot.BallotState.CAST) }
         encryptor.close()
 
         checkOutput(group, outputDir, nballots, false)
@@ -88,7 +88,7 @@ class AddEncryptedVariationsTest {
                 cballots.add(result.unwrap())
             }
             cballots.shuffle()
-            cballots.forEach { encryptor.submit(it.ballotId, EncryptedBallot.BallotState.CAST) }
+            cballots.forEach { encryptor.submit(it.confirmationCode, EncryptedBallot.BallotState.CAST) }
             encryptor.close()
         }
 
@@ -127,7 +127,7 @@ class AddEncryptedVariationsTest {
             cballots.add(result.unwrap())
         }
         cballots.shuffle()
-        cballots.forEach { encryptor.submit(it.ballotId, EncryptedBallot.BallotState.CAST) }
+        cballots.forEach { encryptor.submit(it.confirmationCode, EncryptedBallot.BallotState.CAST) }
         encryptor.close()
 
         checkOutput(group, outputDir, nballots, true)
@@ -165,7 +165,7 @@ class AddEncryptedVariationsTest {
                 cballots.add(result.unwrap())
             }
             cballots.shuffle()
-            cballots.forEach { encryptor.submit(it.ballotId, EncryptedBallot.BallotState.CAST) }
+            cballots.forEach { encryptor.submit(it.confirmationCode, EncryptedBallot.BallotState.CAST) }
             encryptor.close()
         }
 
@@ -226,7 +226,7 @@ class AddEncryptedVariationsTest {
                 val skip = skip && random < 2 // skip 2 in 10
                 println(" skip $skip state $state")
                 if (!skip) {
-                    encryptor.submit(it.ballotId, state)
+                    encryptor.submit(it.confirmationCode, state)
                 }
             }
             encryptor.close()

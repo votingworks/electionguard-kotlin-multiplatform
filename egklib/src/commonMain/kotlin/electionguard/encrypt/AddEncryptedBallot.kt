@@ -8,6 +8,7 @@ import electionguard.ballot.*
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.core.Base16.fromHex
 import electionguard.core.hashFunction
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
@@ -100,8 +101,8 @@ class AddEncryptedBallot(
         return Ok(ciphertextBallot)
     }
 
-    fun submit(ccode: String, state : EncryptedBallot.BallotState): Result<Boolean, String> {
-        val cballot = pending.remove(ccode)
+    fun submit(ccode: UInt256, state : EncryptedBallot.BallotState): Result<Boolean, String> {
+        val cballot = pending.remove(ccode.toHex())
         if (cballot == null) {
             logger.error{ "Tried to submit unknown ballot ccode=$ccode" }
             return Err( "Tried to submit unknown ballot ccode=$ccode" )
@@ -121,7 +122,8 @@ class AddEncryptedBallot(
             val keys = pending.keys.toList()
             keys.forEach {
                 logger.error{ "pending Ciphertext ballot ${it} was not submitted" }
-                submit(it, EncryptedBallot.BallotState.UNKNOWN)
+                val ba = it.fromHex() ?: throw RuntimeException("illegal confirmation code")
+                submit(UInt256(ba), EncryptedBallot.BallotState.UNKNOWN)
             }
         }
         val closing = EncryptedBallotChain(device, baux0, ballotIds, this.lastConfirmationCode, chainCodes, closeChain())

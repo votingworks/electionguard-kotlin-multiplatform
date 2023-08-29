@@ -40,7 +40,7 @@ fun main(args: Array<String>) {
     repeat(7) {
         val ballot = ballotProvider.makeBallot()
         val result = encryptor.encrypt(ballot)
-        encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+        encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
     }
 
     // write out the results to outputDir
