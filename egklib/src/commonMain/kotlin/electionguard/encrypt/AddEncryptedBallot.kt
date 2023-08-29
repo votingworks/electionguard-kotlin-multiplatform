@@ -41,7 +41,7 @@ class AddEncryptedBallot(
     val publisher = makePublisher(outputDir, createNew, isJson)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(device)
     val ballotIds = mutableListOf<String>()
-    val pending = mutableMapOf<String, CiphertextBallot>()
+    val pending = mutableMapOf<String, CiphertextBallot>() // ccode.toHex() is key
     val baux0 : ByteArray
 
     private var lastConfirmationCode: UInt256 = UInt256.ZERO
@@ -96,19 +96,24 @@ class AddEncryptedBallot(
         this.lastConfirmationCode = ciphertextBallot.confirmationCode
 
         // hmmm you could write CiphertextBallot to a log, in case of crash
-        pending[ciphertextBallot.ballotId] = ciphertextBallot
+        pending[ciphertextBallot.confirmationCode.toHex()] = ciphertextBallot
         return Ok(ciphertextBallot)
     }
 
-    fun submit(ballotId: String, state : EncryptedBallot.BallotState): Boolean {
-        val cballot = pending.remove(ballotId)
+    fun submit(ccode: String, state : EncryptedBallot.BallotState): Result<Boolean, String> {
+        val cballot = pending.remove(ccode)
         if (cballot == null) {
-            logger.error{ "Tried to submit Ciphertext ballot $ballotId not pending" }
-            return false
+            logger.error{ "Tried to submit unknown ballot ccode=$ccode" }
+            return Err( "Tried to submit unknown ballot ccode=$ccode" )
         }
-        val eballot =  cballot.submit(state)
-        sink.writeEncryptedBallot(eballot) // the sink must append
-        return true
+        try {
+            val eballot = cballot.submit(state)
+            sink.writeEncryptedBallot(eballot) // the sink must append
+            return Ok(true)
+        } catch (t: Throwable) {
+            logger.throwing(t) // TODO
+            return Err("Tried to submit Ciphertext ballot ccode=$ccode error = ${t.message}")
+        }
     }
 
     override fun close() {
