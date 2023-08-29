@@ -45,7 +45,7 @@ object ElementModPAsStringSerializer : KSerializer<ElementModPJson> {
     override fun deserialize(decoder: Decoder): ElementModPJson {
         val string = decoder.decodeString()
         return ElementModPJson(
-            string.fromHex() ?: throw SerializationException("invalid base16 string")
+            string.fromHex() ?: throw Throwable("invalid base16 string")
         )
     }
 }
@@ -63,7 +63,7 @@ object ElementModQAsStringSerializer : KSerializer<ElementModQJson> {
     override fun deserialize(decoder: Decoder): ElementModQJson {
         val string = decoder.decodeString()
         return ElementModQJson(
-            string.fromHex() ?: throw SerializationException("invalid base16 string")
+            string.fromHex() ?: throw Throwable("invalid base16 string")
         )
     }
 }
@@ -81,7 +81,7 @@ object UInt256AsStringSerializer : KSerializer<UInt256Json> {
     override fun deserialize(decoder: Decoder): UInt256Json {
         val string = decoder.decodeString()
         return UInt256Json(
-            string.fromHex() ?: throw SerializationException("invalid base16 string")
+            string.fromHex() ?: throw Throwable("invalid base16 string")
         )
     }
 }

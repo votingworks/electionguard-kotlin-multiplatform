@@ -9,7 +9,7 @@ dependencyResolutionManagement {
         create("libs") {
             version("kotlin-version", providers.gradleProperty("kotlinVersion").get())
             version("coroutines-version", "1.6.4")
-            version("ktor-version", "2.3.1")
+            version("ktor-version", "2.3.3")
 
             plugin("ktor", "io.ktor.plugin").versionRef("ktor-version")
             plugin("serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin-version")
@@ -85,15 +85,14 @@ dependencyResolutionManagement {
                 )
             )
 
-            //implementation(kotlin("test-common", kotlinVersion))
-            //implementation(kotlin("test-annotations-common", kotlinVersion))
-
             //// testing
+            library("kotlin-test", "org.jetbrains.kotlin", "kotlin-test").versionRef("kotlin-version")
             library("kotlin-test-common", "org.jetbrains.kotlin", "test-common").versionRef("kotlin-version")
             library("kotlin-test-annotations-common", "org.jetbrains.kotlin", "test-annotations-common").versionRef("kotlin-version")
-
             library("kotlinx-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").versionRef("coroutines-version")
+
             library("ktor-server-tests-jvm", "io.ktor", "ktor-server-tests-jvm").versionRef("ktor-version")
+            library("ktor-server-test-host", "io.ktor", "ktor-server-test-host").versionRef("kotlin-version")
 
             // property based testing
             library("kotest-property", "io.kotest", "kotest-property").version("5.6.2")
@@ -102,6 +101,7 @@ dependencyResolutionManagement {
             library("mockk", "io.mockk", "mockk").version("1.13.5")
             library("kotlin-test-junit5", "org.jetbrains.kotlin", "kotlin-test-junit5").versionRef("kotlin-version")
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin-version")
+
             // use ParameterizedTest feature feature
             library("junit-jupiter-params", "org.junit.jupiter:junit-jupiter-params:5.9.3")
         }
@@ -109,8 +109,3 @@ dependencyResolutionManagement {
 }
 
 include ("egklib")
-// include ("hacllib")
-//include ("webapps:decryptingtrustee")
-//include ("webapps:decryption")
-//include ("webapps:keyceremony")
-//include ("webapps:keyceremonytrustee")

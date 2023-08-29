@@ -8,6 +8,7 @@ import electionguard.ballot.*
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.core.Base16.fromHex
 import electionguard.core.hashFunction
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
@@ -41,7 +42,7 @@ class AddEncryptedBallot(
     val publisher = makePublisher(outputDir, createNew, isJson)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(device)
     val ballotIds = mutableListOf<String>()
-    val pending = mutableMapOf<String, CiphertextBallot>()
+    val pending = mutableMapOf<String, CiphertextBallot>() // ccode.toHex() is key
     val baux0 : ByteArray
 
     private var lastConfirmationCode: UInt256 = UInt256.ZERO
@@ -96,19 +97,24 @@ class AddEncryptedBallot(
         this.lastConfirmationCode = ciphertextBallot.confirmationCode
 
         // hmmm you could write CiphertextBallot to a log, in case of crash
-        pending[ciphertextBallot.ballotId] = ciphertextBallot
+        pending[ciphertextBallot.confirmationCode.toHex()] = ciphertextBallot
         return Ok(ciphertextBallot)
     }
 
-    fun submit(ballotId: String, state : EncryptedBallot.BallotState): Boolean {
-        val cballot = pending.remove(ballotId)
+    fun submit(ccode: UInt256, state : EncryptedBallot.BallotState): Result<Boolean, String> {
+        val cballot = pending.remove(ccode.toHex())
         if (cballot == null) {
-            logger.error{ "Tried to submit Ciphertext ballot $ballotId not pending" }
-            return false
+            logger.error{ "Tried to submit unknown ballot ccode=$ccode" }
+            return Err( "Tried to submit unknown ballot ccode=$ccode" )
         }
-        val eballot =  cballot.submit(state)
-        sink.writeEncryptedBallot(eballot) // the sink must append
-        return true
+        try {
+            val eballot = cballot.submit(state)
+            sink.writeEncryptedBallot(eballot) // the sink must append
+            return Ok(true)
+        } catch (t: Throwable) {
+            logger.throwing(t) // TODO
+            return Err("Tried to submit Ciphertext ballot ccode=$ccode error = ${t.message}")
+        }
     }
 
     override fun close() {
@@ -116,7 +122,8 @@ class AddEncryptedBallot(
             val keys = pending.keys.toList()
             keys.forEach {
                 logger.error{ "pending Ciphertext ballot ${it} was not submitted" }
-                submit(it, EncryptedBallot.BallotState.UNKNOWN)
+                val ba = it.fromHex() ?: throw RuntimeException("illegal confirmation code")
+                submit(UInt256(ba), EncryptedBallot.BallotState.UNKNOWN)
             }
         }
         val closing = EncryptedBallotChain(device, baux0, ballotIds, this.lastConfirmationCode, chainCodes, closeChain())

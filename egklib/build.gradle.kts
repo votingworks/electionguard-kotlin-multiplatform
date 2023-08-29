@@ -1,3 +1,4 @@
+val kotlin_version: String by project
 
 buildscript {
     repositories {

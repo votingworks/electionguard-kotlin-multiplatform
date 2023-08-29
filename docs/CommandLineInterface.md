@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 6/23/2023
+last update 7/24/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
@@ -20,7 +20,8 @@ last update 6/23/2023
 <img src="./images/Workflow.svg" alt="Workflow" width="800"/>
 
 1. **Create a Manifest record** 
-   1. Generating a real Manifest by election officials is outside the scope of this library.
+   1. Generating a real Manifest by election officials is outside the scope of this library. That is to say,
+      you must figure out what that looks like yourself, and use it as input to the library.
    2. Create a manifest in code with the _electionguard.ballot.Manifest_ classes, and write it out
           with a Publisher. 
    3. Create a fake manifest for testing with the _electionguard.input.RunCreateTestManifest_ CLI.
@@ -52,6 +53,9 @@ last update 6/23/2023
     1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext
        ballots, encrypts the ballots and writes out EncryptedBallot records. If any input plaintext ballot fails validation,
        it is annotated and written to a separate directory, and not encrypted.
+    2. _electionguard.encrypt.AddEncryptedBallot_ is a class that your program calls to encrypt plaintext ballots
+       and add them to the election record.
+   3. In jvmMain, _electionguard.cli.ExampleEncryption_ is an example of using AddEncryptedBallot.
 
 6. **Accumulate Tally**.
     1. _electionguard.tally.RunAccumulateTally_ is a CLI that reads an ElectionInitialized record and EncryptedBallot

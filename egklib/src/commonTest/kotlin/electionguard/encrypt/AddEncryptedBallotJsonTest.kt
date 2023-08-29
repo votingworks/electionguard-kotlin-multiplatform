@@ -45,7 +45,7 @@ class AddEncryptedBallotJsonTest {
             val ballot = ballotProvider.makeBallot()
             val result = encryptor.encrypt(ballot)
             assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+            encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
         }
         encryptor.close()
 
@@ -82,7 +82,7 @@ class AddEncryptedBallotJsonTest {
                 val ballot = ballotProvider.makeBallot()
                 val result = encryptor.encrypt(ballot)
                 assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.close()
         }
@@ -119,7 +119,7 @@ class AddEncryptedBallotJsonTest {
                 val ballot = ballotProvider.makeBallot()
                 val result = encryptor.encrypt(ballot)
                 assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.close()
         }
@@ -157,7 +157,7 @@ class AddEncryptedBallotJsonTest {
             val ballot = ballotProvider.makeBallot()
             val result = encryptor.encrypt(ballot)
             assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+            encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
         }
         encryptor.close()
 
@@ -195,7 +195,7 @@ class AddEncryptedBallotJsonTest {
                 val ballot = ballotProvider.makeBallot()
                 val result = encryptor.encrypt(ballot)
                 assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.close()
         }
@@ -233,7 +233,7 @@ class AddEncryptedBallotJsonTest {
                 val ballot = ballotProvider.makeBallot()
                 val result = encryptor.encrypt(ballot)
                 assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().ballotId, EncryptedBallot.BallotState.CAST)
+                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.close()
         }
