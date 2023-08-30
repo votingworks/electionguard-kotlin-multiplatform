@@ -11,7 +11,7 @@ import kotlinx.cli.default
 import kotlinx.cli.required
 
 /** Run Create Election Configuration CLI. */
-class RunCreateConfig {
+class RunCreateElectionConfig {
 
     companion object {
         @JvmStatic

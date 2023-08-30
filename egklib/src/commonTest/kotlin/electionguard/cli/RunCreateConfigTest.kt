@@ -1,13 +1,12 @@
 package electionguard.cli
 
-import electionguard.cli.createconfig.main
 import kotlin.test.Test
 
 class RunCreateConfigTest {
 
     @Test
     fun testCreateConfigProto() {
-        main(
+        RunCreateElectionConfig.main(
             arrayOf(
                 "-manifest",
                 "src/commonTest/data/startManifestProto/manifest.protobuf",
@@ -23,7 +22,7 @@ class RunCreateConfigTest {
 
     @Test
     fun testCreateConfigJson() {
-        main(
+        RunCreateElectionConfig.main(
             arrayOf(
                 "-manifest",
                 "src/commonTest/data/startManifestJson/manifest.json",
@@ -39,7 +38,7 @@ class RunCreateConfigTest {
 
     @Test
     fun testCreateConfigDirectoryProto() {
-        main(
+        RunCreateElectionConfig.main(
             arrayOf(
                 "-manifest",
                 "src/commonTest/data/startManifestProto",
@@ -56,7 +55,7 @@ class RunCreateConfigTest {
 
     @Test
     fun testCreateConfigDirectoryJson() {
-        main(
+        RunCreateElectionConfig.main(
             arrayOf(
                 "-manifest",
                 "src/commonTest/data/startManifestJson",

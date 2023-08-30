@@ -1,6 +1,5 @@
 package electionguard.cli
 
-import electionguard.cli.convertmanifest.main
 import electionguard.core.productionGroup
 import electionguard.input.createTestManifest
 import electionguard.publish.readAndCheckManifestBytes
@@ -22,7 +21,7 @@ class RunCreateTestManifestTest {
             )
         )
 
-        main(
+        RunConvertManifest.main(
             arrayOf(
                 "-manifest",
                 "testOut/manifest/runCreateTestManifest",
@@ -31,7 +30,7 @@ class RunCreateTestManifestTest {
             )
         )
 
-        main(
+        RunConvertManifest.main(
             arrayOf(
                 "-manifest",
                 "testOut/manifest/testConvertManifestFromJsonToProto",
