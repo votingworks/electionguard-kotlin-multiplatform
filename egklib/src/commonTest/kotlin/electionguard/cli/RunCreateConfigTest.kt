@@ -6,7 +6,7 @@ class RunCreateConfigTest {
 
     @Test
     fun testCreateConfigProto() {
-        createConfig(
+        RunCreateElectionConfig.main(
             arrayOf(
                 "-manifest",
                 "src/commonTest/data/startManifestProto/manifest.protobuf",
@@ -22,7 +22,7 @@ class RunCreateConfigTest {
 
     @Test
     fun testCreateConfigJson() {
-        createConfig(
+        RunCreateElectionConfig.main(
             arrayOf(
                 "-manifest",
                 "src/commonTest/data/startManifestJson/manifest.json",
@@ -38,7 +38,7 @@ class RunCreateConfigTest {
 
     @Test
     fun testCreateConfigDirectoryProto() {
-        createConfig(
+        RunCreateElectionConfig.main(
             arrayOf(
                 "-manifest",
                 "src/commonTest/data/startManifestProto",
@@ -55,7 +55,7 @@ class RunCreateConfigTest {
 
     @Test
     fun testCreateConfigDirectoryJson() {
-        createConfig(
+        RunCreateElectionConfig.main(
             arrayOf(
                 "-manifest",
                 "src/commonTest/data/startManifestJson",

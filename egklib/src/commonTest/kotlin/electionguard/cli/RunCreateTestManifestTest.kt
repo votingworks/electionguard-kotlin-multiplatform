@@ -21,7 +21,7 @@ class RunCreateTestManifestTest {
             )
         )
 
-        convertManifest(
+        RunConvertManifest.main(
             arrayOf(
                 "-manifest",
                 "testOut/manifest/runCreateTestManifest",
@@ -30,7 +30,7 @@ class RunCreateTestManifestTest {
             )
         )
 
-        convertManifest(
+        RunConvertManifest.main(
             arrayOf(
                 "-manifest",
                 "testOut/manifest/testConvertManifestFromJsonToProto",
