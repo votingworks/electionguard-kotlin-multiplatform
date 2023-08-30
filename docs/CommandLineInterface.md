@@ -25,11 +25,11 @@ last update 7/24/2023
    2. Create a manifest in code with the _electionguard.ballot.Manifest_ classes, and write it out
           with a Publisher. 
    3. Create a fake manifest for testing with the _electionguard.input.RunCreateTestManifest_ CLI.
-   4. Convert an existing manifest between JSON and Proto with the _electionguard.cli.RunConvertManifest_ CLI.
+   4. Convert an existing manifest between JSON and Proto with the _RunConvertManifest_ CLI.
       The type (JSON or Proto) of Manifest is used for the rest of the election record.
 
 2. **Create an ElectionConfig record**.
-   1. Create an ElectionConfig from a Manifest and input parameters using _electionguard.cli.RunCreateElectionConfig_ CLI.
+   1. Create an ElectionConfig from a Manifest and input parameters using _RunCreateElectionConfig_ CLI.
 
 3. **Run the KeyCeremony**. 
 
