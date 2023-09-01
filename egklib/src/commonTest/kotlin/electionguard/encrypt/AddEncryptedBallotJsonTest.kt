@@ -32,8 +32,6 @@ class AddEncryptedBallotJsonTest {
             electionRecord.manifest(),
             electionInit,
             device,
-            electionRecord.config().configBaux0,
-            false,
             outputDir,
             "${outputDir}/invalidDir",
             true,
@@ -49,7 +47,7 @@ class AddEncryptedBallotJsonTest {
         }
         encryptor.close()
 
-        checkOutput(group, outputDir, nballots)
+        checkOutput(group, outputDir, nballots, false)
     }
 
     @Test
@@ -69,8 +67,6 @@ class AddEncryptedBallotJsonTest {
                 electionRecord.manifest(),
                 electionInit,
                 device,
-                electionRecord.config().configBaux0,
-                false,
                 outputDir,
                 "outputDir/invalidDir",
                 true,
@@ -87,7 +83,7 @@ class AddEncryptedBallotJsonTest {
             encryptor.close()
         }
 
-        checkOutput(group, outputDir, 3 * nballots)
+        checkOutput(group, outputDir, 3 * nballots, false)
     }
 
     @Test
@@ -106,8 +102,6 @@ class AddEncryptedBallotJsonTest {
                 electionRecord.manifest(),
                 electionInit,
                 "device$it",
-                electionRecord.config().configBaux0,
-                false,
                 outputDir,
                 "$outputDir/invalidDir",
                 true,
@@ -124,7 +118,7 @@ class AddEncryptedBallotJsonTest {
             encryptor.close()
         }
 
-        checkOutput(group, outputDir, 3 * nballots)
+        checkOutput(group, outputDir, 3 * nballots, false)
     }
 
     @Test
@@ -134,7 +128,8 @@ class AddEncryptedBallotJsonTest {
 
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
+        val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+        val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
 
         val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
@@ -144,8 +139,6 @@ class AddEncryptedBallotJsonTest {
             electionRecord.manifest(),
             electionInit,
             device,
-            electionRecord.config().configBaux0,
-            true,
             outputDir,
             "${outputDir}/invalidDir",
             true,
@@ -171,7 +164,8 @@ class AddEncryptedBallotJsonTest {
 
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
+        val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+        val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
 
         val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
@@ -182,8 +176,6 @@ class AddEncryptedBallotJsonTest {
                 electionRecord.manifest(),
                 electionInit,
                 device,
-                electionRecord.config().configBaux0,
-                true,
                 outputDir,
                 "outputDir/invalidDir",
                 true,
@@ -209,9 +201,10 @@ class AddEncryptedBallotJsonTest {
 
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, true)
+        val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+        val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
 
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         repeat(3) {
@@ -220,8 +213,6 @@ class AddEncryptedBallotJsonTest {
                 electionRecord.manifest(),
                 electionInit,
                 "device$it",
-                electionRecord.config().configBaux0,
-                true,
                 outputDir,
                 "$outputDir/invalidDir",
                 true,

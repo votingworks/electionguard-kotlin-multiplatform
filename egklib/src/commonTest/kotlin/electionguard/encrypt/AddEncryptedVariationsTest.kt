@@ -33,8 +33,6 @@ class AddEncryptedVariationsTest {
             electionRecord.manifest(),
             electionInit,
             device,
-            electionRecord.config().configBaux0,
-            false,
             outputDir,
             "${outputDir}/invalidDir",
             true,
@@ -71,8 +69,6 @@ class AddEncryptedVariationsTest {
                 electionRecord.manifest(),
                 electionInit,
                 "device$it",
-                electionRecord.config().configBaux0,
-                false,
                 outputDir,
                 "$outputDir/invalidDir",
                 true,
@@ -101,7 +97,9 @@ class AddEncryptedVariationsTest {
         val device = "device0"
 
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
+        val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+        val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
+
         val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
@@ -110,8 +108,6 @@ class AddEncryptedVariationsTest {
             electionRecord.manifest(),
             electionInit,
             device,
-            electionRecord.config().configBaux0,
-            true,
             outputDir,
             "${outputDir}/invalidDir",
             true,
@@ -138,7 +134,9 @@ class AddEncryptedVariationsTest {
         val outputDir = "$outputDirProto/testMultipleDevicesChaining"
 
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
+        val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+        val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
+
         val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
@@ -148,8 +146,6 @@ class AddEncryptedVariationsTest {
                 electionRecord.manifest(),
                 electionInit,
                 "device$it",
-                electionRecord.config().configBaux0,
-                true,
                 outputDir,
                 "$outputDir/invalidDir",
                 true,
@@ -189,7 +185,12 @@ class AddEncryptedVariationsTest {
         val device = "deviceM"
 
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
+        val electionInit = if (chained) {
+            val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+            electionRecord.electionInit()!!.copy(config = configWithChaining)
+        } else {
+            electionRecord.electionInit()!!
+        }
         val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
@@ -200,8 +201,6 @@ class AddEncryptedVariationsTest {
                 electionRecord.manifest(),
                 electionInit,
                 device,
-                electionRecord.config().configBaux0,
-                chained,
                 outputDir,
                 "${outputDir}/invalidDir",
                 true,

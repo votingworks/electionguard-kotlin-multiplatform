@@ -23,8 +23,6 @@ class AddEncryptedBallot(
     val manifest: Manifest,
     val electionInit: ElectionInitialized,
     val device : String,
-    val configBaux0 : ByteArray,
-    val chainCodes : Boolean,
     val outputDir: String, // write ballots here, must not have multiple writers to same directory
     val invalidDir: String,
     val isJson : Boolean,
@@ -43,6 +41,8 @@ class AddEncryptedBallot(
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(device)
     val ballotIds = mutableListOf<String>()
     val pending = mutableMapOf<String, CiphertextBallot>() // ccode.toHex() is key
+    val configBaux0 : ByteArray = electionInit.config.configBaux0
+    val configChaining : Boolean = electionInit.config.chainConfirmationCodes
     val baux0 : ByteArray
 
     private var lastConfirmationCode: UInt256 = UInt256.ZERO
@@ -61,7 +61,7 @@ class AddEncryptedBallot(
         if (chainResult is Ok) {
             // this is a restart on an existing chain
             val chain: EncryptedBallotChain = chainResult.unwrap()
-            require (chainCodes == chain.chaining)
+            require (configChaining == chain.chaining)
             baux0 = chain.baux0
             ballotIds.addAll(chain.ballotIds)
             this.lastConfirmationCode = chain.lastConfirmationCode
@@ -70,7 +70,7 @@ class AddEncryptedBallot(
             // hmmm you could check EncryptedBallotChain each time, in case of crash
 
         } else {
-            baux0 = if (!chainCodes) configBaux0 else
+            baux0 = if (!configChaining) configBaux0 else
                 hashFunction(electionInit.extendedBaseHash.bytes, 0x24.toByte(), configBaux0).bytes // eq 60
         }
     }
@@ -78,7 +78,7 @@ class AddEncryptedBallot(
     // must be single threaded
     fun encrypt(ballot: PlaintextBallot): Result<CiphertextBallot, String> {
         if (closed) {
-            throw RuntimeException("Adding ballot after chain has been closed")
+            return Err("Adding ballot after chain has been closed")
         }
 
         val mess = ballotValidator.validate(ballot)
@@ -88,7 +88,7 @@ class AddEncryptedBallot(
             return Err(" ${ballot.ballotId} did not validate, write to invalidDir= $invalidDir")
         }
 
-        val bauxj: ByteArray = if (!chainCodes || first) baux0 else
+        val bauxj: ByteArray = if (!configChaining || first) baux0 else
                                hashFunction(lastConfirmationCode.bytes, configBaux0).bytes // eq 61
         first = false
 
@@ -117,7 +117,8 @@ class AddEncryptedBallot(
         }
     }
 
-    override fun close() {
+    // write out pending, encryptedBallots, and chain (if chainCodes is true)
+    fun sync() {
         if (pending.isNotEmpty()) {
             val keys = pending.keys.toList()
             keys.forEach {
@@ -126,19 +127,23 @@ class AddEncryptedBallot(
                 submit(UInt256(ba), EncryptedBallot.BallotState.UNKNOWN)
             }
         }
-        val closing = EncryptedBallotChain(device, baux0, ballotIds, this.lastConfirmationCode, chainCodes, closeChain())
+        val closing = EncryptedBallotChain(device, baux0, ballotIds, this.lastConfirmationCode, configChaining, closeChain())
         publisher.writeEncryptedBallotChain(closing)
-        sink.close()
     }
 
     fun closeChain() : UInt256? {
-        closed = true
-        if (!chainCodes) return null
+        if (!configChaining) return null
 
         // Hbar = H(HE ; 24, Baux )
         // Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") (62)
         // H(Bℓ ) is the final confirmation code in the chain
         val bauxFinal = hashFunction(lastConfirmationCode.bytes, configBaux0, "CLOSE")
         return hashFunction(electionInit.extendedBaseHash.bytes, 0x24.toByte(), bauxFinal)
+    }
+
+    override fun close() {
+        sync()
+        sink.close()
+        closed = true
     }
 }

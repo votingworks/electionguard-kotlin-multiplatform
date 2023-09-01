@@ -36,8 +36,6 @@ class AddEncryptedBallotTest {
             electionRecord.manifest(),
             electionInit,
             device,
-            electionRecord.config().configBaux0,
-            false,
             outputDir,
             "${outputDir}/invalidDir",
             false,
@@ -72,8 +70,6 @@ class AddEncryptedBallotTest {
                 electionRecord.manifest(),
                 electionInit,
                 device,
-                electionRecord.config().configBaux0,
-                false,
                 outputDir,
                 "outputDir/invalidDir",
                 false,
@@ -108,8 +104,6 @@ class AddEncryptedBallotTest {
                 electionRecord.manifest(),
                 electionInit,
                 "device$it",
-                electionRecord.config().configBaux0,
-                false,
                 outputDir,
                 "$outputDir/invalidDir",
                 false,
@@ -135,7 +129,9 @@ class AddEncryptedBallotTest {
         val device = "device0"
 
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
+        val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+        val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
+
         val publisher = makePublisher(outputDir, true, false)
         publisher.writeElectionInitialized(electionInit)
 
@@ -144,8 +140,6 @@ class AddEncryptedBallotTest {
             electionRecord.manifest(),
             electionInit,
             device,
-            electionRecord.config().configBaux0,
-            true,
             outputDir,
             "${outputDir}/invalidDir",
             false,
@@ -170,7 +164,9 @@ class AddEncryptedBallotTest {
         val device = "device1"
 
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
+        val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+        val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
+
         val publisher = makePublisher(outputDir, true, false)
         publisher.writeElectionInitialized(electionInit)
 
@@ -180,8 +176,6 @@ class AddEncryptedBallotTest {
                 electionRecord.manifest(),
                 electionInit,
                 device,
-                electionRecord.config().configBaux0,
-                true,
                 outputDir,
                 "outputDir/invalidDir",
                 false,
@@ -206,7 +200,9 @@ class AddEncryptedBallotTest {
         val outputDir = "$outputDirProto/testMultipleDevicesChaining"
 
         val electionRecord = readElectionRecord(group, input)
-        val electionInit = electionRecord.electionInit()!!
+        val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
+        val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
+
         val publisher = makePublisher(outputDir, true, false)
         publisher.writeElectionInitialized(electionInit)
 
@@ -216,8 +212,6 @@ class AddEncryptedBallotTest {
                 electionRecord.manifest(),
                 electionInit,
                 "device$it",
-                electionRecord.config().configBaux0,
-                true,
                 outputDir,
                 "$outputDir/invalidDir",
                 false,
@@ -238,7 +232,7 @@ class AddEncryptedBallotTest {
     }
 }
 
-fun checkOutput(group : GroupContext, outputDir: String, expectedCount: Int, chained : Boolean = false) {
+fun checkOutput(group : GroupContext, outputDir: String, expectedCount: Int, chained : Boolean) {
     val consumer = makeConsumer(outputDir, group, false)
     var count = 0
     consumer.iterateAllEncryptedBallots { true }.forEach {
@@ -257,15 +251,23 @@ fun checkOutput(group : GroupContext, outputDir: String, expectedCount: Int, cha
     }
 
     val record = readElectionRecord(consumer)
-    val verifier = VerifyEncryptedBallots(group, record.manifest(),
+    val verifyEncryptions = VerifyEncryptedBallots(group, record.manifest(),
         ElGamalPublicKey(record.jointPublicKey()!!),
         record.extendedBaseHash()!!,
         record.config(), 1)
+
+    val stats = Stats()
+    val ballotResult = verifyEncryptions.verifyBallots(record.encryptedAllBallots { true }, stats)
+    println("verifyBallots =  $ballotResult")
+    assertTrue( ballotResult is Ok)
+    assertEquals( expectedCount, stats.count())
+
     if (chained) {
-        val result = verifier.verifyConfirmationChain(record)
+        val result = verifyEncryptions.verifyConfirmationChain(record)
         if (result is Err) {
             println("FAIL $result")
         }
+        println("verifyConfirmationChain =  $ballotResult")
         assertTrue(result is Ok)
     }
 }
