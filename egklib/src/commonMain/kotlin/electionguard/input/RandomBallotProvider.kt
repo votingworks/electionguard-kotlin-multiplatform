@@ -38,8 +38,11 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11) {
 
     fun getFakeBallot(manifest: Manifest, ballotStyleId: String, ballotId: String): PlaintextBallot {
         val contests: MutableList<PlaintextBallot.Contest> = ArrayList()
+        val ballotStyle = manifest.ballotStyles.find { it.ballotStyleId == ballotStyleId }
         for (contestp in manifest.contests) {
-            contests.add(makeContestFrom(contestp))
+            if (ballotStyle!!.geopoliticalUnitIds.contains(contestp.geopoliticalUnitId)) {
+                contests.add(makeContestFrom(contestp))
+            }
         }
         return PlaintextBallot(ballotId, ballotStyleId, contests)
     }
