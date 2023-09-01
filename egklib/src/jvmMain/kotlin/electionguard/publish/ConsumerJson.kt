@@ -103,7 +103,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     actual override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String> {
         val ballotChainPath = Path.of(jsonPaths.encryptedBallotChain(device))
         if (!Files.exists(ballotChainPath)) {
-            return Err("not exist")
+            return Err("readEncryptedBallotChain path '$ballotChainPath' does not exist")
         }
         return try {
             var chain: EncryptedBallotChain

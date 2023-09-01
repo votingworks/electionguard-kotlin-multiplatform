@@ -86,7 +86,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     actual override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String> {
         val ballotChain = protoPaths.encryptedBallotChain(device)
         if (!Files.exists(Path.of(ballotChain))) {
-            return Err("not exist")
+            return Err("readEncryptedBallotChain path '$ballotChain' does not exist")
         }
         return try {
             var proto: electionguard.protogen.EncryptedBallotChain

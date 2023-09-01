@@ -18,7 +18,6 @@ class RunExampleEncryption {
             val inputDir = "src/commonTest/data/workflow/allAvailableJson"
             val outputDir = "testOut/encrypt/ExampleEncryption"
             val device = "device0"
-            val chained = false
 
             val group = productionGroup()
             val electionRecord = readElectionRecord(group, inputDir)
@@ -31,8 +30,6 @@ class RunExampleEncryption {
                 electionRecord.manifest(),
                 electionInit,
                 device,
-                electionRecord.config().configBaux0,
-                chained,
                 outputDir,
                 "${outputDir}/invalidDir",
                 true, // isJson
@@ -51,7 +48,7 @@ class RunExampleEncryption {
             encryptor.close()
 
             // verify
-            verifyOutput(group, outputDir, chained)
+            verifyOutput(group, outputDir, electionInit.config.chainConfirmationCodes)
         }
 
         fun verifyOutput(group: GroupContext, outputDir: String, chained: Boolean = false) {
