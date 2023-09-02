@@ -15,7 +15,7 @@ class BallotInputValidation(val manifest: Manifest) {
     private val styles = manifest.ballotStyles.associateBy { it.ballotStyleId }
 
     fun validate(ballot: PlaintextBallot): ValidationMessages {
-        val ballotMesses = ValidationMessages("Ballot '${ballot.ballotId}'", 0)
+        val ballotMesses = ValidationMessages("Ballot '${ballot.ballotId}'", 1)
         val ballotStyle: Manifest.BallotStyle? = styles[ballot.ballotStyle]
         
         // Referential integrity of ballot's BallotStyle id

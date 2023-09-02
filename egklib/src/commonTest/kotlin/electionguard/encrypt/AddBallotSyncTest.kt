@@ -38,8 +38,7 @@ class AddBallotSyncTest {
             device,
             outputDir,
             "outputDir/invalidDir",
-            true,
-            false,
+            isJson = publisher.isJson(),
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -60,7 +59,7 @@ class AddBallotSyncTest {
         val ballot = ballotProvider.makeBallot()
         val result = encryptor.encrypt(ballot)
         assertTrue(result is Err)
-        assertEquals("Adding ballot after chain has been closed", result.error)
+        assertEquals("Trying to add ballot after chain has been closed", result.error)
     }
 
     @Test
@@ -81,8 +80,7 @@ class AddBallotSyncTest {
             device,
             outputDir,
             "outputDir/invalidDir",
-            false,
-            false,
+            isJson = publisher.isJson(),
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -103,7 +101,7 @@ class AddBallotSyncTest {
         val ballot = ballotProvider.makeBallot()
         val result = encryptor.encrypt(ballot)
         assertTrue(result is Err)
-        assertEquals("Adding ballot after chain has been closed", result.error)
+        assertEquals("Trying to add ballot after chain has been closed", result.error)
     }
 
     @Test
@@ -126,8 +124,7 @@ class AddBallotSyncTest {
             device,
             outputDir,
             "outputDir/invalidDir",
-            true,
-            false,
+            isJson = publisher.isJson(),
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -148,7 +145,7 @@ class AddBallotSyncTest {
         val ballot = ballotProvider.makeBallot()
         val result = encryptor.encrypt(ballot)
         assertTrue(result is Err)
-        assertEquals("Adding ballot after chain has been closed", result.error)
+        assertEquals("Trying to add ballot after chain has been closed", result.error)
     }
 
     @Test
@@ -171,8 +168,7 @@ class AddBallotSyncTest {
             device,
             outputDir,
             "outputDir/invalidDir",
-            false,
-            false,
+            isJson = publisher.isJson(),
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -193,7 +189,7 @@ class AddBallotSyncTest {
         val ballot = ballotProvider.makeBallot()
         val result = encryptor.encrypt(ballot)
         assertTrue(result is Err)
-        assertEquals("Adding ballot after chain has been closed", result.error)
+        assertEquals("Trying to add ballot after chain has been closed", result.error)
     }
 
 }

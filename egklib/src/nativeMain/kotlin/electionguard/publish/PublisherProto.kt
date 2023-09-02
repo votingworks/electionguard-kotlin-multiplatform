@@ -26,6 +26,8 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
         }
     }
 
+    actual override fun isJson() : Boolean = false
+
     actual override fun writeManifest(manifest: Manifest) : String {
         val proto = manifest.publishProto()
         val buffer = proto.encodeToByteArray()

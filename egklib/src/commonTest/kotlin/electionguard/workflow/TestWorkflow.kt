@@ -119,8 +119,7 @@ class TestWorkflow {
             "device009",
             workingDir,
             invalidDir,
-            false,
-            false,
+            isJson = publisher.isJson(),
         )
         var count = 1
         ballots.forEach { ballot ->
@@ -284,8 +283,7 @@ class TestWorkflow {
             "runWorkflowChainedJson",
             workingDir,
             invalidDir,
-            true,
-            false,
+            isJson = publisher.isJson(),
         )
         var count = 1
         ballots.forEach { ballot ->
