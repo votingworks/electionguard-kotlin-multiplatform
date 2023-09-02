@@ -49,7 +49,7 @@ and allows the voter to cast or challenge
 
 ## 3. Voter casts the ballot
 
-Your system then gives the voter the opportunity to challenge or to cast the ballot:
+If the voter decides to cast the ballot:
 
 ````
     fun myCastBallot(confirmationCode : UInt256) : Boolean {
@@ -74,7 +74,7 @@ If the voter decides to challenge the ballot:
 
 ````
     fun myChallengeBallot(confirmationCode : UInt256) : Boolean {
-       val challengeResult : Result<PlaintextBallot, String> = addEncryptor.challenge(confirmationCode) // (1)
+       val challengeResult : Result<Boolean, String> = addEncryptor.challenge(confirmationCode) // (1)
        if (challengeResult is Ok) {
            return true // (2)
        } else {
@@ -94,22 +94,23 @@ If the voter decides to challenge the ballot:
 If the voter decides to challenge the ballot and get an immediate decryption:
 
 ````
-    fun myChallengeBallot(confirmationCode : UInt256) : PlaintextBallot? {
-       val challengeResult : Result<PlaintextBallot, String> = addEncryptor.challengeAndDecrypt(confirmationCode) // (1)
-       if (challengeResult is Ok) {
-           return challengeResult.unwrap() // (2)
-       } else {
-           println("${challengeResult.getError()}") // (3)
-            // process error
-            return null
+  fun myChallengeAndDecryptBallot(confirmationCode : UInt256) : PlaintextBallot? {
+
+      val decryptResult = addEncryptor.challengeAndDecrypt(ccode) // (1)
+      if (decryptResult is Ok) {
+          return decryptResult.unwrap() // (2)
+      } else {
+          println("${decryptResult.getError()}") // (3)
+          // process error
+          return null
       }
     }
 ````
 
-1. addEncryptor records the ballot as challenged and decrypts it, or returns an error message.
-2. the ballot is successfully challenged, and is in the election record for further verification. 
-   myChallengeBallot returns the decrypted ballot, which can be compared to the original.
-3. An error occurs if the confirmationCode is incorrect, or has already been submitted.
+   1. addEncryptor records the ballot as challenged and decrypts it, or returns an error message.
+   2. the ballot is successfully challenged, and is in the election record for further verification.
+      myChallengeAndDecryptBallot returns the decrypted ballot, which can be compared to the original.
+   3. An error occurs if the confirmationCode is incorrect, or has already been submitted.
 
 ## 6. Working with chained ballots
 

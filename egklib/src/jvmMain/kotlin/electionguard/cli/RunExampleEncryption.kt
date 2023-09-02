@@ -26,7 +26,7 @@ class RunExampleEncryption {
             val electionRecord = readElectionRecord(group, inputDir)
             val manifest = electionRecord.manifest()
             val electionInit = electionRecord.electionInit()!!
-            val publisher = makePublisher(outputDir, true, true)
+            val publisher = makePublisher(outputDir, true, electionRecord.isJson())
             publisher.writeElectionInitialized(electionInit)
 
             val encryptor = AddEncryptedBallot(
