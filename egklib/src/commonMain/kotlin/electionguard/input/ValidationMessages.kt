@@ -17,10 +17,10 @@ class ValidationMessages(val id: String, private val level: Int) {
 
     override fun toString(): String {
         if (!hasErrors()) {
-            return "$id all OK\n"
+            return "$id all OK"
         }
         val builder = StringBuilder(2000)
-        builder.append("$id hasProblems\n")
+        builder.append("$id hasProblems:")
             for (mess in messages) {
                 builder.append("$indent$mess\n")
             }

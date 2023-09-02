@@ -11,7 +11,7 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-class AddEncryptedVariationsTest {
+class AddEncryptedUnorderedTest {
     val group = productionGroup()
     val input = "src/commonTest/data/workflow/allAvailableJson"
     val outputDirProto = "testOut/encrypt/AddEncryptedUnorderedTest"
@@ -35,8 +35,7 @@ class AddEncryptedVariationsTest {
             device,
             outputDir,
             "${outputDir}/invalidDir",
-            true,
-            false,
+            isJson = publisher.isJson(),
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -71,8 +70,7 @@ class AddEncryptedVariationsTest {
                 "device$it",
                 outputDir,
                 "$outputDir/invalidDir",
-                true,
-                false,
+                isJson = publisher.isJson(),
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -110,8 +108,7 @@ class AddEncryptedVariationsTest {
             device,
             outputDir,
             "${outputDir}/invalidDir",
-            true,
-            false,
+            isJson = publisher.isJson(),
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -148,8 +145,7 @@ class AddEncryptedVariationsTest {
                 "device$it",
                 outputDir,
                 "$outputDir/invalidDir",
-                true,
-                false,
+                isJson = publisher.isJson(),
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -181,6 +177,10 @@ class AddEncryptedVariationsTest {
         testMultipleCalls(outputDir, false, false, true)
     }
 
+    /**
+     * @param shuffle: shuffle the order in which the encrypted ballots are submitted
+     * @param skip: some of the encrypted ballots are not submitted
+     */
     fun testMultipleCalls(outputDir: String, shuffle: Boolean, skip: Boolean, chained: Boolean) {
         val device = "deviceM"
 
@@ -203,8 +203,7 @@ class AddEncryptedVariationsTest {
                 device,
                 outputDir,
                 "${outputDir}/invalidDir",
-                true,
-                false,
+                isJson = publisher.isJson(),
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 

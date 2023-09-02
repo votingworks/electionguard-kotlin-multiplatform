@@ -20,7 +20,7 @@ class ManifestInputValidation(val manifest: Manifest) {
 
     /** Determine if a manifest is valid.  */
     fun validate(): ValidationMessages {
-        val manifestMessages = ValidationMessages("Manifest '${manifest.electionScopeId}'", 0)
+        val manifestMessages = ValidationMessages("Manifest '${manifest.electionScopeId}'", 1)
 
         // Referential integrity of BallotStyle geopolitical_unit_ids
         for (ballotStyle in manifest.ballotStyles) {

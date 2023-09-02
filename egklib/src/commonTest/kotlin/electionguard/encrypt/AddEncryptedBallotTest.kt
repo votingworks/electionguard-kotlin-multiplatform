@@ -38,8 +38,7 @@ class AddEncryptedBallotTest {
             device,
             outputDir,
             "${outputDir}/invalidDir",
-            false,
-            false,
+            isJson = publisher.isJson(),
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -72,8 +71,7 @@ class AddEncryptedBallotTest {
                 device,
                 outputDir,
                 "outputDir/invalidDir",
-                false,
-                false,
+                isJson = publisher.isJson(),
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -106,8 +104,7 @@ class AddEncryptedBallotTest {
                 "device$it",
                 outputDir,
                 "$outputDir/invalidDir",
-                false,
-                false,
+                isJson = publisher.isJson(),
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -142,8 +139,7 @@ class AddEncryptedBallotTest {
             device,
             outputDir,
             "${outputDir}/invalidDir",
-            false,
-            false,
+            isJson = publisher.isJson(),
         )
         val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -178,8 +174,7 @@ class AddEncryptedBallotTest {
                 device,
                 outputDir,
                 "outputDir/invalidDir",
-                false,
-                false,
+                isJson = publisher.isJson(),
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 
@@ -214,8 +209,7 @@ class AddEncryptedBallotTest {
                 "device$it",
                 outputDir,
                 "$outputDir/invalidDir",
-                false,
-                false,
+                isJson = publisher.isJson(),
             )
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
 

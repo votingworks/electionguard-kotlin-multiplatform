@@ -1,5 +1,7 @@
 package electionguard.cli
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.getError
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
@@ -9,6 +11,7 @@ import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
 import electionguard.verifier.VerifyEncryptedBallots
+import kotlin.random.Random
 
 class RunExampleEncryption {
 
@@ -16,11 +19,12 @@ class RunExampleEncryption {
         @JvmStatic
         fun main(args: Array<String>) {
             val inputDir = "src/commonTest/data/workflow/allAvailableJson"
-            val outputDir = "testOut/encrypt/ExampleEncryption"
+            val outputDir = "testOut/encrypt/RunExampleEncryption"
             val device = "device0"
 
             val group = productionGroup()
             val electionRecord = readElectionRecord(group, inputDir)
+            val manifest = electionRecord.manifest()
             val electionInit = electionRecord.electionInit()!!
             val publisher = makePublisher(outputDir, true, true)
             publisher.writeElectionInitialized(electionInit)
@@ -30,34 +34,50 @@ class RunExampleEncryption {
                 electionRecord.manifest(),
                 electionInit,
                 device,
-                outputDir,
-                "${outputDir}/invalidDir",
-                true, // isJson
-                false,
+                outputDir = outputDir,
+                invalidDir ="testOut/encrypt/invalidDir",
+                isJson = publisher.isJson(),
             )
 
-            // encrypt 7 randomly generated ballots
+            // encrypt randomly generated ballots
+            val nballots = 17
             val ballotProvider = RandomBallotProvider(electionRecord.manifest())
-            repeat(7) {
-                val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+            repeat(nballots) {
+                val ballot = ballotProvider.getFakeBallot(manifest, "ballotStyle", "ballot$it")
+                val encryptResult = encryptor.encrypt(ballot)
+                if (encryptResult is Ok) {
+                    val ccode = encryptResult.unwrap().confirmationCode
+                    // randomly challenge a few
+                    val challengeIt = Random.nextInt(nballots) < 2
+                    if (challengeIt) {
+                        val decryptResult = encryptor.challengeAndDecrypt(ccode)
+                        if (decryptResult is Ok) {
+                            println("challenged $ccode, decryption Ok = ${ballot == decryptResult.unwrap()}")
+                        } else {
+                            println("challengeAndDecrypt failed = ${decryptResult.getError()}")
+                        }
+                    } else {
+                        encryptor.cast(ccode)
+                    }
+                } else {
+                    println("encryptResult failed = ${encryptResult.getError()}")
+                }
             }
 
             // write out the results to outputDir
             encryptor.close()
 
             // verify
-            verifyOutput(group, outputDir, electionInit.config.chainConfirmationCodes)
+            verifyOutput(group, outputDir, nballots, electionInit.config.chainConfirmationCodes)
         }
 
-        fun verifyOutput(group: GroupContext, outputDir: String, chained: Boolean = false) {
+        fun verifyOutput(group: GroupContext, outputDir: String, expectedCount : Int, chained: Boolean = false) {
             val consumer = makeConsumer(outputDir, group, false)
             var count = 0
             consumer.iterateAllEncryptedBallots { true }.forEach {
                 count++
             }
-            println("$count EncryptedBallots")
+            println("$count EncryptedBallots ok=${count == expectedCount}")
 
             val record = readElectionRecord(consumer)
             val verifier = VerifyEncryptedBallots(
@@ -69,11 +89,11 @@ class RunExampleEncryption {
 
             // Note we are verifying all ballots, not just CAST
             val verifierResult = verifier.verifyBallots(record.encryptedAllBallots { true })
-            println("verifyEncryptedBallots $verifierResult")
+            println("verifyEncryptedBallots: $verifierResult")
 
             if (chained) {
                 val chainResult = verifier.verifyConfirmationChain(record)
-                println(" verifyChain $chainResult")
+                println(" verifyChain: $chainResult")
             }
         }
     }

@@ -22,6 +22,8 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         validateOutputDir(topDir)
     }
 
+    actual override fun isJson() : Boolean = true
+
     private fun writeToFile(fileout: String, stringOut: String) {
         val file: CPointer<FILE> = openFile(fileout, "wb")
         try {

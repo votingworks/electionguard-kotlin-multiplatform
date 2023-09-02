@@ -8,6 +8,7 @@ import electionguard.publish.readElectionRecord
 import electionguard.verifier.runVerifier
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertFailsWith
 
 class RunBatchEncryptionTest {
     val nthreads = 25
@@ -124,7 +125,9 @@ class RunBatchEncryptionTest {
 
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, inputDir)
-        val ballots = RandomBallotProvider(electionRecord.manifest(), 1).ballots("badStyleId")
+
+        val ballot = RandomBallotProvider(electionRecord.manifest(), 1).makeBallot()
+        val ballots = listOf( ballot.copy(ballotStyle = "badStyleId"))
 
         batchEncryption(
             group,

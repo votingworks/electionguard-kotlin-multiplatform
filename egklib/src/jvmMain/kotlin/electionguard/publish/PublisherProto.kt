@@ -39,6 +39,8 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         validateOutputDir(electionRecordDir, Formatter())
     }
 
+    actual override fun isJson() : Boolean = false
+
     ////////////////////
     // duplicated from ElectionRecordPath so that we can use java.nio.file.Path
 
