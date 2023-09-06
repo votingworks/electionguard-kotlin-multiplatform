@@ -11,7 +11,7 @@ _last update 9/06/2023_
   git clone https://github.com/danwallach/electionguard-kotlin-multiplatform.git
 ```
 
-2. **Java 17+**. Make it your default Java when working with egk.
+2. **Java 17+**. Install as needed, and make it your default Java when working with egk.
 
     _In general, we will use the latest version of the JVM with long-term-support (aka LTS). 
     This is the "language level" or bytecode version, along with the library API's, that our code assumes. 
@@ -44,6 +44,13 @@ To build the complete library and run the standard tests:
 ```
   cd devhome/electionguard-kotlin-multiplatform
   ./gradlew build
+```
+
+To just do a clean build (no tests):
+
+```
+  cd devhome/electionguard-kotlin-multiplatform
+  ./gradlew clean assemble
 ```
 
 You should find that the library jar file is placed into:
@@ -108,13 +115,6 @@ And you can also add it to your classpath to execute programs from the command l
     -in /path/to/election_record
 ```
 
-/usr/lib/jvm/jdk-19/bin/java \
-    -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-    -classpath /home/stormy/dev/github/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
-     electionguard.verifier.RunVerifierKt \
-    -in /home/stormy/dev/github/electionguard-kotlin-multiplatform/egklib/src/commonTest/data/workflow/allAvailableJson
-
-
 Since the main class is _electionguard.verifier.RunVerifierKt_ you can also run the verifier as:
 
 ```
@@ -123,8 +123,3 @@ Since the main class is _electionguard.verifier.RunVerifierKt_ you can also run 
     -jar devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
     -in /path/to/election_record
 ```
-
-/usr/lib/jvm/jdk-19/bin/java \
-    -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-    -jar /home/stormy/dev/github/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
-    -in /home/stormy/dev/github/electionguard-kotlin-multiplatform/egklib/src/commonTest/data/workflow/allAvailableJson
