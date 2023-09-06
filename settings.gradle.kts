@@ -15,7 +15,7 @@ dependencyResolutionManagement {
             plugin("serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin-version")
             plugin("formatter", "tech.formatter-kt.formatter").version("0.7.9")
 
-            library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
+            library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:0.3.6")
             library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             library("kotlinx-coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines-version")
             library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
