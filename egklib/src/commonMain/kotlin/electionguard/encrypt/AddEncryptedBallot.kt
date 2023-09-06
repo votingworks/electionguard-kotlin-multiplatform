@@ -67,7 +67,7 @@ class AddEncryptedBallot(
         if (chainResult is Ok) {
             // this is a restart on an existing chain
             val chain: EncryptedBallotChain = chainResult.unwrap()
-            require (configChaining == chain.chaining)
+            require (configChaining == chain.chaining) { "mismatched chaining config=$configChaining ouputDir=${chain.chaining}"}
             baux0 = chain.baux0
             ballotIds.addAll(chain.ballotIds)
             this.lastConfirmationCode = chain.lastConfirmationCode

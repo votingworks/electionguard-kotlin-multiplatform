@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.cli.jvm.compiler.createLibraryListForJvm
+
 val kotlin_version: String by project
 
 buildscript {
@@ -7,7 +9,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("multiplatform") version providers.gradleProperty("kotlinVersion").get()
+    kotlin("multiplatform") version "1.9.10"
 
     // cross-platform serialization support
     alias(libs.plugins.serialization)
@@ -238,4 +240,74 @@ tasks.register("showConfigurations") {
     configurations.forEach {
         println(it.name)
     }
+}
+
+/*
+tasks.register("fatJar", Jar::class.java) {
+    archiveClassifier.set("all")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes("Main-Class" to "electionguard.wtf")
+    }
+    from(configurations.named("jvmRuntimeClasspath")
+        .onEach { println("add from dependencies: ${it.name}") }
+        .map { if (it.isDirectory) it else zipTree(it) })
+    val sourcesMain = sourceSets.main.get()
+    (sourcesMain.allSource as Iterable).forEach { println("add from sources: ${it.name}") }
+    from(sourcesMain.output)
+}
+
+ */
+
+tasks {
+    register("fatJar", Jar::class.java) {
+        archiveClassifier.set("all")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        manifest {
+            attributes("Main-Class" to "electionguard.wtf")
+        }
+        from(configurations.getByName("jvmRuntimeClasspath")
+            .onEach { println("add from dependencies: ${it.name}") }
+            .map { if (it.isDirectory) it else zipTree(it) })
+        //val sourcesMain = sourceSets.main.get()
+        //from(sourcesMain.output)
+    }
+}
+
+tasks.register("makeFatJarKamp", Jar::class.java) {
+    archiveClassifier.set("all")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    val classpath = configurations.getByName("jvmRuntimeClasspath")
+        .onEach { println("add from dependencies: ${it.name}") }
+        .map { if (it.isDirectory) it else zipTree(it) }
+    from(classpath) {
+        exclude("META-INF/*.SF")
+        exclude("META-INF/*.DSA")
+        exclude("META-INF/*.RSA")
+    }
+
+    val mainClassName = "electionguard.verifier.RunVerifierKt"
+
+    manifest {
+        attributes(mapOf(
+            "Main-Class" to mainClassName,
+            "Built-By" to System.getProperty("user.name"),
+            "Build-Jdk" to System.getProperty("java.version"),
+            "Implementation-Version" to project.version,
+            "Created-By" to "Gradle v${org.gradle.util.GradleVersion.current()}",
+        ))
+    }
+
+    inputs.property("mainClassName", mainClassName)
+    inputs.files(classpath)
+    inputs.files(outputs)
+}
+
+tasks.create<JavaExec>("makeFatJar") {
+    val main = "electionguard.verifier.RunVerfifier"
+    classpath = objects.fileCollection().from(
+        tasks.named("compileKotlinJvm"),
+        configurations.named("jvmRuntimeClasspath")
+    )
 }
