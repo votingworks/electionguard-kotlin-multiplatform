@@ -22,21 +22,26 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.io.TempDir
 import java.io.FileOutputStream
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.test.Test
 
+// TODO assumes that testOut is present?) github action is failing
+// TallyDecryptionTest[jvm] > testTallyDecryptionTestVector()[jvm] FAILED
+//     java.io.FileNotFoundException at TallyDecryptionTestVector.kt:35
 class TallyDecryptionTest {
 
     @Test
-    fun testTallyDecryptionTestVector() {
+    fun testTallyDecryptionTestVector(@TempDir tempDir : Path) {
         // all trustees present
-        val testVector1 = TallyDecryptionTestVector(3, 3, listOf(), "testOut/testvectors/TallyDecryptionTestVector.json")
+        val testVector1 = TallyDecryptionTestVector(3, 3, listOf(), tempDir.resolve("TallyDecryptionTestVector.json"))
         testVector1.makeTallyPartialDecryptionTestVector()
         testVector1.readTallyPartialDecryptionTestVector()
 
         // 3 of 4 trustees present
-        val testVector2 = TallyDecryptionTestVector(4, 3, listOf(1), "testOut/testvectors/TallyPartialDecryptionTestVector.json")
+        val testVector2 = TallyDecryptionTestVector(4, 3, listOf(1), tempDir.resolve("TallyPartialDecryptionTestVector.json"))
         testVector2.makeTallyPartialDecryptionTestVector()
         testVector2.readTallyPartialDecryptionTestVector()
     }
@@ -46,7 +51,7 @@ class TallyDecryptionTestVector(
     val numberOfGuardians: Int,
     val quorum: Int,
     val missingCoordinates: List<Int>,
-    val outputFile: String
+    val outputFile: Path
 ) {
     private val jsonFormat = Json { prettyPrint = true }
     val group = productionGroup()
@@ -158,7 +163,7 @@ class TallyDecryptionTestVector(
         )
         println(jsonFormat.encodeToString(tallyPartialDecryptionTestVector))
 
-        FileOutputStream(outputFile).use { out ->
+        FileOutputStream(outputFile.toFile()).use { out ->
             jsonFormat.encodeToStream(tallyPartialDecryptionTestVector, out)
             out.close()
         }
@@ -168,7 +173,7 @@ class TallyDecryptionTestVector(
         val fileSystem = FileSystems.getDefault()
         val fileSystemProvider = fileSystem.provider()
         val testVector: TallyPartialDecryptionTestVector =
-            fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
+            fileSystemProvider.newInputStream(outputFile).use { inp ->
                 Json.decodeFromStream<TallyPartialDecryptionTestVector>(inp)
             }
 
