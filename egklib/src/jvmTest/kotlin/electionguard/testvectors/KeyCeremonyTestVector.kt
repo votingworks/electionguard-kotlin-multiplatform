@@ -7,15 +7,17 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import org.junit.jupiter.api.io.TempDir
 import java.io.FileOutputStream
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.io.use
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class KeyCeremonyTestVector {
     private val jsonFormat = Json { prettyPrint = true }
-    private val outputFile = "testOut/testvectors/KeyCeremonyTestVector.json"
+    private var outputFile = "testOut/testvectors/KeyCeremonyTestVector.json"
 
     val numberOfGuardians = 5
     val quorum = 3
@@ -48,7 +50,8 @@ class KeyCeremonyTestVector {
     )
 
     @Test
-    fun testKeyCeremonyTestVector() {
+    fun testKeyCeremonyTestVector(@TempDir tempDir : Path) {
+        outputFile = tempDir.resolve("KeyCeremonyTestVector.json").toString()
         makeKeyCeremonyTestVector()
         readKeyCeremonyTestVector()
     }

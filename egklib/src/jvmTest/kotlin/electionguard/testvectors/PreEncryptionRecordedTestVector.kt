@@ -18,8 +18,10 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.io.TempDir
 import java.io.FileOutputStream
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.io.use
 import kotlin.random.Random
 import kotlin.test.Test
@@ -28,7 +30,7 @@ import kotlin.test.assertEquals
 /** Generate the election record information from a Pre-encrypted Ballot that has been voted. */
 class PreEncryptionRecordedTestVector {
     private val jsonFormat = Json { prettyPrint = true }
-    private val outputFile = "testOut/testvectors/PreEncryptionRecordedTestVector.json"
+    private var outputFile = "testOut/testvectors/PreEncryptionRecordedTestVector.json"
 
     val group = productionGroup()
 
@@ -45,7 +47,8 @@ class PreEncryptionRecordedTestVector {
     )
 
     @Test
-    fun testPreEncryptionRecordedTestVector() {
+    fun testPreEncryptionRecordedTestVector(@TempDir tempDir : Path) {
+        outputFile = tempDir.resolve("PreEncryptionRecordedTestVector.json").toString()
         makePreEncryptionRecordedTestVector()
         readPreEncryptionRecordedTestVector()
     }

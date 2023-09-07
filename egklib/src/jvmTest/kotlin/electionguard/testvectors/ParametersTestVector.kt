@@ -12,8 +12,10 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import org.junit.jupiter.api.io.TempDir
 import java.io.FileOutputStream
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.io.use
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,7 +23,7 @@ import kotlin.text.toByteArray
 
 class ParametersTestVector {
     private val jsonFormat = Json { prettyPrint = true }
-    private val outputFile = "testOut/testvectors/ParametersTestVector.json"
+    private var outputFile = "testOut/testvectors/ParametersTestVector.json"
 
     @Serializable
     data class PrimesJson(
@@ -65,7 +67,8 @@ class ParametersTestVector {
     )
 
     @Test
-    fun testParametersTestVector() {
+    fun testParametersTestVector(@TempDir tempDir : Path) {
+        outputFile = tempDir.resolve("ParametersTestVector.json").toString()
         makeParametersTestVector()
         readParametersTestVector()
     }

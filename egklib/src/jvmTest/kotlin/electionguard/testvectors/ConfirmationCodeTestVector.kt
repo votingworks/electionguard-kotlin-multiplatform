@@ -17,14 +17,16 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import org.junit.jupiter.api.io.TempDir
 import java.io.FileOutputStream
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ConfirmationCodeTestVector {
     private val jsonFormat = Json { prettyPrint = true }
-    private val outputFile = "testOut/testvectors/ConfirmationCodeTestVector.json"
+    private var outputFile = "testOut/testvectors/ConfirmationCodeTestVector.json"
 
     val group = productionGroup()
     val nBallots = 1
@@ -70,7 +72,8 @@ class ConfirmationCodeTestVector {
     )
 
     @Test
-    fun testConfirmationCodeTestVector() {
+    fun testConfirmationCodeTestVector(@TempDir tempDir : Path) {
+        outputFile = tempDir.resolve("ConfirmationCodeTestVector.json").toString()
         makeConfirmationCodeTestVector()
         readConfirmationCodeTestVector()
     }

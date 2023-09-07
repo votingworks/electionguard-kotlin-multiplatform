@@ -31,10 +31,12 @@ import kotlin.test.Test
 // TODO assumes that testOut is present?) github action is failing
 // TallyDecryptionTest[jvm] > testTallyDecryptionTestVector()[jvm] FAILED
 //     java.io.FileNotFoundException at TallyDecryptionTestVector.kt:35
+// was     private val outputFile = "testOut/testvectors/TallyDecryptionTestVector.json" etc
 class TallyDecryptionTest {
 
     @Test
     fun testTallyDecryptionTestVector(@TempDir tempDir : Path) {
+        println("tempDir = $tempDir")
         // all trustees present
         val testVector1 = TallyDecryptionTestVector(3, 3, listOf(), tempDir.resolve("TallyDecryptionTestVector.json"))
         testVector1.makeTallyPartialDecryptionTestVector()

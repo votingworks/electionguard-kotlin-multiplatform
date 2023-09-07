@@ -15,14 +15,16 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.io.TempDir
 import java.io.FileOutputStream
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BallotChainingTestVector {
     private val jsonFormat = Json { prettyPrint = true }
-    private val outputFile = "testOut/testvectors/BallotChainingTestVector.json"
+    private var outputFile = "testOut/testvectors/BallotChainingTestVector.json"
 
     val group = productionGroup()
     val nBallots = 12
@@ -68,7 +70,8 @@ class BallotChainingTestVector {
     )
 
     @Test
-    fun testBallotChainingTestVector() {
+    fun testBallotChainingTestVector(@TempDir tempDir : Path) {
+        outputFile = tempDir.resolve("BallotChainingTestVector.json").toString()
         makeBallotChainingTestVector()
         readBallotChainingTestVector()
     }
