@@ -1,11 +1,13 @@
 # ElectionGuard-Kotlin-Multiplatform
 
-_last update 9/05/2023_
+_last update 9/06/2023_
 
 ElectionGuard-Kotlin-Multiplatform (EKM) is a multiplatform Kotlin implementation of 
 [ElectionGuard](https://github.com/microsoft/electionguard), 
 [version 2.0.0](https://github.com/microsoft/electionguard/releases/download/v2.0/EG_Spec_2_0.pdf), 
-available under an MIT-style open source [License](LICENSE).
+available under an MIT-style open source [License](LICENSE). 
+
+The GitHub repository is now hosted by [VotingWorks](https://github.com/votingworks/electionguard-kotlin-multiplatform.git).
 
 EKM can use both JSON and [Protocol Buffers](https://en.wikipedia.org/wiki/Protocol_Buffers) for serialization. 
 Protobuf is a binary format that takes roughly half the space of JSON for the same information. 
