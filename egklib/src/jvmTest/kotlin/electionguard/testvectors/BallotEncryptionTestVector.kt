@@ -14,14 +14,16 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import org.junit.jupiter.api.io.TempDir
 import java.io.FileOutputStream
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BallotEncryptionTestVector {
     private val jsonFormat = Json { prettyPrint = true }
-    private val outputFile = "testOut/testvectors/BallotEncryptionTestVector.json"
+    private var outputFile = "testOut/testvectors/BallotEncryptionTestVector.json"
 
     val group = productionGroup()
     val nBallots = 1
@@ -96,7 +98,8 @@ class BallotEncryptionTestVector {
     )
 
     @Test
-    fun testBallotEncryptionTestVector() {
+    fun testBallotEncryptionTestVector(@TempDir tempDir : Path) {
+        outputFile = tempDir.resolve("BallotEncryptionTestVector.json").toString()
         makeBallotEncryptionTestVector()
         readBallotEncryptionTestVector()
     }

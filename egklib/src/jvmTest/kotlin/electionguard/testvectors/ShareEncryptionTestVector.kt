@@ -12,15 +12,17 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.io.TempDir
 import java.io.FileOutputStream
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import kotlin.io.use
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ShareEncryptionTestVector {
     private val jsonFormat = Json { prettyPrint = true }
-    private val outputFile = "testOut/testvectors/ShareEncryptionTestVector.json"
+    private var outputFile = "testOut/testvectors/ShareEncryptionTestVector.json"
 
     val numberOfGuardians = 3
     val quorum = 3
@@ -118,7 +120,8 @@ class ShareEncryptionTestVector {
     )
 
     @Test
-    fun testShareEncryptionTestVector() {
+    fun testShareEncryptionTestVector(@TempDir tempDir : Path) {
+        outputFile = tempDir.resolve("ShareEncryptionTestVector.json").toString()
         makeShareEncryptionTestVector()
         readShareEncryptionTestVector()
     }
