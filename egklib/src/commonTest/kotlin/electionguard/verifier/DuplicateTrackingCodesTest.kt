@@ -30,7 +30,7 @@ class DuplicateTrackingCodesTest {
             count++
         }
 
-        println("verify duplicate ballots fail")
+        // verify duplicate ballots fail
         val verifier = Verifier(electionRecord)
         val results = verifier.verifyEncryptedBallots(mungedBallots, Stats())
         assertTrue(results is Err)
