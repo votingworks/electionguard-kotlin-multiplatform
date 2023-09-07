@@ -1,5 +1,7 @@
 # Verification
 
+_last update 9/07/2023_
+
 ElectionGuard-Kotlin-Multiplatform library fully implements the **Verifier** section 6 of the ElectionGuard specification.
 Use the classes in the _egklib/src/commonMain/kotlin/electionguard/verifier_ package in your own program, 
 or the existing CLI program.
