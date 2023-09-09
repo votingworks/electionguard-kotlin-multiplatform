@@ -1,14 +1,15 @@
 package electionguard.keyceremony
 
+import electionguard.cli.RunTrustedKeyCeremony
+import electionguard.cli.RunVerifier
 import electionguard.core.productionGroup
-import electionguard.verifier.runVerifier
 import kotlin.test.Test
 
 class RunKeyCeremonyTest {
 
     @Test
     fun testKeyCeremonyJson() {
-        main(
+        RunTrustedKeyCeremony.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/startConfigJson",
@@ -18,12 +19,12 @@ class RunKeyCeremonyTest {
                 "testOut/keyceremony/testKeyCeremonyJson",
             )
         )
-        runVerifier(productionGroup(), "testOut/keyceremony/testKeyCeremonyJson", 1, true)
+        RunVerifier.runVerifier(productionGroup(), "testOut/keyceremony/testKeyCeremonyJson", 1, true)
     }
 
     @Test
     fun testKeyCeremonyProto() {
-        main(
+        RunTrustedKeyCeremony.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/startConfigProto",
@@ -33,7 +34,7 @@ class RunKeyCeremonyTest {
                 "testOut/keyceremony/testKeyCeremonyProto",
             )
         )
-        runVerifier(productionGroup(), "testOut/keyceremony/testKeyCeremonyProto", 1, true)
+        RunVerifier.runVerifier(productionGroup(), "testOut/keyceremony/testKeyCeremonyProto", 1, true)
     }
 
 }

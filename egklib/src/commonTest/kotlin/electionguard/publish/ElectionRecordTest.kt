@@ -2,8 +2,8 @@ package electionguard.publish
 
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
+import electionguard.cli.RunVerifier
 import electionguard.core.*
-import electionguard.verifier.runVerifier
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -49,8 +49,7 @@ class ElectionRecordTest {
         readDecryption(decryption)
         validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally)
 
-        //
-        assertTrue(runVerifier(group, topdir, 11, true))
+        assertTrue(RunVerifier.runVerifier(group, topdir, 11, true))
     }
 
     fun readDecryption(decryption: DecryptionResult) {

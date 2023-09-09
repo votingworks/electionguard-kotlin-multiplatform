@@ -1,7 +1,8 @@
 package electionguard.decryptBallot
 
+import electionguard.cli.RunTrustedBallotDecryption.Companion.runDecryptBallots
+import electionguard.cli.RunTrustedTallyDecryption.Companion.readDecryptingTrustees
 import electionguard.core.productionGroup
-import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.makeConsumer
 
 import kotlin.test.Test

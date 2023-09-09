@@ -1,7 +1,7 @@
 package electionguard.publish
 
+import electionguard.cli.RunVerifier
 import electionguard.core.productionGroup
-import electionguard.verifier.runVerifier
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -47,7 +47,7 @@ class RunElectionRecordConvertTest {
         assertEquals(erOrg.decryptedTally(), erProto.decryptedTally())
         assertEquals(erOrg.decryptionResult()!!.decryptedTally, erProto.decryptionResult()!!.decryptedTally)
 
-        // test rountrip verify
-        runVerifier(productionGroup(), "testOut/publish/RunElectionRecordConvertProto", 11, true)
+        // test roundtrip verify
+        RunVerifier.runVerifier(productionGroup(), "testOut/publish/RunElectionRecordConvertProto", 11, true)
     }
 }

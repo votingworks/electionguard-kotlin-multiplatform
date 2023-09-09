@@ -1,5 +1,8 @@
 package electionguard.decrypt
 
+import electionguard.cli.RunTrustedTallyDecryption
+import electionguard.cli.RunTrustedTallyDecryption.Companion.readDecryptingTrustees
+import electionguard.cli.RunTrustedTallyDecryption.Companion.runDecryptTally
 import electionguard.core.productionGroup
 
 import kotlin.test.Test
@@ -18,7 +21,7 @@ class RunTrustedTallyDecryptionTest {
 
     @Test
     fun testDecryptionAllJson() {
-        main(
+        RunTrustedTallyDecryption.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/workflow/allAvailableJson",
@@ -34,7 +37,7 @@ class RunTrustedTallyDecryptionTest {
 
     @Test
     fun testDecryptionSome() {
-        main(
+        RunTrustedTallyDecryption.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/workflow/someAvailableProto",
@@ -53,7 +56,7 @@ class RunTrustedTallyDecryptionTest {
 
     @Test
     fun testDecryptionSomeJson() {
-        main(
+        RunTrustedTallyDecryption.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/workflow/someAvailableJson",

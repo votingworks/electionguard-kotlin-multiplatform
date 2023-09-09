@@ -166,7 +166,7 @@ fun makeElectionConfig(
     quorum: Int,
     manifestBytes: ByteArray,
     chainConfirmationCodes: Boolean,
-    baux0: ByteArray, // B_aux,0 from eq 59,60
+    baux0: ByteArray, // B_aux,0 from eq 58-60
     metadata: Map<String, String> = emptyMap(),
 ): ElectionConfig {
 

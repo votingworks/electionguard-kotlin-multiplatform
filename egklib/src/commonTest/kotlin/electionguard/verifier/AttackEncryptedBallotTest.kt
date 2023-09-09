@@ -6,11 +6,11 @@ import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.cli.RunTrustedTallyDecryption.Companion.readDecryptingTrustees
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
-import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.readElectionRecord
 import electionguard.tally.AccumulateTally
 import kotlin.test.assertNotEquals
