@@ -123,3 +123,8 @@ Since the main class is _electionguard.verifier.RunVerifierKt_ you can also run 
     -jar devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
     -in /path/to/election_record
 ```
+
+/usr/lib/jvm/jdk-19/bin/java \
+    -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
+    -jar devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
+    -in /path/to/election_record

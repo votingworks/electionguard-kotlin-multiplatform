@@ -10,8 +10,6 @@ buildscript {
 
 plugins {
     kotlin("multiplatform") version "1.9.10"
-
-    // cross-platform serialization support
     alias(libs.plugins.serialization)
 }
 

@@ -1,5 +1,21 @@
 rootProject.name = "electionguard-kotlin-multiplatform"
 
+// eventually this may become canonical source for all versions, including webapps.
+// 9/9/2023
+val coroutinesVersion = "1.7.3"
+val jupitorVersion = "5.10.0"
+val kotlinVersion = "1.9.10"
+val kotlinxCliVersion = "0.3.6"
+val kotlinxDatetimeVersion = "0.4.1"
+val kotlinxSerializationCoreVersion = "1.6.0"
+val kotestVersion = "5.7.2"
+val ktorVersion = "2.3.4"
+val logbackVersion = "1.4.11"
+val microutilsLoggingVersion = "3.0.5"
+val mockkVersion = "1.13.7"
+val pbandkVersion = "0.14.2"
+val resultVersion = "1.1.18"
+
 dependencyResolutionManagement {
     repositories {
         google()
@@ -7,18 +23,23 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            version("kotlin-version", providers.gradleProperty("kotlinVersion").get())
-            version("coroutines-version", "1.6.4")
-            version("ktor-version", "2.3.3")
+            version("kotlin-version", kotlinVersion)
+            version("ktor-version", ktorVersion)
 
             plugin("ktor", "io.ktor.plugin").versionRef("ktor-version")
             plugin("serialization", "org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin-version")
-            plugin("formatter", "tech.formatter-kt.formatter").version("0.7.9")
 
-            library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:0.3.6")
-            library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-            library("kotlinx-coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines-version")
-            library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+            library("kotlin-result", "com.michael-bull.kotlin-result:kotlin-result:$resultVersion")
+            library("pbandk", "pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
+
+            //// logging
+            library("microutils-logging", "io.github.microutils:kotlin-logging:$microutilsLoggingVersion")
+            library("logback-classic", "ch.qos.logback:logback-classic:$logbackVersion")
+
+            library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion")
+            library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:$kotlinxDatetimeVersion")
+            library("kotlinx-coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutinesVersion)
+            library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationCoreVersion")
 
             //// ktor client
             library("ktor-utils", "io.ktor", "ktor-utils").versionRef("ktor-version")
@@ -58,15 +79,6 @@ dependencyResolutionManagement {
                 )
             )
 
-            // depends on kotlin-stdlib-common:1.6.20 -> 1.7.20
-            library("kotlin-result", "com.michael-bull.kotlin-result:kotlin-result:1.1.18")
-            // depends on kotlin 1.5.32 -> 1.7.20, coroutines 1.5.2, protoc 3.19.1
-            library("pbandk", "pro.streem.pbandk:pbandk-runtime:0.14.2")
-
-            //// logging
-            library("microutils-logging", "io.github.microutils:kotlin-logging:3.0.5")
-            library("logback-classic", "ch.qos.logback:logback-classic:1.3.4")
-
             library("kotlin-server-logging", "io.ktor", "ktor-server-call-logging").versionRef("ktor-version")
             bundle(
                 "logging-server",
@@ -89,21 +101,21 @@ dependencyResolutionManagement {
             library("kotlin-test", "org.jetbrains.kotlin", "kotlin-test").versionRef("kotlin-version")
             library("kotlin-test-common", "org.jetbrains.kotlin", "test-common").versionRef("kotlin-version")
             library("kotlin-test-annotations-common", "org.jetbrains.kotlin", "test-annotations-common").versionRef("kotlin-version")
-            library("kotlinx-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").versionRef("coroutines-version")
+            library("kotlinx-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").version(coroutinesVersion)
 
             library("ktor-server-tests-jvm", "io.ktor", "ktor-server-tests-jvm").versionRef("ktor-version")
             library("ktor-server-test-host", "io.ktor", "ktor-server-test-host").versionRef("kotlin-version")
 
             // property based testing
-            library("kotest-property", "io.kotest", "kotest-property").version("5.6.2")
+            library("kotest-property", "io.kotest", "kotest-property").version(kotestVersion)
 
             //// jvm only
-            library("mockk", "io.mockk", "mockk").version("1.13.5")
+            library("mockk", "io.mockk", "mockk").version(mockkVersion)
             library("kotlin-test-junit5", "org.jetbrains.kotlin", "kotlin-test-junit5").versionRef("kotlin-version")
             library("kotlin-test-junit", "org.jetbrains.kotlin", "kotlin-test-junit").versionRef("kotlin-version")
 
             // use ParameterizedTest feature feature
-            library("junit-jupiter-params", "org.junit.jupiter:junit-jupiter-params:5.9.3")
+            library("junit-jupiter-params", "org.junit.jupiter:junit-jupiter-params:$jupitorVersion")
         }
     }
 }
