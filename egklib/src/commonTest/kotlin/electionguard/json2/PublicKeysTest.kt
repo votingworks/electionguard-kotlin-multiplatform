@@ -31,7 +31,6 @@ class PublicKeysTest {
                 val publicKey = PublicKeys(id, xcoord, proofs)
                 assertEquals(publicKey, publicKey.publishJson().import(group))
                 assertEquals(publicKey, jsonRoundTrip(publicKey.publishJson()).import(group))
-
             }
         }
     }
