@@ -1,11 +1,10 @@
 package electionguard.publish
 
 import electionguard.ballot.ElectionConstants
+import electionguard.cli.RunVerifier
 import electionguard.core.productionGroup
 import electionguard.json2.ElectionConstantsJson
 import electionguard.json2.import
-import electionguard.verifier.verifyChallengedBallots
-import electionguard.verifier.verifyEncryptedBallots
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -58,8 +57,8 @@ class TestZippedJson {
 
     @Test
     fun testVerifyEncryptedBallots() {
-        verifyEncryptedBallots(productionGroup(), zippedJson, 11)
-        verifyChallengedBallots(productionGroup(), zippedJson)
+        RunVerifier.verifyEncryptedBallots(productionGroup(), zippedJson, 11)
+        RunVerifier.verifyChallengedBallots(productionGroup(), zippedJson)
     }
 }
 

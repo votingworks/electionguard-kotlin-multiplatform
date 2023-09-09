@@ -42,15 +42,15 @@ class RunCreateElectionConfig {
                 shortName = "createdBy",
                 description = "who created"
             ).default("RunCreateElectionConfigurationy")
-            val device by parser.option(
+            val baux0 by parser.option(
                 ArgType.String,
                 shortName = "device",
-                description = "device information"
+                description = "device information, used for B_aux,0 from eq 58-60"
             ).default("device")
             val chainCodes by parser.option(
                 ArgType.Boolean,
                 shortName = "chainCodes",
-                description = "chain conformation codes"
+                description = "chain confirmation codes"
             ).default(false)
             parser.parse(args)
 
@@ -61,7 +61,8 @@ class RunCreateElectionConfig {
                         "   quorum= $quorum\n" +
                         "   output = $outputDir\n" +
                         "   createdBy = $createdBy\n" +
-                        "   device = $device"
+                        "   baux0 = $baux0" +
+                        "   chainCodes = $chainCodes"
             )
 
             val group = productionGroup()
@@ -78,7 +79,7 @@ class RunCreateElectionConfig {
                     quorum,
                     manifestBytes,
                     chainCodes,
-                    device.encodeToByteArray(),
+                    baux0.encodeToByteArray(),
                     mapOf(
                         Pair("CreatedBy", createdBy),
                     ),

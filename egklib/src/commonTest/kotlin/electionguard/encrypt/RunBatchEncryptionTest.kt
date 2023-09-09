@@ -1,21 +1,22 @@
 package electionguard.encrypt
 
+import electionguard.cli.RunBatchEncryption
+import electionguard.cli.RunBatchEncryption.Companion.batchEncryption
+import electionguard.cli.RunVerifier
 import electionguard.core.productionGroup
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makeConsumer
-import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
-import electionguard.verifier.runVerifier
 import kotlin.test.Test
 import kotlin.test.assertContains
-import kotlin.test.assertFailsWith
 
-class RunBatchEncryptionTest {
+class
+RunBatchEncryptionTest {
     val nthreads = 25
 
     @Test
     fun testRunBatchEncryptionProto() {
-        main(
+        RunBatchEncryption.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/allAvailableProto",
                 "-ballots", "src/commonTest/data/fakeBallots/proto",
@@ -25,12 +26,12 @@ class RunBatchEncryptionTest {
                 "-device", "device0",
             )
         )
-        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionProto", 11)
+        RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionProto", 11)
     }
 
     @Test
     fun testRunBatchEncryptionWithJsonBallots() {
-        main(
+        RunBatchEncryption.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots", "src/commonTest/data/fakeBallots/json",
@@ -40,12 +41,12 @@ class RunBatchEncryptionTest {
                 "-device", "device2",
             )
         )
-        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionWithJsonBallots", 11)
+        RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionWithJsonBallots", 11)
     }
 
     @Test
     fun testRunBatchEncryptionJson() {
-        main(
+        RunBatchEncryption.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots", "src/commonTest/data/fakeBallots/json",
@@ -55,12 +56,12 @@ class RunBatchEncryptionTest {
                 "-device", "device2",
             )
         )
-        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionJson", 11)
+        RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionJson", 11)
     }
 
     @Test
     fun testRunBatchEncryptionJsonWithProtoBallots() {
-        main(
+        RunBatchEncryption.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots", "src/commonTest/data/fakeBallots/proto",
@@ -70,12 +71,12 @@ class RunBatchEncryptionTest {
                 "-device", "device3",
             )
         )
-        runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots", 11)
+        RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots", 11)
     }
 
     @Test
     fun testRunBatchEncryptionEncryptTwice() {
-        main(
+        RunBatchEncryption.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots", "src/commonTest/data/fakeBallots/json",
@@ -90,7 +91,7 @@ class RunBatchEncryptionTest {
 
     @Test
     fun testRunBatchEncryptionVerify() {
-        main(
+        RunBatchEncryption.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots", "src/commonTest/data/fakeBallots/json",
@@ -105,7 +106,7 @@ class RunBatchEncryptionTest {
 
     @Test
     fun testRunBatchEncryptionVerifyDecrypt() {
-        main(
+        RunBatchEncryption.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/allAvailableJson",
                 "-ballots", "src/commonTest/data/fakeBallots/json",

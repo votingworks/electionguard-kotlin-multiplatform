@@ -1,12 +1,13 @@
 package electionguard.tally
 
+import electionguard.cli.RunAccumulateTally
 import kotlin.test.Test
 
 class RunTallyAccumulationTest {
 
     @Test
     fun runTallyAccumulationTestJson() {
-        main(
+        RunAccumulateTally.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/workflow/someAvailableJson",
@@ -18,7 +19,7 @@ class RunTallyAccumulationTest {
 
     @Test
     fun runTallyAccumulationTestProto() {
-        main(
+        RunAccumulateTally.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/workflow/someAvailableProto",

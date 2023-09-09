@@ -2,7 +2,7 @@ rootProject.name = "electionguard-kotlin-multiplatform"
 
 // eventually this may become canonical source for all versions, including webapps.
 // 9/9/2023
-val coroutinesVersion = "1.7.3"
+val coroutinesVersion = "1.6.4" // "1.7.3" see issue #362
 val jupitorVersion = "5.10.0"
 val kotlinVersion = "1.9.10"
 val kotlinxCliVersion = "0.3.6"

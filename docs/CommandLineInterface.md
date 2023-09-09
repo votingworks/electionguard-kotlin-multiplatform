@@ -1,21 +1,21 @@
 # Workflow and Command Line Programs (Under Construction)
 
-last update 7/24/2023
+last update 9/9/2023
 
 <!-- TOC -->
-* [Workflow and Command Line Programs](#workflow-and-command-line-programs)
-  * [Election workflow](#election-workflow)
-  * [Run Trusted KeyCeremony](#run-trusted-keyceremony)
+* [Workflow and Command Line Programs (Under Construction)](#workflow-and-command-line-programs-under-construction)
+  * [Election workflow overview](#election-workflow-overview)
+  * [Make ekglib fatJar](#make-ekglib-fatjar)
+  * [Create an Election Configuration](#create-an-election-configuration)
+  * [Run trusted KeyCeremony](#run-trusted-keyceremony)
   * [Run Batch Encryption](#run-batch-encryption)
   * [Run Accumulate Tally](#run-accumulate-tally)
-  * [Run Trusted Tally Decryption](#run-trusted-tally-decryption)
-  * [Run Trusted Ballot Decryption](#run-trusted-ballot-decryption)
+  * [Run trusted Tally Decryption](#run-trusted-tally-decryption)
+  * [Run trusted Ballot Decryption](#run-trusted-ballot-decryption)
   * [Run Verifier](#run-verifier)
-  * [Remote Processes](#remote-processes)
-    * [Make KeyStore](#make-keystore)
 <!-- TOC -->
 
-## Election workflow
+## Election workflow overview
 
 <img src="./images/Workflow.svg" alt="Workflow" width="800"/>
 
@@ -24,36 +24,26 @@ last update 7/24/2023
       you must figure out what that looks like yourself, and use it as input to the library.
    2. Create a manifest in code with the _electionguard.ballot.Manifest_ classes, and write it out
           with a Publisher. 
-   3. Create a fake manifest for testing with the _electionguard.input.RunCreateTestManifest_ CLI.
-   4. Convert an existing manifest between JSON and Proto with the _RunConvertManifest_ CLI.
-      The type (JSON or Proto) of Manifest is used for the rest of the election record.
+   3. Create a fake manifest for testing with the _electionguard.input.createTestManifest_ test program.
+   4. Use an existing fake manifest for testing in _egklib/src/commonTest/data/startManifestJson/manifest.json_ or
+      _egklib/src/commonTest/data/startManifestProto/manifest.protobuf_
 
 2. **Create an ElectionConfig record**.
-   1. Create an ElectionConfig from a Manifest and input parameters using _RunCreateElectionConfig_ CLI.
+   1. Create an ElectionConfig from a Manifest and input parameters using [_RunCreateElectionConfig_ CLI](#create-an-election-configuration)
 
 3. **Run the KeyCeremony**. 
+   1. Create an ElectionInitialized from an ElectionConfig and input parameters using [_RunTrustedKeyCeremony_ CLI](#run-trusted-keyceremony)
+   2. To run a keyceremony with remote guardians, see the webapps CLI.
 
-   1. _electionguard.keyceremony.RunTrustedKeyCeremony_ is a CLI that will run the entire key ceremony locally in a
-       single process. See _electionguard.keyceremony.RunKeyCeremonyTest_ as an example.
-
-   2. To run a keyceremony with remote guardians, using the webapps CLI:
-
-        1. In _webapps/keyceremonytrustees_, start up _webapps.electionguard.KeyCeremonyRemoteTrustee_, and specify the
-           directory to write the private trustee files, using the command line argument:
-
-           `-trusteeDir <trustee directory>`
-
-        2. In _webapps/keyceremony_, run _webapps.electionguard.keyceremony.RunRemoteKeyCeremony_ CLI (see
-           RunRemoteKeyCeremonyTest as an example of the inputs needed).
-
-4. **Create test input plaintext ballots**
-   1._electionguard.workflow.GenerateFakeBallots_ generates random test ballots.
+4. **Create test input plaintext ballots**.
+   1. _electionguard.workflow.GenerateFakeBallots_ generates random test ballots.
+   2. Use existing fake ballots for testing in _egklib/src/commonTest/data/fakeBallots
 
 5. **Batch Encryption**. 
-    1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext
+   1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext
        ballots, encrypts the ballots and writes out EncryptedBallot records. If any input plaintext ballot fails validation,
        it is annotated and written to a separate directory, and not encrypted.
-    2. _electionguard.encrypt.AddEncryptedBallot_ is a class that your program calls to encrypt plaintext ballots
+   2. _electionguard.encrypt.AddEncryptedBallot_ is a class that your program calls to encrypt plaintext ballots
        and add them to the election record.
    3. In jvmMain, _electionguard.cli.ExampleEncryption_ is an example of using AddEncryptedBallot.
 
@@ -83,69 +73,100 @@ last update 7/24/2023
 9. **Complete test Workflow**.
     1. A complete test workflow can be run from electionguard.workflow.TestWorkflow.
 
+## Make ekglib fatJar
 
-## Run Trusted KeyCeremony
+For classpath simplicity, the examples below use the ekglib fatJar.
 
-This has access to all the trustees, so is only used for testing, or in a use case of trust.
+
+## Create an Election Configuration
+
+````
+Usage: RunCreateElectionConfig options_list
+Options: 
+    --electionManifest, -manifest -> Manifest file or directory (json or protobuf) (always required) { String }
+    --nguardians, -nguardians -> number of guardians (always required) { Int }
+    --quorum, -quorum -> quorum size (always required) { Int }
+    --outputDir, -out -> Directory to write output ElectionInitialized record (always required) { String }
+    --createdBy, -createdBy [RunCreateElectionConfigurationy] -> who created { String }
+    --baux0, -device [device] -> device information, used for B_aux,0 from eq 58-60 { String }
+    --chainCodes, -chainCodes [false] -> chain confirmation codes 
+    --help, -h -> Usage info 
+
+````
+
+Example:
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
+  -classpath egklib/build/libs/egklib-all.jar \
+  electionguard.cli.RunCreateElectionConfig \
+    -manifest egklib/src/commonTest/data/startManifestJson \
+    -nguardians 3 \
+    -quorum 3 \
+    -out testOut/cliWorkflow/config \
+    --baux0 device42 \
+    --chainCodes
+````
+
+## Run trusted KeyCeremony
+
+This has access to all the trustees, so is only used for testing, or in a use case of trust. 
+Otherwise, use the remote keyceremony webapps.
 
 ````
 Usage: RunTrustedKeyCeremony options_list
 Options: 
-    --inputDir, -in -> Directory containing input ElectionConfig record { String }
-    --electionManifest, -manifest -> Manifest file or directory (json or protobuf) { String }
-    --nguardians, -nguardians -> number of guardians { Int }
-    --quorum, -quorum -> quorum size { Int }
+    --inputDir, -in -> Directory containing input election record (always required) { String }
     --trusteeDir, -trustees -> Directory to write private trustees (always required) { String }
     --outputDir, -out -> Directory to write output ElectionInitialized record (always required) { String }
-    --createdBy, -createdBy -> who created { String }
+    --createdBy, -createdBy [RunTrustedKeyCeremony] -> who created { String }
     --help, -h -> Usage info 
 ````
 
-As input, either specify the input directory that contains __electionConfig.protobuf__ file, OR the election manifest,
-nguardians and quorum.
+Example:
 
-The _electionManifest_ may name
-
-* a json or protobuf file containing the manifest
-* a directory containing __manifest.protobuf__ or __manifest.json__
-
-input:
-
-* _inputDir_/electionConfig.protobuf
-* _electionManifest_/manifest.protobuf
-* _electionManifest_/manifest.json
-* _electionManifest_ is a file containing the manifest (json or protobuf)
-
-output:
-
-* _trusteeDir_/decryptingTrustee-_guardianId_.protobuf
-* _outputDir_/electionInitialized.protobuf
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/build/libs/egklib-all.jar \
+  electionguard.cli.RunTrustedKeyCeremony \
+    -in testOut/cliWorkflow/config \
+    -trustees testOut/cliWorkflow/keyceremony/trustees \
+    -out testOut/cliWorkflow/keyceremony 
+````
 
 ## Run Batch Encryption
 
 ````
 Usage: RunBatchEncryption options_list
 Options: 
-    --inputDir, -in -> Directory containing input ElectionInitialized.protobuf file (always required) { String }
+    --inputDir, -in -> Directory containing input election record (always required) { String }
     --ballotDir, -ballots -> Directory to read Plaintext ballots from (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
     --invalidDir, -invalid -> Directory to write invalid input ballots to { String }
-    --fixedNonces, -fixed [false] -> Encrypt with fixed nonces and timestamp 
-    --check, -check [None] -> Check encryption { Value should be one of [None, Verify, EncryptTwice] }
+    --check, -check [None] -> Check encryption { Value should be one of [none, verify, encrypttwice, decryptnonce] }
     --nthreads, -nthreads [11] -> Number of parallel threads to use { Int }
     --createdBy, -createdBy -> who created { String }
+    --device, -device -> voting device information (always required) { String }
     --help, -h -> Usage info 
 ````
 
-input:
+Example:
 
-* _inputDir_/electionInitialized.protobuf
-* _ballotDir_/plaintextBallots.protobuf
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/build/libs/egklib-all.jar \
+  electionguard.cli.RunBatchEncryption \
+    -in testOut/cliWorkflow/keyceremony \
+    -ballots egklib/src/commonTest/data/fakeBallots/json \
+    -out testOut/cliWorkflow/electionRecord \
+    -device device42
+````
 
 output:
 
-* _outputDir_/encryptedBallots.protobuf
-* _invalidDir_/plaintextBallots.protobuf
+* outputDir/encrypted_ballots/device
+* outputDir/private/invalid_ballots/
 
 ## Run Accumulate Tally
 
@@ -154,26 +175,32 @@ Usage: RunAccumulateTally options_list
 Options: 
     --inputDir, -in -> Directory containing input ElectionInitialized record and encrypted ballots (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
-    --name, -name -> Name of accumulation { String }
+    --name, -name -> Name of tally { String }
     --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
 ````
 
-Only CAST ballots are tallied.
+Example:
 
-input:
-
-* _inputDir_/electionInitialized.protobuf
-* _inputDir_/encryptedBallots.protobuf
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/build/libs/egklib-all.jar \
+  electionguard.cli.RunAccumulateTally \
+    -in testOut/cliWorkflow/electionRecord \
+    -out testOut/cliWorkflow/electionRecord 
+````
 
 output:
 
-* _outputDir_/tallyResult.protobuf
-* 
+* outputDir/encrypted_tally.(json|protobuf)
 
-## Run Trusted Tally Decryption
+Note that at this point in the cliWorkflow example, we are both reading from and writing to the electionRecord. A
+production workflow may be significantly different.
+
+## Run trusted Tally Decryption
 
 This has access to all the trustees, so is only used for testing, or in a use case of trust.
+Otherwise, use the remote decryption webapps.
 
 ````
 Usage: RunTrustedTallyDecryption options_list
@@ -186,17 +213,24 @@ Options:
     --help, -h -> Usage info 
 ````
 
-input:
+Example:
 
-* _inputDir_/tallyResult.protobuf
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/build/libs/egklib-all.jar \
+  electionguard.cli.RunTrustedTallyDecryption \
+    -in testOut/cliWorkflow/electionRecord \
+    -trustees testOut/cliWorkflow/keyceremony/trustees \
+    -out testOut/cliWorkflow/electionRecord 
+````
 
 output:
+* outputDir/tally.(json|protobuf)
 
-* _outputDir_/decryptionResult.protobuf
-
-## Run Trusted Ballot Decryption
+## Run trusted Ballot Decryption
 
 This has access to all the trustees, so is only used for testing, or in a use case of trust.
+Otherwise, use the remote decryption webapps.
 
 ````
 Usage: RunTrustedBallotDecryption options_list
@@ -204,7 +238,7 @@ Options:
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
-    --decryptSpoiledList, -spoiled -> decrypt spoiled ballots { String }
+    --decryptChallengedList, -challenged -> decrypt challenged ballots { String }
     --nthreads, -nthreads -> Number of parallel threads to use { Int }
     --help, -h -> Usage info 
 ````
@@ -216,14 +250,21 @@ The decryptSpoiledList may be:
 3. "All" -> decrypt all the ballots in encryptedBallots.protobuf
 4. omitted -> decrypt the ballots in encryptedBallots.protobuf that have been marked SPOILED.
 
-input:
+Example:
 
-* _inputDir_/tallyResult.protobuf
-* _inputDir_/encryptedBallots.protobuf
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/build/libs/egklib-all.jar \
+  electionguard.cli.RunTrustedBallotDecryption \
+    -in testOut/cliWorkflow/electionRecord \
+    -trustees testOut/cliWorkflow/keyceremony/trustees \
+    -challenged All \
+    -out testOut/cliWorkflow/electionRecord 
+````
 
 output:
 
-* _outputDir_/spoiledBallotTallies.protobuf
+* outputDir/challenged_ballots/
 
 ## Run Verifier
 
@@ -236,46 +277,13 @@ Options:
     --help, -h -> Usage info 
 ````
 
-input:
-
-* _inputDir_/decryptionResult.protobuf
-* _inputDir_/spoiledBallotTallies.protobuf (optional)
-
-output:
-
-* stdout
-
-## Remote Processes
-
-<img src="./images/RemoteProcesses.svg" alt="RemoteProcesses" width="800"/>
-
-### Make KeyStore
-
-To use HTTPS between remote processes, we need a digital certificate. You may supply your own keystore, or use the
-__MakeKeystore__ CLI (in keyceremonytrustee test directory).
-This will generate a self-signed certificate and write it to a JKS keystore, to be used in the webapps.
-The certificate _alias_ = "electionguard" and _domains_ = listOf("127.0.0.1", "0.0.0.0", "localhost").
+Example:
 
 ````
-Usage: MakeKeyStore options_list
-Options: 
-Options: 
-    --keystorePassword, -kpwd -> password for the entire keystore (always required) { String }
-    --electionguardPassword, -epwd -> password for the electionguard certificate entry (always required) { String }
-    --sslKeyStore, -keystore -> write the keystore file to this path, default webapps/keystore.jks { String }
-    --help, -h -> Usage info 
-````
-
-Example
-
-````
-java -classpath <classpath> webapps.electionguard.MakeKeystoreKt -kpwd keystorePassword -epwd egPassword
-````
-
-output:
-
-````
-MakeKeyStore
- keystorePassword = 'ksPassword' electionguardPassword = 'egPassword'
- write to path = 'webapps/keystore.jks'
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/build/libs/egklib-all.jar \
+  electionguard.cli.RunVerifier \
+    -in testOut/cliWorkflow/electionRecord \
+    -nthreads 10 \
+    --showTime
 ````

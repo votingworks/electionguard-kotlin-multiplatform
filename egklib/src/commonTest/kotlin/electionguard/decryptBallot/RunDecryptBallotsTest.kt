@@ -1,7 +1,9 @@
 package electionguard.decryptBallot
 
+import electionguard.cli.RunTrustedBallotDecryption
+import electionguard.cli.RunTrustedBallotDecryption.Companion.runDecryptBallots
+import electionguard.cli.RunTrustedTallyDecryption.Companion.readDecryptingTrustees
 import electionguard.core.productionGroup
-import electionguard.decrypt.readDecryptingTrustees
 import electionguard.publish.makeConsumer
 
 import kotlin.test.Test
@@ -72,7 +74,7 @@ class RunDecryptBallotsTest {
     @Test
     fun testDecryptBallotsMainMultiThreaded() {
         println("\ntestDecryptBallotsMainMultiThreaded")
-        main(
+        RunTrustedBallotDecryption.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/workflow/someAvailableProto",
@@ -80,7 +82,7 @@ class RunDecryptBallotsTest {
                 "src/commonTest/data/workflow/someAvailableProto/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptBallotsMainMultiThreaded",
-                "-spoiled",
+                "-challenged",
                 "all",
                 "-nthreads",
                 "$nthreads"
@@ -92,7 +94,7 @@ class RunDecryptBallotsTest {
     @Test
     fun testDecryptBallotsMarkedSpoiled() {
         println("\ntestDecryptBallotsMainDefault")
-        main(
+        RunTrustedBallotDecryption.main(
             arrayOf(
                 "-in",
                 "src/commonTest/data/workflow/someAvailableProto",
