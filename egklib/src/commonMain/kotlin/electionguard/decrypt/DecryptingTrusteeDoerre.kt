@@ -12,7 +12,7 @@ import electionguard.core.randomElementModQ
 data class DecryptingTrusteeDoerre(
     val id: String,
     val xCoordinate: Int,
-    val publicKey: ElementModP,
+    val publicKey: ElementModP, // Must match the public record
     val keyShare: ElementModQ, // P(i) = my share of the secret key s = (s1 + s2 + · · · + sn ), eq 65
 ) : DecryptingTrusteeIF {
 
@@ -22,7 +22,7 @@ data class DecryptingTrusteeDoerre(
 
     override fun id(): String = id
     override fun xCoordinate(): Int = xCoordinate
-    override fun electionPublicKey(): ElementModP = publicKey
+    override fun guardianPublicKey(): ElementModP = publicKey
 
     override fun decrypt(
         group: GroupContext,

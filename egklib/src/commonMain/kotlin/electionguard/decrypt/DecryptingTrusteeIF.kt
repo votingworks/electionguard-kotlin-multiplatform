@@ -12,7 +12,7 @@ interface DecryptingTrusteeIF {
     fun xCoordinate(): Int
 
     /** The guardian's public key = K_i.  */
-    fun electionPublicKey(): ElementModP
+    fun guardianPublicKey(): ElementModP
 
     /**
      * Compute partial decryptions of elgamal encryptions.

@@ -57,7 +57,7 @@ fun runDoerreTest(
     val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
 
     val jointPublicKey: ElementModP =
-        dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
+        dTrustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
 
     testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
 }
