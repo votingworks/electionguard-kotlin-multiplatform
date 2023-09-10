@@ -250,10 +250,11 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return Iterable { PlaintextBallotIterator(dirPath, filter) }
     }
 
-    // trustee in given directory for given guardianId
+    // read the trustee in the given directory for the given guardianId
     actual override fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF {
         val filename = jsonPaths.decryptingTrusteePath(trusteeDir, guardianId)
-        return readTrustee(fileSystem.getPath(filename)).unwrap()
+        val result =  readTrustee(fileSystem.getPath(filename))
+        return if (result is Ok) result.unwrap() else throw Exception(result.getError())
     }
 
     //////// The low level reading functions

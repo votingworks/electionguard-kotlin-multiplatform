@@ -86,7 +86,7 @@ fun runEncryptDecryptBallot(
     val guardianList: List<Guardian> = trustees.map { makeGuardian(it) }
     val guardians = Guardians(group, guardianList)
     val jointPublicKey: ElementModP =
-        dTrustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
+        dTrustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
 
     testEncryptDecryptVerify(
         group,

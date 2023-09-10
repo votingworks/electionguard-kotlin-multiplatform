@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs (Under Construction)
 
-last update 9/9/2023
+last update 9/10/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs (Under Construction)](#workflow-and-command-line-programs-under-construction)
@@ -17,7 +17,7 @@ last update 9/9/2023
 
 ## Election workflow overview
 
-<img src="./images/Workflow.svg" alt="Workflow" width="800"/>
+<img src="./images/Workflow.svg" alt="Workflow" width="1200"/>
 
 1. **Create a Manifest record** 
    1. Generating a real Manifest by election officials is outside the scope of this library. That is to say,
@@ -46,6 +46,8 @@ last update 9/9/2023
    2. _electionguard.encrypt.AddEncryptedBallot_ is a class that your program calls to encrypt plaintext ballots
        and add them to the election record.
    3. In jvmMain, _electionguard.cli.ExampleEncryption_ is an example of using AddEncryptedBallot.
+   4. To run encryption with the Encryption server, see the webapps CLI. This allows you to run the encryption on a 
+      different machine than where ballots are generated, and/or to call from a non-JVM program.
 
 6. **Accumulate Tally**.
     1. _electionguard.tally.RunAccumulateTally_ is a CLI that reads an ElectionInitialized record and EncryptedBallot
@@ -58,14 +60,7 @@ last update 9/9/2023
     2. _electionguard.decrypt.RunTrustedBallotDecryption_ is a CLI for testing, that will run locally in a single
        process, that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a
        _DecryptedTallyOrBallot_ record for the spoiled ballot.
-
-    3. To run a decryption using the webapps CLI:
-
-        1. In _webapps/decryptingtrustee_, start up _webapps.electionguard.Application_
-
-        2. In _webapps/decryption_, run _webapps.electionguard.decrypt.RunRemoteTallyDecryption_ CLI.
-
-        3. See _webapps.electionguard.decrypt.RunRemoteWorkflow_ in the tests, as an example.
+    3. To run decryption with remote guardians, see the webapps CLI.
 
 8. **Verify**. 
     1. _electionguard.verify.VerifyElectionRecord_ is a CLI that reads an election record and verifies it.
