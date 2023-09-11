@@ -1,6 +1,6 @@
 # Verification
 
-_last update 9/07/2023_
+_last update 9/11/2023_
 
 ElectionGuard-Kotlin-Multiplatform library fully implements the **Verifier** section 6 of the ElectionGuard specification.
 Use the classes in the _egklib/src/commonMain/kotlin/electionguard/verifier_ package in your own program, 
@@ -13,7 +13,7 @@ See _Building a library fat jar_ in [GettingStarted](GettingStarted.md), then ru
 ```
 /usr/lib/jvm/jdk-19/bin/java \
     -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-    -jar devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
+    -jar devhome/egk-webapps/egklib/build/libs/egklib-all.jar \
     -in /path/to/election_record
 ```
 
