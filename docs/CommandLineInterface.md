@@ -1,6 +1,6 @@
-# Workflow and Command Line Programs (Under Construction)
+# Workflow and Command Line Programs
 
-last update 9/10/2023
+last update 9/11/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs (Under Construction)](#workflow-and-command-line-programs-under-construction)
@@ -70,7 +70,7 @@ last update 9/10/2023
 
 ## Make ekglib fatJar
 
-For classpath simplicity, the examples below use the ekglib fatJar.
+For classpath simplicity, the examples below use the [ekglib fatJar](https://github.com/JohnLCaron/egk-webapps#build-the-egklib-fat-jar).
 
 
 ## Create an Election Configuration
