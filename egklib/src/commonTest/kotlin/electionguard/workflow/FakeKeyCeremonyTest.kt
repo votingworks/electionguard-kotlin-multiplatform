@@ -12,6 +12,7 @@ import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /** Run a fake KeyCeremony to generate an ElectionInitialized for workflow testing. */
 class RunFakeKeyCeremonyTest {
@@ -51,7 +52,7 @@ fun runFakeKeyCeremony(
 
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
-        KeyCeremonyTrustee(group, "guardian$seq", seq, quorum)
+        KeyCeremonyTrustee(group, "guardian$seq", seq, nguardians, quorum)
     }.sortedBy { it.xCoordinate }
 
     // exchange PublicKeys
@@ -62,7 +63,7 @@ fun runFakeKeyCeremony(
 
     // check they are complete
     trustees.forEach {
-        assertEquals(nguardians - 1, it.otherPublicKeys.size)
+        assertTrue( it.checkComplete() )
         assertEquals(quorum, it.coefficientCommitments().size)
     }
 

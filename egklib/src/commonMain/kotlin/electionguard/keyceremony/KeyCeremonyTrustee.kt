@@ -14,12 +14,13 @@ open class KeyCeremonyTrustee(
     val group: GroupContext,
     val id: String,
     val xCoordinate: Int,
+    val nguardians: Int,
     val quorum: Int,
     val polynomial : ElectionPolynomial = group.generatePolynomial(id, xCoordinate, quorum)
 ) : KeyCeremonyTrusteeIF {
 
     // Other guardians' public keys
-    internal val otherPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
+    private val otherPublicKeys: MutableMap<String, PublicKeys> = mutableMapOf()
 
     // My share of other's key.
     internal val myShareOfOthers: MutableMap<String, PrivateKeyShare> = mutableMapOf()
@@ -31,6 +32,7 @@ open class KeyCeremonyTrustee(
         require(id.isNotEmpty())
         require(xCoordinate > 0)
         require(quorum > 0)
+        require(quorum <= nguardians)
     }
 
     override fun id(): String = id
@@ -184,6 +186,11 @@ open class KeyCeremonyTrustee(
         return errors.merge()
     }
 
+    override fun checkComplete(): Boolean {
+        return (nguardians == otherPublicKeys.size + 1) && (nguardians == myShareOfOthers.size + 1) &&
+                (nguardians == othersShareOfMyKey.size + 1)
+    }
+
     private val label = "share_enc_keys"
     private val context = "share_encrypt"
 
@@ -275,19 +282,13 @@ open class KeyCeremonyTrustee(
     // Call after all myShareOfOthers has been populated with all the other trustee's.
     // The value P(i) == G_i’s share of the secret key s = (s1 + s2 + · · · + sn )
     // == (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. spec 2.0.0, eq 65.
-    override fun computeSecretKeyShare(nguardians : Int): Result<ElementModQ, String> {
+    internal fun computeSecretKeyShare(): ElementModQ {
        if (nguardians != myShareOfOthers.size + 1) {
-            return Err("requires nguardians ${nguardians} but have ${myShareOfOthers.size  + 1} shares")
+            throw RuntimeException("requires nguardians ${nguardians} but have ${myShareOfOthers.size  + 1} shares")
         }
         var result: ElementModQ = polynomial.valueAt(group, xCoordinate)
         myShareOfOthers.values.forEach{ result += it.yCoordinate }
-        this.secretKeyShare = result
-        return Ok(result)
-    }
-
-    private var secretKeyShare : ElementModQ? = null
-    override fun secretKeyShare(): ElementModQ {
-        return secretKeyShare!!
+        return result
     }
 }
 

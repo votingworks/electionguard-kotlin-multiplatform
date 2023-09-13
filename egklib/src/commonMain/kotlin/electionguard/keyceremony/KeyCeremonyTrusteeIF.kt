@@ -2,7 +2,6 @@ package electionguard.keyceremony
 
 import com.github.michaelbull.result.Result
 import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
 import electionguard.core.SchnorrProof
 
 interface KeyCeremonyTrusteeIF {
@@ -27,9 +26,6 @@ interface KeyCeremonyTrusteeIF {
     /** Receive and verify a key share. */
     fun receiveKeyShare(keyShare: KeyShare): Result<Boolean, String>
 
-    /** call after all shares are added, and before calling secretKeyShare() */
-    fun computeSecretKeyShare(nguardians : Int): Result<ElementModQ, String>
-
-    /** The resulting secretKeyShare for this guardian == (P1(ℓ) + P2(ℓ) + · · · + Pn(ℓ)) mod q. spec 2.0.0, eq 65. */
-    fun secretKeyShare(): ElementModQ
+    /** call after all shares are added */
+    fun checkComplete(): Boolean
 }

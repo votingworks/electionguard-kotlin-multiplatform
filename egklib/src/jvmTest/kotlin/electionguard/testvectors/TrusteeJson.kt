@@ -21,16 +21,17 @@ fun KeyCeremonyTrustee.publishJsonE(missing : Boolean): TrusteeJson {
         this.id,
         this.xCoordinate,
         this.polynomial.coefficients.map { it.publishJson() },
-        this.secretKeyShare().publishJson(),
+        this.computeSecretKeyShare().publishJson(),
         missing,
     )
 }
 
-fun TrusteeJson.importKeyCeremonyTrustee(group: GroupContext): KeyCeremonyTrustee {
+fun TrusteeJson.importKeyCeremonyTrustee(group: GroupContext, nguardians: Int): KeyCeremonyTrustee {
     return KeyCeremonyTrustee(
         group,
         this.id,
         this.xCoordinate,
+        nguardians,
         polynomial_coefficients.size,
         group.regeneratePolynomial(
             this.id,
@@ -41,7 +42,8 @@ fun TrusteeJson.importKeyCeremonyTrustee(group: GroupContext): KeyCeremonyTruste
 }
 
 fun TrusteeJson.importDecryptingTrustee(group: GroupContext): DecryptingTrusteeDoerre {
-    return DecryptingTrusteeDoerre(this.id,
+    return DecryptingTrusteeDoerre(
+        this.id,
         this.xCoordinate,
         group.gPowP(this.polynomial_coefficients[0].import(group)),
         this.keyShare.import(group))

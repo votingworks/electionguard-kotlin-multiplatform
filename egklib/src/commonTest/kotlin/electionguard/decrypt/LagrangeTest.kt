@@ -54,11 +54,11 @@ class LagrangeTest {
         val w1 = group.computeLagrangeCoefficient(1, listOf(1, 2))
         val w2 = group.computeLagrangeCoefficient(2, listOf(1, 2))
 
-        val polly1 = KeyCeremonyTrustee(group, "guardian1", 1, 2)
+        val polly1 = KeyCeremonyTrustee(group, "guardian1", 1, 2, 2)
         val y11 = polly1.valueAt(group, 1)
         val y12 = polly1.valueAt(group, 2)
 
-        val polly2 = KeyCeremonyTrustee(group, "guardian2", 2, 2)
+        val polly2 = KeyCeremonyTrustee(group, "guardian2", 2, 2, 2)
         val y21 = polly2.valueAt(group, 1)
         val y22 = polly2.valueAt(group, 2)
 
@@ -72,11 +72,11 @@ class LagrangeTest {
         val w1 = group.computeLagrangeCoefficient(1, listOf(1, 2))
         val w2 = group.computeLagrangeCoefficient(2, listOf(1, 2))
 
-        val polly1 = KeyCeremonyTrustee(group, "guardian1", 1, 2)
+        val polly1 = KeyCeremonyTrustee(group, "guardian1", 1, 2, 2)
         val y11 = polly1.valueAt(group, 1)
         val y12 = polly1.valueAt(group, 2)
 
-        val polly2 = KeyCeremonyTrustee(group, "guardian2", 2, 2)
+        val polly2 = KeyCeremonyTrustee(group, "guardian2", 2, 2, 2)
         val y21 = polly2.valueAt(group, 1)
         val y22 = polly2.valueAt(group, 2)
 
@@ -95,15 +95,11 @@ class LagrangeTest {
                 t2.receiveEncryptedKeyShare(t1.encryptedKeyShareFor(t2.id).unwrap())
             }
         }
-
-        // compute SecretKeyShares
-        trustees.forEach { it.computeSecretKeyShare(2) }
-
-        assertEquals(y11 + y21, polly1.secretKeyShare())
-        assertEquals(y12 + y22, polly2.secretKeyShare())
+        assertEquals(y11 + y21, polly1.computeSecretKeyShare())
+        assertEquals(y12 + y22, polly2.computeSecretKeyShare())
 
         val expected = polly1.electionPrivateKey() + polly2.electionPrivateKey()
-        val computed = polly1.secretKeyShare() * w1 + polly2.secretKeyShare() * w2
+        val computed = polly1.computeSecretKeyShare() * w1 + polly2.computeSecretKeyShare() * w2
         assertEquals(expected, computed)
 
         testKeyShares(group, trustees, listOf(1, 2))
@@ -118,16 +114,16 @@ class LagrangeTest {
 
         val weightedSum = with(group) {
             trustees.map {
-                assertTrue( it.secretKeyShare().inBounds())
+                assertTrue( it.computeSecretKeyShare().inBounds())
                 val coeff = lagrangeCoefficients[it.id] ?: throw IllegalArgumentException()
-                it.secretKeyShare() * coeff
+                it.computeSecretKeyShare() * coeff
             }.addQ() // eq 7
         }
 
         var weightedSum2 = group.ZERO_MOD_Q
         trustees.forEach {
             val coeff = lagrangeCoefficients[it.id] ?: throw IllegalArgumentException()
-            weightedSum2 += it.secretKeyShare() * coeff
+            weightedSum2 += it.computeSecretKeyShare() * coeff
         }
         assertEquals(weightedSum, weightedSum2)
 

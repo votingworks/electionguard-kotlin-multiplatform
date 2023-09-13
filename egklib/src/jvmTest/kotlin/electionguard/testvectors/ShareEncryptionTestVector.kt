@@ -130,7 +130,7 @@ class ShareEncryptionTestVector {
 
         val trustees: List<KeyCeremonyTrusteeSaveNonces> = List(numberOfGuardians) {
             val seq = it + 1
-            KeyCeremonyTrusteeSaveNonces(group, "guardian$seq", seq, quorum)
+            KeyCeremonyTrusteeSaveNonces(group, "guardian$seq", seq, numberOfGuardians, quorum)
         }.sortedBy { it.xCoordinate }
 
         keyCeremonyExchange(trustees)
@@ -150,7 +150,7 @@ class ShareEncryptionTestVector {
                 "Generate this guardian's shares for other guardians (Pi(ℓ) = yCoordinate, El(Pi(ℓ) = encryptedCoordinate), eq 17",
                 trustee.myShareOfOthers.values.map { it.publishJson() },
                 "Generate this guardian's share of the secret key, eq 66",
-                trustee.secretKeyShare().publishJson(),
+                trustee.computeSecretKeyShare().publishJson(),
             )
         }
 
@@ -195,6 +195,7 @@ class ShareEncryptionTestVector {
                 group,
                 guardianJson.name,
                 guardianJson.coordinate,
+                numberOfGuardians,
                 quorum,
                 polynomial,
                 share.shareNonces
@@ -212,7 +213,7 @@ class ShareEncryptionTestVector {
         }
 
         trustees.zip(guardianShares).map { (trustee, share) ->
-            assertEquals(share.expected_my_share, trustee.secretKeyShare())
+            assertEquals(share.expected_my_share, trustee.computeSecretKeyShare())
         }
     }
 
@@ -226,9 +227,10 @@ private class KeyCeremonyTrusteeSaveNonces(
     group: GroupContext,
     id: String,
     xCoordinate: Int,
+    nguardians: Int,
     quorum: Int,
     polynomial : ElectionPolynomial = group.generatePolynomial(id, xCoordinate, quorum)
-) : KeyCeremonyTrustee(group, id, xCoordinate, quorum, polynomial) {
+) : KeyCeremonyTrustee(group, id, xCoordinate, nguardians, quorum, polynomial) {
     val shareNonces = mutableMapOf<String, ElementModQ>()
 
     override fun shareEncryption(
@@ -240,16 +242,19 @@ private class KeyCeremonyTrusteeSaveNonces(
         shareNonces[other.guardianId] = nonce
         return super.shareEncryption(Pil, other, nonce)
     }
+
+    fun myShareOfOthers(): Map<String, PrivateKeyShare> = super.myShareOfOthers
 }
 
 private class KeyCeremonyTrusteeWithNonces(
     group: GroupContext,
     id: String,
     xCoordinate: Int,
+    nguardians: Int,
     quorum: Int,
     polynomial : ElectionPolynomial = group.generatePolynomial(id, xCoordinate, quorum),
     val shareNonces: Map<String, ElementModQ>,
-) : KeyCeremonyTrustee(group, id, xCoordinate, quorum, polynomial) {
+) : KeyCeremonyTrustee(group, id, xCoordinate, nguardians, quorum, polynomial) {
 
     override fun shareEncryption(
         Pil: ElementModQ,

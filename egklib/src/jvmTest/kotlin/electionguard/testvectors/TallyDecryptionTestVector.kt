@@ -107,7 +107,7 @@ class TallyDecryptionTestVector(
         // run the whole workflow
         val keyCeremonyTrustees: List<KeyCeremonyTrustee> = List(numberOfGuardians) {
             val seq = it + 1
-            KeyCeremonyTrustee(group, "guardian$seq", seq, quorum)
+            KeyCeremonyTrustee(group, "guardian$seq", seq, numberOfGuardians, quorum)
         }.sortedBy { it.xCoordinate }
 
         keyCeremonyExchange(keyCeremonyTrustees)
@@ -140,7 +140,7 @@ class TallyDecryptionTestVector(
         }
         val encryptedTally = accumulator.build()
 
-        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.electionPublicKey(), it.secretKeyShare()) }
+        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.electionPublicKey(), it.computeSecretKeyShare()) }
         // leave out one of the trustees to make it a partial decryption
         val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }
 
@@ -183,7 +183,7 @@ class TallyDecryptionTestVector(
         val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group))
         val encryptedTally = testVector.encrypted_tally.import(group)
 
-        val keyCeremonyTrustees =  testVector.trustees.map { it.importKeyCeremonyTrustee(group) }
+        val keyCeremonyTrustees =  testVector.trustees.map { it.importKeyCeremonyTrustee(group, numberOfGuardians) }
         val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group) }
         // leave out one of the trustees to make it a partial decryption
         val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }

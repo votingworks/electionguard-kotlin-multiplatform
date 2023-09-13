@@ -15,9 +15,9 @@ class KeyCeremonyMockTest {
     @Test
     fun testKeyCeremonyOk() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3, 3)
         val spy3 = spyk(trustee3)
         val trustees = listOf(trustee1, trustee2, spy3)
 
@@ -28,9 +28,9 @@ class KeyCeremonyMockTest {
     @Test
     fun testKeyCeremonyMockOk() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             val result1 = trustee3.encryptedKeyShareFor(trustee1.id())
@@ -47,9 +47,9 @@ class KeyCeremonyMockTest {
     @Test
     fun testAllowBadEncryptedShare() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
@@ -65,9 +65,9 @@ class KeyCeremonyMockTest {
     @Test
     fun testBadEncryptedShare() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
@@ -84,9 +84,9 @@ class KeyCeremonyMockTest {
     @Test
     fun testBadKeySharesAllowFalse() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
@@ -101,6 +101,7 @@ class KeyCeremonyMockTest {
         val result = keyCeremonyExchange(trustees, false)
         println("result = $result")
         assertTrue(result is Err)
+        println(result)
         assertTrue(result.error.contains("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id3'"))
         assertTrue(result.error.contains("Trustee 'id1' failed to validate KeyShare for missingGuardianId 'id3'"))
     }
@@ -108,9 +109,9 @@ class KeyCeremonyMockTest {
     @Test
     fun testBadKeySharesAllowTrue() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3, 3)
         val spy3 = spyk(trustee3)
         every { spy3.encryptedKeyShareFor(trustee1.id()) } answers {
             trustee3.encryptedKeyShareFor(trustee1.id()) // trustee needs to cache
@@ -125,6 +126,7 @@ class KeyCeremonyMockTest {
         val result = keyCeremonyExchange(trustees, true)
         println("result = $result")
         assertTrue(result is Err)
+        println(result)
         assertTrue(result.error.contains("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id3'"))
         assertTrue(result.error.contains("Trustee 'id1' failed to validate KeyShare for missingGuardianId 'id3'"))
     }

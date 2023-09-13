@@ -19,8 +19,8 @@ class ShareEncryptDecryptTest {
                 Arb.int(min=1, max=100),
                 elementsModQ(group, minimum = 2)
             ) { xcoord, pil ->
-                val trustee1 = KeyCeremonyTrustee(group, "id1", xcoord, 4)
-                val trustee2 = KeyCeremonyTrustee(group, "id2", xcoord+1, 4)
+                val trustee1 = KeyCeremonyTrustee(group, "id1", xcoord, 4, 4)
+                val trustee2 = KeyCeremonyTrustee(group, "id2", xcoord+1, 4, 4)
 
                 val publicKeys2 : PublicKeys = trustee2.publicKeys().unwrap()
                 val share : HashedElGamalCiphertext = trustee1.shareEncryption(pil, publicKeys2)

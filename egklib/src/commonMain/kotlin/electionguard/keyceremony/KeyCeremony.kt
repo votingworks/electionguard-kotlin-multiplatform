@@ -115,12 +115,11 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
         }
     }
 
-    // at this point we do the computeSecretKeyShare and see if there are errors
-    val results : List<Result<ElementModQ, String>> = trustees.map { it.computeSecretKeyShare(trustees.size) }
-    val (_, shareErrors)  = results.partition()
-    //if (shareErrors.isNotEmpty()) {
-    //    Err("keyCeremonyExchange failed exchanging shares:\n ${shareErrors.merge()}")
-    //}
+    // check that everyone is happy
+    var happy = trustees.map { it.checkComplete() }.reduce{ a, b -> a && b }
+    if (!happy) {
+        return Err("keyCeremonyExchange failed checkComplete")
+    }
 
     if (allowEncryptedFailure) {
         val keyResultAll = keyResults.merge()
