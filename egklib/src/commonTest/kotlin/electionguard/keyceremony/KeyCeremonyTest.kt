@@ -12,12 +12,15 @@ import kotlin.test.assertTrue
 
 class KeyCeremonyTest {
 
+
     @Test
     fun testKeyCeremony() {
+        val nguardians = 3
+        val quorum = 2
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 2)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 2)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 2)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, quorum)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, quorum)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, quorum)
         val trustees = listOf(trustee1, trustee2, trustee3)
 
         val result = keyCeremonyExchange(trustees)
@@ -36,8 +39,8 @@ class KeyCeremonyTest {
         val config = makeElectionConfig(
             protocolVersion,
             group.constants,
-            3,
-            2,
+            nguardians,
+            quorum,
             ByteArray(0),
             false,
             "device".encodeToByteArray(),
@@ -105,14 +108,4 @@ class KeyCeremonyTest {
         assertTrue(result is Err, result.getError())
         assertTrue(result.toString().contains("keyCeremonyExchange trustees have non-unique xcoordinates"))
     }
-}
-
-fun makeFakeManifest(): Manifest {
-    return Manifest(
-        "electionScopeId",
-        "specVersion",
-        Manifest.ElectionType.general,
-        "startDate", "endDate",
-        emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), null,
-    )
 }

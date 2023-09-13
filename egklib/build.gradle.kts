@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.cli.jvm.compiler.createLibraryListForJvm
-
 val kotlin_version: String by project
 
 buildscript {

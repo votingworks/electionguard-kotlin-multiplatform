@@ -7,8 +7,8 @@ import electionguard.core.*
 import kotlin.experimental.xor
 
 /**
- * A Trustee that knows its own secret key and polynomial.
- * KeyCeremonyTrustee must stay private. Guardian is its public info in the election record.
+ * A Trustee that knows its own secret key and polynomial, used during the Key Ceremony.
+ * This must stay private. Guardian is its public info in the election record.
  */
 open class KeyCeremonyTrustee(
     val group: GroupContext,
@@ -44,26 +44,20 @@ open class KeyCeremonyTrustee(
     override fun coefficientProofs(): List<SchnorrProof> = polynomial.coefficientProofs
 
     override fun publicKeys(): Result<PublicKeys, String> {
-        return Ok(PublicKeys(
-            id,
-            xCoordinate,
-            polynomial.coefficientProofs,
-        ))
-    }
-
-    // The value P(i) == G_i’s share of the secret key s = (s1 + s2 + · · · + sn )
-    // == (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. spec 2.0.0, eq 65.
-    override fun keyShare(): ElementModQ {
-        var result: ElementModQ = polynomial.valueAt(group, xCoordinate)
-        myShareOfOthers.values.forEach{ result += it.yCoordinate }
-        return result
+        return Ok(
+            PublicKeys(
+                id,
+                xCoordinate,
+                polynomial.coefficientProofs,
+            )
+        )
     }
 
     // debugging
     internal fun electionPrivateKey(): ElementModQ = polynomial.coefficients[0]
 
     // debug only
-    internal fun valueAt(group: GroupContext, xcoord: Int) : ElementModQ {
+    internal fun valueAt(group: GroupContext, xcoord: Int): ElementModQ {
         return polynomial.valueAt(group, xcoord)
     }
 
@@ -71,13 +65,13 @@ open class KeyCeremonyTrustee(
     override fun receivePublicKeys(publicKeys: PublicKeys): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
         if (publicKeys.guardianId == this.id) {
-            errors.add( Err("Cant send '${publicKeys.guardianId}' public keys to itself"))
+            errors.add(Err("Cant send '${publicKeys.guardianId}' public keys to itself"))
         }
         if (publicKeys.guardianXCoordinate < 1) {
-            errors.add( Err("${this.id} receivePublicKeys from '${publicKeys.guardianId}': guardianXCoordinate must be >= 1"))
+            errors.add(Err("${this.id} receivePublicKeys from '${publicKeys.guardianId}': guardianXCoordinate must be >= 1"))
         }
         if (publicKeys.coefficientProofs.size != quorum) {
-            errors.add( Err("${this.id} receivePublicKeys from '${publicKeys.guardianId}': needs ($quorum) coefficientProofs"))
+            errors.add(Err("${this.id} receivePublicKeys from '${publicKeys.guardianId}': needs ($quorum) coefficientProofs"))
         }
         if (errors.isEmpty()) {
             val validProofs: Result<Boolean, String> = publicKeys.validate()
@@ -93,13 +87,13 @@ open class KeyCeremonyTrustee(
     override fun encryptedKeyShareFor(otherGuardian: String): Result<EncryptedKeyShare, String> {
         var pkeyShare = othersShareOfMyKey[otherGuardian]
         if (pkeyShare == null) {
-            val other : PublicKeys = otherPublicKeys[otherGuardian] // G_l's public keys
+            val other: PublicKeys = otherPublicKeys[otherGuardian] // G_l's public keys
                 ?: return Err("Trustee '$id', does not have public key for '$otherGuardian'")
 
             // Compute my polynomial's y value at the other's x coordinate = Pi(ℓ)
             val Pil: ElementModQ = polynomial.valueAt(group, other.guardianXCoordinate)
             // My encryption of Pil, using the other's public key. spec 2.0.0, section 3.2.2, p 24, eq 18.
-            val EPil : HashedElGamalCiphertext = shareEncryption(Pil, other)
+            val EPil: HashedElGamalCiphertext = shareEncryption(Pil, other)
 
             pkeyShare = PrivateKeyShare(this.xCoordinate, this.id, other.guardianId, EPil, Pil)
             // keep track in case its challenged
@@ -114,7 +108,7 @@ open class KeyCeremonyTrustee(
         if (share == null) {
             return Err("ReceiveEncryptedKeyShare '${this.id}' sent a null share")
         }
-         if (share.secretShareFor != id) {
+        if (share.secretShareFor != id) {
             return Err("ReceiveEncryptedKeyShare '${this.id}' sent share to wrong trustee '${this.id}', should be availableGuardianId '${share.secretShareFor}'")
         }
 
@@ -149,7 +143,7 @@ open class KeyCeremonyTrustee(
     override fun keyShareFor(otherGuardian: String): Result<KeyShare, String> {
         val pkeyShare = othersShareOfMyKey[otherGuardian]
         return if (pkeyShare != null) Ok(pkeyShare.makeKeyShare())
-            else Err("Trustee '$id', does not have KeyShare for '$otherGuardian'; must call encryptedKeyShareFor() first")
+        else Err("Trustee '$id', does not have KeyShare for '$otherGuardian'; must call encryptedKeyShareFor() first")
     }
 
     /** Receive and verify a key share. */
@@ -166,12 +160,16 @@ open class KeyCeremonyTrustee(
         } else {
             // check if the Pi(ℓ) that was sent satisfies eq 21.
             // g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1
-            if (group.gPowP(keyShare.yCoordinate) != calculateGexpPiAtL(this.xCoordinate, otherKeys.coefficientCommitments())) {
+            if (group.gPowP(keyShare.yCoordinate) != calculateGexpPiAtL(
+                    this.xCoordinate,
+                    otherKeys.coefficientCommitments()
+                )
+            ) {
                 errors.add(Err("Trustee '$id' failed to validate KeyShare for missingGuardianId '${keyShare.polynomialOwner}'"))
             } else {
                 // ok use it, but encrypt it ourself, dont use passed value, and use a new nonce
                 val Pil: ElementModQ = polynomial.valueAt(group, otherKeys.guardianXCoordinate)
-                val EPil : HashedElGamalCiphertext = this.shareEncryption(Pil, otherKeys)
+                val EPil: HashedElGamalCiphertext = this.shareEncryption(Pil, otherKeys)
 
                 myShareOfOthers[keyShare.polynomialOwner] = PrivateKeyShare(
                     keyShare.ownerXcoord,
@@ -192,7 +190,7 @@ open class KeyCeremonyTrustee(
     // guardian Gi encryption Eℓ of Pi(ℓ) at another guardian's Gℓ coordinate ℓ
     // see section 3.2.2 "share encryption"
     open fun shareEncryption(
-        Pil : ElementModQ,
+        Pil: ElementModQ,
         other: PublicKeys,
         nonce: ElementModQ = group.randomElementModQ(minimum = 2)
     ): HashedElGamalCiphertext {
@@ -244,7 +242,7 @@ open class KeyCeremonyTrustee(
     // above in Equations (16) and (17), which allows Gℓ to verify the validity of the MAC, namely that
     //   Ci,ℓ,2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 ).
     // If the MAC verifies, then Gℓ decrypts b(Pi (ℓ), 32) = Ci,ℓ,1 ⊕ k1 .
-    fun shareDecryption(share: EncryptedKeyShare): ByteArray?  {
+    fun shareDecryption(share: EncryptedKeyShare): ByteArray? {
         // αi,ℓ = Ci,ℓ,0
         // βi,ℓ = (Ci,ℓ,0 )sℓ mod p
         // ki,ℓ = H(HP ; 11, i, ℓ, Kℓ , αi,ℓ , βi,ℓ )
@@ -254,11 +252,14 @@ open class KeyCeremonyTrustee(
         val alpha = c0
         val beta = c0 powP this.electionPrivateKey()
         val hp = group.constants.hp.bytes
-        val kil = hashFunction(hp, 0x11.toByte(), share.ownerXcoord, xCoordinate, electionPublicKey(), alpha, beta).bytes
+        val kil =
+            hashFunction(hp, 0x11.toByte(), share.ownerXcoord, xCoordinate, electionPublicKey(), alpha, beta).bytes
 
         // Now the MAC key k0 and the encryption key k1 can be computed as above in Equations (16) and (17)
-        val k0 = hmacFunction(kil, 0x01.toByte(), label, 0x00.toByte(), context, share.ownerXcoord, xCoordinate, 512).bytes
-        val k1 = hmacFunction(kil, 0x02.toByte(), label, 0x00.toByte(), context, share.ownerXcoord, xCoordinate, 512).bytes
+        val k0 =
+            hmacFunction(kil, 0x01.toByte(), label, 0x00.toByte(), context, share.ownerXcoord, xCoordinate, 512).bytes
+        val k1 =
+            hmacFunction(kil, 0x02.toByte(), label, 0x00.toByte(), context, share.ownerXcoord, xCoordinate, 512).bytes
 
         // Gℓ can verify the validity of the MAC, namely that Ci,ℓ,2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 ).
         val expectedC2 = hmacFunction(k0, c0, c1)
@@ -271,6 +272,23 @@ open class KeyCeremonyTrustee(
         return pilBytes
     }
 
+    // Call after all myShareOfOthers has been populated with all the other trustee's.
+    // The value P(i) == G_i’s share of the secret key s = (s1 + s2 + · · · + sn )
+    // == (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. spec 2.0.0, eq 65.
+    override fun computeSecretKeyShare(nguardians : Int): Result<ElementModQ, String> {
+       if (nguardians != myShareOfOthers.size + 1) {
+            return Err("requires nguardians ${nguardians} but have ${myShareOfOthers.size  + 1} shares")
+        }
+        var result: ElementModQ = polynomial.valueAt(group, xCoordinate)
+        myShareOfOthers.values.forEach{ result += it.yCoordinate }
+        this.secretKeyShare = result
+        return Ok(result)
+    }
+
+    private var secretKeyShare : ElementModQ? = null
+    override fun secretKeyShare(): ElementModQ {
+        return secretKeyShare!!
+    }
 }
 
 // internal use only

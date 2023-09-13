@@ -20,10 +20,11 @@ fun KeyCeremonyTrustee.publishJson(): TrusteeJson {
         this.id,
         this.xCoordinate,
         this.polynomial.coefficients.map { it.publishJson() },
-        this.keyShare().publishJson(),
+        this.secretKeyShare().publishJson(),
     )
 }
 
+/*
 fun TrusteeJson.importKeyCeremonyTrustee(group: GroupContext): KeyCeremonyTrustee {
     return KeyCeremonyTrustee(
         group,
@@ -37,6 +38,8 @@ fun TrusteeJson.importKeyCeremonyTrustee(group: GroupContext): KeyCeremonyTruste
         )
     )
 }
+
+ */
 
 fun TrusteeJson.importDecryptingTrustee(group: GroupContext): DecryptingTrusteeDoerre {
     return DecryptingTrusteeDoerre(this.id,

@@ -57,6 +57,8 @@ class MissingGuardianTests {
                 t2.receiveEncryptedKeyShare(t1.encryptedKeyShareFor(t2.id).unwrap())
             }
         }
+        // compute SecretKeyShares
+        trustees.forEach { it.computeSecretKeyShare(nguardians) }
 
         val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
 

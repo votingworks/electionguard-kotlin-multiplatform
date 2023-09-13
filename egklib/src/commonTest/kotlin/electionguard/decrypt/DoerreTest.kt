@@ -53,6 +53,7 @@ fun runDoerreTest(
             t2.receiveEncryptedKeyShare(t1.encryptedKeyShareFor(t2.id).unwrap())
         }
     }
+    trustees.forEach { it.computeSecretKeyShare(nguardians) }
 
     val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
 

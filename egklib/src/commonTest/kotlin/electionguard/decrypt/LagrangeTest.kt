@@ -5,9 +5,6 @@ import com.github.michaelbull.result.unwrap
 import electionguard.core.ElementModQ
 import electionguard.core.GroupContext
 import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
-import electionguard.core.toElementModQ
-import electionguard.keyceremony.ElectionPolynomial
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.generatePolynomial
 
@@ -99,11 +96,14 @@ class LagrangeTest {
             }
         }
 
-        assertEquals(y11 + y21, polly1.keyShare())
-        assertEquals(y12 + y22, polly2.keyShare())
+        // compute SecretKeyShares
+        trustees.forEach { it.computeSecretKeyShare(2) }
+
+        assertEquals(y11 + y21, polly1.secretKeyShare())
+        assertEquals(y12 + y22, polly2.secretKeyShare())
 
         val expected = polly1.electionPrivateKey() + polly2.electionPrivateKey()
-        val computed = polly1.keyShare() * w1 + polly2.keyShare() * w2
+        val computed = polly1.secretKeyShare() * w1 + polly2.secretKeyShare() * w2
         assertEquals(expected, computed)
 
         testKeyShares(group, trustees, listOf(1, 2))
@@ -118,16 +118,16 @@ class LagrangeTest {
 
         val weightedSum = with(group) {
             trustees.map {
-                assertTrue( it.keyShare().inBounds())
+                assertTrue( it.secretKeyShare().inBounds())
                 val coeff = lagrangeCoefficients[it.id] ?: throw IllegalArgumentException()
-                it.keyShare() * coeff
+                it.secretKeyShare() * coeff
             }.addQ() // eq 7
         }
 
         var weightedSum2 = group.ZERO_MOD_Q
         trustees.forEach {
             val coeff = lagrangeCoefficients[it.id] ?: throw IllegalArgumentException()
-            weightedSum2 += it.keyShare() * coeff
+            weightedSum2 += it.secretKeyShare() * coeff
         }
         assertEquals(weightedSum, weightedSum2)
 

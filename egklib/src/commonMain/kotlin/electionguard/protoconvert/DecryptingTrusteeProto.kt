@@ -57,7 +57,7 @@ fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
         this.id(),
         this.xCoordinate(),
         this.electionPublicKey().publishProto(),
-        this.keyShare().publishProto(),
+        this.secretKeyShare().publishProto(),
     )
 
 private fun EncryptedKeyShare.publishProto() =
