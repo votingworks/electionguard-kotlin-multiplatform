@@ -81,7 +81,7 @@ class RunTrustedKeyCeremony {
             // Generate all KeyCeremonyTrustees here, which means this is a trusted situation.
             val trustees: List<KeyCeremonyTrustee> = List(config.numberOfGuardians) {
                 val seq = it + 1
-                KeyCeremonyTrustee(group, "trustee$seq", seq, config.quorum)
+                KeyCeremonyTrustee(group, "trustee$seq", seq, nguardians = config.numberOfGuardians, quorum = config.quorum )
             }
 
             val exchangeResult = keyCeremonyExchange(trustees)

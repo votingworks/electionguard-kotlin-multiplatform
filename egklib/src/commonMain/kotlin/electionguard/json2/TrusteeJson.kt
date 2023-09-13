@@ -20,7 +20,7 @@ fun KeyCeremonyTrustee.publishJson(): TrusteeJson {
         this.id,
         this.xCoordinate,
         this.polynomial.coefficients.map { it.publishJson() },
-        this.secretKeyShare().publishJson(),
+        this.computeSecretKeyShare().publishJson(),
     )
 }
 

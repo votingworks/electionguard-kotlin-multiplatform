@@ -12,15 +12,14 @@ import kotlin.test.assertTrue
 
 class KeyCeremonyTest {
 
-
     @Test
     fun testKeyCeremony() {
         val nguardians = 3
         val quorum = 2
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, quorum)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, quorum)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, quorum)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, nguardians, quorum)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, nguardians, quorum)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, nguardians, quorum)
         val trustees = listOf(trustee1, trustee2, trustee3)
 
         val result = keyCeremonyExchange(trustees)
@@ -33,7 +32,7 @@ class KeyCeremonyTest {
         assertEquals(expected, keys)
 
         trustees.forEach {
-            assertEquals(2, it.otherPublicKeys.size)
+            assertTrue(it.checkComplete())
         }
 
         val config = makeElectionConfig(
@@ -70,9 +69,9 @@ class KeyCeremonyTest {
     @Test
     fun testKeyCeremonyFailQuorum() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 2)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 2, 3, 2)
         val trustees = listOf(trustee1, trustee2, trustee3)
 
         val result = keyCeremonyExchange(trustees)
@@ -84,9 +83,9 @@ class KeyCeremonyTest {
     @Test
     fun testKeyCeremonyFailTrusteeIdDuplicate() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id1", 2, 3)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id1", 2, 3, 3)
         val trustees = listOf(trustee1, trustee2, trustee3)
 
         val result = keyCeremonyExchange(trustees)
@@ -98,9 +97,9 @@ class KeyCeremonyTest {
     @Test
     fun testKeyCeremonyFailTrusteeCoordDuplicate() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3)
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 3, 3)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 1, 3, 3)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 3, 3, 3)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 3, 3, 3)
         val trustees = listOf(trustee1, trustee2, trustee3)
 
         val result = keyCeremonyExchange(trustees)

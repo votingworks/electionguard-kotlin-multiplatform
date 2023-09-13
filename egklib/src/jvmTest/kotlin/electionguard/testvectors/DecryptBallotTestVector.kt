@@ -59,7 +59,7 @@ class DecryptBallotTestVector {
         // run the whole workflow
         val keyCeremonyTrustees: List<KeyCeremonyTrustee> = List(numberOfGuardians) {
             val seq = it + 1
-            KeyCeremonyTrustee(group, "guardian$seq", seq, quorum)
+            KeyCeremonyTrustee(group, "guardian$seq", seq, numberOfGuardians, quorum)
         }.sortedBy { it.xCoordinate }
 
         keyCeremonyExchange(keyCeremonyTrustees)
@@ -87,7 +87,7 @@ class DecryptBallotTestVector {
         }.first()
         val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 
-        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.electionPublicKey(), it.secretKeyShare()) }
+        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.electionPublicKey(), it.computeSecretKeyShare()) }
 
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }
         val guardiansWrapper = Guardians(group, guardians)
@@ -129,7 +129,7 @@ class DecryptBallotTestVector {
         val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group))
         val encryptedBallot = testVector.encrypted_ballot.import(group)
 
-        val keyCeremonyTrustees =  testVector.trustees.map { it.importKeyCeremonyTrustee(group) }
+        val keyCeremonyTrustees =  testVector.trustees.map { it.importKeyCeremonyTrustee(group, numberOfGuardians) }
         val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group) }
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }
         val guardiansWrapper = Guardians(group, guardians)

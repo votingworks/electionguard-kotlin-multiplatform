@@ -37,7 +37,7 @@ fun runDoerreTest(
 ) {
     val trustees: List<KeyCeremonyTrustee> = List(nguardians) {
         val seq = it + 1
-        KeyCeremonyTrustee(group,"guardian$seq", seq, quorum)
+        KeyCeremonyTrustee(group,"guardian$seq", seq, nguardians, quorum)
     }.sortedBy { it.xCoordinate }
 
     // exchange PublicKeys
@@ -53,7 +53,7 @@ fun runDoerreTest(
             t2.receiveEncryptedKeyShare(t1.encryptedKeyShareFor(t2.id).unwrap())
         }
     }
-    trustees.forEach { it.computeSecretKeyShare(nguardians) }
+    trustees.forEach { it.checkComplete() }
 
     val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
 

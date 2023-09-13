@@ -12,7 +12,7 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testPublicKeys() {
         val group = productionGroup()
-        val trustee = KeyCeremonyTrustee(group, "id", 42, 4)
+        val trustee = KeyCeremonyTrustee(group, "id", 42, 4, 4)
         assertEquals("id", trustee.id())
         assertEquals(42, trustee.xCoordinate())
         assertNotNull(trustee.electionPublicKey())
@@ -32,8 +32,8 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testReceivePublicKeysBadQuorum() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 5)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 5, 4)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 5, 5)
 
         val result1 = trustee1.receivePublicKeys(trustee2.publicKeys().unwrap())
         assertTrue(result1 is Err)
@@ -43,7 +43,7 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testReceivePublicKeysBadReceiver() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 5, 4)
         val result1 = trustee1.receivePublicKeys(trustee1.publicKeys().unwrap())
         assertTrue(result1 is Err)
         assertEquals("Cant send 'id1' public keys to itself", result1.error)
@@ -52,7 +52,7 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testReceivePublicKeysBadProofs() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 5, 4)
         val goodProof = trustee1.coefficientProofs()[0]
         val badProof = goodProof.copy(challenge = group.TWO_MOD_Q)
         val badProofs = trustee1.coefficientProofs().toMutableList()
@@ -67,8 +67,8 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testShareEncryptDecrypt() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 4)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 5, 4)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 5, 4)
 
         val publicKeys2 : PublicKeys = trustee2.publicKeys().unwrap()
         val pil = group.randomElementModQ()
@@ -84,8 +84,8 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testReceiveSecretKeyShare() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 4)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 5, 4)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 5, 4)
 
         val result1 = trustee1.receivePublicKeys(trustee2.publicKeys().unwrap())
         assertTrue(result1 is Ok)
@@ -117,8 +117,8 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testValidateSecretKeyShare() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 4)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 5, 4)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 5, 4)
 
         assertTrue(trustee1.receivePublicKeys(trustee2.publicKeys().unwrap()) is Ok)
         assertTrue(trustee2.receivePublicKeys(trustee1.publicKeys().unwrap()) is Ok)
@@ -144,7 +144,7 @@ class KeyCeremonyTrusteeTest {
         assertEquals("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id2'", result5.error)
 
         // mess this one up so it wont validate
-        val trustee3 = KeyCeremonyTrustee(group, "id3", 43, 4)
+        val trustee3 = KeyCeremonyTrustee(group, "id3", 43, 5, 4)
         assertTrue(trustee1.receivePublicKeys(trustee3.publicKeys().unwrap()) is Ok)
         // give it the wrong generatingGuardianId
         val ss2v1 = ss21.copy(polynomialOwner = "id3")
@@ -156,8 +156,8 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testKeyShareFor() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 4)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 5, 4)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 5, 4)
 
         assertTrue(trustee1.receivePublicKeys(trustee2.publicKeys().unwrap()) is Ok)
         assertTrue(trustee2.receivePublicKeys(trustee1.publicKeys().unwrap()) is Ok)
@@ -182,8 +182,8 @@ class KeyCeremonyTrusteeTest {
     @Test
     fun testReceiveKeyShare() {
         val group = productionGroup()
-        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 4)
-        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 4)
+        val trustee1 = KeyCeremonyTrustee(group, "id1", 41, 5, 4)
+        val trustee2 = KeyCeremonyTrustee(group, "id2", 42, 5, 4)
 
         assertTrue(trustee1.receivePublicKeys(trustee2.publicKeys().unwrap()) is Ok)
         assertTrue(trustee2.receivePublicKeys(trustee1.publicKeys().unwrap()) is Ok)
