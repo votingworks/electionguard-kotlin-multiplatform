@@ -3,11 +3,14 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
+import electionguard.core.ElementModQ
+
 import electionguard.core.*
 
 private const val debug = false
@@ -21,7 +24,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
     }
 
     // make sure trustee xcoords are all different
-    val uniqueCoords = trustees.map{it.xCoordinate()}.toSet()
+    val uniqueCoords = trustees.map { it.xCoordinate() }.toSet()
     if (uniqueCoords.size != trustees.size) {
         return Err("keyCeremonyExchange trustees have non-unique xcoordinates = ${trustees.map{it.xCoordinate()}}")
     }
@@ -112,6 +115,13 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
         }
     }
 
+    // at this point we do the computeSecretKeyShare and see if there are errors
+    val results : List<Result<ElementModQ, String>> = trustees.map { it.computeSecretKeyShare(trustees.size) }
+    val (_, shareErrors)  = results.partition()
+    //if (shareErrors.isNotEmpty()) {
+    //    Err("keyCeremonyExchange failed exchanging shares:\n ${shareErrors.merge()}")
+    //}
+
     if (allowEncryptedFailure) {
         val keyResultAll = keyResults.merge()
         return if (keyResultAll is Ok) {
@@ -155,8 +165,8 @@ data class KeyCeremonyResults(
         val guardians: List<Guardian> = publicKeysSorted.map { makeGuardian(it) }
 
         val metadataAll = mutableMapOf(
-            Pair("CreatedBy", "keyCeremonyExchange"),
-            Pair("CreatedOn", getSystemDate()),
+            kotlin.Pair("CreatedBy", "keyCeremonyExchange"),
+            kotlin.Pair("CreatedOn", getSystemDate()),
         )
         metadataAll.putAll(metadata)
 

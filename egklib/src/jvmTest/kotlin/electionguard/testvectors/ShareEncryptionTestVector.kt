@@ -150,7 +150,7 @@ class ShareEncryptionTestVector {
                 "Generate this guardian's shares for other guardians (Pi(ℓ) = yCoordinate, El(Pi(ℓ) = encryptedCoordinate), eq 17",
                 trustee.myShareOfOthers.values.map { it.publishJson() },
                 "Generate this guardian's share of the secret key, eq 66",
-                trustee.keyShare().publishJson(),
+                trustee.secretKeyShare().publishJson(),
             )
         }
 
@@ -212,7 +212,7 @@ class ShareEncryptionTestVector {
         }
 
         trustees.zip(guardianShares).map { (trustee, share) ->
-            assertEquals(share.expected_my_share, trustee.keyShare())
+            assertEquals(share.expected_my_share, trustee.secretKeyShare())
         }
     }
 

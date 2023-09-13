@@ -21,7 +21,7 @@ fun KeyCeremonyTrustee.publishJsonE(missing : Boolean): TrusteeJson {
         this.id,
         this.xCoordinate,
         this.polynomial.coefficients.map { it.publishJson() },
-        this.keyShare().publishJson(),
+        this.secretKeyShare().publishJson(),
         missing,
     )
 }

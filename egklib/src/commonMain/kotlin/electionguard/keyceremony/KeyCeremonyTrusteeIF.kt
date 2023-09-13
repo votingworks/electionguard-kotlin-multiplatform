@@ -9,7 +9,6 @@ interface KeyCeremonyTrusteeIF {
     fun id(): String
     fun xCoordinate(): Int
     fun electionPublicKey(): ElementModP
-    fun keyShare(): ElementModQ
     fun coefficientCommitments(): List<ElementModP>
     fun coefficientProofs(): List<SchnorrProof>
 
@@ -27,4 +26,10 @@ interface KeyCeremonyTrusteeIF {
     fun keyShareFor(otherGuardian: String): Result<KeyShare, String>
     /** Receive and verify a key share. */
     fun receiveKeyShare(keyShare: KeyShare): Result<Boolean, String>
+
+    /** call after all shares are added, and before calling secretKeyShare() */
+    fun computeSecretKeyShare(nguardians : Int): Result<ElementModQ, String>
+
+    /** The resulting secretKeyShare for this guardian == (P1(ℓ) + P2(ℓ) + · · · + Pn(ℓ)) mod q. spec 2.0.0, eq 65. */
+    fun secretKeyShare(): ElementModQ
 }
