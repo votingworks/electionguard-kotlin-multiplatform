@@ -145,7 +145,7 @@ class TallyDecryptor(
         val response: ElementModQ = with(group) { selectionDecryptions.responses.values.map { it }.addQ() }
         // finally we can create the proof
         val proof = ChaumPedersenProof(selectionDecryptions.collectiveChallenge!!.toElementModQ(group), response)
-        val T = selection.encryptedVote.data / selectionDecryptions.M!! // "decrypted value" T = B · M −1, eq 64
+        val T = selection.encryptedVote.data / selectionDecryptions.M!! // "decrypted value" T = B · M −1, spec 2.0 eq 64
 
         val decrypytedSelection = DecryptedTallyOrBallot.Selection(
             selection.selectionId,

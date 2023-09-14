@@ -57,7 +57,7 @@ class MissingGuardianTests {
                 t2.receiveEncryptedKeyShare(t1.encryptedKeyShareFor(t2.id).unwrap())
             }
         }
-        trustees.forEach { it.checkComplete() }
+        trustees.forEach { it.isComplete() }
 
         val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
 

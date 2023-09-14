@@ -7,7 +7,7 @@ import electionguard.core.SchnorrProof
 interface KeyCeremonyTrusteeIF {
     fun id(): String
     fun xCoordinate(): Int
-    fun electionPublicKey(): ElementModP
+    fun guardianPublicKey(): ElementModP
     fun coefficientCommitments(): List<ElementModP>
     fun coefficientProofs(): List<SchnorrProof>
 
@@ -27,5 +27,5 @@ interface KeyCeremonyTrusteeIF {
     fun receiveKeyShare(keyShare: KeyShare): Result<Boolean, String>
 
     /** call after all shares are added */
-    fun checkComplete(): Boolean
+    fun isComplete(): Boolean
 }

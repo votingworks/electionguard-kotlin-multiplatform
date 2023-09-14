@@ -39,7 +39,7 @@ open class KeyCeremonyTrustee(
 
     override fun xCoordinate(): Int = xCoordinate
 
-    override fun electionPublicKey(): ElementModP = polynomial.coefficientCommitments[0]
+    override fun guardianPublicKey(): ElementModP = polynomial.coefficientCommitments[0]
 
     override fun coefficientCommitments(): List<ElementModP> = polynomial.coefficientCommitments
 
@@ -186,7 +186,7 @@ open class KeyCeremonyTrustee(
         return errors.merge()
     }
 
-    override fun checkComplete(): Boolean {
+    override fun isComplete(): Boolean {
         return (nguardians == otherPublicKeys.size + 1) && (nguardians == myShareOfOthers.size + 1) &&
                 (nguardians == othersShareOfMyKey.size + 1)
     }
@@ -260,7 +260,7 @@ open class KeyCeremonyTrustee(
         val beta = c0 powP this.electionPrivateKey()
         val hp = group.constants.hp.bytes
         val kil =
-            hashFunction(hp, 0x11.toByte(), share.ownerXcoord, xCoordinate, electionPublicKey(), alpha, beta).bytes
+            hashFunction(hp, 0x11.toByte(), share.ownerXcoord, xCoordinate, guardianPublicKey(), alpha, beta).bytes
 
         // Now the MAC key k0 and the encryption key k1 can be computed as above in Equations (16) and (17)
         val k0 =

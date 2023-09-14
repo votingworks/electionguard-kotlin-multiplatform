@@ -63,7 +63,7 @@ fun runFakeKeyCeremony(
 
     // check they are complete
     trustees.forEach {
-        assertTrue( it.checkComplete() )
+        assertTrue( it.isComplete() )
         assertEquals(quorum, it.coefficientCommitments().size)
     }
 
@@ -75,7 +75,7 @@ fun runFakeKeyCeremony(
     assertEquals(quorum * nguardians, commitments.size)
 
     val jointPublicKey: ElementModP =
-        trustees.map { it.electionPublicKey() }.reduce { a, b -> a * b }
+        trustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
 
     // create a new config so the quorum, nguardians can change
     val newConfig = makeElectionConfig(

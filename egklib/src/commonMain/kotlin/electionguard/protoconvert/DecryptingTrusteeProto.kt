@@ -56,7 +56,7 @@ fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
     electionguard.protogen.DecryptingTrustee(
         this.id(),
         this.xCoordinate(),
-        this.electionPublicKey().publishProto(),
+        this.guardianPublicKey().publishProto(),
         this.computeSecretKeyShare().publishProto(),
     )
 

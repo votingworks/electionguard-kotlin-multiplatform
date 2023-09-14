@@ -131,7 +131,7 @@ data class ContestData(
         contestIndex: Int, // ind_c(Λ)
         ballotNonce: UInt256): HashedElGamalCiphertext {
 
-        // D = D_1 ∥ D_2 ∥ · · · ∥ D_bD  ; eq (49)
+        // D = D_1 ∥ D_2 ∥ · · · ∥ D_bD  ; (spec 2.0, eq 49)
         val messageBlocks: List<UInt256> =
             this.toList()
                 .chunked(32) { block ->
@@ -143,12 +143,12 @@ data class ContestData(
 
         val group = compatibleContextOrFail(publicKey.key)
 
-        // ξ = H(HE ; 0x20, ξB , indc (Λ), “contest data”) (eq 50)
+        // ξ = H(HE ; 0x20, ξB , indc (Λ), “contest data”) (spec 2.0, eq 50)
         val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestIndex, contestDataLabel)
 
         // ElectionGuard spec: (α, β) = (g^ξ mod p, K^ξ mod p); by encrypting a zero, we achieve exactly this
         val (alpha, beta) = 0.encrypt(publicKey, contestDataNonce.toElementModQ(group))
-        // k = H(HE ; 0x22, K, α, β) ; eq 51
+        // k = H(HE ; 0x22, K, α, β) ; (spec 2.0, eq 51)
         val kdfKey = hashFunction(extendedBaseHash.bytes, 0x22.toByte(), publicKey.key, alpha, beta)
 
         // TODO check

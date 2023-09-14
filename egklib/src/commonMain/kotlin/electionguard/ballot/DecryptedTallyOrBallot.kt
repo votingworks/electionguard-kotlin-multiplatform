@@ -38,14 +38,14 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
      *
      * @param selectionId equals the Manifest.SelectionDescription.selectionId.
      * @param tally     the decrypted vote count.
-     * @param bOverM    T = (B / M) mod p. (eq 65), needed for verification 9.A.
+     * @param bOverM    T = (B / M) mod p. (spec 2.0, eq 64), needed for verification 9.A.
      * @param encryptedVote The encrypted vote count
      * @param proof     Proof of correctness that ciphertext encrypts tally
      */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
         val tally: Int,         // logK(T)
-        val bOverM: ElementModP, // T = (B / M) mod p. (eq 65), needed for verification 9.A.
+        val bOverM: ElementModP, // T = (B / M) mod p. (spec 2.0, eq 64)
         val encryptedVote: ElGamalCiphertext, // same as EncryptedTally.Selection.encryptedVote
         val proof: ChaumPedersenProof,
     ) {

@@ -17,6 +17,6 @@ message EncryptedKeyShare {
   string polynomial_owner = 2; // guardian i (owns the polynomial Pi) name
   string secret_share_for = 3; // The id of the guardian to receive this (ℓ)
   // Pi(ℓ)= The generatingGuardian's polynomial value at designatedGuardianXCoordinate
-  // This is the encryption = Eℓ (Pi(ℓ)), see spec 1.9 eq 17.
+  // This is the encryption = Eℓ (Pi(ℓ)), see spec 2.0.0 eq 18.
   HashedElGamalCiphertext encrypted_coordinate = 4;
 }

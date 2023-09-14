@@ -3,13 +3,11 @@ package electionguard.keyceremony
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
-import electionguard.core.ElementModQ
 
 import electionguard.core.*
 
@@ -116,7 +114,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
     }
 
     // check that everyone is happy
-    var happy = trustees.map { it.checkComplete() }.reduce{ a, b -> a && b }
+    var happy = trustees.map { it.isComplete() }.reduce{ a, b -> a && b }
     if (!happy) {
         return Err("keyCeremonyExchange failed checkComplete")
     }
