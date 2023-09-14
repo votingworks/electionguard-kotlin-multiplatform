@@ -46,13 +46,13 @@ class TrusteeDecryptions(val id : String) {
 
 data class ChallengeRequest(
     val id: String, // "contestId#@selectionId"
-    val challenge: ElementModQ, // eq 72
+    val challenge: ElementModQ, // 2.0, eq 72
     val nonce: ElementModQ,
 )
 
 data class ChallengeResponse(
     val id: String, // "contestId#@selectionId"
-    val response: ElementModQ, // eq 73
+    val response: ElementModQ, // 2.0, eq 73
 )
 
 data class TrusteeChallengeResponses(
@@ -71,9 +71,9 @@ class DecryptionResults(
     val ciphertext: ElGamalCiphertext, // text to decrypt
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var tally: Int? = null, // the decrypted tally
-    var M: ElementModP? = null, // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 2.0.0, eq 69
-    var collectiveChallenge: UInt256? = null, // spec 1.9 eq 72
-    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; eq 73
+    var M: ElementModP? = null, // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 2.0, eq 68
+    var collectiveChallenge: UInt256? = null, // spec 2.0, eq 70
+    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; spec 2.0, eq 72
 )
 
 /**
@@ -85,8 +85,8 @@ class ContestDataResults(
     val ciphertext: HashedElGamalCiphertext, // text to decrypt
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var beta: ElementModP? = null,
-    var collectiveChallenge: UInt256? = null, // eq 81
-    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; eq 82
+    var collectiveChallenge: UInt256? = null, // joint challenge value, spec 2.0, eq 81
+    var responses: MutableMap<String, ElementModQ> = mutableMapOf(), // key = guardianId, v_i; spec 2.0, eq 82
 )
 
 /**

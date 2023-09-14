@@ -98,7 +98,7 @@ class PreEncryptionRecordedTestVector {
             extendedBaseHash.publishJson(),
             primaryNonce.publishJson(),
             votedFor,
-            "Compute the encrypted ballot from the ballot primary nonce and the selections voted for, spec 1.9 section 4.3",
+            "Compute the encrypted ballot from the ballot primary nonce and the selections voted for, spec 2.0 section 4.3",
             fullEncryptedBallot.publishJson(),
         )
         println(jsonFormat.encodeToString(preEncryptionRecordedTestVector))

@@ -66,7 +66,7 @@ class DecryptBallotTestVector {
 
         val publicKeys = mutableListOf<ElementModP>()
         keyCeremonyTrustees.forEach { trustee ->
-            publicKeys.add(trustee.electionPublicKey())
+            publicKeys.add(trustee.guardianPublicKey())
         }
 
         val electionBaseHash = UInt256.random()
@@ -87,7 +87,7 @@ class DecryptBallotTestVector {
         }.first()
         val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 
-        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.electionPublicKey(), it.computeSecretKeyShare()) }
+        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.guardianPublicKey(), it.computeSecretKeyShare()) }
 
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }
         val guardiansWrapper = Guardians(group, guardians)

@@ -27,12 +27,12 @@ class KeyCeremonyTest {
         val kc = result.value
         assertEquals(3, kc.publicKeys.size)
         // note sorting
-        val keys: List<ElementModP> = trustees.map {it.electionPublicKey() }
+        val keys: List<ElementModP> = trustees.map {it.guardianPublicKey() }
         val expected: List<ElementModP> = kc.publicKeys.map {it.publicKey().key}
         assertEquals(expected, keys)
 
         trustees.forEach {
-            assertTrue(it.checkComplete())
+            assertTrue(it.isComplete())
         }
 
         val config = makeElectionConfig(
@@ -47,7 +47,7 @@ class KeyCeremonyTest {
         val init: ElectionInitialized = kc.makeElectionInitialized(config)
 
         val strustees = trustees.sortedBy { it.xCoordinate }
-        val skeys: List<ElementModP> = strustees.map {it.electionPublicKey() }
+        val skeys: List<ElementModP> = strustees.map {it.guardianPublicKey() }
         val expectedPublicKey: ElementModP =
             skeys.reduce { a, b -> a * b }
 

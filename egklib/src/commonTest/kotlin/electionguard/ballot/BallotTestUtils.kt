@@ -9,7 +9,7 @@ fun makeDoerreTrustee(ktrustee: KeyCeremonyTrustee): DecryptingTrusteeDoerre {
     return DecryptingTrusteeDoerre(
         ktrustee.id,
         ktrustee.xCoordinate,
-        ktrustee.electionPublicKey(),
+        ktrustee.guardianPublicKey(),
         ktrustee.computeSecretKeyShare(),
     )
 }

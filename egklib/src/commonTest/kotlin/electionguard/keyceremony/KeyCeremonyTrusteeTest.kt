@@ -15,10 +15,10 @@ class KeyCeremonyTrusteeTest {
         val trustee = KeyCeremonyTrustee(group, "id", 42, 4, 4)
         assertEquals("id", trustee.id())
         assertEquals(42, trustee.xCoordinate())
-        assertNotNull(trustee.electionPublicKey())
+        assertNotNull(trustee.guardianPublicKey())
         assertNotNull(trustee.electionPrivateKey())
         assertEquals(4, trustee.coefficientCommitments().size)
-        assertEquals(trustee.electionPublicKey(), trustee.coefficientCommitments()[0])
+        assertEquals(trustee.guardianPublicKey(), trustee.coefficientCommitments()[0])
 
         val result = trustee.publicKeys()
         assertTrue(result is Ok)

@@ -13,7 +13,7 @@ data class Guardians(val group : GroupContext, val guardians: List<Guardian>) {
      * g raised to Pi(xcoord), where P is the sum of all the trustee's secret polynomials.
      * Can be calculated entirely from the public commitments (K_j,m):
      *    g^P(xcoord) = Prod (Prod ( (K_j,m)^xcoord^m ), m=0,k-1), j=1,n)
-     *  This is the innermost factor of eq 74.
+     *  This is the innermost factor of spec 2.0, eq 74.
      */
     fun getGexpP(guardianId: String) : ElementModP {
         return guardianGexpP.getOrPut(guardianId) {

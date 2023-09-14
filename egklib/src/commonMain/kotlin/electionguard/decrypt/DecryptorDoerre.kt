@@ -109,7 +109,7 @@ class DecryptorDoerre(
                 val a: ElementModP = with(group) { cresults.shares.values.map { it.a }.multP() }
                 val b: ElementModP = with(group) { cresults.shares.values.map { it.b }.multP() }
 
-                // "collective challenge" c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β) ; eq 81
+                // "joint challenge" c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β) ; 2.0, eq 81
                 cresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), jointPublicKey.key,
                     cresults.ciphertext.c0,
                     cresults.ciphertext.c1.toHex(),
@@ -211,7 +211,7 @@ class DecryptorDoerre(
     }
 }
 
-/** Compute the lagrange coefficient, now that we know which guardians are present; section 3.6.2, eq 67. */
+/** Compute the lagrange coefficient, now that we know which guardians are present; 2.0, section 3.6.2, eq 67. */
 fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>): ElementModQ {
     val others: List<Int> = present.filter { it != coordinate }
     if (others.isEmpty()) {

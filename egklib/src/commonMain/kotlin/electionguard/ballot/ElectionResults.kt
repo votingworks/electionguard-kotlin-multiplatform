@@ -40,14 +40,13 @@ data class TallyResult(
 data class DecryptionResult(
     val tallyResult: TallyResult,
     val decryptedTally: DecryptedTallyOrBallot,
-    // val lagrangeCoordinates: List<LagrangeCoordinate>,
     val metadata: Map<String, String> = emptyMap(),
 )
 
 data class LagrangeCoordinate(
     var guardianId: String,
     var xCoordinate: Int,
-    var lagrangeCoefficient: ElementModQ, // wℓ, spec 1.9 eq 68
+    var lagrangeCoefficient: ElementModQ, // wℓ, spec 2.0.0 eq 67
 ) {
     init {
         require(guardianId.isNotEmpty())

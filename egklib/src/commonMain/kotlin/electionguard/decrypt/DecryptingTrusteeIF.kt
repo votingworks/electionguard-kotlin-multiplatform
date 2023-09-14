@@ -8,7 +8,7 @@ interface DecryptingTrusteeIF {
     /** Guardian id.  */
     fun id(): String
 
-    /** Guardian x coordinate, for compensated partial decryption  */
+    /** Guardian x coordinate  */
     fun xCoordinate(): Int
 
     /** The guardian's public key = K_i.  */

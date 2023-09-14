@@ -4,7 +4,7 @@ import electionguard.core.*
 
 /** Pi(x), spec 2.0.0, section 3.2.1. Must be kept secret. */
 data class ElectionPolynomial(
-    val guardianId: String,  // ith guardian
+    val guardianId: String,
 
     /** The secret coefficients `a_j, j = 1..k`  */
     val coefficients: List<ElementModQ>,

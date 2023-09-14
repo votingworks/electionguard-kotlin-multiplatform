@@ -27,7 +27,7 @@ class HmacSha256Test {
     fun parameterBaseHashTest() {
         val primes = productionGroup().constants
 
-        // HP = H(HV ; 00, p, q, g)   spec 1.9 eq 4
+        // HP = H(HV ; 00, p, q, g)   spec 2.0 eq 4
         // The symbol HV denotes the version byte array that encodes the used version of this specification.
         // The array has length 32 and contains the UTF-8 encoding of the string "v2.0" followed by 00-
         // bytes, i.e. HV = 76322E30 ∥ b(0, 28).

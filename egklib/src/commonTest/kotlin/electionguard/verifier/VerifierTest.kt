@@ -54,7 +54,7 @@ class VerifierTest {
         RunVerifier.verifyChallengedBallots(productionGroup(), "src/commonTest/data/workflow/chainedJson")
     }
 
-    // • Ordered lists of the ballots encrypted by each device. spec 1.9, p.42
+    // Ordered lists of the ballots encrypted by each device. spec 2.0, section 3.7, p.46
     @Test
     fun testVerifyTallyBallotIds() {
         RunVerifier.verifyTallyBallotIds(productionGroup(), "testOut/workflow/allAvailableProto")

@@ -77,7 +77,7 @@ class AddEncryptedBallot(
 
         } else {
             baux0 = if (!configChaining) configBaux0 else
-                hashFunction(electionInit.extendedBaseHash.bytes, 0x24.toByte(), configBaux0).bytes // eq 60
+                hashFunction(electionInit.extendedBaseHash.bytes, 0x24.toByte(), configBaux0).bytes // spec 2.0 eq 60
         }
     }
 
@@ -97,7 +97,7 @@ class AddEncryptedBallot(
         }
 
         val bauxj: ByteArray = if (!configChaining || first) baux0 else
-                               hashFunction(lastConfirmationCode.bytes, configBaux0).bytes // eq 61
+                               hashFunction(lastConfirmationCode.bytes, configBaux0).bytes // spec 2.0 eq 61
         first = false
 
         val ciphertextBallot = encryptor.encrypt(ballot, bauxj)

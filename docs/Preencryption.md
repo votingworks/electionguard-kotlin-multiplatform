@@ -51,7 +51,7 @@ Recorder(manifest, sigma).record(ballotId, ballotStyle, primaryNonce, codeBaux, 
 1. The recorder regenerates the PreEncryptedBallot from the primaryNonce and ballotStyleId.
 2. With the regenerated PreEncryptedBallot and the voter's choices, generate an encrypted_ballot for the election record,
    which has the usual fields, plus for each contest, the PreEncryption data.
-3. With these, a verifier can verify the Pre-encryption (spec 1.9, section 4.5).
+3. With these, a verifier can verify the Pre-encryption (spec 2.0, section 4.5).
 
 ````
 data class EncryptedBallot(

@@ -83,8 +83,8 @@ class DecryptWithNonce(val group : GroupContext, val publicKey: ElGamalPublicKey
         contestIndex: Int,
         selection: EncryptedBallot.Selection
     ): PlaintextBallot.Selection? {
-
-        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestIndex, selection.sequenceOrder) // eq 25
+        // spec 2.0, eq 25
+        val selectionNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestIndex, selection.sequenceOrder)
         val decodedVote: Int? = selection.encryptedVote.decryptWithNonce(publicKey, selectionNonce.toElementModQ(group))
 
         return decodedVote?.let {

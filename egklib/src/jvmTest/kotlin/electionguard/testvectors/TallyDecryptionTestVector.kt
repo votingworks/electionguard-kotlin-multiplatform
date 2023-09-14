@@ -114,7 +114,7 @@ class TallyDecryptionTestVector(
 
         val publicKeys = mutableListOf<ElementModP>()
         keyCeremonyTrustees.forEach { trustee ->
-            publicKeys.add(trustee.electionPublicKey())
+            publicKeys.add(trustee.guardianPublicKey())
         }
 
         val electionBaseHash = UInt256.random()
@@ -140,7 +140,7 @@ class TallyDecryptionTestVector(
         }
         val encryptedTally = accumulator.build()
 
-        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.electionPublicKey(), it.computeSecretKeyShare()) }
+        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.guardianPublicKey(), it.computeSecretKeyShare()) }
         // leave out one of the trustees to make it a partial decryption
         val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }
 
