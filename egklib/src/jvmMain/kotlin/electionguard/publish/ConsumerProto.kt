@@ -11,12 +11,7 @@ import electionguard.core.GroupContext
 import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.json2.EncryptedBallotJson
-import electionguard.json2.import
 import electionguard.protoconvert.import
-import electionguard.protoconvert.publishProto
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
@@ -24,10 +19,8 @@ import java.io.*
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
 import java.util.function.Predicate
 import java.util.stream.Stream
-import kotlin.io.path.name
 
 private val logger = KotlinLogging.logger("ElectionRecord")
 
