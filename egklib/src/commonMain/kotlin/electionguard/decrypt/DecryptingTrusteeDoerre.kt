@@ -13,7 +13,7 @@ data class DecryptingTrusteeDoerre(
     val id: String,
     val xCoordinate: Int,
     val publicKey: ElementModP, // Must match the public record
-    val keyShare: ElementModQ, // P(i) = my share of the secret key s = (s1 + s2 + · · · + sn ), 2.0 eq 65
+    val keyShare: ElementModQ, // P(i) = (P1 (i) + P2 (i) + · · · + Pn (i)) eq 65
 ) : DecryptingTrusteeIF {
 
     init {
