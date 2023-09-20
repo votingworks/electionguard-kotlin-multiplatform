@@ -142,7 +142,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         return DecryptedTallyOrBallotSink()
     }
 
-    inner class DecryptedTallyOrBallotSink() : DecryptedTallyOrBallotSinkIF {
+    inner class DecryptedTallyOrBallotSink : DecryptedTallyOrBallotSinkIF {
         override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot) {
             val tallyJson = tally.publishJson()
             FileOutputStream(jsonPaths.decryptedBallotPath(tally.id)).use { out ->
