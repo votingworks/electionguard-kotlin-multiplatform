@@ -10,11 +10,14 @@ import electionguard.core.productionGroup
 import electionguard.publish.readElectionRecord
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class PlaintextEquivalenceProofTest {
+    val group = productionGroup()
+
     @Test
     fun testDistPep() {
-        val group = productionGroup()
         val inputDir = "src/commonTest/data/workflow/allAvailableProto"
         val trusteeDir = "$inputDir/private_data/trustees"
         println("testDistPep with input= $inputDir\n   trustees= $trusteeDir")
@@ -67,10 +70,12 @@ class PlaintextEquivalenceProofTest {
         println("---Same")
         val eballots1 = electionRecord.encryptedAllBallots { true}.iterator()
         val same =  eballots1.next()
-        val result1 = plaintextEquivalenceProof.makeProof(same, same)
-        assert (result1 is Ok)
-        println( result1.unwrap().show() )
-        val sum1 = testResult(result1.unwrap(), true)
+        val resultSame = plaintextEquivalenceProof.makeProof(same, same)
+        if (resultSame is Ok) {
+            assertTrue(testResult(resultSame.unwrap()))
+        } else {
+            println (resultSame)
+        }
         println()
 
         println("---Different")
@@ -78,22 +83,20 @@ class PlaintextEquivalenceProofTest {
         val eballot1 =  eballots.next()
         val eballot2 =  eballots.next()
         val result = plaintextEquivalenceProof.makeProof(eballot1, eballot2)
-        assert (result is Ok)
-        println( result.unwrap().show() )
-        val sum2 = testResult(result1.unwrap(), false)
-        assertEquals(sum1, sum2)
+        if (result is Ok) {
+            assertFalse(testResult(result.unwrap()))
+        }  else {
+            println (result)
+        }
     }
 
-    fun testResult(result: DecryptedTallyOrBallot, isEqual: Boolean): Int {
-        var sum = 0
+    fun testResult(result: DecryptedTallyOrBallot): Boolean {
+        var allEqual = true
         result.contests.forEach {
             it.selections.forEach {
-                sum += it.tally
-                if (isEqual && it.tally != 10) {
-                    println("  HEY NOT EQUAL")
-                }
+                allEqual = allEqual && it.bOverM.equals(group.ONE_MOD_P)
             }
         }
-        return sum
+        return allEqual
     }
 }

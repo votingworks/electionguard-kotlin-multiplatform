@@ -42,8 +42,12 @@ class DecryptorDoerre(
         return ballot.convertToTally().decrypt(true)
     }
 
+    fun decryptPep(ballot: EncryptedBallot): DecryptedTallyOrBallot {
+        return ballot.convertToTally().decrypt(false, true)
+    }
+
     var first = false
-    fun EncryptedTally.decrypt(isBallot : Boolean = false): DecryptedTallyOrBallot {
+    fun EncryptedTally.decrypt(isBallot : Boolean = false, skipLog : Boolean = false): DecryptedTallyOrBallot {
         val startDecrypt = getSystemTimeInMillis()
         // must get the DecryptionResults from all trustees before we can do the challenges
         val trusteeDecryptions = mutableListOf<TrusteeDecryptions>()
@@ -70,7 +74,7 @@ class DecryptorDoerre(
             // T = B · M−1 mod p; spec 2.0.0, eq 64
             val T = dresults.ciphertext.data / weightedProduct
             // T = K^t mod p, take log to get t = tally
-            dresults.tally = jointPublicKey.dLog(T, maxDlog) ?: throw DLogException("dlog failed on $selectionKey")
+            dresults.tally = if (skipLog) 0 else jointPublicKey.dLog(T, maxDlog) ?: throw DLogException("dlog failed on $selectionKey")
             dresults.M = weightedProduct
 
             // compute the collective challenge, needed for the collective proof; spec 2.0.0 eq 70

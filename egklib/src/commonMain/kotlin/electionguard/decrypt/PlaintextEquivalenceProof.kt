@@ -19,7 +19,7 @@ class PlaintextEquivalenceProof(
     val guardians: Guardians, // all guardians
     decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
 ) {
-    val offset : ElGamalCiphertext = 10.encrypt(jointPublicKey) // add 10 to keep the ratio positive
+    // val offset : ElGamalCiphertext = 10.encrypt(jointPublicKey) // add 10 to keep the ratio positive
 
     val decryptor = DecryptorDoerre(group, extendedBaseHash, jointPublicKey, guardians, decryptingTrustees)
 
@@ -37,7 +37,7 @@ class PlaintextEquivalenceProof(
 
         // now run that through the usual decryption
         try {
-            val decryption = decryptor.decryptBallot(ratioBallot)
+            val decryption = decryptor.decryptPep(ratioBallot)
             return Ok(decryption)
         } catch (t : DLogException) {
             return Err(t.message?: "no message")
@@ -122,9 +122,10 @@ class PlaintextEquivalenceProof(
             selectionMesses.add(msg)
         }
 
-        val ciphertext1WithOffset = selection1.encryptedVote.plus(offset)
+        val ciphertext1 = selection1.encryptedVote
+        // val ciphertext1WithOffset = selection1.encryptedVote.plus(offset)
         val ciphertext2 = selection2.encryptedVote
-        val ratio = ElGamalCiphertext(ciphertext1WithOffset.pad div ciphertext2.pad, ciphertext1WithOffset.data div ciphertext2.data)
+        val ratio = ElGamalCiphertext(ciphertext1.pad div ciphertext2.pad, ciphertext1.data div ciphertext2.data)
         // make a copy, replacing the ciphertext with the ratio. proofs no longer valid.
         return selection1.copy(encryptedVote = ratio)
     }
