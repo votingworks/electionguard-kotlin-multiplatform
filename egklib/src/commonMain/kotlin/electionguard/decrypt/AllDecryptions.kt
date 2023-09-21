@@ -10,14 +10,15 @@ import electionguard.core.UInt256
 data class PartialDecryption(
     val guardianId: String,  // guardian i
     val Mi: ElementModP, // Mi = A ^ P(i); spec 2.0.0, eq 66 or = C0 ^ P(i); eq 77
-    val u: ElementModQ,  // these are needed for the proof
-    val a: ElementModP,
-    val b: ElementModP,
+    //// these are needed for the proof
+    val u: ElementModQ,  // nonce, private do not use, just pass back to the trustee
+    val a: ElementModP,  // g^u
+    val b: ElementModP,  // A^u
 )
 
 /** One selection decryption from one Decrypting Trustees. */
 data class DecryptionResult(
-    val id: String,     // "contestId#@selectionId"
+    val id: String,     // "contestId#@selectionId" aka "selectionKey"
     val ciphertext: ElGamalCiphertext, // text to decrypt
     val share: PartialDecryption,
 )
@@ -29,14 +30,14 @@ data class ContestDataResult(
     val share: PartialDecryption,
 )
 
-/** All decryptions from one Decrypting Trustee for one ballot. */
-class TrusteeDecryptions(val id : String) {
-    val shares: MutableMap<String, DecryptionResult> = mutableMapOf() // key "contestId#@selectionId"
-    val contestData: MutableMap<String, ContestDataResult> = mutableMapOf() // key contestId
+/** All decryptions from one Decrypting Trustee for one ballot/tally. */
+class TrusteeDecryptions(val trusteeId : String) {
+    val shares = mutableMapOf<String, DecryptionResult>() // key "contestId#@selectionId" aka "selectionKey"
+    val contestData = mutableMapOf<String, ContestDataResult>() // key = contestId
 
     fun addDecryption(contestId: String, selectionId: String, ciphertext: ElGamalCiphertext, decryption: PartialDecryption) {
-        val id = "${contestId}#@${selectionId}"
-        this.shares[id] = DecryptionResult(id, ciphertext, decryption)
+        val selectionKey = "${contestId}#@${selectionId}"
+        this.shares[selectionKey] = DecryptionResult(selectionKey, ciphertext, decryption)
     }
 
     fun addContestDataResults(contestId: String, ciphertext: HashedElGamalCiphertext, decryption: PartialDecryption) {
@@ -45,18 +46,18 @@ class TrusteeDecryptions(val id : String) {
 }
 
 data class ChallengeRequest(
-    val id: String, // "contestId#@selectionId"
+    val id: String, // "contestId#@selectionId" aka "selectionKey"
     val challenge: ElementModQ, // 2.0, eq 72
     val nonce: ElementModQ,
 )
 
 data class ChallengeResponse(
-    val id: String, // "contestId#@selectionId"
+    val id: String, // "contestId#@selectionId" aka "selectionKey"
     val response: ElementModQ, // 2.0, eq 73
 )
 
 data class TrusteeChallengeResponses(
-    val id: String, // "contestId#@selectionId"
+    val id: String, // "contestId#@selectionId" aka "selectionKey"
     val results: List<ChallengeResponse>,
 )
 
@@ -67,7 +68,7 @@ data class TrusteeChallengeResponses(
  * Mutable, built incrementally.
  */
 class DecryptionResults(
-    val id: String,     // "contestId#@selectionId"
+    val id: String,     // "contestId#@selectionId" aka "selectionKey"
     val ciphertext: ElGamalCiphertext, // text to decrypt
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var tally: Int? = null, // the decrypted tally
@@ -93,8 +94,8 @@ class ContestDataResults(
  * All decryptions from all the Decrypting Trustees for one ballot.
  * Mutable, built incrementally.
  */
-class Decryptions {
-    val shares: MutableMap<String, DecryptionResults> = mutableMapOf() // key "contestId#@selectionId"
+class AllDecryptions {
+    val shares: MutableMap<String, DecryptionResults> = mutableMapOf() // key "contestId#@selectionId" = "selectionKey"
     val contestData: MutableMap<String, ContestDataResults> = mutableMapOf() // key contestId
 
     fun addTrusteeDecryptions(trusteeDecryptions : TrusteeDecryptions) {

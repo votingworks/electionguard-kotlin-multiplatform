@@ -44,21 +44,21 @@ class DecryptorDoerre(
 
     var first = false
     fun EncryptedTally.decrypt(isBallot : Boolean = false): DecryptedTallyOrBallot {
-        // get the DecryptionResults from all trustees before we can do the challenges
         val startDecrypt = getSystemTimeInMillis()
+        // must get the DecryptionResults from all trustees before we can do the challenges
         val trusteeDecryptions = mutableListOf<TrusteeDecryptions>()
-        for (decryptingTrustee in decryptingTrustees) {
-            trusteeDecryptions.add( this.computeDecryptionShareForTrustee(decryptingTrustee, isBallot))
+        for (decryptingTrustee in decryptingTrustees) { // could be parallel
+            trusteeDecryptions.add( this.getPartialDecryptionFromTrustee(decryptingTrustee, isBallot))
         }
-        val decryptions = Decryptions()
-        trusteeDecryptions.forEach { decryptions.addTrusteeDecryptions(it)}
+        val allDecryptions = AllDecryptions()
+        trusteeDecryptions.forEach { allDecryptions.addTrusteeDecryptions(it)}
 
-        val ndecrypt = decryptions.shares.size + decryptions.contestData.size
+        val ndecrypt = allDecryptions.shares.size + allDecryptions.contestData.size
         stats.of("computeShares").accum(getSystemTimeInMillis() - startDecrypt, ndecrypt)
         val startChallengeTotal = getSystemTimeInMillis()
 
         // compute M for each DecryptionResults over all the shares from available guardians
-        for ((id, dresults) in decryptions.shares) {
+        for ((selectionKey, dresults) in allDecryptions.shares) {
             // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 2.0.0, eq 68
             val weightedProduct = with(group) {
                 dresults.shares.map { (key, value) ->
@@ -70,14 +70,19 @@ class DecryptorDoerre(
             // T = B · M−1 mod p; spec 2.0.0, eq 64
             val T = dresults.ciphertext.data / weightedProduct
             // T = K^t mod p, take log to get t = tally
-            dresults.tally = jointPublicKey.dLog(T, maxDlog) ?: throw RuntimeException("dlog failed on $id")
+            dresults.tally = jointPublicKey.dLog(T, maxDlog) ?: throw DLogException("dlog failed on $selectionKey")
             dresults.M = weightedProduct
 
             // compute the collective challenge, needed for the collective proof; spec 2.0.0 eq 70
-            val a: ElementModP = with(group) { dresults.shares.values.map { it.a }.multP() }
-            val b: ElementModP = with(group) { dresults.shares.values.map { it.b }.multP() }
+            val a: ElementModP = with(group) { dresults.shares.values.map { it.a }.multP() } // Prod(ai)
+            val b: ElementModP = with(group) { dresults.shares.values.map { it.b }.multP() } // Prod(bi)
             // "collective challenge" c = H(HE ; 0x30, K, A, B, a, b, M ) ; spec 2.0.0 eq 71
-            dresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), jointPublicKey.key, dresults.ciphertext.pad, dresults.ciphertext.data, a, b, weightedProduct)
+            dresults.collectiveChallenge = hashFunction(
+                extendedBaseHash.bytes, 0x30.toByte(),
+                jointPublicKey.key,
+                dresults.ciphertext.pad,
+                dresults.ciphertext.data,
+                a, b, weightedProduct)
 
             if (first) { // temp debug, when a,b dont validate
                 println(" decrypt extendedBaseHash = $extendedBaseHash")
@@ -95,7 +100,7 @@ class DecryptorDoerre(
         // note that the proof is only in the decrypted ballot, and is only checked by the verifier
         // that means you could get this wrong and encrypt/decrypt would still work, just proof validation would fail
         if (isBallot) {
-            for (cresults in decryptions.contestData.values) {
+            for (cresults in allDecryptions.contestData.values) {
                 // lagrange weighted product of the shares, beta = Prod(M_i^w_i) mod p; spec 2.0.0, eq 78
                 val weightedProduct = with(group) {
                     cresults.shares.map { (key, value) ->
@@ -123,11 +128,11 @@ class DecryptorDoerre(
         val startChallengeCalls = getSystemTimeInMillis()
         val trusteeChallengeResponses = mutableListOf<TrusteeChallengeResponses>()
         for (trustee in decryptingTrustees) {
-            trusteeChallengeResponses.add(decryptions.challengeTrustee(trustee))
+            trusteeChallengeResponses.add(allDecryptions.challengeTrustee(trustee))
         }
         trusteeChallengeResponses.forEach { challengeResponses ->
             challengeResponses.results.forEach {
-                decryptions.addChallengeResponse(challengeResponses.id, it)
+                allDecryptions.addChallengeResponse(challengeResponses.id, it)
             }
         }
 
@@ -138,20 +143,19 @@ class DecryptorDoerre(
         // After gathering the challenge responses from the available trustees, we can verify and publish.
         // Put that code into a different class to keep this one from getting too big.
         val tallyDecryptor = TallyDecryptor(group, extendedBaseHash, jointPublicKey, lagrangeCoordinates, guardians)
-        val result = tallyDecryptor.decryptTally(this, decryptions, stats)
+        val result = tallyDecryptor.decryptTally(this, allDecryptions, stats)
 
         stats.of("decryptTally").accum(getSystemTimeInMillis() - startTally, ndecrypt)
         return result
     }
 
     /**
-     * Compute one guardian's share of a decryption, aka a 'partial decryption', for all selections of
-     *  this tally/ballot.
+     * Get trustee decryptions, aka a 'partial decryption', for all selections of this tally/ballot.
      * @param trustee: The trustee who will partially decrypt the tally
      * @param isBallot: if a ballot or a tally, ie if it may have contest data to decrypt.
      * @return results for this trustee
      */
-    private fun EncryptedTally.computeDecryptionShareForTrustee(
+    private fun EncryptedTally.getPartialDecryptionFromTrustee(
         trustee: DecryptingTrusteeIF,
         isBallot: Boolean,
     ) : TrusteeDecryptions {
@@ -184,18 +188,16 @@ class DecryptorDoerre(
         return trusteeDecryptions
     }
 
-    // challenges for one trustee
-    fun Decryptions.challengeTrustee(
-        trustee: DecryptingTrusteeIF,
-    ) : TrusteeChallengeResponses {
+    // send all challenges for a ballot / tally to one trustee
+    fun AllDecryptions.challengeTrustee(trustee: DecryptingTrusteeIF) : TrusteeChallengeResponses {
         val wi = lagrangeCoordinates[trustee.id()]!!.lagrangeCoefficient
         // Get all the challenges from the shares for this trustee
         val requests: MutableList<ChallengeRequest> = mutableListOf()
-        for ((id, results) in this.shares) {
+        for ((selectionKey, results) in this.shares) {
             val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
             // spec 2.0.0, eq 72
             val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
-            requests.add(ChallengeRequest(id, ci, result.u))
+            requests.add(ChallengeRequest(selectionKey, ci, result.u))
         }
         // Get all the challenges from the contestData
         for ((id, results) in this.contestData) {
@@ -205,7 +207,7 @@ class DecryptorDoerre(
             requests.add(ChallengeRequest(id, ci, result.u))
         }
 
-        // ask for all of them at once
+        // ask for all of them at once from the trustee
         val results: List<ChallengeResponse> = trustee.challenge(group, requests)
         return TrusteeChallengeResponses(trustee.id(), results)
     }
@@ -230,7 +232,7 @@ fun GroupContext.computeLagrangeCoefficient(coordinate: Int, present: List<Int>)
 }
 
 /** Convert an EncryptedBallot to an EncryptedTally, for processing spoiled ballots. */
-private fun EncryptedBallot.convertToTally(): EncryptedTally {
+fun EncryptedBallot.convertToTally(): EncryptedTally {
     val contests = this.contests.map { contest ->
         val selections = contest.selections.map {
             EncryptedTally.Selection(

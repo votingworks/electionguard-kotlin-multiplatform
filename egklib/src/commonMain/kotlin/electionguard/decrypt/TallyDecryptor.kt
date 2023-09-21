@@ -29,7 +29,7 @@ class TallyDecryptor(
      */
     fun decryptTally(
         tally: EncryptedTally,
-        decryptions: Decryptions,
+        decryptions: AllDecryptions,
         stats: Stats,
     ): DecryptedTallyOrBallot {
         // LOOK could parallelize contests
@@ -39,7 +39,7 @@ class TallyDecryptor(
 
     private fun decryptContest(
         contest: EncryptedTally.Contest,
-        decryptions: Decryptions,
+        decryptions: AllDecryptions,
         stats: Stats,
     ): DecryptedTallyOrBallot.Contest {
         val results = decryptions.contestData[contest.contestId]
