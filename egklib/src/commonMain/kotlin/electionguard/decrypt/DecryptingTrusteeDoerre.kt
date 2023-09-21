@@ -34,7 +34,9 @@ data class DecryptingTrusteeDoerre(
             val a = group.gPowP(u)  // (a,b) for the proof, spec 2.0.0, eq 69
             val b = text powP u
             val mi = text powP keyShare // Mi = A ^ P(i), spec 2.0.0, eq 66
-            results.add( PartialDecryption(id, mi, u, a, b)) // controversial to send u, could cache it here.
+            // controversial to send u, could cache it here.
+            // could add a constant random nonce to ui, and subtract it on the challenge?
+            results.add( PartialDecryption(id, mi, u, a, b))
         }
         return results
     }

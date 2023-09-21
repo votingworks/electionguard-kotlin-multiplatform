@@ -44,14 +44,24 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
      */
     data class Selection(
         val selectionId: String, // matches SelectionDescription.selectionId
-        val tally: Int,         // logK(T)
+        val tally: Int,         // logK(T), ie the decrypted vote
         val bOverM: ElementModP, // T = (B / M) mod p. (spec 2.0, eq 64)
         val encryptedVote: ElGamalCiphertext, // same as EncryptedTally.Selection.encryptedVote
-        val proof: ChaumPedersenProof,
+        val proof: ChaumPedersenProof, // proof that M = A^s mod p
     ) {
         init {
             require(selectionId.isNotEmpty())
             require(tally >= 0)
+        }
+    }
+
+    fun show() : String = buildString {
+        appendLine("Ballot ${id}")
+        contests.forEach {
+            appendLine("  Contest ${it.contestId}")
+            it.selections.forEach {
+                appendLine("    Selection ${it.selectionId} ${it.tally} ")
+            }
         }
     }
 }

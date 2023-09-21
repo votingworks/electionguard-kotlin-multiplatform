@@ -39,9 +39,16 @@ data class ElectionPolynomial(
 }
 
 /**
- * Calculate g^Pi(xcoord) mod p = Product ((K_i,j)^xcoord^j) mod p, j = 0, quorum-1.
- * Used to test secret key share by KeyCeremonyTrustee, and verifying results in TallyDecryptor.
- * spec 2.0.0, sec 3.2.2, p 24, eq 21:
+ * Calculate g^Pi(xcoord) mod p
+ * Used to test secret key share by KeyCeremonyTrustee, and verify results in TallyDecryptor.
+ * spec 2.0.0, sec 3.2.2, p 24, eq 21
+ *
+ * Also see spec 2.0, eq 13:
+ * g^Pi(x) mod p =
+ *    g^( Sum_j ( a_i,j * x^j), j=0..k-1 ) mod p =
+ *    Prod_j (g^(a_i,j * x^j),  j=0..k-1 ) mod p =
+ *    Prod_j (g^(a_i,j)^(x^j)), j=0..k-1 ) mod p =
+ *    Prod_j ((K_i,j)^(x^j)),   j=0..k-1 ) mod p
  */
 fun calculateGexpPiAtL(
     xcoord: Int,  // evaluated at xcoord ℓ

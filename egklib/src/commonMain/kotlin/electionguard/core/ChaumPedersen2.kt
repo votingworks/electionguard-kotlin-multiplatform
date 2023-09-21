@@ -1,15 +1,13 @@
 package electionguard.core
 
 import com.github.michaelbull.result.*
-import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.Base16.toHex
 import kotlin.collections.fold
 
 /**
- * Disjunctive proof that the ciphertext is between zero and a maximum
- * value, inclusive. Note that the size of the proof is proportional to
- * the maximum value. Example: a proof that a ciphertext is in [0, 5]
- * will have six internal proof components.
+ * Disjunctive proof that the ciphertext is between zero and a maximum value, inclusive.
+ * Note that the size of the proof is proportional to the maximum value.
+ * Example: a proof that a ciphertext is in [0, 5] will have six internal proof components.
  */
 data class ChaumPedersenRangeProofKnownNonce(
     val proofs: List<ChaumPedersenProof>, // L + 1
@@ -26,8 +24,8 @@ data class ChaumPedersenRangeProofKnownNonce(
 data class ChaumPedersenProof(val c: ElementModQ, val r: ElementModQ)
 
 /**
- * Expanded form of the [ChaumPedersenProof], with the `a` and `b` values recomputed. This
- * should not be serialized.
+ * Expanded form of the [ChaumPedersenProof], with the `a` and `b` values recomputed.
+ * This should not be serialized.
  */
 data class ExpandedChaumPedersenProof(
     val a: ElementModP,
