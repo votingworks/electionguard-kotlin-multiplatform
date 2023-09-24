@@ -1,9 +1,6 @@
 package electionguard.decrypt
 
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.randomElementModQ
+import electionguard.core.*
 
 /**
  * A Trustee that has a share of the election private key, for the purpose of decryption.
@@ -15,6 +12,10 @@ data class DecryptingTrusteeDoerre(
     val publicKey: ElementModP, // Must match the public record
     val keyShare: ElementModQ, // P(i) = (P1 (i) + P2 (i) + · · · + Pn (i)) eq 65
 ) : DecryptingTrusteeIF {
+    val group = compatibleContextOrFail(publicKey, keyShare)
+    // problem with this is now theres state; if trustee goes down it cant come back up and continue, if there are
+    // PartialDecryption not yet challenged, since there will be a different randomConstantNonce.
+    val randomConstantNonce = group.randomElementModQ(2) // random value u in Zq
 
     init {
         require(xCoordinate > 0)
@@ -34,9 +35,9 @@ data class DecryptingTrusteeDoerre(
             val a = group.gPowP(u)  // (a,b) for the proof, spec 2.0.0, eq 69
             val b = text powP u
             val mi = text powP keyShare // Mi = A ^ P(i), spec 2.0.0, eq 66
-            // controversial to send u, could cache it here.
-            // could add a constant random nonce to ui, and subtract it on the challenge?
-            results.add( PartialDecryption(id, mi, u, a, b))
+            // TODO controversial to send u, could cache it here.
+            // try adding a constant random nonce to ui, and subtract it on the challenge.
+            results.add( PartialDecryption(id, mi, u + randomConstantNonce, a, b))
         }
         return results
     }
@@ -46,7 +47,7 @@ data class DecryptingTrusteeDoerre(
         challenges: List<ChallengeRequest>,
     ): List<ChallengeResponse> {
         return challenges.map {
-            ChallengeResponse(it.id, it.nonce - it.challenge * keyShare) // spec 2.0.0, eq 73
+            ChallengeResponse(it.id, it.nonce - randomConstantNonce - it.challenge * keyShare) // spec 2.0.0, eq 73
         }
     }
 }

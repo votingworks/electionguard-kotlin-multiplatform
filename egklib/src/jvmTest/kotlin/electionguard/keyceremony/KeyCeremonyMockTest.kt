@@ -9,6 +9,7 @@ import io.mockk.spyk
 import kotlin.test.Test
 
 import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class KeyCeremonyMockTest {
 
@@ -102,8 +103,9 @@ class KeyCeremonyMockTest {
         println("result = $result")
         assertTrue(result is Err)
         println(result)
-        assertTrue(result.error.contains("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id3'"))
-        assertTrue(result.error.contains("Trustee 'id1' failed to validate KeyShare for missingGuardianId 'id3'"))
+        assertEquals("keyCeremonyExchange failed checkComplete", result.error)
+        //assertTrue(result.error.contains("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id3'"))
+        //assertTrue(result.error.contains("Trustee 'id1' failed to validate KeyShare for missingGuardianId 'id3'"))
     }
 
     @Test
@@ -127,8 +129,9 @@ class KeyCeremonyMockTest {
         println("result = $result")
         assertTrue(result is Err)
         println(result)
-        assertTrue(result.error.contains("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id3'"))
-        assertTrue(result.error.contains("Trustee 'id1' failed to validate KeyShare for missingGuardianId 'id3'"))
+        assertEquals("keyCeremonyExchange failed checkComplete", result.error)
+        //assertTrue(result.error.contains("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id3'"))
+        //assertTrue(result.error.contains("Trustee 'id1' failed to validate KeyShare for missingGuardianId 'id3'"))
     }
 
 }

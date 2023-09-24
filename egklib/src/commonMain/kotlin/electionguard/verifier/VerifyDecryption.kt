@@ -4,7 +4,6 @@ import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.ManifestIF
 import electionguard.core.*
-import electionguard.core.Base16.toHex
 import kotlin.collections.mutableSetOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -112,7 +111,7 @@ class VerifyDecryption(
 
     // Verification 9 (Correctness of tally decryptions)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        return this.proof.validate2(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
+        return this.proof.validateDecryption(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
     }
 
     // TODO check

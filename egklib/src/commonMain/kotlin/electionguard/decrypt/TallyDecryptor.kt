@@ -142,7 +142,7 @@ class TallyDecryptor(
         stats: Stats,
     ): DecryptedTallyOrBallot.Selection {
         // v = Sum(v_i mod q); spec 2.0.0 eq 76
-        val response: ElementModQ = with(group) { selectionDecryptions.responses.values.map { it }.addQ() }
+        val response: ElementModQ = with(group) { selectionDecryptions.responses.values.addQ() }
         // finally we can create the proof
         val proof = ChaumPedersenProof(selectionDecryptions.collectiveChallenge!!.toElementModQ(group), response)
         val T = selection.encryptedVote.data / selectionDecryptions.M!! // "decrypted value" T = B · M −1, spec 2.0 eq 64
@@ -175,7 +175,7 @@ class TallyDecryptor(
 
     // this is the verifier proof (box 8)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        return this.proof.validate2(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
+        return this.proof.validateDecryption(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
     }
 
     // Verify with spec 2.0.0 eq 75, 76

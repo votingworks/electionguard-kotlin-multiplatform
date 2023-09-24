@@ -17,18 +17,18 @@ class PlaintextEquivalenceProofTest {
     val group = productionGroup()
 
     @Test
-    fun testDistPep() {
+    fun testEgkPep() {
         val inputDir = "src/commonTest/data/workflow/allAvailableProto"
         val trusteeDir = "$inputDir/private_data/trustees"
-        println("testDistPep with input= $inputDir\n   trustees= $trusteeDir")
-        runDistPep(
+        println("=== testDistPep with input= $inputDir\n   trustees= $trusteeDir")
+        runEgkPep(
             group,
             inputDir,
             RunTrustedTallyDecryption.readDecryptingTrustees(group, inputDir, trusteeDir),
         )
     }
 
-    fun runDistPep(
+    fun runEgkPep(
         group: GroupContext,
         inputDir: String,
         decryptingTrustees: List<DecryptingTrusteeIF>,
@@ -41,10 +41,10 @@ class PlaintextEquivalenceProofTest {
         val trusteeNames = decryptingTrustees.map { it.id() }.toSet()
         val missingGuardians =
             electionInit.guardians.filter { !trusteeNames.contains(it.guardianId) }.map { it.guardianId }
-        println("runDistPep present = $trusteeNames missing = $missingGuardians")
+        println("   present = $trusteeNames missing = $missingGuardians")
 
         val guardians = Guardians(group, electionInit.guardians)
-        val plaintextEquivalenceProof = PlaintextEquivalenceProof(
+        val egkPep = PlaintextEquivalenceProof(
             group,
             electionInit.extendedBaseHash,
             electionInit.jointPublicKey(),
@@ -52,41 +52,48 @@ class PlaintextEquivalenceProofTest {
             decryptingTrustees,
         )
 
-        /*
         var count = 0
         for (eballot in electionRecord.encryptedAllBallots { true} ) {
-            // println( eballot.show() )
-            val result = distPepPrep.makeProof(eballot, eballot)
+            val result = egkPep.testEquivalent(eballot, eballot)
             assert (result is Ok)
-            // println( result.unwrap() )
+            assertTrue (result.unwrap())
+            println(" same ballot ${eballot.ballotId}")
             count++
-            break
         }
 
         val took = getSystemTimeInMillis() - starting
-        println("runDistPep took $took millisecs for $count ballots")
-         */
+        val per = took / (count * 1000.0)
+        println("runDistPep took $took millisecs for $count ballots = ${"%.3f".format(per)} secs/ballot")
+        println()
 
-        println("---Same")
-        val eballots1 = electionRecord.encryptedAllBallots { true}.iterator()
-        val same =  eballots1.next()
-        val resultSame = plaintextEquivalenceProof.makeProof(same, same)
+        val eballots = electionRecord.encryptedAllBallots { true}.iterator()
+        val same =  eballots.next()
+        val resultSame = egkPep.doEgkPep(same, same)
         if (resultSame is Ok) {
             assertTrue(testResult(resultSame.unwrap()))
+            println(" same ballot ${same.ballotId}")
         } else {
             println (resultSame)
         }
-        println()
 
-        println("---Different")
-        val eballots = electionRecord.encryptedAllBallots { true}.iterator()
-        val eballot1 =  eballots.next()
-        val eballot2 =  eballots.next()
-        val result = plaintextEquivalenceProof.makeProof(eballot1, eballot2)
+        var eballot1 =  eballots.next()
+        var eballot2 =  eballots.next()
+        val result = egkPep.doEgkPep(eballot1, eballot2)
         if (result is Ok) {
             assertFalse(testResult(result.unwrap()))
+            println(" different ballot ${eballot1.ballotId}, ${eballot2.ballotId}")
         }  else {
             println (result)
+        }
+
+        val eballot3 =  eballots.next()
+        val eballot4 =  eballots.next()
+        val result2 = egkPep.testEquivalent(eballot3, eballot4)
+        if (result2 is Ok) {
+            assertFalse(result2.unwrap())
+            println(" different ballot ${eballot3.ballotId}, ${eballot4.ballotId}")
+        }  else {
+            println (result2)
         }
     }
 

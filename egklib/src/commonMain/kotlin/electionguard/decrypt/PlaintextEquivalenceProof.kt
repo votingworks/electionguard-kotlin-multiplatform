@@ -3,6 +3,7 @@ package electionguard.decrypt
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
@@ -10,8 +11,9 @@ import electionguard.input.ValidationMessages
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
+private var first = true
 
-// "Distributed Plaintext Equivalence Proof"
+// "Distributed Plaintext Equivalence Proof" for CAKE
 class PlaintextEquivalenceProof(
     val group: GroupContext,
     val extendedBaseHash: UInt256,
@@ -19,12 +21,32 @@ class PlaintextEquivalenceProof(
     val guardians: Guardians, // all guardians
     decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
 ) {
-    // val offset : ElGamalCiphertext = 10.encrypt(jointPublicKey) // add 10 to keep the ratio positive
-
     val decryptor = DecryptorDoerre(group, extendedBaseHash, jointPublicKey, guardians, decryptingTrustees)
 
+    // create proof that ballot1 and ballot2 are equivalent
+    fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
+         // now run that through the usual decryption
+        val result = doEgkPep(ballot1, ballot2)
+        if (result is Err) {
+            return Err(result.error)
+        }
+        val decrypted = result.unwrap()
+        var same = true
+        var count = 0
+        decrypted.contests.forEach { contest ->
+            contest.selections.forEach { selection ->
+                same = same && selection.bOverM.equals(group.ONE_MOD_P)
+                count++
+                if (first) println("   selection = ${selection.selectionId}")
+            }
+        }
+        if (first) println("count selection = $count")
+        first = false
+        return Ok(same)
+    }
+
     // create proof that ballot1 and ballot2 are equivilent
-    fun makeProof(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<DecryptedTallyOrBallot, String> {
+    fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<DecryptedTallyOrBallot, String> {
         // LOOK check ballotIds match, styleIds?
         val ballotMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)
         val ratioBallot = makeRatioBallot(ballot1, ballot2, ballotMesses)
@@ -36,11 +58,11 @@ class PlaintextEquivalenceProof(
         }
 
         // now run that through the usual decryption
-        try {
-            val decryption = decryptor.decryptPep(ratioBallot)
+        val decryption = decryptor.decryptPep(ratioBallot)
+        if (ballotMesses.hasErrors()) {
+            return Err(ballotMesses.toString())
+        } else {
             return Ok(decryption)
-        } catch (t : DLogException) {
-            return Err(t.message?: "no message")
         }
     }
 
@@ -123,9 +145,12 @@ class PlaintextEquivalenceProof(
         }
 
         val ciphertext1 = selection1.encryptedVote
-        // val ciphertext1WithOffset = selection1.encryptedVote.plus(offset)
         val ciphertext2 = selection2.encryptedVote
-        val ratio = ElGamalCiphertext(ciphertext1.pad div ciphertext2.pad, ciphertext1.data div ciphertext2.data)
+        // use ((α1/α2)^ξ, (β1/β2)^ξ))
+        val eps = group.randomElementModQ(minimum = 2)
+        val A = (ciphertext1.pad div ciphertext2.pad) powP eps
+        val B = (ciphertext1.data div ciphertext2.data) powP eps
+        val ratio = ElGamalCiphertext(A, B)
         // make a copy, replacing the ciphertext with the ratio. proofs no longer valid.
         return selection1.copy(encryptedVote = ratio)
     }

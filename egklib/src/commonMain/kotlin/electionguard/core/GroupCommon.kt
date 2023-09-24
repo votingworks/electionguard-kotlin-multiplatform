@@ -264,7 +264,8 @@ interface ElementModQ : Element, Comparable<ElementModQ> {
 
 interface ElementModP : Element, Comparable<ElementModP> {
     /**
-     * Validates that this element is a quadratic residue, ie in Z^r_p.
+     * Validates that this element is a quadratic residue, ie in Z_p^r.
+     * "Z_p^r is the set of r-th-residues in Z∗p", see spec 2.0 p.9
      */
     fun isValidResidue(): Boolean
 

@@ -4,7 +4,7 @@ import electionguard.core.*
 import kotlin.test.assertEquals
 
 // test pep using multiple guardians, but using guardian secret key instead of keyShare
-class PepTestWithGuardians(val group: GroupContext, nguardians : Int) {
+class CakeDecryptionWithGuardians(val group: GroupContext, nguardians : Int) {
     val extendedBaseHash = UInt256.random()
     val guardians = mutableListOf<PepGuardian>()
     val publicKey : ElementModP

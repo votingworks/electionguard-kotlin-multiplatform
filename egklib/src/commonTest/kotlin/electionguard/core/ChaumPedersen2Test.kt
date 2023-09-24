@@ -447,6 +447,7 @@ class ChaumPedersen2Test {
 
                 val proofValidation = proof.validate2(ciphertext, keypair.publicKey, qbar, p0)
                 assertTrue(proofValidation is Err)
+                println(" Err = ${proofValidation}")
             }
         }
     }

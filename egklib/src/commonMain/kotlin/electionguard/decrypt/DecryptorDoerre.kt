@@ -14,6 +14,7 @@ private const val maxDlog: Int = 1000
  * Orchestrates the decryption of encrypted Tallies and Ballots with DecryptingTrustees.
  * This is the only way that an EncryptedTally can be decrypted.
  * An EncryptedBallot can also be decrypted if you know the master nonce.
+ * Communication with the trustees is with a list of all the ciphertexts from a single ballot / tally at one.
  */
 class DecryptorDoerre(
     val group: GroupContext,
@@ -26,7 +27,7 @@ class DecryptorDoerre(
     val stats = Stats()
 
     init {
-        // build the lagrangeCoordinates, needed for output
+        // build the lagrangeCoordinates once and for all
         val dguardians = mutableListOf<LagrangeCoordinate>()
         for (trustee in decryptingTrustees) {
             val present: List<Int> = // available trustees minus me
@@ -46,8 +47,12 @@ class DecryptorDoerre(
         return ballot.convertToTally().decrypt(false, true)
     }
 
+    fun decryptPep(tally: EncryptedTally): DecryptedTallyOrBallot {
+        return tally.decrypt(false, true)
+    }
+
     var first = false
-    fun EncryptedTally.decrypt(isBallot : Boolean = false, skipLog : Boolean = false): DecryptedTallyOrBallot {
+    fun EncryptedTally.decrypt(isBallot : Boolean = false, isPep : Boolean = false): DecryptedTallyOrBallot {
         val startDecrypt = getSystemTimeInMillis()
         // must get the DecryptionResults from all trustees before we can do the challenges
         val trusteeDecryptions = mutableListOf<TrusteeDecryptions>()
@@ -73,8 +78,9 @@ class DecryptorDoerre(
 
             // T = B · M−1 mod p; spec 2.0.0, eq 64
             val T = dresults.ciphertext.data / weightedProduct
-            // T = K^t mod p, take log to get t = tally
-            dresults.tally = if (skipLog) 0 else jointPublicKey.dLog(T, maxDlog) ?: throw DLogException("dlog failed on $selectionKey")
+            // T = K^t mod p, take log to get t = tally.
+            // Dont bother taking the log for PEP, it will not be found when (m1 != m2)), just test T == 1 for equality.
+            dresults.tally = if (isPep) 0 else jointPublicKey.dLog(T, maxDlog) ?: throw DLogException("dlog failed on $selectionKey")
             dresults.M = weightedProduct
 
             // compute the collective challenge, needed for the collective proof; spec 2.0.0 eq 70

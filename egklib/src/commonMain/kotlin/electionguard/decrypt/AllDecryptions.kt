@@ -11,7 +11,7 @@ data class PartialDecryption(
     val guardianId: String,  // guardian i
     val Mi: ElementModP, // Mi = A ^ P(i); spec 2.0.0, eq 66 or = C0 ^ P(i); eq 77
     //// these are needed for the proof
-    val u: ElementModQ,  // nonce, private do not use, just pass back to the trustee
+    val u: ElementModQ,  // opaque, just pass back to the trustee
     val a: ElementModP,  // g^u
     val b: ElementModP,  // A^u
 )
@@ -48,7 +48,7 @@ class TrusteeDecryptions(val trusteeId : String) {
 data class ChallengeRequest(
     val id: String, // "contestId#@selectionId" aka "selectionKey"
     val challenge: ElementModQ, // 2.0, eq 72
-    val nonce: ElementModQ,
+    val nonce: ElementModQ, // opaque, only for use by the trustee
 )
 
 data class ChallengeResponse(

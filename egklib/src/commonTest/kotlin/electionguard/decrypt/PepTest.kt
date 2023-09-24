@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 
 class PepTest {
     val group = productionGroup()
-    val pepWithGuardians = PepTestWithGuardians(group, 3)
+    val pepWithGuardians = CakeDecryptionWithGuardians(group, 3)
 
     @Test
     fun basic() {
@@ -22,6 +22,48 @@ class PepTest {
         val dvote = keypair.publicKey.dLog(T, 10)
         println("dvote = $dvote")
         assertEquals(1, dvote)
+    }
+
+    @Test
+    fun testEgkDecryption() {
+        runEgkDecryption(1, 1, 1, 1, true)
+        runEgkDecryption(1, 1, 1, 0, false)
+
+        runEgkDecryption(2, 2, 1, 1, true)
+        runEgkDecryption(2, 2, 1, 0, false)
+
+        runEgkDecryption(3, 2, 1, 1, true)
+        runEgkDecryption(3, 2, 1, 0, false)
+    }
+
+    fun runEgkDecryption(nguardians : Int, quorum : Int, numerator : Int, denominator: Int, expectEq : Boolean) {
+        val cakeEgkDecryption = makeCakeEgkDecryption(group, nguardians, quorum, (1..quorum).toList())
+        val publicKeyG = ElGamalPublicKey(cakeEgkDecryption.publicKey)
+        val ratioG = makeRatio(numerator, denominator, publicKeyG)
+        val Tg = cakeEgkDecryption.doEgkPep(ratioG, expectEq)
+        val isEq = Tg.equals(group.ONE_MOD_P)
+        print("$numerator / $denominator doCakePep isEqual = $isEq T = ${Tg.toStringShort()}")
+        val dvoteg = publicKeyG.dLog(Tg)
+        println(" dvote = $dvoteg")
+        assertEquals(expectEq, isEq)
+    }
+
+    @Test
+    fun testProof() {
+        val numerator = 1
+        val denominator = 1
+        val expectEq = true
+        val pepWithOneGuardian = CakeDecryptionWithGuardians(group, 1)
+
+        // since we have a different publicKey, have to regen the ratio
+        val publicKeyG = ElGamalPublicKey(pepWithOneGuardian.publicKey)
+        val ratioG = makeRatio(numerator, denominator, publicKeyG)
+        val Tg = pepWithOneGuardian.doCakePep(ratioG, expectEq)
+        val isEq = Tg.equals(group.ONE_MOD_P)
+        print("$numerator / $denominator doCakePep isEqual = $isEq T = ${Tg.toStringShort()}")
+        val dvoteg = publicKeyG.dLog(Tg)
+        println(" dvote = $dvoteg")
+        assertEquals(expectEq, isEq)
     }
 
     @Test
@@ -64,7 +106,7 @@ class PepTest {
         print("$numerator / $denominator doCakePep isEqual = $isEqg T = ${Tg.toStringShort()}")
         val dvoteg = publicKeyG.dLog(Tg)
         println(" dvote = $dvoteg")
-        assertEquals(expectEq, isEq)
+        assertEquals(expectEq, isEqg)
 
         println()
     }
@@ -137,6 +179,8 @@ class PepTest {
         val T = DecryptWithSecret(ciphertextAB, keypair.secretKey.key)
         val isEq = T.equals(group.ONE_MOD_P)
         assertEquals(expectEq, isEq)
+        val dlog = keypair.publicKey.dLog(T, 10)
+        println("isEq = $isEq, dLog = $dlog")
 
         // (2.3) (c′, v′) := ZKPDecrypt (T, (A, B)).
         // Send (IsEq, c, v, T, c′, v′, A, B) to V
