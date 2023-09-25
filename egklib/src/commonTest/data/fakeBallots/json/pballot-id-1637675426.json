@@ -1,0 +1,666 @@
+{
+    "ballot_id": "id-1637675426",
+    "ballot_style": "ballotStyle",
+    "contests": [
+        {
+            "contest_id": "contest1",
+            "sequence_order": 1,
+            "selections": [
+                {
+                    "selection_id": "selection1",
+                    "sequence_order": 1,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection2",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection3",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection4",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection5",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest2",
+            "sequence_order": 2,
+            "selections": [
+                {
+                    "selection_id": "selection6",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection7",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection8",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection9",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection10",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest3",
+            "sequence_order": 3,
+            "selections": [
+                {
+                    "selection_id": "selection11",
+                    "sequence_order": 1,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection12",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection13",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection14",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection15",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest4",
+            "sequence_order": 4,
+            "selections": [
+                {
+                    "selection_id": "selection16",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection17",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection18",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection19",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection20",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest5",
+            "sequence_order": 5,
+            "selections": [
+                {
+                    "selection_id": "selection21",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection22",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection23",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection24",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection25",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest6",
+            "sequence_order": 6,
+            "selections": [
+                {
+                    "selection_id": "selection26",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection27",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection28",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection29",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection30",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest7",
+            "sequence_order": 7,
+            "selections": [
+                {
+                    "selection_id": "selection31",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection32",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection33",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection34",
+                    "sequence_order": 4,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection35",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest8",
+            "sequence_order": 8,
+            "selections": [
+                {
+                    "selection_id": "selection36",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection37",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection38",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection39",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection40",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest9",
+            "sequence_order": 9,
+            "selections": [
+                {
+                    "selection_id": "selection41",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection42",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection43",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection44",
+                    "sequence_order": 4,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection45",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest10",
+            "sequence_order": 10,
+            "selections": [
+                {
+                    "selection_id": "selection46",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection47",
+                    "sequence_order": 2,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection48",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection49",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection50",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest11",
+            "sequence_order": 11,
+            "selections": [
+                {
+                    "selection_id": "selection51",
+                    "sequence_order": 1,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection52",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection53",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection54",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection55",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest12",
+            "sequence_order": 12,
+            "selections": [
+                {
+                    "selection_id": "selection56",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection57",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection58",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection59",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection60",
+                    "sequence_order": 5,
+                    "vote": 1
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest13",
+            "sequence_order": 13,
+            "selections": [
+                {
+                    "selection_id": "selection61",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection62",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection63",
+                    "sequence_order": 3,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection64",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection65",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest14",
+            "sequence_order": 14,
+            "selections": [
+                {
+                    "selection_id": "selection66",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection67",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection68",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection69",
+                    "sequence_order": 4,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection70",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest15",
+            "sequence_order": 15,
+            "selections": [
+                {
+                    "selection_id": "selection71",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection72",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection73",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection74",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection75",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest16",
+            "sequence_order": 16,
+            "selections": [
+                {
+                    "selection_id": "selection76",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection77",
+                    "sequence_order": 2,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection78",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection79",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection80",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest17",
+            "sequence_order": 17,
+            "selections": [
+                {
+                    "selection_id": "selection81",
+                    "sequence_order": 1,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection82",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection83",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection84",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection85",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest18",
+            "sequence_order": 18,
+            "selections": [
+                {
+                    "selection_id": "selection86",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection87",
+                    "sequence_order": 2,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection88",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection89",
+                    "sequence_order": 4,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection90",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest19",
+            "sequence_order": 19,
+            "selections": [
+                {
+                    "selection_id": "selection91",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection92",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection93",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection94",
+                    "sequence_order": 4,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection95",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        },
+        {
+            "contest_id": "contest20",
+            "sequence_order": 20,
+            "selections": [
+                {
+                    "selection_id": "selection96",
+                    "sequence_order": 1,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection97",
+                    "sequence_order": 2,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection98",
+                    "sequence_order": 3,
+                    "vote": 0
+                },
+                {
+                    "selection_id": "selection99",
+                    "sequence_order": 4,
+                    "vote": 1
+                },
+                {
+                    "selection_id": "selection100",
+                    "sequence_order": 5,
+                    "vote": 0
+                }
+            ],
+            "write_ins": [
+            ]
+        }
+    ]
+}

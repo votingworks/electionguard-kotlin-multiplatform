@@ -10,7 +10,7 @@ import electionguard.ballot.protocolVersion
 import electionguard.core.*
 import electionguard.decryptBallot.DecryptPreencryptWithNonce
 import electionguard.encrypt.cast
-import electionguard.input.ManifestBuilder
+import electionguard.cli.ManifestBuilder
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
 import electionguard.publish.readElectionRecord

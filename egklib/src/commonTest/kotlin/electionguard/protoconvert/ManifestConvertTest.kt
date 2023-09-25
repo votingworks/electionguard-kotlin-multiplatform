@@ -2,7 +2,7 @@ package electionguard.protoconvert
 
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
-import electionguard.input.buildTestManifest
+import electionguard.cli.buildTestManifest
 import electionguard.publish.makePublisher
 import kotlin.test.Test
 import kotlin.test.assertEquals

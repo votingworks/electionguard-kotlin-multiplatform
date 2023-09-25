@@ -1,6 +1,7 @@
 package electionguard.input
 
 import electionguard.ballot.Manifest
+import electionguard.cli.ManifestBuilder
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertFalse
@@ -8,9 +9,10 @@ import kotlin.test.assertTrue
 
 /** Tester for [ManifestInputValidation]  */
 class TestManifestInputValidation {
+
     @Test
     fun testDefaults() {
-        val ebuilder = ManifestBuilder("test_manifest")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -133,7 +135,7 @@ class TestManifestInputValidation {
 
     @Test
     fun testDuplicateSelectionId() {
-        val ebuilder = ManifestBuilder("election_scope_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id", "candidate_2")
@@ -143,12 +145,11 @@ class TestManifestInputValidation {
         val problems : ValidationMessages = validator.validate()
         println("Problems=$problems")
         assertTrue(problems.hasErrors())
-        assertContains(problems.toString(), "Manifest.B.6")
         assertContains(problems.toString(), "Manifest.B.3")
     }
 
     @Test
-    fun testDuplicateSelectionIdGlobal() {
+    fun testDuplicateCandidateIdGlobal() {
         val ebuilder = ManifestBuilder("election_scope_id")
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id1", "candidate_1")

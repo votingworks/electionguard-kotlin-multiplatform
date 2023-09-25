@@ -5,7 +5,7 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.core.*
 import electionguard.encrypt.cast
-import electionguard.input.ManifestBuilder
+import electionguard.cli.ManifestBuilder
 import electionguard.json2.*
 import electionguard.preencrypt.*
 import electionguard.preencrypt.MarkedPreEncryptedBallot

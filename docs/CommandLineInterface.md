@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 9/11/2023
+last update 9/25/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs (Under Construction)](#workflow-and-command-line-programs-under-construction)
@@ -72,6 +72,36 @@ last update 9/11/2023
 
 For classpath simplicity, the examples below use the [ekglib fatJar](https://github.com/JohnLCaron/egk-webapps#build-the-egklib-fat-jar).
 
+## Create a fake Election Manifest
+
+````
+Usage: RunCreateTestManifest options_list
+Options: 
+    --electionManifest, -manifest -> Manifest file or directory (json or protobuf) (always required) { String }
+    --nguardians, -nguardians -> number of guardians (always required) { Int }
+    --quorum, -quorum -> quorum size (always required) { Int }
+    --outputDir, -out -> Directory to write output ElectionInitialized record (always required) { String }
+    --createdBy, -createdBy [RunCreateElectionConfigurationy] -> who created { String }
+    --baux0, -device [device] -> device information, used for B_aux,0 from eq 58-60 { String }
+    --chainCodes, -chainCodes [false] -> chain confirmation codes 
+    --help, -h -> Usage info 
+
+````
+
+Example:
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
+  -classpath egklib/build/libs/egklib-all.jar \
+  electionguard.cli.RunCreateTestManifest \
+    -manifest egklib/src/commonTest/data/startManifestJson \
+    -nguardians 3 \
+    -quorum 3 \
+    -out testOut/cliWorkflow/config \
+    --baux0 device42 \
+    --chainCodes
+````
 
 ## Create an Election Configuration
 

@@ -3,8 +3,8 @@ package electionguard.json2
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.Manifest
 import electionguard.core.*
-import electionguard.input.ManifestBuilder
-import electionguard.input.buildTestManifest
+import electionguard.cli.ManifestBuilder
+import electionguard.cli.buildTestManifest
 import electionguard.protoconvert.ManifestConvertTest.Companion.generateFakeManifest
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto

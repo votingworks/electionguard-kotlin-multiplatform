@@ -10,7 +10,7 @@ import electionguard.decrypt.Guardians
 import electionguard.json2.*
 import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
-import electionguard.input.ManifestBuilder
+import electionguard.cli.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
