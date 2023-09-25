@@ -1,7 +1,6 @@
 package electionguard.cli
 
 import electionguard.core.productionGroup
-import electionguard.input.createTestManifest
 import electionguard.publish.readAndCheckManifestBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,7 +14,7 @@ class RunCreateTestManifestTest {
         createTestManifest(
             arrayOf(
                 "-ncontests", "20",
-                "-nselections", "4",
+                "-nselections", "5",
                 "-out",
                 "testOut/manifest/runCreateTestManifest",
             )

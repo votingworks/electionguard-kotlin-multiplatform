@@ -2,6 +2,7 @@ package electionguard.input
 
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
+import electionguard.cli.ManifestBuilder
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -30,7 +31,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testDefaultOkValidate() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -49,7 +50,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testStylingNotExistValidate() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
             .setDefaultStyle("badHairDay")
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
@@ -68,7 +69,7 @@ class TestBallotInputValidation {
     }
 
     fun testGpunitListed(listed: Boolean): ElectionAndBallot {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
             .addStyle("ballotStyle", "orphan", "annie")
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
@@ -100,7 +101,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testInvalidContestId() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -120,7 +121,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testInvalidContestSeq() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -140,7 +141,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testInvalidSelectionId() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -160,7 +161,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testInvalidSelectionSeq() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -180,7 +181,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testZeroOrOneValidate() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .setVoteVariationType(Manifest.VoteVariationType.n_of_m, 2)
             .addSelection("selection_id", "candidate_1")
@@ -201,7 +202,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testOvervoteValidate() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -221,7 +222,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testContestDeclaredTwiceValidate() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .addSelection("selection_id", "candidate_1")
             .addSelection("selection_id2", "candidate_2")
@@ -243,7 +244,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testSelectionDeclaredTwiceValidate() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .setVoteVariationType(Manifest.VoteVariationType.n_of_m, 2)
             .addSelection("selection_id", "candidate_1")
@@ -264,7 +265,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testSelectionDuplicateSequence() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .setVoteVariationType(Manifest.VoteVariationType.n_of_m, 2)
             .addSelection("selection_id", "candidate_1")
@@ -285,7 +286,7 @@ class TestBallotInputValidation {
 
     @Test
     fun testSelectionNoMatchValidate() {
-        val ebuilder = ManifestBuilder("ballot_id")
+        val ebuilder = ManifestBuilder()
         val election: Manifest = ebuilder.addContest("contest_id")
             .setVoteVariationType(Manifest.VoteVariationType.n_of_m, 2)
             .addSelection("selection_id", "candidate_1")

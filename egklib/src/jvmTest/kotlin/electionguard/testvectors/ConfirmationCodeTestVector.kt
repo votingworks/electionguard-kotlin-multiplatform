@@ -8,7 +8,7 @@ import electionguard.core.Base16.toHex
 import electionguard.encrypt.CiphertextBallot
 import electionguard.encrypt.Encryptor
 import electionguard.input.BallotInputValidation
-import electionguard.input.ManifestBuilder
+import electionguard.cli.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.json2.*
 import io.kotest.property.arbitrary.single

@@ -48,7 +48,7 @@ class ManifestInputValidation(val manifest: Manifest) {
 
         val contestIds: MutableSet<String> = HashSet()
         val contestSeqs: MutableSet<Int> = HashSet()
-        val selectionIds: MutableSet<String> = HashSet()
+        val candidateIds: MutableSet<String> = HashSet()
         for (electionContest in manifest.contests) {
             // No duplicate contest object_id
             if (contestIds.contains(electionContest.contestId)) {
@@ -68,15 +68,15 @@ class ManifestInputValidation(val manifest: Manifest) {
                 contestSeqs.add(electionContest.sequenceOrder)
             }
 
-            // No duplicate sequenceIds across contests
+            // No duplicate candidateIds across contests
             for (electionSelection in electionContest.selections) {
-                if (selectionIds.contains(electionSelection.selectionId)) {
-                    val msg = "Manifest.B.6 Multiple Selections have same id '${electionSelection.selectionId}'" +
+                if (candidateIds.contains(electionSelection.candidateId)) {
+                    val msg = "Manifest.B.6 Multiple Selections have same candidate id '${electionSelection.candidateId}'" +
                             " within the manifest"
                     manifestMessages.add(msg)
                     logger.warn { msg }
                 }
-                selectionIds.add(electionSelection.selectionId)
+                candidateIds.add(electionSelection.candidateId)
             }
             validateContest(electionContest, manifestMessages)
         }

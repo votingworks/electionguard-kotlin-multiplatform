@@ -4,7 +4,7 @@ import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.fileReadBytes
 import electionguard.core.productionGroup
-import electionguard.input.buildTestManifest
+import electionguard.cli.buildTestManifest
 import electionguard.publish.*
 import kotlin.test.Test
 import kotlin.test.assertEquals

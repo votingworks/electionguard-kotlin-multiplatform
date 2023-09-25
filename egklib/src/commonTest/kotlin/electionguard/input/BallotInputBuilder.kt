@@ -2,10 +2,11 @@ package electionguard.input
 
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
+import electionguard.cli.ManifestBuilder
 
 class BallotInputBuilder internal constructor(val manifest: Manifest, val id: String) {
     private val contests = ArrayList<ContestBuilder>()
-    private var style = styleDef
+    private var style = ManifestBuilder.styleDefault
 
     fun setStyle(style: String): BallotInputBuilder {
         this.style = style
@@ -76,9 +77,5 @@ class BallotInputBuilder internal constructor(val manifest: Manifest, val id: St
                 return PlaintextBallot.Selection(selectionId, seqOrder?: seq++, vote)
             }
         }
-    }
-
-    companion object {
-        const val styleDef = "ballotStyle"
     }
 }
