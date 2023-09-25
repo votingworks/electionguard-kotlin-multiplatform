@@ -15,6 +15,7 @@ import java.util.*
 actual class PublisherJson actual constructor(topDir: String, createNew: Boolean) : Publisher {
     private var jsonPaths: ElectionRecordJsonPaths = ElectionRecordJsonPaths(topDir)
     private val jsonFormat = Json { prettyPrint = true }
+    val jsonIgnoreNulls = Json { explicitNulls = false }
 
     init {
         val electionRecordDir = Path.of(topDir)
@@ -91,7 +92,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     private fun writePlaintextBallot(outputDir: String, plaintextBallot: PlaintextBallot) {
         val plaintextBallotJson = plaintextBallot.publishJson()
         FileOutputStream(jsonPaths.plaintextBallotPath(outputDir, plaintextBallot.ballotId)).use { out ->
-            jsonFormat.encodeToStream(plaintextBallotJson, out)
+            jsonIgnoreNulls.encodeToStream(plaintextBallotJson, out)
             out.close()
         }
     }

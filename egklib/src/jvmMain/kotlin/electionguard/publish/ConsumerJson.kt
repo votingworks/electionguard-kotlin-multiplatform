@@ -19,13 +19,14 @@ import java.nio.file.Path
 import java.util.function.Predicate
 import java.util.stream.Stream
 
-private val logger = KotlinLogging.logger("ConsumerJson")
+private val logger = KotlinLogging.logger("ConsumerJsonJvm")
 
 /** Can read both zipped and unzipped JSON election record */
 actual class ConsumerJson actual constructor(val topDir: String, val group: GroupContext) : Consumer {
     var fileSystem = FileSystems.getDefault()
     var fileSystemProvider = fileSystem.provider()
     var jsonPaths = ElectionRecordJsonPaths(topDir)
+    val jsonIgnoreNulls = Json { explicitNulls = false }
 
     init {
         if (!Files.exists(Path.of(topDir))) {
@@ -335,7 +336,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             while (idx < pathList.size) {
                 val file = pathList[idx++]
                 fileSystemProvider.newInputStream(file).use { inp ->
-                    val json = Json.decodeFromStream<PlaintextBallotJson>(inp)
+                    val json = jsonIgnoreNulls.decodeFromStream<PlaintextBallotJson>(inp)
                     val plaintextBallot = json.import()
                     if (filter == null || filter.test(plaintextBallot)) {
                         setNext(plaintextBallot)

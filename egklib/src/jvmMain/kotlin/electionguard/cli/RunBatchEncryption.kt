@@ -92,6 +92,11 @@ class RunBatchEncryption {
                 shortName = "device",
                 description = "voting device name"
             ).required()
+            val cleanOutput by parser.option(
+                ArgType.Boolean,
+                shortName = "clean",
+                description = "clean output dir"
+            ).default(false)
 
             parser.parse(args)
 
@@ -112,6 +117,7 @@ class RunBatchEncryption {
                 nthreads,
                 createdBy,
                 check,
+                cleanOutput,
             )
         }
 
@@ -128,13 +134,14 @@ class RunBatchEncryption {
             nthreads: Int,
             createdBy: String?,
             check: CheckType = CheckType.None,
+            cleanOutput: Boolean = false,
         ) {
             // ballots can be in either format
             val ballotSource = makeInputBallotSource(ballotDir, group)
 
             return batchEncryption(
                 group, inputDir, outputDir, ballotSource.iteratePlaintextBallots(ballotDir, null),
-                invalidDir, device, nthreads, createdBy, check
+                invalidDir, device, nthreads, createdBy, check, cleanOutput
             )
         }
 
@@ -149,6 +156,7 @@ class RunBatchEncryption {
             nthreads: Int,
             createdBy: String?,
             check: CheckType = CheckType.None,
+            cleanOutput: Boolean = false,
         ) {
             val electionRecord = readElectionRecord(group, inputDir)
             val electionInit = electionRecord.electionInit()!!
@@ -196,7 +204,7 @@ class RunBatchEncryption {
                 electionInit.jointPublicKey, electionInit.extendedBaseHash, check
             )
 
-            val publisher = makePublisher(outputDir, false, electionRecord.isJson())
+            val publisher = makePublisher(outputDir, cleanOutput, electionRecord.isJson())
             val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(device, true)
 
             try {
@@ -232,6 +240,7 @@ class RunBatchEncryption {
                 )
             )
             if (invalidDir != null && !invalidBallots.isEmpty()) {
+                electionguard.core.createDirectories(invalidDir)
                 publisher.writePlaintextBallot(invalidDir, invalidBallots)
                 println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
             }

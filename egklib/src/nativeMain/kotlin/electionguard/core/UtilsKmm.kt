@@ -10,6 +10,8 @@ actual fun getSystemTimeInMillis() : Long = getTimeMillis()
 
 actual fun pathExists(path: String): Boolean = exists(path)
 
+actual fun createDirectories(directory: String)
+
 actual fun isDirectory(path: String): Boolean = isdirectory(path)
 
 actual fun fileReadLines(filename: String): List<String> {
