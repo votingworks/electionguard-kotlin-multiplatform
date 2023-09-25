@@ -3,9 +3,10 @@
 last update 9/25/2023
 
 <!-- TOC -->
-* [Workflow and Command Line Programs (Under Construction)](#workflow-and-command-line-programs-under-construction)
+* [Workflow and Command Line Programs](#workflow-and-command-line-programs)
   * [Election workflow overview](#election-workflow-overview)
   * [Make ekglib fatJar](#make-ekglib-fatjar)
+  * [Create a fake Election Manifest](#create-a-fake-election-manifest)
   * [Create an Election Configuration](#create-an-election-configuration)
   * [Run trusted KeyCeremony](#run-trusted-keyceremony)
   * [Run Batch Encryption](#run-batch-encryption)
@@ -77,15 +78,11 @@ For classpath simplicity, the examples below use the [ekglib fatJar](https://git
 ````
 Usage: RunCreateTestManifest options_list
 Options: 
-    --electionManifest, -manifest -> Manifest file or directory (json or protobuf) (always required) { String }
-    --nguardians, -nguardians -> number of guardians (always required) { Int }
-    --quorum, -quorum -> quorum size (always required) { Int }
-    --outputDir, -out -> Directory to write output ElectionInitialized record (always required) { String }
-    --createdBy, -createdBy [RunCreateElectionConfigurationy] -> who created { String }
-    --baux0, -device [device] -> device information, used for B_aux,0 from eq 58-60 { String }
-    --chainCodes, -chainCodes [false] -> chain confirmation codes 
+    --ncontests, -ncontests -> number of contests (always required) { Int }
+    --nselections, -nselections -> number of selections per contest (always required) { Int }
+    --outputType, -type [JSON] -> JSON or PROTO { String }
+    --outputDir, -out -> Directory to write output Manifest (always required) { String }
     --help, -h -> Usage info 
-
 ````
 
 Example:
@@ -95,12 +92,9 @@ Example:
   -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
   -classpath egklib/build/libs/egklib-all.jar \
   electionguard.cli.RunCreateTestManifest \
-    -manifest egklib/src/commonTest/data/startManifestJson \
-    -nguardians 3 \
-    -quorum 3 \
-    -out testOut/cliWorkflow/config \
-    --baux0 device42 \
-    --chainCodes
+    -ncontests 3 \
+    -nselections 11 \
+    -out testOut/cliWorkflow/manifest 
 ````
 
 ## Create an Election Configuration
@@ -116,7 +110,6 @@ Options:
     --baux0, -device [device] -> device information, used for B_aux,0 from eq 58-60 { String }
     --chainCodes, -chainCodes [false] -> chain confirmation codes 
     --help, -h -> Usage info 
-
 ````
 
 Example:
@@ -173,6 +166,7 @@ Options:
     --nthreads, -nthreads [11] -> Number of parallel threads to use { Int }
     --createdBy, -createdBy -> who created { String }
     --device, -device -> voting device information (always required) { String }
+    --cleanOutput, -clean [false] -> clean output dir 
     --help, -h -> Usage info 
 ````
 
@@ -185,13 +179,10 @@ Example:
     -in testOut/cliWorkflow/keyceremony \
     -ballots egklib/src/commonTest/data/fakeBallots/json \
     -out testOut/cliWorkflow/electionRecord \
-    -device device42
+    -device device42 \
+    --cleanOutput
 ````
 
-output:
-
-* outputDir/encrypted_ballots/device
-* outputDir/private/invalid_ballots/
 
 ## Run Accumulate Tally
 
@@ -221,6 +212,7 @@ output:
 
 Note that at this point in the cliWorkflow example, we are both reading from and writing to the electionRecord. A
 production workflow may be significantly different.
+
 
 ## Run trusted Tally Decryption
 
