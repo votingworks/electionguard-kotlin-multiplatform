@@ -2,10 +2,10 @@ package electionguard.publish
 
 import com.github.michaelbull.result.*
 import electionguard.ballot.protocolVersion
+import electionguard.cli.ManifestBuilder.Companion.electionScopeId
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.input.electionScopeId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

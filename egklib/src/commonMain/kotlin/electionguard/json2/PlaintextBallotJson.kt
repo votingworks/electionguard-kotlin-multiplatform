@@ -8,6 +8,7 @@ data class PlaintextBallotJson(
     val ballot_id: String,
     val ballot_style: String,
     val contests: List<PlaintextContestJson>,
+    val errors: String?, // error messages from processing, eg when invalid
 )
 
 @Serializable
@@ -34,7 +35,7 @@ fun PlaintextBallot.publishJson(): PlaintextBallotJson {
             contest.writeIns,
         )
     }
-    return PlaintextBallotJson(this.ballotId, this.ballotStyle, contests)
+    return PlaintextBallotJson(this.ballotId, this.ballotStyle, contests, this.errors)
 }
 
 fun PlaintextBallotJson.import(): PlaintextBallot {
@@ -46,5 +47,5 @@ fun PlaintextBallotJson.import(): PlaintextBallot {
             contest.write_ins,
         )
     }
-    return PlaintextBallot(this.ballot_id, this.ballot_style, contests)
+    return PlaintextBallot(this.ballot_id, this.ballot_style, contests, this.errors)
 }

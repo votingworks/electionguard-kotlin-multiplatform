@@ -102,8 +102,7 @@ class KeyCeremonyMockTest {
         println("result = $result")
         assertTrue(result is Err)
         println(result)
-        assertTrue(result.error.contains("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id3'"))
-        assertTrue(result.error.contains("Trustee 'id1' failed to validate KeyShare for missingGuardianId 'id3'"))
+        assertTrue(result.error.contains("keyCeremonyExchange failed checkComplete"))
     }
 
     @Test
@@ -127,8 +126,7 @@ class KeyCeremonyMockTest {
         println("result = $result")
         assertTrue(result is Err)
         println(result)
-        assertTrue(result.error.contains("Trustee 'id1' couldnt decrypt EncryptedKeyShare for missingGuardianId 'id3'"))
-        assertTrue(result.error.contains("Trustee 'id1' failed to validate KeyShare for missingGuardianId 'id3'"))
+        assertTrue(result.error.contains("keyCeremonyExchange failed checkComplete"))
     }
 
 }

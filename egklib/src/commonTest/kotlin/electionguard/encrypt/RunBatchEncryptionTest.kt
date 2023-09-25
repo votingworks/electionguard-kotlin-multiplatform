@@ -24,6 +24,7 @@ RunBatchEncryptionTest {
                 "-invalid", "testOut/encrypt/testRunBatchEncryptionProto/invalid_ballots",
                 "-nthreads", "$nthreads",
                 "-device", "device0",
+                "--cleanOutput",
             )
         )
         RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionProto", 11)
@@ -39,6 +40,7 @@ RunBatchEncryptionTest {
                 "-invalid", "testOut/encrypt/testRunBatchEncryptionWithJsonBallots/invalid_ballots",
                 "-nthreads", "$nthreads",
                 "-device", "device2",
+                "--cleanOutput",
             )
         )
         RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionWithJsonBallots", 11)
@@ -54,6 +56,7 @@ RunBatchEncryptionTest {
                 "-invalid", "testOut/encrypt/testRunBatchEncryptionJson/invalid_ballots",
                 "-nthreads", "$nthreads",
                 "-device", "device2",
+                "--cleanOutput",
             )
         )
         RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionJson", 11)
@@ -69,6 +72,7 @@ RunBatchEncryptionTest {
                 "-invalid", "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots/invalid_ballots",
                 "-nthreads", "$nthreads",
                 "-device", "device3",
+                "--cleanOutput",
             )
         )
         RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots", 11)
@@ -84,7 +88,8 @@ RunBatchEncryptionTest {
                 "-invalid", "testOut/encrypt/testRunBatchEncryptionEncryptTwice/invalid_ballots",
                 "-nthreads", "$nthreads",
                 "-device", "device4",
-                "-check", "EncryptTwice"
+                "-check", "EncryptTwice",
+                "--cleanOutput",
             )
         )
     }
@@ -100,6 +105,7 @@ RunBatchEncryptionTest {
                 "-nthreads", "$nthreads",
                 "-device", "device35",
                 "-check", "Verify",
+                "--cleanOutput",
             )
         )
     }
@@ -115,6 +121,7 @@ RunBatchEncryptionTest {
                 "-nthreads", "$nthreads",
                 "-device", "device42",
                 "-check", "DecryptNonce",
+                "--cleanOutput",
             )
         )
     }

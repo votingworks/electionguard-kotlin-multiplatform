@@ -1,5 +1,5 @@
 # 🗳 Input Validation
-_last changed: Jan 17, 2023_
+_last changed: Sep 25, 2023_
 
 The election manifest and each input plaintext ballot are expected to be validated before being passed to the 
 EKM library. 
@@ -49,7 +49,7 @@ For additional safety, Manifest Validation may be run during other workflow step
 
 5. Within a ContestDescription, all SelectionDescription have a unique candidateId.
 
-6. All SelectionDescription have a unique selectionId within the election
+6. All SelectionDescription have a unique candidateId within the election.
 
 ### C. Contest VoteVariationType
 

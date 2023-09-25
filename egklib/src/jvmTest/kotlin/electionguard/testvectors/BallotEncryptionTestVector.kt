@@ -6,7 +6,7 @@ import electionguard.core.*
 import electionguard.encrypt.CiphertextBallot
 import electionguard.encrypt.Encryptor
 import electionguard.input.BallotInputValidation
-import electionguard.input.ManifestBuilder
+import electionguard.cli.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.json2.*
 import kotlinx.serialization.Serializable
