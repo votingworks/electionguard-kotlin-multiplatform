@@ -6,6 +6,9 @@ expect fun getSystemTimeInMillis(): Long
 /** Does this path exist? */
 expect fun pathExists(path: String): Boolean
 
+/** Create the named directory */
+expect fun createDirectories(directory: String): Boolean
+
 /** Is this path a directory? */
 expect fun isDirectory(path: String): Boolean
 
