@@ -20,7 +20,7 @@ For additional safety, Manifest Validation may be run during other workflow step
 
 ### A. Referential integrity
 
-<img src="./images/ReferentialIntegrity.svg" alt="ReferentialIntegrity" width="800"/>
+<img src="./images/ReferentialIntegrity.egk.jpg" alt="ReferentialIntegrity" width="800"/>
 
 1. Referential integrity of BallotStyle geopoliticalUnitIds.
     * For each BallotStyle, all geopoliticalUnitIds reference a GeopoliticalUnit in Manifest.geopoliticalUnitIds

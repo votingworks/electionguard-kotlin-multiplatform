@@ -55,6 +55,16 @@ enum class ProductionMode(val numBitsInP: Int) {
     val numLongWordsInP: Int = numBitsInP / 64
 }
 
+// temp debug
+var countPowP = 0
+var countAccPowP = 0
+fun showAndClearCountPowP() : String {
+    val result = "countPowP = $countPowP countAccPowP = $countAccPowP"
+    countPowP = 0
+    countAccPowP = 0
+    return result
+}
+
 /**
  * The GroupContext interface provides all the necessary context to define the arithmetic that we'll
  * be doing, such as the moduli P and Q, the generator G, and so forth. This also allows us to
@@ -264,7 +274,8 @@ interface ElementModQ : Element, Comparable<ElementModQ> {
 
 interface ElementModP : Element, Comparable<ElementModP> {
     /**
-     * Validates that this element is a quadratic residue, ie in Z^r_p.
+     * Validates that this element is a quadratic residue, ie in Z_p^r.
+     * "Z_p^r is the set of r-th-residues in Z∗p", see spec 2.0 p.9
      */
     fun isValidResidue(): Boolean
 

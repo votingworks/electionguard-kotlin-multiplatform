@@ -198,6 +198,8 @@ class ProductionGroupContext(
         return if (tmp >= q || tmp < BigInteger.ZERO) null else ProductionElementModQ(tmp, this)
     }
 
+    // TODO, for an election where limit > 1, might want to cache all encryption up to limit.
+
     override fun uIntToElementModQ(i: UInt) : ElementModQ = when (i) {
         0U -> ZERO_MOD_Q
         1U -> ONE_MOD_Q
@@ -338,12 +340,15 @@ open class ProductionElementModP(internal val element: BigInteger, val groupCont
     override operator fun compareTo(other: ElementModP): Int = element.compareTo(other.getCompat(groupContext))
 
     override fun isValidResidue(): Boolean {
+        countPowP++
         val residue = this.element.modPow(groupContext.q, groupContext.p) == groupContext.ONE_MOD_P.element
         return inBounds() && residue
     }
 
-    override infix fun powP(e: ElementModQ) =
-        this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
+    override infix fun powP(e: ElementModQ) : ElementModP {
+        countPowP++
+        return this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
+    }
 
     override operator fun times(other: ElementModP) =
         (this.element * other.getCompat(groupContext)).modWrap()
@@ -385,7 +390,10 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
 
     override fun acceleratePow(): ElementModP = this
 
-    override infix fun powP(e: ElementModQ) = powRadix.pow(e)
+    override infix fun powP(e: ElementModQ) : ElementModP {
+        countAccPowP++
+        return powRadix.pow(e)
+    }
 }
 
 internal data class ProductionMontgomeryElementModP(val element: BigInteger, val groupContext: ProductionGroupContext): MontgomeryElementModP {

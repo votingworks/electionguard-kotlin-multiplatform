@@ -11,7 +11,7 @@ class RunCreateTestManifestTest {
 
     @Test
     fun runCreateTestManifest() {
-        createTestManifest(
+        RunConvertManifest.main(
             arrayOf(
                 "-ncontests", "20",
                 "-nselections", "5",

@@ -407,6 +407,8 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 }
 
 fun Path.pathList(): List<Path> {
+    // LOOK does this sort?
+    // LOOK "API Note: This method must be used within a try-with-resources statement"
     return Files.walk(this, 1).use { fileStream ->
         fileStream.filter { it != this }.toList()
     }

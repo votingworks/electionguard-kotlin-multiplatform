@@ -4,7 +4,6 @@ import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.ManifestIF
 import electionguard.core.*
-import electionguard.core.Base16.toHex
 import kotlin.collections.mutableSetOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,7 +79,7 @@ class VerifyDecryption(
                 // T = K^t mod p.
                 val tallyQ = selection.tally.toElementModQ(group)
                 if (selection.bOverM != publicKey powP tallyQ) {
-                    results.add(Err("    10.A,12.B Tally Decryption M = K^t mod p failed: '$where2'"))
+                    results.add(Err("    10.A,13.B Tally Decryption M = K^t mod p failed: '$where2'"))
                 }
 
                 if (isBallot && (selection.tally !in (0..1))) {
@@ -94,6 +93,7 @@ class VerifyDecryption(
                     results.add(Err("     13.B sum of votes ${contestVotes} in contest must be less than $limit: '$where'"))
                 }
             }
+            // println(" verify $nselections on ${if (isBallot) "ballot" else "tally"} ${decrypted.id}")
         }
 
         // (10.D) For each option text label listed for this contest in the election manifest, the option label
@@ -112,7 +112,7 @@ class VerifyDecryption(
 
     // Verification 9 (Correctness of tally decryptions)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        return this.proof.validate2(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
+        return this.proof.validateDecryption(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
     }
 
     // TODO check

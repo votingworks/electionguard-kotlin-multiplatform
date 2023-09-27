@@ -14,8 +14,9 @@ data class ChaumPedersenRangeProofKnownNonce(
 )
 
 /**
- * General-purpose Chaum-Pedersen proof object, for demonstrating that the prover knows the exponent `x`
- * for two tuples `(g, g^x)` and `(h, h^x)`, without revealing anything about `x`.
+ * General-purpose Chaum-Pedersen proof object, for demonstrating that the
+ * prover knows the exponent x for two tuples (g, g^x) and (h, h^x),
+ * without revealing anything about x.
  * (See [Chaum-Pedersen 1992](https://link.springer.com/chapter/10.1007/3-540-48071-4_7))
  *
  * @param c challenge
@@ -25,7 +26,7 @@ data class ChaumPedersenProof(val c: ElementModQ, val r: ElementModQ)
 
 /**
  * Expanded form of the [ChaumPedersenProof], with the `a` and `b` values recomputed.
- * This should not be serialized.
+ * Need not be serialized, since a and b can be recomputed from the public record.
  */
 data class ExpandedChaumPedersenProof(
     val a: ElementModP,
@@ -35,7 +36,7 @@ data class ExpandedChaumPedersenProof(
 )
 
 // spec 2.0.0, section 3.3.5
-// Proves that (α, β) is an encryption of an integer in the range 0, 1, . . . , L.
+// Prove that (α, β) is an encryption of an integer in the range 0, 1, . . . , L.
 // (Requires knowledge of encryption nonce ξ for which (α, β) is an encryption of ℓ.)
 fun ElGamalCiphertext.makeChaumPedersen(
     vote: Int, // ℓ
@@ -57,7 +58,6 @@ fun ElGamalCiphertext.makeChaumPedersen(
 
     return this.makeChaumPedersenWithNonces(
         vote,
-        limit,
         nonce,
         publicKey,
         extendedBaseHash,
@@ -66,24 +66,26 @@ fun ElGamalCiphertext.makeChaumPedersen(
     )
 }
 
-fun ElGamalCiphertext.makeChaumPedersenWithNonces(
+internal fun ElGamalCiphertext.makeChaumPedersenWithNonces(
     vote: Int, // ℓ
-    limit: Int,     // L
     nonce: ElementModQ, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
     publicKey: ElGamalPublicKey, // K
     extendedBaseHash: UInt256, // He
     randomUj: List<ElementModQ>, // size == L + 1
     randomCj: List<ElementModQ>, // size == L + 1
 ): ChaumPedersenRangeProofKnownNonce {
+    require(randomUj.size == randomCj.size)
+    // require(vote >= 0 && vote <= randomUj.size ) // TODO return Result
+
     val (alpha, beta) = this
     val group = compatibleContextOrFail(pad, nonce, publicKey.key, alpha, beta)
 
-    // (aℓ , bℓ ) = (g^uℓ mod p, K^uℓ mod p), for j = ℓ (eq 44)
-    // (aj , bj ) = (g^uj mod p, K^tj mod p), where tj = (uj +(ℓ−j) * cj ), for j != ℓ (eq 45)
+    // (aℓ , bℓ ) = (g^uℓ mod p, K^uℓ mod p), for j = ℓ; (eq 44)
+    // (aj , bj ) = (g^uj mod p, K^tj mod p), where tj = (uj +(ℓ−j) * cj), for j != ℓ;  (eq 45)
     val aList = randomUj.map { u -> group.gPowP(u) }
     val bList = randomUj.mapIndexed { j, u ->
         if (j == vote) {
-            //  j = ℓ
+            //  j == ℓ
             publicKey powP u
         } else {
             //  j != ℓ
@@ -176,22 +178,32 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
     return results.merge()
 }
 
-// Verification 9 (Correctness of tally decryptions)
-fun ChaumPedersenProof.validate2(
+/**
+ * Verification 9 (Correctness of tally decryptions)
+ *    encrypt vote -> (g^ξ, K^(ξ+vote)) = (A, B)
+ *    decrypt vote T = B / M, where M = A^s, so T = g^s*(ξ+vote) / g^ξ*s = g^(ξ*s + s*vote - s*ξ) = g^s^vote = K^vote
+ *    prove knowledge of s, such that K = g^s mod p, M = A^s mod p.
+ *    prove knowledge of x for two tuples (g, g^x) and (h, h^x). so g=g. h=A.
+ */
+fun ChaumPedersenProof.validateDecryption(
     publicKey: ElementModP, // K
     extendedBaseHash: UInt256, // He
-    bOverM: ElementModP,
+    T: ElementModP,
     encryptedVote: ElGamalCiphertext,
 ): Boolean {
-    val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, bOverM)
-    val M: ElementModP = encryptedVote.data / bOverM // eq 9.1
+    val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, T)
+    val M: ElementModP = encryptedVote.data / T // eq 9.1
     val a = group.gPowP(this.r) * (publicKey powP this.c) // 9.2
     val b = (encryptedVote.pad powP this.r) * (M powP this.c) // 9.3
 
-    // TODO 9.A
+    // 9.A The given value v is in the set Z_q.
+    if (!this.r.inBounds()) {
+        return false
+    }
 
-    // The challenge value c satisfies c = H(HE ; 0x30, K, A, B, a, b, M ). eq 9.B
+    // The challenge value c = H(HE ; 0x30, K, A, B, a, b, M ). eq 71, 9.B.
     val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey, encryptedVote.pad, encryptedVote.data, a, b, M)
+
     return (challenge.toElementModQ(group) == this.c)
 }
 

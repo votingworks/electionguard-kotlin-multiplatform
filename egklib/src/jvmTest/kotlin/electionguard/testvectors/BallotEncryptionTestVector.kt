@@ -208,7 +208,6 @@ class BallotEncryptionTestVector {
 
             val proofWithNonces: ChaumPedersenRangeProofKnownNonce = contestAccumulation.makeChaumPedersenWithNonces(
                 totalVotes,
-                limit,
                 aggNonce,
                 publicKey,
                 extendedBaseHash,
@@ -228,7 +227,6 @@ class BallotEncryptionTestVector {
 
                 val proofWithNonces: ChaumPedersenRangeProofKnownNonce = actualSelection.ciphertext.makeChaumPedersenWithNonces(
                     plainSelection.vote,
-                    limit,
                     actualSelection.selectionNonce, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
                     publicKey,
                     extendedBaseHash,

@@ -77,7 +77,7 @@ class RunTrustedBallotDecryption {
             parser.parse(args)
             println(
                 "RunTrustedBallotDecryption starting\n   input= $inputDir\n   trustees= $trusteeDir\n" +
-                        "   decryptSpoiledList = $decryptChallenged\n   output = $outputDir"
+                        "   decryptChallenged = $decryptChallenged\n   output = $outputDir"
             )
 
             val group = productionGroup()
