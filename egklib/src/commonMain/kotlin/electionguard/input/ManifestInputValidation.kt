@@ -190,7 +190,7 @@ class ManifestInputValidation(val manifest: Manifest) {
         }
     }
 
-    // there will be one encryption for each selection and a placeholder for each voteAllowed
-    private fun Manifest.ContestDescription.countEncryptions() = this.selections.size + this.votesAllowed
+    // there will be one encryption for each selection and one for each contest for the ContestData
+    private fun Manifest.ContestDescription.countEncryptions() = this.selections.size + 1
 
 }

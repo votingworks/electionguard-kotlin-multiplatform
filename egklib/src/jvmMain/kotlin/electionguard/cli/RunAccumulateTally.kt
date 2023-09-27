@@ -75,7 +75,6 @@ class RunAccumulateTally {
             val accumulator = AccumulateTally(group, electionRecord.manifest(), name)
             for (encryptedBallot in consumerIn.iterateAllCastBallots()) {
                 accumulator.addCastBallot(encryptedBallot)
-                println(" accumulate ${encryptedBallot.ballotId}")
                 count++
             }
             val tally: EncryptedTally = accumulator.build()

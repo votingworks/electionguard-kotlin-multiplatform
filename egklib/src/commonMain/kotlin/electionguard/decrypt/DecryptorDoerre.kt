@@ -68,6 +68,7 @@ class DecryptorDoerre(
 
         // compute M for each DecryptionResults over all the shares from available guardians
         for ((selectionKey, dresults) in allDecryptions.shares) {
+            // TODO if nguardians = 1, can set weightedProduct = Mi.
             // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 2.0.0, eq 68
             val weightedProduct = with(group) {
                 dresults.shares.map { (key, value) ->

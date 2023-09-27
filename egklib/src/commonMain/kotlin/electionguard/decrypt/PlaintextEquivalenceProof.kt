@@ -6,12 +6,13 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
+import electionguard.ballot.EncryptedTally
 import electionguard.core.*
 import electionguard.input.ValidationMessages
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
-private var first = true
+private var first = false
 
 // "Distributed Plaintext Equivalence Proof" for CAKE
 class PlaintextEquivalenceProof(
@@ -25,7 +26,7 @@ class PlaintextEquivalenceProof(
 
     // create proof that ballot1 and ballot2 are equivalent
     fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
-         // now run that through the usual decryption
+        // now run that through the usual decryption
         val result = doEgkPep(ballot1, ballot2)
         if (result is Err) {
             return Err(result.error)
@@ -43,6 +44,14 @@ class PlaintextEquivalenceProof(
         if (first) println("count selection = $count")
         first = false
         return Ok(same)
+    }
+
+    fun doEgkPep(ciphertext1: ElGamalCiphertext, ciphertext2: ElGamalCiphertext): PepDecryptOutput {
+        val ratio = makeRatio(ciphertext1, ciphertext2)
+        val eTally = makeTallyForSingleCiphertext(ratio)
+        val dTally = decryptor.decryptPep(eTally)
+        val dSelection = dTally.contests[0].selections[0]
+        return PepDecryptOutput(dSelection.bOverM, dSelection.proof)
     }
 
     // create proof that ballot1 and ballot2 are equivilent
@@ -146,12 +155,25 @@ class PlaintextEquivalenceProof(
 
         val ciphertext1 = selection1.encryptedVote
         val ciphertext2 = selection2.encryptedVote
-        // use ((α1/α2)^ξ, (β1/β2)^ξ))
-        val eps = group.randomElementModQ(minimum = 2)
-        val A = (ciphertext1.pad div ciphertext2.pad) powP eps
-        val B = (ciphertext1.data div ciphertext2.data) powP eps
-        val ratio = ElGamalCiphertext(A, B)
+
+        val ratio = makeRatio(ciphertext1, ciphertext2)
         // make a copy, replacing the ciphertext with the ratio. proofs no longer valid.
         return selection1.copy(encryptedVote = ratio)
     }
+
+    // use ((α1/α2)^ξ, (β1/β2)^ξ))
+    fun makeRatio(ciphertext1: ElGamalCiphertext, ciphertext2: ElGamalCiphertext): ElGamalCiphertext {
+        val eps = group.randomElementModQ(minimum = 2)
+        val A = (ciphertext1.pad div ciphertext2.pad) powP eps
+        val B = (ciphertext1.data div ciphertext2.data) powP eps
+        return ElGamalCiphertext(A, B)
+    }
+}
+
+data class PepDecryptOutput(val T: ElementModP, val proof: ChaumPedersenProof)
+
+fun makeTallyForSingleCiphertext(ciphertext : ElGamalCiphertext) : EncryptedTally {
+    val selection = EncryptedTally.Selection("Selection1", 1, ciphertext)
+    val contest = EncryptedTally.Contest("Contest1", 1, listOf(selection))
+    return EncryptedTally("tallyId", listOf(contest), emptyList())
 }

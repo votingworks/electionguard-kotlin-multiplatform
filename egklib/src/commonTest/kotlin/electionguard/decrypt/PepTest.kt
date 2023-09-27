@@ -1,12 +1,13 @@
 package electionguard.decrypt
 
+import electionguard.ballot.EncryptedTally
 import electionguard.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PepTest {
     val group = productionGroup()
-    val pepWithGuardians = CakeDecryptionWithGuardians(group, 3)
+    val cakeDecryptionWithGuardians = CakeDecryptionWithGuardians(group, 3)
 
     @Test
     fun basic() {
@@ -23,7 +24,6 @@ class PepTest {
         println("dvote = $dvote")
         assertEquals(1, dvote)
     }
-
     @Test
     fun testEgkDecryption() {
         runEgkDecryption(1, 1, 1, 1, true)
@@ -37,6 +37,32 @@ class PepTest {
     }
 
     fun runEgkDecryption(nguardians : Int, quorum : Int, numerator : Int, denominator: Int, expectEq : Boolean) {
+        val pep: PlaintextEquivalenceProof = makeEgkDecryption(group, nguardians, quorum, (1..quorum).toList())
+        val publicKey = pep.jointPublicKey
+        val enumerator: ElGamalCiphertext = numerator.encrypt(publicKey)
+        val edenominator: ElGamalCiphertext = denominator.encrypt(publicKey)
+
+        val pepOut = pep.doEgkPep(enumerator, edenominator)
+        val isEq = pepOut.T.equals(group.ONE_MOD_P)
+        print("$numerator / $denominator doCakePep isEqual = $isEq T = ${pepOut.T.toStringShort()}")
+        val dvoteg = publicKey.dLog(pepOut.T)
+        println(" dvote = $dvoteg")
+        assertEquals(expectEq, isEq)
+    }
+
+    @Test
+    fun testCakeEgkDecryption() {
+        runCakeEgkDecryption(1, 1, 1, 1, true)
+        runCakeEgkDecryption(1, 1, 1, 0, false)
+
+        runCakeEgkDecryption(2, 2, 1, 1, true)
+        runCakeEgkDecryption(2, 2, 1, 0, false)
+
+        runCakeEgkDecryption(3, 2, 1, 1, true)
+        runCakeEgkDecryption(3, 2, 1, 0, false)
+    }
+
+    fun runCakeEgkDecryption(nguardians : Int, quorum : Int, numerator : Int, denominator: Int, expectEq : Boolean) {
         val cakeEgkDecryption = makeCakeEgkDecryption(group, nguardians, quorum, (1..quorum).toList())
         val publicKeyG = ElGamalPublicKey(cakeEgkDecryption.publicKey)
         val ratioG = makeRatio(numerator, denominator, publicKeyG)
@@ -67,41 +93,41 @@ class PepTest {
     }
 
     @Test
-    fun ratios() {
-        doRatio(0, 0, true)
-        doRatio(1, 1, true)
-        doRatio(1, 0, false)
-        doRatio(2, 2, true)
-        doRatio(2, 1, false)
-        doRatio(2, 0, false)
+    fun testCakeDecryption() {
+        runCakeDecryption(0, 0, true)
+        runCakeDecryption(1, 1, true)
+        runCakeDecryption(1, 0, false)
+        runCakeDecryption(2, 2, true)
+        runCakeDecryption(2, 1, false)
+        runCakeDecryption(2, 0, false)
 
-        doRatio(0, 1, false)
-        doRatio(0, 2, false)
-        doRatio(0, 200, false)
+        runCakeDecryption(0, 1, false)
+        runCakeDecryption(0, 2, false)
+        runCakeDecryption(0, 200, false)
     }
 
-    fun doRatio(numerator : Int, denominator: Int, expectEq : Boolean) {
+    fun runCakeDecryption(numerator : Int, denominator: Int, expectEq : Boolean) {
         val keypair = elGamalKeyPairFromRandom(group)
         val ratio = makeRatio(numerator, denominator, keypair.publicKey)
 
-        val Trs = doRatioSimple(ratio, keypair)
+        val Trs = runCakeDecryptionSimple(ratio, keypair)
         val isEqs = Trs.equals(group.ONE_MOD_P)
-        print("$numerator / $denominator doRatioSimple isEqual = $isEqs T = ${Trs.toStringShort()}")
+        print("$numerator / $denominator runCakeDecryptionSimple isEqual = $isEqs T = ${Trs.toStringShort()}")
         assertEquals(expectEq, isEqs)
         val dvote = keypair.publicKey.dLog(Trs)
         println(" dvote = $dvote")
 
-        val Tr = doRatioCakeWithOneGuardian(ratio, keypair, expectEq)
+        val Tr = runCakeDecryptionCakeWithOneGuardian(ratio, keypair, expectEq)
         val isEq = Tr.equals(group.ONE_MOD_P)
-        print("$numerator / $denominator doRatioCakeWithOneGuardian isEqual = $isEq T = ${Tr.toStringShort()}")
+        print("$numerator / $denominator runCakeDecryptionCakeWithOneGuardian isEqual = $isEq T = ${Tr.toStringShort()}")
         val dvote2 = keypair.publicKey.dLog(Tr)
         println(" dvote = $dvote2")
         assertEquals(expectEq, isEq)
 
         // since we have a different publicKey, have to regen the ratio
-        val publicKeyG = ElGamalPublicKey(pepWithGuardians.publicKey)
+        val publicKeyG = ElGamalPublicKey(cakeDecryptionWithGuardians.publicKey)
         val ratioG = makeRatio(numerator, denominator, publicKeyG)
-        val Tg = pepWithGuardians.doCakePep(ratioG, expectEq)
+        val Tg = cakeDecryptionWithGuardians.doCakePep(ratioG, expectEq)
         val isEqg = Tg.equals(group.ONE_MOD_P)
         print("$numerator / $denominator doCakePep isEqual = $isEqg T = ${Tg.toStringShort()}")
         val dvoteg = publicKeyG.dLog(Tg)
@@ -118,12 +144,12 @@ class PepTest {
         return ElGamalCiphertext(enumerator.pad div edenominator.pad, enumerator.data div edenominator.data)
     }
 
-    fun doRatioSimple(ratio : ElGamalCiphertext, keypair : ElGamalKeypair) : ElementModP {
+    fun runCakeDecryptionSimple(ratio : ElGamalCiphertext, keypair : ElGamalKeypair) : ElementModP {
         return DecryptWithSecret(ratio, keypair.secretKey.key)
     }
 
     // the case where theres only one guardian
-    fun doRatioCakeWithOneGuardian(ratio : ElGamalCiphertext, keypair : ElGamalKeypair, expectEq : Boolean) : ElementModP {
+    fun runCakeDecryptionCakeWithOneGuardian(ratio : ElGamalCiphertext, keypair : ElGamalKeypair, expectEq : Boolean) : ElementModP {
         val K = keypair.publicKey.key
 
         // Step 1 (for each Gi)
@@ -276,4 +302,10 @@ class PepTest {
 
         return ZpkDecryptOutput(T, c, v)
     }
+}
+
+fun makeTallyForSingleCiphertext(ciphertext : ElGamalCiphertext) : EncryptedTally {
+    val selection = EncryptedTally.Selection("Selection1", 1, ciphertext)
+    val contest = EncryptedTally.Contest("Contest1", 1, listOf(selection))
+    return EncryptedTally("tallyId", listOf(contest), emptyList())
 }
