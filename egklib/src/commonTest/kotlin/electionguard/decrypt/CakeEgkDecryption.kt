@@ -57,7 +57,6 @@ class CakeEgkDecryption(val group: GroupContext, val extendedBaseHash: UInt256, 
     // The CAKE PEP protocol, modified to use Egk
     fun doEgkPep(ratio: ElGamalCiphertext, expectEq: Boolean): ElementModP {
         // step 1a: extra nonce protects (m1 - m2) from leaking. having multiple ones from each guardian is not needed?
-        // the G are not actually needed here
         val stepValues = guardians.map { it.cakeStep1(ratio) }
         val stepMap = stepValues.associateBy { it.id }
         val A = with(group) { stepValues.map { it.bigAi }.multP() }
@@ -74,6 +73,7 @@ class CakeEgkDecryption(val group: GroupContext, val extendedBaseHash: UInt256, 
         // the response: vj = uj − c * ξj, has both of the new nonces in it
         guardians.map { it.cakeStep3(stepMap[it.id()]!!, c) } // 1b.h,i
 
+        // 1b.3 (4n)
         guardians.forEach {
             val myStep1 = stepMap[it.id()]!!
 
@@ -95,7 +95,7 @@ class CakeEgkDecryption(val group: GroupContext, val extendedBaseHash: UInt256, 
         // Step 3 (verifier V)
         val v = with (group) { stepValues.map { it.vi }.addQ() }
 
-        // (3.a) LOOK this is whats in addition
+        // (3.a) LOOK this is whats in addition (4)
         // (a) Compute a = α^v * A^c and b = β^v * B^c
         // verify if c = H(cons0 ; cons1 , K, α, β, A, B, a, b). Otherwise, output “reject”.
         val verifier_a = (ratio.pad powP v) * (A powP c)
@@ -180,7 +180,9 @@ class CakeEgkDecryption(val group: GroupContext, val extendedBaseHash: UInt256, 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     fun EgkDecrypt(ciphertextAB : ElGamalCiphertext, decryptor: DecryptorDoerre) : EgkDecryptOutput {
         val eTally = makeTallyForSingleCiphertext(ciphertextAB)
+        //showAndClearCountPowP()
         val dTally = decryptor.decryptPep(eTally)
+        //println("EgkDecrypt = ${showAndClearCountPowP()} expect ${4 * decryptor.nguardians + 4}")
         val dSelection = dTally.contests[0].selections[0]
 
         //     data class Selection(

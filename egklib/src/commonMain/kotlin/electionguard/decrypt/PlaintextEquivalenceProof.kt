@@ -11,9 +11,10 @@ import electionguard.input.ValidationMessages
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
-private var first = true
+private var first = false
 
 // "Distributed Plaintext Equivalence Proof" for CAKE
+// uses Simplified Egk PEP for now.
 class PlaintextEquivalenceProof(
     val group: GroupContext,
     val extendedBaseHash: UInt256,
@@ -23,7 +24,7 @@ class PlaintextEquivalenceProof(
 ) {
     val decryptor = DecryptorDoerre(group, extendedBaseHash, jointPublicKey, guardians, decryptingTrustees)
 
-    // create proof that ballot1 and ballot2 are equivalent
+    // test if ballot1 and ballot2 are equivalent (or not).
     fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
          // now run that through the usual decryption
         val result = doEgkPep(ballot1, ballot2)
@@ -45,7 +46,13 @@ class PlaintextEquivalenceProof(
         return Ok(same)
     }
 
-    // create proof that ballot1 and ballot2 are equivilent
+    /**
+     * Create proof that ballot1 and ballot2 are equivalent (or not).
+     * The returned DecryptedTallyOrBallot is the ratio of the two ballots for each selection.
+     * Each decrypted selection has T == 1 (or not) and a corresponding proof.
+     * Note that the two encrypted ballots must have been decrypted by the same encryptor, using
+     * the same parameters (extendedBaseHash, jointPublicKey, guardians, decryptingTrustees).
+    */
     fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<DecryptedTallyOrBallot, String> {
         // LOOK check ballotIds match, styleIds?
         val ballotMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)

@@ -1,8 +1,6 @@
 package electionguard.workflow
 
-import com.github.michaelbull.result.Ok
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.EncryptedBallot
 import electionguard.cli.RunAccumulateTally.Companion.runAccumulateBallots
 import electionguard.cli.RunBatchEncryption.Companion.batchEncryption
 import electionguard.cli.RunCreateElectionConfig
@@ -10,8 +8,6 @@ import electionguard.cli.RunTrustedBallotDecryption
 import electionguard.cli.RunTrustedTallyDecryption.Companion.runDecryptTally
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.decrypt.Guardians
-import electionguard.decrypt.PlaintextEquivalenceProof
 import electionguard.publish.*
 import electionguard.verifier.Verifier
 import kotlin.test.Test
@@ -20,6 +16,7 @@ import kotlin.test.assertEquals
 
 /**
  * Run workflow with varying number of guardians, on the same ballots, and compare the results.
+ * Also show operation Counts.
  */
 class TestNumGuardians {
     val group = productionGroup()
@@ -48,7 +45,7 @@ class TestNumGuardians {
     }
 
     fun runWorkflow(name : String, nguardians: Int, quorum: Int, present: List<Int>, nthreads: Int) {
-        println("=========================================================== ${showAndClearCountPowP()}")
+        println("=========================================================== ${group.showAndClearCountPowP()}")
         val workingDir =  "testOut/workflow/$name"
         val privateDir =  "$workingDir/private_data"
         val trusteeDir =  "${privateDir}/trustees"
@@ -71,19 +68,19 @@ class TestNumGuardians {
         // key ceremony
         val (manifest, init) = runFakeKeyCeremony(group, workingDir, workingDir, trusteeDir, nguardians, quorum, false)
         println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
-        println("----------- after keyCeremony ${showAndClearCountPowP()}")
+        println("----------- after keyCeremony ${group.showAndClearCountPowP()}")
 
         // encrypt
         batchEncryption(group, workingDir, workingDir, inputBallotDir, invalidDir, "device11", nthreads, name1)
-        println("----------- after encrypt ${showAndClearCountPowP()}")
+        println("----------- after encrypt ${group.showAndClearCountPowP()}")
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", name1)
-        println("----------- after tally ${showAndClearCountPowP()}")
+        println("----------- after tally ${group.showAndClearCountPowP()}")
 
         val dtrustees : List<DecryptingTrusteeIF> = readDecryptingTrustees(group, trusteeDir, init, present, true)
         runDecryptTally(group, workingDir, workingDir, dtrustees, name1)
-        println("----------- after decrypt tally ${showAndClearCountPowP()}")
+        println("----------- after decrypt tally ${group.showAndClearCountPowP()}")
 
         // decrypt ballots
         RunTrustedBallotDecryption.main(
@@ -95,26 +92,7 @@ class TestNumGuardians {
                 "-nthreads", nthreads.toString()
             )
         )
-        println("----------- after decrypt ballots ${showAndClearCountPowP()}")
-
-        if (name != name1) {
-            // call PEP to compare to
-            val starting = getSystemTimeInMillis() // wall clock
-            val pep = PlaintextEquivalenceProof(
-                group,
-                init.extendedBaseHash,
-                ElGamalPublicKey(init.jointPublicKey),
-                Guardians(group, init.guardians), // all guardians
-                dtrustees
-            )
-            compareBallotPepEquivilence(pep, name1, name, true)
-
-            val took = getSystemTimeInMillis() - starting
-            val nballots = 33
-            val per = took / (1000.0 * nballots)
-            println("\nPEP took $took msecs = ${per} secs/ballot")
-            println("----------- after decrypt PEP ${showAndClearCountPowP()}")
-        }
+        println("----------- after decrypt ballots ${group.showAndClearCountPowP()}")
 
         // verify
         println("\nRun Verifier")
@@ -125,7 +103,7 @@ class TestNumGuardians {
         stats.show()
         println("Verify is $ok")
         assertTrue(ok)
-        println("----------- after verify ${showAndClearCountPowP()}")
+        println("----------- after verify ${group.showAndClearCountPowP()}")
     }
 
     @Test
@@ -152,22 +130,6 @@ class TestNumGuardians {
         }
     }
 
-    fun compareBallotPepEquivilence(pep: PlaintextEquivalenceProof, name1 : String, name2 : String, expectEqual : Boolean) {
-        val record1 =  readElectionRecord(group, "testOut/workflow/$name1")
-        val record2 =  readElectionRecord(group, "testOut/workflow/$name2")
-        println("PEP compare ${record1.topdir()} ${record2.topdir()}")
-
-        val ballotsa = record1.encryptedAllBallots { true }.iterator()
-        val ballotsb = record2.encryptedAllBallots { true }.iterator()
-        while (ballotsa.hasNext()) {
-            val ballota = ballotsa.next()
-            val result = pep.testEquivalent(ballota, ballotsb.next())
-            assertTrue(result is Ok)
-            println(" ${ballota.ballotId} compare ${result}")
-            // assertEquals(expectEqual, result.value)
-        }
-    }
-
     // doesnt make sense that these are ordered
     fun testEqualTallies(tallya : DecryptedTallyOrBallot, tallyb : DecryptedTallyOrBallot) {
         assertEquals(tallya.id, tallyb.id)
@@ -182,31 +144,4 @@ class TestNumGuardians {
         }
         println()
     }
-
-    // doesnt make sense that these are ordered
-    fun testPepEqualTallies(tallya : DecryptedTallyOrBallot, tallyb : DecryptedTallyOrBallot) {
-        assertEquals(tallya.id, tallyb.id)
-        print(" compare ${tallya.id} ${tallyb.id}")
-        tallya.contests.zip(tallyb.contests).forEach { (contesta, contestb) ->
-            assertEquals(contesta.contestId, contestb.contestId)
-            contesta.selections.zip(contestb.selections).forEach { (selectiona, selectionb) ->
-                assertEquals(selectiona.selectionId, selectionb.selectionId)
-                assertEquals(selectiona.tally, selectionb.tally)
-                print(" OK")
-            }
-        }
-        println()
-    }
-
-    fun testEqualEBallot(ballota : EncryptedBallot, ballotb : EncryptedBallot) {
-        assertEquals(ballota.ballotId, ballotb.ballotId)
-        ballota.contests.zip(ballotb.contests).forEach { (contesta, contestb) ->
-            assertEquals(contesta.contestId, contestb.contestId)
-            contesta.selections.zip(contestb.selections).forEach { (selectiona, selectionb) ->
-                assertEquals(selectiona.selectionId, selectionb.selectionId)
-                println(" OK ${selectiona.selectionId}")
-            }
-        }
-    }
-
 }

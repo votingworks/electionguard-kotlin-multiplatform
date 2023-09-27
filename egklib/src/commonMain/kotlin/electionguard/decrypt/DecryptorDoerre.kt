@@ -25,6 +25,7 @@ class DecryptorDoerre(
 ) {
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>
     val stats = Stats()
+    val nguardians = decryptingTrustees.size
 
     init {
         // build the lagrangeCoordinates once and for all
