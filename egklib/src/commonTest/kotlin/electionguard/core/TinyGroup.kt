@@ -183,6 +183,8 @@ internal class TinyGroupContext(
     override fun gPowP(e: ElementModQ): ElementModP = gModP powP e
 
     override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
+
+    override fun showAndClearCountPowP() = ""
 }
 
 internal class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {
@@ -373,5 +375,4 @@ internal data class TinyMontgomeryElementModP(val element: UInt, val groupContex
 
     override val context: GroupContext
         get() = groupContext
-
 }

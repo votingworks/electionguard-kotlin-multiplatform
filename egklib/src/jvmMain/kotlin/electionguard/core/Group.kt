@@ -3,6 +3,7 @@ package electionguard.core
 import electionguard.ballot.ElectionConstants
 import mu.KotlinLogging
 import java.math.BigInteger
+import java.util.concurrent.atomic.AtomicInteger
 
 private val logger = KotlinLogging.logger("Group")
 
@@ -257,7 +258,19 @@ class ProductionGroupContext(
     override fun gPowP(e: ElementModQ) = gModP powP e
 
     override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
+
+    // temp debug
+
+    override fun showAndClearCountPowP() : String {
+        val result = "countPowP,AccPowP= ${countPowP}, $countAccPowP total= ${countPowP.get()+countAccPowP.get()}"
+        countPowP.set(0)
+        countAccPowP.set(0)
+        return result
+    }
 }
+
+private val countPowP = AtomicInteger(0)
+private val countAccPowP = AtomicInteger(0)
 
 private fun Element.getCompat(other: ProductionGroupContext): BigInteger {
     context.assertCompatible(other)
@@ -340,13 +353,13 @@ open class ProductionElementModP(internal val element: BigInteger, val groupCont
     override operator fun compareTo(other: ElementModP): Int = element.compareTo(other.getCompat(groupContext))
 
     override fun isValidResidue(): Boolean {
-        countPowP++
+        countPowP.incrementAndGet()
         val residue = this.element.modPow(groupContext.q, groupContext.p) == groupContext.ONE_MOD_P.element
         return inBounds() && residue
     }
 
     override infix fun powP(e: ElementModQ) : ElementModP {
-        countPowP++
+        countPowP.incrementAndGet()
         return this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
     }
 
@@ -391,7 +404,7 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
     override fun acceleratePow(): ElementModP = this
 
     override infix fun powP(e: ElementModQ) : ElementModP {
-        countAccPowP++
+        countAccPowP.incrementAndGet()
         return powRadix.pow(e)
     }
 }

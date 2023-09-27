@@ -34,17 +34,35 @@ class PepTest {
 
         runEgkDecryption(3, 2, 1, 1, true)
         runEgkDecryption(3, 2, 1, 0, false)
+
+        runEgkDecryption(6, 5, 1, 1, true)
+        runEgkDecryption(6, 5, 1, 0, false)
     }
 
-    fun runEgkDecryption(nguardians : Int, quorum : Int, numerator : Int, denominator: Int, expectEq : Boolean) {
+    @Test
+    fun testEgkDecryptionCount() {
+        runEgkDecryption(1, 1, 1, 1, true, false)
+        runEgkDecryption(2, 2, 1, 1, true, false)
+        runEgkDecryption(3, 3, 1, 1, true, false)
+        runEgkDecryption(5, 5, 1, 1, true, false)
+        runEgkDecryption(8, 8, 1, 1, true, false)
+    }
+
+    fun runEgkDecryption(nguardians : Int, quorum : Int, numerator : Int, denominator: Int, expectEq : Boolean, show : Boolean = true) {
+        println("runEgkDecryption n = $quorum / $nguardians")
         val cakeEgkDecryption = makeCakeEgkDecryption(group, nguardians, quorum, (1..quorum).toList())
         val publicKeyG = ElGamalPublicKey(cakeEgkDecryption.publicKey)
         val ratioG = makeRatio(numerator, denominator, publicKeyG)
+        group.showAndClearCountPowP()
         val Tg = cakeEgkDecryption.doEgkPep(ratioG, expectEq)
+        val expect = 12 * nguardians + 16
+        println(" after doEgkPep ${group.showAndClearCountPowP()} expect = $expect")
         val isEq = Tg.equals(group.ONE_MOD_P)
-        print("$numerator / $denominator doCakePep isEqual = $isEq T = ${Tg.toStringShort()}")
-        val dvoteg = publicKeyG.dLog(Tg)
-        println(" dvote = $dvoteg")
+        if (show) {
+            print(" $numerator / $denominator, doEgkPep isEqual = $isEq T = ${Tg.toStringShort()}")
+            val dvoteg = publicKeyG.dLog(Tg)
+            println(" dvote = $dvoteg")
+        }
         assertEquals(expectEq, isEq)
     }
 
