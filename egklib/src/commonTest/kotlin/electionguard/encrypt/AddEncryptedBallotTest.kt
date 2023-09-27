@@ -54,6 +54,70 @@ class AddEncryptedBallotTest {
     }
 
     @Test
+    fun testEncryptAndCast() {
+        val outputDir = "$outputDirProto/testEncryptAndCast"
+        val device = "device0"
+
+        val electionRecord = readElectionRecord(group, input)
+        val electionInit = electionRecord.electionInit()!!
+        val publisher = makePublisher(outputDir, true, false)
+        publisher.writeElectionInitialized(electionInit)
+
+        val encryptor = AddEncryptedBallot(
+            group,
+            electionRecord.manifest(),
+            electionInit,
+            device,
+            outputDir,
+            "${outputDir}/invalidDir",
+            isJson = publisher.isJson(),
+        )
+        val ballotProvider = RandomBallotProvider(electionRecord.manifest())
+
+        repeat(nballots) {
+            val ballot = ballotProvider.makeBallot()
+            val result = encryptor.encryptAndCast(ballot)
+            assertTrue(result is Ok)
+            assertTrue( encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST) is Err)
+        }
+        encryptor.close()
+
+        checkOutput(group, outputDir, nballots, publisher.isJson())
+    }
+
+    @Test
+    fun testEncryptAndCastNoWrite() {
+        val outputDir = "$outputDirProto/testEncryptAndCastNoWrite"
+        val device = "device0"
+
+        val electionRecord = readElectionRecord(group, input)
+        val electionInit = electionRecord.electionInit()!!
+        val publisher = makePublisher(outputDir, true, false)
+        publisher.writeElectionInitialized(electionInit)
+
+        val encryptor = AddEncryptedBallot(
+            group,
+            electionRecord.manifest(),
+            electionInit,
+            device,
+            outputDir,
+            "${outputDir}/invalidDir",
+            isJson = publisher.isJson(),
+        )
+        val ballotProvider = RandomBallotProvider(electionRecord.manifest())
+
+        repeat(nballots) {
+            val ballot = ballotProvider.makeBallot()
+            val result = encryptor.encryptAndCast(ballot, false)
+            assertTrue(result is Ok)
+            assertTrue( encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST) is Err)
+        }
+        encryptor.close()
+
+        // TODO make sure no ballots were written
+    }
+
+    @Test
     fun testCallMultipleTimes() {
         val outputDir = "$outputDirProto/testCallMultipleTimes"
         val device = "device1"
