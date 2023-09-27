@@ -13,8 +13,8 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
 
-private const val verifySelections = true
-private const val verifyContestData = true
+private const val doVerifierSelectionProof = true
+private const val doVerifierContestProof = false
 
 /** Turn an EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(
@@ -26,6 +26,7 @@ class TallyDecryptor(
 ) {
     /**
      * Called after gathering the shares and challenge responses for all available trustees.
+     * TODO: pass back Result with error messages instead of logging?
      */
     fun decryptTally(
         tally: EncryptedTally,
@@ -93,7 +94,7 @@ class TallyDecryptor(
                 contestDataDecryptions.beta!!,
             )
 
-            if (verifyContestData) {
+            if (doVerifierContestProof) {
                 val results = verifyContestData(contestId, decryptedContestData)
                 if (results is Err) {
                     println(results)
@@ -134,6 +135,12 @@ class TallyDecryptor(
         return results.merge()
     }
 
+    // Verify with spec 2.0.0 eq 83, 84
+    private fun ContestDataResults.checkIndividualResponses(): Boolean {
+        // TODO
+        return true
+    }
+
     // TODO detect nulls
     private fun decryptSelection(
         selection: EncryptedTally.Selection,
@@ -155,21 +162,25 @@ class TallyDecryptor(
             proof
         )
 
-        if (verifySelections) {
+        val startVerify = getSystemTimeInMillis()
+
+        // the idea here is to do the proof verification, whose cost is 4 exponents (3 powP and 1 accPowp)
+        // If it fails, then do the individual guardian verification, hopefully to pinpoint the culprit.
+        if (doVerifierSelectionProof) {
+            if (!decrypytedSelection.verifySelection()) {
+                logger.error { "verifySelection failed for  $contestId and ${selection.selectionId}" }
+                selectionDecryptions.checkIndividualResponses()
+            }
+        } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents
             val startVerifyDetailed = getSystemTimeInMillis()
             if (!selectionDecryptions.checkIndividualResponses()) {
-                println("checkIndividualResponses failed for  $contestId and ${selection.selectionId}")
+                logger.error {"checkIndividualResponses failed for  $contestId and ${selection.selectionId}"}
             }
             stats.of("checkIndividualResponses", "selection", "selections")
                 .accum(getSystemTimeInMillis() - startVerifyDetailed, 1)
-
-            val startVerify = getSystemTimeInMillis()
-            if (!decrypytedSelection.verifySelection()) {
-                println("verifySelection failed for  $contestId and ${selection.selectionId}")
-            }
-            stats.of("verifySelection", "selection", "selections").accum(getSystemTimeInMillis() - startVerify, 1)
         }
 
+        stats.of("verifySelection", "selection", "selections").accum(getSystemTimeInMillis() - startVerify, 1)
         return decrypytedSelection
     }
 
@@ -191,13 +202,13 @@ class TallyDecryptor(
             val inner = guardians.getGexpP(guardianId)
             val ap = group.gPowP(vi) * (inner powP ci) // eq 74
             if (partialDecryption.a != ap) {
-                println(" ayes dont match for ${guardianId}")
+                logger.error {" ayes dont match for ${guardianId}"}
                 ok = false
             }
 
             val bp = (this.ciphertext.pad powP vi) * (partialDecryption.Mi powP ci) // eq 75
             if (partialDecryption.b != bp) {
-                println(" bees dont match for ${guardianId}")
+                logger.error {" bees dont match for ${guardianId}"}
                 ok = false
             }
         }
