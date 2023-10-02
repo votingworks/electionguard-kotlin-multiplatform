@@ -25,7 +25,9 @@ class DecryptorDoerre(
 ) {
     val lagrangeCoordinates: Map<String, LagrangeCoordinate>
     val stats = Stats()
-    val nguardians = decryptingTrustees.size
+    val nguardians = guardians.guardians.size // number of guardinas
+    val ndGuardians = decryptingTrustees.size // number of decrypting guardinas
+    val quorum = guardians.guardians[0].coefficientCommitments().size
 
     init {
         // build the lagrangeCoordinates once and for all
@@ -128,9 +130,9 @@ class DecryptorDoerre(
 
                 // "joint challenge" c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β) ; 2.0, eq 81
                 cresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), jointPublicKey.key,
-                    cresults.ciphertext.c0,
-                    cresults.ciphertext.c1.toHex(),
-                    cresults.ciphertext.c2,
+                    cresults.hashedCiphertext.c0,
+                    cresults.hashedCiphertext.c1.toHex(),
+                    cresults.hashedCiphertext.c2,
                     a, b, weightedProduct)
             }
         }

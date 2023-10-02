@@ -13,8 +13,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
 
-private const val doVerifierSelectionProof = true
-private const val doVerifierContestProof = false
+private const val doVerifierSelectionProof = false
 
 /** Turn an EncryptedTally into a DecryptedTallyOrBallot. */
 class TallyDecryptor(
@@ -77,7 +76,7 @@ class TallyDecryptor(
 
             // use beta to do the decryption
             val contestData =
-                contestDataDecryptions.ciphertext.decryptWithBetaToContestData(
+                contestDataDecryptions.hashedCiphertext.decryptWithBetaToContestData(
                     publicKey,
                     extendedBaseHash,
                     contestId,
@@ -89,56 +88,24 @@ class TallyDecryptor(
 
             val decryptedContestData = DecryptedTallyOrBallot.DecryptedContestData(
                 contestData.unwrap(),
-                contestDataDecryptions.ciphertext,
+                contestDataDecryptions.hashedCiphertext,
                 proof,
                 contestDataDecryptions.beta!!,
             )
 
-            if (doVerifierContestProof) {
-                val results = verifyContestData(contestId, decryptedContestData)
-                if (results is Err) {
-                    println(results)
+            if (doVerifierSelectionProof) {
+                if (!decryptedContestData.verifyContestData()) {
+                    logger.error { "verifyContestData failed for $contestId" }
+                    contestDataDecryptions.checkIndividualResponses()
+                }
+            } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents
+                if (!contestDataDecryptions.checkIndividualResponses()) {
+                    logger.error {"checkIndividualResponses failed for $contestId"}
                 }
             }
 
             decryptedContestData
         }
-    }
-
-    // this is the verifier proof (box 11)
-    private fun verifyContestData(where: String, decryptedContestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
-        val proof = decryptedContestData.proof
-        val hashedCiphertext = decryptedContestData.encryptedContestData
-        // a = g^v * K^c  (11.1,14.1)
-        val a = group.gPowP(proof.r) * (publicKey powP proof.c)
-
-        // b = C0^v * β^c (11.2,14.2)
-        val b = (hashedCiphertext.c0 powP proof.r) * (decryptedContestData.beta powP proof.c)
-
-        val results = mutableListOf<Result<Boolean, String>>()
-
-        // (11.A,14.A) The given value v is in the set Zq.
-        if (!proof.r.inBounds()) {
-            results.add(Err("     (11.A,14.A) The value v is not in the set Zq.: '$where'"))
-        }
-
-        // (11.B) The challenge value c satisfies c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β)
-        val challenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), publicKey.key,
-            hashedCiphertext.c0,
-            hashedCiphertext.c1.toHex(),
-            hashedCiphertext.c2,
-            a, b, decryptedContestData.beta)
-
-        if (challenge != proof.c.toUInt256()) {
-            results.add(Err("     (11.B,14.B) The challenge value is wrong: '$where'"))
-        }
-        return results.merge()
-    }
-
-    // Verify with spec 2.0.0 eq 83, 84
-    private fun ContestDataResults.checkIndividualResponses(): Boolean {
-        // TODO
-        return true
     }
 
     // TODO detect nulls
@@ -172,12 +139,9 @@ class TallyDecryptor(
                 selectionDecryptions.checkIndividualResponses()
             }
         } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents
-            val startVerifyDetailed = getSystemTimeInMillis()
             if (!selectionDecryptions.checkIndividualResponses()) {
                 logger.error {"checkIndividualResponses failed for  $contestId and ${selection.selectionId}"}
             }
-            stats.of("checkIndividualResponses", "selection", "selections")
-                .accum(getSystemTimeInMillis() - startVerifyDetailed, 1)
         }
 
         stats.of("verifySelection", "selection", "selections").accum(getSystemTimeInMillis() - startVerify, 1)
@@ -186,10 +150,10 @@ class TallyDecryptor(
 
     // this is the verifier proof (box 8)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        return this.proof.validateDecryption(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
+        return this.proof.verifyDecryption(extendedBaseHash, publicKey.key, this.encryptedVote, this.bOverM)
     }
 
-    // Verify with spec 2.0.0 eq 75, 76
+    // Verify with spec 2.0.0 eq 74, 75
     private fun DecryptionResults.checkIndividualResponses(): Boolean {
         var ok = true
         for (partialDecryption in this.shares.values) {
@@ -197,18 +161,49 @@ class TallyDecryptor(
             val vi = this.responses[guardianId]
                 ?: throw IllegalStateException("*** response not found for ${guardianId}")
             val wi = lagrangeCoordinates[guardianId]!!.lagrangeCoefficient
-            val ci = wi * this.collectiveChallenge!!.toElementModQ(group) // spec 2.0.0 eq 72
+            val ci = wi * this.collectiveChallenge!!.toElementModQ(group) // spec 2.0.0 eq 72 (recalc)
 
-            val inner = guardians.getGexpP(guardianId)
+            val inner = guardians.getGexpP(guardianId) // inner factor
             val ap = group.gPowP(vi) * (inner powP ci) // eq 74
             if (partialDecryption.a != ap) {
-                logger.error {" ayes dont match for ${guardianId}"}
+                logger.error {"ai != ai' dont match for i=${guardianId}"} // TODO error message
                 ok = false
             }
 
             val bp = (this.ciphertext.pad powP vi) * (partialDecryption.Mi powP ci) // eq 75
             if (partialDecryption.b != bp) {
-                logger.error {" bees dont match for ${guardianId}"}
+                logger.error {"bi != bi' dont match for i=${guardianId}"}
+                ok = false
+            }
+        }
+        return ok
+    }
+
+    private fun DecryptedTallyOrBallot.DecryptedContestData.verifyContestData(): Boolean {
+        return this.proof.verifyContestDataDecryption(publicKey.key, extendedBaseHash, this.beta, this.encryptedContestData)
+    }
+
+    // HashedElGamalCiphertext instead of ElGamalCiphertext
+    private fun ContestDataResults.checkIndividualResponses(): Boolean {
+        var ok = true
+        for (partialDecryption in this.shares.values) {
+            val guardianId = partialDecryption.guardianId
+            val vi = this.responses[guardianId]
+                ?: throw IllegalStateException("*** response not found for ${guardianId}") // 82
+            val wi = lagrangeCoordinates[guardianId]!!.lagrangeCoefficient
+            val ci = wi * this.collectiveChallenge!!.toElementModQ(group) // spec 2.0.0 eq 81.5, p 42
+
+            val inner = guardians.getGexpP(guardianId) // inner factor
+            val ap = group.gPowP(vi) * (inner powP ci) // eq 83
+            if (partialDecryption.a != ap) {
+                logger.error {"ai != ai' dont match for i=${guardianId}"} // TODO error message
+                ok = false
+            }
+
+            // this.ciphertext.pad -> this.hashedCiphertext.c0 is the only difference
+            val bp = (this.hashedCiphertext.c0 powP vi) * (partialDecryption.Mi powP ci) // eq 84
+            if (partialDecryption.b != bp) {
+                logger.error {"bi != bi' dont match for i=${guardianId}"}
                 ok = false
             }
         }

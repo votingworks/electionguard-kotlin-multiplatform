@@ -38,15 +38,14 @@ fun makeCakeEgkDecryption(
     // create inputs for Doerre Decryption
     val dtrustees: List<DecryptingTrusteeDoerre> = ktrustees.map { makeDoerreTrustee(it) }
     val jointPublicKey = dtrustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
-    val missing = dtrustees.filter {!present.contains(it.xCoordinate())}.map { it.id }
-    val available = dtrustees.filter {present.contains(it.xCoordinate())}
+    val available = dtrustees.filter { present.contains(it.xCoordinate()) }
     val extendedBaseHash = UInt256.random()
-    val decryptor = DecryptorDoerre(group, extendedBaseHash, ElGamalPublicKey(jointPublicKey), guardians, dtrustees)
-    return CakeEgkDecryption(group, extendedBaseHash, jointPublicKey, dtrustees, decryptor)
+    val decryptor = DecryptorDoerre(group, extendedBaseHash, ElGamalPublicKey(jointPublicKey), guardians, available)
+    return CakeEgkDecryption(group, quorum, extendedBaseHash, jointPublicKey, dtrustees, decryptor)
 }
 
-// test Cake PEP using EgkDecryption
-class CakeEgkDecryption(val group: GroupContext, val extendedBaseHash: UInt256, val publicKey : ElementModP,
+// test Cake PEP using Egk Decryption
+class CakeEgkDecryption(val group: GroupContext, val quorum: Int, val extendedBaseHash: UInt256, val publicKey : ElementModP,
                         val dtrustees: List<DecryptingTrusteeDoerre>, val decryptor : DecryptorDoerre) {
     val guardians = mutableListOf<PepGuardian>()
 
@@ -76,9 +75,7 @@ class CakeEgkDecryption(val group: GroupContext, val extendedBaseHash: UInt256, 
         // 1b.3 (4n)
         guardians.forEach {
             val myStep1 = stepMap[it.id()]!!
-
             // (1b.4 (j) Verify if aj = α^vj * Aj^c and bj = β^vj * Bj^c
-            // LOOK this is just algebra, since vj = uj − c * ξj
             val verifya = (ratio.pad powP myStep1.vi) * (myStep1.bigAi powP c)
             assertEquals(myStep1.ai, verifya)
             val verifyb = (ratio.data powP myStep1.vi) * (myStep1.bigBi powP c)
@@ -121,7 +118,7 @@ class CakeEgkDecryption(val group: GroupContext, val extendedBaseHash: UInt256, 
         assertEquals(c_prime, verify_c_prime)
 
         // this proof validation is the same as step 3.b
-        assertTrue( egkDecryptOutput.proof.validateDecryption(publicKey, extendedBaseHash, T, ciphertextAB))
+        assertTrue( egkDecryptOutput.proof.verifyDecryption(extendedBaseHash, publicKey, ciphertextAB, T))
         //    val M: ElementModP = encryptedVote.data / bOverM
         //    val a = group.gPowP(this.r) * (publicKey powP this.c)
         //    val b = (encryptedVote.pad powP this.r) * (M powP this.c)
@@ -180,9 +177,9 @@ class CakeEgkDecryption(val group: GroupContext, val extendedBaseHash: UInt256, 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     fun EgkDecrypt(ciphertextAB : ElGamalCiphertext, decryptor: DecryptorDoerre) : EgkDecryptOutput {
         val eTally = makeTallyForSingleCiphertext(ciphertextAB)
-        //showAndClearCountPowP()
+        //group.showAndClearCountPowP()
         val dTally = decryptor.decryptPep(eTally)
-        //println("EgkDecrypt = ${showAndClearCountPowP()} expect ${4 * decryptor.nguardians + 4}")
+        //println("EgkDecrypt = ${group.showAndClearCountPowP()} expect ${4 * decryptor.nguardians + 4}")
         val dSelection = dTally.contests[0].selections[0]
 
         //     data class Selection(

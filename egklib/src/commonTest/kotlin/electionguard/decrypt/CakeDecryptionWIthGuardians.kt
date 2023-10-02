@@ -232,8 +232,6 @@ class CakeDecryptionWithGuardians(val group: GroupContext, nguardians : Int) {
     }
 }
 
-data class ZpkDecryptOutput(val T: ElementModP, val challenge: ElementModQ, val response: ElementModQ)
-
 // keypair = (s, K) = (s, g^s)
 // text = (g^ξ, K^(σ+ξ)) = (g^ξ, g^s*(σ+ξ)) = (g^ξ, g^σ^s * g^ξ^*s)
 fun DecryptWithSecret(text : ElGamalCiphertext, secretKey : ElementModQ) : ElementModP {

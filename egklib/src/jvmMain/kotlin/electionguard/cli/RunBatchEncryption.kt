@@ -158,6 +158,7 @@ class RunBatchEncryption {
             check: CheckType = CheckType.None,
             cleanOutput: Boolean = false,
         ) {
+            count = 0 // start over each batch
             val electionRecord = readElectionRecord(group, inputDir)
             val electionInit = electionRecord.electionInit()!!
 

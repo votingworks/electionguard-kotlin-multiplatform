@@ -36,7 +36,7 @@ data class TallyResult(
     }
 }
 
-/** Results of decrypting an EncryptedTally, namely a DecryptedTallyOrBallot. */
+/** Results of decrypting an EncryptedTally. */
 data class DecryptionResult(
     val tallyResult: TallyResult,
     val decryptedTally: DecryptedTallyOrBallot,
