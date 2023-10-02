@@ -112,7 +112,8 @@ class VerifyDecryption(
 
     // Verification 9 (Correctness of tally decryptions)
     private fun DecryptedTallyOrBallot.Selection.verifySelection(): Boolean {
-        return this.proof.validateDecryption(publicKey.key, extendedBaseHash, this.bOverM, this.encryptedVote)
+        return this.proof.verifyDecryption(extendedBaseHash, publicKey.key, this.encryptedVote, this.bOverM)
+
     }
 
     // TODO check
@@ -133,7 +134,7 @@ class VerifyDecryption(
             results.add(Err("     (11.A,14.A) The value v is not in the set Zq.: '$where'"))
         }
 
-        val challengeOk = decryptedContestData.proof.validate2(publicKey.key, extendedBaseHash, decryptedContestData.beta, decryptedContestData.encryptedContestData)
+        val challengeOk = decryptedContestData.proof.verifyContestDataDecryption(publicKey.key, extendedBaseHash, decryptedContestData.beta, decryptedContestData.encryptedContestData)
         if (challengeOk) {
             results.add(Err("     (11.B,14.B) The challenge value is wrong: '$where'"))
         }

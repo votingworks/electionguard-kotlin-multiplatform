@@ -1,15 +1,13 @@
 package electionguard.ballot
 
 import electionguard.core.ElementModP
-import electionguard.core.GroupContext
 import electionguard.core.SchnorrProof
-import electionguard.keyceremony.calculateGexpPiAtL
 
 /** Public info for the ith Guardian/Trustee. */
 data class Guardian(
     val guardianId: String,
     val xCoordinate: Int, // use sequential numbering starting at 1; = i of T_i, K_i
-    val coefficientProofs: List<SchnorrProof> // the order is the same as coordinates
+    val coefficientProofs: List<SchnorrProof> // the order is the same as coordinates, size = quorum
 ) {
     init {
         require(guardianId.isNotEmpty())

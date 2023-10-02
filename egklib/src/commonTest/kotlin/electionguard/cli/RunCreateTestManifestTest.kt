@@ -11,14 +11,17 @@ class RunCreateTestManifestTest {
 
     @Test
     fun runCreateTestManifest() {
-        RunConvertManifest.main(
+        RunCreateTestManifest.main(
             arrayOf(
                 "-ncontests", "20",
                 "-nselections", "5",
-                "-out",
-                "testOut/manifest/runCreateTestManifest",
+                "-out", "testOut/manifest/runCreateTestManifest",
             )
         )
+    }
+
+    @Test
+    fun runConvertManifest() {
 
         RunConvertManifest.main(
             arrayOf(

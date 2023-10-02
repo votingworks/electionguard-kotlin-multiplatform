@@ -126,7 +126,7 @@ open class KeyCeremonyTrustee(
         // Having decrypted each Pi (ℓ), guardian Gℓ can now verify its validity against
         // the commitments Ki,0 , Ki,1 , . . . , Ki,k−1 made by Gi to its coefficients by confirming that
         // g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1 ; spec 2.0.0 eq 21
-        if (group.gPowP(expectedPil) != calculateGexpPiAtL(this.xCoordinate, publicKeys.coefficientCommitments())) {
+        if (group.gPowP(expectedPil) != calculateGexpPiAtL(publicKeys.guardianId, this.xCoordinate, publicKeys.coefficientCommitments())) {
             return Err("Trustee '$id' failed to validate EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
         }
 
@@ -163,6 +163,7 @@ open class KeyCeremonyTrustee(
             // check if the Pi(ℓ) that was sent satisfies eq 21.
             // g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1
             if (group.gPowP(keyShare.yCoordinate) != calculateGexpPiAtL(
+                    otherKeys.guardianId,
                     this.xCoordinate,
                     otherKeys.coefficientCommitments()
                 )

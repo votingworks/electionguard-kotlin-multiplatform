@@ -148,14 +148,14 @@ class DecryptBallotTestVector {
                 assertEquals(expectSelection.tally, actualSelection.tally)
                 assertEquals(expectSelection.b_over_m.import(group), actualSelection.bOverM)
                 assertEquals(expectSelection.encrypted_vote.import(group), actualSelection.encryptedVote)
-                assertTrue(actualSelection.proof.validateDecryption(publicKey.key, extendedBaseHash, actualSelection.bOverM, actualSelection.encryptedVote))
-                assertTrue(actualSelection.proof.validateDecryption(publicKey.key, extendedBaseHash, expectSelection.b_over_m.import(group), expectSelection.encrypted_vote.import(group)))
+                assertTrue(actualSelection.proof.verifyDecryption(extendedBaseHash, publicKey.key, actualSelection.encryptedVote, actualSelection.bOverM))
+                assertTrue(actualSelection.proof.verifyDecryption(extendedBaseHash, publicKey.key, expectSelection.encrypted_vote.import(group), expectSelection.b_over_m.import(group)))
             }
 
             val expectedDecryptedContestData = expectContest.decrypted_contest_data!!.import(group)
             val actualDecryptedContestData = actualContest.decryptedContestData!!
             assertEquals(expectedDecryptedContestData.contestData, actualDecryptedContestData.contestData)
-            assertTrue(expectedDecryptedContestData.proof.validate2(publicKey.key, extendedBaseHash, expectedDecryptedContestData.beta, expectedDecryptedContestData.encryptedContestData))
+            assertTrue(expectedDecryptedContestData.proof.verifyContestDataDecryption(publicKey.key, extendedBaseHash, expectedDecryptedContestData.beta, expectedDecryptedContestData.encryptedContestData))
         }
     }
 

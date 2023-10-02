@@ -1,6 +1,7 @@
 package electionguard.core
 
 import com.github.michaelbull.result.*
+import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.Base16.toHex
 import kotlin.collections.fold
 
@@ -178,18 +179,70 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
     return results.merge()
 }
 
+private val show = false
+
+// generic
+fun ChaumPedersenProof.verify(
+    extendedBaseHash: UInt256, // He
+    separator: Byte,
+    publicKey: ElementModP, // K
+    x: ElementModP,
+    y: ElementModP,
+    X: ElementModP,
+    Y: ElementModP,
+): Boolean {
+    val group = compatibleContextOrFail(publicKey, x, y, X, Y)
+    val a = (x powP this.r) * (X powP this.c)
+    val b = (y powP this.r) * (Y powP this.c)
+
+
+    //                         val c = hashFunction(
+    //                            extendedBaseHash.bytes,
+    //                            0x42,
+    //                            jointPublicKey.key,
+    //                            alpha, beta, A, B, a, b
+
+    val challenge = hashFunction(extendedBaseHash.bytes, separator, publicKey, x, y, X, Y, a, b)
+    if (show) {
+        println("verifyPEP c = $c v = $r")
+        println("  extendedBaseHash = ${extendedBaseHash.bytes.contentToString()}")
+        println("  separator = $separator")
+        println("  publicKey = $publicKey")
+        println("  alpha = $x")
+        println("  beta = $y")
+        println("  A = $X")
+        println("  B = $Y")
+        println("  a = $a")
+        println("  b = $b")
+        println("  challenge = $challenge")
+        println("  challengeQ = ${challenge.toElementModQ(group)}")
+        println("  expect = ${this.c}")
+    }
+
+    return (challenge.toElementModQ(group) == this.c)
+}
+
 /**
  * Verification 9 (Correctness of tally decryptions)
+ * For each option in each contest on each tally, an election verifier must compute the values
+ *   (9.1) M = B · T −1 mod p,
+ *   (9.2) a = g^v · K^c mod p,
+ *   (9.3) b = A^v · M^c mod p.
+ * An election verifier must then confirm the following:
+ *   (9.A) The given value v is in the set Zq .
+ *   (9.B) The challenge value c satisfies c = H(HE ; 0x30, K, A, B, a, b, M ).
+ *
  *    encrypt vote -> (g^ξ, K^(ξ+vote)) = (A, B)
  *    decrypt vote T = B / M, where M = A^s, so T = g^s*(ξ+vote) / g^ξ*s = g^(ξ*s + s*vote - s*ξ) = g^s^vote = K^vote
  *    prove knowledge of s, such that K = g^s mod p, M = A^s mod p.
- *    prove knowledge of x for two tuples (g, g^x) and (h, h^x). so g=g. h=A.
+ *    prove knowledge of s for two tuples (g, g^s) and (h, h^s).
+ *    knows the exponent s for two tuples (g, K) and (A, M), where K = g^s and M = A^s. so g=g and h=A.
  */
-fun ChaumPedersenProof.validateDecryption(
-    publicKey: ElementModP, // K
+fun ChaumPedersenProof.verifyDecryption(
     extendedBaseHash: UInt256, // He
-    T: ElementModP,
+    publicKey: ElementModP, // K
     encryptedVote: ElGamalCiphertext,
+    T: ElementModP,
 ): Boolean {
     val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, T)
     val M: ElementModP = encryptedVote.data / T // eq 9.1
@@ -200,15 +253,24 @@ fun ChaumPedersenProof.validateDecryption(
     if (!this.r.inBounds()) {
         return false
     }
-
     // The challenge value c = H(HE ; 0x30, K, A, B, a, b, M ). eq 71, 9.B.
     val challenge = hashFunction(extendedBaseHash.bytes, 0x30.toByte(), publicKey, encryptedVote.pad, encryptedVote.data, a, b, M)
-
     return (challenge.toElementModQ(group) == this.c)
 }
 
-// Verification 11 (Correctness of decryptions of contest data)
-fun ChaumPedersenProof.validate2(
+/**
+ * Verification 11 (Correctness of decryptions of contest data)
+ * An election verifier must confirm the correct decryption of the contest data field for each contest by
+ * verifying the conditions analogous to Verification 9 for the corresponding NIZK proof with (A, B)
+ * replaced by (C0 , C1 , C2 ) and Mi by beta as follows. An election verifier must compute the following
+ * values.
+ *   (11.1) a = g^v · K^c mod p,
+ *   (11.2) b = C0^v · β^c mod p.
+ * An election verifier must then confirm the following.
+ *   (11.A) The given value v is in the set Zq .
+ *   (11.B) The challenge value c satisfies c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β).
+ */
+fun ChaumPedersenProof.verifyContestDataDecryption(
     publicKey: ElementModP, // K
     extendedBaseHash: UInt256, // He
     beta: ElementModP,
@@ -218,7 +280,11 @@ fun ChaumPedersenProof.validate2(
     val a = group.gPowP(this.r) * (publicKey powP this.c) // 11.1
     val b = (hashedCiphertext.c0 powP this.r) * (beta powP this.c) // 11.2
 
-    // The challenge value c satisfies c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β) ; (11.B)
+    // 11.A The given value v is in the set Z_q.
+    if (!this.r.inBounds()) {
+        return false
+    }
+    // The challenge value c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β) // 11.B
     val challenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), publicKey,
         hashedCiphertext.c0,
         hashedCiphertext.c1.toHex(),

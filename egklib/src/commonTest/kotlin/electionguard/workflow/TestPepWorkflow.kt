@@ -6,7 +6,8 @@ import electionguard.cli.RunCreateElectionConfig
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.Guardians
-import electionguard.decrypt.PlaintextEquivalenceProof
+import electionguard.decrypt.PepSimple
+import electionguard.decrypt.PepTrusted
 import electionguard.publish.*
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -28,17 +29,17 @@ class TestPepWorkflow {
     @Test
     fun runWorkflows() {
         println("productionGroup (Default) = $group class = ${group.javaClass.name}")
-        //runWorkflow(name1, 1, 1, listOf(1), 1)
-        runWorkflow(name1, 1, 1, listOf(1), 25)
+        runWorkflow(name1, 1, 1, listOf(1), 1)
+        //runWorkflow(name1, 1, 1, listOf(1), 25)
 
         //runWorkflow(name2, 3, 3, listOf(1,2,3), 1)
-        runWorkflow(name2, 3, 3, listOf(1,2,3), 25)
+        //runWorkflow(name2, 3, 3, listOf(1,2,3), 25)
 
         //runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 1)
-        runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 25)
+        //runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 25)
 
         //runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 1)
-        runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 25)
+        //runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 25)
     }
 
     fun runWorkflow(name : String, nguardians: Int, quorum: Int, present: List<Int>, nthreads: Int) {
@@ -68,22 +69,24 @@ class TestPepWorkflow {
         // encrypt
         group.showAndClearCountPowP()
         batchEncryption(group, workingDir, workingDir, inputBallotDir, invalidDir, "device11", nthreads, name1)
-        println("----------- after encrypt ${group.showAndClearCountPowP()}")
+        //println("----------- after encrypt ${group.showAndClearCountPowP()}")
 
         // encrypt again, simulating the CAKE workflow of scanning the paper ballots
         batchEncryption(group, workingDir, workingDir, inputBallotDir, invalidDir, "scanPaper", nthreads, name1)
-        println("----------- after encrypt ${group.showAndClearCountPowP()}")
+        //println("----------- after encrypt ${group.showAndClearCountPowP()}")
 
         val dtrustees : List<DecryptingTrusteeIF> = readDecryptingTrustees(group, trusteeDir, init, present, true)
 
+        // todo PARELLIZE PEP
         // call PEP to compare the two encryptions
         val starting = getSystemTimeInMillis() // wall clock
-        val pep = PlaintextEquivalenceProof(
+        val pep = PepTrusted(
             group,
             init.extendedBaseHash,
             ElGamalPublicKey(init.jointPublicKey),
             Guardians(group, init.guardians), // all guardians
-            dtrustees
+            dtrustees,
+            3
         )
         group.showAndClearCountPowP()
         compareBallotPepEquivilence(pep, workingDir, "device11", "scanPaper")
@@ -93,11 +96,11 @@ class TestPepWorkflow {
         val per = took / (1000.0 * nballots)
         println("\nPEP took $took msecs = ${per} secs/ballot")
         val nencyptions = 100
-        val expect = (4 * nguardians + 6) * nencyptions * nballots
+        val expect = (8 * nguardians + 12) * nencyptions * nballots
         println("----------- after compareBallotPepEquivilence ${group.showAndClearCountPowP()}, expect=$expect")
     }
 
-    fun compareBallotPepEquivilence(pep: PlaintextEquivalenceProof, workingDir : String, device1 : String, device2 : String) {
+    fun compareBallotPepEquivilence(pep: PepTrusted, workingDir : String, device1 : String, device2 : String) {
         val record =  readElectionRecord(group, workingDir)
 
         val ballotsa = record.encryptedBallots(device1) { true }.iterator()
