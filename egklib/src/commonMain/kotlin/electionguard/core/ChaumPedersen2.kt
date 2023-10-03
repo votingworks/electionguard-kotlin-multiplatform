@@ -1,7 +1,6 @@
 package electionguard.core
 
 import com.github.michaelbull.result.*
-import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.Base16.toHex
 import kotlin.collections.fold
 
@@ -129,7 +128,7 @@ internal fun ElGamalCiphertext.makeChaumPedersenWithNonces(
 
 // Verification 5 (Well-formedness of selection encryptions) TODO check complete
 // Verification 6 (Adherence to vote limits) TODO check complete
-fun ChaumPedersenRangeProofKnownNonce.validate2(
+fun ChaumPedersenRangeProofKnownNonce.verify(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey, // K
     extendedBaseHash: UInt256, // He
@@ -179,7 +178,7 @@ fun ChaumPedersenRangeProofKnownNonce.validate2(
     return results.merge()
 }
 
-private val show = false
+private const val show = false
 
 // generic
 fun ChaumPedersenProof.verify(
@@ -242,10 +241,10 @@ fun ChaumPedersenProof.verifyDecryption(
     extendedBaseHash: UInt256, // He
     publicKey: ElementModP, // K
     encryptedVote: ElGamalCiphertext,
-    T: ElementModP,
+    bOverM: ElementModP, // T or S
 ): Boolean {
-    val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, T)
-    val M: ElementModP = encryptedVote.data / T // eq 9.1
+    val group = compatibleContextOrFail(publicKey, encryptedVote.pad, encryptedVote.data, bOverM)
+    val M: ElementModP = encryptedVote.data / bOverM // eq 9.1
     val a = group.gPowP(this.r) * (publicKey powP this.c) // 9.2
     val b = (encryptedVote.pad powP this.r) * (M powP this.c) // 9.3
 
