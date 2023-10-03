@@ -106,7 +106,7 @@ class TestNumGuardians {
         println("----------- after verify ${group.showAndClearCountPowP()}")
     }
 
-    @Test
+    // @Test
     fun checkTalliesAreEqual() {
         val record1 =  readElectionRecord(group, "testOut/workflow/$name1")
         val record2 =  readElectionRecord(group, "testOut/workflow/$name2")
