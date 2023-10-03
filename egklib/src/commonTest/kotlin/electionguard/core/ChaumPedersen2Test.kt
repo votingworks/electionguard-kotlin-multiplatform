@@ -37,11 +37,11 @@ class ChaumPedersen2Test {
                     keypair.publicKey,
                     extendedBaseHash
                 )
-            println(goodProof.validate2(message0, keypair.publicKey, extendedBaseHash, 1))
-            assertTrue(goodProof.validate2(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
+            println(goodProof.verify(message0, keypair.publicKey, extendedBaseHash, 1))
+            assertTrue(goodProof.verify(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
 
-            println(goodProof.validate2(message0, keypair.publicKey, extendedBaseHash2, 1)) // extendedBaseHash doesnt match
-            assertFalse(goodProof.validate2(message0, keypair.publicKey, extendedBaseHash2, 1) is Ok)
+            println(goodProof.verify(message0, keypair.publicKey, extendedBaseHash2, 1)) // extendedBaseHash doesnt match
+            assertFalse(goodProof.verify(message0, keypair.publicKey, extendedBaseHash2, 1) is Ok)
 
             val badProof1 =
                 message0.makeChaumPedersen(
@@ -51,8 +51,8 @@ class ChaumPedersen2Test {
                     keypair.publicKey,
                     extendedBaseHash
                 )
-            println(badProof1.validate2(message0, keypair.publicKey, extendedBaseHash, 1))
-            assertFalse(badProof1.validate2(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
+            println(badProof1.verify(message0, keypair.publicKey, extendedBaseHash, 1))
+            assertFalse(badProof1.verify(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
 
             val badProof2 =
                 message1.makeChaumPedersen(
@@ -62,8 +62,8 @@ class ChaumPedersen2Test {
                     keypair.publicKey,
                     extendedBaseHash
                 )
-            println(badProof2.validate2(message0, keypair.publicKey, extendedBaseHash, 1)) // vote doesnt match
-            assertFalse(badProof2.validate2(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
+            println(badProof2.verify(message0, keypair.publicKey, extendedBaseHash, 1)) // vote doesnt match
+            assertFalse(badProof2.verify(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
 
             // validating equivalent but different message (same nonce)
             val differentMessage = 0.encrypt(keypair, nonce)
@@ -75,8 +75,8 @@ class ChaumPedersen2Test {
                     keypair.publicKey,
                     extendedBaseHash
                 )
-            println(badProof3.validate2(message0, keypair.publicKey, extendedBaseHash, 1)) // new
-            assertTrue(badProof3.validate2(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
+            println(badProof3.verify(message0, keypair.publicKey, extendedBaseHash, 1)) // new
+            assertTrue(badProof3.verify(message0, keypair.publicKey, extendedBaseHash, 1) is Ok)
         }
     }
 
@@ -105,7 +105,7 @@ class ChaumPedersen2Test {
                         extendedBaseHash = UInt256.ONE
                     )
                 assertTrue(
-                    proof.validate2(
+                    proof.verify(
                         message,
                         keypair.publicKey,
                         UInt256.ONE,
@@ -114,7 +114,7 @@ class ChaumPedersen2Test {
                     "first proof is valid"
                 )
                 assertFalse(
-                    proof.validate2(
+                    proof.verify(
                         message,
                         keypair.publicKey,
                         UInt256.ONE,
@@ -123,7 +123,7 @@ class ChaumPedersen2Test {
                     "modified constant invalidates proof"
                 )
                 assertFalse(
-                    proof.validate2(badMessage, keypair.publicKey, UInt256.ONE, 1) is Ok,
+                    proof.verify(badMessage, keypair.publicKey, UInt256.ONE, 1) is Ok,
                     "modified message invalidates proof"
                 )
 
@@ -136,7 +136,7 @@ class ChaumPedersen2Test {
                         extendedBaseHash = UInt256.ONE
                     )
                 assertFalse(
-                    badProof.validate2(badMessage, keypair.publicKey, UInt256.ONE, 1) is Ok,
+                    badProof.verify(badMessage, keypair.publicKey, UInt256.ONE, 1) is Ok,
                     "modified proof with consistent message is invalid"
                 )
 
@@ -149,7 +149,7 @@ class ChaumPedersen2Test {
                         extendedBaseHash = UInt256.ONE
                     )
                 assertFalse(
-                    badProof2.validate2(message, keypair.publicKey, UInt256.ONE, 1) is Ok,
+                    badProof2.verify(message, keypair.publicKey, UInt256.ONE, 1) is Ok,
                     "modified proof with inconsistent message is invalid"
                 )
 
@@ -222,26 +222,26 @@ class ChaumPedersen2Test {
                     hashHeader
                 )
 
-            assertTrue(goodProof0.validate2(message0, keypair.publicKey, hashHeader, 1) is Ok)
-            assertTrue(goodProof1.validate2(message1, keypair.publicKey, hashHeader, 1) is Ok)
+            assertTrue(goodProof0.verify(message0, keypair.publicKey, hashHeader, 1) is Ok)
+            assertTrue(goodProof1.verify(message1, keypair.publicKey, hashHeader, 1) is Ok)
 
-            assertFalse(goodProof0.validate2(message1, keypair.publicKey, hashHeader, 1) is Ok)
-            assertFalse(goodProof0.validate2(message1, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(goodProof0.verify(message1, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(goodProof0.verify(message1, keypair.publicKey, hashHeader, 1) is Ok)
 
-            assertFalse(goodProof1.validate2(message0, keypair.publicKey, badHashHeader, 1) is Ok)
-            assertFalse(goodProof1.validate2(message0, keypair.publicKey, badHashHeader, 1) is Ok)
+            assertFalse(goodProof1.verify(message0, keypair.publicKey, badHashHeader, 1) is Ok)
+            assertFalse(goodProof1.verify(message0, keypair.publicKey, badHashHeader, 1) is Ok)
 
-            assertFalse(badProof0.validate2(message0, keypair.publicKey, hashHeader, 1) is Ok)
-            assertFalse(badProof0.validate2(message1, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(badProof0.verify(message0, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(badProof0.verify(message1, keypair.publicKey, hashHeader, 1) is Ok)
 
-            assertFalse(badProof1.validate2(message0, keypair.publicKey, hashHeader, 1) is Ok)
-            assertFalse(badProof1.validate2(message1, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(badProof1.verify(message0, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(badProof1.verify(message1, keypair.publicKey, hashHeader, 1) is Ok)
 
-            assertFalse(badProof2.validate2(message0, keypair.publicKey, hashHeader, 1) is Ok)
-            assertFalse(badProof2.validate2(message1, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(badProof2.verify(message0, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(badProof2.verify(message1, keypair.publicKey, hashHeader, 1) is Ok)
 
-            assertFalse(badProof3.validate2(message1, keypair.publicKey, hashHeader, 1) is Ok)
-            assertFalse(badProof3.validate2(message0, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(badProof3.verify(message1, keypair.publicKey, hashHeader, 1) is Ok)
+            assertFalse(badProof3.verify(message0, keypair.publicKey, hashHeader, 1) is Ok)
         }
     }
 
@@ -265,13 +265,13 @@ class ChaumPedersen2Test {
                         hashHeader
                     )
 
-                assertTrue(proof.validate2(ciphertext, keypair.publicKey, hashHeader, 1) is Ok)
+                assertTrue(proof.verify(ciphertext, keypair.publicKey, hashHeader, 1) is Ok)
 
                 // now, swap the proofs around and verify it fails
                 val mutated = listOf(proof.proofs[1], proof.proofs[0], proof.proofs[1])
                 val badProof = proof.copy(proofs = mutated)
 
-                assertFalse(badProof.validate2(ciphertext, keypair.publicKey, hashHeader, 1) is Ok)
+                assertFalse(badProof.verify(ciphertext, keypair.publicKey, hashHeader, 1) is Ok)
             }
         }
     }
@@ -304,7 +304,7 @@ class ChaumPedersen2Test {
                 )
 
             assertTrue(
-                proof.validate2(
+                proof.verify(
                     message,
                     publicKey = publicKey,
                     extendedBaseHash = hashHeader,
@@ -346,7 +346,7 @@ class ChaumPedersen2Test {
                 )
 
             assertTrue(
-                proof.validate2(
+                proof.verify(
                     ciphertextAccumulation,
                     publicKey = publicKey,
                     extendedBaseHash = hashHeader,
@@ -369,13 +369,13 @@ class ChaumPedersen2Test {
         val ciphertext2 = 2.encrypt(keypair, nonce)
 
         val rangeProof01 = ciphertext0.makeChaumPedersen(0, 1, nonce, publicKey,  qbar)
-        val valid01 = rangeProof01.validate2(ciphertext0, publicKey, qbar, 1)
+        val valid01 = rangeProof01.verify(ciphertext0, publicKey, qbar, 1)
 
         val rangeProof02 = ciphertext0.makeChaumPedersen(0, 2, nonce, publicKey,  qbar)
-        val valid02 = rangeProof02.validate2(ciphertext0, publicKey, qbar, 2)
+        val valid02 = rangeProof02.verify(ciphertext0, publicKey, qbar, 2)
 
         val rangeProof22 = ciphertext2.makeChaumPedersen(2, 2, nonce, publicKey, qbar)
-        val valid22 = rangeProof22.validate2(ciphertext2, publicKey, qbar, 2)
+        val valid22 = rangeProof22.verify(ciphertext2, publicKey, qbar, 2)
 
         if (valid01 is Err) {
             println("Error in valid01: $valid01")
@@ -415,7 +415,7 @@ class ChaumPedersen2Test {
                     qbar
                 )
 
-                val proofValidation = proof.validate2(ciphertext, keypair.publicKey, qbar, rangeLimit)
+                val proofValidation = proof.verify(ciphertext, keypair.publicKey, qbar, rangeLimit)
                 assertTrue(proofValidation is Ok)
             }
         }
@@ -445,7 +445,7 @@ class ChaumPedersen2Test {
                     true // disables checks that would otherwise reject this proof
                 )
 
-                val proofValidation = proof.validate2(ciphertext, keypair.publicKey, qbar, p0)
+                val proofValidation = proof.verify(ciphertext, keypair.publicKey, qbar, p0)
                 assertTrue(proofValidation is Err)
                 println(" Err = ${proofValidation}")
             }

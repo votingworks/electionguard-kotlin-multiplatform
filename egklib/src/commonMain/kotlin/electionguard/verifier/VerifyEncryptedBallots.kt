@@ -92,7 +92,7 @@ class VerifyEncryptedBallots(
             // Verification 6 (Adherence to vote limits)
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.encryptedVote }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
-            val cvalid = contest.proof.validate2(
+            val cvalid = contest.proof.verify(
                 ciphertextAccumulation,
                 this.jointPublicKey,
                 this.extendedBaseHash,
@@ -140,7 +140,7 @@ class VerifyEncryptedBallots(
         val errors = mutableListOf<Result<Boolean, String>>()
         val here = "${where}/${selection.selectionId}"
 
-        val svalid = selection.proof.validate2(
+        val svalid = selection.proof.verify(
             selection.encryptedVote,
             this.jointPublicKey,
             this.extendedBaseHash,

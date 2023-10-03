@@ -21,8 +21,8 @@ import kotlin.math.roundToInt
 
 private const val debug = false
 
-/** Box [8, 9, 10, 11] (tally), and [12, 13, 14] (ballot). can be multithreaded. */
-// TODO check 12,13,14 (ballot) are same as 9,10,11 (tally)
+/** Box [9, 10, 11] (tally), and [12, 13, 14] (ballot). can be multithreaded. */
+// Note that 12,13,14 (ballot) are almost the same as 9,10,11 (tally). Only diff is 13.B,C
 @OptIn(ExperimentalCoroutinesApi::class)
 class VerifyDecryption(
     val group: GroupContext,
@@ -45,7 +45,7 @@ class VerifyDecryption(
             val where = "${decrypted.id}/${contest.contestId}"
             // (10.B) The contest text label occurs as a contest label in the list of contests in the election manifest.
             if (manifest.contestLimit(contest.contestId) == null) {
-                results.add(Err("    10.B,13.C Ballot contains contest not in manifest: '$where' "))
+                results.add(Err("    10.B,13.D Ballot contains contest not in manifest: '$where' "))
                 continue
             }
 
@@ -63,34 +63,36 @@ class VerifyDecryption(
                 // (10.C) For each option in the contest, the option text label occurs as an option label for the contest
                 // in the election manifest.
                 if (!contestAndSelectionSet.contains(here)) {
-                    results.add(Err("    10.C,13.D Ballot contains selection not in manifest: '$where2' "))
+                    results.add(Err("    10.C,13.E Ballot contains selection not in manifest: '$where2' "))
                     continue
                 }
 
-                if (!selection.proof.r.inBounds()) { // TODO move to CP validate?
-                    results.add(Err("    9.A,11.A response out of bounds: '$where2' "))
+                if (!selection.proof.r.inBounds()) {
+                    results.add(Err("    9.A,12.A response out of bounds: '$where2' "))
                 }
 
                 // 9.B, 11.B
                 if (!selection.verifySelection()) {
-                    results.add(Err("    9.B,11.B Challenge does not match: '$where2' "))
+                    results.add(Err("    9.B,12.B Challenge does not match: '$where2' "))
                 }
 
                 // T = K^t mod p.
                 val tallyQ = selection.tally.toElementModQ(group)
                 if (selection.bOverM != publicKey powP tallyQ) {
-                    results.add(Err("    10.A,13.B Tally Decryption M = K^t mod p failed: '$where2'"))
+                    results.add(Err("    10.A,13.A Tally Decryption M = K^t mod p failed: '$where2'"))
                 }
 
+                // TODO Issue #337
                 if (isBallot && (selection.tally !in (0..1))) {
-                    results.add(Err("     13.A ballot vote ${selection.tally} must be a 0 or a 1: '$where2'"))
+                    results.add(Err("     13.B ballot vote ${selection.tally} must be a 0 or a 1: '$where2'"))
                 }
                 contestVotes += selection.tally
             }
             if (isBallot) {
+                // TODO Issue #337
                 val limit = manifest.contestLimit(contest.contestId)
                 if (contestVotes !in (0..limit)) {
-                    results.add(Err("     13.B sum of votes ${contestVotes} in contest must be less than $limit: '$where'"))
+                    results.add(Err("     13.C sum of votes ${contestVotes} in contest must be less than $limit: '$where'"))
                 }
             }
             // println(" verify $nselections on ${if (isBallot) "ballot" else "tally"} ${decrypted.id}")
@@ -98,11 +100,11 @@ class VerifyDecryption(
 
         // (10.D) For each option text label listed for this contest in the election manifest, the option label
         // occurs for a option in the decrypted tally contest.
-        // (13.E) For each option text label listed for this contest in the election manifest, the option label
+        // (13.F) For each option text label listed for this contest in the election manifest, the option label
         //occurs for a option in the decrypted spoiled ballot.
         contestAndSelectionSet.forEach {
             if (!ballotSelectionSet.contains(it)) {
-                results.add(Err("    10.D,13.E Manifest contains selection not in ballot: '$it' "))
+                results.add(Err("    10.D,13.F Manifest contains selection not in ballot: '$it' "))
             }
         }
 
