@@ -48,6 +48,8 @@ class VerifyDecryption(
                 results.add(Err("    10.B,13.D Ballot contains contest not in manifest: '$where' "))
                 continue
             }
+            val optionLimit = manifest.optionLimit(contest.contestId)
+            val contestLimit = manifest.contestLimit(contest.contestId)
 
             if (contest.decryptedContestData != null) {
                 verifyContestData(where, contest.decryptedContestData)
@@ -82,17 +84,14 @@ class VerifyDecryption(
                     results.add(Err("    10.A,13.A Tally Decryption M = K^t mod p failed: '$where2'"))
                 }
 
-                // TODO Issue #337
-                if (isBallot && (selection.tally !in (0..1))) {
-                    results.add(Err("     13.B ballot vote ${selection.tally} must be a 0 or a 1: '$where2'"))
+                if (isBallot && (selection.tally !in (0..optionLimit))) {
+                    results.add(Err("     13.B ballot vote ${selection.tally} must be between 0..$optionLimit : '$where2'"))
                 }
                 contestVotes += selection.tally
             }
             if (isBallot) {
-                // TODO Issue #337
-                val limit = manifest.contestLimit(contest.contestId)
-                if (contestVotes !in (0..limit)) {
-                    results.add(Err("     13.C sum of votes ${contestVotes} in contest must be less than $limit: '$where'"))
+                if (contestVotes !in (0..contestLimit)) {
+                    results.add(Err("     13.C sum of votes ${contestVotes} in contest must be between 0..$contestLimit : '$where'"))
                 }
             }
             // println(" verify $nselections on ${if (isBallot) "ballot" else "tally"} ${decrypted.id}")

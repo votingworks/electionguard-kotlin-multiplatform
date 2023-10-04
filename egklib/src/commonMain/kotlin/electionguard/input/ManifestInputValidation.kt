@@ -114,13 +114,13 @@ class ManifestInputValidation(val manifest: Manifest) {
 
         when (contest.voteVariation) {
             one_of_m -> if (contest.votesAllowed != 1) {
-                val msg = "Manifest.C.2 one_of_m Contest votesAllowed (${contest.votesAllowed}) must be 1"
+                val msg = "Manifest.C.2 one_of_m Contest contest_limit (${contest.votesAllowed}) must be 1"
                 contestMesses.add(msg)
                 logger.warn { msg }
             }
             n_of_m -> {
                 if (contest.votesAllowed > contest.selections.size) {
-                    val msg = "Manifest.C.3 n_of_m Contest votesAllowed (${contest.votesAllowed}) must be <= selections" +
+                    val msg = "Manifest.C.3 n_of_m Contest contest_limit (${contest.votesAllowed}) must be <= selections" +
                             " (${contest.selections.size})"
                     contestMesses.add(msg)
                     logger.warn { msg }
@@ -128,7 +128,7 @@ class ManifestInputValidation(val manifest: Manifest) {
             }
             approval -> {
                 if (contest.votesAllowed != contest.selections.size) {
-                    val msg = "Manifest.C.4 approval Contest votesAllowed (${contest.votesAllowed}) must equal " +
+                    val msg = "Manifest.C.4 approval Contest contest_limit (${contest.votesAllowed}) must equal " +
                             "number of selections (${contest.selections.size})"
                     contestMesses.add(msg)
                     logger.warn { msg }
@@ -136,6 +136,19 @@ class ManifestInputValidation(val manifest: Manifest) {
             }
             else -> {}
         }
+
+        if (contest.votesAllowed < 1) {
+            val msg = "Manifest.C.5 Contest contest_limit (${contest.votesAllowed}) must be > 0"
+            contestMesses.add(msg)
+            logger.warn { msg }
+        }
+
+        if (contest.optionSelectionLimit < 1 || contest.optionSelectionLimit > contest.votesAllowed) {
+            val msg = "Manifest.C.6 contest option_limit (${contest.optionSelectionLimit}) must be > 0 and <= contest_limit (${contest.votesAllowed})"
+            contestMesses.add(msg)
+            logger.warn { msg }
+        }
+
         validateContestSelections(contest, contestMesses)
     }
 
@@ -190,7 +203,7 @@ class ManifestInputValidation(val manifest: Manifest) {
         }
     }
 
-    // there will be one encryption for each selection and one for each contest for the ContestData
+    // there will be one encryption for each selection and one for each contest (for the ContestData)
     private fun Manifest.ContestDescription.countEncryptions() = this.selections.size + 1
 
 }

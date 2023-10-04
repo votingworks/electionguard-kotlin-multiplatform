@@ -30,7 +30,7 @@ data class PreEncryptedBallot(
 data class PreEncryptedContest(
     val contestId: String, // could just pass the manifest contest, in case other info is needed
     val sequenceOrder: Int,
-    val votesAllowed: Int,
+    val votesAllowed: Int, // TODO remove
     val selections: List<PreEncryptedSelection>, // nselections + limit, in sequenceOrder, eq 92,93
     val preencryptionHash: UInt256, // eq 95
 )

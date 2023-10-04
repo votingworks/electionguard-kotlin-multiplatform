@@ -91,12 +91,16 @@ class EncryptedBallotJsonManifestFacade(ballot : EncryptedBallotJsonV) : Manifes
     override fun contestLimit(contestId: String): Int {
         return contests.find{ it.contestId == contestId }!!.votesAllowed
     }
+    override fun optionLimit(contestId : String) : Int {
+        return contests.find{ it.contestId == contestId }!!.optionLimit
+    }
 
     class ContestFacade(
         override val contestId: String,
         override val sequenceOrder: Int,
         override val selections: List<ManifestIF.Selection>,
-        override val votesAllowed: Int = 1,
+        val votesAllowed: Int = 1,
+        val optionLimit: Int = 1,
     ) : ManifestIF.Contest
 
     class SelectionFacade(

@@ -31,10 +31,8 @@ class PreEncryptor(
     ): PreEncryptedBallot {
 
         val mcontests = manifest.contestsForBallotStyle(ballotStyleId)
-            ?: throw IllegalArgumentException("Unknown ballotStyleId $ballotStyleId")
-
         val preeContests = mcontests.sortedBy { it.sequenceOrder }.map {
-            it.preencryptContest(primaryNonce)
+            it.preencryptContest(manifest.contestLimit(it.contestId), primaryNonce)
         }
         val contestHashes = preeContests.map { it.preencryptionHash }
 
@@ -50,7 +48,7 @@ class PreEncryptor(
         )
     }
 
-    private fun ManifestIF.Contest.preencryptContest(primaryNonce: UInt256): PreEncryptedContest {
+    private fun ManifestIF.Contest.preencryptContest(contestLimit: Int, primaryNonce: UInt256): PreEncryptedContest {
         val preeSelections = mutableListOf<PreEncryptedSelection>()
 
         // make sure selections are sorted by sequence number
@@ -62,7 +60,7 @@ class PreEncryptor(
 
         // In a contest with a selection limit of L, an additional L null vectors are added
         var sequence = this.selections.size
-        for (nullVectorIdx in (1..this.votesAllowed)) {
+        for (nullVectorIdx in (1..contestLimit)) {
             // TODO null labels may be in manifest, see 4.2.1
             preeSelections.add( preencryptSelection(primaryNonce, this.sequenceOrder, "null${nullVectorIdx}", sequence, sortedSelectionIndices))
             sequence++
@@ -77,7 +75,7 @@ class PreEncryptor(
         return PreEncryptedContest(
             this.contestId,
             this.sequenceOrder,
-            this.votesAllowed,
+            contestLimit,
             preeSelections,
             preencryptionHash,
         )
