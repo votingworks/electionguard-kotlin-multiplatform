@@ -50,8 +50,8 @@ class PlaintextBallotJsonManifestFacade(ballot : PlaintextBallotJsonV) : Manifes
             ContestFacade(
                 bc.contest_id,
                 bc.sequence_order,
+                bc.selections.map { SelectionFacade(it.selection_id, it.sequence_order) },
                 bc.votes_allowed,
-                bc.selections.map { SelectionFacade(it.selection_id, it.sequence_order)}
             )
         }
     }
@@ -60,16 +60,21 @@ class PlaintextBallotJsonManifestFacade(ballot : PlaintextBallotJsonV) : Manifes
     override fun contestLimit(contestId: String): Int {
         return contests.find{ it.contestId == contestId }!!.votesAllowed
     }
+    override fun optionLimit(contestId : String) : Int {
+        return contests.find{ it.contestId == contestId }!!.optionLimit
+    }
 
     class ContestFacade(
         override val contestId: String,
         override val sequenceOrder: Int,
-        override val votesAllowed: Int,
         override val selections: List<ManifestIF.Selection>,
+        val votesAllowed: Int = 1,
+        val optionLimit: Int = 1,
     ) : ManifestIF.Contest
 
     class SelectionFacade(
         override val selectionId: String,
-        override val sequenceOrder: Int) : ManifestIF.Selection
+        override val sequenceOrder: Int
+    ) : ManifestIF.Selection
 
 }

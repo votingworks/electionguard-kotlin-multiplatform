@@ -106,14 +106,15 @@ class BallotInputValidation(val manifest: Manifest) {
                     logger.warn { msg }
                 }
 
-                // Vote can only be a 0 or 1, not supporting ranked choice, approval yet.
+                /* Vote can only be a 0 or 1, not supporting ranked choice, approval yet.
                 if (selection.vote < 0 || selection.vote > 1) {
-                    val msg = "Ballot.C.1 Ballot Selection '${selection.selectionId}' vote ($selection.vote) must be 0 or 1"
+                    val msg = "Ballot.C.1 Ballot Selection '${selection.selectionId}' vote (${selection.vote}) must be " +
+                            "between 0 and the contest.option_limit= ${electionContest.optionLimit}"
                     contestMesses.add(msg)
                     logger.warn { msg }
                 } else {
                     total += selection.vote
-                }
+                } */
             }
         }
 
@@ -128,11 +129,12 @@ class BallotInputValidation(val manifest: Manifest) {
          */
     }
 
-    class ElectionContest internal constructor(electionContest: Manifest.ContestDescription) {
-        val contestId = electionContest.contestId
-        val sequenceOrder = electionContest.sequenceOrder
-        val geopoliticalUnitId = electionContest.geopoliticalUnitId
-        val allowed = electionContest.votesAllowed
-        val selectionMap = electionContest.selections.associateBy { it.selectionId }
+    class ElectionContest internal constructor(contest: Manifest.ContestDescription) {
+        val contestId = contest.contestId
+        val sequenceOrder = contest.sequenceOrder
+        val geopoliticalUnitId = contest.geopoliticalUnitId
+        val selectionMap = contest.selections.associateBy { it.selectionId }
+        val contestLimit = contest.votesAllowed
+        val optionLimit = contest.optionSelectionLimit
     }
 }

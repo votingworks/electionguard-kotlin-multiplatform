@@ -7,7 +7,6 @@ interface ManifestIF {
     interface Contest {
         val contestId: String
         val sequenceOrder: Int
-        val votesAllowed: Int
         val selections: List<Selection>
     }
 
@@ -19,7 +18,10 @@ interface ManifestIF {
     /** get the list of valid contests for the given ballotStyle */
     fun contestsForBallotStyle(ballotStyle : String): List<Contest>
 
-    /** get the contest limit (aka votesAllowed) for the given contest id */
+    /** get the contest selection limit (aka votesAllowed) for the given contest id */
     fun contestLimit(contestId : String): Int
+
+    /** get the option selection limit for the given contest id */
+    fun optionLimit(contestId : String): Int
 
 }

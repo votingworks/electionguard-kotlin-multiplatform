@@ -86,7 +86,7 @@ class VerifyEncryptedBallots(
             nselections += contest.selections.size
 
             contest.selections.forEach {
-                results.add(verifySelection(where, it))
+                results.add(verifySelection(where, it, manifest.optionLimit(contest.contestId)))
             }
 
             // Verification 6 (Adherence to vote limits)
@@ -136,7 +136,7 @@ class VerifyEncryptedBallots(
     }
 
     // Verification 5 (Well-formedness of selection encryptions)
-    private fun verifySelection(where: String, selection: EncryptedBallot.Selection): Result<Boolean, String> {
+    private fun verifySelection(where: String, selection: EncryptedBallot.Selection, optionLimit : Int): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
         val here = "${where}/${selection.selectionId}"
 
@@ -144,7 +144,7 @@ class VerifyEncryptedBallots(
             selection.encryptedVote,
             this.jointPublicKey,
             this.extendedBaseHash,
-            1, // TODO
+            optionLimit,
         )
         if (svalid is Err) {
             errors.add(Err("    5. ChaumPedersenProof validation failed for ${here}} = ${svalid.error} "))

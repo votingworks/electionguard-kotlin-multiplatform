@@ -10,7 +10,7 @@ import kotlin.collections.fold
  * Example: a proof that a ciphertext is in [0, 5] will have six internal proof components.
  */
 data class ChaumPedersenRangeProofKnownNonce(
-    val proofs: List<ChaumPedersenProof>, // L + 1
+    val proofs: List<ChaumPedersenProof>, // limit + 1
 )
 
 /**
@@ -35,12 +35,12 @@ data class ExpandedChaumPedersenProof(
     val r: ElementModQ,
 )
 
-// spec 2.0.0, section 3.3.5
-// Prove that (α, β) is an encryption of an integer in the range 0, 1, . . . , L.
+// spec 2.0.0, section 3.3.5, p 31.
+// Prove that (α, β) is an encryption of an integer in the range 0..limit.
 // (Requires knowledge of encryption nonce ξ for which (α, β) is an encryption of ℓ.)
 fun ElGamalCiphertext.makeChaumPedersen(
     vote: Int, // ℓ
-    limit: Int,     // L
+    limit: Int,     // R or L
     nonce: ElementModQ, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
     publicKey: ElGamalPublicKey, // K
     extendedBaseHash: UInt256, // He
@@ -53,7 +53,7 @@ fun ElGamalCiphertext.makeChaumPedersen(
         throw ArithmeticException("negative limits not supported")
     }
     if (!overrideErrorChecks && limit < vote) {
-        throw ArithmeticException("limit must be at least as big as the plaintext")
+        throw ArithmeticException("vote may not exceed optionLimit")
     }
 
     return this.makeChaumPedersenWithNonces(
@@ -71,8 +71,8 @@ internal fun ElGamalCiphertext.makeChaumPedersenWithNonces(
     nonce: ElementModQ, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
     publicKey: ElGamalPublicKey, // K
     extendedBaseHash: UInt256, // He
-    randomUj: List<ElementModQ>, // size == L + 1
-    randomCj: List<ElementModQ>, // size == L + 1
+    randomUj: List<ElementModQ>, // size == R + 1
+    randomCj: List<ElementModQ>, // size == R + 1
 ): ChaumPedersenRangeProofKnownNonce {
     require(randomUj.size == randomCj.size)
     // require(vote >= 0 && vote <= randomUj.size ) // TODO return Result
@@ -111,7 +111,7 @@ internal fun ElGamalCiphertext.makeChaumPedersenWithNonces(
             randomCj.filterIndexed { j, _ -> j != vote }
                 .fold(group.ZERO_MOD_Q) { a, b -> a + b }
 
-    // responses are computed for all 0 ≤ j ≤ L as vj = (uj − cj * ξ) mod q, eq 48
+    // responses are computed for all 0 ≤ j ≤ R as vj = (uj − cj * ξ) mod q, eq 48
     val vList = randomUj.zip(randomCj).mapIndexed { j, (uj, cj) ->
         val cjActual = if (j == vote) cl else cj
         uj - cjActual * nonce

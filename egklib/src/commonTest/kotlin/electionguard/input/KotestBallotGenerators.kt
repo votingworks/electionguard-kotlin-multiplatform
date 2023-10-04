@@ -170,7 +170,7 @@ object KotestBallotGenerators {
 
     fun humanName(): Arb<String> =
         Arb.pair(Arb.of(firstNames), Arb.of(lastNames))
-            .map { "${it.first} ${it.second}" }
+            .map { it : Pair<Any, Any> ->  "${it.first} ${it.second}" }
 
     fun email(): Arb<String> {
         return Arb.string(minSize = 1, maxSize = 10, Codepoint.alphanumeric())
@@ -238,7 +238,8 @@ object KotestBallotGenerators {
         val partyAbbrvs = (1..numParties).map { "P$it" }
 
         return Arb.list(Arb.triple(uuid(), url(), color()), numParties..numParties).map {
-            it.mapIndexed { i, (uuid, url, color) ->
+            it.mapIndexed { i, trip : Triple<String, String, String> ->
+                val (uuid, url, color) = trip
                 Manifest.Party(
                     partyId = uuid,
                     name = partyNames[i],

@@ -65,9 +65,9 @@ data class ContestData(
         contestId: String, // aka Λ
         contestIndex: Int, // ind_c(Λ)
         ballotNonce: UInt256,
-        votesAllowed: Int): HashedElGamalCiphertext {
+        contestLimit: Int): HashedElGamalCiphertext {
 
-        val messageSize = (1 + votesAllowed) * BLOCK_SIZE
+        val messageSize = (1 + contestLimit) * BLOCK_SIZE
 
         var trialContestData = this
         var trialContestDataBA = trialContestData.publish().encodeToByteArray()
@@ -76,8 +76,8 @@ data class ContestData(
         trialSizes.add(trialSize)
 
         // remove extra write_ins, append a "*"
-        if ((trialSize > messageSize) && trialContestData.writeIns.size > votesAllowed) {
-            val truncateWriteIns = trialContestData.writeIns.subList(0, votesAllowed)
+        if ((trialSize > messageSize) && trialContestData.writeIns.size > contestLimit) {
+            val truncateWriteIns = trialContestData.writeIns.subList(0, contestLimit)
                 .toMutableList()
             truncateWriteIns.add("*")
             trialContestData = trialContestData.copy(
@@ -90,7 +90,7 @@ data class ContestData(
 
         // chop write-in vote strings
         if ((trialSize > messageSize) && trialContestData.writeIns.isNotEmpty()) {
-            val chop = max(CHOP_WRITE_INS, (messageSize - trialSize + votesAllowed - 1) / votesAllowed)
+            val chop = max(CHOP_WRITE_INS, (messageSize - trialSize + contestLimit - 1) / contestLimit)
             val truncateWriteIns = trialContestData.writeIns.map {
                 if (it.length <= CHOP_WRITE_INS) it else it.substring(0, chop) + "*"
             }
@@ -101,8 +101,8 @@ data class ContestData(
         }
 
         // chop overvote list
-        while (trialSize > messageSize && (trialContestData.overvotes.size > votesAllowed + 1)) {
-            val chopList = trialContestData.overvotes.subList(0, votesAllowed + 1) + (-1)
+        while (trialSize > messageSize && (trialContestData.overvotes.size > contestLimit + 1)) {
+            val chopList = trialContestData.overvotes.subList(0, contestLimit + 1) + (-1)
             trialContestData = trialContestData.copy(overvotes = chopList)
             trialContestDataBA = trialContestData.publish().encodeToByteArray()
             trialSize = trialContestDataBA.size

@@ -48,7 +48,12 @@ class Encryptor(
         for (mcontest in manifest.contestsForBallotStyle(this.ballotStyle)) {
             // If no contest on the ballot, create a well formed contest with all zeroes
             val pcontest = plaintextContests[mcontest.contestId] ?: makeZeroContest(mcontest)
-            encryptedContests.add( pcontest.encryptContest(mcontest, ballotNonce))
+            encryptedContests.add(
+                pcontest.encryptContest(mcontest,
+                    manifest.contestLimit(mcontest.contestId),
+                    manifest.optionLimit(mcontest.contestId),
+                    ballotNonce)
+            )
         }
         val sortedContests = encryptedContests.sortedBy { it.sequenceOrder }
 
@@ -77,23 +82,29 @@ class Encryptor(
 
     private fun PlaintextBallot.Contest.encryptContest(
         mcontest: ManifestIF.Contest,
+        contestLimit: Int,
+        optionLimit: Int,
         ballotNonce: UInt256,
     ): CiphertextBallot.Contest {
         val ballotSelections = this.selections.associateBy { it.selectionId }
 
         val votedFor = mutableListOf<Int>()
+        var selectionOvervote = false
         for (mselection: ManifestIF.Selection in mcontest.selections) {
             // Find the ballot selection matching the contest description.
             val plaintextSelection = ballotSelections[mselection.selectionId]
             if (plaintextSelection != null && plaintextSelection.vote > 0) {
                 votedFor.add(plaintextSelection.sequenceOrder)
+                if (plaintextSelection.vote > optionLimit) {
+                    selectionOvervote = true
+                }
             }
         }
 
         val totalVotedFor = votedFor.size + this.writeIns.size
         val status = if (totalVotedFor == 0) ContestDataStatus.null_vote
-            else if (totalVotedFor < mcontest.votesAllowed)  ContestDataStatus.under_vote
-            else if (totalVotedFor > mcontest.votesAllowed)  ContestDataStatus.over_vote
+            else if (selectionOvervote || totalVotedFor > contestLimit)  ContestDataStatus.over_vote
+            else if (totalVotedFor < contestLimit)  ContestDataStatus.under_vote
             else ContestDataStatus.normal
 
         val encryptedSelections = mutableListOf<CiphertextBallot.Selection>()
@@ -107,6 +118,7 @@ class Encryptor(
             encryptedSelections.add( plaintextSelection.encryptSelection(
                 ballotNonce,
                 this.sequenceOrder,
+                optionLimit,
             ))
         }
 
@@ -117,13 +129,13 @@ class Encryptor(
         )
 
         val contestDataEncrypted = contestData.encrypt(jointPublicKey, extendedBaseHash, mcontest.contestId,
-            mcontest.sequenceOrder, ballotNonce, mcontest.votesAllowed)
+            mcontest.sequenceOrder, ballotNonce, contestLimit)
 
         return this.encryptContest(
             group,
             jointPublicKey,
             extendedBaseHash,
-            mcontest.votesAllowed,
+            contestLimit,
             if (status == ContestDataStatus.over_vote) 0 else totalVotedFor,
             encryptedSelections.sortedBy { it.sequenceOrder },
             contestDataEncrypted,
@@ -141,7 +153,8 @@ class Encryptor(
     private fun PlaintextBallot.Selection.encryptSelection(
         ballotNonce: UInt256,
         contestIndex: Int,
-    ): CiphertextBallot.Selection {
+        optionLimit : Int,
+        ): CiphertextBallot.Selection {
 
         // ξi,j = H(HE ; 0x20, ξB , indc (Λi ), indo (λj )) ; spec 2.0.0 eq 25
         val selectionNonce = hashFunction(extendedBaseHashB, 0x20.toByte(), ballotNonce, contestIndex, this.sequenceOrder)
@@ -151,7 +164,8 @@ class Encryptor(
             jointPublicKey,
             extendedBaseHash,
             selectionNonce.toElementModQ(group),
-        )
+            optionLimit,
+            )
     }
 }
 
@@ -202,12 +216,13 @@ fun PlaintextBallot.Selection.encryptSelection(
     jointPublicKey: ElGamalPublicKey,
     cryptoExtendedBaseHash: UInt256,
     selectionNonce: ElementModQ,
+    optionLimit : Int,
 ): CiphertextBallot.Selection {
     val elgamalEncryption: ElGamalCiphertext = vote.encrypt(jointPublicKey, selectionNonce) // eq 24
 
     val proof = elgamalEncryption.makeChaumPedersen(
         vote,
-        1,
+        optionLimit,
         selectionNonce,
         jointPublicKey,
         cryptoExtendedBaseHash

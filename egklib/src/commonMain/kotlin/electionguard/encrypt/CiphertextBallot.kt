@@ -18,7 +18,7 @@ data class CiphertextBallot(
     data class Contest(
         val contestId: String, // matches ContestDescription.contestIdd
         val sequenceOrder: Int, // matches ContestDescription.sequenceOrder
-        val votesAllowed: Int,
+        val votesAllowed: Int, // TODO remove
         val contestHash: UInt256, // eq 57
         val selections: List<Selection>,
         val proof: ChaumPedersenRangeProofKnownNonce,
@@ -60,7 +60,7 @@ fun CiphertextBallot.Contest.submit(): EncryptedBallot.Contest {
     return EncryptedBallot.Contest(
         this.contestId,
         this.sequenceOrder,
-        this.votesAllowed,
+        this.votesAllowed, // TODO remove
         this.contestHash,
         this.selections.map { it.submit() },
         this.proof,

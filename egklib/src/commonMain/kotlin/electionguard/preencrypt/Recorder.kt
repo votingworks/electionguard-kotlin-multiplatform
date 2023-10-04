@@ -93,7 +93,7 @@ class Recorder(
 
         val proof = ciphertextAccumulation.makeChaumPedersen(
             totalVotes,      // (ℓ in the spec)
-            preeContest.votesAllowed,  // (L in the spec)
+            preeContest.votesAllowed,  // (L in the spec) TODO remove ?
             aggNonce,
             publicKeyEG,
             extendedBaseHash,

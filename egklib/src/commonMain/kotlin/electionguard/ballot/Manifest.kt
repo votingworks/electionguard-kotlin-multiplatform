@@ -43,13 +43,23 @@ data class Manifest(
     }
 
     override fun contestLimit(contestId : String) : Int {
-        return contestIdToLimit[contestId]!!
+        return contestIdToContestLimit[contestId]!!
     }
 
-    /** Map of contestId to contest limit. */
-    val contestIdToLimit : Map<String, Int> by
+    override fun optionLimit(contestId : String) : Int {
+        return contestIdToOptionLimit[contestId]!!
+    }
+
+    /** Map of contestId to contest selection limit. */
+    val contestIdToContestLimit : Map<String, Int> by
     lazy {
-        contests.associate { it.contestId to it.votesAllowed}
+        contests.associate { it.contestId to it.votesAllowed }
+    }
+
+    /** Map of contestId to contest selection limit. */
+    val contestIdToOptionLimit : Map<String, Int> by
+    lazy {
+        contests.associate { it.contestId to it.optionSelectionLimit }
     }
 
     /** Map "$contestId/$selectionId" to candidateId. */
@@ -356,11 +366,12 @@ data class Manifest(
         val geopoliticalUnitId: String,
         val voteVariation: VoteVariationType,
         val numberElected: Int,
-        override val votesAllowed: Int,
+        val votesAllowed: Int, // contest selection limit = L, rename next breaking change
         val name: String,
         override val selections: List<SelectionDescription>,
         val ballotTitle: String?,
         val ballotSubtitle: String?,
+        val optionSelectionLimit : Int = 1, // option selection limit = R, spec 2.0 p 17.
     ) : ManifestIF.Contest
 
     /**
