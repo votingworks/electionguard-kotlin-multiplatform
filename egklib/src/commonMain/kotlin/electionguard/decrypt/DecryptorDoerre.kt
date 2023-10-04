@@ -174,6 +174,7 @@ class DecryptorDoerre(
         isBallot: Boolean,
     ) : TrusteeDecryptions {
 
+        // LOOK could do this once for all trustees
         // Get all the text that need to be decrypted in one call, including from ContestData
         val texts: MutableList<ElementModP> = mutableListOf()
         for (contest in this.contests) {

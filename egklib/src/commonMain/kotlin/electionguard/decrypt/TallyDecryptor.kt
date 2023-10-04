@@ -8,15 +8,14 @@ import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.decryptWithBetaToContestData
 import electionguard.core.*
-import electionguard.core.Base16.toHex
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
 
 private const val doVerifierSelectionProof = false
 
-/** Turn an EncryptedTally into a DecryptedTallyOrBallot. */
-class TallyDecryptor(
+/** Turn an EncryptedTally into a DecryptedTallyOrBallot, after all the partial decryptions have been done. */
+internal class TallyDecryptor(
     val group: GroupContext,
     val extendedBaseHash: UInt256,
     val publicKey: ElGamalPublicKey,
