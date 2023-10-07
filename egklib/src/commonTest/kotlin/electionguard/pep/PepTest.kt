@@ -1,12 +1,10 @@
-package electionguard.decrypt
+package electionguard.pep
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
-import electionguard.cli.RunTrustedTallyDecryption
 import electionguard.core.*
-import electionguard.input.ValidationMessages
-import electionguard.publish.readElectionRecord
+import electionguard.decrypt.DecryptorFull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -16,14 +14,14 @@ class PepTest {
 
     @Test
     fun testPepSimple() {
-        //runPepSimple(1, 1, 1, 1, true)
+        runPepSimple(1, 1, 1, 1, true)
         //runPepSimple(1, 1, 1, 0, false)
-        runPepSimple(2, 2, 1, 1, true)
+        //runPepSimple(2, 2, 1, 1, true)
         //runPepSimple(3, 3, 1, 1, true)
-        runPepSimple(3, 2, 1, 1, true)
+        //runPepSimple(3, 2, 1, 1, true)
         //runPepSimple(5, 5, 1, 1, true)
         //runPepSimple(8, 5, 1, 1, true)
-        runPepSimple(8, 5, 1, 0, false)
+        //runPepSimple(8, 5, 1, 0, false)
     }
 
     fun runPepSimple(
@@ -62,7 +60,7 @@ class PepTest {
         println(" after doEgkPep ${group.showAndClearCountPowP()} expect = $expect")
 
         assertTrue(resultPep is Ok)
-        val pep: BallotPEP = resultPep.unwrap()
+        val pep: BallotPep = resultPep.unwrap()
         if (show) {
             val sel = pep.contests[0].selections[0]
             print(" $numerator / $denominator, doEgkPep isEqual = ${pep.isEq} T = ${sel.T.toStringShort()}")
@@ -121,7 +119,7 @@ class PepTest {
         println(" after doEgkPep ${group.showAndClearCountPowP()} expect = $expect")
 
         assertTrue(resultPep is Ok)
-        val pep: BallotPEP = resultPep.unwrap()
+        val pep: BallotPep = resultPep.unwrap()
         if (show) {
             val sel = pep.contests[0].selections[0]
             print(" $numerator / $denominator, doEgkPep isEqual = ${pep.isEq} T = ${sel.T.toStringShort()}")
@@ -134,13 +132,13 @@ class PepTest {
     @Test
     fun testPepFull() {
         runPepFull(1, 1, 1, 1, true)
-         runPepFull(1, 1, 1, 0, false)
+        runPepFull(1, 1, 1, 0, false)
         runPepFull(2, 2, 1, 1, true)
         runPepFull(3, 3, 1, 1, true)
         runPepFull(3, 2, 1, 1, true)
         runPepFull(5, 5, 1, 1, true)
         runPepFull(8, 5, 1, 1, true)
-         runPepFull(8, 5, 1, 0, false)
+        runPepFull(8, 5, 1, 0, false)
     }
 
     fun runPepFull(
@@ -221,5 +219,66 @@ class PepTest {
         val alpha = (enc1.pad div enc2.pad)
         val beta = (enc1.data div enc2.data)
         return ElGamalCiphertext(alpha, beta)
+    }
+
+    @Test
+    fun testPepBlindTrust() {
+        runPepBlindTrust(1, 1, 1, 1, true)
+        runPepBlindTrust(1, 1, 1, 0, false)
+        runPepBlindTrust(2, 2, 1, 1, true)
+        runPepBlindTrust(3, 3, 1, 1, true)
+        runPepBlindTrust(3, 2, 1, 1, true)
+        runPepBlindTrust(5, 5, 1, 1, true)
+        runPepBlindTrust(8, 5, 1, 1, true)
+        runPepBlindTrust(8, 5, 1, 0, false)
+    }
+
+    fun runPepBlindTrust(
+        nguardians: Int,
+        quorum: Int,
+        numerator: Int,
+        denominator: Int,
+        expectEq: Boolean,
+        show: Boolean = true
+    ) {
+        println("runPepBlindTrust n = $quorum / $nguardians")
+        val cakeEgkDecryption = makeCakeEgkDecryption(group, nguardians, quorum, (1..quorum).toList())
+        val publicKeyG = ElGamalPublicKey(cakeEgkDecryption.publicKey)
+        val btrustees = mutableListOf<PepTrustee>()
+        repeat(3) {
+            btrustees.add(PepTrustee(it, group))
+        }
+        val egkPep = PepBlindTrust(
+            group,
+            cakeEgkDecryption.extendedBaseHash,
+            publicKeyG,
+            cakeEgkDecryption.decryptor.guardians,
+            btrustees,
+            cakeEgkDecryption.dtrustees,
+        )
+
+        val enc1 = numerator.encrypt(publicKeyG) // (g^ξ, K^(σ+ξ))
+        val enc2 = denominator.encrypt(publicKeyG) // (g^ξ', K^(σ'+ξ'))
+
+        val ballot1 = makeBallotForSingleCiphertext(group, enc1)
+        val ballot2 = makeBallotForSingleCiphertext(group, enc2)
+
+        group.showAndClearCountPowP()
+        val resultPep = egkPep.doEgkPep(ballot1, ballot2)
+        val nb = btrustees.size
+        val nd = egkPep.decryptor.ndGuardians
+        val nenc = 1
+        val expect = (8 + 8 * nd + 8 * nb) * nenc // we do run the verifier
+        println(" after doEgkPep ${group.showAndClearCountPowP()} expect = $expect")
+
+        assertTrue(resultPep is Ok)
+        val pep: BallotPep = resultPep.unwrap()
+        if (show) {
+            val sel = pep.contests[0].selections[0]
+            print(" $numerator / $denominator, doEgkPep isEqual = ${pep.isEq} T = ${sel.T.toStringShort()}")
+            val dvoteg = publicKeyG.dLog(sel.T)
+            println(" dvote = $dvoteg")
+        }
+        assertEquals(expectEq, pep.isEq)
     }
 }

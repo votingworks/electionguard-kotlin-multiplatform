@@ -1,4 +1,4 @@
-package electionguard.decrypt
+package electionguard.pep
 
 import electionguard.core.*
 import kotlin.test.assertEquals

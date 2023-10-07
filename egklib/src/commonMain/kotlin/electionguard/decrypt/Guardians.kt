@@ -10,6 +10,13 @@ data class Guardians(val group : GroupContext, val guardians: List<Guardian>) {
     val guardianMap = guardians.associateBy { it.guardianId }
     val guardianGexpP = mutableMapOf<String, ElementModP>()
 
+    // eager evaluation so operation counts are simpler
+    init {
+        guardians.forEach {
+            guardianGexpP[it.guardianId] = getGexpP(it.guardianId)
+        }
+    }
+
     /**
      * g^P(ℓ) mod p = Prod_i( g^Pi(ℓ) ), i = 1..n
      *

@@ -135,7 +135,8 @@ class DecryptorFull(
             val b: ElementModP = with(group) { work.partialDecryptions.values.map { it.b }.multP() } // Prod(bi)
             // "collective challenge" c = H(HE ; 0x30, K, A, B, a, b, M ) ; spec 2.0.0 eq 71
             val c = hashFunction(
-                extendedBaseHash.bytes, 0x30.toByte(),
+                extendedBaseHash.bytes,
+                0x30.toByte(),
                 jointPublicKey.key,
                 ciphertext.pad,
                 ciphertext.data,
