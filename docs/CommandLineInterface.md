@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 9/27/2023
+last update 11/07/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
@@ -14,6 +14,8 @@ last update 9/27/2023
   * [Run trusted Tally Decryption](#run-trusted-tally-decryption)
   * [Run trusted Ballot Decryption](#run-trusted-ballot-decryption)
   * [Run Verifier](#run-verifier)
+  * [Run Trusted Pep](#run-trusted-pep)
+  * [Run Verify Pep](#run-verify-pep)
 <!-- TOC -->
 
 ## Election workflow overview
@@ -303,4 +305,51 @@ Example:
     -in testOut/cliWorkflow/electionRecord \
     -nthreads 10 \
     --showTime
+````
+
+## Run Trusted Pep
+
+```` 
+Usage: RunTrustedPep options_list
+Options: 
+    --inputDir, -in -> Directory containing input election record (always required) { String }
+    --scannedBallotDir, -scanned -> Directory containing scanned ballots (always required) { String }
+    --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
+    --outputDir, -out -> Directory to write output election record (always required) { String }
+    --missing, -missing -> missing guardians' xcoord, comma separated, eg '2,4' { String }
+    --nthreads, -nthreads [11] -> Number of parallel threads to use { Int }
+    --help, -h -> Usage info 
+````
+
+Example:
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/egklib-all.jar \
+  electionguard.cli.RunTrustedPep \
+    -in testOut/cliWorkflow/electionRecord \
+    -trustees src/commonTest/data/workflow/allAvailableJson/private_data/trustees \
+    -scanned testOut/pep/testPepSomeJson/encrypted_ballots/scanned/
+    -out testOut/pep/testPepAllJson \
+    -nthreads 4 
+````
+
+## Run Verify Pep
+
+```` 
+Usage: RunVerifyPep options_list
+Options: 
+    --inputDir, -in -> Directory containing input election record (always required) { String }
+    --pepDirectory, -pep -> Directory containing PEP output (always required) { String }
+    --help, -h -> Usage info 
+````
+
+Example:
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/egklib-all.jar \
+  electionguard.cli.RunVerifyPep \
+    -in testOut/cliWorkflow/electionRecord \
+    -pep testOut/pep/testPepAllJson
 ````
