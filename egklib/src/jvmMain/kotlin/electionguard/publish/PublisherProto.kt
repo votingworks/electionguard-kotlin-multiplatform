@@ -2,6 +2,7 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
+import electionguard.pep.BallotPep
 import electionguard.protoconvert.publishDecryptingTrusteeProto
 import electionguard.protoconvert.publishProto
 import electionguard.publish.ElectionRecordProtoPaths.Companion.DECRYPTION_RESULT_FILE
@@ -39,7 +40,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         validateOutputDir(electionRecordDir, Formatter())
     }
 
-    actual override fun isJson() : Boolean = false
+    actual override fun isJson(): Boolean = false
 
     ////////////////////
     // duplicated from ElectionRecordPath so that we can use java.nio.file.Path
@@ -139,7 +140,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         val ballotDir = protoPaths.encryptedBallotDir(device)
         validateOutputDir(Path.of(ballotDir), Formatter())
         return if (batched) EncryptedBallotBatchedSink(device, protoPaths.encryptedBallotBatched(device))
-               else EncryptedBallotDeviceSink(device)
+        else EncryptedBallotDeviceSink(device)
     }
 
     inner class EncryptedBallotDeviceSink(val device: String) : EncryptedBallotSinkIF {
@@ -175,7 +176,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
     inner class DecryptedTallyOrBallotSink(path: String) : DecryptedTallyOrBallotSinkIF {
         val out: FileOutputStream = FileOutputStream(path, true) // append
 
-        override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot){
+        override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot) {
             val ballotProto: pbandk.Message = tally.publishProto()
             writeDelimitedTo(ballotProto, out)
         }
@@ -184,6 +185,32 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
             out.close()
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////
+    actual override fun pepBallotSink(outputDir: String): PepBallotSinkIF = PepBallotSink(outputDir)
+
+    inner class PepBallotSink(path: String) : PepBallotSinkIF {
+        override fun writePepBallot(pepBallot : BallotPep) {
+        }
+        override fun close() {
+        }
+    }
+
+}
+
+
+/** Delete everything in the given directory, but leave that directory.  */
+fun removeAllFiles(path: Path) {
+    if (!path.toFile().exists()) {
+        return
+    }
+    Files.walk(path)
+        .filter { p: Path -> p != path }
+        .map { obj: Path -> obj.toFile() }
+        .sorted { o1: File, o2: File? -> -o1.compareTo(o2) }
+        .forEach { f: File -> f.delete() }
+}
+
 
     fun writeDelimitedTo(proto: pbandk.Message, output: OutputStream) {
         val bb = ByteArrayOutputStream()
@@ -205,19 +232,6 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
             }
         }
     }
-}
-
-/** Delete everything in the given directory, but leave that directory.  */
-fun removeAllFiles(path: Path) {
-    if (!path.toFile().exists()) {
-        return
-    }
-    Files.walk(path)
-        .filter { p: Path -> p != path }
-        .map { obj: Path -> obj.toFile() }
-        .sorted { o1: File, o2: File? -> -o1.compareTo(o2) }
-        .forEach { f: File -> f.delete() }
-}
 
 /** Make sure output directories exists and are writeable.  */
 fun validateOutputDir(path: Path, error: Formatter): Boolean {

@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Result
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.pep.BallotPep
 
 expect class ConsumerJson (topDir: String, group: GroupContext) : Consumer {
     override fun topdir() : String
@@ -21,13 +22,13 @@ expect class ConsumerJson (topDir: String, group: GroupContext) : Consumer {
     override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String>
     override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     override fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
-
     override fun hasEncryptedBallots() : Boolean
-    override fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
-    override fun iterateCastBallots(): Iterable<EncryptedBallot>
-    override fun iterateSpoiledBallots(): Iterable<EncryptedBallot>
+
     override fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
+    override fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
 
     override fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
     override fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF
+
+    override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, String>
 }

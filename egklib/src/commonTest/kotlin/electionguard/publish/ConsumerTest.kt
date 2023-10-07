@@ -29,8 +29,8 @@ class ConsumerTest {
     @Test
     fun readSpoiledBallotTallys() {
         runTest {
-            val context = productionGroup()
-            val consumerIn = makeConsumer(topdir, context)
+            val group = productionGroup()
+            val consumerIn = makeConsumer(group, topdir)
             var count = 0
             for (tally in consumerIn.iterateDecryptedBallots()) {
                 println("$count tally = ${tally.id}")
@@ -42,8 +42,8 @@ class ConsumerTest {
     @Test
     fun readEncryptedBallots() {
         runTest {
-            val context = productionGroup()
-            val consumerIn = makeConsumer(topdir, context)
+            val group = productionGroup()
+            val consumerIn = makeConsumer(group, topdir)
             var count = 0
             for (ballot in consumerIn.iterateAllEncryptedBallots { true} ) {
                 println("$count ballot = ${ballot.ballotId}")
@@ -55,8 +55,8 @@ class ConsumerTest {
     @Test
     fun readEncryptedBallotsCast() {
         runTest {
-            val context = productionGroup()
-            val consumerIn = makeConsumer(topdir, context)
+            val group = productionGroup()
+            val consumerIn = makeConsumer(group, topdir)
             var count = 0
             for (ballot in consumerIn.iterateAllCastBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
@@ -68,8 +68,8 @@ class ConsumerTest {
     @Test
     fun readSubmittedBallotsSpoiled() {
         runTest {
-            val context = productionGroup()
-            val consumerIn = makeConsumer(topdir, context)
+            val group = productionGroup()
+            val consumerIn = makeConsumer(group, topdir)
             var count = 0
             for (ballot in consumerIn.iterateAllSpoiledBallots()) {
                 println("$count ballot = ${ballot.ballotId}")
@@ -81,8 +81,8 @@ class ConsumerTest {
     @Test
     fun readTrustee() {
         runTest {
-            val context = productionGroup()
-            val consumerIn = makeConsumer(topdir, context)
+            val group = productionGroup()
+            val consumerIn = makeConsumer(group, topdir)
             val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val trusteeDir = "$topdir/private_data/trustees"
             init.guardians.forEach {
@@ -95,9 +95,9 @@ class ConsumerTest {
     @Test
     fun readBadTrustee() {
         runTest {
-            val context = productionGroup()
             val trusteeDir = "$topdir/private_data/trustees"
-            val consumerIn = makeConsumer(trusteeDir, context)
+            val group = productionGroup()
+            val consumerIn = makeConsumer(group, topdir)
             val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
                 consumerIn.readTrustee(trusteeDir, "badId")
             }
@@ -110,10 +110,10 @@ class ConsumerTest {
     @Test
     fun readMissingTrustees() {
         runTest {
-            val context = productionGroup()
             val trusteeDir = "src/commonTest/data/testBad/nonexistant"
+            val group = productionGroup()
+            val consumerIn = makeConsumer(group, topdir)
             val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
-                val consumerIn = makeConsumer(trusteeDir, context)
                 consumerIn.readTrustee(trusteeDir, "randomName")
             }
             assertFalse(result is Ok)

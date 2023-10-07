@@ -67,7 +67,7 @@ class RunAccumulateTally {
         ) {
             val starting = getSystemTimeInMillis()
 
-            val consumerIn = makeConsumer(inputDir, group)
+            val consumerIn = makeConsumer(group, inputDir)
             val electionRecord = readElectionRecord(consumerIn)
             val electionInit = electionRecord.electionInit()!!
 

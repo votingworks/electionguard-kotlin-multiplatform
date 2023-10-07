@@ -9,7 +9,7 @@ import electionguard.core.UInt256
 
 
 fun readElectionRecord(group : GroupContext, topDir: String) : ElectionRecord {
-    val consumerIn = makeConsumer(topDir, group)
+    val consumerIn = makeConsumer(group, topDir)
     return readElectionRecord(consumerIn)
 }
 

@@ -74,7 +74,7 @@ class RunTrustedTallyDecryption {
             trusteeDir: String,
             missing: String? = null
         ): List<DecryptingTrusteeIF> {
-            val consumerIn = makeConsumer(inputDir, group)
+            val consumerIn = makeConsumer(group, inputDir)
             val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
             val trusteeSource = makeTrusteeSource(trusteeDir, group, consumerIn.isJson())
             val allGuardians = init.guardians.map { trusteeSource.readTrustee(trusteeDir, it.guardianId) }

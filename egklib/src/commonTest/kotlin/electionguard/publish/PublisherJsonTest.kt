@@ -18,13 +18,13 @@ class PublisherJsonTest {
     private val output = "testOut/publish/PublisherJsonTest"
 
     val group = productionGroup()
-    val consumerIn = makeConsumer(input, group)
+    val consumerIn = makeConsumer(group, input)
 
     @Test
     fun testRoundtripElectionConfig() {
         val output1 = output + "1"
         val publisher = makePublisher(output1, true, true)
-        val consumerOut = makeConsumer(output1, group, true)
+        val consumerOut = makeConsumer(group, output1, true)
 
         val (manifest, config) = generateElectionConfig(publisher, 3, 3)
 
@@ -56,7 +56,7 @@ class PublisherJsonTest {
     fun testRoundtripElectionInit() {
         val output2 = output + "2"
         val publisher = makePublisher(output2, true, true)
-        val consumerOut = makeConsumer(output2, group, true)
+        val consumerOut = makeConsumer(group, output2, true)
 
         val (_, config) = generateElectionConfig(publisher, 6, 4)
         publisher.writeElectionConfig(config)
@@ -86,7 +86,7 @@ class PublisherJsonTest {
     fun testWriteEncryptions() {
         val output3 = output + "3"
         val publisher = makePublisher(output3, true, true)
-        val consumerOut = makeConsumer(output3, group, true)
+        val consumerOut = makeConsumer(group, output3, true)
 
         val initResult = consumerIn.readElectionInitialized()
         assertTrue(initResult is Ok)
@@ -118,7 +118,7 @@ class PublisherJsonTest {
     fun testWriteSpoiledBallots() {
         val output4 = output + "4"
         val publisher = makePublisher(output4, true, true)
-        val consumerOut = makeConsumer(output4, group, true)
+        val consumerOut = makeConsumer(group, output4, true)
 
         val dsink = publisher.decryptedTallyOrBallotSink()
         try {
@@ -136,7 +136,7 @@ class PublisherJsonTest {
     fun testWriteTallyResults() {
         val output5 = output + "5"
         val publisher = makePublisher(output5, true, true)
-        val consumerOut = makeConsumer(output5, group, true)
+        val consumerOut = makeConsumer(group, output5, true)
 
         val tallyResult = consumerIn.readTallyResult()
         if (tallyResult is Err) {
@@ -160,7 +160,7 @@ class PublisherJsonTest {
     fun testWriteDecryptionResults() {
         val output6 = output + "6"
         val publisher = makePublisher(output6, true, true)
-        val consumerOut = makeConsumer(output6, group, true)
+        val consumerOut = makeConsumer(group, output6, true)
 
         val tallyResult = consumerIn.readDecryptionResult()
         if (tallyResult is Err) {

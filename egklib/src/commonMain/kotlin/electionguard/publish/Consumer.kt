@@ -7,6 +7,7 @@ import electionguard.core.isDirectory
 import electionguard.core.pathExists
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.input.ManifestInputValidation
+import electionguard.pep.BallotPep
 
 /** public API to read from the election record */
 interface Consumer {
@@ -29,23 +30,21 @@ interface Consumer {
     fun iterateAllSpoiledBallots(): Iterable<EncryptedBallot>  = iterateAllEncryptedBallots{  it.state == EncryptedBallot.BallotState.SPOILED }
     fun hasEncryptedBallots() : Boolean
 
-    //// TODO: remove
-    fun iterateEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
-    fun iterateCastBallots(): Iterable<EncryptedBallot>  // encrypted ballots that are CAST
-    fun iterateSpoiledBallots(): Iterable<EncryptedBallot> // encrypted ballots that are SPOILED
-
     fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
+    fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
 
     //// not part of the election record, private data
     // read plaintext ballots in given directory, with filter
     fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
     // trustee in given directory for given guardianId
     fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF
+
+    fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, String>
 }
 
 fun makeConsumer(
-    topDir: String,
     group: GroupContext,
+    topDir: String,
     isJson: Boolean? = null, // if not set, check if manifest.json file exists
 ): Consumer {
     val useJson = isJson ?: topDir.endsWith(".zip") ||

@@ -43,7 +43,7 @@ class ElectionRecordTest {
 
     fun readElectionRecordAndValidate(topdir: String) {
         val group = productionGroup()
-        val consumerIn = makeConsumer(topdir, group)
+        val consumerIn = makeConsumer(group, topdir)
         assertNotNull(consumerIn)
         val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
         readDecryption(decryption)

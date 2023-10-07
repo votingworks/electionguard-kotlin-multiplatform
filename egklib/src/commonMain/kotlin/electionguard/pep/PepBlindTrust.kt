@@ -22,6 +22,7 @@ class PepBlindTrust(
     decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
 ) : PepAlgorithm {
     val decryptor = DecryptorDoerre(group, extendedBaseHash, jointPublicKey, guardians, decryptingTrustees)
+    val stats = Stats()
 
     // test if ballot1 and ballot2 are equivalent or not.
     override fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
@@ -34,6 +35,8 @@ class PepBlindTrust(
     }
 
     override fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPep, String> {
+        val startPep = System.currentTimeMillis()
+
         // LOOK check ballotIds match, styleIds?
         val errorMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)
         if (ballot1.ballotId != ballot2.ballotId) {
@@ -64,7 +67,7 @@ class PepBlindTrust(
         //    (d) Compute aj = α^uj mod p and bj = β^uj mod p
         //    (e) Send (Aj, Bj, aj, bj) to admin
         // step 1: for each trustee, a list of its responses
-        val step1s : List<List<BlindResponse>> = blindTrustees.map { it.blind(ratioCiphertexts) }
+        val step1s: List<List<BlindResponse>> = blindTrustees.map { it.blind(ratioCiphertexts) }
         require(step1s.size == nb) // list(nd, texts)
 
         // for each ciphertext, a list of responses from all the trustees
@@ -123,7 +126,7 @@ class PepBlindTrust(
 
         // step 3: form all the challenges to each trustee, put them in working
         // while were at it , we also need to know the original BlindResponse, so put those in working
-        blindResponses.zip(work23s).map { (responsesForTrustees : List<BlindResponse>, work23 : BlindWorking) ->
+        blindResponses.zip(work23s).map { (responsesForTrustees: List<BlindResponse>, work23: BlindWorking) ->
             responsesForTrustees.forEach { br ->
                 work23.blindChallenges.add(BlindChallenge(work23.c, br.eps, br.u))
             }
@@ -136,7 +139,7 @@ class PepBlindTrust(
         //     send to admin
 
         // step 4: gather all challenges, get response from each trustee
-        val step4 : List<List<BlindChallengeResponse>> = blindTrustees.mapIndexed { idx, trustee ->
+        val step4: List<List<BlindChallengeResponse>> = blindTrustees.mapIndexed { idx, trustee ->
             val allChallengesForIthTrustee = work23s.map { it.blindChallenges[idx] }
             trustee.challenge(allChallengesForIthTrustee)
         }
@@ -165,7 +168,7 @@ class PepBlindTrust(
                 require(bjp == br.bj)
             }
             // cough, cough, while were at it: 6(b) v = Sum_dj(vj)
-            work23.v = with (group) { step4.map { it.response }.addQ() }
+            work23.v = with(group) { step4.map { it.response }.addQ() }
         }
 
         // create an EncryptedBallot with the ciphertexts = (A, B), this is what we decrypt
@@ -173,7 +176,7 @@ class PepBlindTrust(
         val contestsAB =
             ballot1.contests.map { contest ->
                 val selectionsAB =
-                    contest.selections.map{ selection ->
+                    contest.selections.map { selection ->
                         val work = workIterator.next()
                         work.ciphertextAB = ElGamalCiphertext(work.bigA, work.bigB)
                         selection.copy(encryptedVote = work.ciphertextAB!!)
@@ -184,7 +187,7 @@ class PepBlindTrust(
 
         //6. admin:
         //    (a) decrypt (A, B): (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)    // 8*nd
-        val decryption : DecryptedTallyOrBallot = decryptor.decryptPep(ballotAB)
+        val decryption: DecryptedTallyOrBallot = decryptor.decryptPep(ballotAB)
 
         //    (b) v = Sum_dj(vj), IsEq = (T == 1)
         //    (c) Send (IsEq, c, v, α, β, c′, v′, A, B, T) to V and publish to BB.
@@ -193,40 +196,20 @@ class PepBlindTrust(
         val contestsPEP =
             decryption.contests.map { dContest ->
                 val selectionsPEP =
-                    dContest.selections.map{ dSelection ->
+                    dContest.selections.map { dSelection ->
                         isEq = isEq && (dSelection.bOverM == group.ONE_MOD_P)
-                        if (!isEq)
-                            println("wtf")
                         val work = workIterator.next()
                         SelectionPep(work, dSelection)
                     }
                 ContestPep(dContest.contestId, selectionsPEP)
             }
-        val ballotPEP = BallotPep(isEq, decryption.id, contestsPEP)
+        val ballotPEP = BallotPep(decryption.id, isEq, contestsPEP)
+
+        stats.of("egkPep", "selection").accum(getSystemTimeInMillis() - startPep, ntexts)
 
         // step 6: verify
         val verifyResult = VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP)
         return if (verifyResult is Ok) Ok(ballotPEP) else Err(verifyResult.getError()!!)
-}
-
-    data class BallotWorking(
-        val ballotId: String,
-        val contests: List<ContestWorking>,
-    )
-
-    data class ContestWorking(
-        val contestId: String,
-        val selections: List<SelectionWorking>,
-    )
-
-    inner class SelectionWorking(
-        val selectionId: String,
-        val ciphertextRatio: ElGamalCiphertext,
-        val ciphertextAB: ElGamalCiphertext,
-        val a: ElementModP,
-        val b: ElementModP
-    ) {
-        var c: ElementModQ = group.ZERO_MOD_Q
-        var v: ElementModQ = group.ZERO_MOD_Q
     }
+
 }

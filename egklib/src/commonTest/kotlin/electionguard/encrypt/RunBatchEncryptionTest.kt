@@ -148,7 +148,7 @@ RunBatchEncryptionTest {
             "testInvalidBallot",
         )
 
-        val consumerOut = makeConsumer(invalidDir, group)
+        val consumerOut = makeConsumer(group, invalidDir)
         consumerOut.iteratePlaintextBallots(invalidDir, null).forEach {
             println("${it.errors}")
             assertContains(it.errors.toString(), "Ballot.A.1 Ballot Style 'badStyleId' does not exist in election")

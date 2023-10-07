@@ -48,7 +48,7 @@ class ShowSet(val want: Set<String>) {
 }
 
 fun runElectionRecordShow(group: GroupContext, inputDir: String, showSet: ShowSet, details : Boolean) {
-    val consumer = makeConsumer(inputDir, group)
+    val consumer = makeConsumer(group, inputDir)
     val electionRecord = readElectionRecord(consumer)
     println("RunElectionRecord from $inputDir, stage = ${electionRecord.stage()}\n")
 

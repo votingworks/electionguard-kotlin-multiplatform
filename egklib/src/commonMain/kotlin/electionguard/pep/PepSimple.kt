@@ -93,7 +93,7 @@ class PepSimple(
                     }
                 ContestPep(dContest.contestId, selectionsPEP)
             }
-        val ballotPEP = BallotPep(isEq, decryption.id, contestsPEP)
+        val ballotPEP = BallotPep(decryption.id, isEq, contestsPEP)
 
         // step 6: verify
         val verifyResult = VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP)

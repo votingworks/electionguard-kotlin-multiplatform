@@ -11,7 +11,6 @@ import electionguard.input.ValidationMessages
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
-private var first = false
 
 // "Distributed Plaintext Equivalence Proof", distributed with trusted admin.
 class PepTrusted(
@@ -20,7 +19,7 @@ class PepTrusted(
     val jointPublicKey: ElGamalPublicKey,
     val guardians: Guardians, // all guardians
     decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
-    val nag : Int, // number of admin guardians
+    val nag: Int, // number of admin guardians
 ) : PepAlgorithm {
     val decryptor = DecryptorDoerre(group, extendedBaseHash, jointPublicKey, guardians, decryptingTrustees)
 
@@ -40,7 +39,7 @@ class PepTrusted(
      * Each decrypted selection has T == 1 (or not) and a corresponding proof.
      * Note that the two encrypted ballots must have been decrypted by the same encryptor, using
      * the same parameters (extendedBaseHash, jointPublicKey, guardians, decryptingTrustees).
-    */
+     */
     override fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPep, String> {
         // LOOK check ballotIds match, styleIds?
         val errorMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)
@@ -99,62 +98,61 @@ class PepTrusted(
 
         // step 2. Use standard algorithm to decrypt ciphertextAB, and get the decryption proof:
         //    (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)
-        val decryption : DecryptedTallyOrBallot = decryptor.decryptPep(ballotAB)
+        val decryption: DecryptedTallyOrBallot = decryptor.decryptPep(ballotAB)
 
         // step 3,4,5 compute challenge and get guardian responses and verify them
         ballotWorking.contests.map { contest ->
-            val selectionsW =
-                contest.selections.map { selection ->
-                    // collective challenge
-                    val c = hashFunction(
-                        extendedBaseHash.bytes,
-                        0x42.toByte(),
-                        jointPublicKey.key,
-                        selection.ciphertextRatio.pad, selection.ciphertextRatio.data,
-                        selection.ciphertextAB.pad, selection.ciphertextAB.data,
-                        selection.a,
-                        selection.b,
-                    ).toElementModQ(group)
+            contest.selections.map { selection ->
+                // collective challenge
+                val c = hashFunction(
+                    extendedBaseHash.bytes,
+                    0x42.toByte(),
+                    jointPublicKey.key,
+                    selection.ciphertextRatio.pad, selection.ciphertextRatio.data,
+                    selection.ciphertextAB.pad, selection.ciphertextAB.data,
+                    selection.a,
+                    selection.b,
+                ).toElementModQ(group)
 
-                    var vSum = group.ZERO_MOD_Q
-                    admins.forEach { admin ->
-                        val selectionKey = "${contest.contestId}#${selection.selectionId}"
-                        val sel = admin.selectionMap[selectionKey]!!
-                        val vi = sel.challenge(c)
-                        vSum = vSum + vi
+                var vSum = group.ZERO_MOD_Q
+                admins.forEach { admin ->
+                    val selectionKey = "${contest.contestId}#${selection.selectionId}"
+                    val sel = admin.selectionMap[selectionKey]!!
+                    val vi = sel.challenge(c)
+                    vSum = vSum + vi
 
-                        //     (5.a) for each guardian, verify that aj = α^vj * Aj^cj and bj = β^vj * Bj^c for any j
-                        val ratio = sel.ciphertextRatio
-                        val AB = sel.ciphertextAB
-                        val verifya = (ratio.pad powP vi) * (AB.pad powP c)
-                        if ((verifya != sel.a)) {
-                            println(" selection ${selectionKey} verifya failed for guardian ${admin.idx}")
-                            errorMesses.add("verifya failed on '$selectionKey' for guardian ${admin.idx}")
-                        }
-                        val verifyb = (ratio.data powP vi) * (AB.data powP c)
-                        if ((verifyb != sel.b)) {
-                            println(" selection ${selectionKey} verifyb failed for guardian ${admin.idx}")
-                            errorMesses.add("verifyb failed on '$selectionKey' for guardian ${admin.idx}")
-                        }
-
-                        /*  5.a for each guardian:
-                        //   verify if ChaumPedersenProof(cj, vj).verify(cons0; {cons1, K}, α, β, Aj, Bj), otherwise, reject. [step 1.j in org]
-                        val verify5a = ChaumPedersenProof(c, vi).verify(
-                                extendedBaseHash,
-                                0x42.toByte(),
-                                jointPublicKey.key,
-                                sel.ciphertextRatio.pad,sel. ciphertextRatio.data,
-                                sel.ciphertextAB.pad, sel.ciphertextAB.data,
-                            )
-                        if (!verify5a) {
-                            println(" selection ${selectionKey} verify5a = $verify5a for guardian ${admin.idx}")
-                            // errorMesses.add("verify5a failed on '$selectionKey' for guardian ${admin.idx}")
-                        }
-                         */
+                    //     (5.a) for each guardian, verify that aj = α^vj * Aj^cj and bj = β^vj * Bj^c for any j
+                    val ratio = sel.ciphertextRatio
+                    val AB = sel.ciphertextAB
+                    val verifya = (ratio.pad powP vi) * (AB.pad powP c)
+                    if ((verifya != sel.a)) {
+                        println(" selection ${selectionKey} verifya failed for guardian ${admin.idx}")
+                        errorMesses.add("verifya failed on '$selectionKey' for guardian ${admin.idx}")
                     }
-                    selection.c = c
-                    selection.v = vSum
+                    val verifyb = (ratio.data powP vi) * (AB.data powP c)
+                    if ((verifyb != sel.b)) {
+                        println(" selection ${selectionKey} verifyb failed for guardian ${admin.idx}")
+                        errorMesses.add("verifyb failed on '$selectionKey' for guardian ${admin.idx}")
+                    }
+
+                    /*  5.a for each guardian:
+                    //   verify if ChaumPedersenProof(cj, vj).verify(cons0; {cons1, K}, α, β, Aj, Bj), otherwise, reject. [step 1.j in org]
+                    val verify5a = ChaumPedersenProof(c, vi).verify(
+                            extendedBaseHash,
+                            0x42.toByte(),
+                            jointPublicKey.key,
+                            sel.ciphertextRatio.pad,sel. ciphertextRatio.data,
+                            sel.ciphertextAB.pad, sel.ciphertextAB.data,
+                        )
+                    if (!verify5a) {
+                        println(" selection ${selectionKey} verify5a = $verify5a for guardian ${admin.idx}")
+                        // errorMesses.add("verify5a failed on '$selectionKey' for guardian ${admin.idx}")
+                    }
+                     */
                 }
+                selection.c = c
+                selection.v = vSum
+            }
         }
 
         // 5. admin:
@@ -174,7 +172,7 @@ class PepTrusted(
                     }
                 ContestPep(dContest.contestId, selectionsPEP)
             }
-        val ballotPEP = BallotPep(isEq, decryption.id, contestsPEP)
+        val ballotPEP = BallotPep(decryption.id, isEq, contestsPEP)
 
         // step 6: verify
         val verifyResult = VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP)
@@ -203,7 +201,7 @@ class PepTrusted(
     }
 }
 
-class AdminGuardian(val group: GroupContext, val idx: Int, ratioBallot : EncryptedBallot) {
+class AdminGuardian(val group: GroupContext, val idx: Int, ratioBallot: EncryptedBallot) {
     private val workingValues: BallotValues
     val selectionMap = mutableMapOf<String, SelectionValues>()
 
@@ -257,7 +255,7 @@ class AdminGuardian(val group: GroupContext, val idx: Int, ratioBallot : Encrypt
         val a: ElementModP,
         val b: ElementModP,
     ) {
-        fun challenge(c : ElementModQ) : ElementModQ {
+        fun challenge(c: ElementModQ): ElementModQ {
             return u - c * eps
         }
     }

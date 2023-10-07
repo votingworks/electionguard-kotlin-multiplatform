@@ -77,7 +77,7 @@ class RunDecryptBallotsJsonTest {
         val group = productionGroup()
         val inputDir = "src/commonTest/data/workflow/someAvailableJson"
         val ballotDir = "$inputDir/private_data/input/"
-        val consumerIn = makeConsumer(inputDir, group)
+        val consumerIn = makeConsumer(group, inputDir)
 
         consumerIn.iteratePlaintextBallots(ballotDir, null).forEach {
             println(it.ballotId)
