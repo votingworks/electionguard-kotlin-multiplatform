@@ -1,9 +1,12 @@
-package electionguard.decrypt
+package electionguard.pep
 
 import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
+import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.decrypt.DecryptorDoerre
+import electionguard.decrypt.Guardians
 import electionguard.input.ValidationMessages
 import mu.KotlinLogging
 
@@ -18,11 +21,11 @@ class PepTrusted(
     val guardians: Guardians, // all guardians
     decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
     val nag : Int, // number of admin guardians
-) {
+) : PepAlgorithm {
     val decryptor = DecryptorDoerre(group, extendedBaseHash, jointPublicKey, guardians, decryptingTrustees)
 
     // test if ballot1 and ballot2 are equivalent (or not).
-    fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
+    override fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
         val result = doEgkPep(ballot1, ballot2)
         if (result is Err) {
             return Err(result.error)
@@ -38,7 +41,7 @@ class PepTrusted(
      * Note that the two encrypted ballots must have been decrypted by the same encryptor, using
      * the same parameters (extendedBaseHash, jointPublicKey, guardians, decryptingTrustees).
     */
-    fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPEP, String> {
+    override fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPep, String> {
         // LOOK check ballotIds match, styleIds?
         val errorMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)
 
@@ -105,7 +108,7 @@ class PepTrusted(
                     // collective challenge
                     val c = hashFunction(
                         extendedBaseHash.bytes,
-                        0x42, // LOOK
+                        0x42.toByte(),
                         jointPublicKey.key,
                         selection.ciphertextRatio.pad, selection.ciphertextRatio.data,
                         selection.ciphertextAB.pad, selection.ciphertextAB.data,
@@ -167,14 +170,14 @@ class PepTrusted(
                 val selectionsPEP =
                     dContest.selections.zip(contest.selections).map { (dSelection, selection) ->
                         isEq = isEq && (dSelection.bOverM == group.ONE_MOD_P)
-                        SelectionPEP(selection, dSelection)
+                        SelectionPep(selection, dSelection)
                     }
-                ContestPEP(dContest.contestId, selectionsPEP)
+                ContestPep(dContest.contestId, selectionsPEP)
             }
-        val ballotPEP = BallotPEP(isEq, decryption.id, contestsPEP)
+        val ballotPEP = BallotPep(isEq, decryption.id, contestsPEP)
 
         // step 6: verify
-        val verifyResult = Verifier(group, extendedBaseHash, jointPublicKey).verifyPEP(ballotPEP)
+        val verifyResult = VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP)
         return if (verifyResult is Ok) Ok(ballotPEP) else Err(verifyResult.getError()!!)
     }
 
@@ -197,48 +200,6 @@ class PepTrusted(
     ) {
         var c: ElementModQ = group.ZERO_MOD_Q
         var v: ElementModQ = group.ZERO_MOD_Q
-    }
-}
-
-class Verifier(
-    val group: GroupContext,
-    val extendedBaseHash: UInt256,
-    val jointPublicKey: ElGamalPublicKey,
-    ) {
-
-    //    (a) verify if ChaumPedersenProof(c, v).verify(cons0; {cons1, K}, α, β, A, B). Otherwise, output “reject”.
-    //
-    //    (b) verify if ChaumPedersenProof(c', v').verifyDecryption(g, K, A, B, T) is true. Otherwise, output “reject”.
-    //
-    //    (c) If T = 1, IsEq = 1 and (A, B) ̸= (1, 1), output “alokkkkkkkkkkkkkij7uo8uccept(equal)”.
-    //        If T ̸= 1, IsEq = 0, output “accept(unequal)”.
-    //        Otherwise, output “reject”.
-
-    fun verifyPEP(ballotPEP: BallotPEP): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
-        ballotPEP.contests.forEach { contest ->
-            contest.selections.forEach { pep ->
-                val selectionKey = "${contest.contestId}#${pep.selectionId}"
-                val verifya = ChaumPedersenProof(pep.c, pep.v).verify(
-                        extendedBaseHash,
-                        0x42.toByte(),
-                        jointPublicKey.key,
-                        pep.ciphertextRatio.pad, pep.ciphertextRatio.data,
-                        pep.ciphertextAB.pad, pep.ciphertextAB.data,
-                    )
-
-                // if (!verifya) errors.add("PEP test 3.a failed on ${selectionKey}")
-                val verifyb = ChaumPedersenProof(pep.c_prime, pep.v_prime).verifyDecryption(
-                        extendedBaseHash,
-                        jointPublicKey.key,
-                        pep.ciphertextAB,
-                        pep.T,
-                    )
-                if (!verifyb) errors.add("PEP test 3.b failed on ${contest.contestId}#${pep.selectionId}")
-                println(" selection ${selectionKey} verifya = $verifya verifyb = $verifyb")
-            }
-        }
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString(";"))
     }
 }
 

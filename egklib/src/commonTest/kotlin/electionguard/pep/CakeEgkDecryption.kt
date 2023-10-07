@@ -1,10 +1,13 @@
-package electionguard.decrypt
+package electionguard.pep
 
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.makeDoerreTrustee
 import electionguard.ballot.makeGuardian
 import electionguard.core.*
+import electionguard.decrypt.DecryptingTrusteeDoerre
+import electionguard.decrypt.DecryptorDoerre
+import electionguard.decrypt.Guardians
 import electionguard.keyceremony.KeyCeremonyTrustee
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

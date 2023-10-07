@@ -27,7 +27,16 @@ package electionguard.core
  */
 fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
     val hmac = HmacSha256(key)
-    elements.forEach { hmac.addToHash(it) }
+    var count = 0
+    val showHash = false // (elements[0] == 0x30.toByte())
+    if (showHash) {
+        println("hashFunction")
+    }
+    elements.forEach {
+        if (showHash) println(" $count $it")
+        hmac.addToHash(it)
+        count++
+    }
     return hmac.finish()
 }
 

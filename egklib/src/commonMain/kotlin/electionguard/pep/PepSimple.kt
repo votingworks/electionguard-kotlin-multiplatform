@@ -1,9 +1,12 @@
-package electionguard.decrypt
+package electionguard.pep
 
 import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
+import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.decrypt.DecryptorDoerre
+import electionguard.decrypt.Guardians
 import electionguard.input.ValidationMessages
 import mu.KotlinLogging
 
@@ -17,11 +20,11 @@ class PepSimple(
     val jointPublicKey: ElGamalPublicKey,
     val guardians: Guardians, // all guardians
     decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
-) {
+) : PepAlgorithm {
     val decryptor = DecryptorDoerre(group, extendedBaseHash, jointPublicKey, guardians, decryptingTrustees)
 
     // test if ballot1 and ballot2 are equivalent (or not).
-    fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
+    override fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
         val result = doEgkPep(ballot1, ballot2)
         if (result is Err) {
             return Err(result.error)
@@ -37,7 +40,7 @@ class PepSimple(
      * Note that the two encrypted ballots must have been decrypted by the same encryptor, using
      * the same parameters (extendedBaseHash, jointPublicKey, guardians, decryptingTrustees).
      */
-    fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPEP, String> {
+    override fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPep, String> {
         // LOOK check ballotIds match, styleIds?
         val ballotMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)
 
@@ -86,14 +89,14 @@ class PepSimple(
                 val selectionsPEP =
                     dContest.selections.zip(step1Contest.selections).map { (dSelection, step1Selection) ->
                         isEq = isEq && (dSelection.bOverM == group.ONE_MOD_P)
-                        SelectionPEP(step1Selection, dSelection)
+                        SelectionPep(step1Selection, dSelection)
                     }
-                ContestPEP(dContest.contestId, selectionsPEP)
+                ContestPep(dContest.contestId, selectionsPEP)
             }
-        val ballotPEP = BallotPEP(isEq, decryption.id, contestsPEP)
+        val ballotPEP = BallotPep(isEq, decryption.id, contestsPEP)
 
         // step 6: verify
-        val verifyResult = Verifier(group, extendedBaseHash, jointPublicKey).verifyPEP(ballotPEP)
+        val verifyResult = VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP)
         return if (verifyResult is Ok) Ok(ballotPEP) else Err(verifyResult.getError()!!)
     }
 
@@ -117,7 +120,7 @@ class PepSimple(
                         // 1.e c = H(cons0; cons1, K, α, β, A, B, a, b)
                         val c = hashFunction(
                             extendedBaseHash.bytes,
-                            0x42,
+                            0x42.toByte(),
                             jointPublicKey.key,
                             alpha, beta, A, B, a, b
                         ).toElementModQ(group)
@@ -168,49 +171,6 @@ class PepSimple(
         val ciphertextAB: ElGamalCiphertext,
         val c: ElementModQ, // 2.c
         val v: ElementModQ, // 2.d
-    )
-}
-
-data class BallotPEP(
-    val isEq: Boolean,
-    val ballotId: String,
-    val contests: List<ContestPEP>,
-)
-
-data class ContestPEP(
-    val contestId: String,
-    val selections: List<SelectionPEP>,
-)
-
-data class SelectionPEP(
-    val selectionId: String,
-    val ciphertextRatio: ElGamalCiphertext, // α, β
-    val ciphertextAB: ElGamalCiphertext, // A, B
-    val c: ElementModQ, // 1.e
-    val v: ElementModQ, // 1.f
-    val T: ElementModP, // step 2, T
-    val c_prime: ElementModQ, // step 2, c'
-    val v_prime: ElementModQ, // step 2, v'
-) {
-    constructor(step1: PepSimple.SelectionStep1, dselection: DecryptedTallyOrBallot.Selection) : this(
-        dselection.selectionId,
-        step1.ciphertextRatio,
-        step1.ciphertextAB,
-        step1.c,
-        step1.v,
-        dselection.bOverM,
-        dselection.proof.c,
-        dselection.proof.r,
-    )
-    constructor(selection: PepTrusted.SelectionWorking, dselection: DecryptedTallyOrBallot.Selection) : this(
-        dselection.selectionId,
-        selection.ciphertextRatio,
-        selection.ciphertextAB,
-        selection.c,
-        selection.v,
-        dselection.bOverM,
-        dselection.proof.c,
-        dselection.proof.r,
     )
 }
 

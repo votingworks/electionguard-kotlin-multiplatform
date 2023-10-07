@@ -178,8 +178,6 @@ fun ChaumPedersenRangeProofKnownNonce.verify(
     return results.merge()
 }
 
-private const val show = false
-
 // generic
 fun ChaumPedersenProof.verify(
     extendedBaseHash: UInt256, // He
@@ -194,30 +192,7 @@ fun ChaumPedersenProof.verify(
     val a = (x powP this.r) * (X powP this.c)
     val b = (y powP this.r) * (Y powP this.c)
 
-
-    //                         val c = hashFunction(
-    //                            extendedBaseHash.bytes,
-    //                            0x42,
-    //                            jointPublicKey.key,
-    //                            alpha, beta, A, B, a, b
-
     val challenge = hashFunction(extendedBaseHash.bytes, separator, publicKey, x, y, X, Y, a, b)
-    if (show) {
-        println("verifyPEP c = $c v = $r")
-        println("  extendedBaseHash = ${extendedBaseHash.bytes.contentToString()}")
-        println("  separator = $separator")
-        println("  publicKey = $publicKey")
-        println("  alpha = $x")
-        println("  beta = $y")
-        println("  A = $X")
-        println("  B = $Y")
-        println("  a = $a")
-        println("  b = $b")
-        println("  challenge = $challenge")
-        println("  challengeQ = ${challenge.toElementModQ(group)}")
-        println("  expect = ${this.c}")
-    }
-
     return (challenge.toElementModQ(group) == this.c)
 }
 

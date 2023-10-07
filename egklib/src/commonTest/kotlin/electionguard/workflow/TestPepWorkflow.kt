@@ -6,8 +6,7 @@ import electionguard.cli.RunCreateElectionConfig
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.Guardians
-import electionguard.decrypt.PepSimple
-import electionguard.decrypt.PepTrusted
+import electionguard.pep.*
 import electionguard.publish.*
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -27,22 +26,22 @@ class TestPepWorkflow {
     val name4 = "runWorkflow8of10Guardian"
 
     @Test
-    fun runWorkflows() {
+    fun runPepWorkflows() {
         println("productionGroup (Default) = $group class = ${group.javaClass.name}")
-        runWorkflow(name1, 1, 1, listOf(1), 1)
-        //runWorkflow(name1, 1, 1, listOf(1), 25)
+        runPepWorkflow(name1, 1, 1, listOf(1), 1)
+        runPepWorkflow(name1, 1, 1, listOf(1), 25)
 
-        //runWorkflow(name2, 3, 3, listOf(1,2,3), 1)
-        //runWorkflow(name2, 3, 3, listOf(1,2,3), 25)
+        runPepWorkflow(name2, 3, 3, listOf(1,2,3), 1)
+        runPepWorkflow(name2, 3, 3, listOf(1,2,3), 25)
 
-        //runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 1)
-        //runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 25)
+        runPepWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 1)
+        runPepWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 25)
 
-        //runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 1)
-        //runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 25)
+        runPepWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 1)
+        runPepWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 25)
     }
 
-    fun runWorkflow(name : String, nguardians: Int, quorum: Int, present: List<Int>, nthreads: Int) {
+    fun runPepWorkflow(name : String, nguardians: Int, quorum: Int, present: List<Int>, nthreads: Int) {
         println("===========================================================")
         val workingDir =  "testOut/workflow/$name"
         val privateDir =  "$workingDir/private_data"
@@ -78,8 +77,21 @@ class TestPepWorkflow {
         val dtrustees : List<DecryptingTrusteeIF> = readDecryptingTrustees(group, trusteeDir, init, present, true)
 
         // todo PARELLIZE PEP
-        // call PEP to compare the two encryptions
-        val starting = getSystemTimeInMillis() // wall clock
+        println("runPepBlindTrust n = $quorum / $nguardians")
+        val btrustees = mutableListOf<PepTrustee>()
+        repeat(3) {
+            btrustees.add(PepTrustee(it, group))
+        }
+        val pep = PepBlindTrust(
+            group,
+            init.extendedBaseHash,
+            ElGamalPublicKey(init.jointPublicKey),
+            Guardians(group, init.guardians), // all guardians
+            btrustees,
+            dtrustees,
+        )
+
+        /* call PEP to compare the two encryptions
         val pep = PepTrusted(
             group,
             init.extendedBaseHash,
@@ -88,6 +100,10 @@ class TestPepWorkflow {
             dtrustees,
             3
         )
+
+         */
+
+        val starting = getSystemTimeInMillis() // wall clock
         group.showAndClearCountPowP()
         compareBallotPepEquivilence(pep, workingDir, "device11", "scanPaper")
 
@@ -96,11 +112,11 @@ class TestPepWorkflow {
         val per = took / (1000.0 * nballots)
         println("\nPEP took $took msecs = ${per} secs/ballot")
         val nencyptions = 100
-        val expect = (8 * nguardians + 12) * nencyptions * nballots
+        val expect = (8 + 8 * nguardians + 8 * btrustees.size) * nencyptions  * nballots // counting the verifier
         println("----------- after compareBallotPepEquivilence ${group.showAndClearCountPowP()}, expect=$expect")
     }
 
-    fun compareBallotPepEquivilence(pep: PepTrusted, workingDir : String, device1 : String, device2 : String) {
+    fun compareBallotPepEquivilence(pep: PepAlgorithm, workingDir : String, device1 : String, device2 : String) {
         val record =  readElectionRecord(group, workingDir)
 
         val ballotsa = record.encryptedBallots(device1) { true }.iterator()
