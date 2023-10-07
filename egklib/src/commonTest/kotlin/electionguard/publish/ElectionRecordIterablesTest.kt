@@ -31,7 +31,7 @@ class ElectionRecordIterablesTest {
     }
 
     fun readBallots(context: GroupContext, topdir: String, expected: Int) {
-        val consumerIn = makeConsumer(topdir, context)
+        val consumerIn = makeConsumer(context, topdir)
         val iterator = consumerIn.iterateAllEncryptedBallots { true } .iterator()
         var count = 0
         for (ballot in iterator) {
@@ -42,7 +42,7 @@ class ElectionRecordIterablesTest {
     }
 
     fun readCastBallots(context: GroupContext, topdir: String, expected: Int) {
-        val consumerIn = makeConsumer(topdir, context)
+        val consumerIn = makeConsumer(context, topdir)
         val iterator = consumerIn.iterateAllCastBallots().iterator()
         var count = 0
         for (ballot in iterator) {
@@ -53,7 +53,7 @@ class ElectionRecordIterablesTest {
     }
 
     fun readSpoiledBallots(context: GroupContext, topdir: String, expected: Int) {
-        val consumerIn = makeConsumer(topdir, context)
+        val consumerIn = makeConsumer(context, topdir)
         val iterator = consumerIn.iterateAllSpoiledBallots().iterator()
         var count = 0
         for (ballot in iterator) {
@@ -64,7 +64,7 @@ class ElectionRecordIterablesTest {
     }
 
     fun readDecryptedBallots(context: GroupContext, topdir: String, expected: Int) {
-        val consumerIn = makeConsumer(topdir, context)
+        val consumerIn = makeConsumer(context, topdir)
         val iterator = consumerIn.iterateDecryptedBallots().iterator()
         var count = 0
         for (tally in iterator) {

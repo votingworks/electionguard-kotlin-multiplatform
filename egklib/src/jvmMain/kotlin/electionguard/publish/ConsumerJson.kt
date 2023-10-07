@@ -8,6 +8,9 @@ import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.json2.*
+import electionguard.pep.BallotPep
+import electionguard.pep.BallotPepJson
+import electionguard.pep.import
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -18,6 +21,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Predicate
 import java.util.stream.Stream
+import kotlin.io.path.isDirectory
 
 private val logger = KotlinLogging.logger("ConsumerJsonJvm")
 
@@ -141,19 +145,23 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         override fun computeNext() {
             while (true) {
                 if (ballotIds.hasNext()) {
-                    val ballotFilePath = Path.of(jsonPaths.encryptedBallotPath(device, ballotIds.next()))
-                    fileSystemProvider.newInputStream(ballotFilePath).use { inp ->
-                        val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
-                        val encryptedBallot = json.import(group)
-                        if (filter == null || filter.test(encryptedBallot)) {
-                            setNext(encryptedBallot)
-                            return
-                        }
+                    val ballotFilePath = Path.of(jsonPaths.encryptedBallotDevicePath(device, ballotIds.next()))
+                    val encryptedBallot = readEncryptedBallot(ballotFilePath)
+                    if (filter == null || filter.test(encryptedBallot)) {
+                        setNext(encryptedBallot)
+                        return
                     }
                 } else {
                     return done()
                 }
             }
+        }
+    }
+
+    fun readEncryptedBallot(ballotFilePath : Path): EncryptedBallot{
+        fileSystemProvider.newInputStream(ballotFilePath).use { inp ->
+            val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
+            return json.import(group)
         }
     }
 
@@ -211,25 +219,6 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return Files.exists(fileSystem.getPath(jsonPaths.encryptedBallotDir()))
     }
 
-    // all submitted ballots, with filter
-    actual override fun iterateEncryptedBallots(filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
-        val dirPath = fileSystem.getPath(jsonPaths.encryptedBallotDir())
-        if (!Files.exists(dirPath)) {
-            return emptyList()
-        }
-        return Iterable { EncryptedBallotFileIterator(dirPath, group, filter) }
-    }
-
-    // only EncryptedBallot that are CAST
-    actual override fun iterateCastBallots(): Iterable<EncryptedBallot> {
-        return iterateEncryptedBallots { it.state == EncryptedBallot.BallotState.CAST }
-    }
-
-    // only EncryptedBallot that are SPOILED
-    actual override fun iterateSpoiledBallots(): Iterable<EncryptedBallot> {
-        return iterateEncryptedBallots { it.state == EncryptedBallot.BallotState.SPOILED }
-    }
-
     // decrypted spoiled ballots
     actual override fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot> {
         val dirPath = fileSystem.getPath(jsonPaths.decryptedBallotDir())
@@ -257,6 +246,33 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         val result =  readTrustee(fileSystem.getPath(filename))
         return if (result is Ok) result.unwrap() else throw Exception(result.getError())
     }
+
+    actual override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, String> {
+        val ballotFilePath = Path.of(jsonPaths.encryptedBallotPath(ballotDir, ballotId))
+        return Ok(readEncryptedBallot(ballotFilePath))
+    }
+
+    actual override fun iteratePepBallots(pepDir : String): Iterable<BallotPep> {
+        return Iterable { PepBallotIterator(group, Path.of(pepDir)) }
+    }
+
+    private inner class PepBallotIterator(val group: GroupContext, ballotDir: Path) : AbstractIterator<BallotPep>() {
+        val pathList = ballotDir.pathListNoDirs()
+        var idx = 0
+
+        override fun computeNext() {
+            while (idx < pathList.size) {
+                val file = pathList[idx++]
+                fileSystemProvider.newInputStream(file).use { inp ->
+                    val json = jsonIgnoreNulls.decodeFromStream<BallotPepJson>(inp)
+                    val pepBallot = json.import(group)
+                    return setNext(pepBallot)
+                }
+            }
+            return done()
+        }
+    }
+
 
     //////// The low level reading functions
 
@@ -411,5 +427,13 @@ fun Path.pathList(): List<Path> {
     // LOOK "API Note: This method must be used within a try-with-resources statement"
     return Files.walk(this, 1).use { fileStream ->
         fileStream.filter { it != this }.toList()
+    }
+}
+
+fun Path.pathListNoDirs(): List<Path> {
+    // LOOK does this sort?
+    // LOOK "API Note: This method must be used within a try-with-resources statement"
+    return Files.walk(this, 1).use { fileStream ->
+        fileStream.filter { it != this && !it.isDirectory() }.toList()
     }
 }

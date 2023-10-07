@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
 }
 
 fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: String, createNew : Boolean) {
-    val consumer = makeConsumer(inputDir, group)
+    val consumer = makeConsumer(group, inputDir)
     val publisher = makePublisher(outputDir, createNew, !consumer.isJson())
     val electionRecord = readElectionRecord(consumer)
 

@@ -11,6 +11,7 @@ import electionguard.core.GroupContext
 import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.pep.BallotPep
 import electionguard.protoconvert.import
 import mu.KotlinLogging
 import pbandk.decodeFromByteBuffer
@@ -198,17 +199,17 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // all submitted ballots, cast or spoiled
+    actual override fun hasEncryptedBallots(): Boolean {
+        return Files.exists(Path.of(protoPaths.encryptedBallotPath()))
+    }
+
+    /* all submitted ballots, cast or spoiled
     actual override fun iterateEncryptedBallots(filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
         val filename = protoPaths.encryptedBallotPath()
         if (!Files.exists(Path.of(filename))) {
             return emptyList()
         }
         return Iterable { EncryptedBallotIterator(filename, groupContext, null, filter) }
-    }
-
-    actual override fun hasEncryptedBallots(): Boolean {
-        return Files.exists(Path.of(protoPaths.encryptedBallotPath()))
     }
 
     // only EncryptedBallot that are CAST
@@ -232,6 +233,8 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             Predicate<electionguard.protogen.EncryptedBallot> { it.state == electionguard.protogen.EncryptedBallot.BallotState.SPOILED }
         return Iterable { EncryptedBallotIterator(filename, groupContext, protoFilter, null) }
     }
+
+     */
 
     // all tallies in the SPOILED_BALLOT_FILE file
     actual override fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot> {
@@ -258,6 +261,10 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         val filename = protoPaths.decryptingTrusteePath(trusteeDir, guardianId)
         return groupContext.readTrustee(filename)
     }
+
+    actual override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, String> =
+        Err("Not implemented yet")
+
 
     //////// The low level reading functions for protobuf
 
@@ -402,6 +409,10 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         var proto: electionguard.protogen.DecryptingTrustee
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptingTrustee.decodeFromStream(inp) }
         return proto.import(this).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
+    }
+
+    actual override fun iteratePepBallots(pepDir : String): Iterable<BallotPep> {
+        return emptyList()
     }
 
 }

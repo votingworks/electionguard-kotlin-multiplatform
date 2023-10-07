@@ -40,8 +40,8 @@ class ConsumerJsonTest {
     //@ParameterizedTest
     @MethodSource("params")
     fun readSpoiledBallotTallys(topdir: String) {
-        val context = productionGroup()
-        val consumerIn = makeConsumer(topdir, context)
+        val group = productionGroup()
+        val consumerIn = makeConsumer(group, topdir)
         var count = 0
         for (tally in consumerIn.iterateDecryptedBallots()) {
             println("$count tally = ${tally.id}")
@@ -53,10 +53,10 @@ class ConsumerJsonTest {
     //@ParameterizedTest
     @MethodSource("params")
     fun readEncryptedBallots(topdir: String) {
-        val context = productionGroup()
-        val consumerIn = makeConsumer(topdir, context)
+        val group = productionGroup()
+        val consumerIn = makeConsumer(group, topdir)
         var count = 0
-        for (ballot in consumerIn.iterateEncryptedBallots { true }) {
+        for (ballot in consumerIn.iterateAllEncryptedBallots { true }) {
             println("$count ballot = ${ballot.ballotId}")
             assertTrue(ballot.ballotId.startsWith("ballot-id"))
             count++
@@ -66,8 +66,8 @@ class ConsumerJsonTest {
     //@ParameterizedTest
     @MethodSource("params")
     fun readEncryptedBallotsCast(topdir: String) {
-        val context = productionGroup()
-        val consumerIn = makeConsumer(topdir, context)
+        val group = productionGroup()
+        val consumerIn = makeConsumer(group, topdir)
         var count = 0
         for (ballot in consumerIn.iterateAllCastBallots()) {
             println("$count ballot = ${ballot.ballotId}")
@@ -79,8 +79,8 @@ class ConsumerJsonTest {
     //@ParameterizedTest
     @MethodSource("params")
     fun readSubmittedBallotsSpoiled(topdir: String) {
-        val context = productionGroup()
-        val consumerIn = makeConsumer(topdir, context)
+        val group = productionGroup()
+        val consumerIn = makeConsumer(group, topdir)
         var count = 0
         for (ballot in consumerIn.iterateAllSpoiledBallots()) {
             println("$count ballot = ${ballot.ballotId}")

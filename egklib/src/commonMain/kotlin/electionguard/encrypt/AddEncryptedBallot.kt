@@ -63,7 +63,7 @@ class AddEncryptedBallot(
             throw RuntimeException("ManifestInputValidation FAILED $errors")
         }
 
-        val consumer = makeConsumer(outputDir, group, isJson)
+        val consumer = makeConsumer(group, outputDir, isJson)
         val chainResult = consumer.readEncryptedBallotChain(deviceName)
         if (chainResult is Ok) {
             // this is a restart on an existing chain

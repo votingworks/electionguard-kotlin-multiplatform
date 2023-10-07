@@ -98,7 +98,7 @@ class RunTrustedBallotDecryption {
             println(" runDecryptBallots on ballots in ${inputDir} with nthreads = $nthreads")
             val starting = getSystemTimeInMillis() // wall clock
 
-            val consumerIn = makeConsumer(inputDir, group)
+            val consumerIn = makeConsumer(group, inputDir)
             val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
             val guardians = Guardians(group, tallyResult.electionInitialized.guardians)
 

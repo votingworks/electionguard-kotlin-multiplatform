@@ -291,7 +291,7 @@ class AddEncryptedBallotTest {
 }
 
 fun checkOutput(group : GroupContext, outputDir: String, expectedCount: Int, chained : Boolean) {
-    val consumer = makeConsumer(outputDir, group, false)
+    val consumer = makeConsumer(group, outputDir, false)
     var count = 0
     consumer.iterateAllEncryptedBallots { true }.forEach {
         count++
