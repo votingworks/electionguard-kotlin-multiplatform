@@ -29,8 +29,8 @@ class RunTrustedPepBatchTest {
             arrayOf(
                 "-in", inputDir,
                 "-trustees", "src/commonTest/data/workflow/allAvailableJson/private_data/trustees",
-                "-out", outputDir,
                 "-scanned", "$scannedDir/encrypted_ballots/scanned/",
+                "-out", outputDir,
             )
         )
 
@@ -66,8 +66,9 @@ class RunTrustedPepBatchTest {
             arrayOf(
                 "-in", inputDir,
                 "-trustees", "src/commonTest/data/workflow/someAvailableJson/private_data/trustees",
-                "-out", outputDir,
                 "-scanned", "$scannedDir/encrypted_ballots/scanned/",
+                "-out", outputDir,
+                "-missing", "1,4"
             )
         )
 

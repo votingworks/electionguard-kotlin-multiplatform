@@ -58,7 +58,7 @@ class RunVerifyPep {
                     println(result)
                     allOk = false
                 } else {
-                    println(" ${ballotPEP.ballotId} validates")
+                    println(" ${ballotPEP.ballotId} validates isEq=${ballotPEP.isEq}")
                 }
                 count++
             }

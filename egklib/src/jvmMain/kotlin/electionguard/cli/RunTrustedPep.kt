@@ -14,6 +14,7 @@ import electionguard.pep.PepTrustee
 import electionguard.publish.*
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
+import kotlinx.cli.default
 import kotlinx.cli.required
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -66,18 +67,22 @@ class RunTrustedPep {
                 ArgType.Int,
                 shortName = "nthreads",
                 description = "Number of parallel threads to use"
-            )
+            ).default(11)
+
             parser.parse(args)
             println(
-                "RunTrustedPep starting\n   input= $inputDir\n   scannedBallotDir= $scannedBallotDir\n   trustees= $trusteeDir\n" +
-                        "   output = $outputDir\n   nthreads = $nthreads\n"
+                "RunTrustedPep starting\n   -in $inputDir\n   -scanned $scannedBallotDir\n   -trustees $trusteeDir\n" +
+                        "   -out $outputDir\n   -nthreads $nthreads"
             )
+            if (missing != null) {
+                println("   -missing $missing")
+            }
 
             val group = productionGroup()
             runTrustedPep(
                 group, inputDir, scannedBallotDir, outputDir,
                 RunTrustedTallyDecryption.readDecryptingTrustees(group, inputDir, trusteeDir, missing),
-                nthreads ?: 11
+                nthreads
             )
         }
 
@@ -89,7 +94,7 @@ class RunTrustedPep {
             decryptingTrustees: List<DecryptingTrusteeIF>,
             nthreads: Int,
         ): Int {
-            println(" runTrustedPep on ballots in ${inputDir} compare to Ballots in $scannedBallotDir")
+            println(" compare ballots in '${inputDir}' to ballots in '$scannedBallotDir'")
             val starting = getSystemTimeInMillis() // wall clock
 
             val consumer = makeConsumer(group, inputDir)
@@ -143,7 +148,7 @@ class RunTrustedPep {
 
             val took = getSystemTimeInMillis() - starting
             val msecsPerBallot = (took.toDouble() / 1000 / count).sigfig()
-            println(" Pep compare ballots took ${took / 1000} wallclock secs for $count ballots = $msecsPerBallot secs/ballot")
+            println("PepBlindTrust took ${took / 1000} wallclock secs for $count ballots = $msecsPerBallot secs/ballot with $nthreads threads\n")
 
             return count
         }
