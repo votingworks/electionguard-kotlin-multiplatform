@@ -103,7 +103,7 @@ class ConsumerTest {
             }
             assertTrue(result is Err)
             val message: String = result.getError()?.message ?: "not"
-            assertTrue(message.contains("No such file"))
+            assertTrue(message.contains("file does not exist"))
         }
     }
 

@@ -81,7 +81,7 @@ class VerifyDecryption(
                 // T = K^t mod p.
                 val tallyQ = selection.tally.toElementModQ(group)
                 if (selection.bOverM != publicKey powP tallyQ) {
-                    results.add(Err("    10.A,13.A Tally Decryption M = K^t mod p failed: '$where2'"))
+                    results.add(Err("    10.A,13.A Tally Decryption M = K^t mod p error: '$where2'"))
                 }
 
                 if (isBallot && (selection.tally !in (0..optionLimit))) {

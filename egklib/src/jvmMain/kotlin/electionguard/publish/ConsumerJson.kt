@@ -119,7 +119,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             }
             Ok(chain)
         } catch (e: Exception) {
-            Err("failed")
+            Err("error ${e.message}")
         }
     }
 
@@ -297,7 +297,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             }
             Ok(electionConfig)
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionConfig $configFile failed")
+            Err(e.message ?: "readElectionConfig $configFile error")
         }
     }
 
@@ -313,7 +313,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             }
             Ok(electionInitialized)
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionInitialized $contextFile failed")
+            Err(e.message ?: "readElectionInitialized $contextFile error")
         }
     }
 
@@ -325,7 +325,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 Ok(TallyResult(init, encryptedTally, emptyList()))
             }
         } catch (e: Exception) {
-            Err(e.message ?: "readTallyResult $filename failed")
+            Err(e.message ?: "readTallyResult $filename error")
         }
     }
 
@@ -341,7 +341,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 Ok(DecryptionResult(tallyResult, decryptedTallyOrBallot))
             }
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $decryptedTallyPath failed")
+            Err(e.message ?: "readDecryptionResult $decryptedTallyPath error")
         }
     }
 
@@ -424,7 +424,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 Ok(decryptingTrustee)
             }
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $filePath failed")
+            Err(e.message ?: "readDecryptionResult $filePath error")
         }
     }
 }

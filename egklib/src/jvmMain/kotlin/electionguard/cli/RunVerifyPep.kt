@@ -132,7 +132,7 @@ class RunVerifyPep {
             for (ballotPEP in input) {
                 val result = verifier.verify(ballotPEP)
                 if (result is Err) {
-                    logger.warn { " PEP failed to verify ballot ${ballotPEP.ballotId} because $result" }
+                    logger.warn { " PEP error verifying ballot ${ballotPEP.ballotId} because $result" }
                 } else {
                     val verifyOk = result.unwrap()
                     logger.info { " PEP verify ${ballotPEP.ballotId} is ${verifyOk}" }

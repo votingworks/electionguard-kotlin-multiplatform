@@ -118,7 +118,7 @@ class WorkflowEncryptDecryptTest {
             val shares = trustees.map { eAccum.pad powP it.secretKey.key }
             val allSharesProductM: ElementModP = with (group) { shares.multP() }
             val decryptedValue: ElementModP = eAccum.data / allSharesProductM
-            val dlogM: Int = publicKey.dLog(decryptedValue)?: throw RuntimeException("dlog failed")
+            val dlogM: Int = publicKey.dLog(decryptedValue)?: throw RuntimeException("dlog error")
             assertEquals(3, dlogM)
 
             //decrypt2

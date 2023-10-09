@@ -127,9 +127,9 @@ fun readAndCheckManifestBytes(
     // make sure it validates
     val errors = ManifestInputValidation(manifest).validate()
     if (errors.hasErrors()) {
-        println("*** ManifestInputValidation FAILED on manifest in $manifestDirOrFile")
+        println("*** ManifestInputValidation error on manifest in $manifestDirOrFile")
         println("$errors")
-        throw RuntimeException("*** ManifestInputValidation FAILED on manifest in $manifestDirOrFile")
+        throw RuntimeException("*** ManifestInputValidation error on manifest in $manifestDirOrFile")
     }
 
     return Triple(isJson, manifest, manifestBytes)

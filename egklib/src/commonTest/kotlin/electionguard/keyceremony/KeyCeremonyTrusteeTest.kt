@@ -150,7 +150,7 @@ class KeyCeremonyTrusteeTest {
         val ss2v1 = ss21.copy(polynomialOwner = "id3")
         val result7 = trustee1.receiveEncryptedKeyShare(ss2v1)
         assertTrue(result7 is Err)
-        assertEquals("Trustee 'id1' failed to validate EncryptedKeyShare for missingGuardianId 'id3'", result7.error)
+        assertEquals("Trustee 'id1' error validating EncryptedKeyShare for missingGuardianId 'id3'", result7.error)
     }
 
     @Test
@@ -228,7 +228,7 @@ class KeyCeremonyTrusteeTest {
         val resultBadCoordinate = trustee2.receiveKeyShare(keyShareBadCoordinate)
         assertTrue(resultBadCoordinate is Err)
         println("result = $resultBadCoordinate")
-        assertTrue(resultBadCoordinate.error.contains("Trustee 'id2' failed to validate KeyShare for missingGuardianId 'id1'"))
+        assertTrue(resultBadCoordinate.error.contains("Trustee 'id2' error validating KeyShare for missingGuardianId 'id1'"))
 
         /* Give it a bad nonce LOOK this is disabled in KeyCeremonyTrustee.receiveKeyShare(), see notes there
         val keyShareBadNonce = keyShare12.copy(nonce = group.TWO_MOD_Q)

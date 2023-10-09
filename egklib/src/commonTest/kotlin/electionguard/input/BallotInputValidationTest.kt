@@ -197,7 +197,7 @@ class TestBallotInputValidation {
             .build()
         val eandb = ElectionAndBallot(election, ballot)
 
-        testValidate(eandb, "Ballot.C.1")
+        testValidate(eandb, null)
     }
 
     @Test

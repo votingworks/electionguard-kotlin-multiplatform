@@ -136,14 +136,14 @@ class SpoiledBallotTallyIterator(
         val message = readFromFile(file, length.toULong(), filename)
         val tallyProto = electionguard.protogen.DecryptedTallyOrBallot.decodeFromByteArray(message)
         val tally = tallyProto.import(group)
-        setNext(tally.getOrElse { throw RuntimeException("DecryptedTallyOrBallot failed to parse") })
+        setNext(tally.getOrElse { throw RuntimeException("DecryptedTallyOrBallot error to parse") })
     }
 }
 
 fun GroupContext.readTrustee(filename: String): DecryptingTrusteeIF {
     val buffer = gulp(filename)
     val trusteeProto = electionguard.protogen.DecryptingTrustee.decodeFromByteArray(buffer)
-    return trusteeProto.import(this).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
+    return trusteeProto.import(this).getOrElse { throw RuntimeException("DecryptingTrustee $filename error to parse") }
 }
 
 /** read variable length (base 128) integer from a stream and return as an Int */

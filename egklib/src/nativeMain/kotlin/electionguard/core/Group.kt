@@ -305,12 +305,12 @@ class ProductionGroupContext(
         // running, so we won't worry about it.
         montCtxP = p.useNative {
             Hacl_Bignum64_mont_ctx_init(numPLWords, it)
-                ?: throw RuntimeException("failed to make montCtxP")
+                ?: throw RuntimeException("error making montCtxP")
         }
 
         montCtxQ = q.useNative {
             Hacl_Bignum256_mont_ctx_init(it)
-                ?: throw RuntimeException("failed to make montCtxQ")
+                ?: throw RuntimeException("error making montCtxQ")
         }
 
         genericFieldP = p.useNative {
@@ -319,7 +319,7 @@ class ProductionGroupContext(
             // which doesn't provide us any guarantees.
 
             Hacl_GenericField64_field_init(numPLWords, it)
-                ?: throw RuntimeException("failed to make genericFieldP")
+                ?: throw RuntimeException("error making genericFieldP")
         }
 
         dlogger = DLog(gModP)

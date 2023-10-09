@@ -127,7 +127,7 @@ open class KeyCeremonyTrustee(
         // the commitments Ki,0 , Ki,1 , . . . , Ki,k−1 made by Gi to its coefficients by confirming that
         // g^Pi(ℓ) = Prod{ (Kij)^ℓ^j }, for j=0..k-1 ; spec 2.0.0 eq 21
         if (group.gPowP(expectedPil) != calculateGexpPiAtL(publicKeys.guardianId, this.xCoordinate, publicKeys.coefficientCommitments())) {
-            return Err("Trustee '$id' failed to validate EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
+            return Err("Trustee '$id' error validating EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
         }
 
         // keep track of this result
@@ -168,7 +168,7 @@ open class KeyCeremonyTrustee(
                     otherKeys.coefficientCommitments()
                 )
             ) {
-                errors.add(Err("Trustee '$id' failed to validate KeyShare for missingGuardianId '${keyShare.polynomialOwner}'"))
+                errors.add(Err("Trustee '$id' error validating KeyShare for missingGuardianId '${keyShare.polynomialOwner}'"))
             } else {
                 // ok use it, but encrypt it ourself, dont use passed value, and use a new nonce
                 val Pil: ElementModQ = polynomial.valueAt(group, otherKeys.guardianXCoordinate)

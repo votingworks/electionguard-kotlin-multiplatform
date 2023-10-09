@@ -32,7 +32,7 @@ class PublisherJsonTest {
         val manifestValidator = ManifestInputValidation(manifest)
         val errors = manifestValidator.validate()
         if (errors.hasErrors()) {
-            println("*** ManifestInputValidation FAILED on generated electionConfig")
+            println("*** ManifestInputValidation error on generated electionConfig")
             println("$errors")
             return
         }

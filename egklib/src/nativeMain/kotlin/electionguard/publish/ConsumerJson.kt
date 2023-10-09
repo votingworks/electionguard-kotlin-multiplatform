@@ -143,7 +143,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             Ok(config)
 
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionConfig $configFile failed")
+            Err(e.message ?: "readElectionConfig $configFile error")
         }
     }
 
@@ -152,7 +152,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             val initJson: ElectionInitializedJson = jsonFormat.decodeFromString<ElectionInitializedJson>(gulp(contextFile).toKString())
             Ok(initJson.import(group, config))
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionInitialized $contextFile failed")
+            Err(e.message ?: "readElectionInitialized $contextFile error")
         }
     }
 
@@ -161,11 +161,11 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             val json = jsonFormat.decodeFromString<EncryptedTallyJson>(gulp(filename).toKString())
             val tallyResult: EncryptedTally = json.import(group)
             if (tallyResult == null)
-                Err("failed to read EncryptedTallyJson")
+                Err("error reading EncryptedTallyJson")
             else
                 Ok(TallyResult(init, tallyResult, emptyList()))
         } catch (e: Exception) {
-            Err(e.message ?: "readTallyResult $filename failed")
+            Err(e.message ?: "readTallyResult $filename error")
         }
     }
 
@@ -174,11 +174,11 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             val json = jsonFormat.decodeFromString<DecryptedTallyOrBallotJson>(gulp(filename).toKString())
             val dtallyResult = json.import(group)
             if (dtallyResult == null)
-                Err("failed to read DecryptedTallyOrBallotJson $filename")
+                Err("error reading DecryptedTallyOrBallotJson $filename")
             else
                 Ok(DecryptionResult(tallyResult, dtallyResult))
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $filename failed")
+            Err(e.message ?: "readDecryptionResult $filename error")
         }
     }
 
@@ -195,7 +195,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
                 val json = jsonFormat.decodeFromString<PlaintextBallotJson>(gulp(filename).toKString())
                 val ballot = json.import()
                 if (ballot == null) {
-                    Err("failed to read PlaintextBallotJson ${filename}")
+                    Err("error reading PlaintextBallotJson ${filename}")
                 } else {
                     if (filter == null || filter!!(ballot)) {
                         setNext(ballot)
@@ -221,7 +221,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
                 val ballot = json.import(group)
                 if (ballot == null) {
-                    logger.warn { "Failed to read EncryptedBallotJson ${filename}" }
+                    logger.warn { "error reading EncryptedBallotJson ${filename}" }
                 } else {
                     if (filter == null || filter!!(ballot)) {
                         setNext(ballot)
@@ -246,7 +246,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
                 val json = jsonFormat.decodeFromString<DecryptedTallyOrBallotJson>(gulp(filename).toKString())
                 val ballot = json.import(group)
                 if (ballot == null) {
-                    Err("failed to read DecryptedTallyOrBallotJson $filename")
+                    Err("error reading DecryptedTallyOrBallotJson $filename")
                 } else {
                     setNext(ballot)
                     return
@@ -261,11 +261,11 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
             val json = jsonFormat.decodeFromString<TrusteeJson>(gulp(filename).toKString())
             val trusteeResult = json.importDecryptingTrustee(group)
             if (trusteeResult == null)
-                Err("failed to read DecryptingTrustee $filename")
+                Err("error reading DecryptingTrustee $filename")
             else
                 Ok(trusteeResult)
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $filename failed")
+            Err(e.message ?: "readDecryptionResult $filename error")
         }
     }
 

@@ -106,27 +106,11 @@ class BallotInputValidation(val manifest: Manifest) {
                     logger.warn { msg }
                 }
 
-                /* Vote can only be a 0 or 1, not supporting ranked choice, approval yet.
-                if (selection.vote < 0 || selection.vote > 1) {
-                    val msg = "Ballot.C.1 Ballot Selection '${selection.selectionId}' vote (${selection.vote}) must be " +
-                            "between 0 and the contest.option_limit= ${electionContest.optionLimit}"
-                    contestMesses.add(msg)
-                    logger.warn { msg }
-                } else {
-                    total += selection.vote
-                } */
+                // as of 10/2023
+                // Voting limits are not enforced at ballot validation. They are marked as overvotes. So an overvote on one contest does not
+                // invalidate the entire ballot.
             }
         }
-
-        // TODO Need to deal with overvotes, see issue #156
-        /* Total votes for contest exceeds allowed limit
-        if (total > electionContest.allowed) {
-            val msg = "Ballot.C.2 Ballot Selection votes ($total) exceeds limit (${electionContest.allowed})"
-            contestMesses.add(msg)
-            logger.warn { msg }
-        }
-
-         */
     }
 
     class ElectionContest internal constructor(contest: Manifest.ContestDescription) {

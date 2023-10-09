@@ -49,7 +49,7 @@ class PepSimple(
         // Create encryptedBallot consisting of the (α, β)
         val ratioBallot = makeRatioBallot(ballot1, ballot2, ballotMesses)
         if (ballotMesses.hasErrors()) {
-            val message = "${ballot1.ballotId} makeRatioBallot failed because $ballotMesses"
+            val message = "${ballot1.ballotId} makeRatioBallot error $ballotMesses"
             logger.atWarn().log(message)
             return Err(message)
         }

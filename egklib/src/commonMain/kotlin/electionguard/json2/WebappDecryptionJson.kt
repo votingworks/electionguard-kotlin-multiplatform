@@ -58,7 +58,7 @@ fun DecryptRequestJson.import(group: GroupContext): Result<DecryptRequest, Strin
     val allgood = texts.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(DecryptRequest(texts.map { it!! }))
-    else Err("importModP failed")
+    else Err("importModP error")
 }
 
 ///////////////////////////////////////////
@@ -82,7 +82,7 @@ fun DecryptResponseJson.import(group: GroupContext): Result<DecryptResponse, Str
     val allgood = shares.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(DecryptResponse(shares.map { it!! }))
-    else Err("importPartialDecryption failed")
+    else Err("importPartialDecryption error")
 }
 
 ///////////////////////////////////////////
@@ -135,7 +135,7 @@ fun ChallengeRequestsJson.import(group: GroupContext) : Result<ChallengeRequests
     val allgood = challenges.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(ChallengeRequests(challenges.map { it!! }))
-    else Err("importChallengeRequest failed")
+    else Err("importChallengeRequest error")
 }
 
 ///////////////////////////////////////////
@@ -182,7 +182,7 @@ fun ChallengeResponsesJson.import(group: GroupContext): Result<ChallengeResponse
     val allgood = responses.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(ChallengeResponses(responses.map { it!! }))
-    else Err("importChallengeResponse failed")
+    else Err("importChallengeResponse error")
 }
 
 ///////////////////////////////////////////

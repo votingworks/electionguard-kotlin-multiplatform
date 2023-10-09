@@ -166,7 +166,7 @@ class RunBatchEncryption {
             val manifestValidator = ManifestInputValidation(electionRecord.manifest())
             val errors = manifestValidator.validate()
             if (errors.hasErrors()) {
-                println("*** ManifestInputValidation FAILED on election record in $inputDir")
+                println("*** ManifestInputValidation error on election record in $inputDir")
                 println("$errors")
                 // kotlin.system.exitProcess(1) // kotlin 1.6.20
                 return
@@ -182,7 +182,7 @@ class RunBatchEncryption {
             val validate: ((PlaintextBallot) -> Boolean) = {
                 val mess = ballotValidator.validate(it)
                 if (mess.hasErrors()) {
-                    println("*** BallotInputValidation FAILED on ballot ${it.ballotId}")
+                    println("*** BallotInputValidation error on ballot ${it.ballotId}")
                     println("$mess\n")
                     invalidBallots.add(PlaintextBallot(it, mess.toString()))
                     false

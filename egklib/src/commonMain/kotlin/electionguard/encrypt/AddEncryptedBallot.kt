@@ -60,7 +60,7 @@ class AddEncryptedBallot(
         val manifestValidator = ManifestInputValidation(manifest)
         val errors = manifestValidator.validate()
         if (errors.hasErrors()) {
-            throw RuntimeException("ManifestInputValidation FAILED $errors")
+            throw RuntimeException("ManifestInputValidation error $errors")
         }
 
         val consumer = makeConsumer(group, outputDir, isJson)
@@ -165,7 +165,7 @@ class AddEncryptedBallot(
                 if (dballotResult is Ok) {
                     return Ok(dballotResult.unwrap())
                 } else {
-                    return Err("Decryption failed ballot ccode=$ccode")
+                    return Err("Decryption error ballot ccode=$ccode")
                 }
             }
         } catch (t: Throwable) {

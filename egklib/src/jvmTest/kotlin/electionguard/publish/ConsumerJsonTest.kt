@@ -28,7 +28,7 @@ class ConsumerJsonTest {
         val electionInit = electionRecord.electionInit()
 
         if (electionInit == null) {
-            println("readElectionRecord failed $topdir")
+            println("readElectionRecord error $topdir")
         }
 
         val manifest = electionRecord.manifest()
