@@ -50,7 +50,7 @@ fun electionguard.protogen.EncryptedBallot.import(group: GroupContext):
 private fun electionguard.protogen.EncryptedBallot.BallotState.import(where: String):
         Result<EncryptedBallot.BallotState, String> {
     val state = safeEnumValueOf<EncryptedBallot.BallotState>(this.name)
-        ?: return Err("Failed to convert ballot state, missing or unknown name in $where\"")
+        ?: return Err("Error converting ballot state, missing or unknown name in $where\"")
     return Ok(state)
 }
 
@@ -129,7 +129,7 @@ private fun GroupContext.importRangeProof(
     val allgood = proofs.map { it != null }.reduce{a, b -> a && b }
 
     return if (allgood) Ok(ChaumPedersenRangeProofKnownNonce(proofs.map { it!! }))
-    else Err("importChaumPedersenProof failed $where")
+    else Err("importChaumPedersenProof error $where")
 }
 
 private fun electionguard.protogen.EncryptedBallotSelection.import(

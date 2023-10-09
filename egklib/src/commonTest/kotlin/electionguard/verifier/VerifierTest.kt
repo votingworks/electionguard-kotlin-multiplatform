@@ -57,9 +57,9 @@ class VerifierTest {
     // Ordered lists of the ballots encrypted by each device. spec 2.0, section 3.7, p.46
     @Test
     fun testVerifyTallyBallotIds() {
-        RunVerifier.verifyTallyBallotIds(productionGroup(), "testOut/workflow/allAvailableProto")
-        RunVerifier.verifyTallyBallotIds(productionGroup(), "testOut/workflow/someAvailableProto")
-        RunVerifier.verifyTallyBallotIds(productionGroup(), "testOut/workflow/allAvailableJson")
-        RunVerifier.verifyTallyBallotIds(productionGroup(), "testOut/workflow/someAvailableJson")
+        RunVerifier.verifyTallyBallotIds(productionGroup(), "src/commonTest/data/workflow/allAvailableProto")
+        RunVerifier.verifyTallyBallotIds(productionGroup(), "src/commonTest/data/workflow/someAvailableProto")
+        RunVerifier.verifyTallyBallotIds(productionGroup(), "src/commonTest/data/workflow/allAvailableJson")
+        RunVerifier.verifyTallyBallotIds(productionGroup(), "src/commonTest/data/workflow/someAvailableJson")
     }
 }

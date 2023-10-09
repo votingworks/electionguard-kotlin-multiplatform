@@ -35,7 +35,7 @@ class DecryptionWithNonceTest {
             // decrypt with primary nonce
             val decryptionWithPrimaryNonce = DecryptWithNonce(group, init.jointPublicKey(), init.extendedBaseHash)
             val decryptedBallotResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(primaryNonce) }
-            assertFalse(decryptedBallotResult is Err, "decryptionWithPrimaryNonce failed on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
+            assertFalse(decryptedBallotResult is Err, "decryptionWithPrimaryNonce error on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
             val decryptedBallot = decryptedBallotResult.unwrap()
 
             // all non zero votes match
@@ -85,7 +85,7 @@ class DecryptionWithNonceTest {
             // decrypt with primary nonce
             val decryptionWithPrimaryNonce = DecryptWithNonce(group, init.jointPublicKey(), init.extendedBaseHash)
             val decryptedBallotResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(primaryNonce) }
-            assertFalse(decryptedBallotResult is Err, "decryptionWithPrimaryNonce failed on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
+            assertFalse(decryptedBallotResult is Err, "decryptionWithPrimaryNonce error on ballot ${ballot.ballotId} errors = $decryptedBallotResult")
             val decryptedBallot = decryptedBallotResult.unwrap()
 
             // contestData matches

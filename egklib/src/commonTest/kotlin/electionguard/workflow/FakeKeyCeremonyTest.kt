@@ -58,7 +58,7 @@ fun runFakeKeyCeremony(
     // exchange PublicKeys
     val exchangeResult = keyCeremonyExchange(trustees)
     if (exchangeResult is Err) {
-        println("keyCeremonyExchange failed = ${exchangeResult}")
+        println("keyCeremonyExchange error = ${exchangeResult}")
     }
 
     // check they are complete
@@ -138,7 +138,7 @@ fun testDoerreDecrypt(group: GroupContext,
     val expected = publicKey powP vote.toElementModQ(group)
     assertEquals(expected, bm)
 
-    val dlogM: Int = publicKey.dLog(bm, 100) ?: throw RuntimeException("dlog failed")
+    val dlogM: Int = publicKey.dLog(bm, 100) ?: throw RuntimeException("dlog error")
     println("The answer is $dlogM")
     assertEquals(42, dlogM)
 }
@@ -152,7 +152,7 @@ fun testEncryptDecrypt(group: GroupContext, publicKey: ElGamalPublicKey, trustee
     val shares = trustees.map { evote.pad powP it.electionKeypair.secretKey.key }
     val allSharesProductM: ElementModP = with(group) { shares.multP() }
     val decryptedValue: ElementModP = evote.data / allSharesProductM
-    val dlogM: Int = publicKey.dLog(decryptedValue) ?: throw RuntimeException("dlog failed")
+    val dlogM: Int = publicKey.dLog(decryptedValue) ?: throw RuntimeException("dlog error")
     assertEquals(42, dlogM)
 }
 

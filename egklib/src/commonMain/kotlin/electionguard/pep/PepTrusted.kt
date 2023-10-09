@@ -49,7 +49,7 @@ class PepTrusted(
         // Create encryptedBallot consisting of the (α, β)
         val ratioBallot = makeRatioBallot(ballot1, ballot2, errorMesses)
         if (errorMesses.hasErrors()) {
-            val message = "${ballot1.ballotId} makeRatioBallot failed because $errorMesses"
+            val message = "${ballot1.ballotId} makeRatioBallot error $errorMesses"
             logger.atWarn().log(message)
             return Err(message)
         }
@@ -126,13 +126,13 @@ class PepTrusted(
                     val AB = sel.ciphertextAB
                     val verifya = (ratio.pad powP vi) * (AB.pad powP c)
                     if ((verifya != sel.a)) {
-                        println(" selection ${selectionKey} verifya failed for guardian ${admin.idx}")
-                        errorMesses.add("verifya failed on '$selectionKey' for guardian ${admin.idx}")
+                        println(" selection ${selectionKey} verifya error for guardian ${admin.idx}")
+                        errorMesses.add("verifya error on '$selectionKey' for guardian ${admin.idx}")
                     }
                     val verifyb = (ratio.data powP vi) * (AB.data powP c)
                     if ((verifyb != sel.b)) {
-                        println(" selection ${selectionKey} verifyb failed for guardian ${admin.idx}")
-                        errorMesses.add("verifyb failed on '$selectionKey' for guardian ${admin.idx}")
+                        println(" selection ${selectionKey} verifyb error for guardian ${admin.idx}")
+                        errorMesses.add("verifyb error on '$selectionKey' for guardian ${admin.idx}")
                     }
 
                     /*  5.a for each guardian:
@@ -146,7 +146,7 @@ class PepTrusted(
                         )
                     if (!verify5a) {
                         println(" selection ${selectionKey} verify5a = $verify5a for guardian ${admin.idx}")
-                        // errorMesses.add("verify5a failed on '$selectionKey' for guardian ${admin.idx}")
+                        // errorMesses.add("verify5a error on '$selectionKey' for guardian ${admin.idx}")
                     }
                      */
                 }

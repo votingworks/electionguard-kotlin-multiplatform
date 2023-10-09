@@ -49,7 +49,7 @@ class PepBlindTrust(
         // Create encryptedBallot consisting of the (α, β)
         val ratioBallot: EncryptedBallot = makeRatioBallot(ballot1, ballot2, errorMesses)
         if (errorMesses.hasErrors()) {
-            val message = "${ballot1.ballotId} makeRatioBallot failed because $errorMesses"
+            val message = "${ballot1.ballotId} makeRatioBallot error $errorMesses"
             logger.atWarn().log(message)
             return Err(message)
         }

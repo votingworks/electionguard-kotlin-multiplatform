@@ -99,7 +99,7 @@ class VerifyEncryptedBallots(
                 manifest.contestLimit(contest.contestId)
             )
             if (cvalid is Err) {
-                results.add(Err("    6. ChaumPedersenProof validation failed for $where = ${cvalid.error} "))
+                results.add(Err("    6. ChaumPedersenProof validation error for $where = ${cvalid.error} "))
             }
 
             // χl = H(HE ; 0x23, l, K, α1 , β1 , α2 , β2 . . . , αm , βm ) 7.A
@@ -147,7 +147,7 @@ class VerifyEncryptedBallots(
             optionLimit,
         )
         if (svalid is Err) {
-            errors.add(Err("    5. ChaumPedersenProof validation failed for ${here}} = ${svalid.error} "))
+            errors.add(Err("    5. ChaumPedersenProof validation error for ${here}} = ${svalid.error} "))
         }
         return errors.merge()
     }

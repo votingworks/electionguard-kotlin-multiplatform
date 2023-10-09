@@ -89,7 +89,7 @@ fun testDoerreDecrypt(group: GroupContext,
     val expected = publicKey powP vote.toElementModQ(group)
     assertEquals(expected, bm)
 
-    val dlogM: Int = publicKey.dLog(bm, 100) ?: throw RuntimeException("dlog failed")
+    val dlogM: Int = publicKey.dLog(bm, 100) ?: throw RuntimeException("dlog error")
     println("The answer is $dlogM")
     assertEquals(42, dlogM)
 }

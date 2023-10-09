@@ -54,13 +54,13 @@ class RunExampleEncryption {
                         if (decryptResult is Ok) {
                             println("challenged $ccode, decryption Ok = ${ballot == decryptResult.unwrap()}")
                         } else {
-                            println("challengeAndDecrypt failed = ${decryptResult.getError()}")
+                            println("challengeAndDecrypt error = ${decryptResult.getError()}")
                         }
                     } else {
                         encryptor.cast(ccode)
                     }
                 } else {
-                    println("encryptResult failed = ${encryptResult.getError()}")
+                    println("encryptResult error = ${encryptResult.getError()}")
                 }
             }
 

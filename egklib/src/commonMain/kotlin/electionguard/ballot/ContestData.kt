@@ -202,7 +202,8 @@ fun HashedElGamalCiphertext.decryptWithBetaToContestData(
     contestId: String, // aka Λ
     beta : ElementModP) : Result<ContestData, String> {
 
-    val ba: ByteArray = this.decryptContestData(publicKey, extendedBaseHash, contestId, c0, beta) ?: return Err( "decryptWithNonceToContestData failed")
+    val ba: ByteArray = this.decryptContestData(publicKey, extendedBaseHash, contestId, c0, beta) ?:
+        return Err( "decryptWithBetaToContestData did not succeed")
     val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba)
     return importContestData(proto)
 }
@@ -217,7 +218,8 @@ fun HashedElGamalCiphertext.decryptWithNonceToContestData(
     val group = compatibleContextOrFail(publicKey.key)
     val contestDataNonce = hashFunction(extendedBaseHash.bytes, 0x20.toByte(), ballotNonce, contestIndex, ContestData.contestDataLabel)
     val (alpha, beta) = 0.encrypt(publicKey, contestDataNonce.toElementModQ(group))
-    val ba: ByteArray = this.decryptContestData(publicKey, extendedBaseHash, contestId, alpha, beta) ?: return Err( "decryptWithNonceToContestData failed")
+    val ba: ByteArray = this.decryptContestData(publicKey, extendedBaseHash, contestId, alpha, beta) ?:
+        return Err( "decryptWithNonceToContestData did not succeed")
     val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba)
     return importContestData(proto)
 }

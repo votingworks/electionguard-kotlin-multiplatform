@@ -126,7 +126,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
                     val length = writeVlen(file, fileout, buffer.size)
                     if (length <= 0) {
                         fclose(file)
-                        throw Exception("write failed on $outputDir")
+                        throw Exception("error writing $outputDir")
                     }
                     writeToFile(file, fileout, buffer)
                 }
@@ -164,7 +164,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
             val length = writeVlen(file, fileout, buffer.size)
             if (length <= 0) {
                 fclose(file)
-                throw Exception("write failed on $fileout")
+                throw Exception("error writing $fileout")
             }
             writeToFile(file, fileout, buffer)
         }
@@ -187,7 +187,7 @@ actual class PublisherProto actual constructor(private val topDir: String, creat
             val length = writeVlen(file, fileout, buffer.size)
             if (length <= 0) {
                 fclose(file)
-                throw Exception("write failed on $fileout")
+                throw Exception("error writing $fileout")
             }
             writeToFile(file, fileout, buffer)
         }

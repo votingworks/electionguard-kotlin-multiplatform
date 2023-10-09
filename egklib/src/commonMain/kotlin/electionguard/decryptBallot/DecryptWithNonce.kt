@@ -37,7 +37,7 @@ class DecryptWithNonce(val group : GroupContext, val publicKey: ElGamalPublicKey
         for (selection in contest.selections) {
             val dSelection = decryptSelectionWithPrimaryNonce(ballotNonce, contest.sequenceOrder, selection)
             if (dSelection == null) {
-                errors.add(" decryption with nonce failed for contest: '${contest.contestId}' selection: '${selection.selectionId}'")
+                errors.add(" decryption with nonce error for contest: '${contest.contestId}' selection: '${selection.selectionId}'")
             } else {
                 decryptions.add(dSelection)
             }

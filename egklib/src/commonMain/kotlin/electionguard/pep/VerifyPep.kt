@@ -29,7 +29,7 @@ class VerifierPep(
                     pep.ciphertextRatio.pad, pep.ciphertextRatio.data,
                     pep.ciphertextAB.pad, pep.ciphertextAB.data,
                 )
-                if (!verifya) errors.add("PEP test 3.a failed on ${selectionKey}")
+                if (!verifya) errors.add("PEP test 3.a error on ${selectionKey}")
 
                 val verifyb = pep.decryptionProof.verifyDecryption(
                     extendedBaseHash,
@@ -37,7 +37,7 @@ class VerifierPep(
                     pep.ciphertextAB,
                     pep.T,
                 )
-                if (!verifyb) errors.add("PEP test 3.b failed on ${contest.contestId}#${pep.selectionId}")
+                if (!verifyb) errors.add("PEP test 3.b error on ${contest.contestId}#${pep.selectionId}")
                 // println(" selection ${selectionKey} verifya = $verifya verifyb = $verifyb")
             }
         }

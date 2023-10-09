@@ -51,5 +51,5 @@ fun SchnorrProofJson.importResult(group: GroupContext): Result<SchnorrProof, Str
     val p = this.public_key.import(group)
     val c = this.challenge.import(group)
     val r = this.response.import(group)
-    return if (p == null || c == null || r == null) Err("failed to import SchnorrProofJson") else Ok(SchnorrProof(p, c, r))
+    return if (p == null || c == null || r == null) Err("error importing SchnorrProofJson") else Ok(SchnorrProof(p, c, r))
 }

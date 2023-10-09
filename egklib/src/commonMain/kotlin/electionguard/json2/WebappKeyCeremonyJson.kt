@@ -35,7 +35,7 @@ fun PublicKeysJson.importResult(group: GroupContext): Result<PublicKeys, String>
     val allgood = proofs.map { it is Ok }.reduce { a, b -> a && b }
 
     return if (allgood) Ok( PublicKeys(this.guardianId, this.guardianXCoordinate, proofs.map {it.unwrap()}))
-    else Err("PublicKeysJson failed")
+    else Err("PublicKeysJson error")
 }
 
 /////////////////////////////////////////////////////

@@ -187,7 +187,7 @@ class RunTrustedPep {
             for (ballotPair in input) {
                 val result: Result<BallotPep, String> = pep.doEgkPep(ballotPair.first, ballotPair.second)
                 if (result is Err) {
-                    logger.warn { " PEP failed on ballot ${ballotPair.first.ballotId} because $result" }
+                    logger.warn { " PEP error on ballot ${ballotPair.first.ballotId} because $result" }
                 } else {
                     val pepBallot = result.unwrap()
                     logger.info { " PEP compared ${pepBallot.ballotId} equal=${pepBallot.isEq}" }

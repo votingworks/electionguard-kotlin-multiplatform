@@ -58,7 +58,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
 
     val errors = publicKeyResults.merge()
     if (errors is Err) {
-        return Err("keyCeremonyExchange failed exchanging public keys:\n ${errors.error}")
+        return Err("keyCeremonyExchange error exchanging public keys:\n ${errors.error}")
     }
 
     // exchange SecretKeyShares, and validate them
@@ -116,7 +116,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
     // check that everyone is happy
     var happy = trustees.map { it.isComplete() }.reduce{ a, b -> a && b }
     if (!happy) {
-        return Err("keyCeremonyExchange failed checkComplete")
+        return Err("keyCeremonyExchange not complete")
     }
 
     if (allowEncryptedFailure) {
@@ -125,14 +125,14 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
             Ok(KeyCeremonyResults(publicKeys))
         } else {
             val all = (keyResults + encryptedKeyResults).merge()
-            Err("keyCeremonyExchange failed exchanging shares: ${all.unwrapError()}")
+            Err("keyCeremonyExchange had failures exchanging shares: ${all.unwrapError()}, allowed to continue")
         }
     } else {
         val all = (keyResults + encryptedKeyResults).merge()
         return if (all is Ok) {
             Ok(KeyCeremonyResults(publicKeys))
         } else {
-            Err("keyCeremonyExchange failed exchanging shares:\n ${all.unwrapError()}")
+            Err("keyCeremonyExchange had failures exchanging shares:\n ${all.unwrapError()}")
         }
     }
 }

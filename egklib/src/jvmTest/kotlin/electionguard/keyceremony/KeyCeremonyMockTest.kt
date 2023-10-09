@@ -103,7 +103,7 @@ class KeyCeremonyMockTest {
         println("result = $result")
         assertTrue(result is Err)
         println(result)
-        assertTrue(result.error.contains("keyCeremonyExchange failed checkComplete"))
+        assertTrue(result.error.contains("keyCeremonyExchange not complete"))
     }
 
     @Test
@@ -127,7 +127,7 @@ class KeyCeremonyMockTest {
         println("result = $result")
         assertTrue(result is Err)
         println(result)
-        assertTrue(result.error.contains("keyCeremonyExchange failed checkComplete"))
+        assertTrue(result.error.contains("keyCeremonyExchange not complete"))
     }
 
 }

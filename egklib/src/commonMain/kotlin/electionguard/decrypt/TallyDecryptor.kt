@@ -94,12 +94,12 @@ internal class TallyDecryptor(
 
             if (doVerifierSelectionProof) {
                 if (!decryptedContestData.verifyContestData()) {
-                    logger.error { "verifyContestData failed for $contestId" }
+                    logger.error { "verifyContestData error for $contestId" }
                     contestDataDecryptions.checkIndividualResponses()
                 }
             } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents
                 if (!contestDataDecryptions.checkIndividualResponses()) {
-                    logger.error {"checkIndividualResponses failed for $contestId"}
+                    logger.error {"checkIndividualResponses error for $contestId"}
                 }
             }
 
@@ -134,12 +134,12 @@ internal class TallyDecryptor(
         // If it fails, then do the individual guardian verification, hopefully to pinpoint the culprit.
         if (doVerifierSelectionProof) {
             if (!decrypytedSelection.verifySelection()) {
-                logger.error { "verifySelection failed for  $contestId and ${selection.selectionId}" }
+                logger.error { "verifySelection error for  $contestId and ${selection.selectionId}" }
                 selectionDecryptions.checkIndividualResponses()
             }
         } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents
             if (!selectionDecryptions.checkIndividualResponses()) {
-                logger.error {"checkIndividualResponses failed for  $contestId and ${selection.selectionId}"}
+                logger.error {"checkIndividualResponses error for  $contestId and ${selection.selectionId}"}
             }
         }
 

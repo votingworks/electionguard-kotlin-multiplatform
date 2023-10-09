@@ -17,7 +17,7 @@ actual fun createDirectories(directory: String): Boolean {
     }
     try {
         Files.createDirectories(Path.of(directory))
-        logger.warn("Failed createDirectories = '$directory' ")
+        logger.warn("error createDirectories = '$directory' ")
         return true
     } catch (t: Throwable) {
         return false

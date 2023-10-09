@@ -34,7 +34,7 @@ actual class ConsumerProto actual constructor(private val topDir: String, privat
         return try {
             readElectionConfig(path.electionConfigPath())
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionConfig ${path.electionConfigPath()} failed")
+            Err(e.message ?: "readElectionConfig ${path.electionConfigPath()} error")
         }
     }
 
@@ -42,7 +42,7 @@ actual class ConsumerProto actual constructor(private val topDir: String, privat
         return try {
             groupContext.readElectionInitialized(path.electionInitializedPath())
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionInitialized ${path.electionInitializedPath()} failed")
+            Err(e.message ?: "readElectionInitialized ${path.electionInitializedPath()} error")
         }
     }
 
@@ -55,7 +55,7 @@ actual class ConsumerProto actual constructor(private val topDir: String, privat
         return try {
             groupContext.readTallyResult(path.tallyResultPath())
         } catch (e: Exception) {
-            Err(e.message ?: "readTallyResult ${path.tallyResultPath()} failed")
+            Err(e.message ?: "readTallyResult ${path.tallyResultPath()} error")
         }
     }
 
@@ -63,7 +63,7 @@ actual class ConsumerProto actual constructor(private val topDir: String, privat
         return try {
             groupContext.readDecryptionResult(path.decryptionResultPath())
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult ${path.decryptionResultPath()} failed")
+            Err(e.message ?: "readDecryptionResult ${path.decryptionResultPath()} error")
         }
     }
 

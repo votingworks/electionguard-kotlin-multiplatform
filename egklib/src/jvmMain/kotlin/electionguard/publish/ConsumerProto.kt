@@ -89,7 +89,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             }
             proto.import()
         } catch (e: Exception) {
-            Err("failed")
+            Err("error ${e.message}")
         }
     }
 
@@ -274,7 +274,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             ByteArrayInputStream(manifestBytes).use { inp -> proto = electionguard.protogen.Manifest.decodeFromStream(inp) }
             proto.import()
         } catch (e: Exception) {
-            Err(e.message ?: "makeManifestResult failed")
+            Err(e.message ?: "makeManifestResult error")
         }
     }
 
@@ -284,7 +284,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionConfig.decodeFromStream(inp) }
             proto.import()
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionConfig $filename failed")
+            Err(e.message ?: "readElectionConfig $filename error")
         }
     }
 
@@ -296,7 +296,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             }
             proto.import(this)
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionInitialized $filename failed")
+            Err(e.message ?: "readElectionInitialized $filename error")
         }
     }
 
@@ -306,7 +306,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             FileInputStream(filename).use { inp -> proto = electionguard.protogen.TallyResult.decodeFromStream(inp) }
             proto.import(this)
         } catch (e: Exception) {
-            Err(e.message ?: "readTallyResult $filename failed")
+            Err(e.message ?: "readTallyResult $filename error")
         }
     }
 
@@ -318,7 +318,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             }
             proto.import(this)
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $filename failed")
+            Err(e.message ?: "readDecryptionResult $filename error")
         }
     }
 
@@ -401,14 +401,14 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
                 electionguard.protogen.DecryptedTallyOrBallot.decodeFromByteBuffer(ByteBuffer.wrap(message))
             val tally = tallyProto.import(group)
 
-            setNext(tally.getOrElse { throw RuntimeException("Tally failed to parse") })
+            setNext(tally.getOrElse { throw RuntimeException("Tally error to parse") })
         }
     }
 
     private fun GroupContext.readTrustee(filename: String): DecryptingTrusteeDoerre {
         var proto: electionguard.protogen.DecryptingTrustee
         FileInputStream(filename).use { inp -> proto = electionguard.protogen.DecryptingTrustee.decodeFromStream(inp) }
-        return proto.import(this).getOrElse { throw RuntimeException("DecryptingTrustee $filename failed to parse") }
+        return proto.import(this).getOrElse { throw RuntimeException("DecryptingTrustee $filename error to parse") }
     }
 
     actual override fun iteratePepBallots(pepDir : String): Iterable<BallotPep> {
