@@ -14,6 +14,7 @@ last update 11/07/2023
   * [Run trusted Tally Decryption](#run-trusted-tally-decryption)
   * [Run trusted Ballot Decryption](#run-trusted-ballot-decryption)
   * [Run Verifier](#run-verifier)
+  * [Encrypt plaintext files again for Pep](#encrypt-plaintext-files-again-for-pep)
   * [Run Trusted Pep](#run-trusted-pep)
   * [Run Verify Pep](#run-verify-pep)
 <!-- TOC -->
@@ -307,6 +308,22 @@ Example:
     --showTime
 ````
 
+## Encrypt plaintext files again for Pep
+
+Example:
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egklib/egklib-all.jar \
+  electionguard.cli.RunBatchEncryption \
+    -in egklib/src/commonTest/data/workflow/allAvailableJson \
+    -ballots egklib/src/commonTest/data/workflow/allAvailableJson/private_data/input \
+    -out testOut/pep/testPepAllJson \
+    -device scanned \
+    --cleanOutput
+
+````
+
 ## Run Trusted Pep
 
 ```` 
@@ -327,11 +344,11 @@ Example:
 /usr/lib/jvm/jdk-19/bin/java \
   -classpath egklib/egklib-all.jar \
   electionguard.cli.RunTrustedPep \
-    -in testOut/cliWorkflow/electionRecord \
-    -trustees src/commonTest/data/workflow/allAvailableJson/private_data/trustees \
-    -scanned testOut/pep/testPepSomeJson/encrypted_ballots/scanned/
+    -in egklib/src/commonTest/data/workflow/allAvailableJson \
+    -trustees egklib/src/commonTest/data/workflow/allAvailableJson/private_data/trustees \
+    -scanned testOut/pep/testPepAllJson/encrypted_ballots/scanned \
     -out testOut/pep/testPepAllJson \
-    -nthreads 4 
+    -nthreads 25 
 ````
 
 ## Run Verify Pep
@@ -341,6 +358,7 @@ Usage: RunVerifyPep options_list
 Options: 
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --pepDirectory, -pep -> Directory containing PEP output (always required) { String }
+    --nthreads, -nthreads [11] -> Number of parallel threads to use { Int }
     --help, -h -> Usage info 
 ````
 
@@ -350,6 +368,6 @@ Example:
 /usr/lib/jvm/jdk-19/bin/java \
   -classpath egklib/egklib-all.jar \
   electionguard.cli.RunVerifyPep \
-    -in testOut/cliWorkflow/electionRecord \
+    -in egklib/src/commonTest/data/workflow/allAvailableJson \
     -pep testOut/pep/testPepAllJson
 ````

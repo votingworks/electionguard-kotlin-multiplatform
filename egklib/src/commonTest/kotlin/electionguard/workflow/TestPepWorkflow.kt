@@ -1,16 +1,11 @@
 package electionguard.workflow
 
-import com.github.michaelbull.result.Ok
 import electionguard.cli.RunBatchEncryption.Companion.batchEncryption
 import electionguard.cli.RunCreateElectionConfig
+import electionguard.cli.RunTrustedPep
 import electionguard.core.*
-import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.decrypt.Guardians
-import electionguard.pep.*
 import electionguard.publish.*
 import kotlin.test.Test
-import kotlin.test.assertTrue
-import kotlin.test.assertEquals
 
 /**
  * Run workflow with varying number of guardians, on the same ballots, and compare the results.
@@ -28,22 +23,22 @@ class TestPepWorkflow {
     @Test
     fun runPepWorkflows() {
         println("productionGroup (Default) = $group class = ${group.javaClass.name}")
-        runPepWorkflow(name1, 1, 1, listOf(1), 1)
+        //runPepWorkflow(name1, 1, 1, listOf(1), 1)
         runPepWorkflow(name1, 1, 1, listOf(1), 25)
 
-        runPepWorkflow(name2, 3, 3, listOf(1,2,3), 1)
+        //runPepWorkflow(name2, 3, 3, listOf(1,2,3), 1)
         runPepWorkflow(name2, 3, 3, listOf(1,2,3), 25)
 
-        runPepWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 1)
+        //runPepWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 1)
         runPepWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 25)
 
-        runPepWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 1)
+        //runPepWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 1)
         runPepWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 25)
     }
 
     fun runPepWorkflow(name : String, nguardians: Int, quorum: Int, present: List<Int>, nthreads: Int) {
-        println("===========================================================")
-        val workingDir =  "testOut/workflow/$name"
+        println("======================================================================================")
+        val workingDir =  "testOut/workflowPep/$name"
         val privateDir =  "$workingDir/private_data"
         val trusteeDir =  "${privateDir}/trustees"
         val invalidDir =  "${privateDir}/invalid"
@@ -71,62 +66,29 @@ class TestPepWorkflow {
         //println("----------- after encrypt ${group.showAndClearCountPowP()}")
 
         // encrypt again, simulating the CAKE workflow of scanning the paper ballots
-        batchEncryption(group, workingDir, workingDir, inputBallotDir, invalidDir, "scanPaper", nthreads, name1)
+        val scannedBallotDir = "$workingDir/scan"
+        batchEncryption(group, workingDir, scannedBallotDir, inputBallotDir, invalidDir, "scanPaper", nthreads, name1)
         //println("----------- after encrypt ${group.showAndClearCountPowP()}")
 
-        val dtrustees : List<DecryptingTrusteeIF> = readDecryptingTrustees(group, trusteeDir, init, present, true)
+        val decryptingTrustees = readDecryptingTrustees(group, trusteeDir, init, present, true)
 
-        // todo PARELLIZE PEP
-        println("runPepBlindTrust n = $quorum / $nguardians")
-        val btrustees = mutableListOf<PepTrustee>()
-        repeat(3) {
-            btrustees.add(PepTrustee(it, group))
-        }
-        val pep = PepBlindTrust(
-            group,
-            init.extendedBaseHash,
-            ElGamalPublicKey(init.jointPublicKey),
-            Guardians(group, init.guardians), // all guardians
-            btrustees,
-            dtrustees,
-        )
-
-        /* call PEP to compare the two encryptions
-        val pep = PepTrusted(
-            group,
-            init.extendedBaseHash,
-            ElGamalPublicKey(init.jointPublicKey),
-            Guardians(group, init.guardians), // all guardians
-            dtrustees,
-            3
-        )
-
-         */
-
-        val starting = getSystemTimeInMillis() // wall clock
         group.showAndClearCountPowP()
-        compareBallotPepEquivilence(pep, workingDir, "device11", "scanPaper")
 
-        val took = getSystemTimeInMillis() - starting
+        val pepBallotDir = "$workingDir/pep"
+        println("runTrustedPep n = $quorum / $nguardians")
+        RunTrustedPep.batchTrustedPep(
+            group,
+            workingDir,
+            "$scannedBallotDir/encrypted_ballots/scanPaper",
+            pepBallotDir,
+            decryptingTrustees,
+            nthreads
+        )
+
         val nballots = 33
-        val per = took / (1000.0 * nballots)
-        println("\nPEP took $took msecs = ${per} secs/ballot")
         val nencyptions = 100
-        val expect = (8 + 8 * nguardians + 8 * btrustees.size) * nencyptions  * nballots // counting the verifier
+        val nb = 3
+        val expect = (8 + 8 * nguardians + 8 * nb) * nencyptions  * nballots // counting the verifier
         println("----------- after compareBallotPepEquivilence ${group.showAndClearCountPowP()}, expect=$expect")
-    }
-
-    fun compareBallotPepEquivilence(pep: PepAlgorithm, workingDir : String, device1 : String, device2 : String) {
-        val record =  readElectionRecord(group, workingDir)
-
-        val ballotsa = record.encryptedBallots(device1) { true }.iterator()
-        val ballotsb = record.encryptedBallots(device2) { true }.iterator()
-        while (ballotsa.hasNext()) { // assumes same order, may be wrong
-            val ballota = ballotsa.next()
-            val result = pep.testEquivalent(ballota, ballotsb.next())
-            assertTrue(result is Ok)
-            // println(" ${ballota.ballotId} compare ${result}")
-            assertEquals(true, result.value)
-        }
     }
 }

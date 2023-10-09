@@ -33,12 +33,12 @@ interface Consumer {
     fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
     fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
 
-    //// not part of the election record, private data
-    // read plaintext ballots in given directory, with filter
+    //// not part of the election record
+    // read plaintext ballots in given directory, private data.
     fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
-    // trustee in given directory for given guardianId
+    // trustee in given directory for given guardianId, private data.
     fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF
-
+    // read specific file containing encrypted ballot (eg for PEP).
     fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, String>
 }
 

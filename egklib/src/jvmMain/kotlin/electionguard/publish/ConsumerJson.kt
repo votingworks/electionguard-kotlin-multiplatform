@@ -5,6 +5,7 @@ package electionguard.publish
 import com.github.michaelbull.result.*
 import electionguard.ballot.*
 import electionguard.core.GroupContext
+import electionguard.core.pathExists
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.json2.*
@@ -125,7 +126,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     actual override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> {
         val deviceDirPath = Path.of(jsonPaths.encryptedBallotDir(device))
         if (!Files.exists(deviceDirPath)) {
-            throw RuntimeException("$deviceDirPath doesnt exist")
+            throw RuntimeException("ConsumerJson.iterateEncryptedBallots: $deviceDirPath doesnt exist")
         }
         val chainResult = readEncryptedBallotChain(device)
         if (chainResult is Ok) {
@@ -248,8 +249,11 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     }
 
     actual override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, String> {
-        val ballotFilePath = Path.of(jsonPaths.encryptedBallotPath(ballotDir, ballotId))
-        return Ok(readEncryptedBallot(ballotFilePath))
+        val ballotFilename = jsonPaths.encryptedBallotPath(ballotDir, ballotId)
+        if (!pathExists(ballotFilename)) {
+            return Err("readEncryptedBallot '$ballotFilename' file does not exist")
+        }
+        return Ok(readEncryptedBallot(Path.of(ballotFilename)))
     }
 
     actual override fun iteratePepBallots(pepDir : String): Iterable<BallotPep> {
@@ -345,7 +349,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         ballotDir: Path,
         private val filter: Predicate<PlaintextBallot>?
     ) : AbstractIterator<PlaintextBallot>() {
-        val pathList = ballotDir.pathList()
+        val pathList = ballotDir.pathListNoDirs()
         var idx = 0
 
         override fun computeNext() {
@@ -369,7 +373,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         private val group: GroupContext,
         private val filter: Predicate<EncryptedBallot>?,
     ) : AbstractIterator<EncryptedBallot>() {
-        val pathList = ballotDir.pathList()
+        val pathList = ballotDir.pathListNoDirs()
         var idx = 0
 
         override fun computeNext() {
@@ -392,7 +396,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         ballotDir: Path,
         private val group: GroupContext,
     ) : AbstractIterator<DecryptedTallyOrBallot>() {
-        val pathList = ballotDir.pathList()
+        val pathList = ballotDir.pathListNoDirs()
         var idx = 0
 
         override fun computeNext() {
@@ -410,6 +414,9 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     }
 
     private fun readTrustee(filePath: Path): Result<DecryptingTrusteeDoerre, String> {
+        if (!pathExists(filePath.toString())) {
+            return Err("readTrustee '$filePath' file does not exist")
+        }
         return try {
             fileSystemProvider.newInputStream(filePath).use { inp ->
                 val json = Json.decodeFromStream<TrusteeJson>(inp)

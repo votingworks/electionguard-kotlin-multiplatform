@@ -250,7 +250,7 @@ class RunBatchEncryption {
             println("Encryption with nthreads = $nthreads took $took millisecs for $count ballots = $msecsPerBallot msecs/ballot")
             val msecPerEncryption = (took.toDouble() / countEncryptions)
             val encryptionPerBallot = if (count == 0) 0 else (countEncryptions / count)
-            println("    $countEncryptions total encryptions = $encryptionPerBallot per ballot = $msecPerEncryption millisecs/encryption")
+            println("    $countEncryptions total encryptions = $encryptionPerBallot per ballot = $msecPerEncryption millisecs/encryption with $nthreads threads")
         }
 
         private var codeBaux = ByteArray(0)
