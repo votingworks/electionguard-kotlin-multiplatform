@@ -31,7 +31,7 @@ class RunVerifier {
                 ArgType.Int,
                 shortName = "nthreads",
                 description = "Number of parallel threads to use"
-            )
+            ).default(11)
             val showTime by parser.option(
                 ArgType.Boolean,
                 shortName = "time",
@@ -40,7 +40,7 @@ class RunVerifier {
             parser.parse(args)
             println("RunVerifier starting\n   input= $inputDir")
 
-            runVerifier(productionGroup(), inputDir, nthreads ?: 11, showTime)
+            runVerifier(productionGroup(), inputDir, nthreads, showTime)
         }
 
         fun runVerifier(group: GroupContext, inputDir: String, nthreads: Int, showTime: Boolean = false): Boolean {

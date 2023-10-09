@@ -61,7 +61,7 @@ class RunCreateElectionConfig {
                         "   quorum= $quorum\n" +
                         "   output = $outputDir\n" +
                         "   createdBy = $createdBy\n" +
-                        "   baux0 = $baux0" +
+                        "   baux0 = $baux0\n" +
                         "   chainCodes = $chainCodes"
             )
 

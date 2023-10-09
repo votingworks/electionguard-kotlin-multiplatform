@@ -150,7 +150,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         private val group: GroupContext,
         private val filter: Predicate<EncryptedBallot>?,
     ) : AbstractIterator<EncryptedBallot>() {
-        val pathList = ballotDir.pathList()
+        val pathList = ballotDir.pathListNoDirs()
         var idx = 0
 
         override fun computeNext() {
