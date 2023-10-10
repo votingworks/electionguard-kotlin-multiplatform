@@ -303,7 +303,7 @@ Example:
 /usr/lib/jvm/jdk-19/bin/java \
   -classpath egklib/egklib-all.jar \
   electionguard.cli.RunVerifier \
-    -in testOut/cliWorkflow/electionRecord \
+    -in testOut/cliWorkflow/electionRecord 
 ````
 
 ## Encrypt plaintext files again for Pep
@@ -345,7 +345,7 @@ Example:
     -in egklib/src/commonTest/data/workflow/allAvailableJson \
     -trustees egklib/src/commonTest/data/workflow/allAvailableJson/private_data/trustees \
     -scanned testOut/pep/testPepAllJson/encrypted_ballots/scanned \
-    -out testOut/pep/testPepAllJson \
+    -out testOut/pep/testPepAllJson/pepBallots \
     -nthreads 25 
 ````
 
@@ -355,7 +355,7 @@ Example:
 Usage: RunVerifyPep options_list
 Options: 
     --inputDir, -in -> Directory containing input election record (always required) { String }
-    --pepDirectory, -pep -> Directory containing PEP output (always required) { String }
+    --pepBallotDir, -pep -> Directory containing PEP output (always required) { String }
     --nthreads, -nthreads [11] -> Number of parallel threads to use { Int }
     --help, -h -> Usage info 
 ````
@@ -366,6 +366,6 @@ Example:
 /usr/lib/jvm/jdk-19/bin/java \
   -classpath egklib/egklib-all.jar \
   electionguard.cli.RunVerifyPep \
-    -in egklib/src/commonTest/data/workflow/allAvailableJson \
-    -pep testOut/pep/testPepAllJson
+    --inputDir egklib/src/commonTest/data/workflow/allAvailableJson \
+    --pepBallotDir testOut/pep/testPepAllJson/pepBallots
 ````

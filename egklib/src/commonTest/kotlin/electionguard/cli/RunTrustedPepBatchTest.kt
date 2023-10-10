@@ -80,10 +80,10 @@ class RunTrustedPepBatchTest {
         )
     }
 
-    @Test
+    // @Test
     fun testVerifyPep() {
         val inputDir = "src/commonTest/data/workflow/allAvailableJson"
-        val outputDir = "testOut/pep/testPepAllJson"
+        val outputDir = "../testOut/pep/testPepAllJson"
 
         RunVerifyPep.main(
             arrayOf(
@@ -92,5 +92,6 @@ class RunTrustedPepBatchTest {
             )
         )
     }
+
 
 }

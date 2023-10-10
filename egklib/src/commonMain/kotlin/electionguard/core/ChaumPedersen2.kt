@@ -144,16 +144,15 @@ fun ChaumPedersenRangeProofKnownNonce.verify(
     val (alpha, beta) = ciphertext
     results.add(
         if (alpha.isValidResidue() && beta.isValidResidue()) Ok(true) else
-            Err("    5.A,6.A invalid residue: alpha = ${alpha.inBounds()} beta = ${beta.inBounds()}")
+            Err("    5.A,6.A values not in Zp^r: alpha = ${alpha.inBounds()} beta = ${beta.inBounds()}")
     )
 
     val expandedProofs = proofs.mapIndexed { j, proof ->
         // recomputes all the a and b values
         val (cj, vj) = proof
-        results.add(
-            if (cj.inBounds() && vj.inBounds()) Ok(true) else
-                Err("    5.B,6.B c = ${cj.inBounds()} v = ${vj.inBounds()} idx=$j")
-        )
+        if (cj.inBounds() && vj.inBounds()) results.add(Ok(true))
+        if (!cj.inBounds()) results.add(Err("    5.B,6.B cj (idx $j) not in bounds"))
+        if (!vj.inBounds()) results.add(Err("    5.C,6.C vj (idx $j) not in bounds"))
 
         val wj = (vj - j.toElementModQ(group) * cj)
         ExpandedChaumPedersenProof(
