@@ -15,13 +15,13 @@ class PepTest {
     @Test
     fun testPepSimple() {
         runPepSimple(1, 1, 1, 1, true)
-        //runPepSimple(1, 1, 1, 0, false)
-        //runPepSimple(2, 2, 1, 1, true)
-        //runPepSimple(3, 3, 1, 1, true)
-        //runPepSimple(3, 2, 1, 1, true)
-        //runPepSimple(5, 5, 1, 1, true)
-        //runPepSimple(8, 5, 1, 1, true)
-        //runPepSimple(8, 5, 1, 0, false)
+        runPepSimple(1, 1, 1, 0, false)
+        runPepSimple(2, 2, 1, 1, true)
+        runPepSimple(3, 3, 1, 1, true)
+        runPepSimple(3, 2, 1, 1, true)
+        runPepSimple(5, 5, 1, 1, true)
+        runPepSimple(8, 5, 1, 1, true)
+        runPepSimple(8, 5, 1, 0, false)
     }
 
     fun runPepSimple(

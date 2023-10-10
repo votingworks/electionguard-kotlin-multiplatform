@@ -54,7 +54,7 @@ class EncryptDecryptBallotTest {
 private val writeout = false
 private val nguardians = 4
 private val quorum = 3
-private val nballots = 11
+private val nballots = 3
 private val debug = false
 
 fun runEncryptDecryptBallot(

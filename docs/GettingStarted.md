@@ -1,6 +1,6 @@
 # ElectionGuard-Kotlin-Multiplatform Getting Started
 
-_last update 9/06/2023_
+_last update 10/10/2023_
 
 ## Requirements
 
@@ -86,6 +86,14 @@ you can build a "fat jar" that includes egk and its dependencies.
 
 (This is not yet working in electionguard-kotlin-multiplatform. see egk-webapps to build it there)
 
+If you've changed the egk library, copy it to the webapps repo (otherwise egk-webapps will already have the egk library)
+
+```
+  cp egkhome/egklib/build/libs/egklib-jvm-2.0.0-SNAPSHOT.jar devhome/egk-webapps/libs/
+```
+
+Make the fatJar:
+
 ```
   cd devhome/egk-webapps
   ./gradlew fatJar
@@ -93,14 +101,20 @@ you can build a "fat jar" that includes egk and its dependencies.
 
 You should find that the fat jar file is placed into:
 
-`devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar
+`devhome/egk-webapps/egklib/build/libs/egklib-all.jar
 `
+
+You can put this anywhere, but by conventions we place it back into the egk repo:
+
+```
+  cp devhome/egk-webapps/egklib/build/libs/egklib-all.jar egkhome/egklib/
+```
 
 You can put this jar into your build like
 
 ```
   dependencies {
-    implementation(files("devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar"))
+    implementation(files("egkhome/egklib/egklib-all.jar"))
      ...
   }
 ```
@@ -110,21 +124,8 @@ And you can also add it to your classpath to execute programs from the command l
 ```
 /usr/lib/jvm/jdk-19/bin/java \
     -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-    -classpath devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
+    -classpath egkhome/egklib/egklib-all.jar \
     electionguard.verifier.RunVerifierKt \
     -in /path/to/election_record
 ```
 
-Since the main class is _electionguard.verifier.RunVerifierKt_ you can also run the verifier as:
-
-```
-/usr/lib/jvm/jdk-19/bin/java \
-    -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-    -jar devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
-    -in /path/to/election_record
-```
-
-/usr/lib/jvm/jdk-19/bin/java \
-    -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-    -jar devhome/egk-webapps/egklib/build/libs/egklib-2.0.0-all.jar \
-    -in /path/to/election_record

@@ -4,8 +4,8 @@ draft 6/27/2023
 
 * These are JSON files that give inputs and expected outputs for the purpose of testing interoperability between implementations.
 * The JSON formats are ad-hoc. Suggestions for improvements are welcome!
-* The Kotlin code generates and reads back the JSON test vectors. Follow it to find the implementation of that feature. Note that its just my implementation, not guarentted to be right.
-
+* The Kotlin code generates and reads back the JSON test vectors. Follow it to find the implementation of that feature. 
+  Note that its just my implementation, not guaranteed to be right.
 
 | Name                   | JSON file                                                                               | Kotlin code                                                                                       |
 |------------------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|

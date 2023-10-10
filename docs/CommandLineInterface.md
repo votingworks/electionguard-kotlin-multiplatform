@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 11/07/2023
+last update 10/10/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
@@ -292,9 +292,9 @@ output:
 Usage: RunVerifier options_list
 Options: 
     --inputDir, -in -> Directory containing input election record (always required) { String }
-    --nthreads, -nthreads -> Number of parallel threads to use { Int }
+    --nthreads, -nthreads [11] -> Number of parallel threads to use { Int }
     --showTime, -time [false] -> Show timing 
-    --help, -h -> Usage info 
+    --help, -h -> Usage info
 ````
 
 Example:
@@ -304,8 +304,6 @@ Example:
   -classpath egklib/egklib-all.jar \
   electionguard.cli.RunVerifier \
     -in testOut/cliWorkflow/electionRecord \
-    -nthreads 10 \
-    --showTime
 ````
 
 ## Encrypt plaintext files again for Pep
