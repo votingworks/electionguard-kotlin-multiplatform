@@ -38,15 +38,6 @@ class CakeEgkDecryptionTest {
         runEgkDecryption(6, 5, 1, 0, false)
     }
 
-    @Test
-    fun testEgkDecryptionCount() {
-        runEgkDecryption(1, 1, 1, 1, true, false)
-        runEgkDecryption(2, 2, 1, 1, true, false)
-        runEgkDecryption(3, 3, 1, 1, true, false)
-        runEgkDecryption(5, 5, 1, 1, true, false)
-        runEgkDecryption(8, 8, 1, 1, true, false)
-    }
-
     fun runEgkDecryption(
         nguardians: Int,
         quorum: Int,

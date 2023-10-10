@@ -100,7 +100,7 @@ If an Input Ballot fails validation, it is annotated as to why it failed, and pl
 
 ### C. Voting limits
 
-Voting limits are not enforced at ballot validation. They are marked as overvotes. So an overvote on one contest does not
+Voting limits are not enforced at ballot validation. They are marked as overvotes, so that an overvote on one contest does not
 invalidate the entire ballot.
 
 

@@ -32,16 +32,16 @@ class TestNumGuardians {
     fun runWorkflows() {
         println("productionGroup (Default) = $group class = ${group.javaClass.name}")
         //runWorkflow(name1, 1, 1, listOf(1), 1)
-        //runWorkflow(name1, 1, 1, listOf(1), 25)
+        runWorkflow(name1, 1, 1, listOf(1), 25)
 
         //runWorkflow(name2, 3, 3, listOf(1,2,3), 1)
-        //runWorkflow(name2, 3, 3, listOf(1,2,3), 25)
+        runWorkflow(name2, 3, 3, listOf(1,2,3), 25)
 
-        runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 1)
-        //runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 25)
+        // runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 1)
+        runWorkflow(name3, 6, 5, listOf(1,2,4,5,6), 25)
 
-        runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 1)
-        //runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 25)
+        //runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 1)
+        runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 25)
     }
 
     fun runWorkflow(name : String, nguardians: Int, quorum: Int, present: List<Int>, nthreads: Int) {
