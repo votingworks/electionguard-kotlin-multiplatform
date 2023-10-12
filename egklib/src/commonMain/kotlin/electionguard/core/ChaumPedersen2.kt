@@ -126,8 +126,8 @@ internal fun ElGamalCiphertext.makeChaumPedersenWithNonces(
     return ChaumPedersenRangeProofKnownNonce(cpgList)
 }
 
-// Verification 5 (Well-formedness of selection encryptions) TODO check complete
-// Verification 6 (Adherence to vote limits) TODO check complete
+// Verification 5 and 15 (Well-formedness of selection encryptions)
+// Verification 6 and 16 (Adherence to vote limits)
 fun ChaumPedersenRangeProofKnownNonce.verify(
     ciphertext: ElGamalCiphertext,
     publicKey: ElGamalPublicKey, // K

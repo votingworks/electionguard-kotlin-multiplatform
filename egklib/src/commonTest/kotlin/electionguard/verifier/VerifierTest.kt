@@ -25,6 +25,11 @@ class VerifierTest {
         RunVerifier.runVerifier(productionGroup(), "src/commonTest/data/workflow/someAvailableJson", 11, true)
     }
 
+    // @Test
+    fun testProblem() {
+        RunVerifier.runVerifier(productionGroup(), "../testOut/cliWorkflow/electionRecord", 11, true)
+    }
+
     @Test
     fun readRecoveredElectionRecordAndValidate() {
         RunVerifier.main(

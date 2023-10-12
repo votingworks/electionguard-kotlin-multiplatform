@@ -11,7 +11,8 @@ available under an MIT-style open source [License](LICENSE).
 Our GitHub repository is now hosted by [VotingWorks](https://www.voting.works/).
 
 Currently we have ~88% LOC code coverage on the common and jvm core library (7024/7995 LOC). We are focusing on just 
-the JVM implementation, and will consider native and other implementations in the future. 
+the JVM implementation, and will consider native and other implementations in the future. Current library dependencies
+are summarizes [here](dependencies.txt).
 
 Currently Java 17 is required.
 
