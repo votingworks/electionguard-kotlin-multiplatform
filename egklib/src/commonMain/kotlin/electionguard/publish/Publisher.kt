@@ -33,7 +33,7 @@ interface DecryptedTallyOrBallotSinkIF : Closeable {
 }
 
 interface PepBallotSinkIF : Closeable {
-    fun writePepBallot(ballotPep: BallotPep)
+    fun writePepBallot(pepBallot: BallotPep)
 }
 
 // copied from io.ktor.utils.io.core.Closeable to break package dependency
