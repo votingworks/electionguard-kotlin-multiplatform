@@ -46,7 +46,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         println(" 3. verifyElectionPublicKey= $publicKeyOk")
 
         val baseHashOk = verifyExtendedBaseHash()
-        println(" 4. verifyExtendedBaseHAsh= $baseHashOk")
+        println(" 4. verifyExtendedBaseHash= $baseHashOk")
 
         if (record.stage() < ElectionRecord.Stage.ENCRYPTED) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
@@ -55,11 +55,11 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             return true
         }
 
-        // encryption and vote limits 5,6,7
+        // encryption and vote limits
         val verifyEncryptions = VerifyEncryptedBallots(group, manifest, jointPublicKey, He, config, nthreads)
-        // Note we are validating all ballots, not just CAST
+        // Note we are validating all ballots, not just CAST,including preencrypted
         val ballotResult = verifyEncryptions.verifyBallots(record.encryptedAllBallots { true }, stats, showTime)
-        println(" 5,6,17,18. verifyEncryptedBallots $ballotResult")
+        println(" 5,6,15,16,17,18. verifyEncryptedBallots $ballotResult")
 
         val chainResults = if (config.chainConfirmationCodes) {
             val chainResult = verifyEncryptions.verifyConfirmationChain(record)
@@ -67,14 +67,12 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
             chainResult
         } else Ok(true)
 
-        // TODO contest data for encrypted ballots ??
-
         if (record.stage() < ElectionRecord.Stage.TALLIED) {
             println("election record stage = ${record.stage()}, stopping verification now\n")
             return true
         }
 
-        // tally accumulation, box 7 and 9E
+        // tally accumulation
         val verifyAggregation = VerifyAggregation(group, verifyEncryptions.aggregator)
         val aggResult = verifyAggregation.verify(record.encryptedTally()!!, showTime)
         println(" 8. verifyBallotAggregation $aggResult")
