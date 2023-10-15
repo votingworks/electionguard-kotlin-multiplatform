@@ -10,7 +10,7 @@ import electionguard.decrypt.PartialDecryption
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// stuff used by the webapps - maybe move there ??
+// stuff used by the webapps - easiest to have it here as a common dependency
 
 @Serializable
 data class SetMissingRequestJson(

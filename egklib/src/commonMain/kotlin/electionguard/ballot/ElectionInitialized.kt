@@ -12,7 +12,9 @@ data class ElectionInitialized(
 ) {
     init {
         require(guardians.isNotEmpty()) { "empty guardians" }
-        require(guardians.size == this.config.numberOfGuardians) { "nguardians ${guardians.size} != ${this.config.numberOfGuardians}" }
+        require(guardians.size == this.config.numberOfGuardians) {
+            "ElectionInitialized nguardians ${guardians.size} does not match config= ${this.config.numberOfGuardians}"
+        }
     }
 
     fun jointPublicKey(): ElGamalPublicKey {
@@ -30,5 +32,15 @@ data class ElectionInitialized(
         val added = metadata.toMutableMap()
         pairs.forEach { added[it.first] = it.second }
         return this.copy(metadata = added)
+    }
+
+    fun show(): String = buildString {
+        appendLine("ElectionInitialized")
+        append("${config.show()}")
+        appendLine(" jointPublicKey ${jointPublicKey}")
+        appendLine(" extendedBaseHash ${extendedBaseHash}")
+        guardians.forEach {
+            appendLine(" ${it}")
+        }
     }
 }

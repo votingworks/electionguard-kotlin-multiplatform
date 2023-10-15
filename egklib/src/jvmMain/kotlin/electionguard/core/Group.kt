@@ -262,14 +262,14 @@ class ProductionGroupContext(
     // temp debug
 
     override fun showAndClearCountPowP() : String {
-        val result = "countPowP,AccPowP= ${countPowP}, $countAccPowP total= ${countPowP.get()+countAccPowP.get()}"
-        countPowP.set(0)
+        val result = "countPowP,AccPowP= ${countPow}, $countAccPowP total= ${countPow.get()+countAccPowP.get()}"
+        countPow.set(0)
         countAccPowP.set(0)
         return result
     }
 }
 
-private val countPowP = AtomicInteger(0)
+private val countPow = AtomicInteger(0)
 private val countAccPowP = AtomicInteger(0)
 
 private fun Element.getCompat(other: ProductionGroupContext): BigInteger {
@@ -320,8 +320,10 @@ class ProductionElementModQ(internal val element: BigInteger, val groupContext: 
     override infix operator fun div(denominator: ElementModQ): ElementModQ =
         this * denominator.multInv()
 
-    override infix fun powQ(e: ElementModQ): ElementModQ =
-        this.element.modPow(e.getCompat(groupContext), groupContext.q).wrap()
+    override infix fun powQ(e: ElementModQ): ElementModQ {
+        countPow.incrementAndGet()
+        return this.element.modPow(e.getCompat(groupContext), groupContext.q).wrap()
+    }
 
     override fun equals(other: Any?) = when (other) {
         is ElementModQ -> byteArray().contentEquals(other.byteArray())
@@ -353,13 +355,13 @@ open class ProductionElementModP(internal val element: BigInteger, val groupCont
     override operator fun compareTo(other: ElementModP): Int = element.compareTo(other.getCompat(groupContext))
 
     override fun isValidResidue(): Boolean {
-        countPowP.incrementAndGet()
+        countPow.incrementAndGet()
         val residue = this.element.modPow(groupContext.q, groupContext.p) == groupContext.ONE_MOD_P.element
         return inBounds() && residue
     }
 
     override infix fun powP(e: ElementModQ) : ElementModP {
-        countPowP.incrementAndGet()
+        countPow.incrementAndGet()
         return this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
     }
 

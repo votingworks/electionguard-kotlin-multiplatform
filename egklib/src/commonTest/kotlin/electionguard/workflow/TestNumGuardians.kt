@@ -42,6 +42,9 @@ class TestNumGuardians {
 
         //runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 1)
         runWorkflow(name4, 10, 8, listOf(1,2,4,5,6,7,8,9), 25)
+
+        checkTalliesAreEqual()
+        checkBallotsAreEqual()
     }
 
     fun runWorkflow(name : String, nguardians: Int, quorum: Int, present: List<Int>, nthreads: Int) {
@@ -106,8 +109,6 @@ class TestNumGuardians {
         println("----------- after verify ${group.showAndClearCountPowP()}")
     }
 
-    // TODO these assume workflow already ran - fails on github
-    //@Test
     fun checkTalliesAreEqual() {
         val record1 =  readElectionRecord(group, "testOut/workflow/$name1")
         val record2 =  readElectionRecord(group, "testOut/workflow/$name2")
@@ -116,10 +117,13 @@ class TestNumGuardians {
         val record3 =  readElectionRecord(group, "testOut/workflow/$name3")
         testEqualTallies(record1.decryptedTally()!!, record3.decryptedTally()!!)
         testEqualTallies(record2.decryptedTally()!!, record3.decryptedTally()!!)
+
+        val record4 =  readElectionRecord(group, "testOut/workflow/$name4")
+        testEqualTallies(record1.decryptedTally()!!, record4.decryptedTally()!!)
+        testEqualTallies(record2.decryptedTally()!!, record4.decryptedTally()!!)
     }
 
-    //@Test
-    fun testBallots() {
+    fun checkBallotsAreEqual() {
         val record1 =  readElectionRecord(group, "testOut/workflow/$name1")
         val record2 =  readElectionRecord(group, "testOut/workflow/$name2")
         println("compare ${record1.topdir()} ${record2.topdir()}")
@@ -131,7 +135,6 @@ class TestNumGuardians {
         }
     }
 
-    // doesnt make sense that these are ordered
     fun testEqualTallies(tallya : DecryptedTallyOrBallot, tallyb : DecryptedTallyOrBallot) {
         assertEquals(tallya.id, tallyb.id)
         print(" compare ${tallya.id} ${tallyb.id}")

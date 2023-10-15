@@ -15,7 +15,7 @@ data class DecryptingTrusteeDoerre(
     val group = compatibleContextOrFail(publicKey, keyShare)
     // problem with this is now theres state; if trustee goes down it cant come back up and continue, if there are
     // PartialDecryption not yet challenged, since there will be a different randomConstantNonce.
-    val randomConstantNonce = group.randomElementModQ(2) // random value u in Zq
+    private val randomConstantNonce = group.randomElementModQ(2) // random value u in Zq
 
     init {
         require(xCoordinate > 0)

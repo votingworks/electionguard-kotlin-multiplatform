@@ -29,7 +29,7 @@ data class ElectionConfig(
     val metadata: Map<String, String> = emptyMap(),
 ) {
     init {
-        require(numberOfGuardians > 0)  { "numberOfGuardians ${numberOfGuardians} <= 0" }
+        require(numberOfGuardians > 0) { "numberOfGuardians ${numberOfGuardians} <= 0" }
         require(numberOfGuardians >= quorum) { "numberOfGuardians ${numberOfGuardians} != $quorum" }
     }
 
@@ -66,6 +66,12 @@ data class ElectionConfig(
         return result
     }
 
+    fun show(): String = buildString {
+        appendLine("ElectionConfig '${configVersion}' numberOfGuardians=$numberOfGuardians, quorum=$quorum chainConfirmationCodes=$chainConfirmationCodes")
+        appendLine("  parameterBaseHash ${parameterBaseHash}")
+        appendLine("  electionBaseHash ${electionBaseHash}")
+        appendLine("  ElectionConstants ${constants}")
+    }
 }
 
 /**

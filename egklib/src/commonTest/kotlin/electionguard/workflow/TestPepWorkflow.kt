@@ -8,7 +8,7 @@ import electionguard.publish.*
 import kotlin.test.Test
 
 /**
- * Run workflow with varying number of guardians, on the same ballots, and compare the results.
+ * Run workflow with varying number of guardians, on the same ballots.
  */
 class TestPepWorkflow {
     val group = productionGroup()

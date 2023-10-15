@@ -98,6 +98,7 @@ fun ElementModQ.publishJson(): ElementModQJson = ElementModQJson(this.byteArray(
 /** Publishes an UInt256 to its external, serializable form. */
 fun UInt256.publishJson(): UInt256Json = UInt256Json(this.bytes)
 
+// TODO these throw RuntimeException instead of T?
 fun ElementModPJson.import(group: GroupContext): ElementModP = group.binaryToElementModP(this.bytes)?: throw RuntimeException()
 
 fun ElementModQJson.import(group: GroupContext): ElementModQ = group.binaryToElementModQ(this.bytes)?: throw RuntimeException()

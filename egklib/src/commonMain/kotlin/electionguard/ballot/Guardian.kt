@@ -7,7 +7,7 @@ import electionguard.core.SchnorrProof
 data class Guardian(
     val guardianId: String,
     val xCoordinate: Int, // use sequential numbering starting at 1; = i of T_i, K_i
-    val coefficientProofs: List<SchnorrProof> // the order is the same as coordinates, size = quorum
+    val coefficientProofs: List<SchnorrProof> // for each coordinate in polynomial Pi(x)
 ) {
     init {
         require(guardianId.isNotEmpty())
