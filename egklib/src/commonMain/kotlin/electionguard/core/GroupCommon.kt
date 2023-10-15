@@ -251,7 +251,7 @@ interface ElementModQ : Element, Comparable<ElementModQ> {
     /** Computes the additive inverse */
     operator fun unaryMinus(): ElementModQ
 
-    /** Computes b^e mod q */
+    /** Computes b^e mod q. LOOK seems to be not ever used */
     infix fun powQ(e: ElementModQ): ElementModQ
 
     /** Finds the multiplicative inverse */

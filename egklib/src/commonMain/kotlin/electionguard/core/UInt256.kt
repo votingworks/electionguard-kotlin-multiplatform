@@ -49,22 +49,22 @@ fun ByteArray.toUInt256(): UInt256 {
     return UInt256(this.normalize(32))
 }
 
-/** Make ByteArray have exactly [want] bytes by zero padding or removing leading zeros.
+/** Make ByteArray have exactly [nbytes] bytes by zero padding or removing leading zeros.
  * Throws an [IllegalArgumentException] if not possible. */
-fun ByteArray.normalize(want: Int): ByteArray {
-    return if (size == want) {
+fun ByteArray.normalize(nbytes: Int): ByteArray {
+    return if (size == nbytes) {
         this
-    } else if (size > want) {
+    } else if (size > nbytes) {
         // BigInteger sometimes has leading zeroes, so remove them
-        val leading = size - want
+        val leading = size - nbytes
         for (idx in 0 until leading) {
             if (this[idx].compareTo(0) != 0) {
-                throw IllegalArgumentException("ByteArray.normalize has $size bytes, only want $want, leading zeroes stop at $idx")
+                throw IllegalArgumentException("ByteArray.normalize has $size bytes, only want $nbytes, leading zeroes stop at $idx")
             }
         }
         this.copyOfRange(leading, this.size)
     } else {
-        val leftPad = ByteArray(want - size) { 0 }
+        val leftPad = ByteArray(nbytes - size) { 0 }
         leftPad + this
     }
 }
