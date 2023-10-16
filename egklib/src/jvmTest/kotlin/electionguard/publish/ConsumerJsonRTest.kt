@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 import kotlin.test.Test
 
 class ConsumerJsonRTest {
-    val topdir = "/home/stormy/dev/github/electionguard-rust/working/"
+    val topdir = "src/commonTest/data/testElectionRecord/egrust"
 
     @Test
     fun readElectionConfig() {

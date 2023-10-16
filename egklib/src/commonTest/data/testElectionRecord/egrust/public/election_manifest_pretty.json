@@ -1,0 +1,208 @@
+{
+  "label": "General Election - The United Realms of Imaginaria",
+  "contests": [
+    {
+      "label": "For President and Vice President of The United Realms of Imaginaria",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Thündéroak, Vâlêriana D.\nËverbright, Ålistair R. Jr.\n(Ætherwïng)"
+        },
+        {
+          "label": "Stârførge, Cássánder A.\nMøonfire, Célestïa L.\n(Crystâlheärt)"
+        }
+      ]
+    },
+    {
+      "label": "Minister of Arcane Sciences",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Élyria Moonshadow\n(Crystâlheärt)"
+        },
+        {
+          "label": "Archímedes Darkstone\n(Ætherwïng)"
+        },
+        {
+          "label": "Seraphína Stormbinder\n(Independent)"
+        },
+        {
+          "label": "Gávrïel Runëbørne\n(Stärsky)"
+        }
+      ]
+    },
+    {
+      "label": "Minister of Elemental Resources",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Tïtus Stormforge\n(Ætherwïng)"
+        },
+        {
+          "label": "Fæ Willowgrove\n(Crystâlheärt)"
+        },
+        {
+          "label": "Tèrra Stonebinder\n(Independent)"
+        }
+      ]
+    },
+    {
+      "label": "Minister of Dance",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Äeliana Sunsong\n(Crystâlheärt)"
+        },
+        {
+          "label": "Thâlia Shadowdance\n(Ætherwïng)"
+        },
+        {
+          "label": "Jasper Moonstep\n(Stärsky)"
+        }
+      ]
+    },
+    {
+      "label": "Gränd Cøuncil of Arcáne and Technomägical Affairs",
+      "selection_limit": 3,
+      "options": [
+        {
+          "label": "Ìgnatius Gearsøul\n(Crystâlheärt)"
+        },
+        {
+          "label": "Èlena Wîndwhisper\n(Technocrat)"
+        },
+        {
+          "label": "Bërnard Månesworn\n(Ætherwïng)"
+        },
+        {
+          "label": "Èmeline Glîmmerwillow\n(Ætherwïng)"
+        },
+        {
+          "label": "Nikólai Thunderstrîde\n(Independent)"
+        },
+        {
+          "label": "Lïliana Fîrestone\n(Pęacemaker)"
+        },
+        {
+          "label": "Émeric Crystálgaze\n(Førestmíst)"
+        },
+        {
+          "label": "Séraphine Lùmenwing\n(Stärsky)"
+        },
+        {
+          "label": "Rãfael Stëamheart\n(Ætherwïng)"
+        },
+        {
+          "label": "Océane Tidecaller\n(Pęacemaker)"
+        },
+        {
+          "label": "Elysêa Shadowbinder\n(Independent)"
+        }
+      ]
+    },
+    {
+      "label": "Proposed Amendment No. 1\nEqual Representation for Technological and Magical Profeſsions",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "For"
+        },
+        {
+          "label": "Against"
+        }
+      ]
+    },
+    {
+      "label": "Privacy Protection in Techno-Magical Communications Act",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Prō"
+        },
+        {
+          "label": "Ĉontrá"
+        }
+      ]
+    },
+    {
+      "label": "Public Transport Modernization and Enchantment Proposal",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Prō"
+        },
+        {
+          "label": "Ĉontrá"
+        }
+      ]
+    },
+    {
+      "label": "Renewable Ætherwind Infrastructure Initiative",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Prō"
+        },
+        {
+          "label": "Ĉontrá"
+        }
+      ]
+    },
+    {
+      "label": "For Librarian-in-Chief of Smoothstone County",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Élise Planetes"
+        },
+        {
+          "label": "Théodoric Inkdrifter"
+        }
+      ]
+    },
+    {
+      "label": "Silvërspîre County Register of Deeds Sébastian Moonglôw to be retained",
+      "selection_limit": 1,
+      "options": [
+        {
+          "label": "Retain"
+        },
+        {
+          "label": "Remove"
+        }
+      ]
+    }
+  ],
+  "ballot_styles": [
+    {
+      "label": "Smoothstone County Ballot",
+      "contests": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "label": "Silvërspîre County Ballot",
+      "contests": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11
+      ]
+    }
+  ]
+}

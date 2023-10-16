@@ -11,6 +11,8 @@ import java.nio.file.FileSystems
 import java.nio.file.Path
 
 class ElectionParametersTest {
+    val topdir = "src/commonTest/data/testElectionRecord/egrust"
+
     var fileSystem = FileSystems.getDefault()
     var fileSystemProvider = fileSystem.provider()
     val group = productionGroup()
@@ -18,7 +20,7 @@ class ElectionParametersTest {
 
     @Test
     fun test() {
-        val params = readElectionParameters("/home/stormy/dev/github/electionguard-rust/working/public/election_parameters.json")
+        val params = readElectionParameters("$topdir/public/election_parameters.json")
         println("ElectionParameters = $params")
     }
 
