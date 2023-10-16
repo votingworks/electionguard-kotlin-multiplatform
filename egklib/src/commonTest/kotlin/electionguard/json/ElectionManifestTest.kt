@@ -13,6 +13,8 @@ import java.nio.file.Path
 import kotlin.test.assertTrue
 
 class ElectionManifestTest {
+    val topdir = "src/commonTest/data/testElectionRecord/egrust"
+
     var fileSystem = FileSystems.getDefault()
     var fileSystemProvider = fileSystem.provider()
     val group = productionGroup()
@@ -20,7 +22,7 @@ class ElectionManifestTest {
 
     @Test
     fun test() {
-        val manifest = readElectionManifest("/home/stormy/dev/github/electionguard-rust/working/public/election_manifest_pretty.json")
+        val manifest = readElectionManifest("$topdir/public/election_manifest_pretty.json")
         assertTrue(manifest is Ok)
         println("ElectionManifest = ${manifest.unwrap()}")
     }
