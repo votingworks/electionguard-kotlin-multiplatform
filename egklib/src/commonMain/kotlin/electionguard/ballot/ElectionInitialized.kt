@@ -44,3 +44,16 @@ data class ElectionInitialized(
         }
     }
 }
+
+// Computation of the extended base hash HE
+// HE = H(HB ; 0x12, K)
+// B0 = HB
+// B1 = 0x12 ∥ b(K, 512)
+// len(B1 ) = 513
+fun electionExtendedHash(Hb: UInt256, jointPublicKey: ElementModP) : UInt256 {
+    return hashFunction(
+        Hb.bytes,
+        0x12.toByte(),
+        jointPublicKey,
+    )
+}

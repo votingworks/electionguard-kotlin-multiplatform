@@ -18,3 +18,6 @@ expect fun fileReadLines(filename: String): List<String>
 /** Read bytes from a file. */
 expect fun fileReadBytes(filename: String): ByteArray
 
+/** Determine endianness of machine. */
+expect fun isBigEndian(): Boolean
+

@@ -28,13 +28,13 @@ package electionguard.core
 fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
     val hmac = HmacSha256(key)
     var count = 0
-    val showHash = false // (elements[0] == 0x30.toByte())
+    val showHash = false // ((elements[0] as Byte) == 0x01.toByte())
     if (showHash) {
         println("hashFunction")
     }
     elements.forEach {
-        if (showHash) println(" $count $it")
-        hmac.addToHash(it)
+        if (showHash) println(" $count $it ${it.javaClass.name}")
+        hmac.addToHash(it, showHash)
         count++
     }
     return hmac.finish()
@@ -49,7 +49,7 @@ fun hmacFunction(key: ByteArray, vararg elements: Any): UInt256 {
     return hmac.finish()
 }
 
-private fun HmacSha256.addToHash(element : Any) {
+private fun HmacSha256.addToHash(element : Any, show : Boolean = false) {
     if (element is Iterable<*>) {
         element.forEach { this.addToHash(it!!) }
     } else {
@@ -64,16 +64,25 @@ private fun HmacSha256.addToHash(element : Any) {
             is Int -> intToByteArray(element)
             else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
         }
+        if (show) println("  ${ba.contentToString()} len= ${ba.size}")
         this.update(ba)
     }
 }
 
 private val U256 = 256.toUShort()
 
-private fun intToByteArray (data: Int) : ByteArray {
-    require (data >= 0) // 0 <= data < 2^31  // LOOK do we need negative numbers??
-    val dataLong = data.toLong()
-    return ByteArray(4) { i -> (dataLong shr (i * 8)).toByte() }
+// Other integers such as indices are encoded as fixed length byte arrays in big endian format.
+// In ElectionGuard, all such small integers are assumed to be smaller than 2^31.
+// They can therefore be encoded with 4 bytes, i.e. with
+// 32 bits and the most significant bit set to 0. spec 2.0, section 5.1.3
+fun intToByteArray (data: Int) : ByteArray {
+    require (data >= 0)
+    val dataLong : Long = data.toLong()
+    return if (isBigEndian()) {
+        ByteArray(4) { i -> (dataLong shr (i * 8)).toByte() }
+    } else {
+        ByteArray(4) { i -> (dataLong shr ((3-i) * 8)).toByte() }
+    }
 }
 
 ////////////////////////////////////

@@ -8,6 +8,7 @@ import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.Guardian
+import electionguard.ballot.electionExtendedHash
 
 import electionguard.core.*
 
@@ -157,7 +158,7 @@ data class KeyCeremonyResults(
             publicKeysSorted.map { it.publicKey().key }.reduce { a, b -> a * b }
 
         // He = H(HB ; 0x12, K) ; spec 2.0.0 p.25, eq 23.
-        val extendedBaseHash = hashFunction(config.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey)
+        val extendedBaseHash = electionExtendedHash(config.electionBaseHash, jointPublicKey)
 
         val guardians: List<Guardian> = publicKeysSorted.map { makeGuardian(it) }
 

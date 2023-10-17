@@ -1,5 +1,6 @@
 package electionguard.testvectors
 
+import electionguard.ballot.electionExtendedHash
 import electionguard.core.*
 import electionguard.json2.*
 import kotlinx.serialization.Serializable
@@ -91,8 +92,7 @@ class KeyCeremonyTestVector {
         }
 
         val expectedPublicKey = publicKeys.reduce { a, b -> a * b }
-        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), expectedPublicKey)
-
+        val extendedBaseHash = electionExtendedHash(electionBaseHash, expectedPublicKey)
         val keyCeremonyTestVector = KeyCeremonyTestVector(
             "Test KeyCeremony guardian creation",
             guardians,
@@ -152,7 +152,7 @@ class KeyCeremonyTestVector {
 
         // He = H(HB ; 0x12, K) ; spec 2.0.0 p.25, eq 23.
         val electionBaseHash = keyCeremonyTestVector.election_base_hash.import()
-        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), publicKey)
+        val extendedBaseHash = electionExtendedHash(electionBaseHash, publicKey)
 
         assertEquals(keyCeremonyTestVector.expected_extended_base_hash.import(), extendedBaseHash)
     }

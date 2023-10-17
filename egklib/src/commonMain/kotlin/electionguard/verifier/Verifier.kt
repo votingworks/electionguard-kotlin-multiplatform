@@ -185,7 +185,7 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         require(record.quorum() * record.numberOfGuardians() == commitments.size)
 
         // He = H(HB ; 0x12, K) ; spec 2.0.0 p.25, eq 23.
-        val computeHe = hashFunction(record.electionBaseHash().bytes, 0x12.toByte(), jointPublicKey.key)
+        val computeHe = electionExtendedHash(record.electionBaseHash(), jointPublicKey.key)
         if (He != computeHe) {
             errors.add(Err("  4.A extendedBaseHash  does not match computed"))
         }

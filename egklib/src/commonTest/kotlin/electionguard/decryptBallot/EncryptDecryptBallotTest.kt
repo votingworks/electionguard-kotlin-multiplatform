@@ -3,14 +3,7 @@ package electionguard.decryptBallot
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.ContestDataStatus
-import electionguard.ballot.ElectionInitialized
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.Guardian
-import electionguard.ballot.Manifest
-import electionguard.ballot.makeContestData
-import electionguard.ballot.makeDoerreTrustee
-import electionguard.ballot.makeGuardian
+import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptorDoerre
@@ -100,7 +93,7 @@ fun runEncryptDecryptBallot(
 
     //////////////////////////////////////////////////////////
     if (writeout) {
-        val extendedBaseHash = hashFunction(config.electionBaseHash.bytes, 0x12.toByte(), jointPublicKey)
+        val extendedBaseHash = electionExtendedHash(config.electionBaseHash, jointPublicKey)
 
         val init = ElectionInitialized(
             config,

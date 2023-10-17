@@ -122,7 +122,7 @@ data class ElectionConstants(
                 "largePrime = ${this.largePrime.toHex()}\n" +
                 "smallPrime = ${this.smallPrime.toHex()}\n" +
                 "  cofactor = ${this.cofactor.toHex()}\n" +
-                " generator = ${this.generator.toHex()}\n"
+                " generator = ${this.generator.toHex()}"
     }
 }
 
@@ -145,6 +145,9 @@ fun parameterBaseHash(primes : ElectionConstants) : UInt256 {
 
 fun manifestHash(Hp: UInt256, manifestBytes : ByteArray) : UInt256 {
     // HM = H(HP ; 0x01, manifest). spec 2.0.0 p 19, eq 6
+    // B0 = HP
+    // B1 = 0x01 ∥ b(len(manifest), 4) ∥ b(manifest, len(manifest))
+    // len(B1 ) = 5 + len(manifest)
     return hashFunction(
         Hp.bytes,
         0x01.toByte(),
@@ -155,6 +158,9 @@ fun manifestHash(Hp: UInt256, manifestBytes : ByteArray) : UInt256 {
 
 fun electionBaseHash(Hp: UInt256, HM: UInt256, n : Int, k : Int) : UInt256 {
     // HB = H(HP ; 0x02, HM , n, k). spec 2.0.0 p 19, eq 7
+    //  B0 = HP
+    //  B1 = 0x02 ∥ HM ∥ b(n, 4) ∥ b(k, 4)
+    //  len(B1 ) = 41
     return hashFunction(
         Hp.bytes,
         0x02.toByte(),
