@@ -2,6 +2,8 @@ package electionguard.core
 
 import mu.KotlinLogging
 import java.io.File
+import java.nio.ByteOrder
+import java.nio.ByteOrder.nativeOrder
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -29,6 +31,10 @@ actual fun isDirectory(path: String): Boolean = Files.isDirectory(Path.of(path))
 actual fun fileReadLines(filename: String): List<String> = File(filename).readLines()
 
 actual fun fileReadBytes(filename: String): ByteArray = File(filename).readBytes()
+
+actual fun isBigEndian(): Boolean = nativeOrder() == ByteOrder.BIG_ENDIAN
+
+
 
 
 

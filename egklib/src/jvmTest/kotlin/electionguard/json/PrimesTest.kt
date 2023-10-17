@@ -79,7 +79,7 @@ class PrimesTest {
     }
 
     @Test
-    fun showContstatsInBase64() {
+    fun showConstantsInBase64() {
         println("p = ${group.constants.largePrime.toBase64()}")
         println("q = ${group.constants.smallPrime.toBase64()}")
         println("r = ${group.constants.cofactor.toBase64()}")

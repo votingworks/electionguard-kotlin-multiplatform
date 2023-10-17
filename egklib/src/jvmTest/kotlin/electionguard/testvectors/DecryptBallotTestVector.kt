@@ -71,7 +71,7 @@ class DecryptBallotTestVector {
 
         val electionBaseHash = UInt256.random()
         val publicKey = publicKeys.reduce { a, b -> a * b }
-        val extendedBaseHash = hashFunction(electionBaseHash.bytes, 0x12.toByte(), publicKey)
+        val extendedBaseHash = electionExtendedHash(electionBaseHash, publicKey)
 
         val ebuilder = ManifestBuilder("makeDecryptBallotTestVector")
         val manifest: Manifest = ebuilder.addContest("onlyContest")
