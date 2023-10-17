@@ -1,7 +1,6 @@
 package electionguard.decrypt
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.DecryptedTallyOrBallot
@@ -12,7 +11,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")
 
-private const val doVerifierSelectionProof = false
+private const val doVerifierSelectionProof = true
 
 /** Turn an EncryptedTally into a DecryptedTallyOrBallot, after all the partial decryptions have been done. */
 internal class TallyDecryptor(
@@ -130,12 +129,15 @@ internal class TallyDecryptor(
 
         val startVerify = getSystemTimeInMillis()
 
-        // the idea here is to do the proof verification, whose cost is 4 exponents (3 powP and 1 accPowp)
+        // check the proof verification, whose cost is 4 exponents (3 powP and 1 accPowp)
         // If it fails, then do the individual guardian verification, hopefully to pinpoint the culprit.
+        // If it succeeds, dont have to do the individual verification
         if (doVerifierSelectionProof) {
             if (!decrypytedSelection.verifySelection()) {
                 logger.error { "verifySelection error for  $contestId and ${selection.selectionId}" }
-                selectionDecryptions.checkIndividualResponses()
+                if (!selectionDecryptions.checkIndividualResponses()) {
+                    logger.error {"checkIndividualResponses error for  $contestId and ${selection.selectionId}"}
+                }
             }
         } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents
             if (!selectionDecryptions.checkIndividualResponses()) {

@@ -268,7 +268,7 @@ class PepTest {
         val nb = btrustees.size
         val nd = egkPep.decryptor.ndGuardians
         val nenc = 1
-        val expect = (8 + 8 * nd + 8 * nb) * nenc // we do run the verifier
+        val expect = (16 + 4 * nb + 5 * nd) * nenc // we do run the verifier
         println(" after doEgkPep ${group.showAndClearCountPowP()} expect = $expect")
 
         assertTrue(resultPep is Ok)
