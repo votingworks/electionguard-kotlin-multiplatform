@@ -94,7 +94,9 @@ internal class TallyDecryptor(
             if (doVerifierSelectionProof) {
                 if (!decryptedContestData.verifyContestData()) {
                     logger.error { "verifyContestData error for $contestId" }
-                    contestDataDecryptions.checkIndividualResponses()
+                    if (!contestDataDecryptions.checkIndividualResponses()) {
+                        logger.error {"checkIndividualResponses error for $contestId"}
+                    }
                 }
             } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents
                 if (!contestDataDecryptions.checkIndividualResponses()) {
