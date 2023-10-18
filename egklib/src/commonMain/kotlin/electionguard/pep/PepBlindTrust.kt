@@ -12,6 +12,9 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
 
+private const val doVerifierSelectionProof = true
+
+
 /** Egk PEP with blinding Guardians separate from decrypting Guardians, and a trusted admin. */
 class PepBlindTrust(
     val group: GroupContext,
@@ -133,7 +136,6 @@ class PepBlindTrust(
             work23.blindResponses = responsesForTrustees
         }
 
-
         //4. all BGj in {BGj}:
         //     respond to challenge with vj = uj − c * ξj
         //     send to admin
@@ -158,17 +160,32 @@ class PepBlindTrust(
         }
         require(step4invert.size == ntexts) // list(texts, nb)
 
-        // 5. admin:
-        //    for each BGj, verify that aj = α^vj * Aj^c and bj = β^vj * Bj^c for any j  // 4 * nb
-        work23s.zip(step4invert).forEach { (work23, step4) -> // workj23s list(texts)
-            work23.blindResponses!!.zip(step4).forEach { (br, bcr) ->
-                val ajp = (work23.ciphertextRatio.pad powP bcr.response) * (br.bigAj powP work23.c)
-                val bjp = (work23.ciphertextRatio.data powP bcr.response) * (br.bigBj powP work23.c)
-                require(ajp == br.aj)
-                require(bjp == br.bj)
-            }
-            // cough, cough, while were at it: 6(b) v = Sum_dj(vj)
+        // 5.a admin:
+        work23s.zip(step4invert).forEach { (work23, step4) ->
+            //      v = Sum_dj(vj)
             work23.v = with(group) { step4.map { it.response }.addQ() }
+
+            //      verify if ChaumPedersenProof(c, v).verify(cons0; {cons1, K}, α, β, A, B).   // 4
+            val proof = ChaumPedersenProof(work23.c, work23.v!!)
+            val verifya = proof.verify(
+                extendedBaseHash,
+                0x42.toByte(),
+                jointPublicKey.key,
+                work23.ciphertextRatio.pad, work23.ciphertextRatio.data,
+                work23.bigA, work23.bigB,
+            )
+            //      If true, can skip 5.b
+            if (!verifya) {
+                work23s.zip(step4invert).forEach { (work23, step4) -> // workj23s list(texts)
+                    work23.blindResponses!!.zip(step4).forEach { (br, bcr) ->
+                        //    for each BGj, verify that aj = α^vj * Aj^c and bj = β^vj * Bj^c   // 4 * nb
+                        val ajp = (work23.ciphertextRatio.pad powP bcr.response) * (br.bigAj powP work23.c)
+                        val bjp = (work23.ciphertextRatio.data powP bcr.response) * (br.bigBj powP work23.c)
+                        require(ajp == br.aj)
+                        require(bjp == br.bj)
+                    }
+                }
+            }
         }
 
         // create an EncryptedBallot with the ciphertexts = (A, B), this is what we decrypt
@@ -186,10 +203,10 @@ class PepBlindTrust(
         val ballotAB = ballot1.copy(contests = contestsAB)
 
         //6. admin:
-        //    (a) decrypt (A, B): (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)    // 8*nd
+        //    (a) decrypt (A, B): (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)    // 4+5*nd
         val decryption: DecryptedTallyOrBallot = decryptor.decryptPep(ballotAB)
 
-        //    (b) v = Sum_dj(vj), IsEq = (T == 1)
+        //    (b) IsEq = (T == 1)
         //    (c) Send (IsEq, c, v, α, β, c′, v′, A, B, T) to V and publish to BB.
         workIterator = work23s.iterator()
         var isEq = true

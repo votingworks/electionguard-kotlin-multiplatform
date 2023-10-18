@@ -31,6 +31,9 @@ data class DecryptingTrusteeDoerre(
     ): List<PartialDecryption> {
         val results: MutableList<PartialDecryption> = mutableListOf()
         for (text: ElementModP in texts) {
+            if (!text.isValidResidue()) {
+                return emptyList()
+            }
             val u = group.randomElementModQ(2) // random value u in Zq
             val a = group.gPowP(u)  // (a,b) for the proof, spec 2.0.0, eq 69
             val b = text powP u
