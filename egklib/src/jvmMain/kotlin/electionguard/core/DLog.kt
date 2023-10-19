@@ -5,14 +5,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 
-// TODO make this settable
+// TODO make this settable. The maximum vote allowed for the tally.
 private const val MAX_DLOG: Int = 100_000
 
 actual fun dLoggerOf(base: ElementModP) = DLog(base)
 
-actual class DLog(val b: ElementModP) {
-    actual val base: ElementModP
-    get() = b
+actual class DLog(val base: ElementModP) {
+
+    actual fun base() = base
 
     // We're taking advantage of Java's ConcurrentHashMap, which allows us to know
     // we can safely attempt reads on the map without needing our global lock, which
@@ -21,10 +21,10 @@ actual class DLog(val b: ElementModP) {
     private val dLogMapping: MutableMap<ElementModP, Int> =
         ConcurrentHashMap<ElementModP, Int>()
             .apply {
-                this[b.context.ONE_MOD_P] = 0
+                this[base.context.ONE_MOD_P] = 0
             }
 
-    private var dLogMaxElement = b.context.ONE_MOD_P
+    private var dLogMaxElement = base.context.ONE_MOD_P
     private var dLogMaxExponent = 0
 
     private val mutex = Mutex()
@@ -47,7 +47,7 @@ actual class DLog(val b: ElementModP) {
                                 error = true
                                 break
                             } else {
-                                dLogMaxElement *= b
+                                dLogMaxElement *= base
                                 dLogMapping[dLogMaxElement] = dLogMaxExponent
                             }
                         }

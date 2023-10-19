@@ -36,7 +36,7 @@ data class ElectionInitialized(
 
     fun show(): String = buildString {
         appendLine("ElectionInitialized")
-        append("${config.show()}")
+        append(config.show())
         appendLine(" jointPublicKey ${jointPublicKey}")
         appendLine(" extendedBaseHash ${extendedBaseHash}")
         guardians.forEach {

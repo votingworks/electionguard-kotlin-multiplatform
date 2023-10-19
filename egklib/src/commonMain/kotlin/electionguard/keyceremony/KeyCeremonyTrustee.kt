@@ -276,8 +276,7 @@ open class KeyCeremonyTrustee(
         }
 
         //  If the MAC verifies, Gℓ decrypts b(Pi(ℓ), 32) = Ci,ℓ,1 ⊕ k1 .
-        val pilBytes = ByteArray(32) { c1[it] xor k1[it] }
-        return pilBytes
+        return ByteArray(32) { c1[it] xor k1[it] }
     }
 
     // Call after all myShareOfOthers has been populated with all the other trustee's.

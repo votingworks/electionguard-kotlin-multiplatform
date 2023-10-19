@@ -12,7 +12,7 @@ expect fun dLoggerOf(base: ElementModP): DLog
 /** General-purpose discrete-log engine. */
 expect class DLog {
     /** Returns the base used for this particular DLog instance. */
-    val base: ElementModP
+    fun base(): ElementModP
 
     /**
      * Given an element x for which there exists an e, such that (base)^e = x, this will find e,

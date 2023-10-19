@@ -3,7 +3,6 @@ package electionguard.json2
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.keyceremony.regeneratePolynomial
 import kotlinx.serialization.Serializable
 
 /** These must stay private, not in the election record. */

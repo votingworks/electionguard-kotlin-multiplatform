@@ -43,7 +43,7 @@ fun hashFunction(key: ByteArray, vararg elements: Any): UInt256 {
 // identical to hashFunction, made separate to follow the spec.
 // only called from KeyCeremonyTrustee. doesnt use strings
 fun hmacFunction(key: ByteArray, vararg elements: Any): UInt256 {
-    require(elements.size > 0)
+    require(elements.isNotEmpty())
     val hmac = HmacSha256(key)
     elements.forEach { hmac.addToHash(it) }
     return hmac.finish()
@@ -90,7 +90,7 @@ fun intToByteArray (data: Int) : ByteArray {
 
 fun hashFunctionConcat(key: ByteArray, vararg elements: Any): UInt256 {
     var result = ByteArray(0)
-    elements.forEach { result = result + hashElementsToByteArray(it) }
+    elements.forEach { result += hashElementsToByteArray(it) }
     val hmac = HmacSha256(key)
     hmac.update(result)
     println("size = ${result.size}")
@@ -102,7 +102,7 @@ fun hashFunctionConcatSize(key: ByteArray, vararg elements: Any): Int {
     elements.forEach {
         val eh = hashElementsToByteArray(it)
         println("  size = ${eh.size}")
-        result = result + eh
+        result += eh
     }
     return result.size
 }
@@ -110,7 +110,7 @@ fun hashFunctionConcatSize(key: ByteArray, vararg elements: Any): Int {
 private fun hashElementsToByteArray(element : Any) : ByteArray {
     if (element is Iterable<*>) {
         var result = ByteArray(0)
-        element.forEach { result = result + hashElementsToByteArray(it!!) }
+        element.forEach { result += hashElementsToByteArray(it!!) }
         return result
     } else {
         val ba : ByteArray = when (element) {

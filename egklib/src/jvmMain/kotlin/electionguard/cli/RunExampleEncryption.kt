@@ -3,7 +3,6 @@ package electionguard.cli
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import electionguard.encrypt.AddEncryptedBallot
 import electionguard.input.RandomBallotProvider
@@ -73,10 +72,7 @@ class RunExampleEncryption {
 
         fun verifyOutput(group: GroupContext, outputDir: String, expectedCount : Int, chained: Boolean = false) {
             val consumer = makeConsumer(group, outputDir, false)
-            var count = 0
-            consumer.iterateAllEncryptedBallots { true }.forEach {
-                count++
-            }
+            val count = consumer.iterateAllEncryptedBallots { true }.count()
             println("$count EncryptedBallots ok=${count == expectedCount}")
 
             val record = readElectionRecord(consumer)

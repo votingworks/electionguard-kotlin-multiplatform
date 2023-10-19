@@ -11,7 +11,7 @@ import electionguard.input.ValidationMessages
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
-private val show = false
+private const val show = false
 
 // "Distributed Plaintext Equivalence Proof", simple version.
 class PepSimple(

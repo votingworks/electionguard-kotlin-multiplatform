@@ -51,7 +51,10 @@ object Base64 {
     /** Convert a ByteArray to a base64 string. */
     fun ByteArray.toBase64() = encoder.encode(this).decodeToString()
 
-    /** Convert a String to a ByteArray. Returns null if the input is not a valid base64 string. */
+    /** Convert a ByteArray to a base64Url string. */
+    fun ByteArray.toBase64Url() = encoder.encode(this, true).decodeToString()
+
+    /** Convert a String to a base64 ByteArray. Returns null if the input is not a valid base64 string. */
     fun String.fromBase64(): ByteArray? =
         try {
             if (this == "") null else this.fromSafeBase64()
@@ -60,8 +63,20 @@ object Base64 {
             null
         }
 
-    /** Convert a String to a ByteArray. Throws an `IllegalArgumentException` if it's invalid. */
+    /** Convert a String to a base64 ByteArray. Throws an `IllegalArgumentException` if it's invalid. */
     fun String.fromSafeBase64(): ByteArray = decoder.decode(this.encodeToByteArray())
+
+    /** Convert a String to a base64Url ByteArray. Returns null if the input is not a valid base64Url string. */
+    fun String.fromBase64Url(): ByteArray? =
+        try {
+            if (this == "") null else this.fromSafeBase64Url()
+        } catch (ex: IllegalArgumentException) {
+            logger.warn { "input isn't a valid base64 string" }
+            null
+        }
+
+    /** Convert a String to a base64Url ByteArray. Throws an `IllegalArgumentException` if it's invalid. */
+    fun String.fromSafeBase64Url(): ByteArray = decoder.decode(this.encodeToByteArray(), true)
 
     /**
      * Returns a [Encoder] that encodes using the [Basic](#basic) type base64 encoding scheme.
@@ -77,7 +92,7 @@ object Base64 {
      */
     private val decoder = Decoder()
 
-    private class Encoder constructor(
+    private class Encoder(
         private val newline: ByteArray?,
         private val linemax: Int,
         private val doPadding: Boolean
@@ -103,31 +118,32 @@ object Base64 {
          * bytes.
          *
          * @param src the byte array to encode
+         * @param useBase64URL use Base64URL else use Base64
          * @return A newly-allocated byte array containing the resulting encoded bytes.
          */
-        fun encode(src: ByteArray): ByteArray {
+        fun encode(src: ByteArray, useBase64URL : Boolean = false): ByteArray {
             val len = outLength(src.size) // dst array size
             val dst = ByteArray(len)
-            val ret = encode0(src, 0, src.size, dst)
+            val ret = encode0(src, 0, src.size, dst, useBase64URL)
             return if (ret != dst.size) dst.copyOf(ret) else dst
         }
 
-        private fun encodeBlock(src: ByteArray, sp: Int, sl: Int, dst: ByteArray, dp: Int) {
+        private fun encodeBlock(src: ByteArray, sp: Int, sl: Int, dst: ByteArray, dp: Int, base64: CharArray) {
             var sp0 = sp
             var dp0 = dp
             while (sp0 < sl) {
                 val bits: Int =
                     src[sp0++].toInt() and 0xff shl 16 or (src[sp0++].toInt() and 0xff shl 8) or
                         (src[sp0++].toInt() and 0xff)
-                dst[dp0++] = toBase64[bits ushr 18 and 0x3f].code.toByte()
-                dst[dp0++] = toBase64[bits ushr 12 and 0x3f].code.toByte()
-                dst[dp0++] = toBase64[bits ushr 6 and 0x3f].code.toByte()
-                dst[dp0++] = toBase64[bits and 0x3f].code.toByte()
+                dst[dp0++] = base64[bits ushr 18 and 0x3f].code.toByte()
+                dst[dp0++] = base64[bits ushr 12 and 0x3f].code.toByte()
+                dst[dp0++] = base64[bits ushr 6 and 0x3f].code.toByte()
+                dst[dp0++] = base64[bits and 0x3f].code.toByte()
             }
         }
 
-        private fun encode0(src: ByteArray, off: Int, end: Int, dst: ByteArray): Int {
-            val base64 = toBase64
+        private fun encode0(src: ByteArray, off: Int, end: Int, dst: ByteArray, useBase64URL : Boolean): Int {
+            val base64 = if (useBase64URL) toBase64URL else toBase64
             var sp = off
             var slen = (end - off) / 3 * 3
             val sl = off + slen
@@ -135,7 +151,7 @@ object Base64 {
             var dp = 0
             while (sp < sl) {
                 val sl0: Int = min(sp + slen, sl)
-                encodeBlock(src, sp, sl0, dst, dp)
+                encodeBlock(src, sp, sl0, dst, dp, base64)
                 val dlen = (sl0 - sp) / 3 * 4
                 dp += dlen
                 sp = sl0
@@ -175,70 +191,11 @@ object Base64 {
              */
             val toBase64 =
                 charArrayOf(
-                    'A',
-                    'B',
-                    'C',
-                    'D',
-                    'E',
-                    'F',
-                    'G',
-                    'H',
-                    'I',
-                    'J',
-                    'K',
-                    'L',
-                    'M',
-                    'N',
-                    'O',
-                    'P',
-                    'Q',
-                    'R',
-                    'S',
-                    'T',
-                    'U',
-                    'V',
-                    'W',
-                    'X',
-                    'Y',
-                    'Z',
-                    'a',
-                    'b',
-                    'c',
-                    'd',
-                    'e',
-                    'f',
-                    'g',
-                    'h',
-                    'i',
-                    'j',
-                    'k',
-                    'l',
-                    'm',
-                    'n',
-                    'o',
-                    'p',
-                    'q',
-                    'r',
-                    's',
-                    't',
-                    'u',
-                    'v',
-                    'w',
-                    'x',
-                    'y',
-                    'z',
-                    '0',
-                    '1',
-                    '2',
-                    '3',
-                    '4',
-                    '5',
-                    '6',
-                    '7',
-                    '8',
-                    '9',
-                    '+',
-                    '/'
+                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
                 )
 
             /**
@@ -248,70 +205,11 @@ object Base64 {
              */
             internal val toBase64URL =
                 charArrayOf(
-                    'A',
-                    'B',
-                    'C',
-                    'D',
-                    'E',
-                    'F',
-                    'G',
-                    'H',
-                    'I',
-                    'J',
-                    'K',
-                    'L',
-                    'M',
-                    'N',
-                    'O',
-                    'P',
-                    'Q',
-                    'R',
-                    'S',
-                    'T',
-                    'U',
-                    'V',
-                    'W',
-                    'X',
-                    'Y',
-                    'Z',
-                    'a',
-                    'b',
-                    'c',
-                    'd',
-                    'e',
-                    'f',
-                    'g',
-                    'h',
-                    'i',
-                    'j',
-                    'k',
-                    'l',
-                    'm',
-                    'n',
-                    'o',
-                    'p',
-                    'q',
-                    'r',
-                    's',
-                    't',
-                    'u',
-                    'v',
-                    'w',
-                    'x',
-                    'y',
-                    'z',
-                    '0',
-                    '1',
-                    '2',
-                    '3',
-                    '4',
-                    '5',
-                    '6',
-                    '7',
-                    '8',
-                    '9',
-                    '-',
-                    '_'
+                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'
                 )
         }
     }
@@ -340,8 +238,7 @@ object Base64 {
 
             init {
                 fromBase64URL.fill(-1)
-                for (i in Encoder.toBase64URL.indices)
-                    fromBase64URL[Encoder.toBase64URL[i].code] = i
+                for (i in Encoder.toBase64URL.indices) fromBase64URL[Encoder.toBase64URL[i].code] = i
                 fromBase64URL['='.code] = -2
             }
         }
@@ -352,14 +249,14 @@ object Base64 {
          * length of the resulting bytes.
          *
          * @param src the byte array to decode
-         *
+         * @param useBase64URL use Base64URL else use Base64
          * @return A newly-allocated byte array containing the decoded bytes.
          *
          * @throws IllegalArgumentException if `src` is not in valid Base64 scheme
          */
-        fun decode(src: ByteArray): ByteArray {
+        fun decode(src: ByteArray, useBase64URL : Boolean = false): ByteArray {
             var dst = ByteArray(outLength(src, 0, src.size))
-            val ret = decode0(src, 0, src.size, dst)
+            val ret = decode0(src, 0, src.size, dst, useBase64URL)
             if (ret != dst.size) {
                 dst = dst.copyOf(ret)
             }
@@ -383,9 +280,9 @@ object Base64 {
             return 3 * ((len + 3) / 4) - paddings
         }
 
-        private fun decode0(src: ByteArray, spx: Int, sl: Int, dst: ByteArray): Int {
+        private fun decode0(src: ByteArray, spx: Int, sl: Int, dst: ByteArray, useBase64URL : Boolean): Int {
             var sp = spx
-            val base64 = if (false) fromBase64URL else fromBase64
+            val base64 = if (useBase64URL) fromBase64URL else fromBase64
             var dp = 0
             var bits = 0
             var shiftto = 18 // pos of first byte of 4-byte atom

@@ -109,7 +109,7 @@ internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBal
 
 // find a null vector not already in selections
 private fun findNullVectorNotSelected(allSelections : List<PreEncryptedSelection>, selections : List<PreEncryptedSelection>) : PreEncryptedSelection {
-    allSelections.forEach { it ->
+    allSelections.forEach {
         if (it.selectionId.startsWith("null")) {
             if (null == selections.find{ have -> have.selectionId == it.selectionId }) {
                 return it

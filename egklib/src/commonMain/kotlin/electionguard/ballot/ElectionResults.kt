@@ -25,7 +25,7 @@ data class TallyResult(
     fun jointPublicKey(): ElGamalPublicKey {
         return ElGamalPublicKey(electionInitialized.jointPublicKey)
     }
-    fun cryptoExtendedBaseHash(): UInt256 {
+    fun extendedBaseHash(): UInt256 {
         return electionInitialized.extendedBaseHash
     }
     fun numberOfGuardians(): Int {

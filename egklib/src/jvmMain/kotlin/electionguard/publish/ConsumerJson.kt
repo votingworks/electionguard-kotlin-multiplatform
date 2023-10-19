@@ -17,9 +17,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
 import java.io.ByteArrayInputStream
+import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.spi.FileSystemProvider
 import java.util.function.Predicate
 import java.util.stream.Stream
 import kotlin.io.path.isDirectory
@@ -28,8 +30,8 @@ private val logger = KotlinLogging.logger("ConsumerJsonJvm")
 
 /** Can read both zipped and unzipped JSON election record */
 actual class ConsumerJson actual constructor(val topDir: String, val group: GroupContext) : Consumer {
-    var fileSystem = FileSystems.getDefault()
-    var fileSystemProvider = fileSystem.provider()
+    var fileSystem : FileSystem = FileSystems.getDefault()
+    var fileSystemProvider : FileSystemProvider = fileSystem.provider()
     var jsonPaths = ElectionRecordJsonPaths(topDir)
     val jsonIgnoreNulls = Json { explicitNulls = false }
 
@@ -280,7 +282,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
     //////// The low level reading functions
 
-    private fun readElectionConfig(constantsFile: Path, manifestFile: Path, configFile: Path,): Result<ElectionConfig, String> {
+    private fun readElectionConfig(constantsFile: Path, manifestFile: Path, configFile: Path): Result<ElectionConfig, String> {
         return try {
             var constants: ElectionConstants
             fileSystemProvider.newInputStream(constantsFile).use { inp ->

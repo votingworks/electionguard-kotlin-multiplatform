@@ -8,7 +8,7 @@ import electionguard.core.Base64.toBase64
 import mu.KotlinLogging
 private val logger = KotlinLogging.logger("GroupCommon")
 
-internal val b64Production4096P256MinusQ = "AL0="
+internal const val b64Production4096P256MinusQ = "AL0="
 internal const val intProduction4096PBits = 4096
 
 internal const val b64Production3072P256MinusQ = "AL0="

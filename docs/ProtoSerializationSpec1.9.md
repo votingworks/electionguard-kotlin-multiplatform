@@ -434,13 +434,13 @@ draft 7/15/2023
 
 ### message DecryptedSelection
 
-| Name           | Type               | Notes                            |
-|----------------|--------------------|----------------------------------|
+| Name           | Type               | Notes                             |
+|----------------|--------------------|-----------------------------------|
 | selection_id   | string             | SelectionDescription.selection_id |
-| tally          | int                | decrypted vote count             |
-| b_over_m       | ElementModP        | T = (B/M), eq 65                 |
-| encrypted_vote | ElGamalCiphertext  | encrypted vote count             |
-| proof          | ChaumPedersenProof |                                  |
+| tally          | int                | decrypted vote count              |
+| b_over_m       | ElementModP        | T = (B/M), eq 65                  |
+| encrypted_vote | ElGamalCiphertext  | encrypted vote count              |
+| proof          | ChaumPedersenProof |                                   |
 
 ### message DecryptedContestData
 

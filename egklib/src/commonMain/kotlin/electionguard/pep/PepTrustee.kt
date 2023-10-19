@@ -1,12 +1,8 @@
 package electionguard.pep
 
 import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.randomElementModQ
-import electionguard.decrypt.ChallengeRequest
-import electionguard.decrypt.ChallengeResponse
-import electionguard.decrypt.PartialDecryption
 
 class PepTrustee(val idx : Int, val group : GroupContext) :  PepTrusteeIF {
     val randomConstantNonce = group.randomElementModQ(2) // weak sauce

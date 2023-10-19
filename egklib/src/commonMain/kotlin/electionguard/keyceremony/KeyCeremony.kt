@@ -115,7 +115,7 @@ fun keyCeremonyExchange(trustees: List<KeyCeremonyTrusteeIF>, allowEncryptedFail
     }
 
     // check that everyone is happy
-    var happy = trustees.map { it.isComplete() }.reduce{ a, b -> a && b }
+    val happy = trustees.map { it.isComplete() }.reduce{ a, b -> a && b }
     if (!happy) {
         return Err("keyCeremonyExchange not complete")
     }

@@ -1,6 +1,5 @@
 package electionguard.core
 
-import electionguard.ballot.ContestData
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("HashedElGamalCiphertext")

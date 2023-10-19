@@ -17,12 +17,12 @@ actual fun createDirectories(directory: String): Boolean {
     if (pathExists(directory)) {
         return true
     }
-    try {
+    return try {
         Files.createDirectories(Path.of(directory))
         logger.warn("error createDirectories = '$directory' ")
-        return true
+        true
     } catch (t: Throwable) {
-        return false
+        false
     }
 }
 
