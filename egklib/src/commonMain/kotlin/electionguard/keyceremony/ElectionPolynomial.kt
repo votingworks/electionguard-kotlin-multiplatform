@@ -100,7 +100,7 @@ fun GroupContext.regeneratePolynomial(
     var coeffIdx = 0
     coefficients.forEach { privateKey ->
         val publicKey = this.gPowP(privateKey)
-        val keypair: ElGamalKeypair = ElGamalKeypair(ElGamalSecretKey(privateKey), ElGamalPublicKey(publicKey))
+        val keypair = ElGamalKeypair(ElGamalSecretKey(privateKey), ElGamalPublicKey(publicKey))
         commitments.add(keypair.publicKey.key)
         proofs.add(keypair.schnorrProof(guardianXCoord, coeffIdx))
         coeffIdx++

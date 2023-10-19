@@ -14,7 +14,7 @@ class Stats {
     }
 
     fun count() : Int {
-        return if (stats.size > 0) stats.values.first().count() else 0
+        return if (stats.isNotEmpty()) stats.values.first().count() else 0
     }
 
     fun showLines(len: Int = 3): List<String> {

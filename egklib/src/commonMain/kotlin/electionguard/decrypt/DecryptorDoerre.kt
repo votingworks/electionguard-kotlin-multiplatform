@@ -47,11 +47,11 @@ class DecryptorDoerre(
     }
 
     fun decryptPep(ballot: EncryptedBallot): DecryptedTallyOrBallot {
-        return ballot.convertToTally().decrypt(false, true)
+        return ballot.convertToTally().decrypt(isBallot = false, isPep = true)
     }
 
     fun decryptPep(tally: EncryptedTally): DecryptedTallyOrBallot {
-        return tally.decrypt(false, true)
+        return tally.decrypt(isBallot = false, isPep = true)
     }
 
     var first = false

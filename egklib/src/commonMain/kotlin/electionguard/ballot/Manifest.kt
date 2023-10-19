@@ -34,12 +34,8 @@ data class Manifest(
         }
     }
 
-    override fun contestsForBallotStyle(ballotStyle : String) :  List<ManifestIF.Contest> {
-        val result = styleToContestsMap[ballotStyle]
-        if (result == null) {
-            throw RuntimeException("unknown ballotStyle $ballotStyle")
-        }
-        return result
+    override fun contestsForBallotStyle(ballotStyle: String): List<ManifestIF.Contest> {
+        return styleToContestsMap[ballotStyle] ?: throw RuntimeException("unknown ballotStyle $ballotStyle")
     }
 
     override fun contestLimit(contestId : String) : Int {

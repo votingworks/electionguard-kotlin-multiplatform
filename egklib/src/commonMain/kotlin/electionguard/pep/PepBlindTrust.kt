@@ -12,9 +12,6 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
 
-private const val doVerifierSelectionProof = true
-
-
 /** Egk PEP with blinding Guardians separate from decrypting Guardians, and a trusted admin. */
 class PepBlindTrust(
     val group: GroupContext,

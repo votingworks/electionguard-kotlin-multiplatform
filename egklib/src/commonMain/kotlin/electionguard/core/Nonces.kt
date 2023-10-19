@@ -16,7 +16,7 @@ package electionguard.core
  * val (a, b, c) = Nonces(seed, "some-specific-purpose")
  * ```
  *
- * @param varargs must be types that are accepted by hashFunction()
+ * @param headers must be types that are accepted by hashFunction()
  */
 class Nonces(seed: ElementModQ, vararg headers: Any) {
     val internalGroup = compatibleContextOrFail(seed)
@@ -25,7 +25,7 @@ class Nonces(seed: ElementModQ, vararg headers: Any) {
 
     override fun equals(other: Any?) =
         when (other) {
-            is Nonces -> internalSeed == other.internalSeed
+            is Nonces -> internalSeed == other.internalSeed // TODO "dangerous array condition"
             else -> false
         }
 

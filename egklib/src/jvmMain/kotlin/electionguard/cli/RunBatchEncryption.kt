@@ -240,7 +240,7 @@ class RunBatchEncryption {
                     Pair("CreatedFromDir", inputDir)
                 )
             )
-            if (invalidDir != null && !invalidBallots.isEmpty()) {
+            if (invalidDir != null && invalidBallots.isNotEmpty()) {
                 electionguard.core.createDirectories(invalidDir)
                 publisher.writePlaintextBallot(invalidDir, invalidBallots)
                 println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
@@ -259,21 +259,18 @@ class RunBatchEncryption {
         private class EncryptionRunner(
             val group: GroupContext,
             val encryptor: Encryptor,
-            val manifest: ManifestIF,
+            manifest: ManifestIF,
             val config: ElectionConfig,
-            val jointPublicKey: ElementModP,
+            jointPublicKey: ElementModP,
             val extendedBaseHash: UInt256,
             val check: CheckType,
         ) {
             val publicKeyEG = ElGamalPublicKey(jointPublicKey)
 
-            val verifier: VerifyEncryptedBallots?
-
-            init {
-                verifier = if (check == CheckType.Verify)
+            val verifier: VerifyEncryptedBallots? =
+                if (check == CheckType.Verify)
                     VerifyEncryptedBallots(group, manifest, publicKeyEG, extendedBaseHash, config, 1)
                 else null
-            }
 
             fun encrypt(ballot: PlaintextBallot): EncryptedBallot {
                 val ciphertextBallot = encryptor.encrypt(ballot, config.configBaux0)

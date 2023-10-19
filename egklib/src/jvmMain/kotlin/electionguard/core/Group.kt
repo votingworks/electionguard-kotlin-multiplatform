@@ -11,7 +11,7 @@ private val montgomeryI4096 = BigInteger.ONE shl Primes4096.nbits
 private val p4096 = BigInteger(Primes4096.pStr, 16)
 
 private val productionGroups4096 : Map<PowRadixOption, ProductionGroupContext> =
-    PowRadixOption.values().associateWith {
+    PowRadixOption.entries.associateWith {
         ProductionGroupContext(
             pBytes = Primes4096.largePrimeBytes,
             qBytes = Primes4096.smallPrimeBytes,
@@ -31,7 +31,7 @@ private val montgomeryI3072 = BigInteger.ONE shl Primes3072.nbits
 private val p3072 = BigInteger(Primes3072.pStr, 16)
 
 private val productionGroups3072 : Map<PowRadixOption, ProductionGroupContext> =
-    PowRadixOption.values().associateWith {
+    PowRadixOption.entries.associateWith {
         ProductionGroupContext(
             pBytes = Primes3072.largePrimeBytes,
             qBytes = Primes3072.smallPrimeBytes,

@@ -3,7 +3,6 @@ package electionguard.protoconvert
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.partition
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap

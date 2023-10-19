@@ -82,7 +82,7 @@ class AddEncryptedBallot(
         }
     }
 
-    fun encrypt(ballot: PlaintextBallot,): Result<CiphertextBallot, String> {
+    fun encrypt(ballot: PlaintextBallot): Result<CiphertextBallot, String> {
         if (closed) {
             val message = "Trying to add ballot after chain has been closed"
             logger.atWarn().log(message)
@@ -133,13 +133,13 @@ class AddEncryptedBallot(
             logger.error { "Tried to submit state=$state  unknown ballot ccode=$ccode" }
             return Err("Tried to submit state=$state  unknown ballot ccode=$ccode")
         }
-        try {
+        return try {
             val eballot = cballot.submit(state)
             sink.writeEncryptedBallot(eballot)
-            return Ok(true)
+            Ok(true)
         } catch (t: Throwable) {
             logger.throwing(t) // TODO
-            return Err("Tried to submit Ciphertext ballot state=$state ccode=$ccode error = ${t.message}")
+            Err("Tried to submit Ciphertext ballot state=$state ccode=$ccode error = ${t.message}")
         }
     }
 

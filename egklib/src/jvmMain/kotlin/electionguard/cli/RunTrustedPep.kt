@@ -124,7 +124,7 @@ class RunTrustedPep {
                 decryptingTrustees,
             )
 
-            val publisher = makePublisher(outputDir, false, true) // always json for now
+            val publisher = makePublisher(outputDir, createNew = false, jsonSerialization = true) // always json for now
             val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
 
             try {

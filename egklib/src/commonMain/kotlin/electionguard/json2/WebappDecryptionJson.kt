@@ -57,7 +57,7 @@ fun DecryptRequestJson.import(group: GroupContext): Result<DecryptRequest, Strin
     val texts = this.texts.map { it.import(group) }
     val allgood = texts.map { it != null }.reduce { a, b -> a && b }
 
-    return if (allgood) Ok(DecryptRequest(texts.map { it!! }))
+    return if (allgood) Ok(DecryptRequest(texts.map { it }))
     else Err("importModP error")
 }
 

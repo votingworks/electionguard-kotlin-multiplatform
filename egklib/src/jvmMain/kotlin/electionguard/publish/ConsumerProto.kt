@@ -110,7 +110,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             return Iterable { EncryptedBallotIterator(batchedFileName, groupContext, null, filter) }
         }
         // just read individual files
-        return Iterable { EncryptedBallotFileIterator(dirPath, groupContext, filter) }
+        return Iterable { EncryptedBallotFileIterator(dirPath, filter) }
     }
 
     private inner class EncryptedBallotChainIterator(
@@ -147,7 +147,6 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
 
     private inner class EncryptedBallotFileIterator(
         ballotDir: Path,
-        private val group: GroupContext,
         private val filter: Predicate<EncryptedBallot>?,
     ) : AbstractIterator<EncryptedBallot>() {
         val pathList = ballotDir.pathListNoDirs()

@@ -6,13 +6,12 @@ import electionguard.core.*
 import electionguard.publish.ElectionRecord
 
 class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
-    val group: GroupContext
+    val group: GroupContext = productionGroup()
     val manifest: ManifestIF
     val jointPublicKey: ElGamalPublicKey
     val He: UInt256
 
     init {
-        group = productionGroup()
         manifest = record.manifest()
 
         if (record.stage() < ElectionRecord.Stage.INIT) { // fake

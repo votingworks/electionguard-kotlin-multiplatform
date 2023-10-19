@@ -99,6 +99,7 @@ class PowRadix(val basis: ElementModP, val acceleration: PowRadixOption) {
     }
 }
 
+@ExperimentalUnsignedTypes
 internal fun ByteArray.kBitsPerSlice(
     powRadixOption: PowRadixOption,
     tableLength: Int

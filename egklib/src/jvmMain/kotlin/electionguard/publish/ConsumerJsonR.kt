@@ -20,18 +20,21 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
 import java.io.ByteArrayInputStream
+import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.spi.FileSystemProvider
 import java.util.function.Predicate
 import java.util.stream.Stream
 
 private val logger = KotlinLogging.logger("ConsumerJsonRJvm")
 
 /** Can read both zipped and unzipped JSON election record */
+
 actual class ConsumerJsonR actual constructor(val topDir: String, val group: GroupContext) : Consumer {
-    var fileSystem = FileSystems.getDefault()
-    var fileSystemProvider = fileSystem.provider()
+    var fileSystem : FileSystem = FileSystems.getDefault()
+    var fileSystemProvider : FileSystemProvider = fileSystem.provider()
     var jsonPaths = ElectionRecordJsonRPaths(topDir)
     val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true }
 

@@ -23,7 +23,7 @@ data class ChaumPedersenJson(
 )
 
 fun ChaumPedersenProof.publishJson() =
-    ChaumPedersenJson(this.c.publishJson(), this.r.publishJson(), )
+    ChaumPedersenJson(this.c.publishJson(), this.r.publishJson())
 
 fun ChaumPedersenJson.import(group: GroupContext) =
     ChaumPedersenProof(this.challenge.import(group), this.response.import(group))

@@ -16,7 +16,7 @@ fun importUInt256(modQ: electionguard.protogen.UInt256?): UInt256? =
     modQ?.value?.array?.toUInt256()
 
 fun electionguard.protogen.UInt256.import(): Result<UInt256, String> {
-    val result = this.value?.array?.toUInt256()
+    val result = this.value.array.toUInt256()
     return if (result != null) Ok(result) else Err("malformed UInt256") // TODO
 }
 

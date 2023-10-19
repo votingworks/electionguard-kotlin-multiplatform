@@ -119,7 +119,7 @@ class PepTrusted(
                     val selectionKey = "${contest.contestId}#${selection.selectionId}"
                     val sel = admin.selectionMap[selectionKey]!!
                     val vi = sel.challenge(c)
-                    vSum = vSum + vi
+                    vSum += vi
 
                     //     (5.a) for each guardian, verify that aj = α^vj * Aj^cj and bj = β^vj * Bj^c for any j
                     val ratio = sel.ciphertextRatio

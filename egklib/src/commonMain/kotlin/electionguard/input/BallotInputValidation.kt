@@ -73,7 +73,6 @@ class BallotInputValidation(val manifest: Manifest) {
             logger.warn { msg }
         }
 
-        var total = 0
         val selectionIds: MutableSet<String> = HashSet()
         val sequenceOrders: MutableSet<Int> = HashSet()
         for (selection in ballotContest.selections) {

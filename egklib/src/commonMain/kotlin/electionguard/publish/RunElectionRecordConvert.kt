@@ -57,7 +57,7 @@ fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: S
     var ecount = 0
     val esink = publisher.encryptedBallotSink("fake")
     try {
-        consumer.iterateAllEncryptedBallots { true }.forEach() {
+        consumer.iterateAllEncryptedBallots { true }.forEach {
             esink.writeEncryptedBallot(it)
             ecount++
         }
@@ -81,7 +81,7 @@ fun runElectionRecordConvert(group: GroupContext, inputDir: String, outputDir: S
     var dcount = 0
     val dsink = publisher.decryptedTallyOrBallotSink()
     try {
-        consumer.iterateDecryptedBallots().forEach() {
+        consumer.iterateDecryptedBallots().forEach {
             dsink.writeDecryptedTallyOrBallot(it)
             dcount++
         }

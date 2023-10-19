@@ -57,9 +57,9 @@ data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
 
     fun show() : String = buildString {
         appendLine("Ballot ${id}")
-        contests.forEach {
-            appendLine("  Contest ${it.contestId}")
-            it.selections.forEach {
+        contests.forEach { contest ->
+            appendLine("  Contest ${contest.contestId}")
+            contest.selections.forEach {
                 appendLine("    Selection ${it.selectionId} ${it.tally} ")
             }
         }

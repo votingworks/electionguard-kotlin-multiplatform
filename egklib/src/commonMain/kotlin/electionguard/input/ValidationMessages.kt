@@ -33,7 +33,7 @@ class ValidationMessages(val id: String, private val level: Int) {
     }
 
     fun hasErrors(): Boolean {
-        if (!messages.isEmpty()) {
+        if (messages.isNotEmpty()) {
             return true
         }
         if (nested.isEmpty()) {

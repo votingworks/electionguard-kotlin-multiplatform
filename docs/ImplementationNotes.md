@@ -88,13 +88,13 @@ could use here when it's ready.
 
 ### API differences from ElectionGuard-Python
 
-The biggest and most notable difference is the use of [GroupContext](egklib/src/commonMain/kotlin/electionguard/core/GroupCommon.kt)
+The biggest and most notable difference is the use of [GroupContext](../egklib/src/commonMain/kotlin/electionguard/core/GroupCommon.kt)
 instances. A `GroupContext` provides
 all the necessary state to do computation with a group, replacing a series of global variables, in
 the Python code, with instance variables inside the group context. You get a group context by calling
-[productionGroup()](egklib/src/commonMain/kotlin/electionguard/core/Group.kt)
+[productionGroup()](../egklib/src/commonMain/kotlin/electionguard/core/Group.kt)
 with an optional parameter specifying how much precomputation (and memory use) you're willing to tolerate
-in response for more acceleration of the cryptographic primitives. There's also a [tinyGroup()](egklib/src/commonTest/kotlin/electionguard/core/TinyGroup.kt), only
+in response for more acceleration of the cryptographic primitives. There's also a [tinyGroup()](../egklib/src/commonTest/kotlin/electionguard/core/TinyGroup.kt), only
 available to unit tests, that operates with 32-bit primes rather than the original 256 or 4096-bit primes. This
 allows the unit tests to run radically faster, and in some cases even discover corner case bugs that would
 be unlikely to manifest if the tests were operating with a production group.
