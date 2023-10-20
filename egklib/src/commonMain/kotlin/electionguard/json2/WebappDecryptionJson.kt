@@ -11,6 +11,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // stuff used by the webapps - easiest to have it here as a common dependency
+// TODO: are empty lists allowed?
 
 @Serializable
 data class SetMissingRequestJson(
@@ -55,7 +56,7 @@ fun DecryptRequest.publishJson() = DecryptRequestJson(
 
 fun DecryptRequestJson.import(group: GroupContext): Result<DecryptRequest, String> {
     val texts = this.texts.map { it.import(group) }
-    val allgood = texts.map { it != null }.reduce { a, b -> a && b }
+    val allgood = if (texts.isEmpty()) true else texts.map { it != null }.reduce { a, b -> a && b }
 
     return if (allgood) Ok(DecryptRequest(texts.map { it }))
     else Err("importModP error")
