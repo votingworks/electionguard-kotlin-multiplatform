@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 10/10/2023
+last update 10/20/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
@@ -93,7 +93,7 @@ Example:
 ````
 /usr/lib/jvm/jdk-19/bin/java \
   -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunCreateTestManifest \
     -ncontests 3 \
     -nselections 11 \
@@ -120,7 +120,7 @@ Example:
 ````
 /usr/lib/jvm/jdk-19/bin/java \
   -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunCreateElectionConfig \
     -manifest egklib/src/commonTest/data/startManifestJson \
     -nguardians 3 \
@@ -149,7 +149,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunTrustedKeyCeremony \
     -in testOut/cliWorkflow/config \
     -trustees testOut/cliWorkflow/keyceremony/trustees \
@@ -177,7 +177,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunBatchEncryption \
     -in testOut/cliWorkflow/keyceremony \
     -ballots egklib/src/commonTest/data/fakeBallots/json \
@@ -203,7 +203,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunAccumulateTally \
     -in testOut/cliWorkflow/electionRecord \
     -out testOut/cliWorkflow/electionRecord 
@@ -237,7 +237,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunTrustedTallyDecryption \
     -in testOut/cliWorkflow/electionRecord \
     -trustees testOut/cliWorkflow/keyceremony/trustees \
@@ -274,7 +274,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunTrustedBallotDecryption \
     -in testOut/cliWorkflow/electionRecord \
     -trustees testOut/cliWorkflow/keyceremony/trustees \
@@ -301,7 +301,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunVerifier \
     -in testOut/cliWorkflow/electionRecord 
 ````
@@ -312,7 +312,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunBatchEncryption \
     -in egklib/src/commonTest/data/workflow/allAvailableJson \
     -ballots egklib/src/commonTest/data/workflow/allAvailableJson/private_data/input \
@@ -340,7 +340,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunTrustedPep \
     -in egklib/src/commonTest/data/workflow/allAvailableJson \
     -trustees egklib/src/commonTest/data/workflow/allAvailableJson/private_data/trustees \
@@ -364,7 +364,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar \
+  -classpath egkliball/egklib-all.jar \
   electionguard.cli.RunVerifyPep \
     --inputDir egklib/src/commonTest/data/workflow/allAvailableJson \
     --pepBallotDir testOut/pep/testPepAllJson/pepBallots

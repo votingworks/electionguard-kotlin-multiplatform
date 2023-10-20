@@ -9,33 +9,12 @@ buildscript {
 plugins {
     kotlin("multiplatform") version "1.9.10"
     alias(libs.plugins.serialization)
+    application
 }
 
 repositories {
     mavenCentral()
 }
-
-/*
-val kotlinVersion : String = providers.gradleProperty("kotlinVersion").get()
-println("Read kotlinVersion from gradle.properties = $kotlinVersion")
-
-@Suppress("DSL_SCOPE_VIOLATION")
-plugins {
-    kotlin("multiplatform") version providers.gradleProperty("kotlinVersion").get()
-    id("electionguard.common-conventions")
-
-    // cross-platform serialization support
-    alias(libs.plugins.serialization)
-
-    // https://github.com/hovinen/kotlin-auto-formatter
-    // Creates a `formatKotlin` Gradle action that seems to be reliable.
-    // alias(libs.plugins.formatter)
-
-
-    id("maven-publish")
-}
-
- */
 
 group = "electionguard-kotlin-multiplatform"
 version = "2.0.0-SNAPSHOT"
@@ -211,99 +190,3 @@ configurations.forEach {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
     .configureEach { kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn" }
-
-/*
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/danwallach/electionguard-kotlin-multiplatform")
-            credentials {
-                username = project.findProperty("github.user") as String? ?: System.getenv("USERNAME")
-                password = project.findProperty("github.key") as String? ?: System.getenv("TOKEN")
-            }
-        }
-    }
-    publications {
-        register<MavenPublication>("gpr") {
-            from(components["java"])
-        }
-    }
-}
-*/
-
-tasks.register("showConfigurations") {
-    configurations.forEach {
-        println(it.name)
-    }
-}
-
-/*
-tasks.register("fatJar", Jar::class.java) {
-    archiveClassifier.set("all")
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    manifest {
-        attributes("Main-Class" to "electionguard.wtf")
-    }
-    from(configurations.named("jvmRuntimeClasspath")
-        .onEach { println("add from dependencies: ${it.name}") }
-        .map { if (it.isDirectory) it else zipTree(it) })
-    val sourcesMain = sourceSets.main.get()
-    (sourcesMain.allSource as Iterable).forEach { println("add from sources: ${it.name}") }
-    from(sourcesMain.output)
-}
-
- */
-
-tasks {
-    register("fatJar", Jar::class.java) {
-        archiveClassifier.set("all")
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        manifest {
-            attributes("Main-Class" to "electionguard.wtf")
-        }
-        from(configurations.getByName("jvmRuntimeClasspath")
-            .onEach { println("add from dependencies: ${it.name}") }
-            .map { if (it.isDirectory) it else zipTree(it) })
-        //val sourcesMain = sourceSets.main.get()
-        //from(sourcesMain.output)
-    }
-}
-
-tasks.register("makeFatJarKamp", Jar::class.java) {
-    archiveClassifier.set("all")
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    val classpath = configurations.getByName("jvmRuntimeClasspath")
-        .onEach { println("add from dependencies: ${it.name}") }
-        .map { if (it.isDirectory) it else zipTree(it) }
-    from(classpath) {
-        exclude("META-INF/*.SF")
-        exclude("META-INF/*.DSA")
-        exclude("META-INF/*.RSA")
-    }
-
-    val mainClassName = "electionguard.verifier.RunVerifierKt"
-
-    manifest {
-        attributes(mapOf(
-            "Main-Class" to mainClassName,
-            "Built-By" to System.getProperty("user.name"),
-            "Build-Jdk" to System.getProperty("java.version"),
-            "Implementation-Version" to project.version,
-            "Created-By" to "Gradle v${org.gradle.util.GradleVersion.current()}",
-        ))
-    }
-
-    inputs.property("mainClassName", mainClassName)
-    inputs.files(classpath)
-    inputs.files(outputs)
-}
-
-tasks.create<JavaExec>("makeFatJar") {
-    val main = "electionguard.verifier.RunVerfifier"
-    classpath = objects.fileCollection().from(
-        tasks.named("compileKotlinJvm"),
-        configurations.named("jvmRuntimeClasspath")
-    )
-}

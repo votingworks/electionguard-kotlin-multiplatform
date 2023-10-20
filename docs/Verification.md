@@ -1,6 +1,6 @@
 # Verification
 
-_last update 10/10/2023_
+_last update 10/20/2023_
 
 ElectionGuard-Kotlin-Multiplatform library fully implements the **Verifier** section 6 of the ElectionGuard specification.
 Use the classes in the _egklib/src/commonMain/kotlin/electionguard/verifier_ package in your own program, 
@@ -12,7 +12,7 @@ See _Building a library fat jar_ in [GettingStarted](GettingStarted.md), then ru
 
 ```
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egklib/egklib-all.jar electionguard.cli.RunVerifier \
+  -classpath egkliball/egklib-all.jar electionguard.cli.RunVerifier \
   -in /path/to/election_record
 ```
 
@@ -31,6 +31,6 @@ Since the main class of the fatJar is _electionguard.cli.RunVerifierKt_ you can 
 
 ```
 /usr/lib/jvm/jdk-19/bin/java \
-    -jar egkhome/egklib/egklib-all.jar \
+    -jar egkhome/egkliball/egklib-all.jar \
     -in /path/to/election_record
 ```
