@@ -1,6 +1,6 @@
 # ElectionGuard-Kotlin-Multiplatform Getting Started
 
-_last update 10/10/2023_
+_last update 10/20/2023_
 
 ## Requirements
 
@@ -57,6 +57,7 @@ You should find that the library jar file is placed into:
 
 `egklib/build/libs/egklib-jvm-2.0.0-SNAPSHOT.jar
 `
+
 ## Using the egk library in your own jvm-based project
 
 We do not yet have egk uploaded to Maven Central, which is the standard way to distribute JVM libraries.
@@ -79,42 +80,23 @@ of its dependencies, for example:
   }
 ```
 
-## Building a library fat jar
-
-Rather than having to specify all of egk's dependencies in your project's build (which will change all the time), 
-you can build a "fat jar" that includes egk and its dependencies.
-
-(This is not yet working in electionguard-kotlin-multiplatform. see egk-webapps to build it there)
-
-If you've changed the egk library, copy it to the webapps repo (otherwise egk-webapps will already have the egk library)
+## Building a library with all dependencies ("fat jar")
 
 ```
-  cp egkhome/egklib/build/libs/egklib-jvm-2.0.0-SNAPSHOT.jar devhome/egk-webapps/libs/
-```
-
-Make the fatJar:
-
-```
-  cd devhome/egk-webapps
+  cd devhome/electionguard-kotlin-multiplatform
   ./gradlew fatJar
 ```
 
 You should find that the fat jar file is placed into:
 
-`devhome/egk-webapps/egklib/build/libs/egklib-all.jar
+`egkliball/build/libs/egklib-all.jar
 `
-
-You can put this anywhere, but by conventions we place it back into the egk repo:
-
-```
-  cp devhome/egk-webapps/egklib/build/libs/egklib-all.jar egkhome/egklib/
-```
 
 You can put this jar into your build like
 
 ```
   dependencies {
-    implementation(files("egkhome/egklib/egklib-all.jar"))
+    implementation(files("egkhome/egkliball/build/libs/egklib-all.jar"))
      ...
   }
 ```
@@ -124,7 +106,7 @@ And you can also add it to your classpath to execute programs from the command l
 ```
 /usr/lib/jvm/jdk-19/bin/java \
     -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-    -classpath egkhome/egklib/egklib-all.jar \
+    -classpath egkhome/egkliball/egklib-all.jar \
     electionguard.verifier.RunVerifierKt \
     -in /path/to/election_record
 ```

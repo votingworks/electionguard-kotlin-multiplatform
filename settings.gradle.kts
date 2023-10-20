@@ -121,3 +121,4 @@ dependencyResolutionManagement {
 }
 
 include ("egklib")
+include ("egkliball")
