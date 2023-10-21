@@ -59,7 +59,9 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
 
     // Always has to be a config and the original manifest bytes, from which the manifest is parsed
     require(config != null) { "no election config file found in ${consumer.topdir()}" }
-    require(config.manifestHash == manifestHash(config.parameterBaseHash, config.manifestBytes))
+    require(config.manifestHash == manifestHash(config.parameterBaseHash, config.manifestBytes)) {
+        "config.manifestHash fails to match ${consumer.topdir()}"
+    }
     manifest = consumer.makeManifest(config.manifestBytes)
 
     if (stage == ElectionRecord.Stage.INIT && consumer.hasEncryptedBallots()) {

@@ -5,6 +5,13 @@ import electionguard.core.productionGroup
 import kotlin.test.Test
 
 class VerifierTest {
+
+    @Test
+    fun verifyRemoteWorkflow() {
+        RunVerifier.runVerifier(productionGroup(), "src/commonTest/data/testElectionRecord/remoteWorkflow/keyceremony", 11)
+        RunVerifier.runVerifier(productionGroup(), "src/commonTest/data/testElectionRecord/remoteWorkflow/electionRecord", 11)
+    }
+
     @Test
     fun verificationAll() {
         RunVerifier.runVerifier(productionGroup(), "src/commonTest/data/workflow/allAvailableProto", 11, true)

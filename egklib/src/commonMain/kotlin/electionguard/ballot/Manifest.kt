@@ -39,11 +39,11 @@ data class Manifest(
     }
 
     override fun contestLimit(contestId : String) : Int {
-        return contestIdToContestLimit[contestId]!!
+        return contestIdToContestLimit[contestId] ?: throw RuntimeException("manifest missing contestLimit for $contestId")
     }
 
     override fun optionLimit(contestId : String) : Int {
-        return contestIdToOptionLimit[contestId]!!
+        return contestIdToOptionLimit[contestId] ?: throw RuntimeException("manifest missing optionLimit for $contestId")
     }
 
     /** Map of contestId to contest selection limit. */
