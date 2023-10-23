@@ -10,11 +10,6 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class SchnorrTest {
-    @BeforeTest
-    fun suppressLogs() {
-        loggingErrorsOnly()
-    }
-
     @Test
     fun testCorruption() {
         runTest {

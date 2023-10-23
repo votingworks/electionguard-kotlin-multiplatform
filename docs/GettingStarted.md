@@ -1,6 +1,14 @@
 # ElectionGuard-Kotlin-Multiplatform Getting Started
 
-_last update 10/20/2023_
+_last update 10/23/2023_
+
+<!-- TOC -->
+* [ElectionGuard-Kotlin-Multiplatform Getting Started](#electionguard-kotlin-multiplatform-getting-started)
+  * [Requirements](#requirements)
+  * [Building the library](#building-the-library)
+  * [Using the egk library in your own jvm-based project](#using-the-egk-library-in-your-own-jvm-based-project)
+  * [Building a library with all dependencies ("fat jar")](#building-a-library-with-all-dependencies-fat-jar)
+<!-- TOC -->
 
 ## Requirements
 
@@ -82,6 +90,9 @@ of its dependencies, for example:
 
 ## Building a library with all dependencies ("fat jar")
 
+If you are using the electionguard library as standalone (eg for the command line tools), its easier to build a 
+"fat jar" that includes all of its dependencies: 
+
 ```
   cd devhome/electionguard-kotlin-multiplatform
   ./gradlew fatJar
@@ -111,3 +122,5 @@ And you can also add it to your classpath to execute programs from the command l
     -in /path/to/election_record
 ```
 
+This also includes logback as a logging implementation. The includede libraries are described
+[here](../dependencies.txt).

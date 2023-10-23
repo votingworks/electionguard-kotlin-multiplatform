@@ -1,6 +1,6 @@
 package electionguard.core
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Simple static methods to convert [ByteArray] back and forth to hexadecimal strings. Input may be

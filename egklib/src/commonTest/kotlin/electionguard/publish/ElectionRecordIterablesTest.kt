@@ -4,7 +4,7 @@ import electionguard.core.GroupContext
 import electionguard.core.productionGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("ElectionRecordIterablesTest")
 

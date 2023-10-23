@@ -13,11 +13,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ChaumPedersenTest {
-    @BeforeTest
-    fun suppressLogs() {
-        loggingErrorsOnly()
-    }
-
     @Test
     fun testCCKnownNonceProofsSimpleEncryptionZero() {
         runTest {

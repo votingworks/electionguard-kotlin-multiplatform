@@ -8,7 +8,7 @@ import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
 import electionguard.input.ValidationMessages
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
 
@@ -50,7 +50,7 @@ class PepBlindTrust(
         val ratioBallot: EncryptedBallot = makeRatioBallot(ballot1, ballot2, errorMesses)
         if (errorMesses.hasErrors()) {
             val message = "${ballot1.ballotId} makeRatioBallot error $errorMesses"
-            logger.atWarn().log(message)
+            logger.warn { message }
             return Err(message)
         }
 

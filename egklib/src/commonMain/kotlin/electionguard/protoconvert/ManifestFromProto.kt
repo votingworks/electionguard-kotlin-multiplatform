@@ -4,7 +4,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.ballot.*
 import electionguard.core.safeEnumValueOf
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestFromProto")
 

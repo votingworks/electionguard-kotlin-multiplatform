@@ -1,7 +1,7 @@
 package electionguard.protoconvert
 
 import electionguard.ballot.Manifest
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestToProto")
 

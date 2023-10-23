@@ -4,7 +4,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.core.*
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pbandk.decodeFromByteArray
 import pbandk.encodeToByteArray
 import kotlin.math.max

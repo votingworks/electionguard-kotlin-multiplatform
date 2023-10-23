@@ -7,7 +7,7 @@ import electionguard.ballot.EncryptedBallot.BallotState
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
 import electionguard.core.encryptedSum
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("AccumulateTally")
 

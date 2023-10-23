@@ -17,7 +17,7 @@ import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.protoconvert.import
 import kotlinx.cinterop.*
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pbandk.decodeFromByteArray
 import platform.posix.FILE
 import platform.posix.fclose
