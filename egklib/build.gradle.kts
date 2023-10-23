@@ -74,11 +74,8 @@ nativeTarget.apply {
                     // Coroutines
                     implementation(libs.kotlinx.coroutines.core)
 
-                    // Useful, portable routines
-                    // implementation(libs.ktor.utils)
-
                     // Portable logging interface.
-                    implementation(libs.microutils.logging)
+                    implementation(libs.oshai.logging)
 
                     // A multiplatform Kotlin library for working with date and time.
                     implementation(libs.kotlinx.datetime)

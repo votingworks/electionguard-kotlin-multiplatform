@@ -2,7 +2,7 @@ package electionguard.input
 
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("BallotInputValidation")
 

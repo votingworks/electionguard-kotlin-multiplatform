@@ -12,7 +12,7 @@ import electionguard.core.*
 import electionguard.preencrypt.RecordedPreBallot
 import electionguard.preencrypt.RecordedPreEncryption
 import electionguard.preencrypt.RecordedSelectionVector
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pbandk.ByteArr
 
 private val logger = KotlinLogging.logger("EncryptedBallotConvert")

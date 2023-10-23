@@ -1,7 +1,7 @@
 package electionguard.core
 
 import com.github.michaelbull.result.*
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 private val logger = KotlinLogging.logger("SchnorrProof")
 
 /**

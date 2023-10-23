@@ -13,7 +13,7 @@ import kotlinx.cli.default
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicInteger
 
 private val logger = KotlinLogging.logger("RunVerifyPep")

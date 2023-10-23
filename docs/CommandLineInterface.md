@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 10/20/2023
+last update 10/23/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
@@ -74,7 +74,7 @@ last update 10/20/2023
 
 ## Make ekglib fatJar
 
-For classpath simplicity, the examples below use the [ekglib fatJar](https://github.com/JohnLCaron/egk-webapps#build-the-egklib-fat-jar).
+For classpath simplicity, the examples below use the [ekglib fatJar](GettingStarted.md#building-a-library-with-all-dependencies-fat-jar).
 
 ## Create a fake Election Manifest
 

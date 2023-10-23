@@ -4,7 +4,7 @@ import electionguard.ballot.Manifest
 import electionguard.ballot.Manifest.VoteVariationType.approval
 import electionguard.ballot.Manifest.VoteVariationType.one_of_m
 import electionguard.ballot.Manifest.VoteVariationType.n_of_m
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestInputValidation")
 

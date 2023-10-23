@@ -8,7 +8,7 @@ import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
 import electionguard.input.ValidationMessages
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
 private const val show = false
@@ -50,7 +50,7 @@ class PepSimple(
         val ratioBallot = makeRatioBallot(ballot1, ballot2, ballotMesses)
         if (ballotMesses.hasErrors()) {
             val message = "${ballot1.ballotId} makeRatioBallot error $ballotMesses"
-            logger.atWarn().log(message)
+            logger.warn { message }
             return Err(message)
         }
 

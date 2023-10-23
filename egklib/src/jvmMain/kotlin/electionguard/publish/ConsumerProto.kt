@@ -13,7 +13,7 @@ import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.pep.BallotPep
 import electionguard.protoconvert.import
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
 import java.io.*

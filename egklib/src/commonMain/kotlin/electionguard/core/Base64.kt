@@ -1,7 +1,7 @@
 package electionguard.core
 
 import kotlin.math.min
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 // Engineering note for this and Base16: there's also base16 and base64 support
 // in ktor-utils, but those don't reliably reject bogus input, instead just giving

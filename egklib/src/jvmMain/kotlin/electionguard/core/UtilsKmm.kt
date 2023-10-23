@@ -1,6 +1,6 @@
 package electionguard.core
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.ByteOrder
 import java.nio.ByteOrder.nativeOrder
@@ -19,7 +19,7 @@ actual fun createDirectories(directory: String): Boolean {
     }
     return try {
         Files.createDirectories(Path.of(directory))
-        logger.warn("error createDirectories = '$directory' ")
+        logger.warn { "error createDirectories = '$directory' " }
         true
     } catch (t: Throwable) {
         false

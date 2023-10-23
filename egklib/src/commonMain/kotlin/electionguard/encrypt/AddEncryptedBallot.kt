@@ -14,7 +14,7 @@ import electionguard.decryptBallot.DecryptWithNonce
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
 import electionguard.publish.*
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("AddEncryptedBallot")
 
@@ -85,7 +85,7 @@ class AddEncryptedBallot(
     fun encrypt(ballot: PlaintextBallot): Result<CiphertextBallot, String> {
         if (closed) {
             val message = "Trying to add ballot after chain has been closed"
-            logger.atWarn().log(message)
+            logger.warn { message }
             return Err(message)
         }
 
@@ -93,7 +93,7 @@ class AddEncryptedBallot(
         if (mess.hasErrors()) {
             publisher.writePlaintextBallot(invalidDir, listOf(ballot))
             val message = "${ballot.ballotId} did not validate (wrote to invalidDir=$invalidDir) because $mess"
-            logger.atWarn().log(message)
+            logger.warn { message }
             return Err(message)
         }
 

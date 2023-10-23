@@ -1,7 +1,7 @@
 rootProject.name = "electionguard-kotlin-multiplatform"
 
 // eventually this may become canonical source for all versions, including webapps.
-// 9/9/2023
+// 10/23/2023
 val coroutinesVersion = "1.6.4" // "1.7.3" see issue #362
 val jupitorVersion = "5.10.0"
 val kotlinVersion = "1.9.0"
@@ -11,12 +11,10 @@ val kotlinxSerializationCoreVersion = "1.6.0"
 val kotestVersion = "5.7.2"
 val ktorVersion = "2.3.4"
 val logbackVersion = "1.4.11"
-val microutilsLoggingVersion = "3.0.5"
+val oshaiLoggingVersion = "5.1.0"
 val mockkVersion = "1.13.7"
 val pbandkVersion = "0.14.2"
 val resultVersion = "1.1.18"
-
-// implementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
 
 dependencyResolutionManagement {
     repositories {
@@ -35,7 +33,7 @@ dependencyResolutionManagement {
             library("pbandk", "pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
 
             //// logging
-            library("microutils-logging", "io.github.microutils:kotlin-logging:$microutilsLoggingVersion")
+            library("oshai-logging", "io.github.oshai:kotlin-logging:$oshaiLoggingVersion")
             library("logback-classic", "ch.qos.logback:logback-classic:$logbackVersion")
 
             library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion")

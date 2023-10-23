@@ -1,6 +1,6 @@
 # ElectionGuard-Kotlin-Multiplatform
 
-_last update 10/10/2023_
+_last update 10/23/2023_
 
 ElectionGuard-Kotlin-Multiplatform (EGK) is a [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) 
 implementation of 
@@ -11,8 +11,9 @@ available under an MIT-style open source [License](LICENSE).
 Our GitHub repository is now hosted by [VotingWorks](https://www.voting.works/).
 
 Currently we have ~88% LOC code coverage on the common and jvm core library (7024/7995 LOC). We are focusing on just 
-the JVM implementation, and will consider native and other implementations in the future. Current library dependencies
-are summarized [here](dependencies.txt).
+the JVM implementation, and will consider native and other implementations in the future. 
+
+Current library dependencies are summarized [here](dependencies.txt).
 
 Currently Java 17 is required.
 
