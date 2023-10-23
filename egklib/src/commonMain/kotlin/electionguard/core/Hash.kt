@@ -49,7 +49,7 @@ fun hmacFunction(key: ByteArray, vararg elements: Any): UInt256 {
     return hmac.finish()
 }
 
-private fun HmacSha256.addToHash(element : Any, show : Boolean = false) {
+fun HmacSha256.addToHash(element : Any, show : Boolean = false) {
     if (element is Iterable<*>) {
         element.forEach { this.addToHash(it!!) }
     } else {
@@ -69,8 +69,6 @@ private fun HmacSha256.addToHash(element : Any, show : Boolean = false) {
     }
 }
 
-private val U256 = 256.toUShort()
-
 // Other integers such as indices are encoded as fixed length byte arrays in big endian format.
 // In ElectionGuard, all such small integers are assumed to be smaller than 2^31.
 // They can therefore be encoded with 4 bytes, i.e. with
@@ -82,49 +80,6 @@ fun intToByteArray (data: Int) : ByteArray {
         ByteArray(4) { i -> (dataLong shr (i * 8)).toByte() }
     } else {
         ByteArray(4) { i -> (dataLong shr ((3-i) * 8)).toByte() }
-    }
-}
-
-////////////////////////////////////
-//// test concatenation vs update
-
-fun hashFunctionConcat(key: ByteArray, vararg elements: Any): UInt256 {
-    var result = ByteArray(0)
-    elements.forEach { result += hashElementsToByteArray(it) }
-    val hmac = HmacSha256(key)
-    hmac.update(result)
-    println("size = ${result.size}")
-    return hmac.finish()
-}
-
-fun hashFunctionConcatSize(key: ByteArray, vararg elements: Any): Int {
-    var result = ByteArray(0)
-    elements.forEach {
-        val eh = hashElementsToByteArray(it)
-        println("  size = ${eh.size}")
-        result += eh
-    }
-    return result.size
-}
-
-private fun hashElementsToByteArray(element : Any) : ByteArray {
-    if (element is Iterable<*>) {
-        var result = ByteArray(0)
-        element.forEach { result += hashElementsToByteArray(it!!) }
-        return result
-    } else {
-        val ba : ByteArray = when (element) {
-            is Byte -> ByteArray(1) { element }
-            is ByteArray -> element
-            is UInt256 -> element.bytes
-            is Element -> element.byteArray()
-            is String -> element.encodeToByteArray()
-            is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
-            is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
-            is Int -> intToByteArray(element)
-            else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
-        }
-        return ba
     }
 }
 

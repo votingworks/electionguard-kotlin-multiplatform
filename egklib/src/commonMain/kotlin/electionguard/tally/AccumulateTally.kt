@@ -12,6 +12,7 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger("AccumulateTally")
 
 /** Accumulate the votes of EncryptedBallots, and return an EncryptedTally. */
+// TODO what happens if there are no EncryptedBallots?
 class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val name : String) {
     private val mcontests = manifest.contests.associate { it.contestId to Contest(it)}
     private val castIds = mutableSetOf<String>()

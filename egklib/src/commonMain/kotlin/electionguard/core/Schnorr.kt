@@ -7,19 +7,19 @@ private val logger = KotlinLogging.logger("SchnorrProof")
 /**
  * Proof that the prover knows the private key corresponding to the public key.
  * Spec 2.0.0, section 3.2.2, "NIZK Proof" (non-interactive zero knowledge proof).
- * TODO: specialized to the polynomial committments (eq 12). Maybe generalize ??
  */
 data class SchnorrProof(
     val publicKey: ElementModP, // K_ij, public commitment to the jth coefficient.
-    val challenge: ElementModQ,  // c_ij, p 22. eq 12
-    val response: ElementModQ) {  // v_ij = nonce - secretKey.key * cij, p 22.
+    val challenge: ElementModQ, // c_ij, p 22. eq 12
+    val response: ElementModQ,  // v_ij = nonce - secretKey.key * cij.
+    ) {
 
     init {
         compatibleContextOrFail(publicKey, challenge, response)
         require(publicKey.isValidResidue()) // 2.A
     }
 
-    // verification Box 2, p 20
+    // verification Box 2, p 23
     fun validate(guardianXCoord: Int, coeff: Int): Result<Boolean, String> {
         val group = compatibleContextOrFail(publicKey, challenge, response)
 
@@ -28,7 +28,7 @@ data class SchnorrProof(
         // h = g^v * K^c = g^(u - c*s) * g^s*c = g^(u - c*s + c*s) = g^u
         val c = hashFunction(group.constants.hp.bytes, 0x10.toByte(), guardianXCoord, coeff, publicKey, h).toElementModQ(group) // 2.C
         // c wouldnt agree unless h = g^u
-        // therefore, whoever generated r knows s
+        // therefore, whoever generated v knows s
 
         val inBoundsK = publicKey.isValidResidue() // 2.A
         val inBoundsU = response.inBounds() // 2.B

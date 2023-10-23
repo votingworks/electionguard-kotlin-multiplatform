@@ -72,8 +72,8 @@ class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
         }
 
         // tally accumulation
-        val verifyAggregation = VerifyAggregation(group, verifyEncryptions.aggregator)
-        val aggResult = verifyAggregation.verify(record.encryptedTally()!!, showTime)
+        val verifyTally = VerifyTally(group, verifyEncryptions.aggregator)
+        val aggResult = verifyTally.verify(record.encryptedTally()!!, showTime)
         println(" 8. verifyBallotAggregation $aggResult")
 
         if (record.stage() < ElectionRecord.Stage.DECRYPTED) {

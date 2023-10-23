@@ -121,12 +121,13 @@ fun Int.encrypt(
 ): ElGamalCiphertext {
     val context = compatibleContextOrFail(publicKey.key, nonce)
 
+    // LOOK: Exception
     if (nonce.isZero()) {
         throw ArithmeticException("Can't use a zero nonce for ElGamal encryption")
     }
 
     if (this < 0) {
-        throw ArithmeticException("Can't encrypt a negative message")
+        throw ArithmeticException("Can't encrypt a negative vote")
     }
 
     // We don't have to check if message >= Q, because it's an integer, and Q is much larger than that.
@@ -144,7 +145,7 @@ fun Int.encrypt(
 fun Int.encrypt(
     keypair: ElGamalKeypair,
     nonce: ElementModQ = keypair.context.randomElementModQ(minimum = 1)
-) = this.encrypt(keypair.publicKey, nonce)
+    ) = this.encrypt(keypair.publicKey, nonce)
 
 /** Decrypts using the secret key from the keypair. If the decryption fails, `null` is returned. */
 fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair): Int? {
@@ -194,6 +195,7 @@ fun Iterable<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext =
     // an exception on that, and otherwise we're fine.
     asSequence()
         .let {
+            // TODO why not return null?
             it.ifEmpty { throw ArithmeticException("Cannot sum an empty list of ciphertexts") }
                 .reduce { a, b -> a + b }
         }

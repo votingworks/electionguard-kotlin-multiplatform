@@ -12,7 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class ChaumPedersen2Test {
+class ChaumPedersenTest {
     @BeforeTest
     fun suppressLogs() {
         loggingErrorsOnly()

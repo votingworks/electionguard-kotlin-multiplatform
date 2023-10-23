@@ -1,11 +1,8 @@
 package electionguard.core
 
 import electionguard.ballot.ElectionConstants
-import mu.KotlinLogging
 import java.math.BigInteger
 import java.util.concurrent.atomic.AtomicInteger
-
-private val logger = KotlinLogging.logger("Group")
 
 private val montgomeryI4096 = BigInteger.ONE shl Primes4096.nbits
 private val p4096 = BigInteger(Primes4096.pStr, 16)
@@ -53,7 +50,6 @@ actual fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) :
         ProductionMode.Mode4096 -> productionGroups4096[acceleration] ?: throw Error("can't happen")
         ProductionMode.Mode3072 -> productionGroups3072[acceleration] ?: throw Error("can't happen")
     }
-
 
 /** Convert an array of bytes, in big-endian format, to a BigInteger */
 internal fun UInt.toBigInteger() = BigInteger.valueOf(this.toLong())
@@ -218,6 +214,7 @@ class ProductionGroupContext(
     override fun Iterable<ElementModQ>.addQ(): ElementModQ {
         val input = iterator().asSequence().toList()
 
+        // TODO why not return 0 ?
         if (input.isEmpty()) {
             throw ArithmeticException("addQ not defined on empty lists")
         }
@@ -238,6 +235,7 @@ class ProductionGroupContext(
     override fun Iterable<ElementModP>.multP(): ElementModP {
         val input = iterator().asSequence().toList()
 
+        // TODO why not return 1 ?
         if (input.isEmpty()) {
             throw ArithmeticException("multP not defined on empty lists")
         }
@@ -426,13 +424,11 @@ internal data class ProductionMontgomeryElementModP(val element: BigInteger, val
     internal fun BigInteger.divI(): BigInteger = this shr groupContext.productionMode.numBitsInP
 
     override fun times(other: MontgomeryElementModP): MontgomeryElementModP {
+        // w = aI * bI = (ab)(I^2)
         val w: BigInteger = this.element * other.getCompat(this.context)
 
-        // w = aI * bI = (ab)(I^2)
-
         // Z = ((((W mod I)⋅p^' )  mod I)⋅p+W)/I
-        val z: BigInteger =
-            (((w.modI() * groupContext.montgomeryPPrime).modI() * groupContext.p) + w).divI()
+        val z: BigInteger = (((w.modI() * groupContext.montgomeryPPrime).modI() * groupContext.p) + w).divI()
 
         return ProductionMontgomeryElementModP(
             if (z >= groupContext.p) z - groupContext.p else z,

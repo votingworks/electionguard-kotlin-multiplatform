@@ -6,6 +6,7 @@ import electionguard.core.Base16.toHex
 import electionguard.core.Base64.fromBase64
 import electionguard.core.Base64.toBase64
 import mu.KotlinLogging
+
 private val logger = KotlinLogging.logger("GroupCommon")
 
 internal const val b64Production4096P256MinusQ = "AL0="

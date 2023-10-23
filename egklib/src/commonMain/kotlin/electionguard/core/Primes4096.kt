@@ -2,7 +2,7 @@ package electionguard.core
 
 import electionguard.core.Base16.fromHex
 
-// copied from the ElectionGuard 1.9 spec 3.1.1
+// copied from the ElectionGuard spec, section 3.1.1
 object Primes4096 {
     const val nbits = 4096
     const val nbytes = nbits/8
