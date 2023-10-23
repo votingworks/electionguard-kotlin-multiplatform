@@ -16,6 +16,8 @@ val mockkVersion = "1.13.7"
 val pbandkVersion = "0.14.2"
 val resultVersion = "1.1.18"
 
+// implementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+
 dependencyResolutionManagement {
     repositories {
         google()

@@ -89,6 +89,7 @@ class VerifyEncryptedBallots(
             }
 
             // Verification 6 (Adherence to vote limits)
+            // TODO what happens if there are no selections?
             val texts: List<ElGamalCiphertext> = contest.selections.map { it.encryptedVote }
             val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
             val cvalid = contest.proof.verify(

@@ -9,17 +9,6 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 
 /**
- * Our own assert function, which isn't available in the Kotlin standard library on JavaScript, even
- * though it's available on JVM and Native. If `condition` is `false`, then an `AssertionError` is
- * thrown with the given message, which defaults to "false sssertion".
- */
-fun assert(condition: Boolean, message: () -> String = { "false sssertion" }) {
-    if (!condition) {
-        throw AssertionError(message())
-    }
-}
-
-/**
  * Throughout our bignum arithmetic, every operation needs to check that its operands are compatible
  * (i.e., that we're not trying to use the test group and the production group interchangeably).
  * This will verify that compatibility and throw an `ArithmeticException` if they're not.
@@ -29,12 +18,6 @@ fun GroupContext.assertCompatible(other: GroupContext) {
         throw ArithmeticException("incompatible group contexts")
     }
 }
-
-/** Computes the SHA256 hash of the given string's UTF-8 representation. */
-fun String.sha256(): UInt256 = encodeToByteArray().sha256()
-
-/** Computes the HMAC-SHA256 of the given byte array using the given key. */
-fun ByteArray.hmacSha256(key: UInt256): UInt256 = hmacSha256(key.bytes)
 
 /**
  * Convert an unsigned 64-bit long into a big-endian byte array of size 1, 2, 4, or 8 bytes, as

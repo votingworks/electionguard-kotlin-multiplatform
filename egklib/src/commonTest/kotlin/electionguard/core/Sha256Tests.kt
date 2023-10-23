@@ -79,6 +79,18 @@ class Sha256Tests {
             }
     }
 
+    @Test
+    fun testHmacSha256same() {
+        (0..9)
+            .forEach { i ->
+                val h1 = inputs[i].hmacSha256(keys[i])
+                val hmac = HmacSha256(keys[i].bytes)
+                hmac.update(inputs[i])
+                val h2 = hmac.finish()
+                assertEquals(h1, h2)
+            }
+    }
+
     // RFC 4231 test vectors
     // https://datatracker.ietf.org/doc/html/rfc4231#section-4.1
 

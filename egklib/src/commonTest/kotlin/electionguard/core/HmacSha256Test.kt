@@ -104,3 +104,45 @@ class HmacSha256Test {
         println("sep3 43 = ${sep3}")
     }
 }
+
+
+////////////////////////////////////
+//// test concatenation vs update
+
+fun hashFunctionConcat(key: ByteArray, vararg elements: Any): UInt256 {
+    var result = ByteArray(0)
+    elements.forEach { result += hashElementsToByteArray(it) }
+    val hmac = HmacSha256(key)
+    hmac.update(result)
+    println("size = ${result.size}")
+    return hmac.finish()
+}
+
+fun hashFunctionConcatSize(key: ByteArray, vararg elements: Any): Int {
+    var result = ByteArray(0)
+    elements.forEach {
+        val eh = hashElementsToByteArray(it)
+        println("  size = ${eh.size}")
+        result += eh
+    }
+    return result.size
+}
+
+private fun hashElementsToByteArray(element : Any) : ByteArray {
+    if (element is Iterable<*>) {
+        var result = ByteArray(0)
+        element.forEach { result += hashElementsToByteArray(it!!) }
+        return result
+    } else {
+        val ba : ByteArray = when (element) {
+            is Byte -> ByteArray(1) { element }
+            is ByteArray -> element
+            is UInt256 -> element.bytes
+            is Element -> element.byteArray()
+            is String -> element.encodeToByteArray()
+            is Int -> intToByteArray(element)
+            else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
+        }
+        return ba
+    }
+}

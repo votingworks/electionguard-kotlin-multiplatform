@@ -3,6 +3,7 @@ package electionguard.core
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
+/** So we can use AtomicXXX */
 actual class Stat actual constructor(
     val thing : String,
     val what: String

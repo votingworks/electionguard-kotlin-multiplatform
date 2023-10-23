@@ -10,14 +10,14 @@ import electionguard.core.*
  * Verification 8 (Correctness of ballot aggregation)
  * An election verifier must confirm for each (non-placeholder) option in each contest in the election
  * manifest that the aggregate encryption (A, B) satisfies
- * (8.A) A = Prod(αj) mod p,
- * (8.B) B = Prod(βj) mod p,
+ *   (8.A) A = Prod(αj) mod p,
+ *   (8.B) B = Prod(βj) mod p,
  * where the (αj, βj ) are the corresponding encryptions on all cast ballots in the election record.
  *
  * (10.F) For each contest text label that occurs in at least one submitted ballot, that contest text
  *   label occurs in the list of contests in the corresponding tally.
  */
-class VerifyAggregation(
+class VerifyTally(
     val group: GroupContext,
     val aggregator: SelectionAggregator,
 ) {

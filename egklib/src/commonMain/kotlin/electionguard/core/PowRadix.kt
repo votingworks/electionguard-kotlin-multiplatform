@@ -112,7 +112,7 @@ internal fun ByteArray.kBitsPerSlice(
 
     // TODO: support values other than the hard-coded 16, 12, and 8-bit slices?
 
-    assert (this.size <= 32 || (this.size == 33 && this[0].toInt() == 0)) {
+    require (this.size <= 32 || (this.size == 33 && this[0].toInt() == 0)) {
         "invalid input size (${this.size}), not 32 bytes"
     }
 
@@ -132,7 +132,7 @@ internal fun ByteArray.kBitsPerSlice(
     return when (powRadixOption) {
         PowRadixOption.EXTREME_MEMORY_USE ->
             UShortArray(tableLength) {
-                assert(tableLength == 16) { "expected tableLength to be 16, got $tableLength" }
+                require(tableLength == 16) { "expected tableLength to be 16, got $tableLength" }
                 val inputOffset = 32 - 2 * it - 2
                 val lowBits = getOrZero(inputOffset + 1)
                 val highBits = getOrZero(inputOffset) shl 8
@@ -146,7 +146,7 @@ internal fun ByteArray.kBitsPerSlice(
                 // case doesn't require any special code, but the final 4-bits require a
                 // special case.
 
-                assert(tableLength == 22) { "expected tableLength to be 22, got $tableLength" }
+                require(tableLength == 22) { "expected tableLength to be 22, got $tableLength" }
                 val inputOffset = 32 - 3 * (it shr 1) - 1
                 if (it == 21) {
                     // special case because there are no more high bits
@@ -163,7 +163,7 @@ internal fun ByteArray.kBitsPerSlice(
             }
         PowRadixOption.LOW_MEMORY_USE ->
             UShortArray(tableLength) {
-                assert(tableLength == 32) { "expected tableLength to be 32, got $tableLength" }
+                require(tableLength == 32) { "expected tableLength to be 32, got $tableLength" }
                 getOrZeroUShort(tableLength - it - 1)
             }
         else ->

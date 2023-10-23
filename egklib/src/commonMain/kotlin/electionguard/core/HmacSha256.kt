@@ -17,3 +17,12 @@ expect class HmacSha256(key : ByteArray) {
     fun update(ba : ByteArray)
     fun finish() : UInt256
 }
+
+/** Computes the HMAC-SHA256 of the given byte array using the given key */
+fun ByteArray.hmacSha256(key: ByteArray): UInt256 {
+    val hmac = HmacSha256(key)
+    hmac.update(this)
+    return hmac.finish()
+}
+
+fun ByteArray.hmacSha256(key: UInt256): UInt256 = hmacSha256(key.bytes)

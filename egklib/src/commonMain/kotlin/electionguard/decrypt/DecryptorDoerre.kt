@@ -84,7 +84,8 @@ class DecryptorDoerre(
             val T = dresults.ciphertext.data / weightedProduct
             // T = K^t mod p, take log to get t = tally.
             // Dont bother taking the log for PEP, it will not be found when (m1 != m2)), just test T == 1 for equality.
-            dresults.tally = if (isPep) 0 else jointPublicKey.dLog(T, maxDlog) ?: throw DLogException("dlog not founf on $selectionKey")
+            // TODO something better than exception ??
+            dresults.tally = if (isPep) 0 else jointPublicKey.dLog(T, maxDlog) ?: throw RuntimeException("dLog not found on $selectionKey")
             dresults.M = weightedProduct
 
             // compute the collective challenge, needed for the collective proof; spec 2.0.0 eq 70

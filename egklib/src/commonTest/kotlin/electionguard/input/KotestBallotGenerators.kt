@@ -1,7 +1,6 @@
 package electionguard.input
 
 import electionguard.ballot.Manifest
-import electionguard.core.assert
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.*
 import kotlinx.datetime.Clock
@@ -232,7 +231,7 @@ object KotestBallotGenerators {
             .map { "https://www.$it.com" }
 
     fun partyList(numParties: Int): Arb<List<Manifest.Party>> {
-        assert(numParties >= 1)
+        require(numParties >= 1)
 
         val partyNames = (1..numParties).map { "Party$it" }
         val partyAbbrvs = (1..numParties).map { "P$it" }
@@ -260,8 +259,8 @@ object KotestBallotGenerators {
         parties: List<Manifest.Party>,
         geoUnits: List<Manifest.GeopoliticalUnit>
     ): Arb<Manifest.BallotStyle> = arbitrary {
-        assert(!parties.isEmpty())
-        assert(!geoUnits.isEmpty())
+        require(!parties.isEmpty())
+        require(!geoUnits.isEmpty())
 
         val gpUnitIds = geoUnits.map { it.geopoliticalUnitId }
         val partyIds = parties.map { it.partyId }
@@ -375,8 +374,8 @@ object KotestBallotGenerators {
         n: Int,
         m: Int,
     ): Arb<Pair<List<Manifest.Candidate>, Manifest.ContestDescription>> = arbitrary {
-        assert (n > 0)
-        assert (n <= m)
+        require (n > 0)
+        require (n <= m)
 
         val candidates = Arb.list(candidate(partyList), m..m).bind()
         val u = uuid().bind()
@@ -413,7 +412,7 @@ object KotestBallotGenerators {
         val contestsAndCandidates = (0 until numContest).map {
             candidateContest(it, parties, geoUnits, null, null).bind()
         }
-        assert (!contestsAndCandidates.isEmpty())
+        require (!contestsAndCandidates.isEmpty())
 
         val candidates = contestsAndCandidates.flatMap { it.first }
         val contests = contestsAndCandidates.map { it.second }
