@@ -44,11 +44,10 @@ class PepTest {
             cakeEgkDecryption.dtrustees,
         )
 
-
         val enc1 = numerator.encrypt(publicKeyG) // (g^ξ, K^(σ+ξ))
         val enc2 = denominator.encrypt(publicKeyG) // (g^ξ', K^(σ'+ξ'))
-        val ballot1 = makeBallotForSingleCiphertext(group, enc1)
-        val ballot2 = makeBallotForSingleCiphertext(group, enc2)
+        val ballot1 = makeBallotForSingleCiphertext(group, enc1, cakeEgkDecryption.extendedBaseHash)
+        val ballot2 = makeBallotForSingleCiphertext(group, enc2, cakeEgkDecryption.extendedBaseHash)
 
         group.showAndClearCountPowP()
         val resultPep = egkPep.doEgkPep(ballot1, ballot2)
@@ -106,8 +105,8 @@ class PepTest {
         val enc1 = numerator.encrypt(publicKeyG) // (g^ξ, K^(σ+ξ))
         val enc2 = denominator.encrypt(publicKeyG) // (g^ξ', K^(σ'+ξ'))
 
-        val ballot1 = makeBallotForSingleCiphertext(group, enc1)
-        val ballot2 = makeBallotForSingleCiphertext(group, enc2)
+        val ballot1 = makeBallotForSingleCiphertext(group, enc1, cakeEgkDecryption.extendedBaseHash)
+        val ballot2 = makeBallotForSingleCiphertext(group, enc2, cakeEgkDecryption.extendedBaseHash)
 
         group.showAndClearCountPowP()
         val resultPep = egkPep.doEgkPep(ballot1, ballot2)
@@ -181,7 +180,7 @@ class PepTest {
         println(" after doEgkPep ${group.showAndClearCountPowP()} expect = $expect")
     }
 
-    fun makeBallotForSingleCiphertext(group: GroupContext, ciphertext: ElGamalCiphertext): EncryptedBallot {
+    fun makeBallotForSingleCiphertext(group: GroupContext, ciphertext: ElGamalCiphertext, electionId: UInt256): EncryptedBallot {
         val selection =
             EncryptedBallot.Selection("Selection1", 1, ciphertext, generateRangeChaumPedersenProofKnownNonce(group))
         //     data class Contest(
@@ -208,7 +207,7 @@ class PepTest {
         //    override val state: BallotState,
         return EncryptedBallot(
             "ballotId", "ballotStyleId", "device11", 0, ByteArray(0),
-            UInt256.random(), UInt256.random(),
+            UInt256.random(), electionId = electionId,
             listOf(contest), EncryptedBallot.BallotState.CAST
         )
     }
@@ -261,8 +260,8 @@ class PepTest {
         val enc1 = numerator.encrypt(publicKeyG) // (g^ξ, K^(σ+ξ))
         val enc2 = denominator.encrypt(publicKeyG) // (g^ξ', K^(σ'+ξ'))
 
-        val ballot1 = makeBallotForSingleCiphertext(group, enc1)
-        val ballot2 = makeBallotForSingleCiphertext(group, enc2)
+        val ballot1 = makeBallotForSingleCiphertext(group, enc1, cakeEgkDecryption.extendedBaseHash)
+        val ballot2 = makeBallotForSingleCiphertext(group, enc2, cakeEgkDecryption.extendedBaseHash)
 
         group.showAndClearCountPowP()
         val resultPep = egkPep.doEgkPep(ballot1, ballot2)

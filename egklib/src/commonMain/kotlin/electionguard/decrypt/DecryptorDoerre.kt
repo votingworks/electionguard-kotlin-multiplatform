@@ -1,9 +1,6 @@
 package electionguard.decrypt
 
-import electionguard.ballot.LagrangeCoordinate
-import electionguard.ballot.EncryptedTally
-import electionguard.ballot.EncryptedBallot
-import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.core.Base16.toHex
 
@@ -30,6 +27,22 @@ class DecryptorDoerre(
     val quorum = guardians.guardians[0].coefficientCommitments().size
 
     init {
+        // check that the DecryptingTrustee's match their public key
+        val badTrustees = mutableListOf<String>()
+        for (trustee in decryptingTrustees) {
+            val guardian = guardians.guardianMap[trustee.id()]
+            if (guardian == null) {
+                badTrustees.add(trustee.id())
+            } else {
+                if (trustee.guardianPublicKey() != guardian.publicKey()) {
+                    badTrustees.add(trustee.id())
+                }
+            }
+        }
+        if (badTrustees.isNotEmpty()) {
+            throw RuntimeException("DecryptingTrustee(s) ${badTrustees.joinToString(",")} do not match the public record")
+        }
+
         // build the lagrangeCoordinates once and for all
         val dguardians = mutableListOf<LagrangeCoordinate>()
         for (trustee in decryptingTrustees) {
@@ -56,6 +69,9 @@ class DecryptorDoerre(
 
     var first = false
     fun EncryptedTally.decrypt(isBallot : Boolean = false, isPep : Boolean = false): DecryptedTallyOrBallot {
+        if (this.electionId != extendedBaseHash) {
+            throw RuntimeException("Encrypted Tally/Ballot has wrong electionId = ${this.electionId}")
+        }
         val startDecrypt = getSystemTimeInMillis()
         // must get the DecryptionResults from all trustees before we can do the challenges
         val trusteeDecryptions = mutableListOf<TrusteeDecryptions>()

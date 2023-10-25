@@ -64,11 +64,11 @@ class BallotAggregationTestVector {
             encryptor.encrypt(ballot, ByteArray(0))
         }
 
-        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector")
+        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extendedBaseHash)
         eballots.forEach { eballot ->
             accumulator.addCastBallot(eballot.cast())
         }
-        val tally = accumulator.build(extendedBaseHash)
+        val tally = accumulator.build()
 
         val ballotAggregationTestVector = BallotAggregationTestVector(
             "Test ballot aggregation",
@@ -94,12 +94,13 @@ class BallotAggregationTestVector {
                 Json.decodeFromStream<BallotAggregationTestVector>(inp)
             }
 
-        val eballots: List<EncryptedBallotIF> = testVector.encrypted_ballots.map { it.import(group) }
+        val electionId = testVector.extended_base_hash.import()
+        val eballots: List<EncryptedBallotIF> = testVector.encrypted_ballots.map { it.import(group, electionId) }
         val manifest = EncryptedBallotJsonManifestFacade(testVector.encrypted_ballots[0])
 
-        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector")
+        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", testVector.extended_base_hash.import())
         eballots.forEach { eballot -> accumulator.addCastBallot(eballot) }
-        val tally = accumulator.build(testVector.extended_base_hash.import())
+        val tally = accumulator.build()
 
         testVector.expected_encrypted_tally.contests.zip(tally.contests).forEach { (expectContest, actualContest) ->
             expectContest.selections.zip(actualContest.selections).forEach { (expectSelection, actualSelection) ->

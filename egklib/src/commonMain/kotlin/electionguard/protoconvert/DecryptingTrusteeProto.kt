@@ -18,9 +18,8 @@ fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext):
     val id = this.guardianId
     val publicKey = group.importElementModP(this.publicKey).toResultOr { "DecryptingTrustee $id publicKey was malformed or missing" }
     val keyShare = group.importElementModQ(this.keyShare).toResultOr { "DecryptingTrustee $id keyShare was malformed or missing" }
-    val electionId = importUInt256(this.electionId).toResultOr { "DecryptingTrustee $id electionId was malformed or missing" }
 
-    val errors = getAllErrors(publicKey, keyShare, electionId)
+    val errors = getAllErrors(publicKey, keyShare)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -30,7 +29,6 @@ fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext):
         this.guardianXCoordinate,
         publicKey.unwrap(),
         keyShare.unwrap(),
-        electionId.unwrap(),
     ))
 }
 
@@ -55,13 +53,12 @@ private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: G
 
 ///////////////////////////////////////////////////////////////////////////////
 
-fun KeyCeremonyTrustee.publishDecryptingTrusteeProto(electionId : UInt256) =
+fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
     electionguard.protogen.DecryptingTrustee(
         this.id(),
         this.xCoordinate(),
         this.guardianPublicKey().publishProto(),
         this.computeSecretKeyShare().publishProto(),
-        electionId.publishProto(),
     )
 
 private fun EncryptedKeyShare.publishProto() =

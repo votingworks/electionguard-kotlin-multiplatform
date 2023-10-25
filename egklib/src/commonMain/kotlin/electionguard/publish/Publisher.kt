@@ -22,7 +22,7 @@ interface Publisher {
     fun pepBallotSink(outputDir: String): PepBallotSinkIF
 
     fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)
-    fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee, extendedBaseHash : UInt256)
+    fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee)
 }
 
 interface EncryptedBallotSinkIF : Closeable {

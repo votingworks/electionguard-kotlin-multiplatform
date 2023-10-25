@@ -10,7 +10,6 @@ message DecryptingTrustee {
   uint32 guardian_x_coordinate = 2; // my x coefficient (aka sequence_order), must be > 0
   ElementModP public_key = 3;      // my public key
   ElementModQ key_share = 4;       // P(i) = my share of the secret key s = (s1 + s2 + · · · + sn ), eq 66
-  UInt256 election_id = 5;     // unique election identifier
 }
 
 message EncryptedKeyShare {

@@ -13,7 +13,7 @@ data class EncryptedBallot(
     val timestamp: Long,
     val codeBaux: ByteArray, // Baux in spec 2.0.0 eq 58
     val confirmationCode: UInt256, // tracking code = H(B) eq 58
-    val electionId : UInt256,
+    override val electionId : UInt256,
     override val contests: List<Contest>,
     override val state: BallotState,
     val isPreencrypt: Boolean = false,

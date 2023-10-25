@@ -6,6 +6,7 @@ import electionguard.core.*
 interface EncryptedBallotIF {
 
     val ballotId: String
+    val electionId : UInt256
     val contests: List<Contest>
     val state: EncryptedBallot.BallotState
 

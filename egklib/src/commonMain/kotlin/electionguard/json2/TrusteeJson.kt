@@ -1,7 +1,6 @@
 package electionguard.json2
 
 import electionguard.core.GroupContext
-import electionguard.core.UInt256
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.keyceremony.KeyCeremonyTrustee
 import kotlinx.serialization.Serializable
@@ -13,16 +12,14 @@ data class TrusteeJson(
     val x_coordinate: Int,
     val polynomial_coefficients: List<ElementModQJson>,
     val key_share: ElementModQJson,
-    val election_id: UInt256Json,
 )
 
-fun KeyCeremonyTrustee.publishJson(electionId: UInt256): TrusteeJson {
+fun KeyCeremonyTrustee.publishJson(): TrusteeJson {
     return TrusteeJson(
         this.id,
         this.xCoordinate,
         this.polynomial.coefficients.map { it.publishJson() },
         this.computeSecretKeyShare().publishJson(),
-        electionId.publishJson(),
     )
 }
 
@@ -31,6 +28,5 @@ fun TrusteeJson.importDecryptingTrustee(group: GroupContext): DecryptingTrusteeD
         this.x_coordinate,
         group.gPowP(this.polynomial_coefficients[0].import(group)),
         this.key_share.import(group),
-        this.election_id.import(),
         )
 }

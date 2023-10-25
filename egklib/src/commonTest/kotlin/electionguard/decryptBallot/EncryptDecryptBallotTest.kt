@@ -106,7 +106,7 @@ fun runEncryptDecryptBallot(
         publisher.writeElectionInitialized(init)
 
         val trusteePublisher = makePublisher(trusteeDir)
-        trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it, extendedBaseHash) }
+        trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
     }
 }
 

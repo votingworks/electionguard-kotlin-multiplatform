@@ -86,12 +86,11 @@ fun GuardianSecretJsonR.import(group: GroupContext) = GuardianSecretR(
 //    val xCoordinate: Int,
 //    val publicKey: ElementModP, // Must match the public record
 //    val keyShare: ElementModQ, // P(i) = (P1 (i) + P2 (i) + · · · + Pn (i)) eq 65
-fun GuardianSecretR.convert(electionId : UInt256) = DecryptingTrusteeDoerre(
+fun GuardianSecretR.convert() = DecryptingTrusteeDoerre(
     this.name,
     this.i,
     coefficient_commitments[0],
     secret_coefficients[0], // this is s_i instead of P(i). thresholding not implemented i think.
-    electionId,
 )
 
 // DecryptingTrusteeDoerre

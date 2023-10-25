@@ -2,6 +2,7 @@ package electionguard.decrypt
 
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
 
 /** The interface to a DecryptingTrustee. */
 interface DecryptingTrusteeIF {

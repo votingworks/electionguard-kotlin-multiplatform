@@ -12,9 +12,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("AccumulateTally")
 
-/** Accumulate the votes of EncryptedBallots, and return an EncryptedTally. */
+/** Accumulate the votes of EncryptedBallots, and return a new EncryptedTally. */
 // TODO what happens if there are no EncryptedBallots?
-class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val name : String) {
+class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val name : String, val extendedBaseHash : UInt256) {
     private val mcontests = manifest.contests.associate { it.contestId to Contest(it)}
     private val castIds = mutableSetOf<String>()
 
@@ -25,6 +25,10 @@ class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val n
         }
         if (!this.castIds.add(ballot.ballotId)) {
             logger.warn { "Ballot ${ballot.ballotId} is duplicate"}
+            return false
+        }
+        if (ballot.electionId != extendedBaseHash) {
+            logger.warn { "Ballot ${ballot.ballotId} has wrong electionId ${ballot.electionId}"}
             return false
         }
 
@@ -39,7 +43,7 @@ class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val n
         return true
     }
 
-    fun build(extendedBaseHash : UInt256): EncryptedTally {
+    fun build(): EncryptedTally {
         val tallyContests = mcontests.values.map { it.build() }
         return EncryptedTally(this.name, tallyContests, castIds.toList(), extendedBaseHash)
     }

@@ -134,14 +134,14 @@ class TallyDecryptionTestVector(
             encryptor.encrypt(ballot, ByteArray(0))
         }
 
-        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector")
+        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extendedBaseHash)
         eballots.forEach { eballot ->
             accumulator.addCastBallot(eballot.cast())
         }
-        val encryptedTally = accumulator.build(extendedBaseHash)
+        val encryptedTally = accumulator.build()
 
         val trusteesAll = keyCeremonyTrustees.map {
-            DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.guardianPublicKey(), it.computeSecretKeyShare(), extendedBaseHash)
+            DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.guardianPublicKey(), it.computeSecretKeyShare())
         }
         // leave out one of the trustees to make it a partial decryption
         val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }

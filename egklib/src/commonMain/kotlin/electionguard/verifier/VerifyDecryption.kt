@@ -37,6 +37,10 @@ class VerifyDecryption(
     fun verify(decrypted: DecryptedTallyOrBallot, isBallot: Boolean, stats: Stats): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
+        if (decrypted.electionId != extendedBaseHash) {
+            return Err("DecryptedTallyOrBallot has wrong electionId = ${decrypted.electionId}")
+        }
+
         var nselections = 0
         val results = mutableListOf<Result<Boolean, String>>()
         val ballotSelectionSet = mutableSetOf<String>()

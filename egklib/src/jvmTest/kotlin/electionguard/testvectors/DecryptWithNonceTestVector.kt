@@ -9,7 +9,6 @@ import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
 import electionguard.cli.ManifestBuilder
 import electionguard.input.RandomBallotProvider
-import electionguard.tally.AccumulateTally
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

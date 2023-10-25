@@ -118,8 +118,8 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         }
     }
 
-    actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee, extendedBaseHash : UInt256) {
-        val proto = trustee.publishDecryptingTrusteeProto(extendedBaseHash)
+    actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
+        val proto = trustee.publishDecryptingTrusteeProto()
         val fileout = protoPaths.decryptingTrusteePath(trusteeDir, trustee.id)
         FileOutputStream(fileout).use { out ->
             proto.encodeToStream(out)
