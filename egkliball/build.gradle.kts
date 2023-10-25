@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":egklib")) // make this depend on egklib being run
+    // implementation(project(":egklib")) // make this depend on egklib being run
 
     implementation(files("../egklib/build/libs/egklib-jvm-2.0.0-SNAPSHOT.jar")) // add the library to the fatJar
     implementation(libs.kotlin.result)
