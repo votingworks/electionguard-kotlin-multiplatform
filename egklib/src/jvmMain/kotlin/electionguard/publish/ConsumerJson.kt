@@ -282,16 +282,38 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
     //////// The low level reading functions
 
-    private fun readElectionConfig(constantsFile: Path, manifestFile: Path, configFile: Path): Result<ElectionConfig, String> {
-        return try {
-            var constants: ElectionConstants
-            fileSystemProvider.newInputStream(constantsFile).use { inp ->
+    private fun readElectionConfig(constantsPath: Path, manifestFile: Path, configFile: Path): Result<ElectionConfig, String> {
+        val errors = mutableListOf<String>()
+
+        if (!Files.exists(constantsPath)) {
+            errors.add("Constants '$constantsPath' file does not exist ")
+        }
+        if (!Files.exists(manifestFile)) {
+            errors.add("Manifest '$manifestFile' file does not exist ")
+        }
+        if (!Files.exists(configFile)) {
+            errors.add("ElectionConfig '$configFile' file does not exist ")
+        }
+        if (errors.isNotEmpty()) {
+            return Err(errors.joinToString { "," })
+        }
+
+        val constants =  try {
+            fileSystemProvider.newInputStream(constantsPath).use { inp ->
                 val json = Json.decodeFromStream<ElectionConstantsJson>(inp)
-                constants = json.import()
+                json.import()
             }
+        } catch (e: Exception) {
+            return Err("readElectionConfig on constants file $constantsPath error= ${e.message}")
+        }
 
-            val manifestBytes = readManifestBytes(manifestFile.toString())
+        val manifestBytes = try {
+            readManifestBytes(manifestFile.toString())
+        } catch (e: Exception) {
+            return Err("readElectionConfig on manifest file $manifestFile error= ${e.message}")
+        }
 
+        return try {
             var electionConfig: ElectionConfig
             fileSystemProvider.newInputStream(configFile).use { inp ->
                 val json = Json.decodeFromStream<ElectionConfigJson>(inp)
@@ -299,35 +321,41 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             }
             Ok(electionConfig)
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionConfig $configFile error")
+            Err("readElectionConfig on configFile $configFile error= ${e.message}")
         }
     }
 
     private fun readElectionInitialized(
-        contextFile: Path,
+        initPath: Path,
         config: ElectionConfig
     ): Result<ElectionInitialized, String> {
+        if (!Files.exists(initPath)) {
+            return Err("ElectionInitialized '$initPath' file does not exist ")
+        }
         return try {
             var electionInitialized: ElectionInitialized
-            fileSystemProvider.newInputStream(contextFile).use { inp ->
+            fileSystemProvider.newInputStream(initPath).use { inp ->
                 val json = Json.decodeFromStream<ElectionInitializedJson>(inp)
                 electionInitialized = json.import(group, config)
             }
             Ok(electionInitialized)
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionInitialized $contextFile error")
+            Err("readElectionInitialized on file $initPath error= ${e.message}")
         }
     }
 
-    private fun readTallyResult(filename: Path, init: ElectionInitialized): Result<TallyResult, String> {
+    private fun readTallyResult(tallyPath: Path, init: ElectionInitialized): Result<TallyResult, String> {
+        if (!Files.exists(tallyPath)) {
+            return Err("EncryptedTally '$tallyPath' file does not exist ")
+        }
         return try {
-            fileSystemProvider.newInputStream(filename).use { inp ->
+            fileSystemProvider.newInputStream(tallyPath).use { inp ->
                 val json = Json.decodeFromStream<EncryptedTallyJson>(inp)
                 val encryptedTally = json.import(group)
                 Ok(TallyResult(init, encryptedTally, emptyList()))
             }
         } catch (e: Exception) {
-            Err(e.message ?: "readTallyResult $filename error")
+            Err("readTallyResult on file $tallyPath error= ${e.message}")
         }
     }
 
@@ -335,7 +363,9 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         decryptedTallyPath: Path,
         tallyResult: TallyResult
     ): Result<DecryptionResult, String> {
-        // all the coefficients in a map in one file
+        if (!Files.exists(decryptedTallyPath)) {
+            return Err("DecryptedTally '$decryptedTallyPath' file does not exist ")
+        }
         return try {
             fileSystemProvider.newInputStream(decryptedTallyPath).use { inp ->
                 val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
@@ -343,7 +373,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
                 Ok(DecryptionResult(tallyResult, decryptedTallyOrBallot))
             }
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $decryptedTallyPath error")
+            Err("readDecryptionResult on file $decryptedTallyPath error= ${e.message}")
         }
     }
 

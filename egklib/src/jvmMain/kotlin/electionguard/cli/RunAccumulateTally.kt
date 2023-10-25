@@ -94,7 +94,7 @@ class RunAccumulateTally {
 
             val took = getSystemTimeInMillis() - starting
             val msecPerEncryption = if (countOk == 0) 0 else (took.toDouble() / countOk).roundToInt()
-            println("AccumulateTally processed $countOk good ballots, $countBad failed, took $took millisecs, $msecPerEncryption msecs per good ballot")
+            println("AccumulateTally processed $countOk good ballots, $countBad bad ballots, took $took millisecs, $msecPerEncryption msecs per good ballot")
             println("  ballots ids accumulated = ${tally.castBallotIds.joinToString(",")}")
         }
     }
