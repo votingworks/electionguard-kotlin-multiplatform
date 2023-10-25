@@ -89,7 +89,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             }
             proto.import()
         } catch (e: Exception) {
-            Err("error ${e.message}")
+            Err("readEncryptedBallotChain on file $ballotChain error= ${e.message} ")
         }
     }
 
@@ -278,16 +278,22 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     }
 
     private fun readElectionConfig(filename: String): Result<ElectionConfig, String> {
+        if (!Files.exists(Path.of(filename))) {
+            return Err("ElectionConfig '$filename' file does not exist ")
+        }
         return try {
             var proto: electionguard.protogen.ElectionConfig
             FileInputStream(filename).use { inp -> proto = electionguard.protogen.ElectionConfig.decodeFromStream(inp) }
             proto.import()
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionConfig $filename error")
+            Err("readElectionConfig on file $filename error=${e.message}")
         }
     }
 
     private fun GroupContext.readElectionInitialized(filename: String): Result<ElectionInitialized, String> {
+        if (!Files.exists(Path.of(filename))) {
+            return Err("ElectionInitialized '$filename' file does not exist ")
+        }
         return try {
             var proto: electionguard.protogen.ElectionInitialized
             FileInputStream(filename).use { inp ->
@@ -295,21 +301,27 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             }
             proto.import(this)
         } catch (e: Exception) {
-            Err(e.message ?: "readElectionInitialized $filename error")
+            Err("readElectionInitialized on file $filename error= ${e.message}")
         }
     }
 
     private fun GroupContext.readTallyResult(filename: String): Result<TallyResult, String> {
+        if (!Files.exists(Path.of(filename))) {
+            return Err("TallyResult '$filename' file does not exist ")
+        }
         return try {
             var proto: electionguard.protogen.TallyResult
             FileInputStream(filename).use { inp -> proto = electionguard.protogen.TallyResult.decodeFromStream(inp) }
             proto.import(this)
         } catch (e: Exception) {
-            Err(e.message ?: "readTallyResult $filename error")
+            Err("readTallyResult on file $filename error= ${e.message}")
         }
     }
 
     private fun GroupContext.readDecryptionResult(filename: String): Result<DecryptionResult, String> {
+        if (!Files.exists(Path.of(filename))) {
+            return Err("DecryptionResult '$filename' file does not exist ")
+        }
         return try {
             var proto: electionguard.protogen.DecryptionResult
             FileInputStream(filename).use { inp ->
@@ -317,7 +329,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             }
             proto.import(this)
         } catch (e: Exception) {
-            Err(e.message ?: "readDecryptionResult $filename error")
+            Err("readDecryptionResult on file $filename error= ${e.message}")
         }
     }
 

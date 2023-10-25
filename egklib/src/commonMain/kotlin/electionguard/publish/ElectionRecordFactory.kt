@@ -2,6 +2,7 @@ package electionguard.publish
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.unwrapError
 import electionguard.ballot.*
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
@@ -13,47 +14,50 @@ fun readElectionRecord(group : GroupContext, topDir: String) : ElectionRecord {
     return readElectionRecord(consumerIn)
 }
 
-// TODO: Problem is that its detecting the stage by what objects are in the record. But a bug that makes reading an object
-//   also returns an Err. Need to seperate existennce vs error when reading.
+// there must at least be a config record
 fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     var decryptionResult : DecryptionResult? = null
     var tallyResult : TallyResult? = null
     var init : ElectionInitialized? = null
-    var config : ElectionConfig? = null
-    val manifest : Manifest?
-    var stage : ElectionRecord.Stage? = null
+    val config : ElectionConfig
+    var stage : ElectionRecord.Stage
 
-    val decryption = consumer.readDecryptionResult()
-    if (decryption is Ok) {
-        decryptionResult = decryption.value
+    val readDecryptionResult = consumer.readDecryptionResult()
+    if (readDecryptionResult is Ok) {
+        decryptionResult = readDecryptionResult.value
         tallyResult = decryptionResult.tallyResult
         init = tallyResult.electionInitialized
         config = init.config
         stage = ElectionRecord.Stage.DECRYPTED
     } else {
-        val tally = consumer.readTallyResult()
-        if (tally is Ok) {
-            decryptionResult = null
-            tallyResult = tally.value
+        if (!readDecryptionResult.unwrapError().contains("file does not exist")) {
+            throw RuntimeException(readDecryptionResult.unwrapError())
+        }
+        val readTallyResult = consumer.readTallyResult()
+        if (readTallyResult is Ok) {
+            tallyResult = readTallyResult.value
             init = tallyResult.electionInitialized
             config = init.config
             stage = ElectionRecord.Stage.TALLIED
         } else {
-            val initResult = consumer.readElectionInitialized()
-            if (initResult is Ok) {
-                decryptionResult = null
-                tallyResult = null
-                init = initResult.value
+            if (!readTallyResult.unwrapError().contains("file does not exist")) {
+                throw RuntimeException(readTallyResult.unwrapError())
+            }
+            val readInitResult = consumer.readElectionInitialized()
+            if (readInitResult is Ok) {
+                init = readInitResult.value
                 config = init.config
                 stage = ElectionRecord.Stage.INIT
             } else {
-                val configResult = consumer.readElectionConfig()
-                if (configResult is Ok) {
-                    decryptionResult = null
-                    tallyResult = null
-                    init = null
-                    config = configResult.value
+                if (!readInitResult.unwrapError().contains("file does not exist")) {
+                    throw RuntimeException(readInitResult.unwrapError())
+                }
+                val readConfigResult = consumer.readElectionConfig()
+                if (readConfigResult is Ok) {
+                    config = readConfigResult.value
                     stage = ElectionRecord.Stage.CONFIG
+                } else {
+                    throw RuntimeException(readConfigResult.unwrapError())
                 }
             }
         }
@@ -64,12 +68,12 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     require(config.manifestHash == manifestHash(config.parameterBaseHash, config.manifestBytes)) {
         "config.manifestHash fails to match ${consumer.topdir()}"
     }
-    manifest = consumer.makeManifest(config.manifestBytes)
+    val manifest : Manifest = consumer.makeManifest(config.manifestBytes)
 
     if (stage == ElectionRecord.Stage.INIT && consumer.hasEncryptedBallots()) {
         stage = ElectionRecord.Stage.ENCRYPTED
     }
-    return ElectionRecordImpl(consumer, stage!!, decryptionResult, tallyResult, init, config, manifest)
+    return ElectionRecordImpl(consumer, stage, decryptionResult, tallyResult, init, config, manifest)
 }
 
 private class ElectionRecordImpl(val consumer: Consumer,
