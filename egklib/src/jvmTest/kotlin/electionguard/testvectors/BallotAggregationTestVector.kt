@@ -68,7 +68,7 @@ class BallotAggregationTestVector {
         eballots.forEach { eballot ->
             accumulator.addCastBallot(eballot.cast())
         }
-        val tally = accumulator.build()
+        val tally = accumulator.build(extendedBaseHash)
 
         val ballotAggregationTestVector = BallotAggregationTestVector(
             "Test ballot aggregation",
@@ -99,7 +99,7 @@ class BallotAggregationTestVector {
 
         val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector")
         eballots.forEach { eballot -> accumulator.addCastBallot(eballot) }
-        val tally = accumulator.build()
+        val tally = accumulator.build(testVector.extended_base_hash.import())
 
         testVector.expected_encrypted_tally.contests.zip(tally.contests).forEach { (expectContest, actualContest) ->
             expectContest.selections.zip(actualContest.selections).forEach { (expectSelection, actualSelection) ->

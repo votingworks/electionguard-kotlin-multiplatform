@@ -1,21 +1,21 @@
 î
-id-1ballotStyle^
+id-1ballotStyle\
 contest1
 
 selection1
 
 selection2
 
-selection3
+selection3
 
-selection4
+selection4
 
 selection5_
-contest2
+contest2
 
-selection6
+selection6
 
-selection7
+selection7
 
 selection8
 
@@ -26,47 +26,47 @@ selection9
 selection12
 selection13
 selection14
-selection15a
+selection15c
 contest4
 selection16
 selection17
 selection18
-selection19
-selection20c
-contest5
-selection21
+selection19
+selection20c
+contest5
+selection21
 selection22
 selection23
-selection24
-selection25a
+selection24
+selection25c
 contest6
 selection26
 selection27
-selection28
-selection29
-selection30c
+selection28
+selection29
+selection30a
 contest7
 selection31
 selection32
 selection33
-selection34
-selection35c
-contest8
-selection36
+selection34
+selection35a
+contest8
+selection36
 selection37
 selection38
 selection39
-selection40c
-contest9	
-selection41
+selection40a
+contest9	
+selection41
 selection42
 selection43
 selection44
 selection45d
 	contest10
-
-selection46
-selection47
+
+selection46
+selection47
 selection48
 selection49
 selection50d
@@ -76,22 +76,22 @@ selection9
 selection53
 selection54
 selection55d
-	contest12
-selection56
+	contest12
+selection56
 selection57
-selection58
-selection59
+selection58
+selection59
 selection60d
 	contest13
-selection61
-selection62
-selection63
-selection64
+selection61
+selection62
+selection63
+selection64
 selection65d
-	contest14
-selection66
-selection67
-selection68
+	contest14
+selection66
+selection67
+selection68
 selection69
 selection70b
 	contest15
@@ -111,10 +111,272 @@ selection9
 selection82
 selection83
 selection84
+selection85d
+	contest18
+selection86
+selection87
+selection88
+selection89
+selection90d
+	contest19
+selection91
+selection92
+selection93
+selection94
+selection95e
+	contest20
+selection96
+selection97
+selection98
+selection99
+selection100ð
+id-2ballotStyle^
+contest1
+
+selection1
+
+selection2
+
+selection3
+
+selection4
+
+selection5_
+contest2
+
+selection6
+
+selection7
+
+selection8
+
+selection9
+selection10c
+contest3
+selection11
+selection12
+selection13
+selection14
+selection15c
+contest4
+selection16
+selection17
+selection18
+selection19
+selection20a
+contest5
+selection21
+selection22
+selection23
+selection24
+selection25c
+contest6
+selection26
+selection27
+selection28
+selection29
+selection30c
+contest7
+selection31
+selection32
+selection33
+selection34
+selection35c
+contest8
+selection36
+selection37
+selection38
+selection39
+selection40c
+contest9	
+selection41
+selection42
+selection43
+selection44
+selection45d
+	contest10
+
+selection46
+selection47
+selection48
+selection49
+selection50d
+	contest11
+selection51
+selection52
+selection53
+selection54
+selection55d
+	contest12
+selection56
+selection57
+selection58
+selection59
+selection60d
+	contest13
+selection61
+selection62
+selection63
+selection64
+selection65b
+	contest14
+selection66
+selection67
+selection68
+selection69
+selection70d
+	contest15
+selection71
+selection72
+selection73
+selection74
+selection75d
+	contest16
+selection76
+selection77
+selection78
+selection79
+selection80d
+	contest17
+selection81
+selection82
+selection83
+selection84
 selection85b
 	contest18
 selection86
 selection87
+selection88
+selection89
+selection90b
+	contest19
+selection91
+selection92
+selection93
+selection94
+selection95c
+	contest20
+selection96
+selection97
+selection98
+selection99
+selection100ì
+id-3ballotStyle^
+contest1
+
+selection1
+
+selection2
+
+selection3
+
+selection4
+
+selection5_
+contest2
+
+selection6
+
+selection7
+
+selection8
+
+selection9
+selection10a
+contest3
+selection11
+selection12
+selection13
+selection14
+selection15a
+contest4
+selection16
+selection17
+selection18
+selection19
+selection20c
+contest5
+selection21
+selection22
+selection23
+selection24
+selection25c
+contest6
+selection26
+selection27
+selection28
+selection29
+selection30a
+contest7
+selection31
+selection32
+selection33
+selection34
+selection35c
+contest8
+selection36
+selection37
+selection38
+selection39
+selection40c
+contest9	
+selection41
+selection42
+selection43
+selection44
+selection45b
+	contest10
+
+selection46
+selection47
+selection48
+selection49
+selection50d
+	contest11
+selection51
+selection52
+selection53
+selection54
+selection55d
+	contest12
+selection56
+selection57
+selection58
+selection59
+selection60d
+	contest13
+selection61
+selection62
+selection63
+selection64
+selection65b
+	contest14
+selection66
+selection67
+selection68
+selection69
+selection70d
+	contest15
+selection71
+selection72
+selection73
+selection74
+selection75d
+	contest16
+selection76
+selection77
+selection78
+selection79
+selection80b
+	contest17
+selection81
+selection82
+selection83
+selection84
+selection85d
+	contest18
+selection86
+selection87
 selection88
 selection89
 selection90d
@@ -129,11 +391,142 @@ selection9
 selection97
 selection98
 selection99
-selection100ò
-id-2ballotStyle^
+selection100î
+id-4ballotStyle^
 contest1
 
 selection1
+
+selection2
+
+selection3
+
+selection4
+
+selection5_
+contest2
+
+selection6
+
+selection7
+
+selection8
+
+selection9
+selection10a
+contest3
+selection11
+selection12
+selection13
+selection14
+selection15c
+contest4
+selection16
+selection17
+selection18
+selection19
+selection20c
+contest5
+selection21
+selection22
+selection23
+selection24
+selection25c
+contest6
+selection26
+selection27
+selection28
+selection29
+selection30c
+contest7
+selection31
+selection32
+selection33
+selection34
+selection35c
+contest8
+selection36
+selection37
+selection38
+selection39
+selection40c
+contest9	
+selection41
+selection42
+selection43
+selection44
+selection45d
+	contest10
+
+selection46
+selection47
+selection48
+selection49
+selection50b
+	contest11
+selection51
+selection52
+selection53
+selection54
+selection55d
+	contest12
+selection56
+selection57
+selection58
+selection59
+selection60d
+	contest13
+selection61
+selection62
+selection63
+selection64
+selection65d
+	contest14
+selection66
+selection67
+selection68
+selection69
+selection70d
+	contest15
+selection71
+selection72
+selection73
+selection74
+selection75b
+	contest16
+selection76
+selection77
+selection78
+selection79
+selection80b
+	contest17
+selection81
+selection82
+selection83
+selection84
+selection85d
+	contest18
+selection86
+selection87
+selection88
+selection89
+selection90b
+	contest19
+selection91
+selection92
+selection93
+selection94
+selection95c
+	contest20
+selection96
+selection97
+selection98
+selection99
+selection100è
+id-5ballotStyle\
+contest1
+
+selection1
 
 selection2
 
@@ -152,119 +545,119 @@ selection8
 
 selection9
 selection10c
-contest3
-selection11
-selection12
+contest3
+selection11
+selection12
 selection13
 selection14
 selection15c
-contest4
-selection16
+contest4
+selection16
 selection17
-selection18
-selection19
-selection20c
+selection18
+selection19
+selection20a
 contest5
-selection21
-selection22
+selection21
+selection22
 selection23
 selection24
-selection25c
+selection25a
 contest6
 selection26
-selection27
-selection28
+selection27
+selection28
 selection29
-selection30a
+selection30c
 contest7
 selection31
 selection32
-selection33
-selection34
-selection35c
+selection33
+selection34
+selection35a
 contest8
 selection36
-selection37
-selection38
+selection37
+selection38
 selection39
 selection40c
-contest9	
-selection41
-selection42
-selection43
+contest9	
+selection41
+selection42
+selection43
 selection44
 selection45d
 	contest10
 
 selection46
-selection47
-selection48
-selection49
-selection50b
-	contest11
-selection51
+selection47
+selection48
+selection49
+selection50d
+	contest11
+selection51
 selection52
 selection53
 selection54
-selection55d
+selection55b
 	contest12
 selection56
 selection57
 selection58
-selection59
-selection60d
-	contest13
-selection61
+selection59
+selection60b
+	contest13
+selection61
 selection62
 selection63
 selection64
 selection65d
-	contest14
-selection66
-selection67
-selection68
+	contest14
+selection66
+selection67
+selection68
 selection69
-selection70d
+selection70b
 	contest15
 selection71
 selection72
 selection73
-selection74
-selection75d
+selection74
+selection75d
 	contest16
-selection76
-selection77
-selection78
+selection76
+selection77
+selection78
 selection79
-selection80d
-	contest17
-selection81
+selection80b
+	contest17
+selection81
 selection82
 selection83
 selection84
 selection85d
-	contest18
-selection86
+	contest18
+selection86
 selection87
-selection88
-selection89
+selection88
+selection89
 selection90d
 	contest19
-selection91
-selection92
-selection93
+selection91
+selection92
+selection93
 selection94
-selection95c
+selection95e
 	contest20
 selection96
 selection97
 selection98
-selection99
-selection100ê
-id-3ballotStyle\
-contest1
+selection99
+selection100ä
+id-6ballotStyle^
+contest1
 
-selection1
+selection1
 
 selection2
 
@@ -294,10 +687,10 @@ selection9
 selection17
 selection18
 selection19
-selection20a
+selection20c
 contest5
-selection21
-selection22
+selection21
+selection22
 selection23
 selection24
 selection25a
@@ -306,9 +699,140 @@ selection9
 selection27
 selection28
 selection29
-selection30c
-contest7
-selection31
+selection30a
+contest7
+selection31
+selection32
+selection33
+selection34
+selection35a
+contest8
+selection36
+selection37
+selection38
+selection39
+selection40c
+contest9	
+selection41
+selection42
+selection43
+selection44
+selection45d
+	contest10
+
+selection46
+selection47
+selection48
+selection49
+selection50b
+	contest11
+selection51
+selection52
+selection53
+selection54
+selection55b
+	contest12
+selection56
+selection57
+selection58
+selection59
+selection60d
+	contest13
+selection61
+selection62
+selection63
+selection64
+selection65d
+	contest14
+selection66
+selection67
+selection68
+selection69
+selection70b
+	contest15
+selection71
+selection72
+selection73
+selection74
+selection75d
+	contest16
+selection76
+selection77
+selection78
+selection79
+selection80b
+	contest17
+selection81
+selection82
+selection83
+selection84
+selection85b
+	contest18
+selection86
+selection87
+selection88
+selection89
+selection90b
+	contest19
+selection91
+selection92
+selection93
+selection94
+selection95c
+	contest20
+selection96
+selection97
+selection98
+selection99
+selection100ì
+id-7ballotStyle^
+contest1
+
+selection1
+
+selection2
+
+selection3
+
+selection4
+
+selection5]
+contest2
+
+selection6
+
+selection7
+
+selection8
+
+selection9
+selection10c
+contest3
+selection11
+selection12
+selection13
+selection14
+selection15c
+contest4
+selection16
+selection17
+selection18
+selection19
+selection20c
+contest5
+selection21
+selection22
+selection23
+selection24
+selection25a
+contest6
+selection26
+selection27
+selection28
+selection29
+selection30a
+contest7
+selection31
 selection32
 selection33
 selection34
@@ -326,20 +850,282 @@ selection9
 selection44
 selection45d
 	contest10
-
-selection46
+
+selection46
 selection47
-selection48
-selection49
-selection50d
+selection48
+selection49
+selection50b
 	contest11
-selection51
-selection52
+selection51
+selection52
 selection53
 selection54
 selection55d
 	contest12
 selection56
+selection57
+selection58
+selection59
+selection60d
+	contest13
+selection61
+selection62
+selection63
+selection64
+selection65b
+	contest14
+selection66
+selection67
+selection68
+selection69
+selection70d
+	contest15
+selection71
+selection72
+selection73
+selection74
+selection75d
+	contest16
+selection76
+selection77
+selection78
+selection79
+selection80b
+	contest17
+selection81
+selection82
+selection83
+selection84
+selection85d
+	contest18
+selection86
+selection87
+selection88
+selection89
+selection90b
+	contest19
+selection91
+selection92
+selection93
+selection94
+selection95e
+	contest20
+selection96
+selection97
+selection98
+selection99
+selection100æ
+id-8ballotStyle\
+contest1
+
+selection1
+
+selection2
+
+selection3
+
+selection4
+
+selection5_
+contest2
+
+selection6
+
+selection7
+
+selection8
+
+selection9
+selection10c
+contest3
+selection11
+selection12
+selection13
+selection14
+selection15c
+contest4
+selection16
+selection17
+selection18
+selection19
+selection20a
+contest5
+selection21
+selection22
+selection23
+selection24
+selection25a
+contest6
+selection26
+selection27
+selection28
+selection29
+selection30c
+contest7
+selection31
+selection32
+selection33
+selection34
+selection35a
+contest8
+selection36
+selection37
+selection38
+selection39
+selection40c
+contest9	
+selection41
+selection42
+selection43
+selection44
+selection45d
+	contest10
+
+selection46
+selection47
+selection48
+selection49
+selection50d
+	contest11
+selection51
+selection52
+selection53
+selection54
+selection55b
+	contest12
+selection56
+selection57
+selection58
+selection59
+selection60d
+	contest13
+selection61
+selection62
+selection63
+selection64
+selection65b
+	contest14
+selection66
+selection67
+selection68
+selection69
+selection70b
+	contest15
+selection71
+selection72
+selection73
+selection74
+selection75b
+	contest16
+selection76
+selection77
+selection78
+selection79
+selection80d
+	contest17
+selection81
+selection82
+selection83
+selection84
+selection85d
+	contest18
+selection86
+selection87
+selection88
+selection89
+selection90b
+	contest19
+selection91
+selection92
+selection93
+selection94
+selection95c
+	contest20
+selection96
+selection97
+selection98
+selection99
+selection100æ
+id-9ballotStyle^
+contest1
+
+selection1
+
+selection2
+
+selection3
+
+selection4
+
+selection5_
+contest2
+
+selection6
+
+selection7
+
+selection8
+
+selection9
+selection10c
+contest3
+selection11
+selection12
+selection13
+selection14
+selection15a
+contest4
+selection16
+selection17
+selection18
+selection19
+selection20a
+contest5
+selection21
+selection22
+selection23
+selection24
+selection25a
+contest6
+selection26
+selection27
+selection28
+selection29
+selection30c
+contest7
+selection31
+selection32
+selection33
+selection34
+selection35c
+contest8
+selection36
+selection37
+selection38
+selection39
+selection40c
+contest9	
+selection41
+selection42
+selection43
+selection44
+selection45d
+	contest10
+
+selection46
+selection47
+selection48
+selection49
+selection50b
+	contest11
+selection51
+selection52
+selection53
+selection54
+selection55b
+	contest12
+selection56
 selection57
 selection58
 selection59
@@ -362,535 +1148,11 @@ selection9
 selection73
 selection74
 selection75d
-	contest16
-selection76
-selection77
-selection78
-selection79
-selection80d
-	contest17
-selection81
-selection82
-selection83
-selection84
-selection85b
-	contest18
-selection86
-selection87
-selection88
-selection89
-selection90b
-	contest19
-selection91
-selection92
-selection93
-selection94
-selection95e
-	contest20
-selection96
-selection97
-selection98
-selection99
-selection100ò
-id-4ballotStyle^
-contest1
-
-selection1
-
-selection2
-
-selection3
-
-selection4
-
-selection5_
-contest2
-
-selection6
-
-selection7
-
-selection8
-
-selection9
-selection10a
-contest3
-selection11
-selection12
-selection13
-selection14
-selection15c
-contest4
-selection16
-selection17
-selection18
-selection19
-selection20c
-contest5
-selection21
-selection22
-selection23
-selection24
-selection25c
-contest6
-selection26
-selection27
-selection28
-selection29
-selection30a
-contest7
-selection31
-selection32
-selection33
-selection34
-selection35c
-contest8
-selection36
-selection37
-selection38
-selection39
-selection40c
-contest9	
-selection41
-selection42
-selection43
-selection44
-selection45b
-	contest10
-
-selection46
-selection47
-selection48
-selection49
-selection50d
-	contest11
-selection51
-selection52
-selection53
-selection54
-selection55d
-	contest12
-selection56
-selection57
-selection58
-selection59
-selection60d
-	contest13
-selection61
-selection62
-selection63
-selection64
-selection65d
-	contest14
-selection66
-selection67
-selection68
-selection69
-selection70d
-	contest15
-selection71
-selection72
-selection73
-selection74
-selection75b
-	contest16
-selection76
-selection77
-selection78
-selection79
-selection80d
-	contest17
-selection81
-selection82
-selection83
-selection84
-selection85d
-	contest18
-selection86
-selection87
-selection88
-selection89
-selection90d
-	contest19
-selection91
-selection92
-selection93
-selection94
-selection95e
-	contest20
-selection96
-selection97
-selection98
-selection99
-selection100î
-id-5ballotStyle^
-contest1
-
-selection1
-
-selection2
-
-selection3
-
-selection4
-
-selection5_
-contest2
-
-selection6
-
-selection7
-
-selection8
-
-selection9
-selection10c
-contest3
-selection11
-selection12
-selection13
-selection14
-selection15a
-contest4
-selection16
-selection17
-selection18
-selection19
-selection20c
-contest5
-selection21
-selection22
-selection23
-selection24
-selection25c
-contest6
-selection26
-selection27
-selection28
-selection29
-selection30c
-contest7
-selection31
-selection32
-selection33
-selection34
-selection35c
-contest8
-selection36
-selection37
-selection38
-selection39
-selection40c
-contest9	
-selection41
-selection42
-selection43
-selection44
-selection45b
-	contest10
-
-selection46
-selection47
-selection48
-selection49
-selection50b
-	contest11
-selection51
-selection52
-selection53
-selection54
-selection55d
-	contest12
-selection56
-selection57
-selection58
-selection59
-selection60b
-	contest13
-selection61
-selection62
-selection63
-selection64
-selection65b
-	contest14
-selection66
-selection67
-selection68
-selection69
-selection70d
-	contest15
-selection71
-selection72
-selection73
-selection74
-selection75d
 	contest16
 selection76
 selection77
 selection78
 selection79
-selection80d
-	contest17
-selection81
-selection82
-selection83
-selection84
-selection85d
-	contest18
-selection86
-selection87
-selection88
-selection89
-selection90b
-	contest19
-selection91
-selection92
-selection93
-selection94
-selection95e
-	contest20
-selection96
-selection97
-selection98
-selection99
-selection100æ
-id-6ballotStyle\
-contest1
-
-selection1
-
-selection2
-
-selection3
-
-selection4
-
-selection5_
-contest2
-
-selection6
-
-selection7
-
-selection8
-
-selection9
-selection10c
-contest3
-selection11
-selection12
-selection13
-selection14
-selection15c
-contest4
-selection16
-selection17
-selection18
-selection19
-selection20c
-contest5
-selection21
-selection22
-selection23
-selection24
-selection25c
-contest6
-selection26
-selection27
-selection28
-selection29
-selection30a
-contest7
-selection31
-selection32
-selection33
-selection34
-selection35a
-contest8
-selection36
-selection37
-selection38
-selection39
-selection40a
-contest9	
-selection41
-selection42
-selection43
-selection44
-selection45b
-	contest10
-
-selection46
-selection47
-selection48
-selection49
-selection50d
-	contest11
-selection51
-selection52
-selection53
-selection54
-selection55b
-	contest12
-selection56
-selection57
-selection58
-selection59
-selection60d
-	contest13
-selection61
-selection62
-selection63
-selection64
-selection65b
-	contest14
-selection66
-selection67
-selection68
-selection69
-selection70b
-	contest15
-selection71
-selection72
-selection73
-selection74
-selection75d
-	contest16
-selection76
-selection77
-selection78
-selection79
-selection80d
-	contest17
-selection81
-selection82
-selection83
-selection84
-selection85b
-	contest18
-selection86
-selection87
-selection88
-selection89
-selection90b
-	contest19
-selection91
-selection92
-selection93
-selection94
-selection95e
-	contest20
-selection96
-selection97
-selection98
-selection99
-selection100ò
-id-7ballotStyle^
-contest1
-
-selection1
-
-selection2
-
-selection3
-
-selection4
-
-selection5_
-contest2
-
-selection6
-
-selection7
-
-selection8
-
-selection9
-selection10c
-contest3
-selection11
-selection12
-selection13
-selection14
-selection15c
-contest4
-selection16
-selection17
-selection18
-selection19
-selection20a
-contest5
-selection21
-selection22
-selection23
-selection24
-selection25c
-contest6
-selection26
-selection27
-selection28
-selection29
-selection30c
-contest7
-selection31
-selection32
-selection33
-selection34
-selection35c
-contest8
-selection36
-selection37
-selection38
-selection39
-selection40a
-contest9	
-selection41
-selection42
-selection43
-selection44
-selection45b
-	contest10
-
-selection46
-selection47
-selection48
-selection49
-selection50d
-	contest11
-selection51
-selection52
-selection53
-selection54
-selection55d
-	contest12
-selection56
-selection57
-selection58
-selection59
-selection60d
-	contest13
-selection61
-selection62
-selection63
-selection64
-selection65d
-	contest14
-selection66
-selection67
-selection68
-selection69
-selection70d
-	contest15
-selection71
-selection72
-selection73
-selection74
-selection75d
-	contest16
-selection76
-selection77
-selection78
-selection79
 selection80b
 	contest17
 selection81
@@ -901,79 +1163,79 @@ selection9
 	contest18
 selection86
 selection87
-selection88
-selection89
-selection90d
+selection88
+selection89
+selection90b
 	contest19
 selection91
-selection92
-selection93
+selection92
+selection93
 selection94
-selection95e
+selection95c
 	contest20
 selection96
 selection97
 selection98
-selection99
-selection100ê
-id-8ballotStyle\
+selection99
+selection100í
+id-10ballotStyle^
 contest1
 
 selection1
 
-selection2
+selection2
 
-selection3
+selection3
 
 selection4
 
 selection5_
-contest2
+contest2
 
-selection6
+selection6
 
 selection7
 
-selection8
+selection8
 
-selection9
-selection10c
+selection9
+selection10a
 contest3
 selection11
 selection12
-selection13
-selection14
+selection13
+selection14
 selection15a
 contest4
 selection16
 selection17
 selection18
 selection19
-selection20c
+selection20a
 contest5
 selection21
 selection22
-selection23
-selection24
-selection25a
+selection23
+selection24
+selection25c
 contest6
-selection26
-selection27
+selection26
+selection27
 selection28
 selection29
-selection30a
+selection30c
 contest7
-selection31
-selection32
+selection31
+selection32
 selection33
 selection34
 selection35c
-contest8
-selection36
+contest8
+selection36
 selection37
 selection38
-selection39
-selection40a
+selection39
+selection40a
 contest9	
 selection41
 selection42
@@ -994,303 +1256,41 @@ selection9
 selection54
 selection55d
 	contest12
-selection56
-selection57
+selection56
+selection57
 selection58
-selection59
-selection60d
+selection59
+selection60d
 	contest13
 selection61
 selection62
-selection63
-selection64
-selection65d
+selection63
+selection64
+selection65d
 	contest14
 selection66
 selection67
-selection68
-selection69
-selection70b
+selection68
+selection69
+selection70b
 	contest15
 selection71
 selection72
 selection73
 selection74
-selection75d
+selection75b
 	contest16
-selection76
-selection77
-selection78
-selection79
-selection80b
-	contest17
-selection81
-selection82
-selection83
-selection84
-selection85b
-	contest18
-selection86
-selection87
-selection88
-selection89
-selection90d
-	contest19
-selection91
-selection92
-selection93
-selection94
-selection95e
-	contest20
-selection96
-selection97
-selection98
-selection99
-selection100î
-id-9ballotStyle^
-contest1
-
-selection1
-
-selection2
-
-selection3
-
-selection4
-
-selection5_
-contest2
-
-selection6
-
-selection7
-
-selection8
-
-selection9
-selection10c
-contest3
-selection11
-selection12
-selection13
-selection14
-selection15c
-contest4
-selection16
-selection17
-selection18
-selection19
-selection20a
-contest5
-selection21
-selection22
-selection23
-selection24
-selection25c
-contest6
-selection26
-selection27
-selection28
-selection29
-selection30a
-contest7
-selection31
-selection32
-selection33
-selection34
-selection35c
-contest8
-selection36
-selection37
-selection38
-selection39
-selection40c
-contest9	
-selection41
-selection42
-selection43
-selection44
-selection45d
-	contest10
-
-selection46
-selection47
-selection48
-selection49
-selection50d
-	contest11
-selection51
-selection52
-selection53
-selection54
-selection55b
-	contest12
-selection56
-selection57
-selection58
-selection59
-selection60d
-	contest13
-selection61
-selection62
-selection63
-selection64
-selection65b
-	contest14
-selection66
-selection67
-selection68
-selection69
-selection70d
-	contest15
-selection71
-selection72
-selection73
-selection74
-selection75d
-	contest16
-selection76
-selection77
-selection78
-selection79
-selection80b
-	contest17
-selection81
-selection82
-selection83
-selection84
-selection85d
-	contest18
-selection86
-selection87
-selection88
-selection89
-selection90d
-	contest19
-selection91
-selection92
-selection93
-selection94
-selection95c
-	contest20
-selection96
-selection97
-selection98
-selection99
-selection100é
-id-10ballotStyle\
-contest1
-
-selection1
-
-selection2
-
-selection3
-
-selection4
-
-selection5]
-contest2
-
-selection6
-
-selection7
-
-selection8
-
-selection9
-selection10c
-contest3
-selection11
-selection12
-selection13
-selection14
-selection15a
-contest4
-selection16
-selection17
-selection18
-selection19
-selection20c
-contest5
-selection21
-selection22
-selection23
-selection24
-selection25a
-contest6
-selection26
-selection27
-selection28
-selection29
-selection30a
-contest7
-selection31
-selection32
-selection33
-selection34
-selection35a
-contest8
-selection36
-selection37
-selection38
-selection39
-selection40c
-contest9	
-selection41
-selection42
-selection43
-selection44
-selection45d
-	contest10
-
-selection46
-selection47
-selection48
-selection49
-selection50b
-	contest11
-selection51
-selection52
-selection53
-selection54
-selection55b
-	contest12
-selection56
-selection57
-selection58
-selection59
-selection60d
-	contest13
-selection61
-selection62
-selection63
-selection64
-selection65d
-	contest14
-selection66
-selection67
-selection68
-selection69
-selection70d
-	contest15
-selection71
-selection72
-selection73
-selection74
-selection75d
-	contest16
-selection76
+selection76
 selection77
 selection78
 selection79
 selection80d
-	contest17
-selection81
+	contest17
+selection81
 selection82
 selection83
-selection84
-selection85b
+selection84
+selection85b
 	contest18
 selection86
 selection87
@@ -1304,11 +1304,11 @@ selection9
 selection94
 selection95e
 	contest20
-selection96
-selection97
+selection96
+selection97
 selection98
-selection99
-selection100ñ
+selection99
+selection100ï
 id-11ballotStyle\
 contest1
 
@@ -1330,45 +1330,45 @@ selection7
 selection8
 
 selection9
-selection10c
+selection10a
 contest3
 selection11
 selection12
-selection13
-selection14
+selection13
+selection14
 selection15c
-contest4
-selection16
-selection17
-selection18
+contest4
+selection16
+selection17
+selection18
 selection19
 selection20c
 contest5
-selection21
-selection22
-selection23
-selection24
+selection21
+selection22
+selection23
+selection24
 selection25c
 contest6
-selection26
-selection27
+selection26
+selection27
 selection28
-selection29
-selection30c
+selection29
+selection30a
 contest7
 selection31
-selection32
-selection33
+selection32
+selection33
 selection34
-selection35a
+selection35c
 contest8
 selection36
-selection37
-selection38
+selection37
+selection38
 selection39
-selection40a
-contest9	
-selection41
+selection40c
+contest9	
+selection41
 selection42
 selection43
 selection44
@@ -1388,9 +1388,9 @@ selection9
 selection55d
 	contest12
 selection56
-selection57
-selection58
-selection59
+selection57
+selection58
+selection59
 selection60b
 	contest13
 selection61
@@ -1399,33 +1399,33 @@ selection9
 selection64
 selection65d
 	contest14
-selection66
-selection67
+selection66
+selection67
 selection68
-selection69
-selection70d
-	contest15
-selection71
-selection72
+selection69
+selection70d
+	contest15
+selection71
+selection72
 selection73
 selection74
 selection75d
-	contest16
-selection76
+	contest16
+selection76
 selection77
 selection78
-selection79
-selection80d
-	contest17
-selection81
+selection79
+selection80b
+	contest17
+selection81
 selection82
 selection83
 selection84
 selection85d
 	contest18
-selection86
-selection87
-selection88
+selection86
+selection87
+selection88
 selection89
 selection90d
 	contest19
@@ -1435,8 +1435,8 @@ selection9
 selection94
 selection95e
 	contest20
-selection96
-selection97
-selection98
-selection99
+selection96
+selection97
+selection98
+selection99
 selection100

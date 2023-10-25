@@ -8,7 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-class TestPowRadix {
+class PowRadixTest {
     @Test
     fun bitSlicingSimplePattern() {
         val testBytes = ByteArray(32) { 0x8F.toByte() }

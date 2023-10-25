@@ -69,6 +69,7 @@ class Encryptor(
             timestamp,
             codeBaux,
             confirmationCode,
+            extendedBaseHash,
             sortedContests,
             ballotNonce,
             false,

@@ -23,7 +23,7 @@ class EncryptedTallyConvertTest {
     companion object {
         fun generateFakeTally(context: GroupContext): EncryptedTally {
             val contests = List(7) { generateFakeContest(it, context) }
-            return EncryptedTally("tallyId", contests, listOf("device1"))
+            return EncryptedTally("tallyId", contests, listOf("device1"), UInt256.random(),)
         }
 
         private fun generateFakeContest(cseq: Int, context: GroupContext): EncryptedTally.Contest {

@@ -18,14 +18,18 @@ fun electionguard.protogen.DecryptedTallyOrBallot.import(group: GroupContext):
         return Err("No contests in DecryptedTallyOrBallot")
     }
 
-    val (contests, errors) = this.contests.map { it.import(group) }.partition()
+    val electionId = importUInt256(this.electionId).toResultOr { "DecryptingTrustee $id electionId was malformed or missing" }
+    val (contests, cerrors) = this.contests.map { it.import(group) }.partition()
+
+    val errors = getAllErrors(electionId) + cerrors
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
 
-    return Ok(DecryptedTallyOrBallot(
+    return Ok( DecryptedTallyOrBallot(
         this.id,
-        contests.sortedBy { it.contestId }
+        contests.sortedBy { it.contestId },
+        electionId.unwrap(),
     ))
 }
 
@@ -116,6 +120,7 @@ fun DecryptedTallyOrBallot.publishProto() =
     electionguard.protogen.DecryptedTallyOrBallot(
         this.id,
         this.contests.map { it.publishProto() },
+        this.electionId.publishProto(),
     )
 
 private fun DecryptedTallyOrBallot.Contest.publishProto() =

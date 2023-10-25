@@ -10,6 +10,7 @@ public data class EncryptedBallot(
     val timestamp: Long = 0L,
     val codeBaux: pbandk.ByteArr = pbandk.ByteArr.empty,
     val confirmationCode: electionguard.protogen.UInt256? = null,
+    val electionId: electionguard.protogen.UInt256? = null,
     val contests: List<electionguard.protogen.EncryptedBallotContest> = emptyList(),
     val state: electionguard.protogen.EncryptedBallot.BallotState = electionguard.protogen.EncryptedBallot.BallotState.fromValue(0),
     val isPreencrypt: Boolean = false,
@@ -24,7 +25,7 @@ public data class EncryptedBallot(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.EncryptedBallot = electionguard.protogen.EncryptedBallot.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.EncryptedBallot> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedBallot, *>>(10)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.EncryptedBallot, *>>(11)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -124,6 +125,16 @@ public data class EncryptedBallot(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
                         jsonName = "primaryNonce",
                         value = electionguard.protogen.EncryptedBallot::primaryNonce
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "election_id",
+                        number = 11,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
+                        jsonName = "electionId",
+                        value = electionguard.protogen.EncryptedBallot::electionId
                     )
                 )
             }
@@ -495,6 +506,7 @@ public fun EncryptedBallot?.orDefault(): electionguard.protogen.EncryptedBallot 
 private fun EncryptedBallot.protoMergeImpl(plus: pbandk.Message?): EncryptedBallot = (plus as? EncryptedBallot)?.let {
     it.copy(
         confirmationCode = confirmationCode?.plus(plus.confirmationCode) ?: plus.confirmationCode,
+        electionId = electionId?.plus(plus.electionId) ?: plus.electionId,
         contests = contests + plus.contests,
         primaryNonce = primaryNonce?.plus(plus.primaryNonce) ?: plus.primaryNonce,
         unknownFields = unknownFields + plus.unknownFields
@@ -509,6 +521,7 @@ private fun EncryptedBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): 
     var timestamp = 0L
     var codeBaux: pbandk.ByteArr = pbandk.ByteArr.empty
     var confirmationCode: electionguard.protogen.UInt256? = null
+    var electionId: electionguard.protogen.UInt256? = null
     var contests: pbandk.ListWithSize.Builder<electionguard.protogen.EncryptedBallotContest>? = null
     var state: electionguard.protogen.EncryptedBallot.BallotState = electionguard.protogen.EncryptedBallot.BallotState.fromValue(0)
     var isPreencrypt = false
@@ -526,12 +539,13 @@ private fun EncryptedBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): 
             8 -> state = _fieldValue as electionguard.protogen.EncryptedBallot.BallotState
             9 -> isPreencrypt = _fieldValue as Boolean
             10 -> primaryNonce = _fieldValue as electionguard.protogen.UInt256
+            11 -> electionId = _fieldValue as electionguard.protogen.UInt256
         }
     }
 
     return EncryptedBallot(ballotId, ballotStyleId, encryptingDevice, timestamp,
-        codeBaux, confirmationCode, pbandk.ListWithSize.Builder.fixed(contests), state,
-        isPreencrypt, primaryNonce, unknownFields)
+        codeBaux, confirmationCode, electionId, pbandk.ListWithSize.Builder.fixed(contests),
+        state, isPreencrypt, primaryNonce, unknownFields)
 }
 
 @pbandk.Export

@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import electionguard.ballot.*
+import electionguard.core.UInt256
 import electionguard.keyceremony.KeyCeremonyTrustee
 
 /** Read/write the Election Record as protobuf files. */
@@ -20,5 +21,5 @@ expect class PublisherProto(topDir: String, createNew: Boolean = false) : Publis
     override fun pepBallotSink(outputDir: String): PepBallotSinkIF
 
     override fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)
-    override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee)
+    override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee, extendedBaseHash : UInt256)
 }

@@ -36,7 +36,7 @@ dependencyResolutionManagement {
             library("oshai-logging", "io.github.oshai:kotlin-logging:$oshaiLoggingVersion")
             library("logback-classic", "ch.qos.logback:logback-classic:$logbackVersion")
 
-            library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion")
+            library("kotlinx-cli", "org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion") // TODO This library is obsolete
             library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:$kotlinxDatetimeVersion")
             library("kotlinx-coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").version(coroutinesVersion)
             library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationCoreVersion")

@@ -163,8 +163,8 @@ data class KeyCeremonyResults(
         val guardians: List<Guardian> = publicKeysSorted.map { makeGuardian(it) }
 
         val metadataAll = mutableMapOf(
-            kotlin.Pair("CreatedBy", "keyCeremonyExchange"),
-            kotlin.Pair("CreatedOn", getSystemDate()),
+            Pair("CreatedBy", "keyCeremonyExchange"),
+            Pair("CreatedOn", getSystemDate()),
         )
         metadataAll.putAll(metadata)
 

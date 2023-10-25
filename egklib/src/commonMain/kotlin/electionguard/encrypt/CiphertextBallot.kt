@@ -11,6 +11,7 @@ data class CiphertextBallot(
     val timestamp: Long,
     val codeBaux: ByteArray, // Baux in spec 2.0.0, eq 58
     val confirmationCode: UInt256, // tracking code, H(B), eq 58
+    val electionId : UInt256,
     val contests: List<Contest>,
     val ballotNonce: UInt256,
     val isPreEncrypt: Boolean = false,
@@ -50,6 +51,7 @@ fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot
         this.timestamp,
         this.codeBaux,
         this.confirmationCode,
+        this.electionId,
         this.contests.map { it.submit() },
         state,
         this.isPreEncrypt,

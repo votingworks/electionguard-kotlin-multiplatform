@@ -39,6 +39,7 @@ class EncryptedBallotConvertTest {
             42,
             ByteArray(0),
             generateUInt256(context),
+            generateUInt256(context),
             contests,
             if (Random.nextBoolean())
                 EncryptedBallot.BallotState.CAST

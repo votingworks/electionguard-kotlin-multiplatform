@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import electionguard.ballot.*
+import electionguard.core.UInt256
 import electionguard.pep.BallotPep
 import electionguard.keyceremony.KeyCeremonyTrustee
 
@@ -21,7 +22,7 @@ interface Publisher {
     fun pepBallotSink(outputDir: String): PepBallotSinkIF
 
     fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)
-    fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee)
+    fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee, extendedBaseHash : UInt256)
 }
 
 interface EncryptedBallotSinkIF : Closeable {

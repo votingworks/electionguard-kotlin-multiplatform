@@ -77,7 +77,7 @@ class RunAccumulateTally {
                 accumulator.addCastBallot(encryptedBallot)
                 count++
             }
-            val tally: EncryptedTally = accumulator.build()
+            val tally: EncryptedTally = accumulator.build(electionInit.extendedBaseHash)
 
             val publisher = makePublisher(outputDir, false, electionRecord.isJson())
             publisher.writeTallyResult(

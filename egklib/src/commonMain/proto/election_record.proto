@@ -2,7 +2,6 @@ syntax = "proto3";
 
 import "encrypted_tally.proto";
 import "common.proto";
-import "encrypted_ballot.proto";
 import "decrypted_tally.proto";
 
 option java_package = "electionguard.protogen";

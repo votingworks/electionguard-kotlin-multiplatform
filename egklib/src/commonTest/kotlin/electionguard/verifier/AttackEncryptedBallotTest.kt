@@ -55,7 +55,7 @@ class AttackEncryptedBallotTest {
             for (encryptedBallot in mungedBallots ) {
                 accumulator.addCastBallot(encryptedBallot)
             }
-            val encryptedTally: EncryptedTally = accumulator.build()
+            val encryptedTally: EncryptedTally = accumulator.build(electionRecord.extendedBaseHash()!!)
 
             // decrypt it
             println("decrypt munged tally ")
@@ -101,6 +101,7 @@ class AttackEncryptedBallotTest {
             "device",
             ballot.timestamp,
             ByteArray(0),
+            UInt256.random(),
             UInt256.random(),
             ccontests,
             ballot.state

@@ -61,6 +61,7 @@ class Recorder(
             timestamp,
             codeBaux,
             preEncryptedBallot.confirmationCode,
+            extendedBaseHash,
             contests,
             ballotNonce,
             true,

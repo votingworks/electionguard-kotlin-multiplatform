@@ -19,6 +19,7 @@ message EncryptedBallot {
   int64 timestamp = 4; // Timestamp at which the ballot encryption is generated, in seconds since the epoch UTC.
   bytes code_baux = 5; // B_aux in eq 59
   UInt256 confirmation_code = 6; // ballot tracking code, H(B), eq 59 or eq 96 for preencrypt
+  UInt256 election_id = 11;     // unique election identifier
   repeated EncryptedBallotContest contests = 7;
   BallotState state = 8;
 

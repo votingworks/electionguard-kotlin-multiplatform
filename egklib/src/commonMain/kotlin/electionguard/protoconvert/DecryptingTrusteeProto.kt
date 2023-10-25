@@ -7,6 +7,7 @@ import com.github.michaelbull.result.getAllErrors
 import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.EncryptedKeyShare
@@ -15,10 +16,11 @@ fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext):
         Result<DecryptingTrusteeDoerre, String> {
 
     val id = this.guardianId
-    val publicKey = group.importElementModP(this.publicKey) .toResultOr { "DecryptingTrustee $id publicKey was malformed or missing" }
-    val keyShare = group.importElementModQ(this.keyShare) .toResultOr { "DecryptingTrustee $id keyShare was malformed or missing" }
+    val publicKey = group.importElementModP(this.publicKey).toResultOr { "DecryptingTrustee $id publicKey was malformed or missing" }
+    val keyShare = group.importElementModQ(this.keyShare).toResultOr { "DecryptingTrustee $id keyShare was malformed or missing" }
+    val electionId = importUInt256(this.electionId).toResultOr { "DecryptingTrustee $id electionId was malformed or missing" }
 
-    val errors = getAllErrors(publicKey, keyShare)
+    val errors = getAllErrors(publicKey, keyShare, electionId)
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -28,6 +30,7 @@ fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext):
         this.guardianXCoordinate,
         publicKey.unwrap(),
         keyShare.unwrap(),
+        electionId.unwrap(),
     ))
 }
 
@@ -52,12 +55,13 @@ private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: G
 
 ///////////////////////////////////////////////////////////////////////////////
 
-fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
+fun KeyCeremonyTrustee.publishDecryptingTrusteeProto(electionId : UInt256) =
     electionguard.protogen.DecryptingTrustee(
         this.id(),
         this.xCoordinate(),
         this.guardianPublicKey().publishProto(),
         this.computeSecretKeyShare().publishProto(),
+        electionId.publishProto(),
     )
 
 private fun EncryptedKeyShare.publishProto() =

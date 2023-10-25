@@ -1,6 +1,7 @@
 package electionguard.ballot
 
 import electionguard.core.ElGamalCiphertext
+import electionguard.core.UInt256
 import electionguard.core.HashedElGamalCiphertext
 
 /** The encrypted representation of the summed votes for a collection of ballots */
@@ -8,7 +9,8 @@ data class EncryptedTally(
     val tallyId: String,
     val contests: List<Contest>,
     val castBallotIds: List<String>,
-) {
+    val electionId : UInt256,
+    ) {
     init {
         require(contests.isNotEmpty())
     }

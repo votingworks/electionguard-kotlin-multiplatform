@@ -3,7 +3,7 @@ package electionguard.core
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class TestStats {
+class StatsTest {
 
     @Test
     fun testStatEmpty() {
