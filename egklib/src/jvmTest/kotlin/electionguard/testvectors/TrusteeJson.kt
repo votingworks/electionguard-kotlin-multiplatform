@@ -48,5 +48,5 @@ fun TrusteeJson.importDecryptingTrustee(group: GroupContext, electionId : UInt25
         this.xCoordinate,
         group.gPowP(this.polynomial_coefficients[0].import(group)),
         this.keyShare.import(group),
-        electionId)
+        )
 }

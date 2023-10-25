@@ -5,6 +5,7 @@ import electionguard.ballot.EncryptedBallotIF
 import electionguard.ballot.ManifestIF
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
 import electionguard.encrypt.CiphertextBallot
 import electionguard.json2.*
 import kotlinx.serialization.Serializable
@@ -47,19 +48,20 @@ fun CiphertextBallot.publishJsonE(): EncryptedBallotJsonV {
     return EncryptedBallotJsonV(this.ballotId, this.ballotNonce.publishJson(), contests)
 }
 
-fun EncryptedBallotJsonV.import(group: GroupContext): EncryptedBallotFacade {
+fun EncryptedBallotJsonV.import(group: GroupContext, electionId: UInt256): EncryptedBallotFacade {
     val contests = this.contests.map { contest ->
         EncryptedContestFacade(contest.contestId, contest.sequenceOrder,
             contest.selections.map { EncryptedSelectionFacade(it.selectionId, it.sequenceOrder, it.encrypted_vote.import(group)) })
     }
-    return EncryptedBallotFacade(this.ballotId, contests, BallotState.CAST)
+    return EncryptedBallotFacade(this.ballotId, contests, BallotState.CAST, electionId)
 }
 
 // a simplified version of as EncryptedBallot, implementing EncryptedBallotIF
 data class EncryptedBallotFacade(
     override val ballotId: String,
     override val contests: List<EncryptedContestFacade>,
-    override val state: BallotState
+    override val state: BallotState,
+    override val electionId: UInt256
 ) : EncryptedBallotIF
 
 data class EncryptedContestFacade(

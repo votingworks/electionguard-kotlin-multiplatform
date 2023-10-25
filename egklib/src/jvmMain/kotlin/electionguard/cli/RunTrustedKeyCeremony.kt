@@ -10,6 +10,7 @@ import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
+import electionguard.publish.Publisher
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
 import kotlinx.cli.ArgParser
@@ -101,8 +102,8 @@ class RunTrustedKeyCeremony {
             publisher.writeElectionInitialized(electionInitialized)
 
             // store the trustees in some private place.
-            val trusteePublisher = makePublisher(trusteeDir, false, isJson)
-            trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it, electionInitialized.extendedBaseHash) }
+            val trusteePublisher : Publisher = makePublisher(trusteeDir, false, isJson)
+            trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
 
             val took = getSystemTimeInMillis() - starting
             println("RunTrustedKeyCeremony took $took millisecs")

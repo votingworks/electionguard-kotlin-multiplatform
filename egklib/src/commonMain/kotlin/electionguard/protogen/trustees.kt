@@ -8,7 +8,6 @@ public data class DecryptingTrustee(
     val guardianXCoordinate: Int = 0,
     val publicKey: electionguard.protogen.ElementModP? = null,
     val keyShare: electionguard.protogen.ElementModQ? = null,
-    val electionId: electionguard.protogen.UInt256? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): electionguard.protogen.DecryptingTrustee = protoMergeImpl(other)
@@ -19,7 +18,7 @@ public data class DecryptingTrustee(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.DecryptingTrustee = electionguard.protogen.DecryptingTrustee.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.DecryptingTrustee> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptingTrustee, *>>(5)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.DecryptingTrustee, *>>(4)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -59,16 +58,6 @@ public data class DecryptingTrustee(
                         type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.ElementModQ.Companion),
                         jsonName = "keyShare",
                         value = electionguard.protogen.DecryptingTrustee::keyShare
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "election_id",
-                        number = 5,
-                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = electionguard.protogen.UInt256.Companion),
-                        jsonName = "electionId",
-                        value = electionguard.protogen.DecryptingTrustee::electionId
                     )
                 )
             }
@@ -159,7 +148,6 @@ private fun DecryptingTrustee.protoMergeImpl(plus: pbandk.Message?): DecryptingT
     it.copy(
         publicKey = publicKey?.plus(plus.publicKey) ?: plus.publicKey,
         keyShare = keyShare?.plus(plus.keyShare) ?: plus.keyShare,
-        electionId = electionId?.plus(plus.electionId) ?: plus.electionId,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -170,7 +158,6 @@ private fun DecryptingTrustee.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
     var guardianXCoordinate = 0
     var publicKey: electionguard.protogen.ElementModP? = null
     var keyShare: electionguard.protogen.ElementModQ? = null
-    var electionId: electionguard.protogen.UInt256? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -178,12 +165,10 @@ private fun DecryptingTrustee.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             2 -> guardianXCoordinate = _fieldValue as Int
             3 -> publicKey = _fieldValue as electionguard.protogen.ElementModP
             4 -> keyShare = _fieldValue as electionguard.protogen.ElementModQ
-            5 -> electionId = _fieldValue as electionguard.protogen.UInt256
         }
     }
 
-    return DecryptingTrustee(guardianId, guardianXCoordinate, publicKey, keyShare,
-        electionId, unknownFields)
+    return DecryptingTrustee(guardianId, guardianXCoordinate, publicKey, keyShare, unknownFields)
 }
 
 @pbandk.Export

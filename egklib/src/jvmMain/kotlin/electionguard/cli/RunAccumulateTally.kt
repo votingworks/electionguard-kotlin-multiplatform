@@ -71,13 +71,14 @@ class RunAccumulateTally {
             val electionRecord = readElectionRecord(consumerIn)
             val electionInit = electionRecord.electionInit()!!
 
-            var count = 0
-            val accumulator = AccumulateTally(group, electionRecord.manifest(), name)
+            var countBad = 0
+            var countOk = 0
+            val accumulator = AccumulateTally(group, electionRecord.manifest(), name, electionInit.extendedBaseHash)
             for (encryptedBallot in consumerIn.iterateAllCastBallots()) {
-                accumulator.addCastBallot(encryptedBallot)
-                count++
+                val ok = accumulator.addCastBallot(encryptedBallot)
+                if (ok) countOk++ else countBad++
             }
-            val tally: EncryptedTally = accumulator.build(electionInit.extendedBaseHash)
+            val tally: EncryptedTally = accumulator.build()
 
             val publisher = makePublisher(outputDir, false, electionRecord.isJson())
             publisher.writeTallyResult(
@@ -92,8 +93,9 @@ class RunAccumulateTally {
             )
 
             val took = getSystemTimeInMillis() - starting
-            val msecPerEncryption = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
-            println("AccumulateTally processed $count ballots, took $took millisecs, $msecPerEncryption msecs per ballot")
+            val msecPerEncryption = if (countOk == 0) 0 else (took.toDouble() / countOk).roundToInt()
+            println("AccumulateTally processed $countOk good ballots, $countBad failed, took $took millisecs, $msecPerEncryption msecs per good ballot")
+            println("  ballots ids accumulated = ${tally.castBallotIds.joinToString(",")}")
         }
     }
 }

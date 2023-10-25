@@ -11,11 +11,10 @@ data class DecryptingTrusteeDoerre(
     val xCoordinate: Int,
     val publicKey: ElementModP, // Must match the public record
     val keyShare: ElementModQ, // P(i) = (P1 (i) + P2 (i) + · · · + Pn (i)) eq 65
-    val electionId : UInt256,
     ) : DecryptingTrusteeIF {
 
     val group = compatibleContextOrFail(publicKey, keyShare)
-    // problem with this is now theres state; if trustee goes down it cant come back up and continue, if there are
+    // problem with this is now there's state; if trustee goes down it cant come back up and continue, if there are
     // PartialDecryption not yet challenged, since there will be a different randomConstantNonce.
     private val randomConstantNonce = group.randomElementModQ(2) // random value u in Zq
 

@@ -13,13 +13,10 @@ repositories {
     mavenCentral()
 }
 
-//tasks.startScripts {
-//    dependsOn(":egklib:jar")
-//}
-
 dependencies {
-    implementation(files("../egklib/build/libs/egklib-jvm-2.0.0-SNAPSHOT.jar"))
+    implementation(project(":egklib")) // make this depend on egklib being run
 
+    implementation(files("../egklib/build/libs/egklib-jvm-2.0.0-SNAPSHOT.jar")) // add the library to the fatJar
     implementation(libs.kotlin.result)
     implementation(libs.pbandk)
     implementation(libs.oshai.logging)
@@ -34,7 +31,6 @@ tasks.register("fatJar", Jar::class.java) {
         archiveClassifier.set("all")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         archiveBaseName = "egklib"
-
 
     manifest {
             attributes("Main-Class" to "electionguard.cli.RunVerifierKt")

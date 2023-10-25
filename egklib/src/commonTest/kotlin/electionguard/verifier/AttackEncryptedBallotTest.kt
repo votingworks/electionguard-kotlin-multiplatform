@@ -51,11 +51,11 @@ class AttackEncryptedBallotTest {
 
         if (showCount) {
             // sum it up
-            val accumulator = AccumulateTally(group, electionRecord.manifest(), "attackedTally")
+            val accumulator = AccumulateTally(group, electionRecord.manifest(), "attackedTally", electionRecord.extendedBaseHash()!!)
             for (encryptedBallot in mungedBallots ) {
                 accumulator.addCastBallot(encryptedBallot)
             }
-            val encryptedTally: EncryptedTally = accumulator.build(electionRecord.extendedBaseHash()!!)
+            val encryptedTally: EncryptedTally = accumulator.build()
 
             // decrypt it
             println("decrypt munged tally ")

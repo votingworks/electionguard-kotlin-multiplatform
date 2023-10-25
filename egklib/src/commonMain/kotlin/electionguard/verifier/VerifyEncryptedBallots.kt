@@ -1,6 +1,7 @@
 package electionguard.verifier
 
 import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
@@ -36,7 +37,11 @@ class VerifyEncryptedBallots(
 ) {
     val aggregator = SelectionAggregator() // for Verification 8 (Correctness of ballot aggregation)
 
-    fun verifyBallots(ballots: Iterable<EncryptedBallot>, stats: Stats = Stats(), showTime: Boolean = false): Result<Boolean, String> {
+    fun verifyBallots(
+        ballots: Iterable<EncryptedBallot>,
+        stats: Stats = Stats(),
+        showTime: Boolean = false
+    ): Result<Boolean, String> {
         val starting = getSystemTimeInMillis()
 
         runBlocking {
@@ -77,6 +82,10 @@ class VerifyEncryptedBallots(
         val starting = getSystemTimeInMillis()
         val results = mutableListOf<Result<Boolean, String>>()
 
+        if (ballot.electionId != extendedBaseHash) {
+            return Err("Encrypted Ballot has wrong electionId = ${ballot.electionId}")
+        }
+
         var ncontests = 0
         var nselections = 0
         for (contest in ballot.contests) {
@@ -108,7 +117,8 @@ class VerifyEncryptedBallots(
                 ciphers.add(it.pad)
                 ciphers.add(it.data)
             }
-            val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.sequenceOrder, jointPublicKey.key, ciphers)
+            val contestHash =
+                hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.sequenceOrder, jointPublicKey.key, ciphers)
             if (contestHash != contest.contestHash) {
                 results.add(Err("    7.A. Incorrect contest hash for contest ${contest.contestId} "))
             }
@@ -136,7 +146,11 @@ class VerifyEncryptedBallots(
     }
 
     // Verification 5 (Well-formedness of selection encryptions)
-    private fun verifySelection(where: String, selection: EncryptedBallot.Selection, optionLimit : Int): Result<Boolean, String> {
+    private fun verifySelection(
+        where: String,
+        selection: EncryptedBallot.Selection,
+        optionLimit: Int
+    ): Result<Boolean, String> {
         val errors = mutableListOf<Result<Boolean, String>>()
         val here = "${where}/${selection.selectionId}"
 
@@ -216,15 +230,17 @@ class VerifyEncryptedBallots(
     private fun CoroutineScope.launchVerifier(
         id: Int,
         input: ReceiveChannel<EncryptedBallot>,
-        agg: SelectionAggregator,
+        aggregator: SelectionAggregator,
         verify: (EncryptedBallot) -> Result<Boolean, String>,
     ) = launch(Dispatchers.Default) {
         for (ballot in input) {
             if (debugBallots) println("$id channel working on ${ballot.ballotId}")
             val result = verify(ballot)
             mutex.withLock {
-                agg.add(ballot) // this slows down the ballot parallelism: nselections * (2 (modP multiplication))
-                confirmationCodes.add(ConfirmationCode(ballot.ballotId, ballot.confirmationCode))
+                if (result is Ok) {
+                    aggregator.add(ballot) // this slows down the ballot parallelism: nselections * (2 (modP multiplication))
+                    confirmationCodes.add(ConfirmationCode(ballot.ballotId, ballot.confirmationCode))
+                }
                 allResults.add(result)
             }
             yield()

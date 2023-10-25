@@ -88,7 +88,7 @@ class DecryptBallotTestVector {
         val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 
         val trusteesAll = keyCeremonyTrustees.map {
-            DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.guardianPublicKey(), it.computeSecretKeyShare(), extendedBaseHash)
+            DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.guardianPublicKey(), it.computeSecretKeyShare())
         }
 
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }

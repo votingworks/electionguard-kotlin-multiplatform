@@ -12,7 +12,6 @@ fun makeDoerreTrustee(ktrustee: KeyCeremonyTrustee, electionId : UInt256): Decry
         ktrustee.xCoordinate,
         ktrustee.guardianPublicKey(),
         ktrustee.computeSecretKeyShare(),
-        electionId,
     )
 }
 

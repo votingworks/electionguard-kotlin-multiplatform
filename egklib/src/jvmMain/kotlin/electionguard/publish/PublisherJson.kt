@@ -100,8 +100,8 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         }
     }
 
-    actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee, extendedBaseHash : UInt256) {
-        val decryptingTrusteeJson = trustee.publishJson(extendedBaseHash)
+    actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
+        val decryptingTrusteeJson = trustee.publishJson()
         FileOutputStream(jsonPaths.decryptingTrusteePath(trusteeDir, trustee.id)).use { out ->
             jsonFormat.encodeToStream(decryptingTrusteeJson, out)
             out.close()
