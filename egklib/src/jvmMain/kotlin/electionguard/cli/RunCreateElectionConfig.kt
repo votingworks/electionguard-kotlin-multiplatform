@@ -2,6 +2,7 @@ package electionguard.cli
 
 import electionguard.ballot.makeElectionConfig
 import electionguard.ballot.protocolVersion
+import electionguard.core.getSystemDate
 import electionguard.core.productionGroup
 import electionguard.publish.makePublisher
 import electionguard.publish.readAndCheckManifestBytes
@@ -41,7 +42,7 @@ class RunCreateElectionConfig {
                 ArgType.String,
                 shortName = "createdBy",
                 description = "who created"
-            ).default("RunCreateElectionConfigurationy")
+            ).default("RunCreateElectionConfig")
             val baux0 by parser.option(
                 ArgType.String,
                 shortName = "device",
@@ -82,6 +83,7 @@ class RunCreateElectionConfig {
                     baux0.encodeToByteArray(),
                     mapOf(
                         Pair("CreatedBy", createdBy),
+                        Pair("CreatedOn", getSystemDate()),
                     ),
                 )
 

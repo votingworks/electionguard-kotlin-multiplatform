@@ -1,9 +1,6 @@
 package electionguard.ballot
 
-import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElementModP
-import electionguard.core.ChaumPedersenProof
-import electionguard.core.HashedElGamalCiphertext
+import electionguard.core.*
 
 /**
  * The decryption of one encrypted ballot or encrypted tally.
@@ -13,7 +10,11 @@ import electionguard.core.HashedElGamalCiphertext
  * @param id matches the tallyId, or the ballotId if its a ballot decryption.
  * @param contests The contests
  */
-data class DecryptedTallyOrBallot(val id: String, val contests: List<Contest>) {
+data class DecryptedTallyOrBallot(
+    val id: String,
+    val contests: List<Contest>,
+    val electionId : UInt256,
+) {
 
     data class Contest(
         val contestId: String, // matches ContestDescription.contestId

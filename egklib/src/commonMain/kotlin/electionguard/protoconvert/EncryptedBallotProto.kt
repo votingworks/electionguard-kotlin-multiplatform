@@ -23,11 +23,13 @@ fun electionguard.protogen.EncryptedBallot.import(group: GroupContext):
 
     val confirmationCode = importUInt256(this.confirmationCode)
         .toResultOr { "EncryptedBallot $here trackingHash was malformed or missing" }
+    val electionId = importUInt256(this.electionId)
+        .toResultOr { "EncryptedBallot $here electionId was malformed or missing" }
     val ballotState = this.state.import(here)
 
     val (contests, cerrors) = this.contests.map { it.import(here, group) }.partition()
 
-    val errors = getAllErrors(confirmationCode, ballotState) + cerrors
+    val errors = getAllErrors(confirmationCode, electionId, ballotState) + cerrors
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
@@ -40,6 +42,7 @@ fun electionguard.protogen.EncryptedBallot.import(group: GroupContext):
             this.timestamp,
             this.codeBaux.array,
             confirmationCode.unwrap(),
+            electionId.unwrap(),
             contests,
             ballotState.unwrap(),
             this.isPreencrypt,
@@ -168,6 +171,7 @@ fun EncryptedBallot.publishProto(recordedPreBallot: RecordedPreBallot) = electio
     this.timestamp,
     ByteArr(this.codeBaux),
     this.confirmationCode.publishProto(),
+    this.electionId.publishProto(),
     this.contests.map { it.publishProto(recordedPreBallot) },
     this.state.publishProto(),
     true,
@@ -223,6 +227,7 @@ fun EncryptedBallot.publishProto() =
         this.timestamp,
         ByteArr(this.codeBaux),
         this.confirmationCode.publishProto(),
+        this.electionId.publishProto(),
         this.contests.map { it.publishProto() },
         this.state.publishProto()
     )

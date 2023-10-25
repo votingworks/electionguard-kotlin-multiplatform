@@ -9,6 +9,7 @@ option java_outer_classname = "DecryptedTallyOrBallotProto";
 message DecryptedTallyOrBallot {
   string id = 1; // tallyId or ballotId
   repeated DecryptedContest contests = 2;
+  UInt256 election_id = 3;     // unique election identifier
 }
 
 message DecryptedContest {

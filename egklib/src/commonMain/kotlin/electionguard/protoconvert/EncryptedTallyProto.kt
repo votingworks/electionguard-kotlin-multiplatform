@@ -1,20 +1,19 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.partition
-import com.github.michaelbull.result.toResultOr
-import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.*
 import electionguard.ballot.EncryptedTally
 import electionguard.core.GroupContext
 
 fun electionguard.protogen.EncryptedTally.import(group: GroupContext): Result<EncryptedTally, String> {
-    val (contests, errors) = this.contests.map { it.import(group) }.partition()
+    val electionId = importUInt256(this.electionId).toResultOr { "EncryptedTally ${this.tallyId} electionId was malformed or missing" }
+    val (contests, cerrors) = this.contests.map { it.import(group) }.partition()
+
+    val errors = getAllErrors(electionId) + cerrors
     if (errors.isNotEmpty()) {
         return Err(errors.joinToString("\n"))
     }
-    return Ok(EncryptedTally(this.tallyId, contests, this.castBallotIds))
+
+    return Ok(EncryptedTally(this.tallyId, contests, this.castBallotIds, electionId.unwrap()))
 }
 
 private fun electionguard.protogen.EncryptedTallyContest.import(group: GroupContext):
@@ -53,6 +52,7 @@ fun EncryptedTally.publishProto() =
         this.tallyId,
         this.contests.map { it.publishProto() },
         this.castBallotIds,
+        this.electionId.publishProto(),
     )
 
 private fun EncryptedTally.Contest.publishProto() =

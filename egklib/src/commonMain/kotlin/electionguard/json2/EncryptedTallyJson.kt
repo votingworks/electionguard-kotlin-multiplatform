@@ -9,6 +9,7 @@ data class EncryptedTallyJson(
     val tally_id: String,
     val contests: List<EncryptedTallyContestJson>,
     val cast_ballot_ids: List<String>,
+    val election_id: UInt256Json,
 )
 
 @Serializable
@@ -39,7 +40,12 @@ fun EncryptedTally.publishJson(): EncryptedTallyJson {
                 )
             })
     }
-    return EncryptedTallyJson(this.tallyId, contests, this.castBallotIds)
+    return EncryptedTallyJson(
+        this.tallyId,
+        contests,
+        this.castBallotIds,
+        this.electionId.publishJson(),
+        )
 }
 
 fun EncryptedTallyJson.import(group: GroupContext): EncryptedTally {
@@ -56,5 +62,10 @@ fun EncryptedTallyJson.import(group: GroupContext): EncryptedTally {
                 )
             })
     }
-    return EncryptedTally(this.tally_id, contests, this.cast_ballot_ids)
+    return EncryptedTally(
+        this.tally_id,
+        contests,
+        this.cast_ballot_ids,
+        this.election_id.import()
+    )
 }

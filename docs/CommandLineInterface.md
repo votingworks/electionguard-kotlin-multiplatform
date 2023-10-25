@@ -109,7 +109,7 @@ Options:
     --nguardians, -nguardians -> number of guardians (always required) { Int }
     --quorum, -quorum -> quorum size (always required) { Int }
     --outputDir, -out -> Directory to write output ElectionInitialized record (always required) { String }
-    --createdBy, -createdBy [RunCreateElectionConfigurationy] -> who created { String }
+    --createdBy, -createdBy [RunCreateElectionConfig] -> who created { String }
     --baux0, -device [device] -> device information, used for B_aux,0 from eq 58-60 { String }
     --chainCodes, -chainCodes [false] -> chain confirmation codes 
     --help, -h -> Usage info 

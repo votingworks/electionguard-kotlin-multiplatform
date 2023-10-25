@@ -1,6 +1,7 @@
 package electionguard.testvectors
 
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrustee
@@ -41,10 +42,11 @@ fun TrusteeJson.importKeyCeremonyTrustee(group: GroupContext, nguardians: Int): 
     )
 }
 
-fun TrusteeJson.importDecryptingTrustee(group: GroupContext): DecryptingTrusteeDoerre {
+fun TrusteeJson.importDecryptingTrustee(group: GroupContext, electionId : UInt256): DecryptingTrusteeDoerre {
     return DecryptingTrusteeDoerre(
         this.id,
         this.xCoordinate,
         group.gPowP(this.polynomial_coefficients[0].import(group)),
-        this.keyShare.import(group))
+        this.keyShare.import(group),
+        electionId)
 }

@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import electionguard.ballot.*
+import electionguard.core.UInt256
 import electionguard.json2.publishJson
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.pep.BallotPep
@@ -99,8 +100,8 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         }
     }
 
-    actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
-        val decryptingTrusteeJson = trustee.publishJson()
+    actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee, extendedBaseHash : UInt256) {
+        val decryptingTrusteeJson = trustee.publishJson(extendedBaseHash)
         FileOutputStream(jsonPaths.decryptingTrusteePath(trusteeDir, trustee.id)).use { out ->
             jsonFormat.encodeToStream(decryptingTrusteeJson, out)
             out.close()

@@ -1,15 +1,10 @@
 package electionguard.decrypt
 
 import com.github.michaelbull.result.unwrap
+import electionguard.ballot.electionExtendedHash
 import electionguard.ballot.makeDoerreTrustee
+import electionguard.core.*
 
-import electionguard.core.ElGamalPublicKey
-import electionguard.core.ElementModP
-import electionguard.core.GroupContext
-import electionguard.core.encrypt
-import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
-import electionguard.core.toElementModQ
 import electionguard.keyceremony.KeyCeremonyTrustee
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -55,10 +50,10 @@ fun runDoerreTest(
     }
     trustees.forEach { it.isComplete() }
 
-    val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
-
     val jointPublicKey: ElementModP =
-        dTrustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
+        trustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
+    val electionExtendedHash = electionExtendedHash(UInt256.random(), jointPublicKey)
+    val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it, electionExtendedHash) }
 
     testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
 }

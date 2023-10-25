@@ -138,9 +138,11 @@ class TallyDecryptionTestVector(
         eballots.forEach { eballot ->
             accumulator.addCastBallot(eballot.cast())
         }
-        val encryptedTally = accumulator.build()
+        val encryptedTally = accumulator.build(extendedBaseHash)
 
-        val trusteesAll = keyCeremonyTrustees.map { DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.guardianPublicKey(), it.computeSecretKeyShare()) }
+        val trusteesAll = keyCeremonyTrustees.map {
+            DecryptingTrusteeDoerre(it.id, it.xCoordinate, it.guardianPublicKey(), it.computeSecretKeyShare(), extendedBaseHash)
+        }
         // leave out one of the trustees to make it a partial decryption
         val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }
 
@@ -184,7 +186,7 @@ class TallyDecryptionTestVector(
         val encryptedTally = testVector.encrypted_tally.import(group)
 
         val keyCeremonyTrustees =  testVector.trustees.map { it.importKeyCeremonyTrustee(group, numberOfGuardians) }
-        val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group) }
+        val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group, extendedBaseHash) }
         // leave out one of the trustees to make it a partial decryption
         val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }

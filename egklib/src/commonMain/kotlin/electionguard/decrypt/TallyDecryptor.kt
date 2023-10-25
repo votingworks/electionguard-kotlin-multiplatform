@@ -32,7 +32,7 @@ internal class TallyDecryptor(
     ): DecryptedTallyOrBallot {
         // LOOK could parallelize contests
         val contests = tally.contests.map { decryptContest(it, decryptions, stats) }
-        return DecryptedTallyOrBallot(tally.tallyId, contests)
+        return DecryptedTallyOrBallot(tally.tallyId, contests, tally.electionId)
     }
 
     private fun decryptContest(

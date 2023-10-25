@@ -75,11 +75,13 @@ fun runEncryptDecryptBallot(
             t2.receiveEncryptedKeyShare(t1.encryptedKeyShareFor(t2.id).unwrap())
         }
     }
-    val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
     val guardianList: List<Guardian> = trustees.map { makeGuardian(it) }
     val guardians = Guardians(group, guardianList)
     val jointPublicKey: ElementModP =
-        dTrustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
+        trustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
+
+    val extendedBaseHash = electionExtendedHash(config.electionBaseHash, jointPublicKey)
+    val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it, extendedBaseHash) }
 
     testEncryptDecryptVerify(
         group,
@@ -93,8 +95,6 @@ fun runEncryptDecryptBallot(
 
     //////////////////////////////////////////////////////////
     if (writeout) {
-        val extendedBaseHash = electionExtendedHash(config.electionBaseHash, jointPublicKey)
-
         val init = ElectionInitialized(
             config,
             jointPublicKey,
@@ -106,7 +106,7 @@ fun runEncryptDecryptBallot(
         publisher.writeElectionInitialized(init)
 
         val trusteePublisher = makePublisher(trusteeDir)
-        trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
+        trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it, extendedBaseHash) }
     }
 }
 

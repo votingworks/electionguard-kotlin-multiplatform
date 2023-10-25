@@ -207,7 +207,8 @@ class PepTest {
         //    override val contests: List<Contest>,
         //    override val state: BallotState,
         return EncryptedBallot(
-            "ballotId", "ballotStyleId", "device11", 0, ByteArray(0), UInt256.random(),
+            "ballotId", "ballotStyleId", "device11", 0, ByteArray(0),
+            UInt256.random(), UInt256.random(),
             listOf(contest), EncryptedBallot.BallotState.CAST
         )
     }

@@ -10,6 +10,7 @@ message EncryptedTally {
   string tally_id = 1;
   repeated EncryptedTallyContest contests = 2;
   repeated string cast_ballot_ids = 3;
+  UInt256 election_id = 11;     // unique election identifier
 }
 
 message EncryptedTallyContest {

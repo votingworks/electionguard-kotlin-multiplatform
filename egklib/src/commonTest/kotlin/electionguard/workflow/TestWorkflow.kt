@@ -29,7 +29,7 @@ import kotlin.test.assertTrue
  * Note that TestWorkflow uses RunFakeKeyCeremonyTest, not real KeyCeremony.
  *  1. The results can be copied to the test data sets "src/commonTest/data/workflow" whenever the
  *     election record changes.
- *  2. Then see RunDecryptBallotsTest for more damn things to do
+ *  2. Now that we have fixed balloty ids, dont need to RunDecryptBallotsTest for more damn things to do.
  */
 class TestWorkflow {
     private val configDirProto = "src/commonTest/data/startConfigProto"

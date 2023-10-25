@@ -13,6 +13,8 @@ fun readElectionRecord(group : GroupContext, topDir: String) : ElectionRecord {
     return readElectionRecord(consumerIn)
 }
 
+// TODO: Problem is that its detecting the stage by what objects are in the record. But a bug that makes reading an object
+//   also returns an Err. Need to seperate existennce vs error when reading.
 fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     var decryptionResult : DecryptionResult? = null
     var tallyResult : TallyResult? = null

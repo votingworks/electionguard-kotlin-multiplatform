@@ -39,10 +39,10 @@ fun makeCakeEgkDecryption(
     val guardians = Guardians(group, ktrustees.map { makeGuardian(it) })
 
     // create inputs for Doerre Decryption
-    val dtrustees: List<DecryptingTrusteeDoerre> = ktrustees.map { makeDoerreTrustee(it) }
+    val extendedBaseHash = UInt256.random()
+    val dtrustees: List<DecryptingTrusteeDoerre> = ktrustees.map { makeDoerreTrustee(it, extendedBaseHash) }
     val jointPublicKey = dtrustees.map { it.guardianPublicKey() }.reduce { a, b -> a * b }
     val available = dtrustees.filter { present.contains(it.xCoordinate()) }
-    val extendedBaseHash = UInt256.random()
     val decryptor = DecryptorDoerre(group, extendedBaseHash, ElGamalPublicKey(jointPublicKey), guardians, available)
     return CakeEgkDecryption(group, quorum, extendedBaseHash, jointPublicKey, dtrustees, decryptor)
 }
@@ -179,7 +179,7 @@ class CakeEgkDecryption(val group: GroupContext, val quorum: Int, val extendedBa
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     fun EgkDecrypt(ciphertextAB : ElGamalCiphertext, decryptor: DecryptorDoerre) : EgkDecryptOutput {
-        val eTally = makeTallyForSingleCiphertext(ciphertextAB)
+        val eTally = makeTallyForSingleCiphertext(ciphertextAB, extendedBaseHash)
         //group.showAndClearCountPowP()
         val dTally = decryptor.decryptPep(eTally)
         //println("EgkDecrypt = ${group.showAndClearCountPowP()} expect ${4 * decryptor.nguardians + 4}")
@@ -198,9 +198,9 @@ class CakeEgkDecryption(val group: GroupContext, val quorum: Int, val extendedBa
 
 data class EgkDecryptOutput(val T: ElementModP, val proof : ChaumPedersenProof)
 
-fun makeTallyForSingleCiphertext(ciphertext : ElGamalCiphertext) : EncryptedTally {
+fun makeTallyForSingleCiphertext(ciphertext : ElGamalCiphertext, extendedBaseHash : UInt256) : EncryptedTally {
     val selection = EncryptedTally.Selection("Selection1", 1, ciphertext)
     val contest = EncryptedTally.Contest("Contest1", 1, listOf(selection))
-    return EncryptedTally("tallyId", listOf(contest), emptyList())
+    return EncryptedTally("tallyId", listOf(contest), emptyList(), extendedBaseHash)
 }
 

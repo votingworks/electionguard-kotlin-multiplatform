@@ -40,6 +40,7 @@ class EncryptedBallotTest {
             42,
             "baux".encodeToByteArray(),
             generateUInt256(context),
+            generateUInt256(context),
             contests,
             if (Random.nextBoolean())
                 EncryptedBallot.BallotState.CAST

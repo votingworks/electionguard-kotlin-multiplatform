@@ -102,7 +102,7 @@ class RunTrustedKeyCeremony {
 
             // store the trustees in some private place.
             val trusteePublisher = makePublisher(trusteeDir, false, isJson)
-            trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
+            trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it, electionInitialized.extendedBaseHash) }
 
             val took = getSystemTimeInMillis() - starting
             println("RunTrustedKeyCeremony took $took millisecs")

@@ -104,7 +104,7 @@ fun runFakeKeyCeremony(
     publisher.writeElectionInitialized(init)
 
     val trusteePublisher = makePublisher(trusteeDir, false, electionRecord.isJson())
-    trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it) }
+    trustees.forEach { trusteePublisher.writeTrustee(trusteeDir, it, He) }
 
     // val decryptingTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it) }
     // testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), decryptingTrustees, decryptingTrustees.map {it.xCoordinate})

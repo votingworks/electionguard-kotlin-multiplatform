@@ -6,6 +6,7 @@ import electionguard.ballot.ManifestIF
 import electionguard.ballot.EncryptedBallot.BallotState
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
 import electionguard.core.encryptedSum
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -38,9 +39,9 @@ class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val n
         return true
     }
 
-    fun build(): EncryptedTally {
+    fun build(extendedBaseHash : UInt256): EncryptedTally {
         val tallyContests = mcontests.values.map { it.build() }
-        return EncryptedTally(this.name, tallyContests, castIds.toList())
+        return EncryptedTally(this.name, tallyContests, castIds.toList(), extendedBaseHash)
     }
 
     private inner class Contest(val manifestContest : ManifestIF.Contest) {

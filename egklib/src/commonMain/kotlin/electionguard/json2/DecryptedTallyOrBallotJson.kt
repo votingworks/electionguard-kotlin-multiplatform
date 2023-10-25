@@ -4,12 +4,14 @@ import electionguard.ballot.ContestData
 import electionguard.ballot.ContestDataStatus
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class DecryptedTallyOrBallotJson(
     val id: String,
     val contests: List<DecryptedContestJson>,
+    val election_id : UInt256Json,     // unique election identifier
 )
 
 @Serializable
@@ -44,6 +46,7 @@ fun DecryptedTallyOrBallot.publishJson() = DecryptedTallyOrBallotJson(
             contest.decryptedContestData?.publishJson(),
         )
     },
+    this.electionId.publishJson(),
 )
 
 fun DecryptedTallyOrBallotJson.import(group: GroupContext) = DecryptedTallyOrBallot(
@@ -61,6 +64,7 @@ fun DecryptedTallyOrBallotJson.import(group: GroupContext) = DecryptedTallyOrBal
                 ) },
             contest.decrypted_contest_data?.import(group),
         ) },
+    this.election_id.import(),
 )
 
 @Serializable
