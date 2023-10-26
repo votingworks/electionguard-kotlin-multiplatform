@@ -17,10 +17,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
-import java.nio.file.FileSystem
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
+import java.nio.file.*
 import java.nio.file.spi.FileSystemProvider
 import java.util.function.Predicate
 import java.util.stream.Stream
@@ -72,7 +69,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         // need to use fileSystemProvider for zipped files
         val manifestPath = fileSystem.getPath(filename)
         val manifestBytes =
-            fileSystemProvider.newInputStream(manifestPath).use { inp ->
+            fileSystemProvider.newInputStream(manifestPath, StandardOpenOption.READ).use { inp ->
                 inp.readAllBytes()
             }
         return manifestBytes
@@ -115,7 +112,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
         return try {
             var chain: EncryptedBallotChain
-            fileSystemProvider.newInputStream(ballotChainPath).use { inp ->
+            fileSystemProvider.newInputStream(ballotChainPath, StandardOpenOption.READ).use { inp ->
                 val json = Json.decodeFromStream<EncryptedBallotChainJson>(inp)
                 chain = json.import()
             }
@@ -149,10 +146,15 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             while (true) {
                 if (ballotIds.hasNext()) {
                     val ballotFilePath = Path.of(jsonPaths.encryptedBallotDevicePath(device, ballotIds.next()))
-                    val encryptedBallot = readEncryptedBallot(ballotFilePath)
-                    if (filter == null || filter.test(encryptedBallot)) {
-                        setNext(encryptedBallot)
-                        return
+                    try {
+                        val encryptedBallot = readEncryptedBallot(ballotFilePath)
+                        if (filter == null || filter.test(encryptedBallot)) {
+                            setNext(encryptedBallot)
+                            return
+                        }
+                    } catch (t : Throwable) {
+                        println("Error reading EncryptedBallot '${ballotFilePath}', skipping.\n  ${t.message}")
+                        logger.error { "Error reading EncryptedBallot '${ballotFilePath}', skipping.\n  ${t.message}"}
                     }
                 } else {
                     return done()
@@ -162,7 +164,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     }
 
     fun readEncryptedBallot(ballotFilePath : Path): EncryptedBallot{
-        fileSystemProvider.newInputStream(ballotFilePath).use { inp ->
+        fileSystemProvider.newInputStream(ballotFilePath, StandardOpenOption.READ).use { inp ->
             val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
             return json.import(group)
         }
@@ -269,7 +271,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         override fun computeNext() {
             while (idx < pathList.size) {
                 val file = pathList[idx++]
-                fileSystemProvider.newInputStream(file).use { inp ->
+                fileSystemProvider.newInputStream(file, StandardOpenOption.READ).use { inp ->
                     val json = jsonIgnoreNulls.decodeFromStream<BallotPepJson>(inp)
                     val pepBallot = json.import(group)
                     return setNext(pepBallot)
@@ -299,7 +301,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
 
         val constants =  try {
-            fileSystemProvider.newInputStream(constantsPath).use { inp ->
+            fileSystemProvider.newInputStream(constantsPath, StandardOpenOption.READ).use { inp ->
                 val json = Json.decodeFromStream<ElectionConstantsJson>(inp)
                 json.import()
             }
@@ -315,7 +317,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
         return try {
             var electionConfig: ElectionConfig
-            fileSystemProvider.newInputStream(configFile).use { inp ->
+            fileSystemProvider.newInputStream(configFile, StandardOpenOption.READ).use { inp ->
                 val json = Json.decodeFromStream<ElectionConfigJson>(inp)
                 electionConfig = json.import(constants, manifestBytes)
             }
@@ -334,7 +336,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
         return try {
             var electionInitialized: ElectionInitialized
-            fileSystemProvider.newInputStream(initPath).use { inp ->
+            fileSystemProvider.newInputStream(initPath, StandardOpenOption.READ).use { inp ->
                 val json = Json.decodeFromStream<ElectionInitializedJson>(inp)
                 electionInitialized = json.import(group, config)
             }
@@ -349,7 +351,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             return Err("EncryptedTally '$tallyPath' file does not exist ")
         }
         return try {
-            fileSystemProvider.newInputStream(tallyPath).use { inp ->
+            fileSystemProvider.newInputStream(tallyPath, StandardOpenOption.READ).use { inp ->
                 val json = Json.decodeFromStream<EncryptedTallyJson>(inp)
                 val encryptedTally = json.import(group)
                 Ok(TallyResult(init, encryptedTally, emptyList()))
@@ -367,7 +369,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             return Err("DecryptedTally '$decryptedTallyPath' file does not exist ")
         }
         return try {
-            fileSystemProvider.newInputStream(decryptedTallyPath).use { inp ->
+            fileSystemProvider.newInputStream(decryptedTallyPath, StandardOpenOption.READ).use { inp ->
                 val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
                 val decryptedTallyOrBallot = json.import(group)
                 Ok(DecryptionResult(tallyResult, decryptedTallyOrBallot))
@@ -387,7 +389,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         override fun computeNext() {
             while (idx < pathList.size) {
                 val file = pathList[idx++]
-                fileSystemProvider.newInputStream(file).use { inp ->
+                fileSystemProvider.newInputStream(file, StandardOpenOption.READ).use { inp ->
                     val json = jsonIgnoreNulls.decodeFromStream<PlaintextBallotJson>(inp)
                     val plaintextBallot = json.import()
                     if (filter == null || filter.test(plaintextBallot)) {
@@ -411,7 +413,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         override fun computeNext() {
             while (idx < pathList.size) {
                 val file = pathList[idx++]
-                fileSystemProvider.newInputStream(file).use { inp ->
+                fileSystemProvider.newInputStream(file, StandardOpenOption.READ).use { inp ->
                     val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
                     val encryptedBallot = json.import(group)
                     if (filter == null || filter.test(encryptedBallot)) {
@@ -434,7 +436,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         override fun computeNext() {
             while (idx < pathList.size) {
                 val file = pathList[idx++]
-                fileSystemProvider.newInputStream(file).use { inp ->
+                fileSystemProvider.newInputStream(file, StandardOpenOption.READ).use { inp ->
                     val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
                     val decryptedTallyOrBallot = json.import(group)
                     setNext(decryptedTallyOrBallot)
@@ -450,7 +452,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             return Err("readTrustee '$filePath' file does not exist")
         }
         return try {
-            fileSystemProvider.newInputStream(filePath).use { inp ->
+            fileSystemProvider.newInputStream(filePath, StandardOpenOption.READ).use { inp ->
                 val json = Json.decodeFromStream<TrusteeJson>(inp)
                 val decryptingTrustee = json.importDecryptingTrustee(group)
                 Ok(decryptingTrustee)

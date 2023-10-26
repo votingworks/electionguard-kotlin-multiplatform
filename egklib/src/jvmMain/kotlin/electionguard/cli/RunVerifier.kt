@@ -55,7 +55,7 @@ class RunVerifier {
             }
 
             val tookAll = (getSystemTimeInMillis() - starting)
-            println("RunVerifier = $allOk took $tookAll msecs alloK = ${allOk}")
+            println("RunVerifier took $tookAll msecs OK = ${allOk}")
             return allOk
         }
 

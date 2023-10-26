@@ -83,7 +83,7 @@ class VerifyEncryptedBallots(
         val results = mutableListOf<Result<Boolean, String>>()
 
         if (ballot.electionId != extendedBaseHash) {
-            return Err("Encrypted Ballot has wrong electionId = ${ballot.electionId}; skipping")
+            return Err("Encrypted Ballot ${ballot.ballotId} has wrong electionId = ${ballot.electionId}; skipping")
         }
 
         var ncontests = 0
