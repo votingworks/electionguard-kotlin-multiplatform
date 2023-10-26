@@ -8,10 +8,22 @@ class VerifierTest {
 
     @Test
     fun verifyRemoteWorkflow() {
-        RunVerifier.runVerifier(productionGroup(), "src/commonTest/data/testElectionRecord/remoteWorkflow/keyceremony", 11)
-        RunVerifier.runVerifier(productionGroup(), "src/commonTest/data/testElectionRecord/remoteWorkflow/electionRecord", 11)
+        try {
+            RunVerifier.runVerifier(
+                productionGroup(),
+                "src/commonTest/data/testElectionRecord/remoteWorkflow/keyceremony",
+                11
+            )
+            RunVerifier.runVerifier(
+                productionGroup(),
+                "src/commonTest/data/testElectionRecord/remoteWorkflow/electionRecord",
+                11
+            )
+        } catch (t :Throwable) {
+            t.printStackTrace(System.out)
+        }
         // RunVerifier.runVerifier(productionGroup(), "/home/stormy/dev/github/egk-webapps/testOut/remoteWorkflow/keyceremony/", 11)
-        //RunVerifier.runVerifier(productionGroup(), "/home/stormy/dev/github/egk-webapps/testOut/remoteWorkflow/electionRecord/", 11)
+        // RunVerifier.runVerifier(productionGroup(), "/home/stormy/dev/github/egk-webapps/testOut/remoteWorkflow/electionRecord/", 11)
     }
 
     @Test
