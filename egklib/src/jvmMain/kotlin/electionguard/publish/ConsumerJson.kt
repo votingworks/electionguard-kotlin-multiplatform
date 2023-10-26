@@ -12,12 +12,15 @@ import electionguard.json2.*
 import electionguard.pep.BallotPep
 import electionguard.pep.BallotPepJson
 import electionguard.pep.import
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.nio.file.*
+import java.nio.file.attribute.BasicFileAttributeView
+import java.nio.file.attribute.FileAttributeView
+import java.nio.file.attribute.PosixFileAttributeView
 import java.nio.file.spi.FileSystemProvider
 import java.util.function.Predicate
 import java.util.stream.Stream
@@ -145,7 +148,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         override fun computeNext() {
             while (true) {
                 if (ballotIds.hasNext()) {
-                    val ballotFilePath = Path.of(jsonPaths.encryptedBallotDevicePath(device, ballotIds.next()))
+                    val ballotFilePath : Path = Path.of(jsonPaths.encryptedBallotDevicePath(device, ballotIds.next()))
                     try {
                         val encryptedBallot = readEncryptedBallot(ballotFilePath)
                         if (filter == null || filter.test(encryptedBallot)) {
