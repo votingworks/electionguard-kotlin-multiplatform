@@ -1,7 +1,6 @@
-val kotlin_version: String by project
-
 buildscript {
     repositories {
+        gradlePluginPortal()
         mavenCentral()
     }
 }
@@ -68,63 +67,26 @@ nativeTarget.apply {
         val commonMain by
             getting {
                 dependencies {
-                    // JSON serialization
-                    implementation(libs.kotlinx.serialization.json)
-
-                    // Coroutines
-                    implementation(libs.kotlinx.coroutines.core)
-
-                    // Portable logging interface.
-                    implementation(libs.oshai.logging)
-
-                    // A multiplatform Kotlin library for working with date and time.
-                    implementation(libs.kotlinx.datetime)
-
-                    // A multiplatform Kotlin library for working with protobuf.
-                    implementation(libs.pbandk)
-
-                    // A multiplatform Kotlin library for command-line parsing (could use enableEndorsedLibs instead)
-                    implementation(libs.kotlinx.cli)
-
-                    // A multiplatform Kotlin library for Result monads
-                    implementation(libs.kotlin.result)
+                    implementation(libs.bundles.eglib)
                 }
             }
         val commonTest by
             getting {
                 dependencies {
-                    implementation(kotlin("test-common"))
-                    implementation(kotlin("test-annotations-common"))
-
-                    // runTest() for running suspend functions in tests
-                    implementation(libs.kotlinx.coroutines.test)
-
-                    // Fancy property-based testing
-                    implementation(libs.kotest.property)
+                    implementation(libs.bundles.egtest)
                 }
             }
         val jvmMain by
             getting {
                 dependencies {
-                    implementation(kotlin("stdlib-jdk8")) }
+                    implementation(kotlin("stdlib-jdk8"))
+                }
             }
         val jvmTest by
             getting {
                 dependencies {
-                    // Progress bars
                     implementation("me.tongfei:progressbar:0.9.3")
-
-                    // junit5 only available on jvm
-                    implementation(libs.kotlin.test.junit5)
-
-                    // mocking only available on jvm
-                    implementation(libs.mockk)
-
-                    // logger implementation
-                    implementation(libs.logback.classic)
-
-                    // use ParameterizedTest feature
-                    implementation(libs.junit.jupiter.params)
+                    implementation(libs.bundles.jvmtest)
                 }
             }
         /* val nativeMain by getting {
