@@ -55,11 +55,15 @@ fun DecryptRequest.publishJson() = DecryptRequestJson(
 )
 
 fun DecryptRequestJson.import(group: GroupContext): Result<DecryptRequest, String> {
-    val texts = this.texts.map { it.import(group) }
-    val allgood = if (texts.isEmpty()) true else texts.map { it != null }.reduce { a, b -> a && b }
+    val badIndices = mutableListOf<Int>()
+    val texts : List<ElementModP?> = this.texts.map { it.import(group) }
+    texts.forEachIndexed { idx, it -> if (it == null) badIndices.add(idx)}
 
-    return if (allgood) Ok(DecryptRequest(texts.map { it }))
-    else Err("importModP error")
+    return if (badIndices.isNotEmpty()) {
+        Err( "DecryptRequestJson bad ciphertexts at indices = ${badIndices.map{ it.toString() }.joinToString()}")
+    } else {
+        Ok( DecryptRequest(texts.filterNotNull()) )
+    }
 }
 
 ///////////////////////////////////////////

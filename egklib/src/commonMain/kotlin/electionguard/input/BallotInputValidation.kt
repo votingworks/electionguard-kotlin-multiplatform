@@ -2,6 +2,7 @@ package electionguard.input
 
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
+import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("BallotInputValidation")
@@ -14,8 +15,8 @@ class BallotInputValidation(val manifest: Manifest) {
     private val contestMap = manifest.contests.associate { it.contestId  to ElectionContest(it) }
     private val styles = manifest.ballotStyles.associateBy { it.ballotStyleId }
 
-    fun validate(ballot: PlaintextBallot): ValidationMessages {
-        val ballotMesses = ValidationMessages("Ballot '${ballot.ballotId}'", 1)
+    fun validate(ballot: PlaintextBallot): ErrorMessages {
+        val ballotMesses = ErrorMessages("Ballot '${ballot.ballotId}'", 1)
         val ballotStyle: Manifest.BallotStyle? = styles[ballot.ballotStyle]
         
         // Referential integrity of ballot's BallotStyle id
@@ -54,7 +55,7 @@ class BallotInputValidation(val manifest: Manifest) {
         ballotContest: PlaintextBallot.Contest,
         ballotStyle: Manifest.BallotStyle,
         electionContest: ElectionContest,
-        ballotMesses: ValidationMessages
+        ballotMesses: ErrorMessages
     ) {
         val contestMesses = ballotMesses.nested("Contest " + ballotContest.contestId)
 

@@ -45,8 +45,20 @@ fun UInt256.isZero(): Boolean = UInt256.ZERO == this
  * Given a [ByteArray] representation of a big-endian, unsigned integer, returns a [UInt256] if it
  * fits. Otherwise, throws an [IllegalArgumentException].
  */
-fun ByteArray.toUInt256(): UInt256 {
+fun ByteArray.toUInt256safe(): UInt256 {
     return UInt256(this.normalize(32))
+}
+
+/**
+ * Given a [ByteArray] representation of a big-endian, unsigned integer, returns a [UInt256] if it
+ * fits. Otherwise, return null.
+ */
+fun ByteArray.toUInt256(): UInt256? {
+    return try {
+        UInt256(this.normalize(32))
+    } catch (t : IllegalArgumentException) {
+        null
+    }
 }
 
 /** Make ByteArray have exactly [nbytes] bytes by zero padding or removing leading zeros.
@@ -54,16 +66,15 @@ fun ByteArray.toUInt256(): UInt256 {
 fun ByteArray.normalize(nbytes: Int): ByteArray {
     return if (size == nbytes) {
         this
-    } else if (size > nbytes) {
-        // BigInteger sometimes has leading zeroes, so remove them
+    } else if (size > nbytes) { // remove leading zeros
         val leading = size - nbytes
         for (idx in 0 until leading) {
             if (this[idx].compareTo(0) != 0) {
-                throw IllegalArgumentException("ByteArray.normalize has $size bytes, only want $nbytes, leading zeroes stop at $idx")
+                throw IllegalArgumentException("ByteArray.normalize failed; has $size bytes, want $nbytes, leading zeroes stop at $idx")
             }
         }
         this.copyOfRange(leading, this.size)
-    } else {
+    } else { // pad with leading zeros
         val leftPad = ByteArray(nbytes - size) { 0 }
         leftPad + this
     }
@@ -74,9 +85,9 @@ fun ByteArray.normalize(nbytes: Int): ByteArray {
  * beginning by computing "mod q".
  */
 fun UInt256.toElementModQ(context: GroupContext): ElementModQ =
-    context.safeBinaryToElementModQ(bytes)
+    context.binaryToElementModQsafe(bytes)
 
-fun ElementModQ.toUInt256(): UInt256 = this.byteArray().toUInt256()
-fun ULong.toUInt256(): UInt256 = this.toByteArray().toUInt256()
-fun UInt.toUInt256(): UInt256 = this.toULong().toByteArray().toUInt256()
-fun UShort.toUInt256(): UInt256 = this.toULong().toByteArray().toUInt256()
+fun ElementModQ.toUInt256safe(): UInt256 = this.byteArray().toUInt256safe()
+fun ULong.toUInt256(): UInt256 = this.toByteArray().toUInt256safe()
+fun UInt.toUInt256(): UInt256 = this.toULong().toByteArray().toUInt256safe()
+fun UShort.toUInt256(): UInt256 = this.toULong().toByteArray().toUInt256safe()

@@ -1,6 +1,6 @@
 package electionguard.verifier
 
-import electionguard.core.Stats
+import electionguard.util.Stats
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.publish.readElectionRecord

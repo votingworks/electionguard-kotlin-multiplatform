@@ -12,6 +12,7 @@ import electionguard.preencrypt.MarkedPreEncryptedBallot
 import electionguard.preencrypt.MarkedPreEncryptedContest
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -89,7 +90,7 @@ class PreEncryptionRecordedTestVector {
         // roundtrip through the proto, combines the recordedBallot
         val encryptedBallot = ciphertextBallot.cast()
         val proto = encryptedBallot.publishProto(recordedBallot)
-        val fullEncryptedBallot = proto.import(group).unwrap()
+        val fullEncryptedBallot = proto.import(group, ErrorMessages(""))!!
 
         val preEncryptionRecordedTestVector = PreEncryptionRecordedTestVector(
             "Test recording a pre-encrypted ballot to election record",
@@ -118,9 +119,9 @@ class PreEncryptionRecordedTestVector {
             }
 
         val manifest = testVector.manifest.import()
-        val publicKey = testVector.joint_public_key.import(group)
-        val extendedBaseHash = testVector.extended_base_hash.import()
-        val primaryNonce = testVector.primary_nonce.import()
+        val publicKey = testVector.joint_public_key.import(group) ?: throw IllegalArgumentException("readPreEncryptionRecordedTestVector malformed joint_public_key")
+        val extendedBaseHash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readPreEncryptionRecordedTestVector malformed extended_base_hash")
+        val primaryNonce = testVector.primary_nonce.import() ?: throw IllegalArgumentException("readPreEncryptionRecordedTestVector malformed primary_nonce")
 
         val preEncryptor = PreEncryptor(group, manifest, publicKey, extendedBaseHash, ::sigma)
         val pballot: PreEncryptedBallot = preEncryptor.preencrypt("ballot_id", "ballotStyle", primaryNonce)
@@ -137,7 +138,7 @@ class PreEncryptionRecordedTestVector {
         // roundtrip through the proto, combines the recordedBallot
         val encryptedBallot = ciphertextBallot.cast()
         val proto = encryptedBallot.publishProto(recordedBallot)
-        val fullEncryptedBallot = proto.import(group).unwrap()
+        val fullEncryptedBallot = proto.import(group, ErrorMessages(""))!!
 
         checkEquals(testVector.expected_recorded_ballot, fullEncryptedBallot)
     }
@@ -202,7 +203,7 @@ class PreEncryptionRecordedTestVector {
             while (doneIdx.size < pcontest.votesAllowed) {
                 val idx = Random.nextInt(nselections)
                 if (!doneIdx.contains(idx)) {
-                    shortCodes.add(sigma(pcontest.selections[idx].selectionHash.toUInt256()))
+                    shortCodes.add(sigma(pcontest.selections[idx].selectionHash.toUInt256safe()))
                     selections.add(pcontest.selections[idx].selectionId)
                     doneIdx.add(idx)
                 }

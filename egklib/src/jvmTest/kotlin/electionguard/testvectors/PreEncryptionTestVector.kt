@@ -143,9 +143,9 @@ class PreEncryptionTestVector {
             }
 
         val manifest = testVector.manifest.import()
-        val publicKey = testVector.joint_public_key.import(group)
-        val extendedBaseHash = testVector.extended_base_hash.import()
-        val primaryNonce = testVector.primary_nonce.import()
+        val publicKey = testVector.joint_public_key.import(group) ?: throw IllegalArgumentException("readPreEncryptionTestVector malformed joint_public_key")
+        val extendedBaseHash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readPreEncryptionTestVector malformed extended_base_hash")
+        val primaryNonce = testVector.primary_nonce.import() ?: throw IllegalArgumentException("readPreEncryptionTestVector malformed primary_nonce")
 
         val preEncryptor = PreEncryptor(group, manifest, publicKey, extendedBaseHash, ::sigma)
         val pballot: PreEncryptedBallot = preEncryptor.preencrypt("ballot_id", "ballotStyle", primaryNonce)

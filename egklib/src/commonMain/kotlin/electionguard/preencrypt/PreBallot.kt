@@ -87,7 +87,7 @@ internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBal
             PreSelectionVector(preeSelection.selectionId, preeSelection.selectionHash, preeSelection.shortCode,
                 preeSelection.selectionVector, preeSelection.selectionNonces)
         }
-        val allSortedSelectedHashes = preeContest.selections.sortedBy { it.selectionHash }.map { it.selectionHash.toUInt256() }
+        val allSortedSelectedHashes = preeContest.selections.sortedBy { it.selectionHash }.map { it.selectionHash.toUInt256safe() }
 
         contests.add(
              PreContest(

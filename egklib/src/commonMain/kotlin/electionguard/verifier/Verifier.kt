@@ -4,6 +4,7 @@ import com.github.michaelbull.result.*
 import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.publish.ElectionRecord
+import electionguard.util.Stats
 
 class Verifier(val record: ElectionRecord, val nthreads: Int = 11) {
     val group: GroupContext = productionGroup()

@@ -1,13 +1,10 @@
 package electionguard.json
 
+import electionguard.core.*
 import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
 import electionguard.core.Base64.fromBase64
 import electionguard.core.Base64.toBase64
-import electionguard.core.ElementModP
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
@@ -43,10 +40,8 @@ object ElementModPR : KSerializer<ElementModPJsonR> {
 /** Publishes an ElementModP to its external, serializable form. */
 fun ElementModP.publishJsonR(): ElementModPJsonR = ElementModPJsonR(this.byteArray())
 
-// TODO these throw RuntimeException instead of T?
-fun ElementModPJsonR.import(group: GroupContext): ElementModP {
-    val wtf = group.binaryToElementModP(this.bytes)
-    return wtf!! // TODO
+fun ElementModPJsonR.import(group: GroupContext): ElementModP? {
+    return group.binaryToElementModP(this.bytes)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +77,7 @@ object ElementModQR : KSerializer<ElementModQJsonR> {
 /** Publishes an ElementModQ to its external, serializable form. */
 fun ElementModQ.publishJsonR(): ElementModQJsonR = ElementModQJsonR(this.byteArray())
 
-fun ElementModQJsonR.import(group: GroupContext): ElementModQ = group.binaryToElementModQ(this.bytes)?: throw RuntimeException()
+fun ElementModQJsonR.import(group: GroupContext): ElementModQ? = group.binaryToElementModQ(this.bytes)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -117,5 +112,5 @@ object UInt256R : KSerializer<UInt256JsonR> {
 /** Publishes an UInt256 to its external, serializable form. */
 fun UInt256.publishJsonR(): UInt256JsonR = UInt256JsonR(this.bytes)
 
-fun UInt256JsonR.import(): UInt256 = if (this.bytes.size == 32) UInt256(this.bytes) else throw RuntimeException()
+fun UInt256JsonR.import(): UInt256? = this.bytes.toUInt256()
 

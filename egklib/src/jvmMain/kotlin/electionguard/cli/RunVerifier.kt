@@ -1,10 +1,10 @@
 package electionguard.cli
 
 import electionguard.core.GroupContext
-import electionguard.core.Stats
+import electionguard.util.Stats
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.core.sigfig
+import electionguard.util.sigfig
 import electionguard.publish.readElectionRecord
 import electionguard.verifier.Verifier
 import kotlinx.cli.ArgParser

@@ -14,6 +14,8 @@ import electionguard.cli.ManifestBuilder
 import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
+import electionguard.util.Stats
 import electionguard.verifier.VerifyEncryptedBallots
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
@@ -225,7 +227,7 @@ internal fun runComplete(
     // roundtrip through the proto, combines the recordedBallot
     val encryptedBallot = ciphertextBallot.cast()
     val proto = encryptedBallot.publishProto(recordedBallot)
-    val fullEncryptedBallot = proto.import(group).unwrap()
+    val fullEncryptedBallot = proto.import(group, ErrorMessages(""))!!
 
     // show what ends up in the election record
     if (show) {
@@ -307,7 +309,7 @@ internal class ChosenBallot(val selectedIdx: Int) {
                 pcontests.add(
                     MarkedPreEncryptedContest(
                         pcontest.contestId,
-                        listOf(sigma(pselection.selectionHash.toUInt256())),
+                        listOf(sigma(pselection.selectionHash.toUInt256safe())),
                         listOf(pselection.selectionId),
                     )
                 )
@@ -340,7 +342,7 @@ internal fun markBallotChooseOne(manifest: Manifest, pballot: PreEncryptedBallot
         pcontests.add(
             MarkedPreEncryptedContest(
                 pcontest.contestId,
-                listOf(sigma(pselection.selectionHash.toUInt256())),
+                listOf(sigma(pselection.selectionHash.toUInt256safe())),
                 listOf(pselection.selectionId),
             )
         )
@@ -365,7 +367,7 @@ internal fun markBallotToLimit(manifest: Manifest, pballot: PreEncryptedBallot):
         while (doneIdx.size < pcontest.votesAllowed) {
             val idx = random.nextInt(nselections)
             if (!doneIdx.contains(idx)) {
-                shortCodes.add(sigma(pcontest.selections[idx].selectionHash.toUInt256()))
+                shortCodes.add(sigma(pcontest.selections[idx].selectionHash.toUInt256safe()))
                 selections.add(pcontest.selections[idx].selectionId)
                 doneIdx.add(idx)
             }

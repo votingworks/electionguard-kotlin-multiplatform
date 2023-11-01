@@ -9,6 +9,7 @@ import electionguard.cli.RunTrustedTallyDecryption.Companion.runDecryptTally
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.publish.*
+import electionguard.util.Stats
 import electionguard.verifier.Verifier
 import kotlin.test.Test
 import kotlin.test.assertTrue

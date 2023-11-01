@@ -126,16 +126,16 @@ class KeyCeremonyTestVector {
         val publicKeys = mutableListOf<ElementModP>()
         keyCeremonyTestVector.guardians.forEach { guardianJson ->
             val guardianXCoord = guardianJson.coordinate
-            val secretKey = guardianJson.polynomial_coefficients[0].import(group)
+            val secretKey = guardianJson.polynomial_coefficients[0].import(group) ?: throw IllegalArgumentException("readKeyCeremonyTestVector malformed secretKey")
             publicKeys.add(group.gPowP(secretKey))
 
             var coeffIdx = 0
             guardianJson.polynomial_coefficients.forEach {
-                val privateKey = it.import(group)
+                val privateKey = it.import(group) ?: throw IllegalArgumentException("readKeyCeremonyTestVector malformed polynomial_coefficient")
                 val publicKey = group.gPowP(privateKey)
 
                 val keypair = ElGamalKeypair(ElGamalSecretKey(privateKey), ElGamalPublicKey(publicKey))
-                val nonce = guardianJson.proof_nonces[coeffIdx].import(group)
+                val nonce = guardianJson.proof_nonces[coeffIdx].import(group) ?: throw IllegalArgumentException("readKeyCeremonyTestVector malformed nonce")
                 val proof = keypair.schnorrProof(guardianXCoord, coeffIdx, nonce)
                 val expectedProof = guardianJson.expected_proofs[coeffIdx]
 
@@ -151,7 +151,7 @@ class KeyCeremonyTestVector {
         assertEquals(keyCeremonyTestVector.expected_joint_public_key.import(group), publicKey)
 
         // He = H(HB ; 0x12, K) ; spec 2.0.0 p.25, eq 23.
-        val electionBaseHash = keyCeremonyTestVector.election_base_hash.import()
+        val electionBaseHash = keyCeremonyTestVector.election_base_hash.import() ?: throw IllegalArgumentException("readKeyCeremonyTestVector malformed electionBaseHash")
         val extendedBaseHash = electionExtendedHash(electionBaseHash, publicKey)
 
         assertEquals(keyCeremonyTestVector.expected_extended_base_hash.import(), extendedBaseHash)

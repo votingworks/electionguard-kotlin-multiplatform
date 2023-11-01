@@ -7,7 +7,8 @@ import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
-import electionguard.input.ValidationMessages
+import electionguard.util.ErrorMessages
+import electionguard.util.Stats
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
@@ -38,7 +39,7 @@ class PepBlindTrust(
         val startPep = System.currentTimeMillis()
 
         // LOOK check ballotIds match, styleIds?
-        val errorMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)
+        val errorMesses = ErrorMessages("Ballot '${ballot1.ballotId}'", 1)
         if (ballot1.ballotId != ballot2.ballotId) {
             val message = "ballot ids not equal ${ballot1.ballotId} != ${ballot2.ballotId}"
             return Err(message)

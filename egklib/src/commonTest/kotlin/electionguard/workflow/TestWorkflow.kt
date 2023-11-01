@@ -10,7 +10,7 @@ import electionguard.cli.RunBatchEncryption.Companion.batchEncryption
 import electionguard.cli.RunTrustedBallotDecryption.Companion.runDecryptBallots
 import electionguard.cli.RunTrustedTallyDecryption.Companion.runDecryptTally
 import electionguard.core.GroupContext
-import electionguard.core.Stats
+import electionguard.util.Stats
 import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.encrypt.AddEncryptedBallot
@@ -374,5 +374,5 @@ fun readDecryptingTrustees(
     isJson: Boolean,
 ): List<DecryptingTrusteeIF> {
     val consumer = makeTrusteeSource(trusteeDir, group, isJson)
-    return init.guardians.filter { present.contains(it.xCoordinate)}.map { consumer.readTrustee(trusteeDir, it.guardianId) }
+    return init.guardians.filter { present.contains(it.xCoordinate)}.map { consumer.readTrustee(trusteeDir, it.guardianId).unwrap() }
 }

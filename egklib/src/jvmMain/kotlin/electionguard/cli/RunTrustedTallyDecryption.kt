@@ -1,8 +1,10 @@
 package electionguard.cli
 
-import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.partition
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.DecryptionResult
-import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
@@ -10,10 +12,10 @@ import electionguard.core.productionGroup
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
-import electionguard.publish.makeConsumer
-import electionguard.publish.makePublisher
-import electionguard.publish.makeTrusteeSource
-import electionguard.publish.readElectionRecord
+import electionguard.publish.*
+import electionguard.util.ErrorMessages
+import electionguard.util.mergeErrorMessages
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -27,6 +29,8 @@ import kotlinx.cli.required
 class RunTrustedTallyDecryption {
 
     companion object {
+        private val logger = KotlinLogging.logger("RunTrustedTallyDecryption")
+
         @JvmStatic
         fun main(args: Array<String>) {
             val parser = ArgParser("RunTrustedTallyDecryption")
@@ -75,15 +79,25 @@ class RunTrustedTallyDecryption {
             missing: String? = null
         ): List<DecryptingTrusteeIF> {
             val consumerIn = makeConsumer(group, inputDir)
-            val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
-            val trusteeSource = makeTrusteeSource(trusteeDir, group, consumerIn.isJson())
-            val allGuardians = init.guardians.map { trusteeSource.readTrustee(trusteeDir, it.guardianId) }
+            val initResult = consumerIn.readElectionInitialized()
+            if (initResult is Err) {
+                logger.error { initResult.error.toString() }
+                return emptyList()
+            }
+            val init = initResult.unwrap()
+            val trusteeSource: Consumer = makeTrusteeSource(trusteeDir, group, consumerIn.isJson())
+            val readTrusteeResults : List<Result<DecryptingTrusteeIF, ErrorMessages>> = init.guardians.map { trusteeSource.readTrustee(trusteeDir, it.guardianId) }
+            val (allTrustees, allErrors) = readTrusteeResults.partition()
+            if (allErrors.isNotEmpty()) {
+                logger.error { mergeErrorMessages("readDecryptingTrustees", allErrors).toString() }
+                return emptyList()
+            }
             if (missing.isNullOrEmpty()) {
-                return allGuardians
+                return allTrustees
             }
             // remove missing guardians
             val missingX = missing.split(",").map { it.toInt() }
-            return allGuardians.filter { !missingX.contains(it.xCoordinate()) }
+            return allTrustees.filter { !missingX.contains(it.xCoordinate()) }
         }
 
         fun runDecryptTally(
@@ -95,9 +109,14 @@ class RunTrustedTallyDecryption {
         ) {
             val starting = getSystemTimeInMillis()
 
-            val electionRecord = readElectionRecord(group, inputDir)
-            val electionInit = electionRecord.electionInit()!!
-            val tallyResult: TallyResult = electionRecord.tallyResult()!!
+            val consumerIn = makeConsumer(group, inputDir)
+            val result = consumerIn.readTallyResult()
+            if (result is Err) {
+                println("readTallyResult failed ${result.error}")
+                return
+            }
+            val tallyResult = result.unwrap()
+            val electionInit = tallyResult.electionInitialized
 
             val trusteeNames = decryptingTrustees.map { it.id() }.toSet()
             val missingGuardians =
@@ -114,7 +133,7 @@ class RunTrustedTallyDecryption {
             )
             val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt() }
 
-            val publisher = makePublisher(outputDir, false, electionRecord.isJson())
+            val publisher = makePublisher(outputDir, false, consumerIn.isJson())
             publisher.writeDecryptionResult(
                 DecryptionResult(
                     tallyResult,

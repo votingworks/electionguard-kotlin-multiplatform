@@ -57,6 +57,11 @@ data class ElectionRecordJsonRPaths(val topDir : String) {
         return "$trusteeDir/SECRET_for_guradian_$idx/guardian_$idx.SECRET_key$JSON_SUFFIX"
     }
 
+    fun decryptingTrusteePath(trusteeDir: String, guardianId: String): String {
+        val id = guardianId.replace(" ", "_")
+        return "$trusteeDir/${ElectionRecordJsonPaths.DECRYPTING_TRUSTEE_PREFIX}-$id${ElectionRecordJsonPaths.JSON_SUFFIX}"
+    }
+
 
 /////////////////////////////////////////////////////////////////////
     fun encryptedTallyPath(): String {

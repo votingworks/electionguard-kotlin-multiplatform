@@ -3,6 +3,7 @@ package electionguard.protoconvert
 import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.*
+import electionguard.util.ErrorMessages
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -14,7 +15,7 @@ class DecryptedTallyOrBallotConvertTest {
         val group = tinyGroup()
         val tally = generateFakeTally(1, group)
         val proto = tally.publishProto()
-        val roundtrip = proto.import(group).getOrThrow { IllegalStateException(it) }
+        val roundtrip = proto.import(group, ErrorMessages(""))!!
         assertNotNull(roundtrip)
         val tallyContestMap = tally.contests.associateBy { it.contestId }
         for (rtContest in roundtrip.contests) {

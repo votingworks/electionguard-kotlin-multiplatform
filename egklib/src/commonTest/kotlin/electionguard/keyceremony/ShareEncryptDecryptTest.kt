@@ -28,7 +28,7 @@ class ShareEncryptDecryptTest {
 
                 val pilbytes : ByteArray? = trustee2.shareDecryption(encryptedShare)
                 assertNotNull(pilbytes)
-                val decodedPil: ElementModQ = pilbytes.toUInt256().toElementModQ(group) // Pi(ℓ)
+                val decodedPil: ElementModQ = pilbytes.toUInt256safe().toElementModQ(group) // Pi(ℓ)
                 assertEquals(pil, decodedPil)
             }
         }

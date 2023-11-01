@@ -1,12 +1,11 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedTally
 import electionguard.core.*
+import electionguard.util.ErrorMessages
+import org.junit.jupiter.api.Assertions.assertNotNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class EncryptedTallyConvertTest {
 
@@ -15,9 +14,9 @@ class EncryptedTallyConvertTest {
         val context = tinyGroup()
         val tally = generateFakeTally(context)
         val proto: electionguard.protogen.EncryptedTally = tally.publishProto()
-        val roundtrip = proto.import(context)
-        assertTrue(roundtrip is Ok)
-        assertEquals(roundtrip.unwrap(), tally)
+        val roundtrip = proto.import(context, ErrorMessages(""))
+        assertNotNull(roundtrip)
+        assertEquals(roundtrip, tally)
     }
 
     companion object {

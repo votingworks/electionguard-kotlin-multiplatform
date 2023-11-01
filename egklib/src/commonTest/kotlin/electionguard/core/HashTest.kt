@@ -1,6 +1,6 @@
 package electionguard.core
 
-import electionguard.core.Base16.fromSafeHex
+import electionguard.core.Base16.fromHexSafe
 import electionguard.core.Base16.toHex
 import io.kotest.property.checkAll
 import io.kotest.property.forAll
@@ -37,17 +37,17 @@ class HashTest {
     fun testNonce() {
         runTest {
             val group = productionGroup()
-            val contestDescriptionHashQ = "00C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromSafeHex()
-                .toUInt256().toElementModQ(group)
+            val contestDescriptionHashQ = "00C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromHexSafe()
+                .toUInt256safe().toElementModQ(group)
             println(" contestDescriptionHashQ = $contestDescriptionHashQ hex = ${contestDescriptionHashQ}")
-            val ballotNonce = "13E7A2F4253E6CCE42ED5576CF7B01A06BE07835227E7AFE5F538FB94E9A9B73".fromSafeHex()
-                .toUInt256().toElementModQ(group)
+            val ballotNonce = "13E7A2F4253E6CCE42ED5576CF7B01A06BE07835227E7AFE5F538FB94E9A9B73".fromHexSafe()
+                .toUInt256safe().toElementModQ(group)
             val nonceSequence = Nonces(contestDescriptionHashQ, ballotNonce)
             val nonce0: ElementModQ = nonceSequence[0]
             println(" nonce seed in hex = ${nonceSequence.internalSeed.toHex()}")
             println(" nonce0 in hex = ${nonce0}")
-            val expect = "ACDE405F255D4C3101A895AE80863EA4639A889593D557EB5AD5B855684D5B50".fromSafeHex()
-                .toUInt256().toElementModQ(group)
+            val expect = "ACDE405F255D4C3101A895AE80863EA4639A889593D557EB5AD5B855684D5B50".fromHexSafe()
+                .toUInt256safe().toElementModQ(group)
             assertEquals(expect, nonceSequence[0])
         }
     }
@@ -68,8 +68,8 @@ class HashTest {
     }
 
     fun test(s1 : String, group : GroupContext) {
-        val s1u = s1.fromSafeHex().toUInt256().toString()
-        val s1q = s1.fromSafeHex().toUInt256().toElementModQ(group).toString()
+        val s1u = s1.fromHexSafe().toUInt256safe().toString()
+        val s1q = s1.fromHexSafe().toUInt256safe().toElementModQ(group).toString()
         println(" len = ${s1.length} s1u = ${s1u} s1q = ${s1q}")
         assertEquals(64, s1q.length)
     }
@@ -78,10 +78,10 @@ class HashTest {
     fun testElementModQ() {
         runTest {
             val group = productionGroup()
-            val s1q = "C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromSafeHex()
-                .toUInt256().toElementModQ(group).base16()
-            val s2q = "000C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromSafeHex()
-                .toUInt256().toElementModQ(group).base16()
+            val s1q = "C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromHexSafe()
+                .toUInt256safe().toElementModQ(group).base16()
+            val s2q = "000C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromHexSafe()
+                .toUInt256safe().toElementModQ(group).base16()
             assertEquals(s1q, s2q)
             assertEquals(s1q.encodeToByteArray().size, s2q.encodeToByteArray().size)
             assertEquals(hashFunction(s1q.encodeToByteArray(), s1q), hashFunction(s2q.encodeToByteArray(), s2q))

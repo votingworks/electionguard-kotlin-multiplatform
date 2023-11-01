@@ -83,10 +83,11 @@ class ConsumerTest {
         runTest {
             val group = productionGroup()
             val consumerIn = makeConsumer(group, topdir)
-            val init = consumerIn.readElectionInitialized().getOrThrow { IllegalStateException(it) }
+            val result = consumerIn.readElectionInitialized()
+            val init = result.unwrap()
             val trusteeDir = "$topdir/private_data/trustees"
             init.guardians.forEach {
-                val trustee = consumerIn.readTrustee(trusteeDir, it.guardianId)
+                val trustee = consumerIn.readTrustee(trusteeDir, it.guardianId).unwrap()
                 assertTrue(trustee.id().equals(it.guardianId))
             }
         }
@@ -99,7 +100,7 @@ class ConsumerTest {
             val group = productionGroup()
             val consumerIn = makeConsumer(group, topdir)
             val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
-                consumerIn.readTrustee(trusteeDir, "badId")
+                consumerIn.readTrustee(trusteeDir, "badId").unwrap()
             }
             assertTrue(result is Err)
             val message: String = result.getError()?.message ?: "not"
@@ -114,7 +115,7 @@ class ConsumerTest {
             val group = productionGroup()
             val consumerIn = makeConsumer(group, topdir)
             val result: Result<DecryptingTrusteeIF, Throwable> = runCatching {
-                consumerIn.readTrustee(trusteeDir, "randomName")
+                consumerIn.readTrustee(trusteeDir, "randomName").unwrap()
             }
             assertFalse(result is Ok)
         }

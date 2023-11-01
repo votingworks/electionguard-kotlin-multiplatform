@@ -12,12 +12,15 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         const val TALLY_RESULT_FILE = "tallyResult$PROTO_SUFFIX"
         const val DECRYPTION_RESULT_FILE = "decryptionResult$PROTO_SUFFIX"
         const val PLAINTEXT_BALLOT_FILE = "plaintextBallots$PROTO_SUFFIX"
-        const val CHALLENGED_BALLOT_FILE = "challengedBallots$PROTO_SUFFIX"
 
         const val ENCRYPTED_DIR = "encrypted_ballots"
         const val ENCRYPTED_BALLOT_PREFIX = "eballot-"
         const val ENCRYPTED_CHAIN_FILE = "ballotChain$PROTO_SUFFIX"
         const val ENCRYPTED_BATCH_FILE = "encryptedBallots$PROTO_SUFFIX"
+
+        const val DECRYPTED_DIR = "decrypted_ballots"
+        const val DECRYPTED_BALLOT_PREFIX = "dballot-"
+        const val DECRYPTED_BATCH_FILE = "challengedBallots$PROTO_SUFFIX"
     }
 
     fun manifestPath(): String {
@@ -49,8 +52,12 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         return "$electionRecordDir/$ENCRYPTED_BATCH_FILE"
     }
 
-    fun spoiledBallotPath(): String {
-        return "$electionRecordDir/$CHALLENGED_BALLOT_FILE"
+    fun decryptedBatchPath(): String {
+        return "$electionRecordDir/$DECRYPTED_BATCH_FILE"
+    }
+
+    fun decryptedBallotDir(): String {
+        return "$electionRecordDir/$DECRYPTED_DIR"
     }
 
     // TODO resolve ??

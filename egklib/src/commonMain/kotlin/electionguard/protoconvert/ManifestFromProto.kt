@@ -1,15 +1,12 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
 import electionguard.ballot.*
 import electionguard.core.safeEnumValueOf
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestFromProto")
 
-fun electionguard.protogen.Manifest.import(): Result<Manifest, String> {
-    return Ok(
+fun electionguard.protogen.Manifest.import() =
         Manifest(
             this.electionScopeId,
             this.specVersion,
@@ -24,8 +21,6 @@ fun electionguard.protogen.Manifest.import(): Result<Manifest, String> {
             this.name.map { it.import() },
             this.contactInformation?.import(),
         )
-    )
-}
 
 private fun electionguard.protogen.BallotStyle.import() =
     Manifest.BallotStyle(

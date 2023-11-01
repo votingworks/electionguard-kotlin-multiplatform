@@ -206,7 +206,7 @@ class ManifestTest {
                 assertEquals(obj, jsonRoundTrip(obj.publishJson()).import())
 
                 val proto : electionguard.protogen.Manifest = obj.publishProto()
-                val rtProto = proto.import().getOrThrow { IllegalStateException(it) }
+                val rtProto = proto.import()
                 compareManifestHash(obj, rtProto)
                 assertEquals(obj, rtProto)
 

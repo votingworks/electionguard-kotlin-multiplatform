@@ -3,6 +3,8 @@ package electionguard.protoconvert
 import com.github.michaelbull.result.*
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
+import electionguard.util.ErrorMessages
+import org.junit.jupiter.api.Assertions.assertNotNull
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,9 +17,9 @@ class EncryptedBallotConvertTest {
         val context = productionGroup()
         val ballot = generateEncryptedBallot(42, context)
         val proto = ballot.publishProto()
-        val roundtrip = proto.import(context)
-        assertTrue(roundtrip is Ok)
-        assertEquals(ballot, roundtrip.unwrap())
+        val roundtrip = proto.import(context, ErrorMessages(""))
+        assertNotNull(roundtrip)
+        assertEquals(ballot, roundtrip)
     }
 
     @Test
@@ -25,9 +27,9 @@ class EncryptedBallotConvertTest {
         val context = tinyGroup()
         val ballot = generateEncryptedBallot(42, context)
         val proto = ballot.publishProto()
-        val roundtrip = proto.import(context)
-        assertTrue(roundtrip is Ok)
-        assertEquals(ballot, roundtrip.unwrap())
+        val roundtrip = proto.import(context, ErrorMessages(""))
+        assertNotNull(roundtrip)
+        assertEquals(ballot, roundtrip)
     }
 
     fun generateEncryptedBallot(seq: Int, context: GroupContext): EncryptedBallot {
@@ -78,8 +80,8 @@ class EncryptedBallotConvertTest {
         val context = productionGroup()
         val ballot = generateEncryptedBallot(42, context).copy(state = EncryptedBallot.BallotState.UNKNOWN)
         val proto = ballot.publishProto()
-        val roundtrip = proto.import(context)
-        assertTrue(roundtrip is Ok)
-        assertEquals(ballot, roundtrip.unwrap())
+        val roundtrip = proto.import(context, ErrorMessages(""))
+        assertNotNull(roundtrip)
+        assertEquals(ballot, roundtrip)
     }
 }

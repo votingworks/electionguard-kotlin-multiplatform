@@ -11,8 +11,8 @@ import electionguard.core.productionGroup
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.publish.Publisher
+import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
-import electionguard.publish.readElectionRecord
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -53,15 +53,21 @@ class RunTrustedKeyCeremony {
             println("RunTrustedKeyCeremony starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
             val group = productionGroup()
-            val electionRecord = readElectionRecord(group, inputDir)
+            val consumerIn = makeConsumer(group, inputDir)
+            val configResult = consumerIn.readElectionConfig()
+            if (configResult is Err) {
+                println("readElectionConfig failed ${configResult.error}")
+                return
+            }
+            val config = configResult.unwrap()
 
             val result = runKeyCeremony(
                 group,
                 inputDir,
-                electionRecord.config(),
+                config,
                 outputDir,
                 trusteeDir,
-                electionRecord.isJson(),
+                consumerIn.isJson(),
                 createdBy
             )
             println("runKeyCeremony result = $result")

@@ -2,6 +2,7 @@ package electionguard.json2
 
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
+import electionguard.util.ErrorMessages
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,7 +16,7 @@ class EncryptedBallotTest {
         val context = productionGroup()
         val ballot = generateEncryptedBallot(42, context)
         val json = ballot.publishJson()
-        val roundtrip = json.import(context)
+        val roundtrip = json.import(context, ErrorMessages(""))
         assertNotNull(roundtrip)
         assertEquals(ballot, roundtrip)
         assertTrue("baux".encodeToByteArray().contentEquals(roundtrip.codeBaux))
@@ -26,7 +27,7 @@ class EncryptedBallotTest {
         val context = tinyGroup()
         val ballot = generateEncryptedBallot(42, context)
         val json = ballot.publishJson()
-        val roundtrip = json.import(context)
+        val roundtrip = json.import(context, ErrorMessages(""))
         assertNotNull(roundtrip)
         assertEquals(ballot, roundtrip)
     }
@@ -79,7 +80,7 @@ class EncryptedBallotTest {
         val context = productionGroup()
         val ballot = generateEncryptedBallot(42, context).copy(state = EncryptedBallot.BallotState.UNKNOWN)
         val json = ballot.publishJson()
-        val roundtrip = json.import(context)
+        val roundtrip = json.import(context, ErrorMessages(""))
         assertNotNull(roundtrip)
         assertEquals(ballot, roundtrip)
     }

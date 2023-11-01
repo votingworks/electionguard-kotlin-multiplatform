@@ -4,6 +4,7 @@ import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.ManifestIF
 import electionguard.core.*
+import electionguard.util.Stats
 import kotlin.collections.mutableSetOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,7 @@ class VerifyDecryption(
         for (contest in decrypted.contests) {
             val where = "${decrypted.id}/${contest.contestId}"
             // (10.B) The contest text label occurs as a contest label in the list of contests in the election manifest.
-            if (manifest.contestLimit(contest.contestId) == null) {
+            if (manifest.contestLimit(contest.contestId) == null) { // TODO
                 results.add(Err("    10.B,13.D Ballot contains contest not in manifest: '$where' "))
                 continue
             }

@@ -5,6 +5,7 @@ import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.pep.BallotPep
+import electionguard.util.ErrorMessages
 
 expect class ConsumerProto (topDir: String, groupContext: GroupContext) : Consumer {
     override fun topdir() : String
@@ -13,13 +14,13 @@ expect class ConsumerProto (topDir: String, groupContext: GroupContext) : Consum
     override fun readManifestBytes(filename : String): ByteArray
     override fun makeManifest(manifestBytes: ByteArray): Manifest
 
-    override fun readElectionConfig(): Result<ElectionConfig, String>
-    override fun readElectionInitialized(): Result<ElectionInitialized, String>
-    override fun readTallyResult(): Result<TallyResult, String>
-    override fun readDecryptionResult(): Result<DecryptionResult, String>
+    override fun readElectionConfig(): Result<ElectionConfig, ErrorMessages>
+    override fun readElectionInitialized(): Result<ElectionInitialized, ErrorMessages>
+    override fun readTallyResult(): Result<TallyResult, ErrorMessages>
+    override fun readDecryptionResult(): Result<DecryptionResult, ErrorMessages>
 
     override fun encryptingDevices(): List<String>
-    override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String>
+    override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, ErrorMessages>
     override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     override fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     override fun hasEncryptedBallots() : Boolean
@@ -28,7 +29,7 @@ expect class ConsumerProto (topDir: String, groupContext: GroupContext) : Consum
     override fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
 
     override fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
-    override fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF
+    override fun readTrustee(trusteeDir: String, guardianId: String): Result<DecryptingTrusteeIF, ErrorMessages>
 
-    override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, String>
+    override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, ErrorMessages>
 }

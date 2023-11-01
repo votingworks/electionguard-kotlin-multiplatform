@@ -4,6 +4,7 @@ import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionConstants
 import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -33,20 +34,25 @@ fun ElectionConfig.publishJson() = ElectionConfigJson(
     this.metadata,
 )
 
-fun ElectionConfigJson.import(constants: ElectionConstants, manifestBytes: ByteArray) : ElectionConfig {
-    return ElectionConfig(
-        this.config_version,
-        constants,
-        this.number_of_guardians,
-        this.quorum,
-        this.parameter_base_hash.import(),
-        this.manifest_hash.import(),
-        this.election_base_hash.import(),
-        manifestBytes,
-        this.chain_confirmation_codes,
-        this.baux0,
-        this.metadata,
-    )
+fun ElectionConfigJson.import(constants: ElectionConstants?, manifestBytes: ByteArray?, errs:ErrorMessages) : ElectionConfig? {
+    if (this.parameter_base_hash.import() == null) errs.add("malformed parameter_base_hash")
+    if (this.manifest_hash.import() == null) errs.add("malformed manifest_hash")
+    if (this.election_base_hash.import() == null) errs.add("malformed election_base_hash")
+
+    return if (errs.hasErrors() || constants == null || manifestBytes == null) null
+    else ElectionConfig(
+                this.config_version,
+                constants,
+                this.number_of_guardians,
+                this.quorum,
+                this.parameter_base_hash.import()!!,
+                this.manifest_hash.import()!!,
+                this.election_base_hash.import()!!,
+                manifestBytes,
+                this.chain_confirmation_codes,
+                this.baux0,
+                this.metadata,
+            )
 }
 
 @Serializable
@@ -66,10 +72,18 @@ fun ElectionConstants.publishJson() = ElectionConstantsJson(
     this.generator.toHex(),
 )
 
-fun ElectionConstantsJson.import() = ElectionConstants(
-    this.name,
-    this.large_prime.fromHex()?: throw RuntimeException(),
-    this.small_prime.fromHex()?: throw RuntimeException(),
-    this.cofactor.fromHex()?: throw RuntimeException(),
-    this.generator.fromHex()?: throw RuntimeException(),
-)
+fun ElectionConstantsJson.import(errs: ErrorMessages) : ElectionConstants? {
+    if (this.large_prime.fromHex() == null) errs.add("malformed large_prime")
+    if (this.small_prime.fromHex() == null) errs.add("malformed small_prime")
+    if (this.cofactor.fromHex() == null) errs.add("malformed cofactor")
+    if (this.generator.fromHex() == null) errs.add("malformed generator")
+
+    return if (errs.hasErrors()) null
+    else ElectionConstants(
+        this.name,
+        this.large_prime.fromHex()!!,
+        this.small_prime.fromHex()!!,
+        this.cofactor.fromHex()!!,
+        this.generator.fromHex()!!,
+    )
+}

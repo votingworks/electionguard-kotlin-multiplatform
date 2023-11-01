@@ -1,7 +1,7 @@
 package electionguard.testvectors
 
 import electionguard.core.*
-import electionguard.core.Base16.fromHex
+import electionguard.core.Base16.fromHexSafe
 import electionguard.core.Base16.toHex
 import electionguard.keyceremony.*
 import electionguard.keyceremony.PrivateKeyShare
@@ -54,9 +54,9 @@ class ShareEncryptionTestVector {
     internal fun GuardianSharesJson.import(group : GroupContext) =
             GuardianShares(
                 name,
-                share_nonces.mapValues { it.value.import(group) },
+                share_nonces.mapValues { it.value.import(group) ?: throw IllegalArgumentException("ShareEncryptionTestVector malformed share_nonces") },
                 expected_shares.map { it.import(group) },
-                expected_my_share_of_secret.import(group),
+                expected_my_share_of_secret.import(group) ?: throw IllegalArgumentException("ShareEncryptionTestVector malformed expected_my_share_of_secret"),
             )
 
     internal data class GuardianShares(
@@ -90,7 +90,7 @@ class ShareEncryptionTestVector {
             polynomialOwner,
             secretShareFor,
             encryptedCoordinate.import(group),
-            yCoordinate.import(group),
+            yCoordinate.import(group) ?: throw IllegalArgumentException("ShareEncryptionTestVector malformed primary_nonce"),
         )
 
     @Serializable
@@ -106,9 +106,9 @@ class ShareEncryptionTestVector {
 
     fun HashedElGamalCiphertextJson.import(group : GroupContext) =
         HashedElGamalCiphertext(
-            c0.import(group),
-            c1.fromHex()!!,
-            c2.import(),
+            c0.import(group) ?: throw IllegalArgumentException("ShareEncryptionTestVector malformed primary_nonce"),
+            c1.fromHexSafe(),
+            c2.import() ?: throw IllegalArgumentException("ShareEncryptionTestVector malformed primary_nonce"),
             numBytes,
         )
 
@@ -184,7 +184,7 @@ class ShareEncryptionTestVector {
         assertTrue(guardians.size == guardianShares.size)
 
         val trustees = guardians.zip(guardianShares).map { (guardianJson, share) ->
-            val coefficients = guardianJson.polynomial_coefficients.map { it.import(group) }
+            val coefficients = guardianJson.polynomial_coefficients.map { it.import(group) ?: throw IllegalArgumentException("ShareEncryptionTestVector malformed polynomial_coefficients") }
             val polynomial = group.regeneratePolynomial(
                 guardianJson.name,
                 guardianJson.coordinate,

@@ -1,4 +1,4 @@
-package electionguard.core
+package electionguard.util
 
 import kotlin.math.min
 

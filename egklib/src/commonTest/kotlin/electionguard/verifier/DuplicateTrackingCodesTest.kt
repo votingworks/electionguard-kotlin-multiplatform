@@ -2,7 +2,7 @@ package electionguard.verifier
 
 import com.github.michaelbull.result.Err
 import electionguard.ballot.EncryptedBallot
-import electionguard.core.Stats
+import electionguard.util.Stats
 import electionguard.core.productionGroup
 import electionguard.publish.readElectionRecord
 import kotlin.test.Test

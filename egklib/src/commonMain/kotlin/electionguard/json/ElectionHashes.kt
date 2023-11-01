@@ -1,6 +1,7 @@
 package electionguard.json
 
 import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 /* hashes.json
@@ -24,11 +25,13 @@ data class ElectionHashes(
     val Hb : UInt256,
 )
 
-fun ElectionHashesJsonR.import() = ElectionHashes(
-    this.h_p.import(),
-    this.h_m.import(),
-    this.h_b.import(),
-)
+fun ElectionHashesJsonR.import(errs : ErrorMessages) : ElectionHashes? {
+    val h_p = this.h_p.import() ?: errs.addNull("malformed h_p") as UInt256?
+    val h_m = this.h_m.import() ?: errs.addNull("malformed h_m") as UInt256?
+    val h_b = this.h_b.import() ?: errs.addNull("malformed h_b") as UInt256?
+    return if (errs.hasErrors()) null else
+        ElectionHashes(h_p!!, h_m!!, h_b!!)
+}
 
 /* hashes_ext.json
 {

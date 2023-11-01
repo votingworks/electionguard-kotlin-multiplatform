@@ -37,16 +37,16 @@ fun TrusteeJson.importKeyCeremonyTrustee(group: GroupContext, nguardians: Int): 
         group.regeneratePolynomial(
             this.id,
             this.xCoordinate,
-            this.polynomial_coefficients.map { it.import(group) },
+            this.polynomial_coefficients.map { it.import(group) ?: throw IllegalArgumentException("TrusteeJson malformed polynomial_coefficients") },
         )
     )
 }
 
-fun TrusteeJson.importDecryptingTrustee(group: GroupContext, electionId : UInt256): DecryptingTrusteeDoerre {
+fun TrusteeJson.importDecryptingTrustee(group: GroupContext): DecryptingTrusteeDoerre {
     return DecryptingTrusteeDoerre(
         this.id,
         this.xCoordinate,
-        group.gPowP(this.polynomial_coefficients[0].import(group)),
-        this.keyShare.import(group),
+        group.gPowP(this.polynomial_coefficients[0].import(group) ?: throw IllegalArgumentException("TrusteeJson malformed polynomial_coefficients")),
+        this.keyShare.import(group) ?: throw IllegalArgumentException("TrusteeJson malformed keyShare"),
         )
 }

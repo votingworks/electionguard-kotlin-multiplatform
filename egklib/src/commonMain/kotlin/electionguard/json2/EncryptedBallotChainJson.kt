@@ -1,8 +1,10 @@
 package electionguard.json2
 
 import electionguard.ballot.EncryptedBallotChain
-import electionguard.core.Base16.fromSafeHex
+import electionguard.core.Base16.fromHexSafe
 import electionguard.core.Base16.toHex
+import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,12 +28,18 @@ fun EncryptedBallotChain.publishJson() = EncryptedBallotChainJson(
     this.metadata,
 )
 
-fun EncryptedBallotChainJson.import() = EncryptedBallotChain(
-    this.encrypting_device,
-    this.baux0.fromSafeHex(),
-    this.ballot_ids,
-    this.last_confirmation_code.import(),
-    this.chaining,
-    this.closing_hash?.import(),
-    this.metadata,
-)
+fun EncryptedBallotChainJson.import(errs : ErrorMessages): EncryptedBallotChain? {
+    val last = last_confirmation_code.import() ?: errs.addNull("malformed last_confirmation_code") as UInt256?
+    val closing_hash = if (closing_hash == null) null else closing_hash.import() ?: errs.addNull("malformed closing_hash") as UInt256?
+
+    return if (errs.hasErrors()) null
+    else EncryptedBallotChain(
+        this.encrypting_device,
+        this.baux0.fromHexSafe(),
+        this.ballot_ids,
+        last!!,
+        this.chaining,
+        closing_hash,
+        this.metadata,
+    )
+}

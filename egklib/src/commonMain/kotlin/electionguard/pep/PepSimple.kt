@@ -7,7 +7,7 @@ import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
-import electionguard.input.ValidationMessages
+import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
@@ -42,7 +42,7 @@ class PepSimple(
      */
     override fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPep, String> {
         // LOOK check ballotIds match, styleIds?
-        val ballotMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)
+        val ballotMesses = ErrorMessages("Ballot '${ballot1.ballotId}'", 1)
 
         // 	Enc(σj) = (αj, βj) for j ∈ {1, 2}.
         //	Let α = α1/α2 mod p, β = β1/β2 mod p
@@ -77,8 +77,8 @@ class PepSimple(
         val nd = decryptor.ndGuardians
         val q = decryptor.quorum
         val nenc = 1
-        val expect = (8 * nd) * nenc + n * n * q // simple
-       //println(" after decryptPep ${group.showAndClearCountPowP()} expect = $expect")
+        // val expect = (8 * nd) * nenc + n * n * q // simple
+        // println(" after decryptPep ${group.showAndClearCountPowP()} expect = $expect")
 
 
         // the BallotStep1 and the DecryptedBallot are zipped together to give the BallotPEP,
@@ -179,7 +179,7 @@ class PepSimple(
 fun makeRatioBallot(
     ballot1: EncryptedBallot,
     ballot2: EncryptedBallot,
-    ballotMesses: ValidationMessages
+    ballotMesses: ErrorMessages
 ): EncryptedBallot {
     val ratioContests = mutableListOf<EncryptedBallot.Contest>()
     // also make sure that the two ballots have identical contests and selections
@@ -203,7 +203,7 @@ fun makeRatioBallot(
 private fun makeRatioContest(
     contest1: EncryptedBallot.Contest,
     contest2: EncryptedBallot.Contest,
-    ballotMesses: ValidationMessages
+    ballotMesses: ErrorMessages
 ): EncryptedBallot.Contest {
     val contestMesses = ballotMesses.nested("Contest " + contest1.contestId)
 
@@ -242,7 +242,7 @@ private fun makeRatioContest(
 private fun makeRatioSelection(
     selection1: EncryptedBallot.Selection,
     selection2: EncryptedBallot.Selection,
-    contestMesses: ValidationMessages
+    contestMesses: ErrorMessages
 ): EncryptedBallot.Selection {
     val selectionMesses = contestMesses.nested("Selection " + selection1.selectionId)
 

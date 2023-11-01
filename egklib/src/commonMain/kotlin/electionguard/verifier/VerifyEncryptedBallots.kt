@@ -10,6 +10,8 @@ import electionguard.ballot.EncryptedBallotChain
 import electionguard.ballot.ManifestIF
 import electionguard.core.*
 import electionguard.publish.ElectionRecord
+import electionguard.util.Stats
+import electionguard.util.sigfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -176,7 +178,7 @@ class VerifyEncryptedBallots(
             // println("verifyConfirmationChain device=$device")
             val ballotChainResult = consumer.readEncryptedBallotChain(device)
             if (ballotChainResult is Err) {
-                results.add(ballotChainResult)
+                results.add(Err(ballotChainResult.toString()))
             } else {
                 val ballotChain: EncryptedBallotChain = ballotChainResult.unwrap()
                 val ballots = consumer.encryptedBallots(device) { true }

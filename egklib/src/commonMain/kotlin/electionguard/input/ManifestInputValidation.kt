@@ -4,6 +4,7 @@ import electionguard.ballot.Manifest
 import electionguard.ballot.Manifest.VoteVariationType.approval
 import electionguard.ballot.Manifest.VoteVariationType.one_of_m
 import electionguard.ballot.Manifest.VoteVariationType.n_of_m
+import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("ManifestInputValidation")
@@ -19,8 +20,8 @@ class ManifestInputValidation(val manifest: Manifest) {
     private val parties: Set<String> = manifest.parties.map { it.partyId }.toSet()
 
     /** Determine if a manifest is valid.  */
-    fun validate(): ValidationMessages {
-        val manifestMessages = ValidationMessages("Manifest '${manifest.electionScopeId}'", 1)
+    fun validate(): ErrorMessages {
+        val manifestMessages = ErrorMessages("Manifest '${manifest.electionScopeId}'", 1)
 
         // Referential integrity of BallotStyle geopolitical_unit_ids
         for (ballotStyle in manifest.ballotStyles) {
@@ -84,8 +85,8 @@ class ManifestInputValidation(val manifest: Manifest) {
     }
 
     /** Determine if the manifest contest is valid.  */
-    private fun validateContest(contest: Manifest.ContestDescription, ballotMesses: ValidationMessages) {
-        val contestMesses = ballotMesses.nested("Contest " + contest.contestId)
+    private fun validateContest(contest: Manifest.ContestDescription, ballotMesses: ErrorMessages) {
+        val contestMesses = ballotMesses.nested("Contest '${contest.contestId}'")
 
         // Referential integrity of Contest electoral_district_id
         if (!gpUnits.contains(contest.geopoliticalUnitId)) {
@@ -153,7 +154,7 @@ class ManifestInputValidation(val manifest: Manifest) {
     }
 
     /** Determine if the manifest selection is valid.  */
-    private fun validateContestSelections(contest: Manifest.ContestDescription, contestMesses: ValidationMessages) {
+    private fun validateContestSelections(contest: Manifest.ContestDescription, contestMesses: ErrorMessages) {
         val selectionIds: MutableSet<String> = HashSet()
         val selectionSeqs: MutableSet<Int> = HashSet()
         val candidateIds: MutableSet<String> = HashSet()

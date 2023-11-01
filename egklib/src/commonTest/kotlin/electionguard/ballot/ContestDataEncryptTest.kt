@@ -11,6 +11,7 @@ import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 private const val debug = false
@@ -73,6 +74,7 @@ class ContestDataEncryptTest {
 
         val hashProto = target.publishProto()
         val hashRoundtrip = group.importHashedCiphertext(hashProto)
+        assertNotNull(hashRoundtrip)
         assertEquals(target, hashRoundtrip)
 
         // HMAC decryption

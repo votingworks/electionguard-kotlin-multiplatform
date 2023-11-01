@@ -133,7 +133,7 @@ Example:
 ## Run trusted KeyCeremony
 
 This has access to all the trustees, so is only used for testing, or in a use case of trust. 
-Otherwise, use the remote keyceremony webapps.
+Otherwise, use the [remote keyceremony webapps](https://github.com/JohnLCaron/egk-webapps#remote-keyceremony).
 
 ````
 Usage: RunTrustedKeyCeremony options_list
@@ -220,7 +220,7 @@ production workflow may be significantly different.
 ## Run trusted Tally Decryption
 
 This has access to all the trustees, so is only used for testing, or in a use case of trust.
-Otherwise, use the remote decryption webapps.
+Otherwise, use the [remote decryption webapp](https://github.com/JohnLCaron/egk-webapps#remote-decryption).
 
 ````
 Usage: RunTrustedTallyDecryption options_list
@@ -250,7 +250,7 @@ output:
 ## Run trusted Ballot Decryption
 
 This has access to all the trustees, so is only used for testing, or in a use case of trust.
-Otherwise, use the remote decryption webapps.
+Otherwise, use the [remote decryption webapp](https://github.com/JohnLCaron/egk-webapps#remote-decryption).
 
 ````
 Usage: RunTrustedBallotDecryption options_list

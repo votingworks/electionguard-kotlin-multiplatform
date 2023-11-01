@@ -3,11 +3,12 @@
 package electionguard.cli
 
 import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
-import electionguard.core.Stats
+import electionguard.util.Stats
 import electionguard.core.UInt256
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
@@ -159,16 +160,21 @@ class RunBatchEncryption {
             cleanOutput: Boolean = false,
         ) {
             count = 0 // start over each batch
-            val electionRecord = readElectionRecord(group, inputDir)
-            val electionInit = electionRecord.electionInit()!!
+            val consumerIn = makeConsumer(group, inputDir)
+            val initResult = consumerIn.readElectionInitialized()
+            if (initResult is Err) {
+                println("readElectionInitialized failed ${initResult.error}")
+                return
+            }
+            val electionInit = initResult.unwrap()
+            val manifest = consumerIn.makeManifest(electionInit.config.manifestBytes)
 
             // ManifestInputValidation
-            val manifestValidator = ManifestInputValidation(electionRecord.manifest())
+            val manifestValidator = ManifestInputValidation(manifest)
             val errors = manifestValidator.validate()
             if (errors.hasErrors()) {
                 println("*** ManifestInputValidation error on election record in $inputDir")
                 println("$errors")
-                // kotlin.system.exitProcess(1) // kotlin 1.6.20
                 return
             }
             // debugging
@@ -178,7 +184,7 @@ class RunBatchEncryption {
             // BallotInputValidation
             var countEncryptions = 0
             val invalidBallots = ArrayList<PlaintextBallot>()
-            val ballotValidator = BallotInputValidation(electionRecord.manifest())
+            val ballotValidator = BallotInputValidation(manifest)
             val validate: ((PlaintextBallot) -> Boolean) = {
                 val mess = ballotValidator.validate(it)
                 if (mess.hasErrors()) {
@@ -195,17 +201,17 @@ class RunBatchEncryption {
 
             val encryptor = Encryptor(
                 group,
-                electionRecord.manifest(),
+                manifest,
                 ElGamalPublicKey(electionInit.jointPublicKey),
                 electionInit.extendedBaseHash,
                 device,
             )
             val runEncryption = EncryptionRunner(
-                group, encryptor, electionRecord.manifest(), electionRecord.config(),
+                group, encryptor, manifest, electionInit.config,
                 electionInit.jointPublicKey, electionInit.extendedBaseHash, check
             )
 
-            val publisher = makePublisher(outputDir, cleanOutput, electionRecord.isJson())
+            val publisher = makePublisher(outputDir, cleanOutput, consumerIn.isJson())
             val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(device, true)
 
             try {

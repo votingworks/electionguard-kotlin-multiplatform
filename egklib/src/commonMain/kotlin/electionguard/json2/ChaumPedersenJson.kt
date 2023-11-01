@@ -1,8 +1,7 @@
 package electionguard.json2
 
-import electionguard.core.ChaumPedersenProof
-import electionguard.core.ChaumPedersenRangeProofKnownNonce
-import electionguard.core.GroupContext
+import electionguard.core.*
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,10 +10,12 @@ data class RangeProofJson(
 )
 
 fun ChaumPedersenRangeProofKnownNonce.publishJson() =
-    RangeProofJson( this.proofs.mapIndexed { idx, it -> it.publishJson() })
+    RangeProofJson( this.proofs.map { it.publishJson() })
 
-fun RangeProofJson.import(group: GroupContext) =
-    ChaumPedersenRangeProofKnownNonce(this.proofs.map { it.import(group) })
+fun RangeProofJson.import(group: GroupContext, errs: ErrorMessages) : ChaumPedersenRangeProofKnownNonce? {
+    val proofs = this.proofs.mapIndexed { idx, it -> it.import(group, errs.nested("Proof $idx")) }
+    return if (errs.hasErrors()) null else ChaumPedersenRangeProofKnownNonce(proofs.filterNotNull())
+}
 
 @Serializable
 data class ChaumPedersenJson(
@@ -25,5 +26,9 @@ data class ChaumPedersenJson(
 fun ChaumPedersenProof.publishJson() =
     ChaumPedersenJson(this.c.publishJson(), this.r.publishJson())
 
-fun ChaumPedersenJson.import(group: GroupContext) =
-    ChaumPedersenProof(this.challenge.import(group), this.response.import(group))
+fun ChaumPedersenJson.import(group: GroupContext, errs: ErrorMessages = ErrorMessages("ChaumPedersenJson.import")): ChaumPedersenProof? {
+    val challenge = this.challenge.import(group) ?: errs.addNull("malformed challenge") as ElementModQ?
+    val response = this.response.import(group) ?: errs.addNull("malformed response") as ElementModQ?
+
+    return if (errs.hasErrors()) null else ChaumPedersenProof(challenge!!, response!!)
+}

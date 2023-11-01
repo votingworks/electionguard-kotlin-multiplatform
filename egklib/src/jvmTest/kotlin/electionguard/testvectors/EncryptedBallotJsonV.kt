@@ -51,7 +51,8 @@ fun CiphertextBallot.publishJsonE(): EncryptedBallotJsonV {
 fun EncryptedBallotJsonV.import(group: GroupContext, electionId: UInt256): EncryptedBallotFacade {
     val contests = this.contests.map { contest ->
         EncryptedContestFacade(contest.contestId, contest.sequenceOrder,
-            contest.selections.map { EncryptedSelectionFacade(it.selectionId, it.sequenceOrder, it.encrypted_vote.import(group)) })
+            contest.selections.map { EncryptedSelectionFacade(it.selectionId, it.sequenceOrder,
+                it.encrypted_vote.import(group) ?: throw IllegalArgumentException("EncryptedBallotJsonV response encrypted_vote for ${it.selectionId}")) })
     }
     return EncryptedBallotFacade(this.ballotId, contests, BallotState.CAST, electionId)
 }

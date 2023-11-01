@@ -309,7 +309,7 @@ class TestBallotInputValidation {
         val validator = BallotInputValidation(eanb.election)
         val problems = validator.validate(eanb.ballot)
         if (problems.hasErrors()) {
-            println("$problems")
+            println(problems)
         }
         if (expectMessage != null) {
             assertTrue(problems.hasErrors())

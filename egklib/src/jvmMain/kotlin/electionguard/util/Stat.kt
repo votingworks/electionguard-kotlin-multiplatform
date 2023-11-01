@@ -1,4 +1,4 @@
-package electionguard.core
+package electionguard.util
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong

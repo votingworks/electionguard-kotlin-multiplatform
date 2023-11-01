@@ -7,7 +7,7 @@ import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
-import electionguard.input.ValidationMessages
+import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("DistPep")
@@ -42,7 +42,7 @@ class PepTrusted(
      */
     override fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPep, String> {
         // LOOK check ballotIds match, styleIds?
-        val errorMesses = ValidationMessages("Ballot '${ballot1.ballotId}'", 1)
+        val errorMesses = ErrorMessages("Ballot '${ballot1.ballotId}'", 1)
 
         // 	Enc(σj) = (αj, βj) for j ∈ {1, 2}.
         //	Let α = α1/α2 mod p, β = β1/β2 mod p

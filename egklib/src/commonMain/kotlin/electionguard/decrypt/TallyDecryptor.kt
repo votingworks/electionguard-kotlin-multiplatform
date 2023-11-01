@@ -7,6 +7,7 @@ import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.LagrangeCoordinate
 import electionguard.ballot.decryptWithBetaToContestData
 import electionguard.core.*
+import electionguard.util.Stats
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("TallyDecryptor")

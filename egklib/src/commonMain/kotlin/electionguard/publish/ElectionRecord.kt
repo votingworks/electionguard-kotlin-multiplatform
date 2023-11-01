@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Result
 import electionguard.ballot.*
 import electionguard.core.ElementModP
 import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 
 /** Interface to the published election record.  */
 interface ElectionRecord {
@@ -36,7 +37,7 @@ interface ElectionRecord {
     fun electionInit(): ElectionInitialized?
 
     fun encryptingDevices(): List<String>
-    fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String>
+    fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, ErrorMessages>
     fun encryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> // may be empty
     fun encryptedAllBallots(filter : ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> // may be empty
 

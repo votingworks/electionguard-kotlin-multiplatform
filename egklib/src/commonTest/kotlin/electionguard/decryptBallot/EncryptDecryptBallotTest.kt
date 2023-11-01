@@ -14,6 +14,7 @@ import electionguard.input.RandomBallotProvider
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
+import electionguard.util.Stats
 import electionguard.verifier.VerifyDecryption
 import kotlin.math.roundToInt
 import kotlin.test.Test
