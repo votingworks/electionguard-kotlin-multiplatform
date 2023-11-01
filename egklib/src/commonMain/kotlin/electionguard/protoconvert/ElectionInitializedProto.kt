@@ -1,59 +1,42 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
-import com.github.michaelbull.result.partition
-import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
+import electionguard.core.ElementModP
 import electionguard.core.GroupContext
+import electionguard.core.SchnorrProof
+import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 
-fun electionguard.protogen.ElectionInitialized.import(group: GroupContext):
-        Result<ElectionInitialized, String> {
+fun electionguard.protogen.ElectionInitialized.import(group: GroupContext, errs: ErrorMessages): ElectionInitialized? {
+    val electionConfig = this.config?.import(errs.nested("ElectionConfig")) ?: errs.add("missing ElectionConfig")
+    val jointPublicKey = group.importElementModP(this.jointPublicKey) ?: (errs.addNull("malformed jointPublicKey") as ElementModP?)
+    val extendedBaseHash = importUInt256(this.extendedBaseHash) ?: (errs.addNull("malformed extendedBaseHash") as UInt256?)
 
-    val electionConfig = this.config?.import() ?: Err("Null ElectionConfig")
-    val jointPublicKey = group.importElementModP(this.jointPublicKey)
-        .toResultOr { "ElectionInitialized jointPublicKey was malformed or missing" }
-    val cryptoExtendedBaseHash = importUInt256(this.extendedBaseHash)
-        .toResultOr { "ElectionInitialized cryptoExtendedBaseHash was malformed or missing" }
+    val guardians = this.guardians.map { it.import(group, errs.nested("Guardian ${it.guardianId}")) }
 
-    val (guardians, gerrors) = this.guardians.map { it.import(group) }.partition()
-
-    val errors = getAllErrors(electionConfig, jointPublicKey, cryptoExtendedBaseHash) + gerrors
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-
-    return Ok(ElectionInitialized(
-        electionConfig.unwrap(),
-        jointPublicKey.unwrap(),
-        cryptoExtendedBaseHash.unwrap(),
-        guardians,
-        this.metadata.associate { it.key to it.value }
-    ))
+    return if (jointPublicKey == null || extendedBaseHash == null || errs.hasErrors()) null
+        else ElectionInitialized(
+            electionConfig.unwrap(),
+            jointPublicKey,
+            extendedBaseHash,
+            guardians.filterNotNull(), // no errors means no nulls
+            this.metadata.associate { it.key to it.value }
+        )
 }
 
-private fun electionguard.protogen.Guardian.import(group: GroupContext):
-        Result<Guardian, String> {
-    val (coefficientProofs, perrors) =
-        this.coefficientProofs.map {
-            group.importSchnorrProof(it)
-                 .toResultOr { "Guardian ${this.guardianId} coefficientProof was malformed or missing" }
-        }.partition()
-
-    if (perrors.isNotEmpty()) {
-        return Err(perrors.joinToString("\n"))
+private fun electionguard.protogen.Guardian.import(group: GroupContext, errs: ErrorMessages) : Guardian? {
+    val coefficientProofs : List<SchnorrProof?> = this.coefficientProofs.mapIndexed { idx, it ->
+            group.importSchnorrProof(it, errs.nested("SchnorrProof $idx"))
+        }
+    if (errs.hasErrors()) {
+        return null
     }
-
-    return Ok(
-        Guardian(
+    return Guardian(
             this.guardianId,
             this.xCoordinate,
-            coefficientProofs,
+            coefficientProofs.filterNotNull(), // no errs means no nulls
         )
-    )
 }
 
 ////////////////////////////////////////////////////////

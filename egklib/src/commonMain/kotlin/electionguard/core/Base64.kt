@@ -1,5 +1,6 @@
 package electionguard.core
 
+import electionguard.core.Base64.fromBase64
 import kotlin.math.min
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -54,42 +55,32 @@ object Base64 {
     /** Convert a ByteArray to a base64Url string. */
     fun ByteArray.toBase64Url() = encoder.encode(this, true).decodeToString()
 
+    /** Convert a String to a base64 ByteArray. Throws an `IllegalArgumentException` if it's invalid. */
+    fun String.fromBase64Safe(): ByteArray = decoder.decode(this.encodeToByteArray())
+
+    /** Convert a String to a base64Url ByteArray. Throws an `IllegalArgumentException` if it's invalid. */
+    fun String.fromBase64UrlSafe(): ByteArray = decoder.decode(this.encodeToByteArray(), true)
+
     /** Convert a String to a base64 ByteArray. Returns null if the input is not a valid base64 string. */
     fun String.fromBase64(): ByteArray? =
         try {
-            if (this == "") null else this.fromSafeBase64()
+            if (this == "") null else this.fromBase64Safe()
         } catch (ex: IllegalArgumentException) {
-            logger.warn { "input isn't a valid base64 string" }
+            logger.warn { "fromBase64 '$this' not a valid base64 string" }
             null
         }
-
-    /** Convert a String to a base64 ByteArray. Throws an `IllegalArgumentException` if it's invalid. */
-    fun String.fromSafeBase64(): ByteArray = decoder.decode(this.encodeToByteArray())
 
     /** Convert a String to a base64Url ByteArray. Returns null if the input is not a valid base64Url string. */
     fun String.fromBase64Url(): ByteArray? =
         try {
-            if (this == "") null else this.fromSafeBase64Url()
+            if (this == "") null else this.fromBase64UrlSafe()
         } catch (ex: IllegalArgumentException) {
-            logger.warn { "input isn't a valid base64 string" }
+            logger.warn { "fromBase64Url '$this' not a valid base64 string" }
             null
         }
 
-    /** Convert a String to a base64Url ByteArray. Throws an `IllegalArgumentException` if it's invalid. */
-    fun String.fromSafeBase64Url(): ByteArray = decoder.decode(this.encodeToByteArray(), true)
 
-    /**
-     * Returns a [Encoder] that encodes using the [Basic](#basic) type base64 encoding scheme.
-     *
-     * @return A Base64 encoder.
-     */
     private val encoder = Encoder(null, -1, true)
-
-    /**
-     * Returns a [Decoder] that decodes using the [Basic](#basic) type base64 encoding scheme.
-     *
-     * @return A Base64 decoder.
-     */
     private val decoder = Decoder()
 
     private class Encoder(

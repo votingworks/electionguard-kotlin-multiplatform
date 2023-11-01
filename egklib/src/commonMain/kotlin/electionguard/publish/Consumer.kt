@@ -8,6 +8,7 @@ import electionguard.core.pathExists
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.input.ManifestInputValidation
 import electionguard.pep.BallotPep
+import electionguard.util.ErrorMessages
 
 /** public API to read from the election record */
 interface Consumer {
@@ -17,29 +18,36 @@ interface Consumer {
     fun readManifestBytes(filename : String): ByteArray
     fun makeManifest(manifestBytes: ByteArray): Manifest
 
-    fun readElectionConfig(): Result<ElectionConfig, String>
-    fun readElectionInitialized(): Result<ElectionInitialized, String>
-    fun readTallyResult(): Result<TallyResult, String>
-    fun readDecryptionResult(): Result<DecryptionResult, String>
+    fun readElectionConfig(): Result<ElectionConfig, ErrorMessages>
+    fun readElectionInitialized(): Result<ElectionInitialized, ErrorMessages>
+    fun readTallyResult(): Result<TallyResult, ErrorMessages>
+    fun readDecryptionResult(): Result<DecryptionResult, ErrorMessages>
 
+    /** The list of devices that have encrytpted ballots. */
     fun encryptingDevices(): List<String>
-    fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String>
+    /** The encrypted ballot chain for specified device. */
+    fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, ErrorMessages>
+    /** Read encrypted ballots for specified devices. */
     fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
+    /** Read all encrypted ballots for all devices. */
     fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     fun iterateAllCastBallots(): Iterable<EncryptedBallot>  = iterateAllEncryptedBallots{  it.state == EncryptedBallot.BallotState.CAST }
     fun iterateAllSpoiledBallots(): Iterable<EncryptedBallot>  = iterateAllEncryptedBallots{  it.state == EncryptedBallot.BallotState.SPOILED }
     fun hasEncryptedBallots() : Boolean
 
+    /** Read all decrypted ballots, usually the challenged ones. */
     fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
-    fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
 
     //// not part of the election record
-    // read plaintext ballots in given directory, private data.
+    /** read plaintext ballots in given directory, private data. */
     fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
-    // trustee in given directory for given guardianId, private data.
-    fun readTrustee(trusteeDir: String, guardianId: String): DecryptingTrusteeIF
-    // read specific file containing encrypted ballot (eg for PEP).
-    fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, String>
+    /** read trustee in given directory for given guardianId, private data. */
+    fun readTrustee(trusteeDir: String, guardianId: String): Result<DecryptingTrusteeIF, ErrorMessages>
+
+    /** Read all the PEP ratio ballots in the given directory. */
+    fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
+    /** Read a specific file containing an encrypted ballot (eg for PEP). */
+    fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, ErrorMessages>
 }
 
 fun makeConsumer(
@@ -76,8 +84,6 @@ fun makeTrusteeSource(
     group: GroupContext,
     isJson: Boolean,
 ): Consumer {
-    // TODO
-    // val useJson = isJson ?: !pathExists("$trusteeDir/${ElectionRecordProtoPaths.PLAINTEXT_BALLOT_FILE}")
 
     return if (isJson) {
         ConsumerJson(trusteeDir, group)
@@ -85,7 +91,6 @@ fun makeTrusteeSource(
         ConsumerProto(trusteeDir, group)
     }
 }
-
 
 // specify the manifest filename, or the directory that its in. May be JSON or proto. If JSON, may be zipped.
 // check that the file parses and validates ok

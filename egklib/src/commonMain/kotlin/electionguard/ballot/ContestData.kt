@@ -253,7 +253,7 @@ fun HashedElGamalCiphertext.decryptContestData(
         return null
     }
 
-    val ciphertextBlocks = c1.toList().chunked(32) { it.toByteArray().toUInt256() } // eq 88
+    val ciphertextBlocks = c1.toList().chunked(32) { it.toByteArray().toUInt256safe() } // eq 88
     val plaintextBlocks = ciphertextBlocks.mapIndexed { i, c -> (c xor kdf[i + 1]).bytes }.toTypedArray()
     val plaintext = concatByteArrays(*plaintextBlocks) // eq 89
 

@@ -1,5 +1,6 @@
 package electionguard.cli
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError
 import com.github.michaelbull.result.unwrap
@@ -22,15 +23,21 @@ class RunExampleEncryption {
             val device = "device0"
 
             val group = productionGroup()
-            val electionRecord = readElectionRecord(group, inputDir)
-            val manifest = electionRecord.manifest()
-            val electionInit = electionRecord.electionInit()!!
-            val publisher = makePublisher(outputDir, true, electionRecord.isJson())
+            val consumerIn = makeConsumer(group, inputDir)
+            val initResult = consumerIn.readElectionInitialized()
+            if (initResult is Err) {
+                println("readElectionInitialized failed ${initResult.error}")
+                return
+            }
+            val electionInit = initResult.unwrap()
+            val manifest = consumerIn.makeManifest(electionInit.config.manifestBytes)
+
+            val publisher = makePublisher(outputDir, true, consumerIn.isJson())
             publisher.writeElectionInitialized(electionInit)
 
             val encryptor = AddEncryptedBallot(
                 group,
-                electionRecord.manifest(),
+                manifest,
                 electionInit,
                 device,
                 outputDir = outputDir,
@@ -40,7 +47,7 @@ class RunExampleEncryption {
 
             // encrypt randomly generated ballots
             val nballots = 17
-            val ballotProvider = RandomBallotProvider(electionRecord.manifest())
+            val ballotProvider = RandomBallotProvider(manifest)
             repeat(nballots) {
                 val ballot = ballotProvider.getFakeBallot(manifest, "ballotStyle", "ballot$it")
                 val encryptResult = encryptor.encrypt(ballot)

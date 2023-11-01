@@ -15,7 +15,7 @@ private val logger = KotlinLogging.logger("AccumulateTally")
 /** Accumulate the votes of EncryptedBallots, and return a new EncryptedTally. */
 // TODO what happens if there are no EncryptedBallots?
 class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val name : String, val extendedBaseHash : UInt256) {
-    private val mcontests = manifest.contests.associate { it.contestId to Contest(it)}
+    private val contests = manifest.contests.associate { it.contestId to Contest(it)}
     private val castIds = mutableSetOf<String>()
 
     fun addCastBallot(ballot: EncryptedBallotIF): Boolean {
@@ -33,18 +33,18 @@ class AccumulateTally(val group : GroupContext, val manifest : ManifestIF, val n
         }
 
         for (ballotContest in ballot.contests) {
-            val mcontest = mcontests[ballotContest.contestId]
-            if (mcontest == null) {
+            val contest = contests[ballotContest.contestId]
+            if (contest == null) {
                 logger.warn { "Ballot ${ballot.ballotId} has contest ${ballotContest.contestId} not in manifest"}
             } else {
-                mcontest.accumulate(ballot.ballotId, ballotContest)
+                contest.accumulate(ballot.ballotId, ballotContest)
             }
         }
         return true
     }
 
     fun build(): EncryptedTally {
-        val tallyContests = mcontests.values.map { it.build() }
+        val tallyContests = contests.values.map { it.build() }
         return EncryptedTally(this.name, tallyContests, castIds.toList(), extendedBaseHash)
     }
 

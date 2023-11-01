@@ -94,11 +94,11 @@ class BallotAggregationTestVector {
                 Json.decodeFromStream<BallotAggregationTestVector>(inp)
             }
 
-        val electionId = testVector.extended_base_hash.import()
-        val eballots: List<EncryptedBallotIF> = testVector.encrypted_ballots.map { it.import(group, electionId) }
+        val extended_base_hash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readBallotAggregationTestVector malformed extended_base_hash")
+        val eballots: List<EncryptedBallotIF> = testVector.encrypted_ballots.map { it.import(group, extended_base_hash) }
         val manifest = EncryptedBallotJsonManifestFacade(testVector.encrypted_ballots[0])
 
-        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", testVector.extended_base_hash.import())
+        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extended_base_hash)
         eballots.forEach { eballot -> accumulator.addCastBallot(eballot) }
         val tally = accumulator.build()
 

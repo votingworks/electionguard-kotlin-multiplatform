@@ -145,19 +145,19 @@ interface GroupContext {
      * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
      * Java's BigInteger. Guarantees the result is in [minimum, P), by computing the result mod P.
      */
-    fun safeBinaryToElementModP(b: ByteArray, minimum: Int = 0): ElementModP
+    fun binaryToElementModPsafe(b: ByteArray, minimum: Int = 0): ElementModP
 
     /**
      * Converts a [ByteArray] to an [ElementModQ]. The input array is assumed to be in big-endian
      * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
      * Java's BigInteger. Guarantees the result is in [minimum, Q), by computing the result mod Q.
      */
-    fun safeBinaryToElementModQ(b: ByteArray, minimum: Int = 0): ElementModQ
+    fun binaryToElementModQsafe(b: ByteArray, minimum: Int = 0): ElementModQ
 
     /**
      * Converts a [ByteArray] to an [ElementModP]. The input array is assumed to be in big-endian
      * byte-order: the most significant byte is in the zeroth element; this is the same behavior as
-     * Java's BigInteger. Returns null if the number is out of bounds.
+     * Java's BigInteger. Returns null if the number is out of bounds or malformed.
      */
     fun binaryToElementModP(b: ByteArray): ElementModP?
 
@@ -335,15 +335,15 @@ fun GroupContext.base16ToElementModQ(s: String): ElementModQ? =
  * Converts a base-16 (hexadecimal) string to an [ElementModP]. Guarantees the result is in [0, P),
  * by computing the result mod P.
  */
-fun GroupContext.safeBase16ToElementModP(s: String): ElementModP =
-    s.fromHex()?.let { safeBinaryToElementModP(it) } ?: ZERO_MOD_P
+fun GroupContext.base16ToElementModPsafe(s: String): ElementModP =
+    s.fromHex()?.let { binaryToElementModPsafe(it) } ?: ZERO_MOD_P
 
 /**
  * Converts a base-16 (hexadecimal) string to an [ElementModQ]. Guarantees the result is in [0, Q),
  * by computing the result mod Q.
  */
-fun GroupContext.safeBase16ToElementModQ(s: String): ElementModQ =
-    s.fromHex()?.let { safeBinaryToElementModQ(it) } ?: ZERO_MOD_Q
+fun GroupContext.base16ToElementModQsafe(s: String): ElementModQ =
+    s.fromHex()?.let { binaryToElementModQsafe(it) } ?: ZERO_MOD_Q
 
 /**
  * Converts a base-64 string to an [ElementModP]. Returns null if the number is out of bounds or the
@@ -363,15 +363,15 @@ fun GroupContext.base64ToElementModQ(s: String): ElementModQ? =
  * Converts a base-64 string to an [ElementModP]. Guarantees the result is in [0, P), by computing
  * the result mod P.
  */
-fun GroupContext.safeBase64ToElementModP(s: String): ElementModP =
-    s.fromBase64()?.let { safeBinaryToElementModP(it) } ?: ZERO_MOD_P
+fun GroupContext.base64ToElementModPsafe(s: String): ElementModP =
+    s.fromBase64()?.let { binaryToElementModPsafe(it) } ?: ZERO_MOD_P
 
 /**
  * Converts a base-64 string to an [ElementModQ]. Guarantees the result is in [0, Q), by computing
  * the result mod Q.
  */
-fun GroupContext.safeBase64ToElementModQ(s: String): ElementModQ =
-    s.fromBase64()?.let { safeBinaryToElementModQ(it) } ?: ZERO_MOD_Q
+fun GroupContext.base64ToElementModQsafe(s: String): ElementModQ =
+    s.fromBase64()?.let { binaryToElementModQsafe(it) } ?: ZERO_MOD_Q
 
 /** Converts from any [Element] to a base64 string representation. */
 fun Element.base64(): String = byteArray().toBase64()
@@ -405,7 +405,7 @@ fun Int.toElementModP(ctx: GroupContext) =
  * @throws IllegalArgumentException if the minimum is negative
  */
 fun GroupContext.randomElementModQ(minimum: Int = 0) =
-    safeBinaryToElementModQ(randomBytes(MAX_BYTES_Q), minimum)
+    binaryToElementModQsafe(randomBytes(MAX_BYTES_Q), minimum)
 
 /**
  * We often want to raise g to small powers, for which we've conveniently pre-computed the answers.

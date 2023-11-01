@@ -8,7 +8,6 @@ import kotlinx.coroutines.test.TestScope
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.random.Random
 import kotlin.random.nextUInt
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Kotest requires its properties to be executed as a suspending function. To make this all work,
@@ -70,7 +69,7 @@ fun generateElementModQ(context: GroupContext): ElementModQ {
 }
 
 fun generateUInt256(context: GroupContext): UInt256 {
-    return generateElementModQ(context).toUInt256();
+    return generateElementModQ(context).toUInt256safe();
 }
 
 fun generateElementModP(context: GroupContext) = context.uIntToElementModP(Random.nextUInt(1879047647.toUInt()))

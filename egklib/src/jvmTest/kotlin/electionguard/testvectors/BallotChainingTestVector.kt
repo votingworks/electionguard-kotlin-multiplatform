@@ -2,7 +2,7 @@ package electionguard.testvectors
 
 import electionguard.ballot.Manifest
 import electionguard.core.*
-import electionguard.core.Base16.fromHex
+import electionguard.core.Base16.fromHexSafe
 import electionguard.core.Base16.toHex
 import electionguard.encrypt.CiphertextBallot
 import electionguard.encrypt.Encryptor
@@ -116,8 +116,8 @@ class BallotChainingTestVector {
                 Json.decodeFromStream<BallotChainingTestVector>(inp)
             }
 
-        val publicKey = ElGamalPublicKey(group.safeBase16ToElementModP(testVector.joint_public_key))
-        val extendedBaseHash = UInt256(testVector.extended_base_hash.fromHex()!!)
+        val publicKey = ElGamalPublicKey(group.base16ToElementModPsafe(testVector.joint_public_key))
+        val extendedBaseHash = UInt256(testVector.extended_base_hash.fromHexSafe())
         val ballotsZipped = testVector.ballots.zip(testVector.expected_encrypted_ballots)
 
         var prevCode : ByteArray? = null
@@ -125,7 +125,7 @@ class BallotChainingTestVector {
             val manifest = PlaintextBallotJsonManifestFacade(ballot)
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
             val ballotNonce = eballot.ballotNonce.import()
-            val codeBaux : ByteArray = eballot.codeBaux.fromHex()!!
+            val codeBaux : ByteArray = eballot.codeBaux.fromHexSafe()
             val cyberBallot = encryptor.encrypt(ballot.import(), codeBaux, ballotNonce)
             checkEquals(eballot, cyberBallot)
             if (prevCode != null) {

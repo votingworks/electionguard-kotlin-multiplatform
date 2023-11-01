@@ -19,7 +19,7 @@ class ManifestConvertTest {
     fun writeManifest() {
         val manifest = buildTestManifest(ncontests, nselections)
         val proto = manifest.publishProto()
-        val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
+        val roundtrip = proto.import()
         assertNotNull(roundtrip)
         assertTrue(roundtrip.equals(manifest))
         assertEquals(roundtrip, manifest)
@@ -36,7 +36,7 @@ class ManifestConvertTest {
     fun roundtripManifest() {
         val manifest = generateFakeManifest()
         val proto = manifest.publishProto()
-        val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
+        val roundtrip = proto.import()
         assertNotNull(roundtrip)
         assertEquals(roundtrip.electionScopeId, manifest.electionScopeId)
         assertEquals(roundtrip.specVersion, manifest.specVersion)

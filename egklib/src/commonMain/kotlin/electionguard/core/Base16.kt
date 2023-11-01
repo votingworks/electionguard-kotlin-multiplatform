@@ -76,21 +76,17 @@ object Base16 {
         val input = (if (this.length and 1 == 1) "0" else "") + this
         return ByteArray(input.length / 2) {
             // any invalid input characters will cause null to get returned
-            val i0 = inverseChars[input[it * 2]] ?: return logFail()
-            val i1 = inverseChars[input[it * 2 + 1]] ?: return logFail()
+            val i0 = inverseChars[input[it * 2]] ?: return null
+            val i1 = inverseChars[input[it * 2 + 1]] ?: return null
             ((i0 shl 4) or i1).toByte()
         }
     }
 
     /**
-     * Converts from a hex-encoded string to a byte array. Assumes the input has no errors. If
-     * there's an error anyway, throws.
+     * Converts from a hex-encoded string to a byte array.
+     * If there is an error, throws IllegalArgumentException.
      */
-    fun String.fromSafeHex(): ByteArray =
-        fromHex() ?: throw IllegalArgumentException("invalid input")
+    fun String.fromHexSafe(): ByteArray =
+        fromHex() ?: throw IllegalArgumentException("fromHexSafe invalid input= '$this'")
 
-    private fun logFail(): ByteArray? {
-        logger.warn { "input isn't a valid base16 string" }
-        return null
-    }
 }

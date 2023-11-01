@@ -3,6 +3,7 @@ package electionguard.json
 import electionguard.ballot.Guardian
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeDoerre
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 /* guardian_1.public_key.json
@@ -30,11 +31,14 @@ data class GuardianR(
     val coefficient_commitments : List<ElementModP>,
 )
 
-fun GuardianJsonR.import(group: GroupContext) = GuardianR(
-    this.name,
-    this.i,
-    coefficient_commitments.map{ it.import(group) }
-)
+fun GuardianJsonR.import(group: GroupContext, errs : ErrorMessages) : GuardianR? {
+    val coefficient_commitments = this.coefficient_commitments.map {
+        it.import(group) ?: errs.addNull("wtf") as ElementModP?
+    }
+
+    return if (errs.hasErrors()) null
+    else GuardianR(this.name, this.i, coefficient_commitments.filterNotNull())
+}
 
 fun GuardianR.convert(group: GroupContext) = Guardian(
     this.name,
@@ -75,12 +79,23 @@ data class GuardianSecretR(
     val coefficient_commitments : List<ElementModP>,
 )
 
-fun GuardianSecretJsonR.import(group: GroupContext) = GuardianSecretR(
-    this.name,
-    this.i,
-    secret_coefficients.map{ it.import(group) },
-    coefficient_commitments.map{ it.import(group) },
-)
+fun GuardianSecretJsonR.import(group: GroupContext, errs : ErrorMessages) : GuardianSecretR? {
+    val secret_coefficients = this.secret_coefficients.map{
+        it.import(group) ?: errs.addNull("wtf") as ElementModQ?
+    }
+    val coefficient_commitments = this.coefficient_commitments.map {
+        it.import(group) ?: errs.addNull("wtf") as ElementModP?
+    }
+
+    return if (errs.hasErrors()) null
+    else
+        GuardianSecretR(
+            this.name,
+            this.i,
+            secret_coefficients.filterNotNull(),
+            coefficient_commitments.filterNotNull()
+        )
+}
 
 //     val id: String,
 //    val xCoordinate: Int,
@@ -106,6 +121,6 @@ data class JointElectionPublicKeyJsonR(
     val joint_election_public_key : ElementModPJsonR,
 )
 
-fun JointElectionPublicKeyJsonR.import(group: GroupContext) : ElementModP {
+fun JointElectionPublicKeyJsonR.import(group: GroupContext) : ElementModP? {
     return this.joint_election_public_key.import(group)
 }

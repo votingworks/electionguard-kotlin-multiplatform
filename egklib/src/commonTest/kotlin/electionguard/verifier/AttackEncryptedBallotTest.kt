@@ -13,6 +13,7 @@ import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
 import electionguard.publish.readElectionRecord
 import electionguard.tally.AccumulateTally
+import electionguard.util.Stats
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 

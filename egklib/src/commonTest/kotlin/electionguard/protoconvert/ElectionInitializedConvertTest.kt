@@ -5,6 +5,7 @@ import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.publish.Publisher
 import electionguard.publish.makePublisher
+import electionguard.util.ErrorMessages
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -19,7 +20,7 @@ class ElectionInitializedConvertTest {
         val context = tinyGroup()
         val electionRecord = generateElectionInitialized(publisher, context)
         val proto = electionRecord.publishProto()
-        val roundtrip = proto.import(context).getOrThrow { IllegalStateException(it) }
+        val roundtrip = proto.import(context, ErrorMessages(""))!!
         assertNotNull(roundtrip)
         //     val config: ElectionConfig,
         //    /** The joint public key (K) in the ElectionGuard Spec. */

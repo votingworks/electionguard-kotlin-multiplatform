@@ -1,116 +1,80 @@
 package electionguard.protoconvert
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
-import com.github.michaelbull.result.partition
-import com.github.michaelbull.result.toResultOr
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.importContestData
+import electionguard.core.ElGamalCiphertext
+import electionguard.core.ElementModP
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 
-fun electionguard.protogen.DecryptedTallyOrBallot.import(group: GroupContext):
-        Result<DecryptedTallyOrBallot, String> {
+fun electionguard.protogen.DecryptedTallyOrBallot.import(group: GroupContext, errs : ErrorMessages): DecryptedTallyOrBallot? {
 
     if (this.contests.isEmpty()) {
-        return Err("No contests in DecryptedTallyOrBallot")
+        errs.add("No contests in DecryptedTallyOrBallot")
+        return null
     }
+    val electionId = importUInt256(this.electionId) ?: errs.addNull("malformed electionId") as UInt256?
+    val contests = this.contests.map { it.import(group, errs.nested("DecryptedContest ${it.contestId}")) }
 
-    val electionId = importUInt256(this.electionId).toResultOr { "DecryptingTrustee $id electionId was malformed or missing" }
-    val (contests, cerrors) = this.contests.map { it.import(group) }.partition()
-
-    val errors = getAllErrors(electionId) + cerrors
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-
-    return Ok( DecryptedTallyOrBallot(
+    return if (errs.hasErrors()) null
+    else DecryptedTallyOrBallot(
         this.id,
-        contests.sortedBy { it.contestId },
-        electionId.unwrap(),
-    ))
+        contests.filterNotNull(),
+        electionId!!,
+    )
 }
 
-private fun electionguard.protogen.DecryptedContest.import(group: GroupContext):
-        Result<DecryptedTallyOrBallot.Contest, String> {
+private fun electionguard.protogen.DecryptedContest.import(group: GroupContext, errs : ErrorMessages): DecryptedTallyOrBallot.Contest? {
 
     if (this.selections.isEmpty()) {
-        return Err("No selections in DecryptedContest")
+        errs.add("No selections")
+        return null
     }
-    val (selections, errors) = this.selections.map { it.import(group) }.partition()
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
+    val selections = this.selections.map { it.import(group, errs.nested("DecryptedSelection ${it.selectionId}")) }
+
+    val decryptedContestData = if (this.decryptedContestData == null) null else {
+        this.decryptedContestData.import(group, errs.nested("decryptedContestData"))
     }
 
-    var decryptedContestData: DecryptedTallyOrBallot.DecryptedContestData? = null
-    if (this.decryptedContestData != null) {
-        val decryptedContestDataResult = this.decryptedContestData.import(this.contestId, group)
-        if (decryptedContestDataResult is Err) {
-            return decryptedContestDataResult
-        } else {
-            decryptedContestData = decryptedContestDataResult.unwrap()
-        }
-    }
-
-    return Ok(
-        DecryptedTallyOrBallot.Contest(
+    return if (errs.hasErrors()) null
+    else DecryptedTallyOrBallot.Contest(
             this.contestId,
-            selections.sortedBy { it.selectionId },
+            selections.filterNotNull().sortedBy { it.selectionId },
             decryptedContestData,
         )
-    )
 }
 
-private fun electionguard.protogen.DecryptedContestData.import(where: String, group: GroupContext):
-        Result<DecryptedTallyOrBallot.DecryptedContestData, String> {
-
+private fun electionguard.protogen.DecryptedContestData.import(group: GroupContext, errs : ErrorMessages): DecryptedTallyOrBallot.DecryptedContestData? {
     val contestData = importContestData(this.contestData)
-    val encryptedContestData = group.importHashedCiphertext(this.encryptedContestData)
-        .toResultOr { "$where: encryptedContestData was malformed" }
-    val proof = group.importChaumPedersenProof(this.proof)
-        .toResultOr { "$where: encryptedContestData was malformed" }
-    val beta = group.importElementModP(this.beta)
-        .toResultOr { "$where: encryptedContestData was malformed" }
+    if (contestData is Err) errs.add("malformed ContestData")
+    val encryptedContestData = group.importHashedCiphertext(this.encryptedContestData, errs.nested("EncryptedContestData"))
+    val proof = group.importChaumPedersenProof(this.proof, errs.nested("Proof"))
+    val beta = group.importElementModP(this.beta) ?: errs.addNull("malformed beta") as ElementModP?
 
-    val errors = getAllErrors(contestData, encryptedContestData, proof, beta)
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-
-    return Ok(
-        DecryptedTallyOrBallot.DecryptedContestData(
+    return if (errs.hasErrors()) null
+    else DecryptedTallyOrBallot.DecryptedContestData(
             contestData.unwrap(),
-            encryptedContestData.unwrap(),
-            proof.unwrap(),
-            beta.unwrap(),
+            encryptedContestData!!,
+            proof!!,
+            beta!!,
         )
-    )
 }
 
-private fun electionguard.protogen.DecryptedSelection.import(group: GroupContext):
-        Result<DecryptedTallyOrBallot.Selection, String> {
-    val value = group.importElementModP(this.bOverM)
-        .toResultOr { "DecryptedSelection ${this.selectionId} value was malformed or missing" }
-    val ciphertext = group.importCiphertext(this.encryptedVote)
-        .toResultOr { "DecryptedSelection ${this.selectionId} ciphertext was malformed or missing" }
-    val proof = group.importChaumPedersenProof(this.proof)
-        .toResultOr { "DecryptedSelection ${this.selectionId} proof was malformed or missing" }
+private fun electionguard.protogen.DecryptedSelection.import(group: GroupContext, errs : ErrorMessages): DecryptedTallyOrBallot.Selection? {
+    val value = group.importElementModP(this.bOverM) ?: errs.addNull("malformed value") as ElementModP?
+    val encryptedVote = group.importCiphertext(this.encryptedVote) ?: errs.addNull("malformed encryptedVote") as ElGamalCiphertext?
+    val proof = group.importChaumPedersenProof(this.proof, errs.nested("Proof"))
 
-    val errors = getAllErrors(value, ciphertext, proof)
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-
-    return Ok(
-        DecryptedTallyOrBallot.Selection(
-            this.selectionId,
-            this.tally,
-            value.unwrap(),
-            ciphertext.unwrap(),
-            proof.unwrap(),
-        )
+    return if (errs.hasErrors()) null
+    else DecryptedTallyOrBallot.Selection(
+        this.selectionId,
+        this.tally,
+        value!!,
+        encryptedVote!!,
+        proof!!,
     )
 }
 

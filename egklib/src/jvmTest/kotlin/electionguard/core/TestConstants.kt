@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.Test
 
-import electionguard.core.Base64.fromSafeBase64
+import electionguard.core.Base64.fromBase64Safe
 import electionguard.core.Base64.toBase64
 
 class TestConstants {
@@ -13,7 +13,7 @@ class TestConstants {
     fun saneConstantsBig() {
         val p = Primes4096.largePrimeBytes.toBigInteger()
         val q = Primes4096.smallPrimeBytes.toBigInteger()
-        val qInv = b64Production4096P256MinusQ.fromSafeBase64().toBigInteger()
+        val qInv = b64Production4096P256MinusQ.fromBase64Safe().toBigInteger()
         val g = Primes4096.generatorBytes.toBigInteger()
         val r = Primes4096.residualBytes.toBigInteger()
 
@@ -30,10 +30,10 @@ class TestConstants {
 
     @Test
     fun saneConstantsSmall() {
-        val p = b64TestP.fromSafeBase64().toBigInteger()
-        val q = b64TestQ.fromSafeBase64().toBigInteger()
-        val g = b64TestG.fromSafeBase64().toBigInteger()
-        val r = b64TestR.fromSafeBase64().toBigInteger()
+        val p = b64TestP.fromBase64Safe().toBigInteger()
+        val q = b64TestQ.fromBase64Safe().toBigInteger()
+        val g = b64TestG.fromBase64Safe().toBigInteger()
+        val r = b64TestR.fromBase64Safe().toBigInteger()
 
         assertEquals(BigInteger.valueOf(intTestP.toLong()), p)
         assertEquals(BigInteger.valueOf(intTestQ.toLong()), q)
@@ -75,7 +75,7 @@ class TestConstants {
         val p256minusQBase64 = p256minusQ.toBase64()
         assertEquals(p256minusQBase64, b64Production4096P256MinusQ)
 
-        val p256minusQBytes = b64Production4096P256MinusQ.fromSafeBase64()
+        val p256minusQBytes = b64Production4096P256MinusQ.fromBase64Safe()
         assertEquals(2, p256minusQBytes.size)
     }
 }

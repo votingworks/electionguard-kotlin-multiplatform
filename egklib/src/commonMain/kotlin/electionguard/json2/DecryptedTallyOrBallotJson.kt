@@ -3,15 +3,15 @@ package electionguard.json2
 import electionguard.ballot.ContestData
 import electionguard.ballot.ContestDataStatus
 import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
+import electionguard.core.*
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class DecryptedTallyOrBallotJson(
     val id: String,
     val contests: List<DecryptedContestJson>,
-    val election_id : UInt256Json,     // unique election identifier
+    val election_id: UInt256Json,     // unique election identifier
 )
 
 @Serializable
@@ -42,30 +42,55 @@ fun DecryptedTallyOrBallot.publishJson() = DecryptedTallyOrBallotJson(
                     selection.bOverM.publishJson(),
                     selection.encryptedVote.publishJson(),
                     selection.proof.publishJson(),
-                ) },
+                )
+            },
             contest.decryptedContestData?.publishJson(),
         )
     },
     this.electionId.publishJson(),
 )
 
-fun DecryptedTallyOrBallotJson.import(group: GroupContext) = DecryptedTallyOrBallot(
-    this.id,
-    this.contests.map { contest ->
-        DecryptedTallyOrBallot.Contest(
-            contest.contest_id,
-            contest.selections.map { selection ->
-                DecryptedTallyOrBallot.Selection(
-                    selection.selection_id,
-                    selection.tally,
-                    selection.b_over_m.import(group),
-                    selection.encrypted_vote.import(group),
-                    selection.proof.import(group),
-                ) },
-            contest.decrypted_contest_data?.import(group),
-        ) },
-    this.election_id.import(),
-)
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+fun DecryptedTallyOrBallotJson.import(group: GroupContext, errs: ErrorMessages): DecryptedTallyOrBallot? {
+    val contests = this.contests.map { it.import(group, errs.nested("DecryptedContestJson ${it.contest_id}")) }
+    val electionId = this.election_id.import() ?: errs.addNull("malformed election_id") as UInt256?
+
+    return if (errs.hasErrors()) null
+    else DecryptedTallyOrBallot(
+        this.id,
+        contests.filterNotNull(),
+        electionId!!,
+    )
+}
+
+fun DecryptedContestJson.import(group: GroupContext, errs: ErrorMessages): DecryptedTallyOrBallot.Contest? {
+    val selections = this.selections.map { it.import(group, errs.nested("DecryptedSelectionJson ${it.selection_id}")) }
+    val decryptedContestData = if (this.decrypted_contest_data == null) null else
+        this.decrypted_contest_data.import(group, errs.nested("DecryptedContestDataJson"))
+
+    return if (errs.hasErrors()) null
+    else DecryptedTallyOrBallot.Contest(
+            this.contest_id,
+            selections.filterNotNull(),
+            decryptedContestData,
+        )
+}
+
+fun DecryptedSelectionJson.import(group: GroupContext, errs: ErrorMessages): DecryptedTallyOrBallot.Selection? {
+    val bOverM = this.b_over_m.import(group) ?: errs.addNull("malformed b_over_m") as ElementModP?
+    val encryptedVote = this.encrypted_vote.import(group) ?: errs.addNull("malformed encrypted_vote") as ElGamalCiphertext?
+    val proof = this.proof.import(group, errs.nested("Proof"))
+
+    return if (errs.hasErrors()) null
+    else DecryptedTallyOrBallot.Selection(
+        this.selection_id,
+        this.tally,
+        bOverM!!,
+        encryptedVote!!,
+        proof!!,
+    )
+}
 
 @Serializable
 data class DecryptedContestDataJson(
@@ -76,10 +101,25 @@ data class DecryptedContestDataJson(
 )
 
 fun DecryptedTallyOrBallot.DecryptedContestData.publishJson() = DecryptedContestDataJson(
-    this.contestData.publishJson(), this.encryptedContestData.publishJson(),  this.proof.publishJson(), this.beta.publishJson(), )
+    this.contestData.publishJson(),
+    this.encryptedContestData.publishJson(),
+    this.proof.publishJson(),
+    this.beta.publishJson(),
+)
 
-fun DecryptedContestDataJson.import(group: GroupContext) = DecryptedTallyOrBallot.DecryptedContestData(
-    this.contest_data.import(), this.encrypted_contest_data.import(group), this.proof.import(group), this.beta.import(group), )
+fun DecryptedContestDataJson.import(group: GroupContext, errs : ErrorMessages): DecryptedTallyOrBallot.DecryptedContestData? {
+    val beta = this.beta.import(group) ?: errs.addNull("malformed beta") as ElementModP?
+    val encryptedContestData = this.encrypted_contest_data.import(group) ?: errs.addNull("malformed encrypted_contest_data") as HashedElGamalCiphertext?
+    val proof = this.proof.import(group, errs.nested("Proof"))
+
+    return if (errs.hasErrors()) null
+    else DecryptedTallyOrBallot.DecryptedContestData(
+        this.contest_data.import(),
+        encryptedContestData!!,
+        proof!!,
+        beta!!,
+    )
+}
 
 // (incomplete) strawman for contest data (section 3.3.7)
 // "The contest data can contain different kinds of information such as undervote, null vote, and

@@ -2,17 +2,17 @@ package electionguard.protoconvert
 
 import com.github.michaelbull.result.*
 import electionguard.ballot.*
+import electionguard.util.ErrorMessages
 import pbandk.ByteArr
 
-fun electionguard.protogen.ElectionConfig.import(): Result<ElectionConfig, String> {
-    val electionConstants = this.constants?.import() ?: Err("Null ElectionConstants")
-    val parameterHash = this.parameterBaseHash?.import() ?: Err("Null parameterBaseHash")
-    val manifestHash = manifestHash?.import() ?: Err("Null manifestHash")
-    val electionHash = this.electionBaseHash?.import() ?: Err("Null electionBaseHash")
+fun electionguard.protogen.ElectionConfig.import(errs: ErrorMessages): Result<ElectionConfig, ErrorMessages> {
+    val electionConstants = this.constants?.import() ?: errs.add("missing ElectionConstants")
+    val parameterHash = this.parameterBaseHash?.import() ?: errs.add("missing parameterBaseHash")
+    val manifestHash = manifestHash?.import() ?: errs.add("missing manifestHash")
+    val electionHash = this.electionBaseHash?.import() ?: errs.add("missing electionBaseHash")
 
-    val errors = getAllErrors(electionConstants, parameterHash, manifestHash, electionHash)
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
+    if (errs.hasErrors()) {
+        return Err(errs)
     }
 
     return Ok(ElectionConfig(

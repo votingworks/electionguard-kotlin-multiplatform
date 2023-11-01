@@ -11,6 +11,8 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+// // Note that Tjson.import([group]) return T?, while T.publishJson() returns Tjson
+
 /** External representation of an ElementModP. */
 @Serializable(with = ElementModPAsStringSerializer::class)
 @SerialName("ElementModP")
@@ -44,9 +46,7 @@ object ElementModPAsStringSerializer : KSerializer<ElementModPJson> {
 
     override fun deserialize(decoder: Decoder): ElementModPJson {
         val string = decoder.decodeString()
-        return ElementModPJson(
-            string.fromHex() ?: throw Throwable("invalid base16 string")
-        )
+        return ElementModPJson(string.fromHex() ?: throw IllegalArgumentException ("invalid base16 ElementModP string '$string'"))
     }
 }
 
@@ -63,7 +63,7 @@ object ElementModQAsStringSerializer : KSerializer<ElementModQJson> {
     override fun deserialize(decoder: Decoder): ElementModQJson {
         val string = decoder.decodeString()
         return ElementModQJson(
-            string.fromHex() ?: throw Throwable("invalid base16 string")
+            string.fromHex() ?: throw IllegalArgumentException("invalid base16 ElementModQ string '$string'")
         )
     }
 }
@@ -81,13 +81,10 @@ object UInt256AsStringSerializer : KSerializer<UInt256Json> {
     override fun deserialize(decoder: Decoder): UInt256Json {
         val string = decoder.decodeString()
         return UInt256Json(
-            string.fromHex() ?: throw Throwable("invalid base16 string")
+            string.fromHex() ?: throw IllegalArgumentException("invalid base16 UInt256 string '$string'")
         )
     }
 }
-
-// Note that Tjson.import([group]) return T, while T.publishJson() returns Tjson
-// TODO use Result?
 
 /** Publishes an ElementModP to its external, serializable form. */
 fun ElementModP.publishJson(): ElementModPJson = ElementModPJson(this.byteArray())
@@ -98,10 +95,9 @@ fun ElementModQ.publishJson(): ElementModQJson = ElementModQJson(this.byteArray(
 /** Publishes an UInt256 to its external, serializable form. */
 fun UInt256.publishJson(): UInt256Json = UInt256Json(this.bytes)
 
-// TODO these throw RuntimeException instead of T?
-fun ElementModPJson.import(group: GroupContext): ElementModP = group.binaryToElementModP(this.bytes)?: throw RuntimeException()
+fun ElementModPJson.import(group: GroupContext): ElementModP? = group.binaryToElementModP(this.bytes)
 
-fun ElementModQJson.import(group: GroupContext): ElementModQ = group.binaryToElementModQ(this.bytes)?: throw RuntimeException()
+fun ElementModQJson.import(group: GroupContext): ElementModQ? = group.binaryToElementModQ(this.bytes)
 
-fun UInt256Json.import(): UInt256 = if (this.bytes.size == 32) UInt256(this.bytes) else throw RuntimeException()
+fun UInt256Json.import(): UInt256? = if (this.bytes.size == 32) UInt256(this.bytes) else null
 

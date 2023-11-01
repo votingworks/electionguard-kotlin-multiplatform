@@ -12,4 +12,9 @@ data class ElGamalCiphertextJson(
 )
 
 fun ElGamalCiphertext.publishJson() = ElGamalCiphertextJson(this.pad.publishJson(), this.data.publishJson())
-fun ElGamalCiphertextJson.import(group: GroupContext) = ElGamalCiphertext(this.pad.import(group), this.data.import(group))
+
+fun ElGamalCiphertextJson.import(group: GroupContext) : ElGamalCiphertext? {
+    val pad = this.pad.import(group)
+    val data = this.data.import(group)
+    return if (pad == null || data == null) null else ElGamalCiphertext(pad, data)
+}

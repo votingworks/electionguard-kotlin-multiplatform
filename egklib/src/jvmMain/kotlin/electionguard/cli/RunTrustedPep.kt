@@ -13,6 +13,7 @@ import electionguard.pep.PepAlgorithm
 import electionguard.pep.PepBlindTrust
 import electionguard.pep.PepTrustee
 import electionguard.publish.*
+import electionguard.util.sigfig
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -105,20 +106,24 @@ class RunTrustedPep {
             println(" PepBlindTrust compare ballots in '${inputDir}' to ballots in '$scannedBallotDir'")
             val starting = getSystemTimeInMillis() // wall clock
 
-            val consumer = makeConsumer(group, inputDir)
-            val electionRecord = readElectionRecord(consumer)
-            val electionInitialized = electionRecord.electionInit()!!
+            val consumerIn = makeConsumer(group, inputDir)
+            val initResult = consumerIn.readElectionInitialized()
+            if (initResult is Err) {
+                println("readElectionInitialized failed ${initResult.error}")
+                return
+            }
+            val electionInit = initResult.unwrap()
 
             val blindingTrustees = mutableListOf<PepTrustee>()
             repeat(3) {
                 blindingTrustees.add(PepTrustee(it, group))
             }
-            val guardians = Guardians(group, electionInitialized.guardians)
+            val guardians = Guardians(group, electionInit.guardians)
 
             val pep = PepBlindTrust(
                 group,
-                electionInitialized.extendedBaseHash,
-                ElGamalPublicKey(electionInitialized.jointPublicKey),
+                electionInit.extendedBaseHash,
+                ElGamalPublicKey(electionInit.jointPublicKey),
                 guardians, // all guardians
                 blindingTrustees,
                 decryptingTrustees,
@@ -131,7 +136,7 @@ class RunTrustedPep {
                 runBlocking {
                     val outputChannel = Channel<BallotPep>()
                     val pepJobs = mutableListOf<Job>()
-                    val ballotProducer = produceBallots(consumer, scannedBallotDir)
+                    val ballotProducer = produceBallots(consumerIn, scannedBallotDir)
                     repeat(nthreads) {
                         pepJobs.add(
                             launchPepWorker(

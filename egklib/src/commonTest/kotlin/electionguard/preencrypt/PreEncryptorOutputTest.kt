@@ -9,6 +9,7 @@ import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
 import kotlin.random.Random
 import kotlin.test.Test
 
@@ -96,7 +97,7 @@ internal class PreEncryptorOutputTest {
         // roundtrip through the proto, combines the recordedBallot
         val encryptedBallot = ciphertextBallot.cast()
         val proto = encryptedBallot.publishProto(recordedBallot)
-        val fullEncryptedBallot = proto.import(group).unwrap()
+        val fullEncryptedBallot = proto.import(group, ErrorMessages(""))!!
 
         // show what ends up in the election record
         if (show) {
@@ -129,7 +130,7 @@ internal class PreEncryptorOutputTest {
             while (doneIdx.size < pcontest.votesAllowed) {
                 val idx = random.nextInt(nselections)
                 if (!doneIdx.contains(idx)) {
-                    shortCodes.add(sigma(pcontest.selections[idx].selectionHash.toUInt256()))
+                    shortCodes.add(sigma(pcontest.selections[idx].selectionHash.toUInt256safe()))
                     selections.add(pcontest.selections[idx].selectionId)
                     doneIdx.add(idx)
                 }

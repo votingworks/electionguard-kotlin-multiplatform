@@ -3,6 +3,7 @@ package electionguard.decrypt
 import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.core.Base16.toHex
+import electionguard.util.Stats
 
 // TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
 private const val maxDlog: Int = 1000

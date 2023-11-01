@@ -3,6 +3,7 @@ package electionguard.pep
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.core.*
 import electionguard.json2.*
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 data class BallotPep(
@@ -99,27 +100,39 @@ fun BallotPep.publishJson(): BallotPepJson {
     return BallotPepJson(this.ballotId, this.isEq, contests)
 }
 
-fun BallotPepJson.import(group: GroupContext): BallotPep {
-    val contests = this.contests.map { pcontest ->
+///////////////////////////////////////////////////////////////////////////////////////////////
 
-        //     val selection_id: String,
-        //    val ciphertext_ratio: ElGamalCiphertextJson,
-        //    val ciphertext_AB: ElGamalCiphertextJson,
-        //    val blinding_proof: ChaumPedersenJson,
-        //    val T: ElementModPJson,
-        //    val decryption_proof: ChaumPedersenJson,
-        ContestPep(
-            pcontest.contest_id,
-            pcontest.selections.map {
-                SelectionPep(
-                    it.selection_id,
-                    it.ciphertext_ratio.import(group),
-                    it.ciphertext_AB.import(group),
-                    it.blinding_proof.import(group),
-                    it.T.import(group),
-                    it.decryption_proof.import(group),
-                )
-            })
-    }
-    return BallotPep(this.ballot_id, this.is_equal, contests)
+fun BallotPepJson.import(group: GroupContext, errs : ErrorMessages): BallotPep? {
+    val contests = this.contests.map { it.import(group, errs.nested("ContestPepJson ${it.contest_id}")) }
+
+    return if (errs.hasErrors()) null
+    else BallotPep(this.ballot_id, this.is_equal, contests.filterNotNull())
+}
+
+fun ContestPepJson.import(group: GroupContext, errs : ErrorMessages): ContestPep? {
+    val selections = this.selections.map { it.import(group, errs.nested("SelectionPepJson ${it.selection_id}")) }
+
+    return if (errs.hasErrors()) null
+    else ContestPep(
+        this.contest_id,
+        selections.filterNotNull()
+    )
+}
+
+fun SelectionPepJson.import(group: GroupContext, errs : ErrorMessages): SelectionPep? {
+    val ciphertextRatio = this.ciphertext_ratio.import(group) ?: errs.addNull("malformed ciphertext_ratio") as ElGamalCiphertext?
+    val ciphertextAB = this.ciphertext_AB.import(group) ?: errs.addNull("malformed ciphertext_AB") as ElGamalCiphertext?
+    val blindingProof = this.blinding_proof.import(group, errs.nested("BlindingProof"))
+    val decryptionProof = this.decryption_proof.import(group, errs.nested("DecryptionProof"))
+    val T = this.T.import(group) ?: errs.addNull("malformed T") as ElementModP?
+
+    return if (errs.hasErrors()) null
+    else SelectionPep(
+        this.selection_id,
+        ciphertextRatio!!,
+        ciphertextAB!!,
+        blindingProof!!,
+        T!!,
+        decryptionProof!!
+    )
 }

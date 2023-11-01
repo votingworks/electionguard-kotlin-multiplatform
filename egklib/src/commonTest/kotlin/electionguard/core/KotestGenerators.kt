@@ -14,7 +14,7 @@ import io.kotest.property.arbitrary.map
 /** Generate an arbitrary ElementModP in [minimum, P) for the given group context. */
 fun elementsModP(ctx: GroupContext, minimum: Int = 0): Arb<ElementModP> =
     Arb.byteArray(Arb.constant(ctx.MAX_BYTES_P), Arb.byte())
-        .map { ctx.safeBinaryToElementModP(it, minimum) }
+        .map { ctx.binaryToElementModPsafe(it, minimum) }
 
 /** Generate an arbitrary ElementModP in [1, P) for the given group context. */
 fun elementsModPNoZero(ctx: GroupContext) = elementsModP(ctx, 1)
@@ -22,7 +22,7 @@ fun elementsModPNoZero(ctx: GroupContext) = elementsModP(ctx, 1)
 /** Generate an arbitrary ElementModQ in [minimum, Q) for the given group context. */
 fun elementsModQ(ctx: GroupContext, minimum: Int = 0): Arb<ElementModQ> =
     Arb.byteArray(Arb.constant(ctx.MAX_BYTES_Q), Arb.byte())
-        .map { ctx.safeBinaryToElementModQ(it, minimum) }
+        .map { ctx.binaryToElementModQsafe(it, minimum) }
 
 /** Generate an arbitrary ElementModQ in [1, Q) for the given group context. */
 fun elementsModQNoZero(ctx: GroupContext) = elementsModQ(ctx, 1)

@@ -9,6 +9,7 @@ import electionguard.input.RandomBallotProvider
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
+import electionguard.util.Stats
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,11 +1,11 @@
 package electionguard.json2
 
 import electionguard.ballot.EncryptedBallot
-import electionguard.core.Base16.fromSafeHex
+import electionguard.core.*
+import electionguard.core.Base16.fromHex
+import electionguard.core.Base16.fromHexSafe
 import electionguard.core.Base16.toHex
-import electionguard.core.ElementModQ
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -80,40 +80,60 @@ fun EncryptedBallot.publishJson(primaryNonce : UInt256? = null): EncryptedBallot
     )
 }
 
-fun EncryptedBallotJson.import(group : GroupContext): EncryptedBallot {
-    val contests = this.contests.map { econtest ->
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        EncryptedBallot.Contest(
-            econtest.contest_id,
-            econtest.sequence_order,
-            econtest.votes_allowed,
-            econtest.contest_hash.import(),
-            econtest.selections.map {
-                EncryptedBallot.Selection(
-                    it.selection_id,
-                    it.sequence_order,
-                    it.encrypted_vote.import(group),
-                    it.proof.import(group),
-                )
-            },
-            econtest.proof.import(group),
-            econtest.encrypted_contest_data.import(group),
-            econtest.pre_encryption?.import(group),
-        )
-    }
+fun EncryptedBallotJson.import(group : GroupContext, errs : ErrorMessages): EncryptedBallot? {
+    val confirmationCode = this.confirmation_code.import() ?: errs.addNull("malformed confirmation_code") as UInt256?
+    val electionId = this.election_id.import() ?: errs.addNull("malformed election_id") as UInt256?
+    val contests = this.contests.map { it.import(group, errs.nested("Contest ${it.contest_id}")) }
+    val state = safeEnumValueOf<EncryptedBallot.BallotState>(this.state) ?: errs.addNull("malformed BallotState") as EncryptedBallot.BallotState?
+    val baux = this.code_baux.fromHex() ?: errs.addNull("malformed baux") as ByteArray?
 
-    return EncryptedBallot(
+    return if (errs.hasErrors()) null
+    else EncryptedBallot(
         this.ballot_id,
         this.ballot_style_id,
         this.encrypting_device,
         this.timestamp,
-        this.code_baux.fromSafeHex(),
-        this.confirmation_code.import(),
-        this.election_id.import(),
-        contests,
-        EncryptedBallot.BallotState.valueOf(this.state),
+        baux!!,
+        confirmationCode!!,
+        electionId!!,
+        contests.filterNotNull(),
+        state!!,
         this.is_preencrypt,
-        // this.primary_nonce?.import(group),
+    )
+}
+
+fun EncryptedContestJson.import(group : GroupContext, errs : ErrorMessages): EncryptedBallot.Contest? {
+    val contestHash = this.contest_hash.import() ?: errs.addNull("malformed contest_hash") as UInt256?
+    val encryptedContestData = this.encrypted_contest_data.import(group) ?: errs.addNull("malformed encrypted_contest_data") as HashedElGamalCiphertext?
+    val selections = this.selections.map { it.import(group, errs.nested("Selection ${it.selection_id}")) }
+    val preEncryption = if (this.pre_encryption == null) null else this.pre_encryption.import(group, errs.nested("PreEncryption"))
+    val proof = this.proof.import(group, errs.nested("Proof"))
+
+    return if (errs.hasErrors()) null
+    else EncryptedBallot.Contest(
+        this.contest_id,
+        this.sequence_order,
+        this.votes_allowed,
+        contestHash!!,
+        selections.filterNotNull(),
+        proof!!,
+        encryptedContestData!!,
+        preEncryption,
+    )
+}
+
+fun EncryptedSelectionJson.import(group : GroupContext, errs : ErrorMessages): EncryptedBallot.Selection? {
+    val encryptedVote = this.encrypted_vote.import(group) ?: errs.addNull("malformed encrypted_vote") as ElGamalCiphertext?
+    val proof = this.proof.import(group, errs.nested("Proof"))
+
+    return if (errs.hasErrors()) null
+    else EncryptedBallot.Selection(
+        this.selection_id,
+        this.sequence_order,
+        encryptedVote!!,
+        proof!!,
     )
 }
 
@@ -132,11 +152,16 @@ fun EncryptedBallot.PreEncryption.publishJson(): PreEncryptionJson {
     )
 }
 
-fun PreEncryptionJson.import(group: GroupContext): EncryptedBallot.PreEncryption {
-    return EncryptedBallot.PreEncryption(
-        this.preencryption_hash.import(),
-        this.all_selection_hashes.map { it.import() },
-        this.selected_vectors.map { it.import(group) },
+fun PreEncryptionJson.import(group: GroupContext, errs: ErrorMessages): EncryptedBallot.PreEncryption? {
+    val preencryptionHash = this.preencryption_hash.import() ?: errs.addNull("malformed preencryption_hash") as UInt256?
+    val allSelectionHashes = this.all_selection_hashes.mapIndexed { idx, it -> it.import() ?: errs.addNull("malformed all_selection_hashes $idx") as UInt256? }
+    val selectedVectors = this.selected_vectors.mapIndexed { idx,it -> it.import(group, errs.nested("selectedVectors $idx")) }
+
+    return if (errs.hasErrors()) null
+    else  EncryptedBallot.PreEncryption(
+        preencryptionHash!!,
+        allSelectionHashes.filterNotNull(),
+        selectedVectors.filterNotNull(),
     )
 }
 
@@ -155,10 +180,14 @@ fun EncryptedBallot.SelectionVector.publishJson(): SelectionVectorJson {
     )
 }
 
-fun SelectionVectorJson.import(group: GroupContext): EncryptedBallot.SelectionVector {
-    return EncryptedBallot.SelectionVector(
-        this.selection_hash.import(),
+fun SelectionVectorJson.import(group: GroupContext, errs: ErrorMessages): EncryptedBallot.SelectionVector? {
+    val selection_hash = this.selection_hash.import() ?: errs.addNull("malformed selection_hash") as UInt256?
+    val encryptions = this.encryptions.mapIndexed { idx, it -> it.import(group)  ?: errs.addNull("malformed encryption $idx") as ElGamalCiphertext? }
+
+    return if (errs.hasErrors()) null
+    else  EncryptedBallot.SelectionVector(
+        selection_hash!!,
         this.short_code,
-        this.encryptions.map { it.import(group) },
+        encryptions.filterNotNull(),
     )
 }

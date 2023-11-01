@@ -1,6 +1,7 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.cli.RunVerifier
 import electionguard.core.*
@@ -45,7 +46,7 @@ class ElectionRecordTest {
         val group = productionGroup()
         val consumerIn = makeConsumer(group, topdir)
         assertNotNull(consumerIn)
-        val decryption = consumerIn.readDecryptionResult().getOrThrow { IllegalStateException(it) }
+        val decryption = consumerIn.readDecryptionResult().unwrap()
         readDecryption(decryption)
         validateTally(decryption.tallyResult.jointPublicKey(), decryption.decryptedTally)
 

@@ -4,7 +4,9 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.core.*
+import electionguard.util.ErrorMessages
 import pbandk.ByteArr
+import kotlin.reflect.KClass
 
 // Note that importXXX(protogen.T?) return T?, while T.publishProto() return protogen.T
 // Its up to the calling routines to turn that into Result<Boolean, String>
@@ -16,8 +18,8 @@ fun importUInt256(modQ: electionguard.protogen.UInt256?): UInt256? =
     modQ?.value?.array?.toUInt256()
 
 fun electionguard.protogen.UInt256.import(): Result<UInt256, String> {
-    val result = this.value.array.toUInt256()
-    return if (result != null) Ok(result) else Err("malformed UInt256") // TODO
+    val value = this.value.array.toUInt256()
+    return if (value != null) Ok(value) else Err("malformed UInt256")
 }
 
 fun GroupContext.importElementModP(modP: electionguard.protogen.ElementModP?): ElementModP? =
@@ -34,19 +36,28 @@ fun GroupContext.importCiphertext(
 
 fun GroupContext.importChaumPedersenProof(
     proof: electionguard.protogen.ChaumPedersenProof?,
+    errs: ErrorMessages = ErrorMessages("importChaumPedersenProof"),
 ): ChaumPedersenProof? {
-    if (proof == null) return null
-    val challenge = this.importElementModQ(proof.challenge)
-    val response = this.importElementModQ(proof.response)
+    if (proof == null)  {
+        errs.add("missing ChaumPedersenProof")
+        return null
+    }
+    val challenge = this.importElementModQ(proof.challenge) ?: (errs.addNull("malformed challenge") as ElementModQ?)
+    val response = this.importElementModQ(proof.response) ?: (errs.addNull("malformed response") as ElementModQ?)
     return if (challenge == null || response == null) null else ChaumPedersenProof(challenge, response)
 }
 
 fun GroupContext.importHashedCiphertext(
     ciphertext: electionguard.protogen.HashedElGamalCiphertext?,
+    errs: ErrorMessages = ErrorMessages("importHashedCiphertext"),
 ): HashedElGamalCiphertext? {
-    if (ciphertext == null) return null
-    val c0 = this.importElementModP(ciphertext.c0)
-    val c2 = importUInt256(ciphertext.c2)
+    if (ciphertext == null)  {
+        errs.add("missing HashedCiphertext")
+        return null
+    }
+    val c0 = this.importElementModP(ciphertext.c0) ?: (errs.addNull("malformed c0") as ElementModP?)
+    val c2 = importUInt256(ciphertext.c2) ?: (errs.addNull("malformed c2") as UInt256?)
+
     return if (c0 == null || c2 == null) null else HashedElGamalCiphertext(
         c0,
         ciphertext.c1.array,
@@ -55,14 +66,17 @@ fun GroupContext.importHashedCiphertext(
     )
 }
 
-fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?): SchnorrProof? {
-    if (proof == null) return null
-    val publicKey = this.importElementModP(proof.publicKey)
-    val challenge = this.importElementModQ(proof.challenge)
-    val response = this.importElementModQ(proof.response)
+fun GroupContext.importSchnorrProof(proof: electionguard.protogen.SchnorrProof?, errs: ErrorMessages = ErrorMessages("importSchnorrProof")): SchnorrProof? {
+    if (proof == null) {
+        errs.add("missing SchnorrProof")
+        return null
+    }
+    val publicKey = this.importElementModP(proof.publicKey) ?: (errs.addNull("malformed publicKey") as ElementModP?)
+    val challenge = this.importElementModQ(proof.challenge) ?: (errs.addNull("malformed challenge") as ElementModQ?)
+    val response = this.importElementModQ(proof.response) ?: (errs.addNull("malformed response") as ElementModQ?)
 
     return if (publicKey == null || challenge == null || response == null) null
-    else SchnorrProof(publicKey, challenge, response)
+        else SchnorrProof(publicKey, challenge, response)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -47,10 +47,10 @@ fun ElGamalCiphertext.makeChaumPedersen(
     overrideErrorChecks: Boolean = false
 ): ChaumPedersenRangeProofKnownNonce {
     if (!overrideErrorChecks && vote < 0) {
-        throw ArithmeticException("negative plaintexts not supported")
+        throw ArithmeticException("negative vote not allowed")
     }
     if (!overrideErrorChecks && limit < 0) {
-        throw ArithmeticException("negative limits not supported")
+        throw ArithmeticException("negative limits not allowed")
     }
     if (!overrideErrorChecks && limit < vote) {
         throw ArithmeticException("vote may not exceed optionLimit")

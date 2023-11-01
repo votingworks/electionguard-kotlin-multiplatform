@@ -1,48 +1,44 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.*
 import electionguard.ballot.EncryptedTally
+import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 
-fun electionguard.protogen.EncryptedTally.import(group: GroupContext): Result<EncryptedTally, String> {
-    val electionId = importUInt256(this.electionId).toResultOr { "EncryptedTally ${this.tallyId} electionId was malformed or missing" }
-    val (contests, cerrors) = this.contests.map { it.import(group) }.partition()
+fun electionguard.protogen.EncryptedTally.import(group: GroupContext, errs : ErrorMessages): EncryptedTally? {
+    val electionId = importUInt256(this.electionId) ?: errs.addNull("malformed electionId") as UInt256?
+    val contests = this.contests.map { it.import(group, errs.nested("EncryptedTally.Contest '${it.contestId}'")) }
 
-    val errors = getAllErrors(electionId) + cerrors
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-
-    return Ok(EncryptedTally(this.tallyId, contests, this.castBallotIds, electionId.unwrap()))
+    return if (errs.hasErrors()) null
+    else
+        EncryptedTally(
+            this.tallyId,
+            contests.filterNotNull(),
+            this.castBallotIds,
+            electionId!!)
 }
 
-private fun electionguard.protogen.EncryptedTallyContest.import(group: GroupContext):
-        Result<EncryptedTally.Contest, String> {
+private fun electionguard.protogen.EncryptedTallyContest.import(group: GroupContext, errs : ErrorMessages): EncryptedTally.Contest? {
+    val selections = this.selections.map { it.import(group, errs.nested("EncryptedTally.Selection '${it.selectionId}'"))}
 
-    val (selections, serrors) = this.selections.map { it.import(group) }.partition()
-
-    if (serrors.isNotEmpty()) {
-        return Err(serrors.joinToString("\n"))
-    }
-    return Ok(EncryptedTally.Contest(this.contestId, this.sequenceOrder, selections))
+    return if (errs.hasErrors()) null
+    else EncryptedTally.Contest(
+        this.contestId,
+        this.sequenceOrder,
+        selections.filterNotNull(),
+    )
 }
 
-private fun electionguard.protogen.EncryptedTallySelection.import(group: GroupContext):
-        Result<EncryptedTally.Selection, String> {
+private fun electionguard.protogen.EncryptedTallySelection.import(group: GroupContext, errs : ErrorMessages): EncryptedTally.Selection? {
+    val ciphertext = group.importCiphertext(this.encryptedVote) ?: errs.addNull("malformed ciphertext") as ElGamalCiphertext?
 
-    val ciphertext = group.importCiphertext(this.encryptedVote)
-        .toResultOr { "Selection ${this.selectionId} ciphertext missing" }
-
-    if (ciphertext is Err) {
-        return ciphertext
-    }
-    return Ok(
-        EncryptedTally.Selection(
+    return if (errs.hasErrors()) null
+    else EncryptedTally.Selection(
             this.selectionId,
             this.sequenceOrder,
-            ciphertext.unwrap(),
+            ciphertext!!,
         )
-    )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

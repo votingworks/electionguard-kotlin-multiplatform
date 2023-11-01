@@ -1,5 +1,9 @@
 package electionguard.show
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getError
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.ElectionConstants
 import electionguard.ballot.Guardian
@@ -9,10 +13,12 @@ import electionguard.core.Base16.toHex
 import electionguard.core.GroupContext
 import electionguard.core.SchnorrProof
 import electionguard.core.productionGroup
+import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.publish.Consumer
 import electionguard.publish.ElectionRecord
 import electionguard.publish.readElectionRecord
 import electionguard.publish.makeConsumer
+import electionguard.util.ErrorMessages
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -179,8 +185,13 @@ fun List<Guardian>.showTrustees(consumer : Consumer, trusteeDir : String): Strin
     val builder = StringBuilder(5000)
     builder.appendLine(" Trustees")
     this.sortedBy { it.guardianId }.forEach { guardian ->
-        val trustee = consumer.readTrustee(trusteeDir, guardian.guardianId)
-        builder.appendLine("  ${trustee.id()} xcoord=${trustee.xCoordinate()}")
+        val result: Result<DecryptingTrusteeIF, ErrorMessages> = consumer.readTrustee(trusteeDir, guardian.guardianId)
+        if (result is Ok) {
+            val trustee = result.unwrap()
+            builder.appendLine("  ${trustee.id()} xcoord=${trustee.xCoordinate()}")
+        } else {
+            builder.appendLine(result.getError().toString())
+        }
     }
     return builder.toString()
 }

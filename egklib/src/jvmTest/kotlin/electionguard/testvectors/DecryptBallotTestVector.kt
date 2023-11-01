@@ -14,6 +14,7 @@ import electionguard.cli.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -127,12 +128,12 @@ class DecryptBallotTestVector {
                 Json.decodeFromStream<DecryptBallotTestVector>(inp)
             }
 
-        val extendedBaseHash = testVector.extended_base_hash.import()
-        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group))
-        val encryptedBallot = testVector.encrypted_ballot.import(group)
+        val extendedBaseHash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed extended_base_hash")
+        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group) ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed joint_public_key"))
+        val encryptedBallot = testVector.encrypted_ballot.import(group, errs = ErrorMessages("readDecryptBallotTestVector"))
 
         val keyCeremonyTrustees =  testVector.trustees.map { it.importKeyCeremonyTrustee(group, numberOfGuardians) }
-        val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group, extendedBaseHash) }
+        val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group) }
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }
         val guardiansWrapper = Guardians(group, guardians)
 
@@ -142,7 +143,7 @@ class DecryptBallotTestVector {
             guardiansWrapper,
             trusteesAll,
         )
-        val decryptedBallot = decryptor.decryptBallot(encryptedBallot)
+        val decryptedBallot = decryptor.decryptBallot(encryptedBallot!!)
 
         // to compare the proofs, we need the nonces. so just validate them.
         testVector.expected_decrypted_ballot.contests.zip(decryptedBallot.contests).forEach { (expectContest, actualContest) ->
@@ -151,10 +152,15 @@ class DecryptBallotTestVector {
                 assertEquals(expectSelection.b_over_m.import(group), actualSelection.bOverM)
                 assertEquals(expectSelection.encrypted_vote.import(group), actualSelection.encryptedVote)
                 assertTrue(actualSelection.proof.verifyDecryption(extendedBaseHash, publicKey.key, actualSelection.encryptedVote, actualSelection.bOverM))
-                assertTrue(actualSelection.proof.verifyDecryption(extendedBaseHash, publicKey.key, expectSelection.encrypted_vote.import(group), expectSelection.b_over_m.import(group)))
+                assertTrue(actualSelection.proof.verifyDecryption(
+                    extendedBaseHash,
+                    publicKey.key,
+                    expectSelection.encrypted_vote.import(group) ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed encrypted_vote"),
+                    expectSelection.b_over_m.import(group) ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed b_over_m"))
+                )
             }
 
-            val expectedDecryptedContestData = expectContest.decrypted_contest_data!!.import(group)
+            val expectedDecryptedContestData = expectContest.decrypted_contest_data!!.import(group, ErrorMessages("readDecryptBallotTestVector"))!!
             val actualDecryptedContestData = actualContest.decryptedContestData!!
             assertEquals(expectedDecryptedContestData.contestData, actualDecryptedContestData.contestData)
             assertTrue(expectedDecryptedContestData.proof.verifyContestDataDecryption(publicKey.key, extendedBaseHash, expectedDecryptedContestData.beta, expectedDecryptedContestData.encryptedContestData))

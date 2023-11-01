@@ -15,6 +15,7 @@ import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.tally.AccumulateTally
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -181,12 +182,12 @@ class TallyDecryptionTestVector(
                 Json.decodeFromStream<TallyPartialDecryptionTestVector>(inp)
             }
 
-        val extendedBaseHash = testVector.extended_base_hash.import()
-        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group))
-        val encryptedTally = testVector.encrypted_tally.import(group)
+        val extendedBaseHash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("ShareEncryptionTestVector malformed extended_base_hash")
+        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group) ?: throw IllegalArgumentException("ShareEncryptionTestVector malformed joint_public_key"))
+        val encryptedTally = testVector.encrypted_tally.import(group, ErrorMessages(""))!!
 
         val keyCeremonyTrustees =  testVector.trustees.map { it.importKeyCeremonyTrustee(group, numberOfGuardians) }
-        val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group, extendedBaseHash) }
+        val trusteesAll = testVector.trustees.map { it.importDecryptingTrustee(group) }
         // leave out one of the trustees to make it a partial decryption
         val trusteesMinus1 = trusteesAll.filter { !missingCoordinates.contains(it.xCoordinate) }
         val guardians = keyCeremonyTrustees.map { Guardian(it.id, it.xCoordinate, it.coefficientProofs()) }

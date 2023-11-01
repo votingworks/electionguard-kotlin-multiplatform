@@ -17,7 +17,6 @@ class ElGamalTests {
     fun noSmallKeys() {
         runTest {
             val context = tinyGroup()
-
             shouldThrow<ArithmeticException> { elGamalKeyPairFromSecret(0.toElementModQ(context)) }
             shouldThrow<ArithmeticException> { elGamalKeyPairFromSecret(1.toElementModQ(context)) }
             shouldNotThrowAny { elGamalKeyPairFromSecret(2.toElementModQ(context)) }

@@ -7,7 +7,10 @@ import electionguard.ballot.*
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
+import io.github.oshai.kotlinlogging.KotlinLogging
 
+private val logger = KotlinLogging.logger("ElectionRecordFactory")
 
 fun readElectionRecord(group : GroupContext, topDir: String) : ElectionRecord {
     val consumerIn = makeConsumer(group, topDir)
@@ -22,7 +25,7 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     val config : ElectionConfig
     var stage : ElectionRecord.Stage
 
-    val readDecryptionResult = consumer.readDecryptionResult()
+    val readDecryptionResult : Result<DecryptionResult, ErrorMessages> = consumer.readDecryptionResult()
     if (readDecryptionResult is Ok) {
         decryptionResult = readDecryptionResult.value
         tallyResult = decryptionResult.tallyResult
@@ -30,8 +33,10 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
         config = init.config
         stage = ElectionRecord.Stage.DECRYPTED
     } else {
-        if (!readDecryptionResult.unwrapError().contains("file does not exist")) {
-            throw RuntimeException(readDecryptionResult.unwrapError())
+        val err : ErrorMessages = readDecryptionResult.unwrapError()
+        if (!err.contains("file does not exist")) {
+            logger.error{ err.toString() }
+            throw RuntimeException(err.toString())
         }
         val readTallyResult = consumer.readTallyResult()
         if (readTallyResult is Ok) {
@@ -40,8 +45,10 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
             config = init.config
             stage = ElectionRecord.Stage.TALLIED
         } else {
-            if (!readTallyResult.unwrapError().contains("file does not exist")) {
-                throw RuntimeException(readTallyResult.unwrapError())
+            val err : ErrorMessages = readTallyResult.unwrapError()
+            if (!err.contains("file does not exist")) {
+                logger.error{ err.toString() }
+                throw RuntimeException(err.toString())
             }
             val readInitResult = consumer.readElectionInitialized()
             if (readInitResult is Ok) {
@@ -49,15 +56,17 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
                 config = init.config
                 stage = ElectionRecord.Stage.INIT
             } else {
-                if (!readInitResult.unwrapError().contains("file does not exist")) {
-                    throw RuntimeException(readInitResult.unwrapError())
+                val err : ErrorMessages = readInitResult.unwrapError()
+                if (!err.contains("file does not exist")) {
+                    logger.error{ err.toString() }
+                    throw RuntimeException(err.toString())
                 }
                 val readConfigResult = consumer.readElectionConfig()
                 if (readConfigResult is Ok) {
                     config = readConfigResult.value
                     stage = ElectionRecord.Stage.CONFIG
                 } else {
-                    throw RuntimeException(readConfigResult.unwrapError())
+                    throw RuntimeException(readConfigResult.unwrapError().toString())
                 }
             }
         }
@@ -149,7 +158,7 @@ private class ElectionRecordImpl(val consumer: Consumer,
         return consumer.encryptingDevices()
     }
 
-    override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, String> {
+    override fun readEncryptedBallotChain(device: String): Result<EncryptedBallotChain, ErrorMessages> {
         return consumer.readEncryptedBallotChain(device)
     }
 

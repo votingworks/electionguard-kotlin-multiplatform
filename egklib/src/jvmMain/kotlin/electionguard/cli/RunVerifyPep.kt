@@ -9,6 +9,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.unwrap
 import electionguard.pep.*
 import electionguard.publish.*
+import electionguard.util.sigfig
 import kotlinx.cli.default
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -49,7 +50,7 @@ class RunVerifyPep {
             batchVerifyPep(productionGroup(), inputDir, pepBallotDir, nthreads)
         }
 
-        fun runVerifyPep(group: GroupContext, inputDir: String, pepBallotDir: String, nthreads: Int): Boolean {
+        fun runVerifyPep(group: GroupContext, inputDir: String, pepBallotDir: String): Boolean {
             val starting = getSystemTimeInMillis()
 
             val consumer = makeConsumer(group, inputDir)

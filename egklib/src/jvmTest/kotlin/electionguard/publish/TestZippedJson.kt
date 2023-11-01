@@ -1,13 +1,16 @@
 package electionguard.publish
 
-import electionguard.ballot.ElectionConstants
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.unwrap
 import electionguard.cli.RunVerifier
 import electionguard.core.productionGroup
 import electionguard.json2.ElectionConstantsJson
 import electionguard.json2.import
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import org.junit.jupiter.api.Assertions.assertNotNull
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -19,6 +22,7 @@ import java.nio.file.spi.FileSystemProvider
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 // run verifier on zipped JSON record, only supported on JVM
 @OptIn(ExperimentalSerializationApi::class)
@@ -47,11 +51,11 @@ class TestZippedJson {
     @Test
     fun readConstants() {
         val path : Path = fs.getPath("/constants.json")
-        var constants: ElectionConstants
         fsp.newInputStream(path).use { inp ->
             val json = Json.decodeFromStream<ElectionConstantsJson>(inp)
-            constants = json.import()
-            println("constants = $constants")
+            val result = json.import(ErrorMessages("readConstants"))
+            assertNotNull(result)
+            println("constants = ${result}")
         }
     }
 
@@ -61,7 +65,6 @@ class TestZippedJson {
         RunVerifier.verifyChallengedBallots(productionGroup(), zippedJson)
     }
 }
-
 
 fun zipFolder(unzipped: File, zipped: File) {
     if (!unzipped.exists() || !unzipped.isDirectory) return

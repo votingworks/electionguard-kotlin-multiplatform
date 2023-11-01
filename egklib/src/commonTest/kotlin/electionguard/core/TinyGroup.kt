@@ -127,7 +127,7 @@ internal class TinyGroupContext(
         }
     }
 
-    override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
+    override fun binaryToElementModPsafe(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
@@ -137,7 +137,7 @@ internal class TinyGroupContext(
         return uIntToElementModP(result)
     }
 
-    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int,): ElementModQ {
+    override fun binaryToElementModQsafe(b: ByteArray, minimum: Int): ElementModQ {
         if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }

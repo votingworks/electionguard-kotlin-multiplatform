@@ -1,12 +1,13 @@
 package electionguard.cli
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedTally
 import electionguard.ballot.TallyResult
 import electionguard.core.GroupContext
 import electionguard.core.getSystemDate
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.publish.readElectionRecord
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
 import electionguard.tally.AccumulateTally
@@ -68,19 +69,24 @@ class RunAccumulateTally {
             val starting = getSystemTimeInMillis()
 
             val consumerIn = makeConsumer(group, inputDir)
-            val electionRecord = readElectionRecord(consumerIn)
-            val electionInit = electionRecord.electionInit()!!
+            val initResult = consumerIn.readElectionInitialized()
+            if (initResult is Err) {
+                println("readElectionInitialized failed ${initResult.error}")
+                return
+            }
+            val electionInit = initResult.unwrap()
+            val manifest = consumerIn.makeManifest(electionInit.config.manifestBytes)
 
             var countBad = 0
             var countOk = 0
-            val accumulator = AccumulateTally(group, electionRecord.manifest(), name, electionInit.extendedBaseHash)
+            val accumulator = AccumulateTally(group, manifest, name, electionInit.extendedBaseHash)
             for (encryptedBallot in consumerIn.iterateAllCastBallots()) {
                 val ok = accumulator.addCastBallot(encryptedBallot)
                 if (ok) countOk++ else countBad++
             }
             val tally: EncryptedTally = accumulator.build()
 
-            val publisher = makePublisher(outputDir, false, electionRecord.isJson())
+            val publisher = makePublisher(outputDir, false, consumerIn.isJson())
             publisher.writeTallyResult(
                 TallyResult(
                     electionInit, tally, listOf(name),

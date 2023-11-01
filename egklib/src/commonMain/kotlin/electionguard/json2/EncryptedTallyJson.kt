@@ -1,7 +1,10 @@
 package electionguard.json2
 
 import electionguard.ballot.EncryptedTally
+import electionguard.core.ElGamalCiphertext
 import electionguard.core.GroupContext
+import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -48,24 +51,41 @@ fun EncryptedTally.publishJson(): EncryptedTallyJson {
         )
 }
 
-fun EncryptedTallyJson.import(group: GroupContext): EncryptedTally {
-    val contests = this.contests.map { pcontest ->
+/////////////////////////////////////////////////////////////////////////////////////////
 
-        EncryptedTally.Contest(
-            pcontest.contest_id,
-            pcontest.sequence_order,
-            pcontest.selections.map {
-                EncryptedTally.Selection(
-                    it.selection_id,
-                    it.sequence_order,
-                    it.encrypted_vote.import(group),
-                )
-            })
-    }
-    return EncryptedTally(
+fun EncryptedTallyJson.import(group: GroupContext, errs : ErrorMessages): EncryptedTally? {
+    val contests = this.contests.map { it.import(group, errs.nested("EncryptedTallyContestJson ${it.contest_id}")) }
+    val electionId = this.election_id.import() ?: errs.addNull("EncryptedTally malformed election_id") as UInt256?
+
+    return if (errs.hasErrors()) null
+    else  EncryptedTally(
         this.tally_id,
-        contests,
+        contests.filterNotNull(),
         this.cast_ballot_ids,
-        this.election_id.import()
+        electionId!!,
     )
+}
+
+fun EncryptedTallyContestJson.import(group: GroupContext, errs : ErrorMessages): EncryptedTally.Contest? {
+    val selections = this.selections.map { it.import(group, errs.nested("EncryptedTallySelectionJson ${it.selection_id}")) }
+
+    return if (errs.hasErrors()) null
+    else EncryptedTally.Contest(
+        this.contest_id,
+        this.sequence_order,
+        selections.filterNotNull()
+    )
+}
+
+
+fun EncryptedTallySelectionJson.import(group: GroupContext, errs : ErrorMessages): EncryptedTally.Selection? {
+    val encryptedVote = this.encrypted_vote.import(group) ?: errs.addNull("malformed encrypted_vote") as ElGamalCiphertext?
+
+    return if (errs.hasErrors()) null
+    else EncryptedTally.Selection(
+        this.selection_id,
+        this.sequence_order,
+        encryptedVote!!,
+    )
+
 }

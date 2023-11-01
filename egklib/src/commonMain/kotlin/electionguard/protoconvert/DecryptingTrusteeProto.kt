@@ -1,54 +1,35 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getAllErrors
-import com.github.michaelbull.result.toResultOr
-import com.github.michaelbull.result.unwrap
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
+import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.keyceremony.EncryptedKeyShare
+import electionguard.util.ErrorMessages
 
-fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext):
-        Result<DecryptingTrusteeDoerre, String> {
+fun electionguard.protogen.DecryptingTrustee.import(group: GroupContext, errs : ErrorMessages): DecryptingTrusteeDoerre? {
 
-    val id = this.guardianId
-    val publicKey = group.importElementModP(this.publicKey).toResultOr { "DecryptingTrustee $id publicKey was malformed or missing" }
-    val keyShare = group.importElementModQ(this.keyShare).toResultOr { "DecryptingTrustee $id keyShare was malformed or missing" }
+    val publicKey = group.importElementModP(this.publicKey) ?: errs.addNull("malformed publicKey") as ElementModP?
+    val keyShare = group.importElementModQ(this.keyShare) ?: errs.addNull("malformed keyShare" ) as ElementModQ?
 
-    val errors = getAllErrors(publicKey, keyShare)
-    if (errors.isNotEmpty()) {
-        return Err(errors.joinToString("\n"))
-    }
-
-    return Ok(DecryptingTrusteeDoerre(
+    return if (errs.hasErrors()) null
+    else DecryptingTrusteeDoerre(
         this.guardianId,
         this.guardianXCoordinate,
-        publicKey.unwrap(),
-        keyShare.unwrap(),
-    ))
+        publicKey!!,
+        keyShare!!,
+    )
 }
 
-private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: GroupContext):
-        Result<EncryptedKeyShare, String> {
+private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: GroupContext, errs : ErrorMessages): EncryptedKeyShare? {
+    val encryptedCoordinate = group.importHashedCiphertext(this.encryptedCoordinate, errs.nested("EncryptedKeyShare"))
 
-    val encryptedCoordinate = group.importHashedCiphertext(this.encryptedCoordinate)
-        .toResultOr { "DecryptingTrustee $id secretKey was malformed or missing" }
-
-    if (encryptedCoordinate is Err) {
-        return encryptedCoordinate
-    }
-    return Ok(
-        EncryptedKeyShare(
+    return if (errs.hasErrors()) null
+    else EncryptedKeyShare(
             this.ownerXcoord,
             this.polynomialOwner,
             this.secretShareFor,
-            encryptedCoordinate.unwrap(),
+            encryptedCoordinate!!,
         )
-    )
 }
 
 ///////////////////////////////////////////////////////////////////////////////

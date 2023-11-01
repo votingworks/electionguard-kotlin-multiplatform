@@ -1,11 +1,13 @@
 package electionguard.protoconvert
 
 import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.fileReadBytes
 import electionguard.core.productionGroup
 import electionguard.cli.buildTestManifest
 import electionguard.publish.*
+import electionguard.util.ErrorMessages
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -61,12 +63,12 @@ class ElectionConfigConvertTest {
 fun roundtripProtoPublishJson(electionConfig: ElectionConfig, outputDir: String, isJson: Boolean): ElectionConfig {
     // roundtrip proto
     val proto = electionConfig.publishProto()
-    val roundtrip = proto.import().getOrThrow { IllegalStateException(it) }
-    compareElectionConfig(electionConfig, roundtrip)
+    val roundtrip = proto.import(ErrorMessages("roundtripProtoPublishJson"))
+    compareElectionConfig(electionConfig, roundtrip.unwrap())
 
     // publish json
     val publisher = makePublisher(outputDir, true, isJson)
-    publisher.writeElectionConfig(roundtrip)
+    publisher.writeElectionConfig(roundtrip.unwrap())
 
     val electionRecord = readElectionRecord(productionGroup(), outputDir)
     return electionRecord.config()

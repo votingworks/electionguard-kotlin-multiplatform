@@ -1,6 +1,8 @@
 package electionguard.cli
 
-import com.github.michaelbull.result.getOrThrow
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.TallyResult
@@ -10,13 +12,14 @@ import electionguard.core.pathExists
 import electionguard.core.fileReadLines
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.core.sigfig
+import electionguard.util.sigfig
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
 import electionguard.publish.DecryptedTallyOrBallotSinkIF
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
+import electionguard.util.ErrorMessages
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -99,7 +102,12 @@ class RunTrustedBallotDecryption {
             val starting = getSystemTimeInMillis() // wall clock
 
             val consumerIn = makeConsumer(group, inputDir)
-            val tallyResult: TallyResult = consumerIn.readTallyResult().getOrThrow { IllegalStateException(it) }
+            val result: Result<TallyResult, ErrorMessages> = consumerIn.readTallyResult()
+            if (result is Err) {
+                logger.error { result.error.toString() }
+                return 0
+            }
+            val tallyResult = result.unwrap()
             val guardians = Guardians(group, tallyResult.electionInitialized.guardians)
 
             val decryptor = DecryptorDoerre(

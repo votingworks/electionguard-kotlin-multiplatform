@@ -1,13 +1,11 @@
 package electionguard.json2
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.unwrap
 import electionguard.core.GroupContext
+import electionguard.core.SchnorrProof
 import electionguard.keyceremony.EncryptedKeyShare
 import electionguard.keyceremony.KeyShare
 import electionguard.keyceremony.PublicKeys
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 
 /** External representation of a PublicKeys, used in KeyCeremony */
@@ -24,18 +22,16 @@ fun PublicKeys.publishJson() = PublicKeysJson(
     this.coefficientProofs.map { it.publishJson() }
 )
 
-fun PublicKeysJson.import(group: GroupContext) = PublicKeys(
-    this.guardianId,
-    this.guardianXCoordinate,
-    this.coefficientProofs.map { it.import(group) }
-)
-
-fun PublicKeysJson.importResult(group: GroupContext): Result<PublicKeys, String> {
-    val proofs = this.coefficientProofs.map { it.importResult(group) }
-    val allgood = proofs.map { it is Ok }.reduce { a, b -> a && b }
-
-    return if (allgood) Ok( PublicKeys(this.guardianId, this.guardianXCoordinate, proofs.map {it.unwrap()}))
-    else Err("PublicKeysJson error")
+fun PublicKeysJson.import(group: GroupContext, errs : ErrorMessages) : PublicKeys? {
+    val coefficientProofs : List<SchnorrProof?> = this.coefficientProofs.mapIndexed { idx, it ->
+        it.import(group, errs.nested("coefficientProof $idx"))
+    }
+    return if (errs.hasErrors()) null
+    else PublicKeys(
+            this.guardianId,
+            this.guardianXCoordinate,
+            coefficientProofs.filterNotNull(),
+        )
 }
 
 /////////////////////////////////////////////////////

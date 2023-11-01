@@ -153,8 +153,8 @@ class BallotEncryptionTestVector {
                 Json.decodeFromStream<BallotEncryptionTestVector>(inp)
             }
 
-        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group))
-        val extendedBaseHash = testVector.extended_base_hash.import()
+        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed joint_public_key"))
+        val extendedBaseHash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed extended_base_hash")
         val ballotsZipped = testVector.ballots.zip(testVector.expected_encrypted_ballots)
 
         ballotsZipped.forEach { (ballot, eballot) ->
@@ -197,8 +197,8 @@ class BallotEncryptionTestVector {
             val expectContest: EncryptedContestJson = pair.second
 
             val limit = expectContest.expected_proof.proofs.size
-            val randomUj = expectContest.expected_proof.proofs.map { it.u_nonce.import(group) }
-            val randomCj = expectContest.expected_proof.proofs.map { it.c_nonce.import(group) }
+            val randomUj = expectContest.expected_proof.proofs.map { it.u_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed u_nonce") }
+            val randomCj = expectContest.expected_proof.proofs.map { it.c_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed c_nonce") }
 
             val ciphertexts: List<ElGamalCiphertext> = actualContest.selections.map { it.ciphertext }
             val contestAccumulation: ElGamalCiphertext = ciphertexts.encryptedSum()
@@ -222,8 +222,8 @@ class BallotEncryptionTestVector {
                 val expectSelection: EncryptedSelectionJson = pair2.second
 
                 val limit = expectSelection.expected_proof.proofs.size
-                val randomUj = expectSelection.expected_proof.proofs.map { it.u_nonce.import(group) }
-                val randomCj = expectSelection.expected_proof.proofs.map { it.c_nonce.import(group) }
+                val randomUj = expectSelection.expected_proof.proofs.map { it.u_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed u_nonce") }
+                val randomCj = expectSelection.expected_proof.proofs.map { it.c_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed u_nonce") }
 
                 val proofWithNonces: ChaumPedersenRangeProofKnownNonce = actualSelection.ciphertext.makeChaumPedersenWithNonces(
                     plainSelection.vote,

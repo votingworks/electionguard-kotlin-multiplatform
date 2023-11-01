@@ -9,6 +9,7 @@ import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
 import electionguard.cli.ManifestBuilder
 import electionguard.input.RandomBallotProvider
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -96,12 +97,14 @@ class DecryptWithNonceTestVector {
                 Json.decodeFromStream<DecryptWithNonceTestVector>(inp)
             }
 
-        val extendedBaseHash = testVector.extended_base_hash.import()
-        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group))
-        val encryptedBallot: EncryptedBallot = testVector.encrypted_ballot.import(group)
+        val extendedBaseHash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed extended_base_hash")
+        val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group) ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed joint_public_key"))
+        val encryptedBallot: EncryptedBallot = testVector.encrypted_ballot.import(group, ErrorMessages("readDecryptBallotTestVector"))!!
 
         val decryptionWithPrimaryNonce = DecryptWithNonce(group, publicKey, extendedBaseHash)
-        val decryptResult = with (decryptionWithPrimaryNonce) { encryptedBallot.decrypt(testVector.primary_nonce.import()) }
+        val decryptResult = with (decryptionWithPrimaryNonce) {
+            encryptedBallot.decrypt(testVector.primary_nonce.import() ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed primary_nonce"))
+        }
         if (decryptResult is Err) {
             throw RuntimeException("encrypted ballot fails decryption = $decryptResult" )
         }

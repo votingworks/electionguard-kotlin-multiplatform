@@ -1,11 +1,11 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.getOrThrow
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.tinyGroup
 import electionguard.publish.Publisher
 import electionguard.publish.makePublisher
+import electionguard.util.ErrorMessages
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -20,7 +20,7 @@ class DecryptionResultConvertTest {
         val context = tinyGroup()
         val electionRecord = generateDecryptionResult(publisher, context)
         val proto = electionRecord.publishProto()
-        val roundtrip = proto.import(context).getOrThrow { IllegalStateException(it) }
+        val roundtrip = proto.import(context, ErrorMessages(""))!!
         assertNotNull(roundtrip)
 
         assertEquals(roundtrip.tallyResult, electionRecord.tallyResult)

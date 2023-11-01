@@ -138,31 +138,34 @@ class ParametersTestVector {
         assertEquals(parameterV.expected.import(), actualHp)
 
         val electionM = parametersTestVector.manifest_hash
+        val parameterBaseHashM = electionM.parameterBaseHash.import()  ?: throw IllegalArgumentException("readParametersTestVector malformed parameterBaseHashM")
         val actualM = hashFunction(
-            electionM.parameterBaseHash.import().bytes,
+            parameterBaseHashM.bytes,
             0x01.toByte(),
             electionM.manifest.length,
             electionM.manifest.toByteArray(),
         )
         assertEquals(electionM.expected.import(), actualM)
         val actualM2 = manifestHash(
-            electionM.parameterBaseHash.import(),
+            electionM.parameterBaseHash.import() ?: throw IllegalArgumentException("readParametersTestVector malformed electionBaseHash"),
             electionM.manifest.toByteArray(),
         )
         assertEquals(electionM.expected.import(), actualM2)
 
         val electionV = parametersTestVector.election_base_hash
+        val parameterBaseHash = electionV.parameterBaseHash.import()  ?: throw IllegalArgumentException("readParametersTestVector malformed parameterBaseHash")
+        val manifestHash = electionV.manifest_hash.import()  ?: throw IllegalArgumentException("readParametersTestVector malformed manifest_hash")
         val actualHb = hashFunction(
-            electionV.parameterBaseHash.import().bytes,
+            parameterBaseHash.bytes,
             0x02.toByte(),
-            electionV.manifest_hash.import().bytes,
+            manifestHash.bytes,
             electionV.numberOfGuardians,
             electionV.quorum,
         )
         assertEquals(electionV.expected.import(), actualHb)
         val actualHb2 = electionBaseHash(
-            electionV.parameterBaseHash.import(),
-            electionV.manifest_hash.import(),
+            electionV.parameterBaseHash.import() ?: throw IllegalArgumentException("readParametersTestVector malformed electionBaseHash"),
+            electionV.manifest_hash.import() ?: throw IllegalArgumentException("readParametersTestVector malformed electionBaseHash"),
             electionV.numberOfGuardians,
             electionV.quorum,
         )

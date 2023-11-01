@@ -3,6 +3,7 @@ package electionguard.json2
 import electionguard.core.*
 import electionguard.core.schnorrProof
 import electionguard.keyceremony.PublicKeys
+import electionguard.util.ErrorMessages
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.single
@@ -29,8 +30,8 @@ class PublicKeysTest {
                     proofs.add(kp.schnorrProof(xcoord, it, nonce))
                 }
                 val publicKey = PublicKeys(id, xcoord, proofs)
-                assertEquals(publicKey, publicKey.publishJson().import(group))
-                assertEquals(publicKey, jsonRoundTrip(publicKey.publishJson()).import(group))
+                assertEquals(publicKey, publicKey.publishJson().import(group, ErrorMessages("round")))
+                assertEquals(publicKey, jsonRoundTrip(publicKey.publishJson()).import(group, ErrorMessages("trip")))
             }
         }
     }

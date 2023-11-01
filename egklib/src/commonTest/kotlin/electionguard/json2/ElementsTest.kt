@@ -60,7 +60,7 @@ class ElementsTest {
         runTest {
             val context = productionGroup()
             checkAll(elementsModQ(context)) { q ->
-                val u : UInt256 = q.toUInt256()
+                val u : UInt256 = q.toUInt256safe()
                 assertEquals(u, u.publishJson().import())
                 assertEquals(u, jsonRoundTripWithStringPrimitive(u.publishJson()).import())
             }

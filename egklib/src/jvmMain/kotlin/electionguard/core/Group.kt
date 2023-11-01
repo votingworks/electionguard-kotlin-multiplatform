@@ -159,41 +159,41 @@ class ProductionGroupContext(
     override fun isCompatible(ctx: GroupContext): Boolean =
         ctx.isProductionStrength() && productionMode == (ctx as ProductionGroupContext).productionMode
 
-    override fun safeBinaryToElementModP(b: ByteArray, minimum: Int): ElementModP {
+    override fun binaryToElementModPsafe(b: ByteArray, minimum: Int): ElementModP {
         if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
-
         val tmp = b.toBigInteger().mod(p)
-
         val mv = minimum.toBigInteger()
         val tmp2 = if (tmp < mv) tmp + mv else tmp
-
         return ProductionElementModP(tmp2, this)
     }
 
-    override fun safeBinaryToElementModQ(b: ByteArray, minimum: Int): ElementModQ {
+    override fun binaryToElementModQsafe(b: ByteArray, minimum: Int): ElementModQ {
         if (minimum < 0) {
             throw IllegalArgumentException("minimum $minimum may not be negative")
         }
-
         val tmp = b.toBigInteger().mod(q)
-
         val mv = minimum.toBigInteger()
         val tmp2 = if (tmp < mv) tmp + mv else tmp
-
         return ProductionElementModQ(tmp2, this)
     }
 
-    override fun binaryToElementModP(b: ByteArray): ElementModP? {
-        val tmp = b.toBigInteger()
-        return if (tmp >= p || tmp < BigInteger.ZERO) null else ProductionElementModP(tmp, this)
-    }
+    override fun binaryToElementModP(b: ByteArray): ElementModP? =
+        try {
+            val tmp = b.toBigInteger()
+            if (tmp >= p || tmp < BigInteger.ZERO) null else ProductionElementModP(tmp, this)
+        } catch (t : Throwable) {
+            null
+        }
 
-    override fun binaryToElementModQ(b: ByteArray): ElementModQ? {
-        val tmp = b.toBigInteger()
-        return if (tmp >= q || tmp < BigInteger.ZERO) null else ProductionElementModQ(tmp, this)
-    }
+    override fun binaryToElementModQ(b: ByteArray): ElementModQ? =
+        try {
+            val tmp = b.toBigInteger()
+            if (tmp >= q || tmp < BigInteger.ZERO) null else ProductionElementModQ(tmp, this)
+        } catch (t : Throwable) {
+            null
+        }
 
     // TODO, for an election where limit > 1, might want to cache all encryption up to limit.
 

@@ -1,22 +1,25 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptionResult
 import electionguard.ballot.EncryptedBallotChain
 import electionguard.ballot.TallyResult
+import electionguard.core.UInt256
+import electionguard.util.ErrorMessages
 import pbandk.ByteArr
 
-fun electionguard.protogen.EncryptedBallotChain.import(): Result<EncryptedBallotChain, String> {
+fun electionguard.protogen.EncryptedBallotChain.import(errs : ErrorMessages): EncryptedBallotChain? {
 
-    return Ok(EncryptedBallotChain(
+    val lastConfirmationCode = importUInt256(this.lastConfirmationCode) ?: errs.addNull("malformed lastConfirmationCode") as UInt256?
+    return if (errs.hasErrors()) null
+    else EncryptedBallotChain(
         this.encryptingDevice,
         this.baux0.array,
         this.ballotIds,
-        importUInt256(this.lastConfirmationCode)!!,
+        lastConfirmationCode!!,
         this.chaining,
         importUInt256(this.closingHash),
         this.metadata.associate { it.key to it.value }
-    ))
+    )
 }
 
 ////////////////////////////////////////////////////////

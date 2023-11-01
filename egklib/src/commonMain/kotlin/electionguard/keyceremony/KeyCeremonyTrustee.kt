@@ -117,7 +117,7 @@ open class KeyCeremonyTrustee(
         // decrypt Pi(l)
         val pilbytes = shareDecryption(share)
             ?: return Err("Trustee '$id' couldnt decrypt EncryptedKeyShare for missingGuardianId '${share.polynomialOwner}'")
-        val expectedPil: ElementModQ = pilbytes.toUInt256().toElementModQ(group) // Pi(ℓ)
+        val expectedPil: ElementModQ = pilbytes.toUInt256safe().toElementModQ(group) // Pi(ℓ)
 
         // The other's Kij
         val publicKeys = otherPublicKeys[share.polynomialOwner]
@@ -242,18 +242,17 @@ open class KeyCeremonyTrustee(
         return HashedElGamalCiphertext(c0, c1, c2, pilBytes.size)
     }
 
-    // Share decryption.
-    // After receiving the ciphertext (Ci,ℓ,0 , Ci,ℓ,1 , Ci,ℓ,2 ) from guardian Gi , guardian
-    // Gℓ decrypts it by computing βi,ℓ = (Ci,ℓ,0)^sℓ mod p, setting αi,ℓ = Ci,ℓ,0 and obtaining
-    //   ki,ℓ = H(HP ; 11, i, ℓ, Kℓ , αi,ℓ , βi,ℓ ).
-    // Now the MAC key k0 and the encryption key k1 can be computed as
-    // above in Equations (16) and (17), which allows Gℓ to verify the validity of the MAC, namely that
-    //   Ci,ℓ,2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 ).
-    // If the MAC verifies, then Gℓ decrypts b(Pi (ℓ), 32) = Ci,ℓ,1 ⊕ k1 .
+    /** Share decryption. p 24.
+     * After receiving the ciphertext (Ci,ℓ,0 , Ci,ℓ,1 , Ci,ℓ,2 ) from guardian Gi , guardian
+     * Gℓ decrypts it by computing βi,ℓ = (Ci,ℓ,0)^sℓ mod p, setting αi,ℓ = Ci,ℓ,0 and obtaining
+     *   ki,ℓ = H(HP ; 11, i, ℓ, Kℓ , αi,ℓ , βi,ℓ ).
+     * Now the MAC key k0 and the encryption key k1 can be computed as
+     * above in Equations (16) and (17), which allows Gℓ to verify the validity of the MAC, namely that
+     *   Ci,ℓ,2 = HMAC(k0 , b(Ci,ℓ,0 , 512) ∥ Ci,ℓ,1 ).
+     * If the MAC verifies, then Gℓ decrypts b(Pi (ℓ), 32) = Ci,ℓ,1 ⊕ k1 .
+     * @returns ByteArray(32) or null
+    */
     fun shareDecryption(share: EncryptedKeyShare): ByteArray? {
-        // αi,ℓ = Ci,ℓ,0
-        // βi,ℓ = (Ci,ℓ,0 )sℓ mod p
-        // ki,ℓ = H(HP ; 11, i, ℓ, Kℓ , αi,ℓ , βi,ℓ )
         val c0 = share.encryptedCoordinate.c0
         val c1 = share.encryptedCoordinate.c1
 
@@ -276,6 +275,7 @@ open class KeyCeremonyTrustee(
         }
 
         //  If the MAC verifies, Gℓ decrypts b(Pi(ℓ), 32) = Ci,ℓ,1 ⊕ k1 .
+        // TODO prove always 32 bytes
         return ByteArray(32) { c1[it] xor k1[it] }
     }
 
