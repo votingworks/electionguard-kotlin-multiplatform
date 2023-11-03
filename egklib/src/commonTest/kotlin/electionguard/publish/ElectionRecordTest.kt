@@ -1,8 +1,8 @@
 package electionguard.publish
 
-import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
+import electionguard.cli.ManifestBuilder
 import electionguard.cli.RunVerifier
 import electionguard.core.*
 import kotlin.test.Test
@@ -12,6 +12,21 @@ import kotlin.test.assertTrue
 
 // Test election records that have been fully decrypted
 class ElectionRecordTest {
+
+    @Test
+    fun readElectionRecord() {
+        val topdir = "src/commonTest/data/workflow/someAvailableJson"
+
+        runTest {
+            val group = productionGroup()
+            val electionRecord = readElectionRecord(group, topdir)
+            val manifest = electionRecord.manifest()
+            println("electionRecord.manifest.specVersion = ${electionRecord.manifest().specVersion}")
+            assertEquals(ManifestBuilder.electionScopeId, manifest.electionScopeId)
+            assertEquals(protocolVersion, manifest.specVersion)
+        }
+    }
+
     @Test
     fun allAvailableProto() {
         readElectionRecordAndValidate("src/commonTest/data/workflow/allAvailableProto")

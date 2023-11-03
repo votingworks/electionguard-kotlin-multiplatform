@@ -1,48 +1,56 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.*
-import electionguard.ballot.protocolVersion
-import electionguard.cli.ManifestBuilder.Companion.electionScopeId
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.decrypt.DecryptingTrusteeIF
+import org.junit.jupiter.api.Assertions.assertNotNull
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConsumerTest {
-    private val topdir = "src/commonTest/data/workflow/someAvailableJson"
+    private val group = productionGroup()
+    val topdir = "src/commonTest/data/workflow/chainedJson"
 
     @Test
-    fun readElectionRecord() {
-        runTest {
-            val group = productionGroup()
-            val electionRecord = readElectionRecord(group, topdir)
-            val manifest = electionRecord.manifest()
-            println("electionRecord.manifest.specVersion = ${electionRecord.manifest().specVersion}")
-            assertEquals(electionScopeId, manifest.electionScopeId)
-            assertEquals(protocolVersion, manifest.specVersion)
-        }
+    fun consumerJson() {
+        val consumerIn = makeConsumer(group, topdir)
+        assertTrue(consumerIn.readElectionConfig() is Ok) // proto doesnt always have config, may have just init
+        testConsumer(consumerIn)
     }
 
     @Test
-    fun readSpoiledBallotTallys() {
-        runTest {
-            val group = productionGroup()
-            val consumerIn = makeConsumer(group, topdir)
-            var count = 0
-            for (tally in consumerIn.iterateDecryptedBallots()) {
-                println("$count tally = ${tally.id}")
-                count++
-            }
-        }
+    fun consumerProto() {
+        testConsumer(makeConsumer(group, "src/commonTest/data/workflow/chainedProto"))
+    }
+
+    fun testConsumer(consumerIn : Consumer) {
+        assertTrue( consumerIn.readElectionInitialized() is Ok)
+        assertTrue( consumerIn.readTallyResult() is Ok)
+        assertTrue( consumerIn.readDecryptionResult() is Ok)
+        assertTrue( consumerIn.hasEncryptedBallots())
+        assertTrue( consumerIn.encryptingDevices().isNotEmpty())
+        val device = consumerIn.encryptingDevices()[0]
+
+        assertTrue( consumerIn.readEncryptedBallotChain(device) is Ok)
+
+        var iter = consumerIn.iterateEncryptedBallots(device) { true }
+        assertNotNull(iter)
+        assertTrue(iter.count() > 0)
+
+        iter = consumerIn.iterateAllEncryptedBallots { true }
+        assertNotNull(iter)
+        assertTrue(iter.count() > 0)
+
+        val iter2 = consumerIn.iterateDecryptedBallots()
+        assertNotNull(iter2)
+        assertTrue(iter.count() >= 0)
     }
 
     @Test
     fun readEncryptedBallots() {
         runTest {
-            val group = productionGroup()
             val consumerIn = makeConsumer(group, topdir)
             var count = 0
             for (ballot in consumerIn.iterateAllEncryptedBallots { true} ) {
@@ -55,7 +63,6 @@ class ConsumerTest {
     @Test
     fun readEncryptedBallotsCast() {
         runTest {
-            val group = productionGroup()
             val consumerIn = makeConsumer(group, topdir)
             var count = 0
             for (ballot in consumerIn.iterateAllCastBallots()) {
@@ -68,7 +75,6 @@ class ConsumerTest {
     @Test
     fun readSubmittedBallotsSpoiled() {
         runTest {
-            val group = productionGroup()
             val consumerIn = makeConsumer(group, topdir)
             var count = 0
             for (ballot in consumerIn.iterateAllSpoiledBallots()) {
@@ -79,9 +85,20 @@ class ConsumerTest {
     }
 
     @Test
+    fun readDecryptedBallots() {
+        runTest {
+            val consumerIn = makeConsumer(group, topdir)
+            var count = 0
+            for (tally in consumerIn.iterateDecryptedBallots()) {
+                println("$count tally = ${tally.id}")
+                count++
+            }
+        }
+    }
+
+    @Test
     fun readTrustee() {
         runTest {
-            val group = productionGroup()
             val consumerIn = makeConsumer(group, topdir)
             val result = consumerIn.readElectionInitialized()
             val init = result.unwrap()

@@ -38,7 +38,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
 
     actual override fun isJson() = false
 
-    actual override fun readManifestBytes(filename : String): ByteArray {
+    actual override fun readManifestBytes(filename: String): ByteArray {
         return fileReadBytes(filename)
     }
 
@@ -70,10 +70,10 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             return emptyList()
         }
         val deviceDirs: Stream<Path> = Files.list(topBallotPath)
-        return deviceDirs.map { it.getName( it.nameCount - 1).toString() }.toList() // last name in the path
+        return deviceDirs.map { it.getName(it.nameCount - 1).toString() }.toList() // last name in the path
     }
 
-    actual override fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, ErrorMessages> {
+    actual override fun readEncryptedBallotChain(device: String): Result<EncryptedBallotChain, ErrorMessages> {
         val errs = ErrorMessages("readEncryptedBallotChain device='$device'")
         val ballotChainFile = protoPaths.encryptedBallotChain(device)
         if (!Files.exists(Path.of(ballotChainFile))) {
@@ -84,14 +84,17 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             FileInputStream(ballotChainFile).use { inp ->
                 proto = electionguard.protogen.EncryptedBallotChain.decodeFromStream(inp)
             }
-            val result = proto.import( errs)
+            val result = proto.import(errs)
             if (errs.hasErrors()) Err(errs) else Ok(result!!)
         } catch (t: Throwable) {
             errs.add("Exception= ${t.message} ${t.stackTraceToString()}")
         }
     }
 
-    actual override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> {
+    actual override fun iterateEncryptedBallots(
+        device: String,
+        filter: ((EncryptedBallot) -> Boolean)?
+    ): Iterable<EncryptedBallot> {
         val dirPath = Path.of(protoPaths.encryptedBallotDir(device))
         if (!Files.exists(dirPath)) {
             throw RuntimeException("$dirPath doesnt exist")
@@ -126,13 +129,14 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         return emptyList()
     }
 
-    actual override fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> {
+    actual override fun iterateAllEncryptedBallots(filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
         val devices = encryptingDevices()
         return Iterable { DeviceIterator(devices.iterator(), filter) }
     }
 
     actual override fun hasEncryptedBallots(): Boolean {
-        return Files.exists(Path.of(protoPaths.encryptedBallotPath()))
+        val iter = iterateAllEncryptedBallots { true }
+        return iter.iterator().hasNext()
     }
 
     // plaintext ballots in given directory, with filter
@@ -147,28 +151,36 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     }
 
     // trustee in given directory for given guardianId
-    actual override fun readTrustee(trusteeDir: String, guardianId: String): Result<DecryptingTrusteeIF, ErrorMessages> {
+    actual override fun readTrustee(
+        trusteeDir: String,
+        guardianId: String
+    ): Result<DecryptingTrusteeIF, ErrorMessages> {
         val filename = protoPaths.decryptingTrusteePath(trusteeDir, guardianId)
         return groupContext.readTrustee(filename)
     }
 
-    actual override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, ErrorMessages> {
+    actual override fun readEncryptedBallot(
+        ballotDir: String,
+        ballotId: String
+    ): Result<EncryptedBallot, ErrorMessages> {
         val errs = ErrorMessages("readEncryptedBallot '$ballotDir/$ballotId'")
         return errs.add("Not implemented yet")
     }
 
 
-    actual override fun iteratePepBallots(pepDir : String): Iterable<BallotPep> {
+    actual override fun iteratePepBallots(pepDir: String): Iterable<BallotPep> {
         throw RuntimeException("Not implemented yet")
     }
 
     ////////////////////////////////////////////////////////////////////
     // The low level reading functions for protobuf
 
-    private fun makeManifestResult(manifestBytes: ByteArray): Result<Manifest,ErrorMessages> {
+    private fun makeManifestResult(manifestBytes: ByteArray): Result<Manifest, ErrorMessages> {
         return try {
             var proto: electionguard.protogen.Manifest
-            ByteArrayInputStream(manifestBytes).use { inp -> proto = electionguard.protogen.Manifest.decodeFromStream(inp) }
+            ByteArrayInputStream(manifestBytes).use { inp ->
+                proto = electionguard.protogen.Manifest.decodeFromStream(inp)
+            }
             Ok(proto.import())
         } catch (t: Throwable) {
             ErrorMessages("makeManifestResult").add("Exception= ${t.message} ${t.stackTraceToString()}")
@@ -212,8 +224,8 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         }
         return try {
             var proto: electionguard.protogen.TallyResult
-            FileInputStream(filename).use {
-                inp -> proto = electionguard.protogen.TallyResult.decodeFromStream(inp)
+            FileInputStream(filename).use { inp ->
+                proto = electionguard.protogen.TallyResult.decodeFromStream(inp)
             }
             val result = proto.import(this, errs)
             if (errs.hasErrors()) Err(errs) else Ok(result!!)
@@ -386,7 +398,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
 
     private inner class DeviceIterator(
         val devices: Iterator<String>,
-        private val filter : ((EncryptedBallot) -> Boolean)?,
+        private val filter: ((EncryptedBallot) -> Boolean)?,
     ) : AbstractIterator<EncryptedBallot>() {
         var innerIterator: Iterator<EncryptedBallot>? = null
 
@@ -453,7 +465,6 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             return done()
         }
     }
-
 }
 
 // variable length (base 128) int32

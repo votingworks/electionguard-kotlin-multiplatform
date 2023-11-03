@@ -1,12 +1,5 @@
-buildscript {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-    }
-}
-
 plugins {
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm")
     alias(libs.plugins.serialization)
     application
 }

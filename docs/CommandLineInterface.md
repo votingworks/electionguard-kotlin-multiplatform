@@ -84,7 +84,7 @@ Options:
     --ncontests, -ncontests -> number of contests (always required) { Int }
     --nselections, -nselections -> number of selections per contest (always required) { Int }
     --outputType, -type [JSON] -> JSON or PROTO { String }
-    --outputDir, -out -> Directory to write output Manifest (always required) { String }
+    --outputDir, -out -> Directory to write test manifest file (always required) { String }
     --help, -h -> Usage info 
 ````
 

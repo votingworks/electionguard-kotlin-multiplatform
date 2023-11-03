@@ -1,7 +1,7 @@
 package electionguard.cli
 
 import electionguard.core.productionGroup
-import electionguard.publish.readAndCheckManifestBytes
+import electionguard.publish.readAndCheckManifest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -43,14 +43,14 @@ class RunCreateTestManifestTest {
 
         // get all and see if they compare equal
         val group = productionGroup()
-        val (isJsonOrg, manifestOrg, _) = readAndCheckManifestBytes(group, "testOut/manifest/runCreateTestManifest")
+        val (isJsonOrg, manifestOrg, _) = readAndCheckManifest(group, "testOut/manifest/runCreateTestManifest")
         assertTrue(isJsonOrg)
 
-        val (isJsonProto, manifestProto, _) = readAndCheckManifestBytes(group, "testOut/manifest/testConvertManifestFromJsonToProto")
+        val (isJsonProto, manifestProto, _) = readAndCheckManifest(group, "testOut/manifest/testConvertManifestFromJsonToProto")
         assertFalse(isJsonProto)
         assertEquals(manifestOrg, manifestProto)
 
-        val (isJsonRoundTrip, manifestRoundtrip, _) = readAndCheckManifestBytes(group, "testOut/manifest/testConvertManifestFromProtoToJson")
+        val (isJsonRoundTrip, manifestRoundtrip, _) = readAndCheckManifest(group, "testOut/manifest/testConvertManifestFromProtoToJson")
         assertTrue(isJsonRoundTrip)
         assertEquals(manifestProto, manifestRoundtrip)
 

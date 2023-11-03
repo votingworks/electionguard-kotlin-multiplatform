@@ -9,6 +9,9 @@ import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.input.ManifestInputValidation
 import electionguard.pep.BallotPep
 import electionguard.util.ErrorMessages
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger("Consumer")
 
 /** public API to read from the election record */
 interface Consumer {
@@ -23,31 +26,32 @@ interface Consumer {
     fun readTallyResult(): Result<TallyResult, ErrorMessages>
     fun readDecryptionResult(): Result<DecryptionResult, ErrorMessages>
 
-    /** The list of devices that have encrytpted ballots. */
+    /** Are there any encrypted ballots? */
+    fun hasEncryptedBallots() : Boolean
+    /** The list of devices that have encrypted ballots. */
     fun encryptingDevices(): List<String>
     /** The encrypted ballot chain for specified device. */
     fun readEncryptedBallotChain(device: String) : Result<EncryptedBallotChain, ErrorMessages>
-    /** Read encrypted ballots for specified devices. */
+    /** Read a specific file containing an encrypted ballot. */
+    fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, ErrorMessages>
+    /** Read encrypted ballots for specified device. */
     fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     /** Read all encrypted ballots for all devices. */
     fun iterateAllEncryptedBallots(filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     fun iterateAllCastBallots(): Iterable<EncryptedBallot>  = iterateAllEncryptedBallots{  it.state == EncryptedBallot.BallotState.CAST }
     fun iterateAllSpoiledBallots(): Iterable<EncryptedBallot>  = iterateAllEncryptedBallots{  it.state == EncryptedBallot.BallotState.SPOILED }
-    fun hasEncryptedBallots() : Boolean
 
     /** Read all decrypted ballots, usually the challenged ones. */
     fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
 
     //// not part of the election record
+
     /** read plaintext ballots in given directory, private data. */
     fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
     /** read trustee in given directory for given guardianId, private data. */
     fun readTrustee(trusteeDir: String, guardianId: String): Result<DecryptingTrusteeIF, ErrorMessages>
-
     /** Read all the PEP ratio ballots in the given directory. */
     fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
-    /** Read a specific file containing an encrypted ballot (eg for PEP). */
-    fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, ErrorMessages>
 }
 
 fun makeConsumer(
@@ -92,29 +96,31 @@ fun makeTrusteeSource(
     }
 }
 
-// specify the manifest filename, or the directory that its in. May be JSON or proto. If JSON, may be zipped.
-// check that the file parses and validates ok
-// TODO needs testing
-fun readAndCheckManifestBytes(
-    group: GroupContext,
-    manifestDirOrFile: String,
-): Triple<Boolean, Manifest, ByteArray> {
+/**
+ * Read the manifest and check that the file parses and validates.
+ * @param manifestDirOrFile manifest filename, or the directory that its in. May be JSON or proto. If JSON, may be zipped
+ * @return isJson, manifest, manifestBytes
+ */
+fun readAndCheckManifest(group: GroupContext, manifestDirOrFile: String): Triple<Boolean, Manifest, ByteArray> {
+
+    val isZip = manifestDirOrFile.endsWith(".zip")
     val isDirectory = isDirectory(manifestDirOrFile)
     val isJson = if (isDirectory) {
-        manifestDirOrFile.endsWith(".zip") ||
         pathExists("$manifestDirOrFile/${ElectionRecordJsonPaths.MANIFEST_FILE}")
     } else {
-        manifestDirOrFile.endsWith(".json")
+        isZip || manifestDirOrFile.endsWith(".json")
     }
 
     val manifestFile = if (isDirectory) {
         if (isJson) "$manifestDirOrFile/${ElectionRecordJsonPaths.MANIFEST_FILE}" else
             "$manifestDirOrFile/${ElectionRecordProtoPaths.MANIFEST_FILE}"
+    } else if (isZip) {
+        ElectionRecordJsonPaths.MANIFEST_FILE
     } else {
         manifestDirOrFile
     }
 
-    val manifestDir = if (isDirectory) {
+    val manifestDir = if (isDirectory || isZip) {
         manifestDirOrFile
     } else {
         manifestDirOrFile.substringBeforeLast("/")
@@ -126,16 +132,21 @@ fun readAndCheckManifestBytes(
         ConsumerProto(manifestDir, group)
     }
 
-    val manifestBytes = consumer.readManifestBytes(manifestFile)
-    // make sure it parses
-    val manifest = consumer.makeManifest(manifestBytes)
-    // make sure it validates
-    val errors = ManifestInputValidation(manifest).validate()
-    if (errors.hasErrors()) {
-        println("*** ManifestInputValidation error on manifest in $manifestDirOrFile")
-        println("$errors")
-        throw RuntimeException("*** ManifestInputValidation error on manifest in $manifestDirOrFile")
+    try {
+        val manifestBytes = consumer.readManifestBytes(manifestFile)
+        // make sure it parses
+        val manifest = consumer.makeManifest(manifestBytes)
+        // make sure it validates
+        val errors = ManifestInputValidation(manifest).validate()
+        if (errors.hasErrors()) {
+            logger.error { "*** ManifestInputValidation error on manifest file= $manifestFile \n $errors" }
+            throw RuntimeException("*** ManifestInputValidation error on manifest file= $manifestFile \n $errors")
+        }
+        return Triple(isJson, manifest, manifestBytes)
+
+    } catch (t: Throwable) {
+        logger.error {"readAndCheckManifestBytes Exception= ${t.message} ${t.stackTraceToString()}" }
+        throw t
     }
 
-    return Triple(isJson, manifest, manifestBytes)
 }

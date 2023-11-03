@@ -5,7 +5,7 @@ import electionguard.ballot.protocolVersion
 import electionguard.core.getSystemDate
 import electionguard.core.productionGroup
 import electionguard.publish.makePublisher
-import electionguard.publish.readAndCheckManifestBytes
+import electionguard.publish.readAndCheckManifest
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -68,7 +68,7 @@ class RunCreateElectionConfig {
 
             val group = productionGroup()
 
-            val (isJson, _, manifestBytes) = readAndCheckManifestBytes(group, electionManifest)
+            val (isJson, _, manifestBytes) = readAndCheckManifest(group, electionManifest)
 
             // As input, either specify the input directory that contains electionConfig.protobuf file,
             // OR the election manifest, nguardians and quorum.
