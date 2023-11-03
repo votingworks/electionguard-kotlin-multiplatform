@@ -70,7 +70,12 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         return "$electionRecordDir/$ENCRYPTED_DIR/$useDevice/"
     }
 
-    fun encryptedBallotPath(device: String, ballotId: String): String {
+    fun encryptedBallotPath(ballotDir : String, ballotId : String): String {
+        val id = ballotId.replace(" ", "_")
+        return "${ballotDir}/${ENCRYPTED_BALLOT_PREFIX}$id${PROTO_SUFFIX}"
+    }
+
+    fun encryptedBallotDevicePath(device: String, ballotId: String): String {
         val useDevice = device.replace(" ", "_")
         val id = ballotId.replace(" ", "_")
         return "$electionRecordDir/$ENCRYPTED_DIR/$useDevice/${ENCRYPTED_BALLOT_PREFIX}$id${PROTO_SUFFIX}"

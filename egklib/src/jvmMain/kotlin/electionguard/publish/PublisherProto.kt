@@ -146,7 +146,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
     inner class EncryptedBallotDeviceSink(val device: String) : EncryptedBallotSinkIF {
 
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
-            val ballotFile = protoPaths.encryptedBallotPath(device, ballot.ballotId)
+            val ballotFile = protoPaths.encryptedBallotDevicePath(device, ballot.ballotId)
             val ballotProto: pbandk.Message = ballot.publishProto()
             FileOutputStream(ballotFile).use { out -> ballotProto.encodeToStream(out) }
         }
