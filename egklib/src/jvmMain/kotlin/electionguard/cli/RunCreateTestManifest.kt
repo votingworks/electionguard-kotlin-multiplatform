@@ -31,7 +31,7 @@ class RunCreateTestManifest {
             val outputDir by parser.option(
                 ArgType.String,
                 shortName = "out",
-                description = "Directory to write output Manifest"
+                description = "Directory to write test manifest file"
             ).required()
             parser.parse(args)
 

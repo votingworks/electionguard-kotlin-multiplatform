@@ -1,12 +1,5 @@
-buildscript {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-    }
-}
-
 plugins {
-    kotlin("multiplatform") version "1.9.10"
+    kotlin("multiplatform")
     alias(libs.plugins.serialization)
     application
 }
@@ -98,6 +91,7 @@ nativeTarget.apply {
 
          */
     }
+    jvmToolchain(17)
 }
 
 // val protoGenSource by extra("build/generated/source/proto")
@@ -149,3 +143,6 @@ configurations.forEach {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
     .configureEach { kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn" }
+dependencies {
+    implementation(kotlin("stdlib-jdk8"))
+}

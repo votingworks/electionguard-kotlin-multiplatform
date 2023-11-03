@@ -48,10 +48,6 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         return "$ballotDir/$PLAINTEXT_BALLOT_FILE"
     }
 
-    fun encryptedBallotPath(): String {
-        return "$electionRecordDir/$ENCRYPTED_BATCH_FILE"
-    }
-
     fun decryptedBatchPath(): String {
         return "$electionRecordDir/$DECRYPTED_BATCH_FILE"
     }

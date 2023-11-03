@@ -7,16 +7,16 @@ import electionguard.core.*
  * All contests and selections must be present, so that an inspection of an EncryptedBallot reveals no information.
  */
 data class EncryptedBallot(
-    override val ballotId: String,
-    val ballotStyleId: String,  // matches a Manifest.BallotStyle
-    val encryptingDevice: String,
-    val timestamp: Long,
-    val codeBaux: ByteArray, // Baux in spec 2.0.0 eq 58
-    val confirmationCode: UInt256, // tracking code = H(B) eq 58
-    override val electionId : UInt256,
-    override val contests: List<Contest>,
-    override val state: BallotState,
-    val isPreencrypt: Boolean = false,
+        override val ballotId: String,
+        val ballotStyleId: String,  // matches a Manifest.BallotStyle
+        val encryptingDevice: String,
+        val timestamp: Long,
+        val codeBaux: ByteArray, // Baux in spec 2.0.0 eq 58
+        val confirmationCode: UInt256, // tracking code = H(B) eq 58
+        override val electionId : UInt256,
+        override val contests: List<Contest>,
+        override val state: BallotState,
+        val isPreencrypt: Boolean = false,
     ) : EncryptedBallotIF {
 
     init {

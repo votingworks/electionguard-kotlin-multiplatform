@@ -2,7 +2,7 @@ package electionguard.cli
 
 import electionguard.core.productionGroup
 import electionguard.publish.makePublisher
-import electionguard.publish.readAndCheckManifestBytes
+import electionguard.publish.readAndCheckManifest
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -34,7 +34,7 @@ class RunConvertManifest {
 
             val group = productionGroup()
 
-            val (isJson, manifest, _) = readAndCheckManifestBytes(group, electionManifest)
+            val (isJson, manifest, _) = readAndCheckManifest(group, electionManifest)
 
             val publisher = makePublisher(outputDir, true, !isJson)
 

@@ -14,7 +14,6 @@ class ElectionRecordIterablesTest {
     @Test
     fun testElectionRecordIterablesProto() {
         readBallots("src/commonTest/data/workflow/chainedProto")
-
     }
 
     @Test
