@@ -8,16 +8,21 @@ import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.json2.EncryptedBallotJson
+import electionguard.json2.import
 import electionguard.pep.BallotPep
 import electionguard.protoconvert.import
 import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
 import java.io.*
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.function.Predicate
 import java.util.stream.Stream
 
@@ -64,6 +69,13 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         return groupContext.readDecryptionResult(protoPaths.decryptionResultPath())
     }
 
+    //////////////////////////////////////////////////////////////////////////
+
+    actual override fun hasEncryptedBallots(): Boolean {
+        val iter = iterateAllEncryptedBallots { true }
+        return iter.iterator().hasNext()
+    }
+
     actual override fun encryptingDevices(): List<String> {
         val topBallotPath = Path.of(protoPaths.encryptedBallotDir())
         if (!Files.exists(topBallotPath)) {
@@ -86,6 +98,20 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
             }
             val result = proto.import(errs)
             if (errs.hasErrors()) Err(errs) else Ok(result!!)
+        } catch (t: Throwable) {
+            errs.add("Exception= ${t.message} ${t.stackTraceToString()}")
+        }
+    }
+
+    actual override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, ErrorMessages> {
+        val errs = ErrorMessages("readEncryptedBallot ballotId=$ballotId from directory $ballotDir")
+        val ballotFilename = protoPaths.encryptedBallotPath(ballotDir, ballotId)
+        if (!Files.exists(Path.of(ballotFilename))) {
+            return errs.add("'$ballotFilename' file does not exist")
+        }
+        return try {
+            val eballot: EncryptedBallot? = readEncryptedBallot(ballotFilename, errs)
+            if (errs.hasErrors()) Err(errs) else Ok(eballot!!)
         } catch (t: Throwable) {
             errs.add("Exception= ${t.message} ${t.stackTraceToString()}")
         }
@@ -114,6 +140,14 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         return Iterable { EncryptedBallotFileIterator(dirPath, filter) }
     }
 
+    actual override fun iterateAllEncryptedBallots(filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
+        val devices = encryptingDevices()
+        return Iterable { DeviceIterator(devices.iterator(), filter) }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+
     actual override fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot> {
         // use batch (all in one protobuf) if it exists
         val batchedFileName: String = protoPaths.decryptedBatchPath()
@@ -127,16 +161,6 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         }
         // otherwise there are none
         return emptyList()
-    }
-
-    actual override fun iterateAllEncryptedBallots(filter: ((EncryptedBallot) -> Boolean)?): Iterable<EncryptedBallot> {
-        val devices = encryptingDevices()
-        return Iterable { DeviceIterator(devices.iterator(), filter) }
-    }
-
-    actual override fun hasEncryptedBallots(): Boolean {
-        val iter = iterateAllEncryptedBallots { true }
-        return iter.iterator().hasNext()
     }
 
     // plaintext ballots in given directory, with filter
@@ -159,15 +183,7 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         return groupContext.readTrustee(filename)
     }
 
-    actual override fun readEncryptedBallot(
-        ballotDir: String,
-        ballotId: String
-    ): Result<EncryptedBallot, ErrorMessages> {
-        val errs = ErrorMessages("readEncryptedBallot '$ballotDir/$ballotId'")
-        return errs.add("Not implemented yet")
-    }
-
-
+    // TODO havent defined PEP protos yet
     actual override fun iteratePepBallots(pepDir: String): Iterable<BallotPep> {
         throw RuntimeException("Not implemented yet")
     }
@@ -304,13 +320,9 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         override fun computeNext() {
             while (true) {
                 if (ballotIds.hasNext()) {
-                    val ballotFile = protoPaths.encryptedBallotPath(device, ballotIds.next())
-                    var proto: electionguard.protogen.EncryptedBallot
-                    FileInputStream(ballotFile).use { inp ->
-                        proto = electionguard.protogen.EncryptedBallot.decodeFromStream(inp)
-                    }
+                    val ballotFile = protoPaths.encryptedBallotDevicePath(device, ballotIds.next())
                     val errs = ErrorMessages("EncryptedBallotChainIterator file='$ballotFile'")
-                    val result: EncryptedBallot? = proto.import(groupContext, errs)
+                    val result: EncryptedBallot? = readEncryptedBallot(ballotFile, errs)
                     if (errs.hasErrors()) {
                         logger.error { errs.toString() }
                         continue
@@ -375,12 +387,8 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         override fun computeNext() {
             while (idx < pathList.size) {
                 val ballotFile = pathList[idx++]
-                var proto: electionguard.protogen.EncryptedBallot
-                FileInputStream(ballotFile.toString()).use { inp ->
-                    proto = electionguard.protogen.EncryptedBallot.decodeFromStream(inp)
-                }
                 val errs = ErrorMessages("EncryptedBallotFileIterator file='$ballotFile'")
-                val result: EncryptedBallot? = proto.import(groupContext, errs)
+                val result: EncryptedBallot? = readEncryptedBallot(ballotFile.toString(), errs)
                 if (errs.hasErrors()) {
                     logger.error { errs.toString() }
                     continue
@@ -393,6 +401,13 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
                 }
             }
             return done()
+        }
+    }
+
+    private fun readEncryptedBallot(ballotFile : String, errs: ErrorMessages): EncryptedBallot? {
+        FileInputStream(ballotFile).use { inp ->
+            val proto = electionguard.protogen.EncryptedBallot.decodeFromStream(inp)
+            return proto.import(groupContext, errs)
         }
     }
 

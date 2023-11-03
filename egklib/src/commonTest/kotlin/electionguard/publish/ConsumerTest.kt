@@ -1,11 +1,14 @@
 package electionguard.publish
 
 import com.github.michaelbull.result.*
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.productionGroup
 import electionguard.core.runTest
 import electionguard.decrypt.DecryptingTrusteeIF
+import electionguard.util.ErrorMessages
 import org.junit.jupiter.api.Assertions.assertNotNull
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -16,13 +19,16 @@ class ConsumerTest {
     @Test
     fun consumerJson() {
         val consumerIn = makeConsumer(group, topdir)
+        assertTrue(consumerIn.isJson())
         assertTrue(consumerIn.readElectionConfig() is Ok) // proto doesnt always have config, may have just init
         testConsumer(consumerIn)
     }
 
     @Test
     fun consumerProto() {
-        testConsumer(makeConsumer(group, "src/commonTest/data/workflow/chainedProto"))
+        val consumerIn = makeConsumer(group, "src/commonTest/data/workflow/chainedProto")
+        assertFalse(consumerIn.isJson())
+        testConsumer(consumerIn)
     }
 
     fun testConsumer(consumerIn : Consumer) {
@@ -35,17 +41,37 @@ class ConsumerTest {
 
         assertTrue( consumerIn.readEncryptedBallotChain(device) is Ok)
 
-        var iter = consumerIn.iterateEncryptedBallots(device) { true }
-        assertNotNull(iter)
-        assertTrue(iter.count() > 0)
+        val iterb = consumerIn.iterateEncryptedBallots(device) { true }
+        assertNotNull(iterb)
+        val iter = iterb.iterator()
+        var count = 0
+        var eballot : EncryptedBallot? = null
+        while (iter.hasNext()) {
+            eballot = iter.next()
+            assertTrue(eballot is EncryptedBallot)
+            count++
+        }
+        assertNotNull(eballot)
+        assertEquals(count, iterb.count())
 
-        iter = consumerIn.iterateAllEncryptedBallots { true }
+        val ballotDir = "${consumerIn.topdir()}/encrypted_ballots/$device"
+        val readResult = consumerIn.readEncryptedBallot(ballotDir, eballot!!.ballotId)
+        println(readResult)
+        assertTrue (readResult is Ok)
+        assertEquals(eballot, readResult.unwrap())
+
+        val iterAll = consumerIn.iterateAllEncryptedBallots { true }
         assertNotNull(iter)
-        assertTrue(iter.count() > 0)
+        assertTrue(iterAll.count() > 0)
 
         val iter2 = consumerIn.iterateDecryptedBallots()
         assertNotNull(iter2)
-        assertTrue(iter.count() >= 0)
+        assertTrue(iter2.count() > 0)
+
+        val plaintextDir = "${consumerIn.topdir()}/private_data/input"
+        val iter3 = consumerIn.iteratePlaintextBallots(plaintextDir) { true }
+        assertNotNull(iter3)
+        assertTrue(iter3.count() > 0)
     }
 
     @Test

@@ -156,11 +156,8 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             return errs.add("'$ballotFilename' file does not exist")
         }
         return try {
-            fileSystemProvider.newInputStream(fileSystem.getPath(ballotFilename), StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
-                val eballot = json.import(group, errs)
-                if (errs.hasErrors()) Err(errs) else Ok(eballot!!)
-            }
+            val eballot = readEncryptedBallot(fileSystem.getPath(ballotFilename), errs)
+            if (errs.hasErrors()) Err(errs) else Ok(eballot!!)
         } catch (t: Throwable) {
             errs.add("Exception= ${t.message} ${t.stackTraceToString()}")
         }

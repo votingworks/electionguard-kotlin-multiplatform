@@ -53,9 +53,9 @@ data class ElectionRecordJsonPaths(val topDir : String) {
         return "$ballotDir/$PLAINTEXT_BALLOT_PREFIX$id$JSON_SUFFIX"
     }
 
-    fun encryptedBallotPath(outputDir : String, ballotId : String): String {
+    fun encryptedBallotPath(ballotDir : String, ballotId : String): String {
         val id = ballotId.replace(" ", "_")
-        return "${outputDir}/$ENCRYPTED_BALLOT_PREFIX$id$JSON_SUFFIX"
+        return "${ballotDir}/$ENCRYPTED_BALLOT_PREFIX$id$JSON_SUFFIX"
     }
 
     fun pepBallotPath(outputDir : String, ballotId : String): String {
