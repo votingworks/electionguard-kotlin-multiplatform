@@ -135,9 +135,9 @@ class TallyDecryptionTestVector(
             encryptor.encrypt(ballot, ByteArray(0))
         }
 
-        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extendedBaseHash)
+        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extendedBaseHash, ElGamalPublicKey(publicKey))
         eballots.forEach { eballot ->
-            accumulator.addCastBallot(eballot.cast())
+            accumulator.addCastBallot(eballot.cast(), ErrorMessages(""))
         }
         val encryptedTally = accumulator.build()
 

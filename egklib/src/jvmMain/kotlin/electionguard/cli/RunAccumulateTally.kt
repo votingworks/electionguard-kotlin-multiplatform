@@ -11,6 +11,8 @@ import electionguard.core.productionGroup
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
 import electionguard.tally.AccumulateTally
+import electionguard.util.ErrorMessages
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
@@ -23,6 +25,8 @@ import kotlin.math.roundToInt
 class RunAccumulateTally {
 
     companion object {
+        private val logger = KotlinLogging.logger("RunAccumulateTally")
+
         @JvmStatic
         fun main(args: Array<String>) {
             val parser = ArgParser("RunAccumulateTally")
@@ -50,13 +54,17 @@ class RunAccumulateTally {
             println("RunAccumulateTally starting\n   input= $inputDir\n   output = $outputDir")
 
             val group = productionGroup()
-            runAccumulateBallots(
-                group,
-                inputDir,
-                outputDir,
-                name ?: "RunAccumulateTally",
-                createdBy ?: "RunAccumulateTally"
-            )
+            try {
+                runAccumulateBallots(
+                    group,
+                    inputDir,
+                    outputDir,
+                    name ?: "RunAccumulateTally",
+                    createdBy ?: "RunAccumulateTally"
+                )
+            } catch (t: Throwable) {
+                logger.error { "Exception= ${t.message} ${t.stackTraceToString()}" }
+            }
         }
 
         fun runAccumulateBallots(
@@ -79,10 +87,17 @@ class RunAccumulateTally {
 
             var countBad = 0
             var countOk = 0
-            val accumulator = AccumulateTally(group, manifest, name, electionInit.extendedBaseHash)
+            val accumulator = AccumulateTally(group, manifest, name, electionInit.extendedBaseHash, electionInit.jointPublicKey())
             for (encryptedBallot in consumerIn.iterateAllCastBallots()) {
-                val ok = accumulator.addCastBallot(encryptedBallot)
-                if (ok) countOk++ else countBad++
+                val errs = ErrorMessages("RunAccumulateTally ballotId=${encryptedBallot.ballotId}")
+                accumulator.addCastBallot(encryptedBallot, errs)
+                if (errs.hasErrors()) {
+                    println(errs)
+                    logger.error{ errs.toString() }
+                    countBad++
+                } else {
+                    countOk++
+                }
             }
             val tally: EncryptedTally = accumulator.build()
 

@@ -83,7 +83,7 @@ class WorkflowEncryptDecryptTest {
             val evote3 = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))
 
             val accum = listOf(evote1, evote2, evote3)
-            val eAccum = accum.encryptedSum()
+            val eAccum = accum.encryptedSum()?: 0.encrypt(publicKey)
 
             //decrypt
             val partialDecryption = eAccum.computeShare(keypair.secretKey)
@@ -112,7 +112,7 @@ class WorkflowEncryptDecryptTest {
 
             // tally
             val accum = listOf(evote1, evote2, evote3)
-            val eAccum = accum.encryptedSum()
+            val eAccum = accum.encryptedSum()?: 0.encrypt(publicKey)
 
             //decrypt
             val shares = trustees.map { eAccum.pad powP it.secretKey.key }

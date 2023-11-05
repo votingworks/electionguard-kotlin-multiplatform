@@ -85,7 +85,7 @@ fun VerifyEncryptedBallots.verifyPreencryptionShortCodes(
     // product of multiple pre-encryption selection vectors. component-wise I think
     for (idx in 0 until nselection) {
         val compList = cv.selectedVectors.map { it.encryptions[idx] }
-        val sum = compList.encryptedSum()
+        val sum = compList.encryptedSum()?: 0.encrypt(jointPublicKey)
         if (sum != selectionVector[idx]) {
             results.add(Err("    18.B Contest ${contest.contestId} (contestLimit=$contestLimit) selectionVector $idx does not match product"))
         }

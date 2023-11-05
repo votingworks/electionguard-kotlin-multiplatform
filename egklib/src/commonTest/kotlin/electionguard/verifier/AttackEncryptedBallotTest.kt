@@ -53,9 +53,10 @@ class AttackEncryptedBallotTest {
 
         if (showCount) {
             // sum it up
-            val accumulator = AccumulateTally(group, electionRecord.manifest(), "attackedTally", electionRecord.extendedBaseHash()!!)
+            val accumulator = AccumulateTally(group, electionRecord.manifest(), "attackedTally",
+                electionRecord.extendedBaseHash()!!, ElGamalPublicKey(electionRecord.jointPublicKey()!!))
             for (encryptedBallot in mungedBallots ) {
-                accumulator.addCastBallot(encryptedBallot)
+                accumulator.addCastBallot(encryptedBallot, ErrorMessages(""))
             }
             val encryptedTally: EncryptedTally = accumulator.build()
 

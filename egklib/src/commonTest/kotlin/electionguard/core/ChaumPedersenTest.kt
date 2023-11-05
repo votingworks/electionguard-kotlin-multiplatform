@@ -287,7 +287,7 @@ class ChaumPedersenTest {
             val nonceAccum = nonce + nonce + nonce // we're using it three times
 
             val texts: List<ElGamalCiphertext> = listOf(vote0, vote1, vote41)
-            val message: ElGamalCiphertext = texts.encryptedSum()
+            val message: ElGamalCiphertext = texts.encryptedSum()?: 0.encrypt(publicKey)
 
             val proof =
                 message.makeChaumPedersen(
@@ -329,7 +329,7 @@ class ChaumPedersenTest {
             val nonceAccum = nonceSequence[0] + nonceSequence[1] + nonceSequence[2]
 
             val texts: List<ElGamalCiphertext> = listOf(vote0, vote1, vote41)
-            val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
+            val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()?: 0.encrypt(publicKey)
 
             val proof =
                 ciphertextAccumulation.makeChaumPedersen(
