@@ -161,7 +161,7 @@ object KotestBallotGenerators {
     fun reportingUnitType(): Arb<Manifest.ReportingUnitType> = Arb.enum()
 
     // ElectionGuard only supports one-of-m and n-of-m elections, so that's
-// all we're going to support here, for now.
+    // all we're going to support here, for now.
     fun voteVariationType(): Arb<Manifest.VoteVariationType> =
         Arb.element(Manifest.VoteVariationType.one_of_m, Manifest.VoteVariationType.one_of_m)
 
@@ -394,7 +394,6 @@ object KotestBallotGenerators {
             sequenceOrder = sequenceOrder,
             geopoliticalUnitId = geoUnit.geopoliticalUnitId,
             voteVariation = voteVariation,
-            // TODO: figure out where/how/if we're supposed to encode m in here
             numberElected = n,
             votesAllowed = n,
             name = "Contest $sequenceOrder",
@@ -440,6 +439,4 @@ object KotestBallotGenerators {
         )
     }
 }
-
-// TODO: add support for referendum contests, in addition to the current candidate contests
 

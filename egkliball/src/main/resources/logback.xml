@@ -8,8 +8,7 @@
         <file>egkServer.log</file>
         <append>true</append>
         <encoder>
-            <!-- pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern -->
-            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} %-5level %msg%n</pattern>
+            <pattern>%date [%10r] %-5level %logger{15} - %msg %n</pattern>
         </encoder>
     </appender>
     <root level="INFO">

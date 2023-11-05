@@ -3,6 +3,7 @@ package electionguard.decrypt
 import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.core.Base16.toHex
+import electionguard.util.ErrorMessages
 import electionguard.util.Stats
 
 // TODO Use a configuration to set to the maximum possible vote. Keep low for testing to detect bugs quickly.
@@ -55,23 +56,23 @@ class DecryptorDoerre(
         this.lagrangeCoordinates = dguardians.associateBy { it.guardianId }
     }
 
-    fun decryptBallot(ballot: EncryptedBallot): DecryptedTallyOrBallot {
+    fun decryptBallot(ballot: EncryptedBallot, errs : ErrorMessages): DecryptedTallyOrBallot? {
         // pretend a ballot is a tally
-        return ballot.convertToTally().decrypt(true)
+        return ballot.convertToTally().decrypt(errs,true)
     }
 
-    fun decryptPep(ballot: EncryptedBallot): DecryptedTallyOrBallot {
-        return ballot.convertToTally().decrypt(isBallot = false, isPep = true)
+    fun decryptPep(ballot: EncryptedBallot, errs : ErrorMessages): DecryptedTallyOrBallot? {
+        return ballot.convertToTally().decrypt(errs, isBallot = false, isPep = true)
     }
 
-    fun decryptPep(tally: EncryptedTally): DecryptedTallyOrBallot {
-        return tally.decrypt(isBallot = false, isPep = true)
+    fun decryptPep(tally: EncryptedTally, errs : ErrorMessages): DecryptedTallyOrBallot? {
+        return tally.decrypt(errs, isBallot = false, isPep = true)
     }
 
     var first = false
-    fun EncryptedTally.decrypt(isBallot : Boolean = false, isPep : Boolean = false): DecryptedTallyOrBallot {
+    fun EncryptedTally.decrypt(errs : ErrorMessages, isBallot : Boolean = false, isPep : Boolean = false): DecryptedTallyOrBallot? {
         if (this.electionId != extendedBaseHash) {
-            throw RuntimeException("Encrypted Tally/Ballot has wrong electionId = ${this.electionId}")
+            errs.add("Encrypted Tally/Ballot has wrong electionId = ${this.electionId}")
         }
         val startDecrypt = getSystemTimeInMillis()
         // must get the DecryptionResults from all trustees before we can do the challenges
@@ -91,9 +92,15 @@ class DecryptorDoerre(
             // TODO if nguardians = 1, can set weightedProduct = Mi.
             // lagrange weighted product of the shares, M = Prod(M_i^w_i) mod p; spec 2.0.0, eq 68
             val weightedProduct = with(group) {
-                dresults.shares.map { (key, value) ->
-                    val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
-                    value.Mi powP coeff.lagrangeCoefficient
+                dresults.shares.map { (guardianId, value) ->
+                    val lagrange = lagrangeCoordinates[guardianId]
+                    val coeff = if (lagrange == null) {
+                            errs.add("missing lagrangeCoordinate for $guardianId")
+                            group.ONE_MOD_Q
+                        } else {
+                            lagrange.lagrangeCoefficient
+                        }
+                    value.Mi powP coeff
                 }.multP()
             }
 
@@ -101,8 +108,7 @@ class DecryptorDoerre(
             val T = dresults.ciphertext.data / weightedProduct
             // T = K^t mod p, take log to get t = tally.
             // Dont bother taking the log for PEP, it will not be found when (m1 != m2)), just test T == 1 for equality.
-            // TODO something better than exception ??
-            dresults.tally = if (isPep) 0 else jointPublicKey.dLog(T, maxDlog) ?: throw RuntimeException("dLog not found on $selectionKey")
+            dresults.tally = if (isPep) 0 else jointPublicKey.dLog(T, maxDlog) ?: errs.addNull("dLog not found on $selectionKey") as Int?
             dresults.M = weightedProduct
 
             // compute the collective challenge, needed for the collective proof; spec 2.0.0 eq 70
@@ -136,9 +142,15 @@ class DecryptorDoerre(
             for (cresults in allDecryptions.contestData.values) {
                 // lagrange weighted product of the shares, beta = Prod(M_i^w_i) mod p; spec 2.0.0, eq 78
                 val weightedProduct = with(group) {
-                    cresults.shares.map { (key, value) ->
-                        val coeff = lagrangeCoordinates[key] ?: throw IllegalArgumentException()
-                        value.Mi powP coeff.lagrangeCoefficient
+                    cresults.shares.map { (guardianId, value) ->
+                        val lagrange = lagrangeCoordinates[guardianId]
+                        val coeff = if (lagrange == null) {
+                            errs.add("missing lagrangeCoordinate for $guardianId")
+                            group.ONE_MOD_Q
+                        } else {
+                            lagrange.lagrangeCoefficient
+                        }
+                        value.Mi powP coeff
                     }.multP()
                 }
                 cresults.beta = weightedProduct
@@ -161,11 +173,13 @@ class DecryptorDoerre(
         val startChallengeCalls = getSystemTimeInMillis()
         val trusteeChallengeResponses = mutableListOf<TrusteeChallengeResponses>()
         for (trustee in decryptingTrustees) {
-            trusteeChallengeResponses.add(allDecryptions.challengeTrustee(trustee))
+            trusteeChallengeResponses.add(allDecryptions.challengeTrustee(trustee, errs.nested("trusteeChallengeResponses")))
         }
         trusteeChallengeResponses.forEach { challengeResponses ->
             challengeResponses.results.forEach {
-                allDecryptions.addChallengeResponse(challengeResponses.id, it)
+                if (!allDecryptions.addChallengeResponse(challengeResponses.id, it)) {
+                    errs.add("Cant find challengeResponse id='${challengeResponses.id}'")
+                }
             }
         }
 
@@ -176,10 +190,10 @@ class DecryptorDoerre(
         // After gathering the challenge responses from the available trustees, we can verify and publish.
         // Put that code into a different class to keep this one from getting too big.
         val tallyDecryptor = TallyDecryptor(group, extendedBaseHash, jointPublicKey, lagrangeCoordinates, guardians)
-        val result = tallyDecryptor.decryptTally(this, allDecryptions, stats)
+        val result = tallyDecryptor.decryptTally(this, allDecryptions, stats, errs.nested("TallyDecryptor.decryptTally"))
 
         stats.of("decryptTally").accum(getSystemTimeInMillis() - startTally, ndecrypt)
-        return result
+        return if (errs.hasErrors()) null else result!!
     }
 
     /**
@@ -223,22 +237,30 @@ class DecryptorDoerre(
     }
 
     // send all challenges for a ballot / tally to one trustee
-    fun AllDecryptions.challengeTrustee(trustee: DecryptingTrusteeIF) : TrusteeChallengeResponses {
+    fun AllDecryptions.challengeTrustee(trustee: DecryptingTrusteeIF, errs : ErrorMessages) : TrusteeChallengeResponses {
         val wi = lagrangeCoordinates[trustee.id()]!!.lagrangeCoefficient
         // Get all the challenges from the shares for this trustee
         val requests: MutableList<ChallengeRequest> = mutableListOf()
         for ((selectionKey, results) in this.shares) {
-            val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            // spec 2.0.0, eq 72
-            val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
-            requests.add(ChallengeRequest(selectionKey, ci, result.u))
+            val result = results.shares[trustee.id()]
+            if (result == null) {
+                errs.add("missing share ${trustee.id()}")
+            } else {
+                // spec 2.0.0, eq 72
+                val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
+                requests.add(ChallengeRequest(selectionKey, ci, result.u))
+            }
         }
         // Get all the challenges from the contestData
         for ((id, results) in this.contestData) {
-            val result = results.shares[trustee.id()] ?: throw IllegalStateException("missing ${trustee.id()}")
-            // spec 2.0.0, eq 72
-            val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
-            requests.add(ChallengeRequest(id, ci, result.u))
+            val result = results.shares[trustee.id()]
+            if (result == null) {
+                errs.add("missing contestData ${trustee.id()}")
+            } else {
+                // spec 2.0.0, eq 72
+                val ci = wi * results.collectiveChallenge!!.toElementModQ(group)
+                requests.add(ChallengeRequest(id, ci, result.u))
+            }
         }
 
         // ask for all of them at once from the trustee

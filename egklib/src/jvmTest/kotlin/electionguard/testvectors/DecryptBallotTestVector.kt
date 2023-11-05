@@ -101,7 +101,7 @@ class DecryptBallotTestVector {
             guardiansWrapper,
             trusteesAll,
         )
-        val decryptedBallot = decryptor.decryptBallot(encryptedBallot)
+        val decryptedBallot = decryptor.decryptBallot(encryptedBallot, ErrorMessages(""))!!
 
         val decryptBallotTestVector = DecryptBallotTestVector(
             "Test decrypt ballot with trustees",
@@ -143,7 +143,7 @@ class DecryptBallotTestVector {
             guardiansWrapper,
             trusteesAll,
         )
-        val decryptedBallot = decryptor.decryptBallot(encryptedBallot!!)
+        val decryptedBallot = decryptor.decryptBallot(encryptedBallot!!, ErrorMessages(""))!!
 
         // to compare the proofs, we need the nonces. so just validate them.
         testVector.expected_decrypted_ballot.contests.zip(decryptedBallot.contests).forEach { (expectContest, actualContest) ->

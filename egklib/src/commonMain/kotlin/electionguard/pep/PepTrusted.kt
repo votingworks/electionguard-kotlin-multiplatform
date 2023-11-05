@@ -98,7 +98,8 @@ class PepTrusted(
 
         // step 2. Use standard algorithm to decrypt ciphertextAB, and get the decryption proof:
         //    (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)
-        val decryption: DecryptedTallyOrBallot = decryptor.decryptPep(ballotAB)
+        val decryption: DecryptedTallyOrBallot? = decryptor.decryptPep(ballotAB, ErrorMessages(""))
+        require(decryption != null)
 
         // step 3,4,5 compute challenge and get guardian responses and verify them
         ballotWorking.contests.map { contest ->

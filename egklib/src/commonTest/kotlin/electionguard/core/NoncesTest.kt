@@ -6,14 +6,7 @@ import kotlin.test.assertEquals
 class NoncesTest {
     @Test
     fun sequencesAreLazy() {
-        // TODO: add a timeout on this test; if it takes more than a few seconds,
-        //   then it's failed. We could use @Timeout with JUnit5 Jupiter, but
-        //   that's not available in Kotlin Test.
-
-        // Possibly relevant:
-        //   https://medium.com/@ralf.stuckert/testing-coroutines-timeout-36c22db1b06a
-
-        runTest {
+            runTest {
             val context = productionGroup(PowRadixOption.LOW_MEMORY_USE)
             val nonces = Nonces(context.ONE_MOD_Q, "sample_text")
             val expected2 = nonces.asPair().toList()

@@ -62,14 +62,18 @@ class RunTrustedTallyDecryption {
             parser.parse(args)
             println("RunTrustedTallyDecryption starting\n   input= $inputDir\n   trustees= $trusteeDir\n   output = $outputDir")
 
-            val group = productionGroup()
-            runDecryptTally(
-                group,
-                inputDir,
-                outputDir,
-                readDecryptingTrustees(group, inputDir, trusteeDir, missing),
-                createdBy
-            )
+            try {
+                val group = productionGroup()
+                runDecryptTally(
+                    group,
+                    inputDir,
+                    outputDir,
+                    readDecryptingTrustees(group, inputDir, trusteeDir, missing),
+                    createdBy
+                )
+            } catch (t: Throwable) {
+                logger.error { "Exception= ${t.message} ${t.stackTraceToString()}" }
+            }
         }
 
         fun readDecryptingTrustees(
@@ -131,20 +135,30 @@ class RunTrustedTallyDecryption {
                 guardians,
                 decryptingTrustees,
             )
-            val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt() }
 
-            val publisher = makePublisher(outputDir, false, consumerIn.isJson())
-            publisher.writeDecryptionResult(
-                DecryptionResult(
-                    tallyResult,
-                    decryptedTally,
-                    mapOf(
-                        Pair("CreatedBy", createdBy ?: "RunTrustedTallyDecryption"),
-                        Pair("CreatedOn", getSystemDate()),
-                        Pair("CreatedFromDir", inputDir)
+            val errs = ErrorMessages("RunTrustedTallyDecryption")
+            try {
+                val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt(errs) }
+                if (decryptedTally == null) {
+                    logger.error { " RunTrustedTallyDecryption failed error=${errs}" }
+                    return
+                }
+                val publisher = makePublisher(outputDir, false, consumerIn.isJson())
+                publisher.writeDecryptionResult(
+                    DecryptionResult(
+                        tallyResult,
+                        decryptedTally,
+                        mapOf(
+                            Pair("CreatedBy", createdBy ?: "RunTrustedTallyDecryption"),
+                            Pair("CreatedOn", getSystemDate()),
+                            Pair("CreatedFromDir", inputDir)
+                        )
                     )
                 )
-            )
+            } catch (t: Throwable) {
+                errs.add("Exception= ${t.message} ${t.stackTraceToString()}")
+                logger.error { errs }
+            }
 
             val took = getSystemTimeInMillis() - starting
             println("DecryptTally took $took millisecs")

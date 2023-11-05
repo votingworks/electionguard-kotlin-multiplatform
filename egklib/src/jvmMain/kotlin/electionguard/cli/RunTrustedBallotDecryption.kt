@@ -83,11 +83,15 @@ class RunTrustedBallotDecryption {
                         "   decryptChallenged = $decryptChallenged\n   output = $outputDir"
             )
 
-            val group = productionGroup()
-            runDecryptBallots(
-                group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
-                decryptChallenged, nthreads ?: 11
-            )
+            try {
+                val group = productionGroup()
+                runDecryptBallots(
+                    group, inputDir, outputDir, readDecryptingTrustees(group, inputDir, trusteeDir),
+                    decryptChallenged, nthreads ?: 11
+                )
+            } catch (t : Throwable) {
+                logger.error{"Exception= ${t.message} ${t.stackTraceToString()}"}
+            }
         }
 
         fun runDecryptBallots(
@@ -187,7 +191,7 @@ class RunTrustedBallotDecryption {
         }
 
         // parallelize over ballots
-// place the ballot reading into its own coroutine
+        // place the ballot reading into its own coroutine
         @OptIn(ExperimentalCoroutinesApi::class)
         private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> =
             produce {
@@ -206,10 +210,20 @@ class RunTrustedBallotDecryption {
             output: SendChannel<DecryptedTallyOrBallot>,
         ) = launch(Dispatchers.Default) {
             for (ballot in input) {
-                val decrypted: DecryptedTallyOrBallot = decryptor.decryptBallot(ballot)
-                logger.debug { " Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}" }
-                if (debug) println(" Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}")
-                output.send(decrypted)
+                val errs = ErrorMessages("RunTrustedBallotDecryption ballot=${ballot.ballotId}")
+                try {
+                    val decrypted = decryptor.decryptBallot(ballot, errs)
+                    if (decrypted != null) {
+                        logger.debug { " Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}" }
+                        if (debug) println(" Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}")
+                        output.send(decrypted)
+                    } else {
+                        logger.error { " decryptBallot failed on ${ballot.ballotId} error=${errs}" }
+                    }
+                } catch (t : Throwable) {
+                    errs.add("Exception= ${t.message} ${t.stackTraceToString()}")
+                    logger.error { errs }
+                }
                 yield()
             }
             logger.debug { "Decryptor #$id done" }

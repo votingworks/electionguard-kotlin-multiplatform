@@ -60,15 +60,15 @@ fun runDoerreTest(
 
 fun testDoerreDecrypt(group: GroupContext,
                                 publicKey: ElGamalPublicKey,
-                                trustees: List<DecryptingTrusteeDoerre>,
+                                trustees: List<DecryptingTrusteeIF>,
                                 present: List<Int>) {
-    val missing = trustees.filter {!present.contains(it.xCoordinate())}.map { it.id }
+    val missing = trustees.filter {!present.contains(it.xCoordinate())}.map { it.id() }
     println("present $present, missing $missing")
     val vote = 42
     val evote = vote.encrypt(publicKey, group.randomElementModQ(minimum = 1))
 
     val available = trustees.filter {present.contains(it.xCoordinate())}
-    val lagrangeCoefficients = available.associate { it.id to group.computeLagrangeCoefficient(it.xCoordinate, present) }
+    val lagrangeCoefficients = available.associate { it.id() to group.computeLagrangeCoefficient(it.xCoordinate(), present) }
 
     val shares: List<PartialDecryption> = available.map {
         it.decrypt(group, listOf(evote.pad))[0]
@@ -85,7 +85,7 @@ fun testDoerreDecrypt(group: GroupContext,
     assertEquals(expected, bm)
 
     val dlogM: Int = publicKey.dLog(bm, 100) ?: throw RuntimeException("dlog error")
-    println("The answer is $dlogM")
+    println("TestDoerreDecrypt answer is $dlogM")
     assertEquals(42, dlogM)
 }
 
