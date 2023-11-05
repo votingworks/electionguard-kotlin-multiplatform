@@ -156,7 +156,7 @@ class TallyDecryptionTestVector(
             guardiansWrapper,
             trusteesMinus1,
         )
-        val decryptedTally = with(decryptor) { encryptedTally.decrypt() }
+        val decryptedTally = with(decryptor) { encryptedTally.decrypt(ErrorMessages(""))!! }
 
         val tallyPartialDecryptionTestVector = TallyPartialDecryptionTestVector(
             "Test tally partial decryption",
@@ -199,7 +199,7 @@ class TallyDecryptionTestVector(
             guardiansWrapper,
             trusteesMinus1,
         )
-        val decryptedTally = with(decryptor) { encryptedTally.decrypt() }
+        val decryptedTally = with(decryptor) { encryptedTally.decrypt(ErrorMessages(""))!! }
 
         testVector.expected_decrypted_tally.contests.zip(decryptedTally.contests).forEach { (expectContest, actualContest) ->
             expectContest.selections.zip(actualContest.selections).forEach { (expectSelection, actualSelection) ->

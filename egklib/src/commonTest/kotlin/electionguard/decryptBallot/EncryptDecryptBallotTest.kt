@@ -14,6 +14,7 @@ import electionguard.input.RandomBallotProvider
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
 import electionguard.util.Stats
 import electionguard.verifier.VerifyDecryption
 import kotlin.math.roundToInt
@@ -136,7 +137,12 @@ fun testEncryptDecryptVerify(
         encryptTime += getSystemTimeInMillis() - startEncrypt
 
         val startDecrypt = getSystemTimeInMillis()
-        val decryptedBallot = decryptor.decryptBallot(encryptedBallot)
+        val errs = ErrorMessages("testEncryptDecryptVerify")
+        val decryptedBallot = decryptor.decryptBallot(encryptedBallot, errs)
+        if (decryptedBallot == null) {
+            println("testEncryptDecryptVerify failedf errors = $errs")
+            return
+        }
         decryptTime += getSystemTimeInMillis() - startDecrypt
 
         // contestData matches

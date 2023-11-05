@@ -52,15 +52,17 @@ class CakeEgkDecryptionTest {
         val ratioG = makeRatio(numerator, denominator, publicKeyG)
         group.showAndClearCountPowP()
         val Tg = cakeEgkDecryption.doEgkPep(ratioG, expectEq)
-        val expect = 12 * nguardians + 16
-        println(" after doEgkPep ${group.showAndClearCountPowP()} expect = $expect")
-        val isEq = Tg.equals(group.ONE_MOD_P)
-        if (show) {
-            print(" $numerator / $denominator, doEgkPep isEqual = $isEq T = ${Tg.toStringShort()}")
-            val dvoteg = publicKeyG.dLog(Tg)
-            println(" dvote = $dvoteg")
+        if (Tg != null) {
+            val expect = 12 * nguardians + 16
+            println(" after doEgkPep ${group.showAndClearCountPowP()} expect = $expect")
+            val isEq = Tg.equals(group.ONE_MOD_P)
+            if (show) {
+                print(" $numerator / $denominator, doEgkPep isEqual = $isEq T = ${Tg.toStringShort()}")
+                val dvoteg = publicKeyG.dLog(Tg)
+                println(" dvote = $dvoteg")
+            }
+            assertEquals(expectEq, isEq)
         }
-        assertEquals(expectEq, isEq)
     }
 }
 

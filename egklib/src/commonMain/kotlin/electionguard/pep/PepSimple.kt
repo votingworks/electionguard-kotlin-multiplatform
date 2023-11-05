@@ -72,7 +72,8 @@ class PepSimple(
         // step 2. Use standard algorithm to decrypt ciphertextAB, and get the decryption proof:
         //    (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)
         //group.showAndClearCountPowP()
-        val decryption: DecryptedTallyOrBallot = decryptor.decryptPep(ballotAB)
+        val decryption: DecryptedTallyOrBallot? = decryptor.decryptPep(ballotAB, ErrorMessages("PepSimple"))
+        require(decryption != null)
         val n = decryptor.nguardians
         val nd = decryptor.ndGuardians
         val q = decryptor.quorum

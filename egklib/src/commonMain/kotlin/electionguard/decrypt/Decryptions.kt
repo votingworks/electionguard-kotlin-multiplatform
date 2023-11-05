@@ -18,7 +18,7 @@ data class PartialDecryption(
 
 /** One selection decryption from one Decrypting Trustees. */
 data class DecryptionResult(
-    val id: String,     // "contestId#@selectionId" aka "selectionKey"
+    val selectionKey: String,     // "contestId#@selectionId"
     val ciphertext: ElGamalCiphertext, // text to decrypt
     val share: PartialDecryption,
 )
@@ -68,7 +68,7 @@ data class TrusteeChallengeResponses(
  * Mutable, built incrementally.
  */
 class DecryptionResults(
-    val selectionKey: String,     // "contestId#@selectionId" aka "selectionKey"
+    val selectionKey: String,     // "contestId#@selectionId"
     val ciphertext: ElGamalCiphertext, // text to decrypt
     val shares: MutableMap<String, PartialDecryption>, // key by guardianId
     var tally: Int? = null, // the decrypted tally
@@ -108,11 +108,11 @@ class AllDecryptions {
     }
 
     /** add Partial decryptions from one DecryptingTrustee. */
-    fun addDecryption(guardianId: String, ciphertext: ElGamalCiphertext, decryption: PartialDecryption) {
-        var decryptionResults = shares[guardianId]
+    fun addDecryption(selectionKey: String, ciphertext: ElGamalCiphertext, decryption: PartialDecryption) {
+        var decryptionResults = shares[selectionKey]
         if (decryptionResults == null) {
-            decryptionResults = DecryptionResults(guardianId, ciphertext, mutableMapOf())
-            shares[guardianId] = decryptionResults
+            decryptionResults = DecryptionResults(selectionKey, ciphertext, mutableMapOf())
+            shares[selectionKey] = decryptionResults
         }
         decryptionResults.shares[decryption.guardianId] = decryption
     }
@@ -128,14 +128,18 @@ class AllDecryptions {
     }
 
     /** add challenge response from one DecryptingTrustee. */
-    fun addChallengeResponse(guardianId: String, cr : ChallengeResponse) {
+    fun addChallengeResponse(guardianId: String, cr : ChallengeResponse) : Boolean {
         val dresult = shares[cr.id]
         if (dresult != null) {
             dresult.responses[guardianId] = cr.response
         } else {
-            val cdresult = contestData[cr.id] ?: throw IllegalStateException("Cant find ${cr.id}")
+            val cdresult = contestData[cr.id]
+            if (cdresult == null) {
+                return false
+            }
             cdresult.responses[guardianId] = cr.response
         }
+        return true
     }
 }
 

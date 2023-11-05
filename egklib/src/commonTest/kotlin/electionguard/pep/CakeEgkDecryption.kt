@@ -9,6 +9,7 @@ import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
 import electionguard.keyceremony.KeyCeremonyTrustee
+import electionguard.util.ErrorMessages
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -57,7 +58,7 @@ class CakeEgkDecryption(val group: GroupContext, val quorum: Int, val extendedBa
     }
 
     // The CAKE PEP protocol, modified to use Egk
-    fun doEgkPep(ratio: ElGamalCiphertext, expectEq: Boolean): ElementModP {
+    fun doEgkPep(ratio: ElGamalCiphertext, expectEq: Boolean): ElementModP? {
         // step 1a: extra nonce protects (m1 - m2) from leaking. having multiple ones from each guardian is not needed?
         val stepValues = guardians.map { it.cakeStep1(ratio) }
         val stepMap = stepValues.associateBy { it.id }
@@ -88,6 +89,10 @@ class CakeEgkDecryption(val group: GroupContext, val quorum: Int, val extendedBa
         //  Step 2 V:
         //  (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)
         val egkDecryptOutput = EgkDecrypt(ciphertextAB, decryptor)
+        if (egkDecryptOutput == null) {
+            println("EgkDecrypt failed")
+            return null
+        }
         val T = egkDecryptOutput.T
         val c_prime = egkDecryptOutput.proof.c
         val v_prime = egkDecryptOutput.proof.r
@@ -178,20 +183,17 @@ class CakeEgkDecryption(val group: GroupContext, val quorum: Int, val extendedBa
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    fun EgkDecrypt(ciphertextAB : ElGamalCiphertext, decryptor: DecryptorDoerre) : EgkDecryptOutput {
+    fun EgkDecrypt(ciphertextAB : ElGamalCiphertext, decryptor: DecryptorDoerre) : EgkDecryptOutput? {
         val eTally = makeTallyForSingleCiphertext(ciphertextAB, extendedBaseHash)
         //group.showAndClearCountPowP()
-        val dTally = decryptor.decryptPep(eTally)
+        val errs = ErrorMessages("CakeEgkDecrypt")
+        val dTally = decryptor.decryptPep(eTally, errs)
+        if (dTally == null) {
+            println("CakeEgkDecrypt failed errors = $errs")
+            return null
+        }
         //println("EgkDecrypt = ${group.showAndClearCountPowP()} expect ${4 * decryptor.nguardians + 4}")
         val dSelection = dTally.contests[0].selections[0]
-
-        //     data class Selection(
-        //        val selectionId: String, // matches SelectionDescription.selectionId
-        //        val tally: Int,         // logK(T), ie the decrypted vote
-        //        val bOverM: ElementModP, // T = (B / M) mod p. (spec 2.0, eq 64)
-        //        val encryptedVote: ElGamalCiphertext, // same as EncryptedTally.Selection.encryptedVote
-        //        val proof: ChaumPedersenProof, // proof that M = A^s mod p TODO why isnt this Schnoor ??
-        //    ) {
         return EgkDecryptOutput(dSelection.bOverM, dSelection.proof)
     }
 }

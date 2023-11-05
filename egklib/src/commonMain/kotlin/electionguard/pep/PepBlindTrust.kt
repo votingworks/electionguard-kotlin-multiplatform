@@ -202,7 +202,8 @@ class PepBlindTrust(
 
         //6. admin:
         //    (a) decrypt (A, B): (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)    // 4+5*nd
-        val decryption: DecryptedTallyOrBallot = decryptor.decryptPep(ballotAB)
+        val decryption: DecryptedTallyOrBallot? = decryptor.decryptPep(ballotAB, ErrorMessages("PepBlindTrust"))
+        require(decryption != null)
 
         //    (b) IsEq = (T == 1)
         //    (c) Send (IsEq, c, v, α, β, c′, v′, A, B, T) to V and publish to BB.

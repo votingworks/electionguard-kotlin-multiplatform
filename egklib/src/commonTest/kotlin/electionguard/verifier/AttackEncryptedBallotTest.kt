@@ -13,6 +13,7 @@ import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
 import electionguard.publish.readElectionRecord
 import electionguard.tally.AccumulateTally
+import electionguard.util.ErrorMessages
 import electionguard.util.Stats
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
@@ -176,7 +177,7 @@ fun decryptTally(
         guardians,
         decryptingTrustees,
         )
-    return with(decryptor) { encryptedTally.decrypt() }
+    return with(decryptor) { encryptedTally.decrypt(ErrorMessages(""))!! }
 }
 
 fun compareTallies(
