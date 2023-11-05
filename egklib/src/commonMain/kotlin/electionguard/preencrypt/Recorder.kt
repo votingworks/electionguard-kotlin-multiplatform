@@ -87,7 +87,7 @@ class Recorder(
         val selections = this.makeSelections(preeContest)
 
         val texts: List<ElGamalCiphertext> = selections.map { it.ciphertext }
-        val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()
+        val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()?: 0.encrypt(publicKeyEG)
         val nonces: Iterable<ElementModQ> = selections.map { it.selectionNonce }
         val aggNonce: ElementModQ = with(group) { nonces.addQ() }
         val totalVotes = votedFor.map{ if (it) 1 else 0 }.sum()
@@ -133,7 +133,7 @@ class Recorder(
         val combinedEncryption = mutableListOf<ElGamalCiphertext>()
         repeat(nselections) { idx ->
             val componentEncryptions : List<ElGamalCiphertext> = this.selectedVectors.map { it.encryptions[idx] }
-            combinedEncryption.add( componentEncryptions.encryptedSum() )
+            combinedEncryption.add( componentEncryptions.encryptedSum()?: 0.encrypt(publicKeyEG) )
         }
 
         // the encryption nonces are added to create suitable nonces

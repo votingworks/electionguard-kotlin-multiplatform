@@ -189,16 +189,9 @@ operator fun ElGamalCiphertext.plus(o: ElGamalCiphertext): ElGamalCiphertext {
  * Homomorphically "adds" a sequence of ElGamal ciphertexts through piecewise multiplication.
  * @throws ArithmeticException if the sequence is empty
  */
-fun Iterable<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext =
-    // This operation isn't defined on an empty list -- we'd have to have some way of getting
-    // an encryption of zero, but we don't have the public key handy -- so we'll just raise
-    // an exception on that, and otherwise we're fine.
-    asSequence()
-        .let {
-            // TODO why not return null?
-            it.ifEmpty { throw ArithmeticException("Cannot sum an empty list of ciphertexts") }
-                .reduce { a, b -> a + b }
-        }
+fun List<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext? {
+    return if (this.isEmpty()) null else this.reduce { a, b -> a + b }
+}
 
 /** Add two lists by component-wise multiplication */
 fun List<ElGamalCiphertext>.add(other: List<ElGamalCiphertext>): List<ElGamalCiphertext> {

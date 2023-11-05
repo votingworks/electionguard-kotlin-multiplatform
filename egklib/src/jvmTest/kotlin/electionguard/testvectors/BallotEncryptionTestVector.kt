@@ -201,7 +201,7 @@ class BallotEncryptionTestVector {
             val randomCj = expectContest.expected_proof.proofs.map { it.c_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed c_nonce") }
 
             val ciphertexts: List<ElGamalCiphertext> = actualContest.selections.map { it.ciphertext }
-            val contestAccumulation: ElGamalCiphertext = ciphertexts.encryptedSum()
+            val contestAccumulation: ElGamalCiphertext = ciphertexts.encryptedSum()?: 0.encrypt(publicKey)
             val nonces: Iterable<ElementModQ> = actualContest.selections.map { it.selectionNonce }
             val aggNonce: ElementModQ = with(group) { nonces.addQ() }
             val totalVotes: Int = plainContest.selections.map { it.vote }.sum()

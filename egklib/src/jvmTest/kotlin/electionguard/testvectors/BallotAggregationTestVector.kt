@@ -10,6 +10,7 @@ import electionguard.encrypt.cast
 import electionguard.cli.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.tally.AccumulateTally
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -64,9 +65,9 @@ class BallotAggregationTestVector {
             encryptor.encrypt(ballot, ByteArray(0))
         }
 
-        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extendedBaseHash)
+        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extendedBaseHash, ElGamalPublicKey(publicKey))
         eballots.forEach { eballot ->
-            accumulator.addCastBallot(eballot.cast())
+            accumulator.addCastBallot(eballot.cast(), ErrorMessages(""))
         }
         val tally = accumulator.build()
 
@@ -95,11 +96,12 @@ class BallotAggregationTestVector {
             }
 
         val extended_base_hash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readBallotAggregationTestVector malformed extended_base_hash")
+        val joint_public_key = testVector.joint_public_key.import(group) ?: throw IllegalArgumentException("readBallotAggregationTestVector malformed joint_public_key")
         val eballots: List<EncryptedBallotIF> = testVector.encrypted_ballots.map { it.import(group, extended_base_hash) }
         val manifest = EncryptedBallotJsonManifestFacade(testVector.encrypted_ballots[0])
 
-        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extended_base_hash)
-        eballots.forEach { eballot -> accumulator.addCastBallot(eballot) }
+        val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extended_base_hash, ElGamalPublicKey(joint_public_key))
+        eballots.forEach { eballot -> accumulator.addCastBallot(eballot, ErrorMessages("")) }
         val tally = accumulator.build()
 
         testVector.expected_encrypted_tally.contests.zip(tally.contests).forEach { (expectContest, actualContest) ->

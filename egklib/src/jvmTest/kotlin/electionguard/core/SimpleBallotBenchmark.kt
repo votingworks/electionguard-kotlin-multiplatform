@@ -24,7 +24,7 @@ fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair
     val selectionsAndProofs = plaintextWithNonceAndCiphertext.mapIndexed { i, (p, n, c) ->
         Pair(c, c.makeChaumPedersen(p, 1, n, keypair.publicKey, proofNonces[i].toUInt256safe()))
     }
-    val encryptedSum = selectionsAndProofs.map { it.first }.encryptedSum()
+    val encryptedSum = selectionsAndProofs.map { it.first }.encryptedSum()?: 0.encrypt(keypair.publicKey)
     val nonceSum = plaintextWithNonce.map { it.second }.reduce { a, b -> a + b }
     val plaintextSum = selections.sum()
     // fun ElGamalCiphertext.rangeChaumPedersenProofKnownNonce(
