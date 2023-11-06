@@ -7,6 +7,7 @@ import electionguard.ballot.*
 import electionguard.core.ElementModP
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
+import electionguard.input.ManifestInputValidation
 import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -18,6 +19,7 @@ fun readElectionRecord(group : GroupContext, topDir: String) : ElectionRecord {
 }
 
 // there must at least be a config record
+// this throws Exceptions
 fun readElectionRecord(consumer: Consumer) : ElectionRecord {
     var decryptionResult : DecryptionResult? = null
     var tallyResult : TallyResult? = null
@@ -33,10 +35,10 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
         config = init.config
         stage = ElectionRecord.Stage.DECRYPTED
     } else {
-        val err : ErrorMessages = readDecryptionResult.unwrapError()
-        if (!err.contains("file does not exist")) {
-            logger.error{ err.toString() }
-            throw RuntimeException(err.toString())
+        val errs1 : ErrorMessages = readDecryptionResult.unwrapError()
+        if (!errs1.contains("file does not exist")) {
+            logger.error{ errs1.toString() }
+            throw RuntimeException(errs1.toString())
         }
         val readTallyResult = consumer.readTallyResult()
         if (readTallyResult is Ok) {
@@ -45,10 +47,10 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
             config = init.config
             stage = ElectionRecord.Stage.TALLIED
         } else {
-            val err : ErrorMessages = readTallyResult.unwrapError()
-            if (!err.contains("file does not exist")) {
-                logger.error{ err.toString() }
-                throw RuntimeException(err.toString())
+            val errs2 : ErrorMessages = readTallyResult.unwrapError()
+            if (!errs2.contains("file does not exist")) {
+                logger.error{ errs2.toString() }
+                throw RuntimeException(errs2.toString())
             }
             val readInitResult = consumer.readElectionInitialized()
             if (readInitResult is Ok) {
@@ -56,28 +58,31 @@ fun readElectionRecord(consumer: Consumer) : ElectionRecord {
                 config = init.config
                 stage = ElectionRecord.Stage.INIT
             } else {
-                val err : ErrorMessages = readInitResult.unwrapError()
-                if (!err.contains("file does not exist")) {
-                    logger.error{ err.toString() }
-                    throw RuntimeException(err.toString())
+                val errs3 : ErrorMessages = readInitResult.unwrapError()
+                if (!errs3.contains("file does not exist")) {
+                    logger.error{ errs3.toString() }
+                    throw RuntimeException(errs3.toString())
                 }
                 val readConfigResult = consumer.readElectionConfig()
                 if (readConfigResult is Ok) {
                     config = readConfigResult.value
                     stage = ElectionRecord.Stage.CONFIG
                 } else {
+                    // Always has to be a config
                     throw RuntimeException(readConfigResult.unwrapError().toString())
                 }
             }
         }
     }
 
-    // Always has to be a config and the original manifest bytes, from which the manifest is parsed
-    require(config != null) { "no election config file found in ${consumer.topdir()}" }
     require(config.manifestHash == manifestHash(config.parameterBaseHash, config.manifestBytes)) {
         "config.manifestHash fails to match ${consumer.topdir()}"
     }
     val manifest : Manifest = consumer.makeManifest(config.manifestBytes)
+    val errors = ManifestInputValidation(manifest).validate()
+    if (ManifestInputValidation(manifest).validate().hasErrors()) {
+        throw RuntimeException("ManifestInputValidation error $errors")
+    }
 
     if (stage == ElectionRecord.Stage.INIT && consumer.hasEncryptedBallots()) {
         stage = ElectionRecord.Stage.ENCRYPTED

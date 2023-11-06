@@ -1,6 +1,7 @@
 package electionguard.preencrypt
 
 import electionguard.core.*
+import electionguard.util.ErrorMessages
 
 /**
  * Intermediate working ballot to transform pre encrypted ballot to an Encrypted ballot.
@@ -31,7 +32,7 @@ internal data class PreContest(
     val votedFor: List<Boolean> // nselections, in order by sequence_order
 ) {
     init {
-        require(votedFor.size == allSelectionHashes.size - selectedVectors.size)
+        require(votedFor.size == allSelectionHashes.size - selectedVectors.size) // TODO
     }
     fun selectedCodes() : List<String> = selectedVectors.map { it.shortCode }
     fun nselections() = votedFor.size
@@ -52,37 +53,52 @@ internal data class PreSelectionVector(
         }
 }
 
-internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBallot): PreBallot {
+internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBallot, errs : ErrorMessages): PreBallot? {
     val contests = mutableListOf<PreContest>()
     preeBallot.contests.forEach { preeContest ->
         val markedContest = this.contests.find { it.contestId == preeContest.contestId }
-            ?: throw IllegalArgumentException("Cant find ${preeContest.contestId}")
+        if (markedContest == null) {
+            errs.add("Cant find PreContest ${preeContest.contestId}")
+            return null
+        }
 
         // find the selected selections by their shortCode
-        val selected = mutableListOf<PreEncryptedSelection>()
+        val preSelections = mutableListOf<PreEncryptedSelection>()
         markedContest.selectedCodes.map { selectedShortCode ->
-            val selection = preeContest.selections.find { it.shortCode == selectedShortCode } ?:
-                throw RuntimeException()
-            selected.add(selection)
+            val selection = preeContest.selections.find { it.shortCode == selectedShortCode }
+            if (selection == null) {
+                errs.add("Cant find PreEncryptedSelection $selectedShortCode")
+            } else {
+                preSelections.add(selection)
+            }
         }
+        if (errs.hasErrors()) return null
 
         val nselections = preeContest.selections.size - preeContest.votesAllowed
         val votedFor = mutableListOf<Boolean>()
         repeat(nselections) { idx ->
             val selection = preeContest.selections[idx]
-            votedFor.add( selected.find { it.selectionId == selection.selectionId } != null)
+            votedFor.add( preSelections.find { it.selectionId == selection.selectionId } != null)
         }
 
-        // add null vector on undervote
-        val votesMissing = preeContest.votesAllowed - selected.size
+        // add null vectors on undervote
+        val votesMissing = preeContest.votesAllowed - preSelections.size
         repeat (votesMissing) {
-            val nullVector = findNullVectorNotSelected(preeContest.selections, selected)
-            selected.add(nullVector)
+            val nullVector = findNullVectorNotSelected(preeContest.selections, preSelections)
+            if (nullVector == null) {
+                errs.add("Cant find NullVector idx=$it")
+            } else {
+                preSelections.add(nullVector)
+            }
         }
-        require (selected.size == preeContest.votesAllowed)
+        if (errs.hasErrors()) return null
+        if (preSelections.size != preeContest.votesAllowed) {
+            errs.add("preSelections.size ${preSelections.size } != preeContest.votesAllowed ${preeContest.votesAllowed}")
+            return null
+        }
 
         // The selectionVectors are sorted numerically by selectionHash, so cant be associated with a selection
-        val sortedSelectedVectors = selected.sortedBy { it.selectionHash }
+        val sortedSelectedVectors = preSelections.sortedBy { it.selectionHash }
         val sortedRecordedVectors = sortedSelectedVectors.map { preeSelection ->
             PreSelectionVector(preeSelection.selectionId, preeSelection.selectionHash, preeSelection.shortCode,
                 preeSelection.selectionVector, preeSelection.selectionNonces)
@@ -108,7 +124,7 @@ internal fun MarkedPreEncryptedBallot.makePreBallot(preeBallot : PreEncryptedBal
 }
 
 // find a null vector not already in selections
-private fun findNullVectorNotSelected(allSelections : List<PreEncryptedSelection>, selections : List<PreEncryptedSelection>) : PreEncryptedSelection {
+private fun findNullVectorNotSelected(allSelections : List<PreEncryptedSelection>, selections : List<PreEncryptedSelection>) : PreEncryptedSelection? {
     allSelections.forEach {
         if (it.selectionId.startsWith("null")) {
             if (null == selections.find{ have -> have.selectionId == it.selectionId }) {
@@ -116,5 +132,5 @@ private fun findNullVectorNotSelected(allSelections : List<PreEncryptedSelection
             }
         }
     }
-    throw RuntimeException()
+    return null
 }

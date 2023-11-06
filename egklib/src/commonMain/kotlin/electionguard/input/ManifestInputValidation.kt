@@ -10,8 +10,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val logger = KotlinLogging.logger("ManifestInputValidation")
 
 /**
- * Validate an election manifest, give human readable error information.
- * See [ElectionGuard Input Validation](https://github.com/danwallach/electionguard-kotlin-multiplatform/blob/main/docs/InputValidation.md)
+ * Validate an election manifest, return human readable error information.
+ * See [Input Validation](https://github.com/votingworks/electionguard-kotlin-multiplatform/blob/main/docs/InputValidation.md)
  */
 class ManifestInputValidation(val manifest: Manifest) {
     private val gpUnits: Set<String> = manifest.geopoliticalUnits.map { it.geopoliticalUnitId }.toSet()

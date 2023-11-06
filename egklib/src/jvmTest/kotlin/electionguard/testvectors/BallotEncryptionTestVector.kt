@@ -196,7 +196,6 @@ class BallotEncryptionTestVector {
             val plainContest: PlaintextContestJsonV = pair.first
             val expectContest: EncryptedContestJson = pair.second
 
-            val limit = expectContest.expected_proof.proofs.size
             val randomUj = expectContest.expected_proof.proofs.map { it.u_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed u_nonce") }
             val randomCj = expectContest.expected_proof.proofs.map { it.c_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed c_nonce") }
 
@@ -221,20 +220,19 @@ class BallotEncryptionTestVector {
                 val plainSelection: PlaintextSelectionJsonV = pair2.first
                 val expectSelection: EncryptedSelectionJson = pair2.second
 
-                val limit = expectSelection.expected_proof.proofs.size
-                val randomUj = expectSelection.expected_proof.proofs.map { it.u_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed u_nonce") }
-                val randomCj = expectSelection.expected_proof.proofs.map { it.c_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed u_nonce") }
+                val randomUjSel = expectSelection.expected_proof.proofs.map { it.u_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed u_nonce") }
+                val randomCjSel = expectSelection.expected_proof.proofs.map { it.c_nonce.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed u_nonce") }
 
-                val proofWithNonces: ChaumPedersenRangeProofKnownNonce = actualSelection.ciphertext.makeChaumPedersenWithNonces(
+                val proofWithNoncesSel: ChaumPedersenRangeProofKnownNonce = actualSelection.ciphertext.makeChaumPedersenWithNonces(
                     plainSelection.vote,
                     actualSelection.selectionNonce, // encryption nonce ξ for which (α, β) is an encryption of ℓ.
                     publicKey,
                     extendedBaseHash,
-                    randomUj,
-                    randomCj
+                    randomUjSel,
+                    randomCjSel
                 )
 
-                assertEquals(expectSelection.expected_proof.import(group), proofWithNonces)
+                assertEquals(expectSelection.expected_proof.import(group), proofWithNoncesSel)
             }
 
         }

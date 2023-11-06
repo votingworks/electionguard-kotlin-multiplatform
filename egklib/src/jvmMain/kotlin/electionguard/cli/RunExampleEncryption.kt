@@ -6,6 +6,7 @@ import com.github.michaelbull.result.getError
 import com.github.michaelbull.result.unwrap
 import electionguard.core.*
 import electionguard.encrypt.AddEncryptedBallot
+import electionguard.input.ManifestInputValidation
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
@@ -31,6 +32,10 @@ class RunExampleEncryption {
             }
             val electionInit = initResult.unwrap()
             val manifest = consumerIn.makeManifest(electionInit.config.manifestBytes)
+            val errors = ManifestInputValidation(manifest).validate()
+            if (ManifestInputValidation(manifest).validate().hasErrors()) {
+                throw RuntimeException("ManifestInputValidation error $errors")
+            }
 
             val publisher = makePublisher(outputDir, true, consumerIn.isJson())
             publisher.writeElectionInitialized(electionInit)

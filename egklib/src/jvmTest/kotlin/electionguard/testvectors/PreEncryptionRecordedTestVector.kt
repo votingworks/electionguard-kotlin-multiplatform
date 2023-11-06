@@ -27,6 +27,7 @@ import kotlin.io.use
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 /** Generate the election record information from a Pre-encrypted Ballot that has been voted. */
 class PreEncryptionRecordedTestVector {
@@ -83,9 +84,12 @@ class PreEncryptionRecordedTestVector {
 
         // record
         val recorder = Recorder(group, manifest, publicKey, extendedBaseHash, "device", ::sigma)
-        val (recordedBallot, ciphertextBallot) = with(recorder) {
-            markedBallot.record(primaryNonce)
+        val errs = ErrorMessages("MarkedBallot ${markedBallot.ballotId}")
+        val pair = with(recorder) {
+            markedBallot.record(primaryNonce, errs)
         }
+        assertFalse(errs.hasErrors())
+        val (recordedBallot, ciphertextBallot) = pair!!
 
         // roundtrip through the proto, combines the recordedBallot
         val encryptedBallot = ciphertextBallot.cast()
@@ -131,9 +135,12 @@ class PreEncryptionRecordedTestVector {
 
         // record
         val recorder = Recorder(group, manifest, publicKey, extendedBaseHash, "device", ::sigma)
-        val (recordedBallot, ciphertextBallot) = with(recorder) {
-            markedBallot.record(primaryNonce)
+        val errs = ErrorMessages("MarkedBallot ${markedBallot.ballotId}")
+        val pair = with(recorder) {
+            markedBallot.record(primaryNonce, errs)
         }
+        assertFalse(errs.hasErrors())
+        val (recordedBallot, ciphertextBallot) = pair!!
 
         // roundtrip through the proto, combines the recordedBallot
         val encryptedBallot = ciphertextBallot.cast()

@@ -24,6 +24,7 @@ import kotlin.math.min
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 private val random = Random
@@ -73,9 +74,11 @@ internal class PreEncryptorTest {
             val recorder =
                 Recorder(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, "device", ::sigma)
 
+            val errs = ErrorMessages("MarkedBallot ${mballot.ballotId}")
             with(recorder) {
-                mballot.record(primaryNonce)
+                mballot.record(primaryNonce, errs)
             }
+            assertFalse(errs.hasErrors())
         }
     }
 
@@ -206,9 +209,12 @@ internal fun runComplete(
 
     // record
     val recorder = Recorder(group, manifest, publicKey, qbar, "device", ::sigma)
-    val (recordedBallot, ciphertextBallot) = with(recorder) {
-        markedBallot.record(primaryNonce)
+    val errs = ErrorMessages("MarkedBallot ${markedBallot.ballotId}")
+    val pair = with(recorder) {
+        markedBallot.record(primaryNonce, errs)
     }
+    assertFalse(errs.hasErrors())
+    val (recordedBallot, ciphertextBallot) = pair!!
 
     // show record results
     if (show) {

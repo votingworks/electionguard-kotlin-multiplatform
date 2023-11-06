@@ -21,7 +21,7 @@ private val logger = KotlinLogging.logger("AddEncryptedBallot")
 /** Encrypt a ballot and add to election record. Single threaded only. */
 class AddEncryptedBallot(
     val group: GroupContext,
-    val manifest: Manifest,
+    val manifest: Manifest, // should already be validated
     val electionInit: ElectionInitialized,
     val deviceName: String,
     val outputDir: String, // write ballots to outputDir/encrypted_ballots/deviceName, must not have multiple writers to same directory
@@ -46,23 +46,17 @@ class AddEncryptedBallot(
 
     val publisher = makePublisher(outputDir, false, isJson)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(deviceName)
-    val ballotIds = mutableListOf<String>()
-    val pending = mutableMapOf<String, CiphertextBallot>() // key = ccode.toHex()
     val configBaux0: ByteArray = electionInit.config.configBaux0
     val configChaining: Boolean = electionInit.config.chainConfirmationCodes
     val baux0: ByteArray
 
+    private val ballotIds = mutableListOf<String>()
+    private val pending = mutableMapOf<UInt256, CiphertextBallot>() // key = ccode.toHex()
     private var lastConfirmationCode: UInt256 = UInt256.ZERO
     private var first = true
     private var closed = false
 
     init {
-        val manifestValidator = ManifestInputValidation(manifest)
-        val errors = manifestValidator.validate()
-        if (errors.hasErrors()) {
-            throw RuntimeException("ManifestInputValidation error $errors")
-        }
-
         val consumer = makeConsumer(group, outputDir, isJson)
         val chainResult = consumer.readEncryptedBallotChain(deviceName)
         if (chainResult is Ok) {
@@ -106,7 +100,7 @@ class AddEncryptedBallot(
         this.lastConfirmationCode = ciphertextBallot.confirmationCode
 
         // hmmm you could write CiphertextBallot to a log, in case of crash
-        pending[ciphertextBallot.confirmationCode.toHex()] = ciphertextBallot
+        pending[ciphertextBallot.confirmationCode] = ciphertextBallot
         return Ok(ciphertextBallot)
     }
 
@@ -122,13 +116,13 @@ class AddEncryptedBallot(
             submit(eballot.confirmationCode, EncryptedBallot.BallotState.CAST)
         } else {
             // remove from pending
-           pending.remove(eballot.confirmationCode.toHex())
+           pending.remove(eballot.confirmationCode)
         }
         return Ok(eballot)
     }
 
     fun submit(ccode: UInt256, state: EncryptedBallot.BallotState): Result<Boolean, String> {
-        val cballot = pending.remove(ccode.toHex())
+        val cballot = pending.remove(ccode)
         if (cballot == null) {
             logger.error { "Tried to submit state=$state  unknown ballot ccode=$ccode" }
             return Err("Tried to submit state=$state  unknown ballot ccode=$ccode")
@@ -152,7 +146,7 @@ class AddEncryptedBallot(
     }
 
     fun challengeAndDecrypt(ccode: UInt256): Result<PlaintextBallot, String> {
-        val cballot = pending.remove(ccode.toHex())
+        val cballot = pending.remove(ccode)
         if (cballot == null) {
             logger.error { "Tried to submit unknown ballot ccode=$ccode" }
             return Err("Tried to submit unknown ballot ccode=$ccode")
@@ -177,11 +171,9 @@ class AddEncryptedBallot(
     // write out pending encryptedBallots, and chain (if chainCodes is true)
     fun sync() {
         if (pending.isNotEmpty()) {
-            val keys = pending.keys.toList()
-            keys.forEach {
-                logger.error { "pending Ciphertext ballot ${it} was not submitted" }
-                val ba = it.fromHex() ?: throw RuntimeException("illegal confirmation code")
-                submit(UInt256(ba), EncryptedBallot.BallotState.UNKNOWN)
+            pending.keys.forEach {
+                logger.error { "pending Ciphertext ballot ${it} was not submitted, marking 'UNKNOWN'" }
+                submit(it, EncryptedBallot.BallotState.UNKNOWN)
             }
         }
         val closing =

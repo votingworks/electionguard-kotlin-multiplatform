@@ -16,7 +16,7 @@ class SimplePlaintextBallot(val selections: List<Int>)
 
 class SimpleEncryptedBallot(val selectionsAndProofs: List<Pair<ElGamalCiphertext, ChaumPedersenRangeProofKnownNonce>>, val sumProof: ChaumPedersenRangeProofKnownNonce)
 
-fun SimplePlaintextBallot.encrypt(context: GroupContext, keypair: ElGamalKeypair, seed: ElementModQ, limit : Int = 1): SimpleEncryptedBallot {
+fun SimplePlaintextBallot.encrypt(keypair: ElGamalKeypair, seed: ElementModQ, limit : Int = 1): SimpleEncryptedBallot {
     val encryptionNonces = Nonces(seed, "encryption")
     val proofNonces = Nonces(seed, "proof")
     val plaintextWithNonce = selections.mapIndexed { i, s -> Pair(s, encryptionNonces[i]) }
@@ -59,9 +59,9 @@ fun main() {
     println("Ballot encryption simulation benchmark, JDK: ${System.getProperty("java.version")}")
 
     runBlocking {
-        ProductionMode.values()
+        ProductionMode.entries
             .forEach { mode ->
-                PowRadixOption.values().filter { it != PowRadixOption.EXTREME_MEMORY_USE }
+                PowRadixOption.entries.filter { it != PowRadixOption.EXTREME_MEMORY_USE }
                     .forEach { powRadixOption ->
                         println("=======================================================")
                         println("Initializing benchmark for $powRadixOption, $mode")
@@ -75,9 +75,8 @@ fun main() {
                         1.encrypt(keypair, nonces[0]).decrypt(keypair)
 
                         println("Running!")
-                        var results: List<SimpleEncryptedBallot>
                         val encryptionTimeMs = measureTimeMillis {
-                            results = ProgressBar
+                            ProgressBar
                                 .wrap(
                                     (0 until numBallots).asIterable().toList(),
                                     ProgressBarBuilder()
@@ -89,7 +88,7 @@ fun main() {
                                         .setMaxRenderedLength(100)
                                         .showSpeed()
                                 )
-                                .map { ballots[it].encrypt(context, keypair, nonces[it]) }
+                                .map { ballots[it].encrypt(keypair, nonces[it]) }
                         }
                         val encryptionTime = encryptionTimeMs / 1000.0
 

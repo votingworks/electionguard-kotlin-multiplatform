@@ -5,7 +5,7 @@ import electionguard.core.*
 
 /**
  * The crypto part of the "The Ballot Encrypting Tool"
- * The encrypting/decrypting primaryNonce is done external to this.
+ * The encrypting/decrypting of the primaryNonce is done external to this.
  */
 class PreEncryptor(
     val group: GroupContext,
@@ -26,8 +26,11 @@ class PreEncryptor(
         • for each contest, votesAllowed additional null selections vectors, and a contest hash
         • a confirmation code for the ballot
      */
-    internal fun preencrypt(ballotId: String, ballotStyleId: String, primaryNonce: UInt256,
-                            codeBaux : ByteArray = ByteArray(0)
+    internal fun preencrypt(
+        ballotId: String,
+        ballotStyleId: String,
+        primaryNonce: UInt256,
+        codeBaux : ByteArray = ByteArray(0)
     ): PreEncryptedBallot {
 
         val mcontests = manifest.contestsForBallotStyle(ballotStyleId)
@@ -61,7 +64,7 @@ class PreEncryptor(
         // In a contest with a selection limit of L, an additional L null vectors are added
         var sequence = this.selections.size
         for (nullVectorIdx in (1..contestLimit)) {
-            // TODO null labels may be in manifest, see 4.2.1
+            // TODO null labels may be in manifest, see 4.2.1. wtf?
             preeSelections.add( preencryptSelection(primaryNonce, this.sequenceOrder, "null${nullVectorIdx}", sequence, sortedSelectionIndices))
             sequence++
         }
