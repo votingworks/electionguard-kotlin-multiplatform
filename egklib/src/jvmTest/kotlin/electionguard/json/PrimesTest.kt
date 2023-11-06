@@ -40,7 +40,7 @@ class PrimesTest {
 
         val rnn = Primes4096.residualNotNormalized
         println("rnn in base64 = ${rnn.toBase64()}")
-        val rnnelem = ProductionElementModP(rnn.toBigInteger(), group as ProductionGroupContext)
+        val rnnelem = ProductionElementModP(rnn.toBigInteger(), group)
         println("rnn == r as bigInt ${r.toBigInteger() == rnn.toBigInteger()}")
         println("rnn == r as ElementModP ${relem == rnnelem}")
 
@@ -49,7 +49,7 @@ class PrimesTest {
         val q = Primes4096.smallPrimeBytes.toBigInteger()
         val cr = (p - BigInteger.ONE) / q
         println("computed r in base64 = ${cr.toByteArray().toBase64()}")
-        val crelem = ProductionElementModP(cr, group as ProductionGroupContext)
+        val crelem = ProductionElementModP(cr, group)
         println("cr == r as bigInt ${r.toBigInteger() == cr}")
         println("cr == r as ElementModP ${relem == crelem}")
 
@@ -63,7 +63,7 @@ class PrimesTest {
         val ba2 = ba.normalize(nbytes)
         val rsb = ba2.toBigInteger()
         println("rs == r as bigInt ${r.toBigInteger() == rsb}")
-        val rsbelem = ProductionElementModP(rsb, group as ProductionGroupContext)
+        val rsbelem = ProductionElementModP(rsb, group)
         println("rs == r as ElementModP ${relem == rsbelem}")
         assertEquals(relem, rsbelem)
     }

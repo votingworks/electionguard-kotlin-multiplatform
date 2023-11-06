@@ -58,7 +58,7 @@ class TestPepWorkflow {
         )
 
         // key ceremony
-        val (manifest, init) = runFakeKeyCeremony(group, workingDir, workingDir, trusteeDir, nguardians, quorum, false)
+        val (_, init) = runFakeKeyCeremony(group, workingDir, workingDir, trusteeDir, nguardians, quorum, false)
 
         // encrypt
         group.showAndClearCountPowP()

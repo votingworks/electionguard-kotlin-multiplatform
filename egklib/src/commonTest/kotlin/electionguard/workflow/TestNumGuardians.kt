@@ -70,7 +70,7 @@ class TestNumGuardians {
         )
 
         // key ceremony
-        val (manifest, init) = runFakeKeyCeremony(group, workingDir, workingDir, trusteeDir, nguardians, quorum, false)
+        val (_, init) = runFakeKeyCeremony(group, workingDir, workingDir, trusteeDir, nguardians, quorum, false)
         println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
         println("----------- after keyCeremony ${group.showAndClearCountPowP()}")
 

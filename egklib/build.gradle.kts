@@ -13,8 +13,14 @@ version = "2.0.0-SNAPSHOT"
 
 kotlin {
     jvm {
-        compilations.all { kotlinOptions.jvmTarget = "1.8" }
-        //        withJava()
+        compilations.all {
+            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.freeCompilerArgs = listOf(
+                "-Xexpect-actual-classes",
+                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi,kotlinx.serialization.ExperimentalSerializationApi"
+            )
+        }
+
         testRuns["test"].executionTask
             .configure {
                 useJUnitPlatform()
