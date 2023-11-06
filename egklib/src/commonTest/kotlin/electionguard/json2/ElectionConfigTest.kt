@@ -1,16 +1,11 @@
 package electionguard.json2
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.getError
-import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.ElectionConstants
 import electionguard.core.Base16.fromHex
 import electionguard.core.UInt256
 import electionguard.core.productionGroup
 import electionguard.util.ErrorMessages
-import io.kotest.assertions.throwables.shouldThrowUnitWithMessage
 import kotlin.test.*
 
 class ElectionConfigTest {
