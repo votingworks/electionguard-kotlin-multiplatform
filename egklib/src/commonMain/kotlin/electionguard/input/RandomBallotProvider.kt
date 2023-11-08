@@ -21,7 +21,7 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11) {
     }
 
     fun ballots(ballotStyleId: String? = null): List<PlaintextBallot> {
-        val ballots: MutableList<PlaintextBallot> = ArrayList()
+        val ballots = mutableListOf<PlaintextBallot>()
         val useStyle = ballotStyleId ?: manifest.ballotStyles[0].ballotStyleId
         for (i in 0 until nballots) {
             val ballotId = if (useSequential) "id-" + sequentialId++ else "id" + Random.nextInt()
@@ -40,8 +40,8 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11) {
         if (manifest.ballotStyles.find { it.ballotStyleId == ballotStyleId } == null) {
             throw RuntimeException("BallotStyle '$ballotStyleId' not in the given manifest styles = ${manifest.ballotStyles}")
         }
-        val contests: MutableList<PlaintextBallot.Contest> = ArrayList()
-        for (contestp in manifest.contestsForBallotStyle(ballotStyleId)) {
+        val contests = mutableListOf<PlaintextBallot.Contest>()
+        for (contestp in manifest.contestsForBallotStyle(ballotStyleId)!!) {
             contests.add(makeContestFrom(contestp as Manifest.ContestDescription))
         }
         return PlaintextBallot(ballotId, ballotStyleId, contests)
@@ -49,7 +49,7 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11) {
 
     fun makeContestFrom(contest: Manifest.ContestDescription): PlaintextBallot.Contest {
         var voted = 0
-        val selections: MutableList<PlaintextBallot.Selection> = ArrayList()
+        val selections =  mutableListOf<PlaintextBallot.Selection>()
         val nselections = contest.selections.size
 
         for (selection_description in contest.selections) {

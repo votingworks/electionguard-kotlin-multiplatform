@@ -93,7 +93,7 @@ internal class TallyDecryptor(
 
             if (doVerifierSelectionProof) {
                 if (!decryptedContestData.verifyContestData()) {
-                    errs.add("verifyContestData failed for $contestId")
+                    errs.add("verifyContestData error on $contestId")
                     contestDataDecryptions.checkIndividualResponses(errs.nested("checkIndividualResponses"))
                 }
             } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents
@@ -132,7 +132,7 @@ internal class TallyDecryptor(
         // If it succeeds, dont have to do the individual verification
         if (doVerifierSelectionProof) {
             if (!decrypytedSelection.verifySelection()) {
-                errs.add("verifySelection failed for $contestId/${selection.selectionId}")
+                errs.add("verifySelection error on $contestId/${selection.selectionId}")
                 selectionDecryptions.checkIndividualResponses(errs.nested("checkIndividualResponses"))
             }
         } else { // Otherwise do the individual guardian verifications, which costs 4*n exponents

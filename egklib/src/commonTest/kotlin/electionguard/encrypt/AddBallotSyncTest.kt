@@ -1,16 +1,12 @@
 package electionguard.encrypt
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.productionGroup
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
-import kotlin.test.Test
-import kotlin.test.assertTrue
-import kotlin.test.assertEquals
+import electionguard.util.ErrorMessages
+import kotlin.test.*
 
 class AddBallotSyncTest {
     val group = productionGroup()
@@ -34,7 +30,10 @@ class AddBallotSyncTest {
         val encryptor = AddEncryptedBallot(
             group,
             electionRecord.manifest(),
-            electionInit,
+            electionInit.config.chainConfirmationCodes,
+            electionInit.config.configBaux0,
+            electionInit.jointPublicKey(),
+            electionInit.extendedBaseHash,
             device,
             outputDir,
             "outputDir/invalidDir",
@@ -45,9 +44,9 @@ class AddBallotSyncTest {
         repeat(3) {
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+                val result = encryptor.encrypt(ballot, ErrorMessages("testJsonSyncNoChain"))
+                assertNotNull(result)
+                encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.sync()
         }
@@ -57,9 +56,10 @@ class AddBallotSyncTest {
 
         // should fail once closed
         val ballot = ballotProvider.makeBallot()
-        val result = encryptor.encrypt(ballot)
-        assertTrue(result is Err)
-        assertEquals("Trying to add ballot after chain has been closed", result.error)
+        val errs = ErrorMessages("")
+        encryptor.encrypt(ballot, errs)
+        assertTrue(errs.hasErrors())
+        assertContains(errs.toString(), "Trying to add ballot after chain has been closed")
     }
 
     @Test
@@ -76,7 +76,10 @@ class AddBallotSyncTest {
         val encryptor = AddEncryptedBallot(
             group,
             electionRecord.manifest(),
-            electionInit,
+            electionInit.config.chainConfirmationCodes,
+            electionInit.config.configBaux0,
+            electionInit.jointPublicKey(),
+            electionInit.extendedBaseHash,
             device,
             outputDir,
             "outputDir/invalidDir",
@@ -87,9 +90,9 @@ class AddBallotSyncTest {
         repeat(3) {
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+                val result = encryptor.encrypt(ballot, ErrorMessages("testProtoSyncNoChain"))
+                assertNotNull(result)
+                encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.sync()
         }
@@ -99,9 +102,10 @@ class AddBallotSyncTest {
 
         // should fail once closed
         val ballot = ballotProvider.makeBallot()
-        val result = encryptor.encrypt(ballot)
-        assertTrue(result is Err)
-        assertEquals("Trying to add ballot after chain has been closed", result.error)
+        val errs = ErrorMessages("")
+        encryptor.encrypt(ballot, errs)
+        assertTrue(errs.hasErrors())
+        assertContains(errs.toString(), "Trying to add ballot after chain has been closed")
     }
 
     @Test
@@ -120,7 +124,10 @@ class AddBallotSyncTest {
         val encryptor = AddEncryptedBallot(
             group,
             electionRecord.manifest(),
-            electionInit,
+            electionInit.config.chainConfirmationCodes,
+            electionInit.config.configBaux0,
+            electionInit.jointPublicKey(),
+            electionInit.extendedBaseHash,
             device,
             outputDir,
             "outputDir/invalidDir",
@@ -131,9 +138,9 @@ class AddBallotSyncTest {
         repeat(3) {
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+                val result = encryptor.encrypt(ballot, ErrorMessages("testJsonSyncChain"))
+                assertNotNull(result)
+                encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.sync()
         }
@@ -143,9 +150,10 @@ class AddBallotSyncTest {
 
         // should fail once closed
         val ballot = ballotProvider.makeBallot()
-        val result = encryptor.encrypt(ballot)
-        assertTrue(result is Err)
-        assertEquals("Trying to add ballot after chain has been closed", result.error)
+        val errs = ErrorMessages("")
+        encryptor.encrypt(ballot, errs)
+        assertTrue(errs.hasErrors())
+        assertContains(errs.toString(), "Trying to add ballot after chain has been closed")
     }
 
     @Test
@@ -164,7 +172,10 @@ class AddBallotSyncTest {
         val encryptor = AddEncryptedBallot(
             group,
             electionRecord.manifest(),
-            electionInit,
+            electionInit.config.chainConfirmationCodes,
+            electionInit.config.configBaux0,
+            electionInit.jointPublicKey(),
+            electionInit.extendedBaseHash,
             device,
             outputDir,
             "outputDir/invalidDir",
@@ -175,9 +186,9 @@ class AddBallotSyncTest {
         repeat(3) {
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+                val result = encryptor.encrypt(ballot, ErrorMessages("testProtoSyncChain"))
+                assertNotNull(result)
+                encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.sync()
         }
@@ -187,9 +198,10 @@ class AddBallotSyncTest {
 
         // should fail once closed
         val ballot = ballotProvider.makeBallot()
-        val result = encryptor.encrypt(ballot)
-        assertTrue(result is Err)
-        assertEquals("Trying to add ballot after chain has been closed", result.error)
+        val errs = ErrorMessages("")
+        encryptor.encrypt(ballot, errs)
+        assertTrue(errs.hasErrors())
+        assertContains(errs.toString(), "Trying to add ballot after chain has been closed")
     }
 
 }

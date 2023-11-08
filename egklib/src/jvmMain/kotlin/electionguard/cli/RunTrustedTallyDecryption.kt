@@ -116,7 +116,7 @@ class RunTrustedTallyDecryption {
             val consumerIn = makeConsumer(group, inputDir)
             val result = consumerIn.readTallyResult()
             if (result is Err) {
-                println("readTallyResult failed ${result.error}")
+                println("readTallyResult error ${result.error}")
                 return
             }
             val tallyResult = result.unwrap()
@@ -140,7 +140,7 @@ class RunTrustedTallyDecryption {
             try {
                 val decryptedTally = with(decryptor) { tallyResult.encryptedTally.decrypt(errs) }
                 if (decryptedTally == null) {
-                    logger.error { " RunTrustedTallyDecryption failed error=${errs}" }
+                    logger.error { " RunTrustedTallyDecryption error=${errs}" }
                     return
                 }
                 val publisher = makePublisher(outputDir, false, consumerIn.isJson())

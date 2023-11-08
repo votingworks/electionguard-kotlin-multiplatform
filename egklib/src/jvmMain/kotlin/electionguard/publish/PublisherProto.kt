@@ -3,7 +3,6 @@ package electionguard.publish
 import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.pep.BallotPep
-import electionguard.protoconvert.publishDecryptingTrusteeProto
 import electionguard.protoconvert.publishProto
 import electionguard.publish.ElectionRecordProtoPaths.Companion.DECRYPTION_RESULT_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_CONFIG_FILE
@@ -118,7 +117,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
     }
 
     actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
-        val proto = trustee.publishDecryptingTrusteeProto()
+        val proto = trustee.publishProto()
         val fileout = protoPaths.decryptingTrusteePath(trusteeDir, trustee.id)
         FileOutputStream(fileout).use { out ->
             proto.encodeToStream(out)

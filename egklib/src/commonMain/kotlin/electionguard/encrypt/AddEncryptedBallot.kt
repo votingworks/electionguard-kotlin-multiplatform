@@ -8,12 +8,11 @@ import electionguard.ballot.*
 import electionguard.core.ElGamalPublicKey
 import electionguard.core.GroupContext
 import electionguard.core.UInt256
-import electionguard.core.Base16.fromHex
 import electionguard.core.hashFunction
 import electionguard.decryptBallot.DecryptWithNonce
 import electionguard.input.BallotInputValidation
-import electionguard.input.ManifestInputValidation
 import electionguard.publish.*
+import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger("AddEncryptedBallot")
@@ -22,7 +21,10 @@ private val logger = KotlinLogging.logger("AddEncryptedBallot")
 class AddEncryptedBallot(
     val group: GroupContext,
     val manifest: Manifest, // should already be validated
-    val electionInit: ElectionInitialized,
+    val configChaining: Boolean,
+    val configBaux0: ByteArray,
+    val jointPublicKey: ElGamalPublicKey,
+    val extendedBaseHash: UInt256,
     val deviceName: String,
     val outputDir: String, // write ballots to outputDir/encrypted_ballots/deviceName, must not have multiple writers to same directory
     val invalidDir: String, // write plaintext ballots that fail validation
@@ -34,20 +36,18 @@ class AddEncryptedBallot(
     val encryptor = Encryptor(
         group,
         manifest,
-        ElGamalPublicKey(electionInit.jointPublicKey),
-        electionInit.extendedBaseHash,
+        jointPublicKey,
+        extendedBaseHash,
         deviceName,
     )
     val decryptor = DecryptWithNonce(
         group,
-        ElGamalPublicKey(electionInit.jointPublicKey),
-        electionInit.extendedBaseHash
+        jointPublicKey,
+        extendedBaseHash
     )
 
     val publisher = makePublisher(outputDir, false, isJson)
     val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(deviceName)
-    val configBaux0: ByteArray = electionInit.config.configBaux0
-    val configChaining: Boolean = electionInit.config.chainConfirmationCodes
     val baux0: ByteArray
 
     private val ballotIds = mutableListOf<String>()
@@ -72,56 +72,57 @@ class AddEncryptedBallot(
 
         } else {
             baux0 = if (!configChaining) configBaux0 else
-                hashFunction(electionInit.extendedBaseHash.bytes, 0x24.toByte(), configBaux0).bytes // spec 2.0 eq 60
+                // H0 = H(HE ; 0x24, Baux,0 ), eq (59)
+                hashFunction(extendedBaseHash.bytes, 0x24.toByte(), configBaux0).bytes
         }
     }
 
-    fun encrypt(ballot: PlaintextBallot): Result<CiphertextBallot, String> {
+    fun encrypt(ballot: PlaintextBallot, errs : ErrorMessages): CiphertextBallot? {
         if (closed) {
-            val message = "Trying to add ballot after chain has been closed"
-            logger.warn { message }
-            return Err(message)
+            errs.add("Trying to add ballot after chain has been closed")
+            return null
         }
 
-        val mess = ballotValidator.validate(ballot)
-        if (mess.hasErrors()) {
+        val validation = ballotValidator.validate(ballot)
+        if (validation.hasErrors()) {
             publisher.writePlaintextBallot(invalidDir, listOf(ballot))
-            val message = "${ballot.ballotId} did not validate (wrote to invalidDir=$invalidDir) because $mess"
-            logger.warn { message }
-            return Err(message)
+            errs.add("${ballot.ballotId} did not validate (wrote to invalidDir=$invalidDir) because $validation")
+            return null
         }
 
-        val bauxj: ByteArray = if (!configChaining || first) baux0 else
-            hashFunction(lastConfirmationCode.bytes, configBaux0).bytes // spec 2.0 eq 61
+        // Baux,j = Hj−1 ∥ Baux,0 eq (60)
+        val bauxj: ByteArray = if (!configChaining || first) baux0 else lastConfirmationCode.bytes + configBaux0
         first = false
 
-        val ciphertextBallot = encryptor.encrypt(ballot, bauxj)
-        ballotIds.add(ciphertextBallot.ballotId)
+        val ciphertextBallot = encryptor.encrypt(ballot, bauxj, errs)
+        if (errs.hasErrors()) {
+            return null
+        }
+        ballotIds.add(ciphertextBallot!!.ballotId)
         this.lastConfirmationCode = ciphertextBallot.confirmationCode
 
         // hmmm you could write CiphertextBallot to a log, in case of crash
         pending[ciphertextBallot.confirmationCode] = ciphertextBallot
-        return Ok(ciphertextBallot)
+        return ciphertextBallot
     }
 
     /** encrypt and cast, does not leave in pending. optional write. */
-    fun encryptAndCast(ballot: PlaintextBallot, writeToDisk: Boolean = true): Result<EncryptedBallot, String> {
-        val resultEncrypt = encrypt(ballot)
-        if (resultEncrypt is Err) {
-            return Err(resultEncrypt.error)
+    fun encryptAndCast(ballot: PlaintextBallot, errs : ErrorMessages, writeToDisk: Boolean = true): EncryptedBallot? {
+        val cballot = encrypt(ballot, errs)
+        if (errs.hasErrors()) {
+            return null
         }
-        val cballot = resultEncrypt.unwrap()
-        val eballot = cballot.submit(EncryptedBallot.BallotState.CAST)
+        val eballot = cballot!!.submit(EncryptedBallot.BallotState.CAST)
         if (writeToDisk) {
             submit(eballot.confirmationCode, EncryptedBallot.BallotState.CAST)
         } else {
             // remove from pending
            pending.remove(eballot.confirmationCode)
         }
-        return Ok(eballot)
+        return eballot
     }
 
-    fun submit(ccode: UInt256, state: EncryptedBallot.BallotState): Result<Boolean, String> {
+    fun submit(ccode: UInt256, state: EncryptedBallot.BallotState): Result<EncryptedBallot, String> {
         val cballot = pending.remove(ccode)
         if (cballot == null) {
             logger.error { "Tried to submit state=$state  unknown ballot ccode=$ccode" }
@@ -130,18 +131,18 @@ class AddEncryptedBallot(
         return try {
             val eballot = cballot.submit(state)
             sink.writeEncryptedBallot(eballot)
-            Ok(true)
+            Ok(eballot)
         } catch (t: Throwable) {
             logger.throwing(t) // TODO
             Err("Tried to submit Ciphertext ballot state=$state ccode=$ccode error = ${t.message}")
         }
     }
 
-    fun cast(ccode: UInt256): Result<Boolean, String> {
+    fun cast(ccode: UInt256): Result<EncryptedBallot, String> {
         return submit(ccode, EncryptedBallot.BallotState.CAST)
     }
 
-    fun challenge(ccode: UInt256): Result<Boolean, String> {
+    fun challenge(ccode: UInt256): Result<EncryptedBallot, String> {
         return submit(ccode, EncryptedBallot.BallotState.SPOILED)
     }
 
@@ -171,7 +172,8 @@ class AddEncryptedBallot(
     // write out pending encryptedBallots, and chain (if chainCodes is true)
     fun sync() {
         if (pending.isNotEmpty()) {
-            pending.keys.forEach {
+            val copyPending = pending.toMap() // make copy so it can be modified
+            copyPending.keys.forEach {
                 logger.error { "pending Ciphertext ballot ${it} was not submitted, marking 'UNKNOWN'" }
                 submit(it, EncryptedBallot.BallotState.UNKNOWN)
             }
@@ -184,11 +186,11 @@ class AddEncryptedBallot(
     fun closeChain(): UInt256? {
         if (!configChaining) return null
 
-        // Hbar = H(HE ; 24, Baux )
-        // Baux = H(Bℓ ) ∥ Baux,0 ∥ b("CLOSE") (62)
-        // H(Bℓ ) is the final confirmation code in the chain
-        val bauxFinal = hashFunction(lastConfirmationCode.bytes, configBaux0, "CLOSE")
-        return hashFunction(electionInit.extendedBaseHash.bytes, 0x24.toByte(), bauxFinal)
+        // Hbar = H(HE ; 0x24, Baux )
+        // Baux = H(Bℓ) ∥ Baux,0 ∥ b("CLOSE")   (eq 61)
+        // H(Bℓ) is the final confirmation code in the chain
+        val bauxFinal = lastConfirmationCode.bytes + configBaux0 + "CLOSE".encodeToByteArray()
+        return hashFunction(extendedBaseHash.bytes, 0x24.toByte(), bauxFinal)
     }
 
     override fun close() {

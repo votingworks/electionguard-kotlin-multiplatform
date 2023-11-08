@@ -218,7 +218,7 @@ class RunTrustedBallotDecryption {
                         if (debug) println(" Decryptor #$id sending DecryptedTallyOrBallot ${decrypted.id}")
                         output.send(decrypted)
                     } else {
-                        logger.error { " decryptBallot failed on ${ballot.ballotId} error=${errs}" }
+                        logger.error { " decryptBallot error on ${ballot.ballotId} error=${errs}" }
                     }
                 } catch (t : Throwable) {
                     errs.add("Exception= ${t.message} ${t.stackTraceToString()}")

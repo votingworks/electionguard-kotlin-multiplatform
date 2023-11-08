@@ -1,14 +1,16 @@
 package electionguard.testvectors
 
-import electionguard.ballot.Manifest
+import electionguard.ballot.*
 import electionguard.core.*
 import electionguard.core.Base16.fromHexSafe
 import electionguard.core.Base16.toHex
 import electionguard.encrypt.CiphertextBallot
 import electionguard.encrypt.Encryptor
 import electionguard.cli.ManifestBuilder
+import electionguard.encrypt.AddEncryptedBallot
 import electionguard.input.RandomBallotProvider
 import electionguard.json2.*
+import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -65,6 +67,7 @@ class BallotChainingTestVector {
         val desc: String,
         val joint_public_key: String,
         val extended_base_hash: String,
+        val configBaux0: ByteArray,
         val ballots: List<PlaintextBallotJsonV>,
         val expected_encrypted_ballots: List<EncryptedBallotJson>,
     )
@@ -79,6 +82,7 @@ class BallotChainingTestVector {
     fun makeBallotChainingTestVector() {
         val publicKey = group.gPowP(group.randomElementModQ())
         val extendedBaseHash = UInt256.random()
+        val configBaux0 = UInt256.random().bytes
 
         val ebuilder = ManifestBuilder("makeBallotEncryptionTestVector")
         val manifest: Manifest = ebuilder.addContest("onlyContest")
@@ -88,19 +92,43 @@ class BallotChainingTestVector {
             .done()
             .build()
 
-        val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash, "device")
+        val encryptor = AddEncryptedBallot(
+            group,
+            manifest,
+            true,
+            configBaux0,
+            ElGamalPublicKey(publicKey),
+            extendedBaseHash,
+            "device",
+            "workingDir",
+            "invalidDir",
+            isJson = true,
+        )
+
+        val cballots = mutableListOf<CiphertextBallot>()
         val ballots = RandomBallotProvider(manifest, nBallots).ballots()
-        val codeSeed = UInt256.random()
-        val eballots = encryptor.encryptChain(ballots, codeSeed)
+
+        var count = 1
+        ballots.forEach { ballot ->
+            val errs = ErrorMessages("Ballot ${ballot.ballotId}")
+            val cballot = encryptor.encrypt(ballot, errs)
+            if (errs.hasErrors()) {
+                println(errs)
+            } else {
+                cballots.add(cballot!!)
+                count++
+            }
+        }
 
         val confirmationCodeTestVector = BallotChainingTestVector(
             "Test ballot confirmation code chaining, section 3.4.3",
             publicKey.toHex(),
             extendedBaseHash.toHex(),
+            configBaux0,
             ballots.map { it.publishJsonE() },
-            eballots.map { it.publishJson() },
+            cballots.map { it.publishJson() },
         )
-        println(jsonFormat.encodeToString(confirmationCodeTestVector))
+        // println(jsonFormat.encodeToString(confirmationCodeTestVector))
 
         FileOutputStream(outputFile).use { out ->
             jsonFormat.encodeToStream(confirmationCodeTestVector, out)
@@ -118,6 +146,7 @@ class BallotChainingTestVector {
 
         val publicKey = ElGamalPublicKey(group.base16ToElementModPsafe(testVector.joint_public_key))
         val extendedBaseHash = UInt256(testVector.extended_base_hash.fromHexSafe())
+        val configBaux0 : ByteArray = testVector.configBaux0
         val ballotsZipped = testVector.ballots.zip(testVector.expected_encrypted_ballots)
 
         var prevCode : ByteArray? = null
@@ -126,10 +155,12 @@ class BallotChainingTestVector {
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
             val ballotNonce = eballot.ballotNonce.import()
             val codeBaux : ByteArray = eballot.codeBaux.fromHexSafe()
-            val cyberBallot = encryptor.encrypt(ballot.import(), codeBaux, ballotNonce)
-            checkEquals(eballot, cyberBallot)
+            val errs = ErrorMessages("Ballot ${eballot.ballotId}")
+            val cyberBallot = encryptor.encrypt(ballot.import(), codeBaux, errs, ballotNonce)
+            checkEquals(eballot, cyberBallot!!)
             if (prevCode != null) {
-                assertTrue(prevCode.contentEquals(codeBaux))
+                val expect = prevCode!! + configBaux0
+                assertTrue(expect.contentEquals(codeBaux))
             }
             prevCode = cyberBallot.confirmationCode.bytes
         }

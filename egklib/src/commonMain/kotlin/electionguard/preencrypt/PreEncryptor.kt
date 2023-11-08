@@ -33,7 +33,7 @@ class PreEncryptor(
         codeBaux : ByteArray = ByteArray(0)
     ): PreEncryptedBallot {
 
-        val mcontests = manifest.contestsForBallotStyle(ballotStyleId)
+        val mcontests = manifest.contestsForBallotStyle(ballotStyleId)!!
         val preeContests = mcontests.sortedBy { it.sequenceOrder }.map {
             it.preencryptContest(manifest.contestLimit(it.contestId), primaryNonce)
         }

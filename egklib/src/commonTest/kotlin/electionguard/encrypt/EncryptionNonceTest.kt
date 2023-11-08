@@ -5,6 +5,7 @@ import electionguard.ballot.PlaintextBallot
 import electionguard.core.*
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,7 +33,7 @@ class EncryptionNonceTest {
 
         val starting = getSystemTimeInMillis()
         RandomBallotProvider(electionRecord.manifest(), nballots).ballots().forEach { ballot ->
-            val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0))
+            val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("testEncryptionNonces"))!!
             // decrypt with nonces
             val decryptionWithNonce = VerifyEmbeddedNonces(group, electionRecord.manifest(), electionInit.jointPublicKey(), electionInit.extendedBaseHash)
             val decryptedBallot = with (decryptionWithNonce) { ciphertextBallot.decrypt() }

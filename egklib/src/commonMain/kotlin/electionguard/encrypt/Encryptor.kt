@@ -5,6 +5,7 @@ import electionguard.ballot.ContestDataStatus
 import electionguard.ballot.ManifestIF
 import electionguard.ballot.PlaintextBallot
 import electionguard.core.*
+import electionguard.util.ErrorMessages
 
 /**
  * Encrypt Plaintext Ballots into Ciphertext Ballots.
@@ -21,31 +22,31 @@ class Encryptor(
 ) {
     private val extendedBaseHashB = extendedBaseHash.bytes
 
-    /** TODO get rid of this */
-    fun encryptChain(ballots: Iterable<PlaintextBallot>, codeSeed: UInt256): List<CiphertextBallot> {
-        var previousTrackingHash = codeSeed
-        val encryptedBallots = mutableListOf<CiphertextBallot>()
-        for (ballot in ballots) {
-            val encryptedBallot = ballot.encryptBallot(previousTrackingHash.bytes, UInt256.random(), null)
-            encryptedBallots.add(encryptedBallot)
-            previousTrackingHash = encryptedBallot.confirmationCode
-        }
-        return encryptedBallots
-    }
-
-    fun encrypt(ballot: PlaintextBallot, codeBaux : ByteArray, ballotNonce: UInt256? = null, timestampOverride: Long? = null): CiphertextBallot {
-        return ballot.encryptBallot(codeBaux, ballotNonce ?: UInt256.random(), timestampOverride)
+    fun encrypt(
+        ballot: PlaintextBallot,
+        codeBaux : ByteArray,
+        errs: ErrorMessages,
+        ballotNonce: UInt256? = null,
+        timestampOverride: Long? = null
+    ): CiphertextBallot? {
+        return ballot.encryptBallot(codeBaux, errs, ballotNonce ?: UInt256.random(), timestampOverride)
     }
 
     private fun PlaintextBallot.encryptBallot(
         codeBaux : ByteArray,
+        errs: ErrorMessages,
         ballotNonce: UInt256,
         timestampOverride: Long? = null,
-    ): CiphertextBallot {
+    ): CiphertextBallot? {
         val plaintextContests = this.contests.associateBy { it.contestId }
 
         val encryptedContests = mutableListOf<CiphertextBallot.Contest>()
-        for (mcontest in manifest.contestsForBallotStyle(this.ballotStyle)) {
+        val manifestContests = manifest.contestsForBallotStyle(this.ballotStyle)
+        if (manifestContests == null || manifestContests.isEmpty()) {
+            errs.add("Manifest does not have ballotStyle ${this.ballotStyle} or it has no contests for that ballotStyle")
+            return null
+        }
+        for (mcontest in manifestContests) {
             // If no contest on the ballot, create a well formed contest with all zeroes
             val pcontest = plaintextContests[mcontest.contestId] ?: makeZeroContest(mcontest)
             encryptedContests.add(

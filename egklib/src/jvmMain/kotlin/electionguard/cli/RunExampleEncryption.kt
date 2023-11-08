@@ -11,6 +11,7 @@ import electionguard.input.RandomBallotProvider
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlin.random.Random
 
@@ -27,7 +28,7 @@ class RunExampleEncryption {
             val consumerIn = makeConsumer(group, inputDir)
             val initResult = consumerIn.readElectionInitialized()
             if (initResult is Err) {
-                println("readElectionInitialized failed ${initResult.error}")
+                println("readElectionInitialized error ${initResult.error}")
                 return
             }
             val electionInit = initResult.unwrap()
@@ -43,7 +44,10 @@ class RunExampleEncryption {
             val encryptor = AddEncryptedBallot(
                 group,
                 manifest,
-                electionInit,
+                electionInit.config.chainConfirmationCodes,
+                electionInit.config.configBaux0,
+                electionInit.jointPublicKey(),
+                electionInit.extendedBaseHash,
                 device,
                 outputDir = outputDir,
                 invalidDir ="testOut/encrypt/invalidDir",
@@ -55,9 +59,10 @@ class RunExampleEncryption {
             val ballotProvider = RandomBallotProvider(manifest)
             repeat(nballots) {
                 val ballot = ballotProvider.getFakeBallot(manifest, "ballotStyle", "ballot$it")
-                val encryptResult = encryptor.encrypt(ballot)
-                if (encryptResult is Ok) {
-                    val ccode = encryptResult.unwrap().confirmationCode
+                val errs = ErrorMessages("Ballot ${ballot.ballotId}")
+                val cballot = encryptor.encrypt(ballot, errs)
+                if (cballot != null) {
+                    val ccode = cballot.confirmationCode
                     // randomly challenge a few
                     val challengeIt = Random.nextInt(nballots) < 2
                     if (challengeIt) {
@@ -71,7 +76,7 @@ class RunExampleEncryption {
                         encryptor.cast(ccode)
                     }
                 } else {
-                    println("encryptResult error = ${encryptResult.getError()}")
+                    println("encryptResult error = ${errs}")
                 }
             }
 

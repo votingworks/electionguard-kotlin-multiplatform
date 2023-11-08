@@ -79,7 +79,7 @@ class RunAccumulateTally {
             val consumerIn = makeConsumer(group, inputDir)
             val initResult = consumerIn.readElectionInitialized()
             if (initResult is Err) {
-                println("readElectionInitialized failed ${initResult.error}")
+                println("readElectionInitialized error ${initResult.error}")
                 return
             }
             val electionInit = initResult.unwrap()

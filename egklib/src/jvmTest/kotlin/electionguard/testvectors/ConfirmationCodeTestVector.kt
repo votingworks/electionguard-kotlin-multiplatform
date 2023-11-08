@@ -11,6 +11,7 @@ import electionguard.input.BallotInputValidation
 import electionguard.cli.ManifestBuilder
 import electionguard.input.RandomBallotProvider
 import electionguard.json2.*
+import electionguard.util.ErrorMessages
 import io.kotest.property.arbitrary.single
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -100,7 +101,7 @@ class ConfirmationCodeTestVector {
             println(msgs)
             if ( !msgs.hasErrors() ) {
                 val codeBaux = byteArrays(11).single()
-                val eballot = encryptor.encrypt(ballot, codeBaux)
+                val eballot = encryptor.encrypt(ballot, codeBaux, ErrorMessages("makeConfirmationCodeTestVector"))!!
                 eballots.add(eballot)
                 useBallots.add(ballot)
             }
@@ -138,7 +139,7 @@ class ConfirmationCodeTestVector {
             val encryptor = Encryptor(group, manifest, publicKey, extendedBaseHash, "device")
             val ballotNonce = eballot.ballotNonce.import()
             val codeBaux = eballot.codeBaux.fromHex()!!
-            val cyberBallot = encryptor.encrypt(ballot.import(), codeBaux, ballotNonce)
+            val cyberBallot = encryptor.encrypt(ballot.import(), codeBaux, ErrorMessages("readConfirmationCodeTestVector"), ballotNonce)!!
             checkEquals(eballot, cyberBallot)
         }
     }

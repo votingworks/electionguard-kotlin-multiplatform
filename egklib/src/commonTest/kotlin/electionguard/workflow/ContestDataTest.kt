@@ -9,6 +9,7 @@ import electionguard.encrypt.cast
 import electionguard.input.BallotInputBuilder
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
 import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -62,7 +63,7 @@ class ContestDataTest {
 
         val encryptor =
             Encryptor(context, electionRecord.manifest(), keypair.publicKey, electionInit.extendedBaseHash, "device")
-        val eballot = encryptor.encrypt(ballot, ByteArray(0))
+        val eballot = encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("testEncryptDecryptWithWriteIn"))!!
 
         eballot.contests.forEachIndexed { idx, it ->
             assertNotNull(it.contestData)

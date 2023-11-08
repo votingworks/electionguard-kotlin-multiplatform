@@ -22,10 +22,7 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 import kotlin.math.min
 import kotlin.random.Random
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 private val random = Random
 
@@ -47,7 +44,7 @@ internal class PreEncryptorTest {
             manifest.ballotStyles.forEach { println(it) }
 
             val pballot = preEncryptor.preencrypt("testPreencrypt_ballot_id", "ballotStyle", 11U.toUInt256())
-            pballot.show()
+            assertNotNull(pballot)
         }
     }
 
@@ -66,16 +63,16 @@ internal class PreEncryptorTest {
 
             val primaryNonce = 42U.toUInt256()
             val pballot = preEncryptor.preencrypt("testDecrypt_ballot_id", "ballotStyle", primaryNonce)
-            pballot.show()
+            assertNotNull(pballot)
 
             val mballot = markBallotChooseOne(manifest, pballot)
-            mballot.show()
+            assertNotNull(mballot)
 
             val recorder =
                 Recorder(group, manifest, electionInit.jointPublicKey, electionInit.extendedBaseHash, "device", ::sigma)
 
             val errs = ErrorMessages("MarkedBallot ${mballot.ballotId}")
-            with(recorder) {
+            with (recorder) {
                 mballot.record(primaryNonce, errs)
             }
             assertFalse(errs.hasErrors())
@@ -94,7 +91,7 @@ internal class PreEncryptorTest {
                 .build()
 
             val chosenBallot = ChosenBallot(1)
-            runComplete(group, "testSingleLimit", manifest, chosenBallot::markedBallot, true)
+            runComplete(group, "testSingleLimit", manifest, chosenBallot::markedBallot, false)
         }
     }
 
@@ -108,7 +105,7 @@ internal class PreEncryptorTest {
                 .build()
 
             val chosenBallot = ChosenBallot(1)
-            runComplete(group, "testSingleLimit", manifest, chosenBallot::markedBallot, true)
+            runComplete(group, "testSingleLimit", manifest, chosenBallot::markedBallot, false)
         }
     }
 
@@ -150,7 +147,7 @@ internal class PreEncryptorTest {
                 .done()
                 .build()
 
-            runComplete(group, "testMultipleSelections", manifest, ::markBallotToLimit, true)
+            runComplete(group, "testMultipleSelections", manifest, ::markBallotToLimit, false)
         }
     }
 

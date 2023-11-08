@@ -62,7 +62,7 @@ class BallotAggregationTestVector {
 
         val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash, "device")
         val eballots = RandomBallotProvider(manifest, nBallots).ballots().map { ballot ->
-            encryptor.encrypt(ballot, ByteArray(0))
+            encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("makeBallotAggregationTestVector"))!!
         }
 
         val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extendedBaseHash, ElGamalPublicKey(publicKey))

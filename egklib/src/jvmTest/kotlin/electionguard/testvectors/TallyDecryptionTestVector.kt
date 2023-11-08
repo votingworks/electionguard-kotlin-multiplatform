@@ -132,12 +132,12 @@ class TallyDecryptionTestVector(
 
         val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash, "device")
         val eballots = RandomBallotProvider(manifest, nBallots).ballots().map { ballot ->
-            encryptor.encrypt(ballot, ByteArray(0))
+            encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("makeTallyPartialDecryptionTestVector"))!!
         }
 
         val accumulator = AccumulateTally(group, manifest, "makeBallotAggregationTestVector", extendedBaseHash, ElGamalPublicKey(publicKey))
         eballots.forEach { eballot ->
-            accumulator.addCastBallot(eballot.cast(), ErrorMessages(""))
+            accumulator.addCastBallot(eballot.cast(), ErrorMessages("makeTallyPartialDecryptionTestVector"))
         }
         val encryptedTally = accumulator.build()
 
