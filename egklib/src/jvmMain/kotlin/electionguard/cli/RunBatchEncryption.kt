@@ -19,6 +19,7 @@ import electionguard.encrypt.submit
 import electionguard.input.BallotInputValidation
 import electionguard.input.ManifestInputValidation
 import electionguard.publish.*
+import electionguard.util.ErrorMessages
 import electionguard.verifier.VerifyEncryptedBallots
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -163,7 +164,7 @@ class RunBatchEncryption {
             val consumerIn = makeConsumer(group, inputDir)
             val initResult = consumerIn.readElectionInitialized()
             if (initResult is Err) {
-                println("readElectionInitialized failed ${initResult.error}")
+                println("readElectionInitialized error ${initResult.error}")
                 return
             }
             val electionInit = initResult.unwrap()
@@ -278,12 +279,19 @@ class RunBatchEncryption {
                     VerifyEncryptedBallots(group, manifest, publicKeyEG, extendedBaseHash, config, 1)
                 else null
 
-            fun encrypt(ballot: PlaintextBallot): EncryptedBallot {
-                val ciphertextBallot = encryptor.encrypt(ballot, config.configBaux0)
+            fun encrypt(ballot: PlaintextBallot): EncryptedBallot? {
+                val errs = ErrorMessages("Ballot ${ballot.ballotId}")
+                val ciphertextBallotMaybe = encryptor.encrypt(ballot, config.configBaux0, errs)
+                if (errs.hasErrors()) {
+                    logger.error { errs.toString() }
+                    return null
+                }
+                val ciphertextBallot = ciphertextBallotMaybe!!
 
                 // experiments in testing the encryption
                 if (check == CheckType.EncryptTwice) {
-                    val encrypted2 = encryptor.encrypt(ballot, config.configBaux0, ciphertextBallot.ballotNonce)
+                    val errs2 = ErrorMessages("Ballot ${ballot.ballotId}")
+                    val encrypted2 = encryptor.encrypt(ballot, config.configBaux0, errs2, ciphertextBallot.ballotNonce)!!
                     if (encrypted2.confirmationCode != ciphertextBallot.confirmationCode) {
                         logger.warn { "CheckType.EncryptTwice: encrypted.confirmationCode doesnt match" }
                     }
@@ -333,12 +341,14 @@ class RunBatchEncryption {
             id: Int,
             input: ReceiveChannel<PlaintextBallot>,
             output: SendChannel<EncryptedBallot>,
-            encrypt: (PlaintextBallot) -> EncryptedBallot,
+            encrypt: (PlaintextBallot) -> EncryptedBallot?,
         ) = launch(Dispatchers.Default) {
             for (ballot in input) {
                 val encrypted = encrypt(ballot)
-                logger.debug { " Encryptor #$id sending CiphertextBallot ${encrypted.ballotId}" }
-                output.send(encrypted)
+                if (encrypted != null) {
+                    logger.debug { " Encryptor #$id sending CiphertextBallot ${encrypted.ballotId}" }
+                    output.send(encrypted)
+                }
                 yield()
             }
             logger.debug { "Encryptor #$id done" }

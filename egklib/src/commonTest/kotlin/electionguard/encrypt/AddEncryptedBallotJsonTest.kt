@@ -7,7 +7,9 @@ import electionguard.core.*
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class AddEncryptedBallotJsonTest {
@@ -30,7 +32,10 @@ class AddEncryptedBallotJsonTest {
         val encryptor = AddEncryptedBallot(
             group,
             electionRecord.manifest(),
-            electionInit,
+            electionInit.config.chainConfirmationCodes,
+            electionInit.config.configBaux0,
+            electionInit.jointPublicKey(),
+            electionInit.extendedBaseHash,
             device,
             outputDir,
             "${outputDir}/invalidDir",
@@ -40,9 +45,9 @@ class AddEncryptedBallotJsonTest {
 
         repeat (nballots) {
             val ballot = ballotProvider.makeBallot()
-            val result = encryptor.encrypt(ballot)
-            assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+            val result = encryptor.encrypt(ballot, ErrorMessages("testJustOne"))
+            assertNotNull(result)
+            encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
         }
         encryptor.close()
 
@@ -64,7 +69,10 @@ class AddEncryptedBallotJsonTest {
             val encryptor = AddEncryptedBallot(
                 group,
                 electionRecord.manifest(),
-                electionInit,
+                electionInit.config.chainConfirmationCodes,
+                electionInit.config.configBaux0,
+                electionInit.jointPublicKey(),
+                electionInit.extendedBaseHash,
                 device,
                 outputDir,
                 "outputDir/invalidDir",
@@ -74,9 +82,9 @@ class AddEncryptedBallotJsonTest {
 
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+                val result = encryptor.encrypt(ballot, ErrorMessages("testCallMultipleTimes"))
+                assertNotNull(result)
+                encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.close()
         }
@@ -98,7 +106,10 @@ class AddEncryptedBallotJsonTest {
             val encryptor = AddEncryptedBallot(
                 group,
                 electionRecord.manifest(),
-                electionInit,
+                electionInit.config.chainConfirmationCodes,
+                electionInit.config.configBaux0,
+                electionInit.jointPublicKey(),
+                electionInit.extendedBaseHash,
                 "device$it",
                 outputDir,
                 "$outputDir/invalidDir",
@@ -108,9 +119,9 @@ class AddEncryptedBallotJsonTest {
 
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+                val result = encryptor.encrypt(ballot, ErrorMessages("testMultipleDevices"))
+                assertNotNull(result)
+                encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.close()
         }
@@ -134,7 +145,10 @@ class AddEncryptedBallotJsonTest {
         val encryptor = AddEncryptedBallot(
             group,
             electionRecord.manifest(),
-            electionInit,
+            electionInit.config.chainConfirmationCodes,
+            electionInit.config.configBaux0,
+            electionInit.jointPublicKey(),
+            electionInit.extendedBaseHash,
             device,
             outputDir,
             "${outputDir}/invalidDir",
@@ -144,9 +158,9 @@ class AddEncryptedBallotJsonTest {
 
         repeat(nballots) {
             val ballot = ballotProvider.makeBallot()
-            val result = encryptor.encrypt(ballot)
-            assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+            val result = encryptor.encrypt(ballot, ErrorMessages("testOneWithChain"))
+            assertNotNull(result)
+            encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
         }
         encryptor.close()
 
@@ -170,7 +184,10 @@ class AddEncryptedBallotJsonTest {
             val encryptor = AddEncryptedBallot(
                 group,
                 electionRecord.manifest(),
-                electionInit,
+                electionInit.config.chainConfirmationCodes,
+                electionInit.config.configBaux0,
+                electionInit.jointPublicKey(),
+                electionInit.extendedBaseHash,
                 device,
                 outputDir,
                 "outputDir/invalidDir",
@@ -180,9 +197,9 @@ class AddEncryptedBallotJsonTest {
 
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+                val result = encryptor.encrypt(ballot, ErrorMessages("testCallMultipleTimesChaining"))
+                assertNotNull(result)
+                encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.close()
         }
@@ -206,7 +223,10 @@ class AddEncryptedBallotJsonTest {
             val encryptor = AddEncryptedBallot(
                 group,
                 electionRecord.manifest(),
-                electionInit,
+                electionInit.config.chainConfirmationCodes,
+                electionInit.config.configBaux0,
+                electionInit.jointPublicKey(),
+                electionInit.extendedBaseHash,
                 "device$it",
                 outputDir,
                 "$outputDir/invalidDir",
@@ -216,9 +236,9 @@ class AddEncryptedBallotJsonTest {
 
             repeat(nballots) {
                 val ballot = ballotProvider.makeBallot()
-                val result = encryptor.encrypt(ballot)
-                assertTrue(result is Ok)
-                encryptor.submit(result.unwrap().confirmationCode, EncryptedBallot.BallotState.CAST)
+                val result = encryptor.encrypt(ballot, ErrorMessages("testMultipleDevicesChaining"))
+                assertNotNull(result)
+                encryptor.submit(result.confirmationCode, EncryptedBallot.BallotState.CAST)
             }
             encryptor.close()
         }

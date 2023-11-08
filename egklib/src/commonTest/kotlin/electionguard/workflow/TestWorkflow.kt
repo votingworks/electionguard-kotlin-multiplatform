@@ -1,6 +1,5 @@
 package electionguard.workflow
 
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionInitialized
 import electionguard.ballot.EncryptedBallot
@@ -18,8 +17,10 @@ import electionguard.input.RandomBallotProvider
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
 import electionguard.publish.makeTrusteeSource
+import electionguard.util.ErrorMessages
 import electionguard.verifier.Verifier
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
@@ -29,7 +30,7 @@ import kotlin.test.assertTrue
  * Note that TestWorkflow uses RunFakeKeyCeremonyTest, not real KeyCeremony.
  *  1. The results can be copied to the test data sets "src/commonTest/data/workflow" whenever the
  *     election record changes.
- *  2. Now that we have fixed balloty ids, dont need to RunDecryptBallotsTest for more damn things to do.
+ *  2. Now that we have fixed ballot ids, dont need to RunDecryptBallotsTest for more damn things to do.
  */
 class TestWorkflow {
     private val configDirProto = "src/commonTest/data/startConfigProto"
@@ -115,7 +116,10 @@ class TestWorkflow {
         val encryptor = AddEncryptedBallot(
             group,
             manifest,
-            electionInit,
+            electionInit.config.chainConfirmationCodes,
+            electionInit.config.configBaux0,
+            electionInit.jointPublicKey(),
+            electionInit.extendedBaseHash,
             "device009",
             workingDir,
             invalidDir,
@@ -124,9 +128,9 @@ class TestWorkflow {
         var count = 1
         ballots.forEach { ballot ->
             val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
-            val result = encryptor.encrypt(ballot)
-            assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().confirmationCode, state)
+            val result = encryptor.encrypt(ballot, ErrorMessages("runWorkflowChained"))
+            assertNotNull(result)
+            encryptor.submit(result.confirmationCode, state)
             println(" write ${ballot.ballotId} $state")
             count++
         }
@@ -279,7 +283,10 @@ class TestWorkflow {
         val encryptor = AddEncryptedBallot(
             group,
             manifest,
-            electionInit,
+            electionInit.config.chainConfirmationCodes,
+            electionInit.config.configBaux0,
+            electionInit.jointPublicKey(),
+            electionInit.extendedBaseHash,
             "runWorkflowChainedJson",
             workingDir,
             invalidDir,
@@ -288,9 +295,9 @@ class TestWorkflow {
         var count = 1
         ballots.forEach { ballot ->
             val state = if (count % (nballots/3) == 0) EncryptedBallot.BallotState.SPOILED else EncryptedBallot.BallotState.CAST
-            val result = encryptor.encrypt(ballot)
-            assertTrue(result is Ok)
-            encryptor.submit(result.unwrap().confirmationCode, state)
+            val result = encryptor.encrypt(ballot, ErrorMessages("runWorkflowChainedJson"))
+            assertNotNull(result)
+            encryptor.submit(result.confirmationCode, state)
             println(" write ${ballot.ballotId} $state")
             count++
         }

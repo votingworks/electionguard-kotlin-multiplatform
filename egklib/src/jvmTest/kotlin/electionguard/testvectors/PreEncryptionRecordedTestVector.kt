@@ -106,7 +106,7 @@ class PreEncryptionRecordedTestVector {
             "Compute the encrypted ballot from the ballot primary nonce and the selections voted for, spec 2.0 section 4.3",
             fullEncryptedBallot.publishJson(),
         )
-        println(jsonFormat.encodeToString(preEncryptionRecordedTestVector))
+        // println(jsonFormat.encodeToString(preEncryptionRecordedTestVector))
 
         FileOutputStream(outputFile).use { out ->
             jsonFormat.encodeToStream(preEncryptionRecordedTestVector, out)

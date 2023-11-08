@@ -70,7 +70,7 @@ fun ByteArray.normalize(nbytes: Int): ByteArray {
         val leading = size - nbytes
         for (idx in 0 until leading) {
             if (this[idx].compareTo(0) != 0) {
-                throw IllegalArgumentException("ByteArray.normalize failed; has $size bytes, want $nbytes, leading zeroes stop at $idx")
+                throw IllegalArgumentException("ByteArray.normalize error; has $size bytes, want $nbytes, leading zeroes stop at $idx")
             }
         }
         this.copyOfRange(leading, this.size)

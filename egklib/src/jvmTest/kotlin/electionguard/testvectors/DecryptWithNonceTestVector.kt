@@ -61,7 +61,7 @@ class DecryptWithNonceTestVector {
 
         val encryptor = Encryptor(group, manifest, ElGamalPublicKey(publicKey), extendedBaseHash, "device")
         val ciphertextBallot = RandomBallotProvider(manifest, nBallots).ballots().map { ballot ->
-            encryptor.encrypt(ballot, ByteArray(0))
+            encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("makeDecryptWithNonceTestVector"))!!
         }.first()
         val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 

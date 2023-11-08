@@ -9,6 +9,7 @@ import electionguard.encrypt.Encryptor
 import electionguard.encrypt.submit
 import electionguard.input.RandomBallotProvider
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -28,8 +29,8 @@ class DecryptionWithNonceTest {
 
         RandomBallotProvider(electionRecord.manifest(), nballots).ballots().forEach { ballot ->
             val primaryNonce = UInt256.random()
-            val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0), primaryNonce, 0)
-            assertEquals(primaryNonce, ciphertextBallot.ballotNonce)
+            val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("testDecryptionWithPrimaryNonce"), primaryNonce, 0)
+            assertEquals(primaryNonce, ciphertextBallot!!.ballotNonce)
             val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
 
             // decrypt with primary nonce
@@ -79,8 +80,8 @@ class DecryptionWithNonceTest {
         val nb = 100
         RandomBallotProvider(electionRecord.manifest(), nb).withWriteIns().ballots().forEach { ballot ->
             val primaryNonce = UInt256.random()
-            val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0), primaryNonce, 0)
-            val encryptedBallot = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
+            val ciphertextBallot = encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("testDecryptionOfContestData"), primaryNonce, 0)
+            val encryptedBallot = ciphertextBallot!!.submit(EncryptedBallot.BallotState.CAST)
 
             // decrypt with primary nonce
             val decryptionWithPrimaryNonce = DecryptWithNonce(group, init.jointPublicKey(), init.extendedBaseHash)

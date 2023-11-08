@@ -13,6 +13,7 @@ import electionguard.keyceremony.keyCeremonyExchange
 import electionguard.publish.Publisher
 import electionguard.publish.makeConsumer
 import electionguard.publish.makePublisher
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -26,6 +27,8 @@ import kotlinx.cli.required
 class RunTrustedKeyCeremony {
 
     companion object {
+        private val logger = KotlinLogging.logger("RunTrustedKeyCeremony")
+
         @JvmStatic
         fun main(args: Array<String>) {
             val parser = ArgParser("RunTrustedKeyCeremony")
@@ -56,22 +59,26 @@ class RunTrustedKeyCeremony {
             val consumerIn = makeConsumer(group, inputDir)
             val configResult = consumerIn.readElectionConfig()
             if (configResult is Err) {
-                println("readElectionConfig failed ${configResult.error}")
+                println("readElectionConfig error ${configResult.error}")
                 return
             }
             val config = configResult.unwrap()
 
-            val result = runKeyCeremony(
-                group,
-                inputDir,
-                config,
-                outputDir,
-                trusteeDir,
-                consumerIn.isJson(),
-                createdBy
-            )
-            println("runKeyCeremony result = $result")
-            require(result is Ok)
+            try {
+                val result = runKeyCeremony(
+                    group,
+                    inputDir,
+                    config,
+                    outputDir,
+                    trusteeDir,
+                    consumerIn.isJson(),
+                    createdBy
+                )
+                println("runKeyCeremony result = $result")
+                require(result is Ok)
+            } catch (t: Throwable) {
+                logger.error{"Exception= ${t.message} ${t.stackTraceToString()}"}
+            }
         }
 
         fun runKeyCeremony(

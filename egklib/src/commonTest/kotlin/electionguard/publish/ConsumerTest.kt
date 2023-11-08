@@ -56,7 +56,7 @@ class ConsumerTest {
 
         val ballotDir = "${consumerIn.topdir()}/encrypted_ballots/$device"
         val readResult = consumerIn.readEncryptedBallot(ballotDir, eballot!!.ballotId)
-        println(readResult)
+        // println(readResult)
         assertTrue (readResult is Ok)
         assertEquals(eballot, readResult.unwrap())
 

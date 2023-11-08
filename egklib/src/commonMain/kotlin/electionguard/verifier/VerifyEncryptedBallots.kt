@@ -182,16 +182,16 @@ class VerifyEncryptedBallots(
                 val ballotChain: EncryptedBallotChain = ballotChainResult.unwrap()
                 val ballots = consumer.encryptedBallots(device) { true }
 
-                // 7.D The initial hash code H0 satisfies H0 = H(HE ; 0x24, Baux,0 ) TODO must store?
-                // and Baux,0 contains the unique voting device information. TODO how?
+                // 7.D The initial hash code H0 satisfies H0 = H(HE ; 0x24, Baux,0 )
+                // "and Baux,0 contains the unique voting device information". TODO ambiguous, change spec wording
                 val H0 = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), config.configBaux0).bytes
 
-                // (7.E) For all 1 ≤ j ≤ ℓ, the additional input byte array used to compute Hj = H(Bj ) is equal to
-                //       Baux,j = H(Bj−1 ) ∥ Baux,0 .
+                // (7.E) For all 1 ≤ j ≤ ℓ, the additional input byte array used to compute Hj = H(Bj) is equal to
+                //       Baux,j = H(Bj−1) ∥ Baux,0 .
                 var prevCC = H0
                 var first = true
                 ballots.forEach { ballot ->
-                    val expectedBaux = if (first) H0 else hashFunction(prevCC, config.configBaux0).bytes // eq 7.E
+                    val expectedBaux = if (first) H0 else prevCC + config.configBaux0  // eq 7.D and 7.E
                     first = false
                     if (!expectedBaux.contentEquals(ballot.codeBaux)) {
                         results.add(Err("    7.E. additional input byte array Baux != H(Bj−1 ) ∥ Baux,0 for ballot=${ballot.ballotId}"))
@@ -199,8 +199,9 @@ class VerifyEncryptedBallots(
                     prevCC = ballot.confirmationCode.bytes
                 }
                 // 7.F The final additional input byte array is equal to Baux = H(Bℓ ) ∥ Baux,0 ∥ b(“CLOSE”, 5) and
-                //      H(Bℓ ) is the final confirmation code on this device. TODO store?
-                val bauxFinal = hashFunction(prevCC, config.configBaux0, "CLOSE")
+                //      H(Bℓ ) is the final confirmation code on this device.
+                val bauxFinal = prevCC + config.configBaux0 + "CLOSE".encodeToByteArray()
+
                 // 7.G The closing hash is correctly computed as H = H(HE ; 0x24, Baux )
                 val expectedClosingHash = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), bauxFinal)
                 if (expectedClosingHash != ballotChain.closingHash) {

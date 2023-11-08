@@ -421,6 +421,7 @@ class ChaumPedersenTest {
         val context = tinyGroup()
         runTest {
             checkAll(
+                propTestFastConfig,
                 Arb.int(0, 5),
                 Arb.int(1, 5),
                 elementsModQNoZero(context),
@@ -442,7 +443,7 @@ class ChaumPedersenTest {
 
                 val proofValidation = proof.verify(ciphertext, keypair.publicKey, qbar, p0)
                 assertTrue(proofValidation is Err)
-                println(" Err = ${proofValidation}")
+                println("testBadRangeProofs $p0, $p1 = ${proofValidation.error}")
             }
         }
     }

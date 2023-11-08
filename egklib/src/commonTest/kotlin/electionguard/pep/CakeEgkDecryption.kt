@@ -189,7 +189,7 @@ class CakeEgkDecryption(val group: GroupContext, val quorum: Int, val extendedBa
         val errs = ErrorMessages("CakeEgkDecrypt")
         val dTally = decryptor.decryptPep(eTally, errs)
         if (dTally == null) {
-            println("CakeEgkDecrypt failed errors = $errs")
+            println("CakeEgkDecrypt errors = $errs")
             return null
         }
         //println("EgkDecrypt = ${group.showAndClearCountPowP()} expect ${4 * decryptor.nguardians + 4}")

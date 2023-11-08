@@ -63,7 +63,7 @@ class TallyDecryptorTest {
         share.M = group.ONE_MOD_P
 
         tallyDecryptor.decryptTally(tally, decryptions, Stats(), errs)
-        assertContains(errs.toString(), "verifySelection failed for Contest1/Selection1")
+        assertContains(errs.toString(), "verifySelection error on Contest1/Selection1")
         println("testBadShareM: $errs")
     }
 
@@ -79,7 +79,7 @@ class TallyDecryptorTest {
         share.responses["trustee1"] = group.ONE_MOD_Q
 
         tallyDecryptor.decryptTally(tally, decryptions, Stats(), errs)
-        assertContains(errs.toString(), "verifySelection failed for Contest1/Selection1")
+        assertContains(errs.toString(), "verifySelection error on Contest1/Selection1")
         println("testBadResponse: $errs")
     }
 
@@ -108,7 +108,7 @@ class TallyDecryptorTest {
 
         tallyDecryptor.decryptTally(tally, decryptions, Stats(), errs)
         println("testBadPartialDecryption: $errs")
-        assertContains(errs.toString(), "verifySelection failed for Contest1/Selection1")
+        assertContains(errs.toString(), "verifySelection error on Contest1/Selection1")
         assertContains(errs.toString(), "checkIndividualResponses has errors:")
         assertContains(errs.toString(), "ai != ai' dont match for guardian2")
     }

@@ -17,7 +17,7 @@ kotlin {
             kotlinOptions.jvmTarget = "1.8"
             kotlinOptions.freeCompilerArgs = listOf(
                 "-Xexpect-actual-classes",
-                "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi,kotlinx.serialization.ExperimentalSerializationApi"
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi,kotlinx.serialization.ExperimentalSerializationApi"
             )
         }
 

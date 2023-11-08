@@ -8,7 +8,8 @@ import kotlin.experimental.xor
 
 /**
  * A Trustee that knows its own secret key and polynomial, used during the Key Ceremony.
- * This must stay private. Guardian is its public info in the election record.
+ * This must stay private. Guardian contains its public info in the election record.
+ * DecryptingTrustee is its instantiation for decrypting.
  */
 open class KeyCeremonyTrustee(
     val group: GroupContext,
@@ -284,7 +285,7 @@ open class KeyCeremonyTrustee(
     // == (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. spec 2.0.0, eq 65.
     internal fun computeSecretKeyShare(): ElementModQ {
        if (nguardians != myShareOfOthers.size + 1) {
-            throw RuntimeException("requires nguardians ${nguardians} but have ${myShareOfOthers.size  + 1} shares")
+            throw RuntimeException("KeyCeremonyTrustee.computeSecretKeyShare: requires nguardians ${nguardians} but have ${myShareOfOthers.size + 1} shares")
         }
         var result: ElementModQ = polynomial.valueAt(group, xCoordinate)
         myShareOfOthers.values.forEach{ result += it.yCoordinate }

@@ -34,7 +34,7 @@ private fun electionguard.protogen.EncryptedKeyShare.import(id: String, group: G
 
 ///////////////////////////////////////////////////////////////////////////////
 
-fun KeyCeremonyTrustee.publishDecryptingTrusteeProto() =
+fun KeyCeremonyTrustee.publishProto() =
     electionguard.protogen.DecryptingTrustee(
         this.id(),
         this.xCoordinate(),

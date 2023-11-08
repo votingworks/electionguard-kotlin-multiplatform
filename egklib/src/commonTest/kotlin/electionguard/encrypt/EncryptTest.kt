@@ -2,6 +2,7 @@ package electionguard.encrypt
 
 import electionguard.core.*
 import electionguard.publish.readElectionRecord
+import electionguard.util.ErrorMessages
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -18,7 +19,7 @@ class EncryptTest {
             val ballot = makeBallot(electionRecord.manifest(), "ballotStyle", 3, 0)
 
             val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash, "device")
-            val result = encryptor.encrypt(ballot, ByteArray(0))
+            val result = encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("testEncryption"))!!
 
             var first = true
             println("result = ${result.confirmationCode} nonce ${result.ballotNonce}")
@@ -44,8 +45,8 @@ class EncryptTest {
 
             val encryptor = Encryptor(group, electionRecord.manifest(), ElGamalPublicKey(electionInit.jointPublicKey), electionInit.extendedBaseHash, "device")
             val nonce1 = UInt256.random()
-            val result1 = encryptor.encrypt(ballot, ByteArray(0), nonce1, 0)
-            val result2 = encryptor.encrypt(ballot, ByteArray(0), nonce1, 0)
+            val result1 = encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("testEncryptionWithBallotNonce1"), nonce1, 0)!!
+            val result2 = encryptor.encrypt(ballot, ByteArray(0), ErrorMessages("testEncryptionWithBallotNonce2"), nonce1, 0)!!
 
             result1.contests.forEachIndexed { index, contest1 ->
                 val contest2 = result2.contests[index]

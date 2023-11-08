@@ -92,10 +92,10 @@ class EncryptedBallotJsonManifestFacade(ballot : EncryptedBallotJsonV) : Manifes
 
     override fun contestsForBallotStyle(ballotStyle : String) = contests
     override fun contestLimit(contestId: String): Int {
-        return contests.find{ it.contestId == contestId }!!.votesAllowed
+        return contests.find{ it.contestId == contestId }?.votesAllowed?: 1
     }
     override fun optionLimit(contestId : String) : Int {
-        return contests.find{ it.contestId == contestId }!!.optionLimit
+        return contests.find{ it.contestId == contestId }?.optionLimit?: 1
     }
 
     class ContestFacade(

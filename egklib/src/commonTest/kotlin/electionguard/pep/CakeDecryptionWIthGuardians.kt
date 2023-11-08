@@ -169,8 +169,8 @@ class CakeDecryptionWithGuardians(val group: GroupContext, nguardians : Int) {
         fun decryptStep5(guardianValue: DecryptValuesFromGuardian?, c : ElementModQ, A : ElementModP, M : ElementModP) {
             if (guardianValue == null) throw RuntimeException("cant find step2p3 $id")
             // 5. Gi : Compute a′j = g^vj * Kj^c and b′j = A^vj * Mj^c and verify aj = a′j and bj = b′j
-            val api = group.gPowP(guardianValue.vi!!) * (guardianKeypair.publicKey.key powP c)
-            val bpi = (A powP guardianValue.vi!!) * (guardianValue.Mi powP c)
+            val api = group.gPowP(guardianValue.vi) * (guardianKeypair.publicKey.key powP c)
+            val bpi = (A powP guardianValue.vi) * (guardianValue.Mi powP c)
             assertEquals(guardianValue.ai, api)
             assertEquals(guardianValue.bi, bpi)
         }

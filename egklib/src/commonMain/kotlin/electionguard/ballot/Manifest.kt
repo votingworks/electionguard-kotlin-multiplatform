@@ -34,16 +34,16 @@ data class Manifest(
         }
     }
 
-    override fun contestsForBallotStyle(ballotStyle: String): List<ManifestIF.Contest> {
-        return styleToContestsMap[ballotStyle] ?: throw RuntimeException("unknown ballotStyle $ballotStyle")
+    override fun contestsForBallotStyle(ballotStyle: String): List<ManifestIF.Contest>? {
+        return styleToContestsMap[ballotStyle]
     }
 
     override fun contestLimit(contestId : String) : Int {
-        return contestIdToContestLimit[contestId] ?: throw RuntimeException("manifest missing contestLimit for $contestId")
+        return contestIdToContestLimit[contestId]?: 1
     }
 
     override fun optionLimit(contestId : String) : Int {
-        return contestIdToOptionLimit[contestId] ?: throw RuntimeException("manifest missing optionLimit for $contestId")
+        return contestIdToOptionLimit[contestId]?: 1
     }
 
     /** Map of contestId to contest selection limit. */
