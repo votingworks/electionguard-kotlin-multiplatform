@@ -15,8 +15,8 @@ import electionguard.publish.readElectionRecord
 import electionguard.tally.AccumulateTally
 import electionguard.util.ErrorMessages
 import electionguard.util.Stats
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 
 /**
  An attack that modifies the EncryptedBallots before the tally phase.
@@ -81,7 +81,7 @@ class AttackEncryptedBallotTest {
         val results = verifier.verifyEncryptedBallots(mungedBallots, stats)
         println("verify = ${results}")
         stats.show()
-        assertTrue(results is Ok)
+        assertFalse(results.hasErrors())
     }
 
     private fun mungeBallot(ballot: EncryptedBallot, publicKey: ElGamalPublicKey): EncryptedBallot {

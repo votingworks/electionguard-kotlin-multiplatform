@@ -18,6 +18,8 @@ interface ManifestIF {
     /** get the list of valid contests for the given ballotStyle */
     fun contestsForBallotStyle(ballotStyle : String): List<Contest>?
 
+    fun findContest(contestId: String): Contest?
+
     /** get the contest selection limit (aka votesAllowed) for the given contest id */
     fun contestLimit(contestId : String): Int
 

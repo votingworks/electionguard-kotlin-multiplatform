@@ -1,9 +1,9 @@
 package electionguard.verifier
 
-import com.github.michaelbull.result.*
 import electionguard.ballot.DecryptedTallyOrBallot
 import electionguard.ballot.ManifestIF
 import electionguard.core.*
+import electionguard.util.ErrorMessages
 import electionguard.util.Stats
 import kotlin.collections.mutableSetOf
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +16,6 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
 import kotlin.math.roundToInt
 
@@ -32,88 +31,96 @@ class VerifyDecryption(
     val extendedBaseHash: UInt256,
 ) {
 
-    /** Set of "contestId/selectionId" string to detect existence. */
-    val contestAndSelectionSet : Set<String> = manifest.contests.map { contest -> contest.selections.map { "${contest.contestId}/${it.selectionId}" } }.flatten().toSet()
+    /** All manifest "contestId/selectionId" strings. */
+    val contestAndSelectionSet : Set<String> = manifest.contests.map { contest -> contest.selections.map {
+        "${contest.contestId}/${it.selectionId}" } }.flatten().toSet()
 
-    fun verify(decrypted: DecryptedTallyOrBallot, isBallot: Boolean, stats: Stats): Result<Boolean, String> {
+    fun verify(decrypted: DecryptedTallyOrBallot, isBallot: Boolean, errs: ErrorMessages, stats: Stats): Boolean {
         val starting = getSystemTimeInMillis()
 
         if (decrypted.electionId != extendedBaseHash) {
-            return Err("DecryptedTallyOrBallot has wrong electionId = ${decrypted.electionId}")
+            errs.add("DecryptedTallyOrBallot has wrong electionId = ${decrypted.electionId}")
+            return false
         }
 
         var nselections = 0
-        val results = mutableListOf<Result<Boolean, String>>()
-        val ballotSelectionSet = mutableSetOf<String>()
 
         for (contest in decrypted.contests) {
-            val where = "${decrypted.id}/${contest.contestId}"
-            // (10.B) The contest text label occurs as a contest label in the list of contests in the election manifest.
-            if (manifest.contestLimit(contest.contestId) == null) { // TODO
-                results.add(Err("    10.B,13.D Ballot contains contest not in manifest: '$where' "))
+            val cerrs = errs.nested("Contest ${contest.contestId}")
+
+            // (10.B, 13.D) The contest text label occurs as a contest label in the contests in the election manifest.
+            if (manifest.findContest(contest.contestId) == null) {
+                val what = if (isBallot) "13.D" else "10.B"
+                cerrs.add("    $what contest '${contest.contestId}' not in manifest")
                 continue
             }
+
             val optionLimit = manifest.optionLimit(contest.contestId)
             val contestLimit = manifest.contestLimit(contest.contestId)
 
             if (contest.decryptedContestData != null) {
-                verifyContestData(where, contest.decryptedContestData)
+                verifyContestData(contest.decryptedContestData, errs)
             }
 
+            val contestSelectionSet = mutableSetOf<String>()
             var contestVotes = 0
             for (selection in contest.selections) {
+                val serrs = cerrs.nested("Selection ${selection.selectionId}")
+
                 nselections++
                 val here = "${contest.contestId}/${selection.selectionId}"
-                val where2 = "$${decrypted.id}/$here"
-                ballotSelectionSet.add(here)
+                contestSelectionSet.add(selection.selectionId)
 
-                // (10.C) For each option in the contest, the option text label occurs as an option label for the contest
-                // in the election manifest.
+                // (10.C, 13.E) the option text label occurs as an option label for the contest in the election manifest.
                 if (!contestAndSelectionSet.contains(here)) {
-                    results.add(Err("    10.C,13.E Ballot contains selection not in manifest: '$where2' "))
+                    val what = if (isBallot) "13.E" else "10.C"
+                    serrs.add("    $what contest/selection '$here' not in manifest")
                     continue
                 }
 
                 if (!selection.proof.r.inBounds()) {
-                    results.add(Err("    9.A,12.A response out of bounds: '$where2' "))
+                    val what = if (isBallot) "12.A" else "9.A"
+                    serrs.add("    $what response out of bounds")
                 }
 
                 // 9.B, 11.B
                 if (!selection.verifySelection()) {
-                    results.add(Err("    9.B,12.B Challenge does not match: '$where2' "))
+                    val what = if (isBallot) "12.B" else "9.B"
+                    serrs.add("    $what challenge does not match")
                 }
 
                 // T = K^t mod p.
                 val tallyQ = selection.tally.toElementModQ(group)
                 if (selection.bOverM != publicKey powP tallyQ) {
-                    results.add(Err("    10.A,13.A Tally Decryption M = K^t mod p error: '$where2'"))
+                    if (isBallot) serrs.add("    10.A incorrect Decryption T = K^t mod p")
+                    else serrs.add("    13.A incorrect Decryption S = K^sigma mod p")
                 }
 
                 if (isBallot && (selection.tally !in (0..optionLimit))) {
-                    results.add(Err("     13.B ballot vote ${selection.tally} must be between 0..$optionLimit : '$where2'"))
+                    serrs.add("     13.B ballot vote ${selection.tally} must be between 0..$optionLimit")
                 }
                 contestVotes += selection.tally
             }
-            if (isBallot) {
-                if (contestVotes !in (0..contestLimit)) {
-                    results.add(Err("     13.C sum of votes ${contestVotes} in contest must be between 0..$contestLimit : '$where'"))
+
+            // (10.D) For each option in the election manifest, the option occurs in the decrypted tally contest.
+            // (13.F) For each option in the election manifest, the option occurs in the decrypted ballot contest.
+            val mcontest = manifest.findContest(contest.contestId)!! // already checked existence above
+            mcontest.selections.forEach {
+                if (!contestSelectionSet.contains(it.selectionId)) {
+                    if (isBallot) errs.add("    13.F Manifest contains selection '$it' not on decrypted ballot")
+                    else errs.add("    10.D Manifest contains selection '$it' not on decrypted tally ")
                 }
             }
-            // println(" verify $nselections on ${if (isBallot) "ballot" else "tally"} ${decrypted.id}")
-        }
 
-        // (10.D) For each option text label listed for this contest in the election manifest, the option label
-        // occurs for a option in the decrypted tally contest.
-        // (13.F) For each option text label listed for this contest in the election manifest, the option label
-        //occurs for a option in the decrypted spoiled ballot.
-        contestAndSelectionSet.forEach {
-            if (!ballotSelectionSet.contains(it)) {
-                results.add(Err("    10.D,13.F Manifest contains selection not in ballot: '$it' "))
+            if (isBallot) {
+                if (contestVotes !in (0..contestLimit)) {
+                    cerrs.add("     13.C sum of votes ${contestVotes} in contest must be between 0..$contestLimit")
+                }
             }
         }
 
         stats.of("verifyDecryption", "selections").accum(getSystemTimeInMillis() - starting, nselections)
-        return results.merge()
+        return !errs.hasErrors()
     }
 
     // Verification 9 (Correctness of tally decryptions)
@@ -132,19 +139,14 @@ class VerifyDecryption(
     // An election verifier must then confirm the following.
     // (11.A) The given value v is in the set Zq .
     // (11.B) The challenge value c satisfies c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β).
-    private fun verifyContestData(where: String, decryptedContestData: DecryptedTallyOrBallot.DecryptedContestData): Result<Boolean, String> {
-        val results = mutableListOf<Result<Boolean, String>>()
-
+    private fun verifyContestData(decryptedContestData: DecryptedTallyOrBallot.DecryptedContestData, errs: ErrorMessages){
         // (11.A,14.A) The given value v is in the set Zq.
         if (!decryptedContestData.proof.r.inBounds()) {
-            results.add(Err("     (11.A,14.A) The value v is not in the set Zq.: '$where'"))
+            errs.add("     (11.A,14.A) The value v is not in the set Zq.")
         }
-
-        val challengeOk = decryptedContestData.proof.verifyContestDataDecryption(publicKey.key, extendedBaseHash, decryptedContestData.beta, decryptedContestData.encryptedContestData)
-        if (challengeOk) {
-            results.add(Err("     (11.B,14.B) The challenge value is wrong: '$where'"))
+        if (!decryptedContestData.proof.verifyContestDataDecryption(publicKey.key, extendedBaseHash, decryptedContestData.beta, decryptedContestData.encryptedContestData)) {
+            errs.add("     (11.B,14.B) The challenge value is wrong")
         }
-        return results.merge()
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -153,18 +155,21 @@ class VerifyDecryption(
     fun verifySpoiledBallotTallies(
         ballots: Iterable<DecryptedTallyOrBallot>,
         nthreads: Int,
+        errs: ErrorMessages,
         stats: Stats,
         showTime: Boolean,
-    ): Result<Boolean, String> {
+    ): Boolean {
         val starting = getSystemTimeInMillis()
 
         runBlocking {
             val verifierJobs = mutableListOf<Job>()
             val ballotProducer = produceTallies(ballots)
             repeat(nthreads) {
-                verifierJobs.add(launchVerifier(it, ballotProducer) { ballot -> verify(ballot, isBallot = true, stats) })
+                // decrypted: DecryptedTallyOrBallot, isBallot: Boolean, errs: ErrorMessages, stats: Stats)
+                verifierJobs.add(launchVerifier(ballotProducer) { dballot ->
+                    verify(dballot, isBallot = true, errs.nested("Ballot ${dballot.id}"), stats)
+                })
             }
-
             // wait for all encryptions to be done, then close everything
             joinAll(*verifierJobs.toTypedArray())
         }
@@ -172,10 +177,9 @@ class VerifyDecryption(
         val took = getSystemTimeInMillis() - starting
         val perBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
         if (showTime) println("   verifySpoiledBallotTallies took $took millisecs for $count ballots = $perBallot msecs/ballot wallclock")
-        return globalResults.merge()
+        return !errs.hasErrors()
     }
 
-    private val globalResults = mutableListOf<Result<Boolean, String>>()
     private var count = 0
     private fun CoroutineScope.produceTallies(producer: Iterable<DecryptedTallyOrBallot>): ReceiveChannel<DecryptedTallyOrBallot> =
         produce {
@@ -190,16 +194,11 @@ class VerifyDecryption(
     private val mutex = Mutex()
 
     private fun CoroutineScope.launchVerifier(
-        id: Int,
         input: ReceiveChannel<DecryptedTallyOrBallot>,
-        verify: (DecryptedTallyOrBallot) -> Result<Boolean, String>,
+        verify: (DecryptedTallyOrBallot) -> Boolean
     ) = launch(Dispatchers.Default) {
-        for (tally in input) {
-            if (debug) println("$id channel working on ${tally.id}")
-            val stat = verify(tally)
-            mutex.withLock {
-                globalResults.add(stat)
-            }
+        for (dballot in input) {
+            verify(dballot)
             yield()
         }
     }

@@ -66,11 +66,12 @@ class RunVerifier {
             val verifier = Verifier(electionRecord, nthreads)
 
             val stats = Stats()
-            val allOk = verifier.verifyEncryptedBallots(stats)
+            val errs = verifier.verifyEncryptedBallots(stats)
+            println(errs)
             stats.show()
 
             val took = ((getSystemTimeInMillis() - starting) / 1000.0).sigfig()
-            println("VerifyEncryptedBallots $allOk took $took seconds")
+            println("VerifyEncryptedBallots took $took seconds")
         }
 
         fun verifyDecryptedTally(group: GroupContext, inputDir: String) {
@@ -81,11 +82,12 @@ class RunVerifier {
 
             val decryptedTally = electionRecord.decryptedTally() ?: throw IllegalStateException("no decryptedTally ")
             val stats = Stats()
-            val allOk = verifier.verifyDecryptedTally(decryptedTally, stats)
+            val errs = verifier.verifyDecryptedTally(decryptedTally, stats)
+            println(errs)
             stats.show()
 
             val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
-            println("verifyDecryptedTally $allOk took $took seconds wallclock")
+            println("verifyDecryptedTally took $took seconds wallclock")
         }
 
         fun verifyChallengedBallots(group: GroupContext, inputDir: String) {
@@ -95,11 +97,12 @@ class RunVerifier {
             val verifier = Verifier(electionRecord, 1)
 
             val stats = Stats()
-            val allOk = verifier.verifySpoiledBallotTallies(stats)
+            val errs = verifier.verifySpoiledBallotTallies(stats)
             stats.show()
+            println(errs)
 
             val took = ((getSystemTimeInMillis() - starting) / 1000.0).roundToInt()
-            println("verifyRecoveredShares $allOk took $took seconds wallclock")
+            println("verifyRecoveredShares took $took seconds wallclock")
         }
 
         fun verifyTallyBallotIds(group: GroupContext, inputDir: String) {
@@ -107,8 +110,8 @@ class RunVerifier {
             println("$inputDir stage=${electionRecord.stage()} ncast_ballots=${electionRecord.encryptedTally()!!.castBallotIds.size}")
 
             val verifier = Verifier(electionRecord, 1)
-            val allOk = verifier.verifyTallyBallotIds()
-            println("   verifyTallyBallotIds= $allOk")
+            val errs = verifier.verifyTallyBallotIds()
+            println(errs)
         }
     }
 }

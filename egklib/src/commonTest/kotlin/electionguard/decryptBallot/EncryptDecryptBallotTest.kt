@@ -1,7 +1,5 @@
 package electionguard.decryptBallot
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.*
 import electionguard.core.*
@@ -18,10 +16,7 @@ import electionguard.util.ErrorMessages
 import electionguard.util.Stats
 import electionguard.verifier.VerifyDecryption
 import kotlin.math.roundToInt
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 /** Test KeyCeremony Trustee generation and recovered decryption. */
 class EncryptDecryptBallotTest {
@@ -176,11 +171,9 @@ fun testEncryptDecryptVerify(
                 }
             }
 
-            val result = verifier.verify(decryptedBallot,  true, Stats())
-            if (result is Err) {
-                println(result)
-            }
-            assertTrue( result is Ok)
+            verifier.verify(decryptedBallot,  true, errs.nested("verify"), Stats())
+            println(errs)
+            assertFalse(errs.hasErrors())
         }
     }
 

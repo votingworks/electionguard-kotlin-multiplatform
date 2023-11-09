@@ -1,12 +1,11 @@
 package electionguard.verifier
 
-import com.github.michaelbull.result.Err
 import electionguard.ballot.EncryptedBallot
 import electionguard.util.Stats
 import electionguard.core.productionGroup
 import electionguard.publish.readElectionRecord
+import org.junit.jupiter.api.Assertions.assertTrue
 import kotlin.test.Test
-import kotlin.test.assertTrue
 
 class DuplicateTrackingCodesTest {
     private val inputDir = "src/commonTest/data/workflow/allAvailableProto"
@@ -33,6 +32,7 @@ class DuplicateTrackingCodesTest {
         // verify duplicate ballots fail
         val verifier = Verifier(electionRecord)
         val results = verifier.verifyEncryptedBallots(mungedBallots, Stats())
-        assertTrue(results is Err)
+        println(results)
+        assertTrue(results.hasErrors())
     }
 }
