@@ -1,7 +1,6 @@
 package electionguard.encrypt
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
@@ -12,10 +11,7 @@ import electionguard.publish.readElectionRecord
 import electionguard.util.ErrorMessages
 import electionguard.util.Stats
 import electionguard.verifier.VerifyEncryptedBallots
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class AddEncryptedBallotTest {
     val group = productionGroup()
@@ -342,17 +338,16 @@ fun checkOutput(group : GroupContext, outputDir: String, expectedCount: Int, cha
         record.config(), 1)
 
     val stats = Stats()
-    val ballotResult = verifyEncryptions.verifyBallots(record.encryptedAllBallots { true }, stats)
-    println("verifyBallots =  $ballotResult")
-    assertTrue( ballotResult is Ok)
+    val errs = ErrorMessages("verifyBallots")
+    verifyEncryptions.verifyBallots(record.encryptedAllBallots { true }, errs, stats)
+    println(errs)
+    assertFalse( errs.hasErrors())
     assertEquals( expectedCount, stats.count())
 
     if (chained) {
-        val result = verifyEncryptions.verifyConfirmationChain(record)
-        if (result is Err) {
-            println("FAIL $result")
-        }
-        println("verifyConfirmationChain =  $ballotResult")
-        assertTrue(result is Ok)
+        val chainErrs = ErrorMessages("verifyConfirmationChain")
+        verifyEncryptions.verifyConfirmationChain(record, chainErrs)
+        println(chainErrs)
+        assertFalse( chainErrs.hasErrors())
     }
 }

@@ -246,14 +246,13 @@ internal fun runComplete(
     }
 
     // verify
+    val verifyErrs = ErrorMessages("verifyEncryptedBallot")
     val stats = Stats()
     val fakeConfig = makeFakeConfig()
     val verifier =
         VerifyEncryptedBallots(group, manifest, ElGamalPublicKey(publicKey), qbar, fakeConfig, 1)
-    val results = verifier.verifyEncryptedBallot(fullEncryptedBallot, stats)
-    if (show || results !is Ok) {
-        println("VerifyEncryptedBallots $results\n")
-    }
+    verifier.verifyEncryptedBallot(fullEncryptedBallot, verifyErrs, stats)
+    println(errs)
 
     // decrypt with nonce
     val decryptionWithPrimaryNonce = DecryptPreencryptWithNonce(group, manifest, ElGamalPublicKey(publicKey), qbar, ::sigma)
@@ -297,7 +296,7 @@ internal fun runComplete(
         }
     }
 
-    assertTrue(results is Ok)
+    assertFalse(errs.hasErrors())
 }
 
 fun sigma(hash: UInt256): String = hash.toHex().substring(0, 5)

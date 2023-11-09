@@ -289,8 +289,8 @@ class RunBatchEncryption {
                 val ciphertextBallot = ciphertextBallotMaybe!!
 
                 // experiments in testing the encryption
+                val errs2 = ErrorMessages("Ballot ${ballot.ballotId}")
                 if (check == CheckType.EncryptTwice) {
-                    val errs2 = ErrorMessages("Ballot ${ballot.ballotId}")
                     val encrypted2 = encryptor.encrypt(ballot, config.configBaux0, errs2, ciphertextBallot.ballotNonce)!!
                     if (encrypted2.confirmationCode != ciphertextBallot.confirmationCode) {
                         logger.warn { "CheckType.EncryptTwice: encrypted.confirmationCode doesnt match" }
@@ -301,9 +301,9 @@ class RunBatchEncryption {
                 } else if (check == CheckType.Verify && verifier != null) {
                     // VerifyEncryptedBallots may be doing more work than actually needed
                     val submitted = ciphertextBallot.submit(EncryptedBallot.BallotState.CAST)
-                    val verifyResults = verifier.verifyEncryptedBallot(submitted, Stats())
-                    if (verifyResults is Err) {
-                        logger.warn { "CheckType.Verify: encrypted doesnt verify = ${verifyResults}" }
+                    val verifyOk = verifier.verifyEncryptedBallot(submitted, errs2, Stats())
+                    if (!verifyOk) {
+                        logger.warn { "CheckType.Verify: encrypted doesnt verify = ${errs2}" }
                     }
                 } else if (check == CheckType.DecryptNonce) {
                     // Decrypt with Nonce to ensure encryption worked

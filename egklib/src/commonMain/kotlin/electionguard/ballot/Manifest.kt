@@ -38,24 +38,22 @@ data class Manifest(
         return styleToContestsMap[ballotStyle]
     }
 
+    override fun findContest(contestId: String): ManifestIF.Contest? {
+        return contestMap[contestId]
+    }
+
     override fun contestLimit(contestId : String) : Int {
-        return contestIdToContestLimit[contestId]?: 1
+        return contestMap[contestId]?.votesAllowed ?: 1
     }
 
     override fun optionLimit(contestId : String) : Int {
-        return contestIdToOptionLimit[contestId]?: 1
+        return contestMap[contestId]?.optionSelectionLimit ?: 1
     }
 
-    /** Map of contestId to contest selection limit. */
-    val contestIdToContestLimit : Map<String, Int> by
+    /** Map of contestId to contests. */
+    val contestMap : Map<String, ContestDescription> by
     lazy {
-        contests.associate { it.contestId to it.votesAllowed }
-    }
-
-    /** Map of contestId to contest selection limit. */
-    val contestIdToOptionLimit : Map<String, Int> by
-    lazy {
-        contests.associate { it.contestId to it.optionSelectionLimit }
+        contests.associateBy { it.contestId }
     }
 
     /** Map "$contestId/$selectionId" to candidateId. */

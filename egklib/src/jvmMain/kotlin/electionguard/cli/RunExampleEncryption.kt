@@ -101,12 +101,14 @@ class RunExampleEncryption {
             )
 
             // Note we are verifying all ballots, not just CAST
-            val verifierResult = verifier.verifyBallots(record.encryptedAllBallots { true })
-            println("verifyEncryptedBallots: $verifierResult")
+            val errs = ErrorMessages("verifyBallots")
+            verifier.verifyBallots(record.encryptedAllBallots { true }, errs)
+            println("verifyEncryptedBallots: $errs")
 
             if (chained) {
-                val chainResult = verifier.verifyConfirmationChain(record)
-                println(" verifyChain: $chainResult")
+                val chainErrs = ErrorMessages("verifyConfirmationChain")
+                verifier.verifyConfirmationChain(record, chainErrs)
+                println(" verifyChain: $chainErrs")
             }
         }
     }

@@ -1,10 +1,9 @@
 package electionguard.verifier
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.EncryptedTally
 import electionguard.core.*
+import electionguard.util.ErrorMessages
 
 /**
  * Verification 8 (Correctness of ballot aggregation)
@@ -22,10 +21,9 @@ class VerifyTally(
     val aggregator: SelectionAggregator,
 ) {
 
-    fun verify(encryptedTally: EncryptedTally, showTime: Boolean = false): Result<Boolean, String> {
+    fun verify(encryptedTally: EncryptedTally, errs: ErrorMessages, showTime: Boolean = false): Boolean {
         val starting = getSystemTimeInMillis()
 
-        val errors = mutableListOf<Result<Boolean, String>>()
         var nselections = 0
         for (contest in encryptedTally.contests) {
             for (selection in contest.selections) {
@@ -36,15 +34,15 @@ class VerifyTally(
                 val accum = aggregator.getAggregateFor(key)
                 if (accum != null) {
                     if (selection.encryptedVote.pad != accum.pad) {
-                        errors.add(Err("  8.A  Ballot Aggregation does not match: $key"))
+                        errs.add("  8.A  Ballot Aggregation does not match: $key")
                     }
                     if (selection.encryptedVote.data != accum.data) {
-                        errors.add(Err("  8.B  Ballot Aggregation does not match: $key"))
+                        errs.add("  8.B  Ballot Aggregation does not match: $key")
                     }
                 } else {
                     // TODO what is it? is it needed? left over from placeholders ??
                     if (selection.encryptedVote.pad != group.ZERO_MOD_P || selection.encryptedVote.data != group.ZERO_MOD_P) {
-                        errors.add(Err("    Ballot Aggregation empty does not match $key"))
+                        errs.add("    Ballot Aggregation empty does not match $key")
                     }
                 }
             }
@@ -54,14 +52,14 @@ class VerifyTally(
         // label occurs in the list of contests in the corresponding tally..
         aggregator.contestIdSet.forEach { contestId ->
             if (null == encryptedTally.contests.find { it.contestId == contestId}) {
-                errors.add(Err("   10.E Contest '$contestId' found in cast ballots not found in tally"))
+                errs.add("   10.E Contest '$contestId' found in cast ballots not found in tally")
             }
         }
 
         val took = getSystemTimeInMillis() - starting
         if (showTime) println("   VerifyAggregation took $took millisecs")
 
-        return errors.merge()
+        return !errs.hasErrors()
     }
 }
 

@@ -1,8 +1,6 @@
 package electionguard.verifier
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.ElectionConfig
 import electionguard.ballot.EncryptedBallot
@@ -10,6 +8,7 @@ import electionguard.ballot.EncryptedBallotChain
 import electionguard.ballot.ManifestIF
 import electionguard.core.*
 import electionguard.publish.ElectionRecord
+import electionguard.util.ErrorMessages
 import electionguard.util.Stats
 import electionguard.util.sigfig
 import kotlinx.coroutines.CoroutineScope
@@ -41,9 +40,10 @@ class VerifyEncryptedBallots(
 
     fun verifyBallots(
         ballots: Iterable<EncryptedBallot>,
+        errs: ErrorMessages,
         stats: Stats = Stats(),
         showTime: Boolean = false
-    ): Result<Boolean, String> {
+    ): Boolean {
         val starting = getSystemTimeInMillis()
 
         runBlocking {
@@ -55,7 +55,7 @@ class VerifyEncryptedBallots(
                         it,
                         ballotProducer,
                         aggregator
-                    ) { ballot -> verifyEncryptedBallot(ballot, stats) })
+                    ) { ballot -> verifyEncryptedBallot(ballot, errs.nested("ballot ${ballot.ballotId}"), stats) })
             }
 
             // wait for all verifications to be done
@@ -67,7 +67,7 @@ class VerifyEncryptedBallots(
         val checkDuplicates = mutableMapOf<UInt256, String>()
         confirmationCodes.forEach {
             if (checkDuplicates[it.code] != null) {
-                allResults.add(Err("    7.C, 17.D. Duplicate confirmation code for ballot ${it.ballotId} and ${checkDuplicates[it.code]}"))
+                errs.add("    7.C, 17.D. Duplicate confirmation code ${it.code} for ballot ids=${it.ballotId},${checkDuplicates[it.code]}")
             }
             checkDuplicates[it.code] = it.ballotId
         }
@@ -77,56 +77,27 @@ class VerifyEncryptedBallots(
             val perBallot = if (count == 0) 0 else (took.toDouble() / count).sigfig()
             println("   VerifyEncryptedBallots with $nthreads threads took $took millisecs wallclock for $count ballots = $perBallot msecs/ballot")
         }
-        return allResults.merge()
+        return !errs.hasErrors()
     }
 
-    fun verifyEncryptedBallot(ballot: EncryptedBallot, stats: Stats): Result<Boolean, String> {
+    fun verifyEncryptedBallot(
+        ballot: EncryptedBallot,
+        errs: ErrorMessages,
+        stats: Stats
+    ) : Boolean {
         val starting = getSystemTimeInMillis()
-        val results = mutableListOf<Result<Boolean, String>>()
 
         if (ballot.electionId != extendedBaseHash) {
-            return Err("Encrypted Ballot ${ballot.ballotId} has wrong electionId = ${ballot.electionId}; skipping")
+            errs.add("Encrypted Ballot ${ballot.ballotId} has wrong electionId = ${ballot.electionId}; skipping")
+            return false
         }
 
         var ncontests = 0
         var nselections = 0
         for (contest in ballot.contests) {
-            val where = "${ballot.ballotId}/${contest.contestId}"
             ncontests++
             nselections += contest.selections.size
-
-            contest.selections.forEach {
-                results.add(verifySelection(where, it, manifest.optionLimit(contest.contestId)))
-            }
-
-            // Verification 6 (Adherence to vote limits)
-            val texts: List<ElGamalCiphertext> = contest.selections.map { it.encryptedVote }
-            val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()?: 0.encrypt(jointPublicKey)
-            val cvalid = contest.proof.verify(
-                ciphertextAccumulation,
-                this.jointPublicKey,
-                this.extendedBaseHash,
-                manifest.contestLimit(contest.contestId)
-            )
-            if (cvalid is Err) {
-                results.add(Err("    6. ChaumPedersenProof validation error for $where = ${cvalid.error} "))
-            }
-
-            // χl = H(HE ; 0x23, l, K, α1 , β1 , α2 , β2 . . . , αm , βm ) 7.A
-            val ciphers = mutableListOf<ElementModP>()
-            texts.forEach {
-                ciphers.add(it.pad)
-                ciphers.add(it.data)
-            }
-            val contestHash =
-                hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.sequenceOrder, jointPublicKey.key, ciphers)
-            if (contestHash != contest.contestHash) {
-                results.add(Err("    7.A. Incorrect contest hash for contest ${contest.contestId} "))
-            }
-
-            if (ballot.isPreencrypt) {
-                results.add(verifyPreencryptionShortCodes(ballot.ballotId, contest))
-            }
+            verifyEncryptedContest(contest, ballot.isPreencrypt, errs.nested("Selection ${contest.contestId}"))
         }
 
         if (!ballot.isPreencrypt) {
@@ -134,27 +105,63 @@ class VerifyEncryptedBallots(
             val contestHashes = ballot.contests.map { it.contestHash }
             val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, ballot.codeBaux)
             if (confirmationCode != ballot.confirmationCode) {
-                results.add(Err("    7.B. Incorrect ballot confirmation code for ballot ${ballot.ballotId} "))
+                errs.add("    7.B. Incorrect ballot confirmation code for ballot ${ballot.ballotId} ")
             }
         } else {
-            results.add(verifyPreencryptedCode(ballot))
+            verifyPreencryptedCode(ballot, errs)
         }
-        // TODO ballot chaining 7.D-G
 
         stats.of("verifyEncryptions", "selection").accum(getSystemTimeInMillis() - starting, nselections)
         if (debugBallots) println(" Ballot '${ballot.ballotId}' ncontests = $ncontests nselections = $nselections")
-        return results.merge()
+
+        return !errs.hasErrors()
+    }
+
+    fun verifyEncryptedContest(
+        contest: EncryptedBallot.Contest,
+        isPreencrypt: Boolean,
+        errs: ErrorMessages
+    ) {
+        contest.selections.forEach {
+            verifySelection( it, manifest.optionLimit(contest.contestId), errs.nested("Selection ${it.selectionId}"))
+        }
+
+        // Verification 6 (Adherence to vote limits)
+        val texts: List<ElGamalCiphertext> = contest.selections.map { it.encryptedVote }
+        val ciphertextAccumulation: ElGamalCiphertext = texts.encryptedSum()?: 0.encrypt(jointPublicKey)
+        val cvalid = contest.proof.verify(
+            ciphertextAccumulation,
+            this.jointPublicKey,
+            this.extendedBaseHash,
+            manifest.contestLimit(contest.contestId)
+        )
+        if (cvalid is Err) {
+            errs.add("    6. ChaumPedersenProof validation error = ${cvalid.error} ")
+        }
+
+        // χl = H(HE ; 0x23, l, K, α1 , β1 , α2 , β2 . . . , αm , βm ) 7.A
+        val ciphers = mutableListOf<ElementModP>()
+        texts.forEach {
+            ciphers.add(it.pad)
+            ciphers.add(it.data)
+        }
+        val contestHash =
+            hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.sequenceOrder, jointPublicKey.key, ciphers)
+        if (contestHash != contest.contestHash) {
+            errs.add("    7.A. Incorrect contest hash")
+        }
+
+        if (isPreencrypt) {
+            verifyPreencryptionShortCodes(contest, errs)
+        }
     }
 
     // Verification 5 (Well-formedness of selection encryptions)
     private fun verifySelection(
-        where: String,
         selection: EncryptedBallot.Selection,
-        optionLimit: Int
-    ): Result<Boolean, String> {
-        val errors = mutableListOf<Result<Boolean, String>>()
-        val here = "${where}/${selection.selectionId}"
-
+        optionLimit: Int,
+        errs: ErrorMessages
+    ) {
         val svalid = selection.proof.verify(
             selection.encryptedVote,
             this.jointPublicKey,
@@ -162,22 +169,20 @@ class VerifyEncryptedBallots(
             optionLimit,
         )
         if (svalid is Err) {
-            errors.add(Err("    5. ChaumPedersenProof validation error for ${here}} = ${svalid.error} "))
+            errs.add("    5. ChaumPedersenProof validation error = ${svalid.error} ")
         }
-        return errors.merge()
     }
 
     //////////////////////////////////////////////////////////////////////////////
     // ballot chaining, section 7
 
-    fun verifyConfirmationChain(consumer: ElectionRecord): Result<Boolean, String> {
-        val results = mutableListOf<Result<Boolean, String>>()
+    fun verifyConfirmationChain(consumer: ElectionRecord, errs: ErrorMessages): Boolean {
 
         consumer.encryptingDevices().forEach { device ->
             // println("verifyConfirmationChain device=$device")
             val ballotChainResult = consumer.readEncryptedBallotChain(device)
             if (ballotChainResult is Err) {
-                results.add(Err(ballotChainResult.toString()))
+                errs.add(ballotChainResult.toString())
             } else {
                 val ballotChain: EncryptedBallotChain = ballotChainResult.unwrap()
                 val ballots = consumer.encryptedBallots(device) { true }
@@ -194,7 +199,7 @@ class VerifyEncryptedBallots(
                     val expectedBaux = if (first) H0 else prevCC + config.configBaux0  // eq 7.D and 7.E
                     first = false
                     if (!expectedBaux.contentEquals(ballot.codeBaux)) {
-                        results.add(Err("    7.E. additional input byte array Baux != H(Bj−1 ) ∥ Baux,0 for ballot=${ballot.ballotId}"))
+                        errs.add("    7.E. additional input byte array Baux != H(Bj−1 ) ∥ Baux,0 for ballot=${ballot.ballotId}")
                     }
                     prevCC = ballot.confirmationCode.bytes
                 }
@@ -205,16 +210,15 @@ class VerifyEncryptedBallots(
                 // 7.G The closing hash is correctly computed as H = H(HE ; 0x24, Baux )
                 val expectedClosingHash = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), bauxFinal)
                 if (expectedClosingHash != ballotChain.closingHash) {
-                    results.add(Err("    7.G. The closing hash is not equal to H = H(HE ; 24, bauxFinal ) for encrypting device=$device"))
+                    errs.add("    7.G. The closing hash is not equal to H = H(HE ; 24, bauxFinal ) for encrypting device=$device")
                 }
             }
         }
-        return results.merge()
+        return !errs.hasErrors()
     }
 
     //////////////////////////////////////////////////////////////
     // coroutines
-    private val allResults = mutableListOf<Result<Boolean, String>>()
     private var count = 0
     private fun CoroutineScope.produceBallots(producer: Iterable<EncryptedBallot>): ReceiveChannel<EncryptedBallot> =
         produce {
@@ -233,17 +237,16 @@ class VerifyEncryptedBallots(
         id: Int,
         input: ReceiveChannel<EncryptedBallot>,
         aggregator: SelectionAggregator,
-        verify: (EncryptedBallot) -> Result<Boolean, String>,
+        verify: (EncryptedBallot) -> Boolean,
     ) = launch(Dispatchers.Default) {
         for (ballot in input) {
             if (debugBallots) println("$id channel working on ${ballot.ballotId}")
             val result = verify(ballot)
             mutex.withLock {
-                if (result is Ok) {
+                if (result) {
                     aggregator.add(ballot) // this slows down the ballot parallelism: nselections * (2 (modP multiplication))
                     confirmationCodes.add(ConfirmationCode(ballot.ballotId, ballot.confirmationCode))
                 }
-                allResults.add(result)
             }
             yield()
         }
