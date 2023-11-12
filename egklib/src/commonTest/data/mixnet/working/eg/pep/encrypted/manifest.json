@@ -1,0 +1,568 @@
+{
+  "election_scope_id": "TestManifest",
+  "spec_version": "v2.0.0",
+  "type": "general",
+  "start_date": "start",
+  "end_date": "end",
+  "geopolitical_units": [
+    {
+      "object_id": "district-district-1",
+      "name": "City of Lincoln",
+      "type": "district",
+      "contact_information": null
+    }
+  ],
+  "parties": [
+    {
+      "object_id": "party-0",
+      "name": "Democrat",
+      "abbreviation": "D",
+      "color": null,
+      "logo_uri": null
+    },
+    {
+      "object_id": "party-1",
+      "name": "Republican",
+      "abbreviation": "R",
+      "color": null,
+      "logo_uri": null
+    },
+    {
+      "object_id": "party-2",
+      "name": "Liberty",
+      "abbreviation": "Li",
+      "color": null,
+      "logo_uri": null
+    },
+    {
+      "object_id": "party-3",
+      "name": "Green",
+      "abbreviation": "G",
+      "color": null,
+      "logo_uri": null
+    }
+  ],
+  "candidates": [
+    {
+      "object_id": "cand-sherlock-holmes",
+      "name": "Sherlock Holmes",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-thomas-edison",
+      "name": "Thomas Edison",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-winston-churchill",
+      "name": "Winston Churchill",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-oprah-winfrey",
+      "name": "Oprah Winfrey",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-louis-armstrong",
+      "name": "Louis Armstrong",
+      "party_id": "party-3",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-john-snow",
+      "name": "John Snow",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-mark-twain",
+      "name": "Mark Twain",
+      "party_id": "party-3",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-benjamin-franklin",
+      "name": "Benjamin Franklin",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-robert-downey-jr",
+      "name": "Robert Downey Jr.",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-bill-nye",
+      "name": "Bill Nye",
+      "party_id": "party-3",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-natalie-portman",
+      "name": "Natalie Portman",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-frank-sinatra",
+      "name": "Frank Sinatra",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-andy-warhol",
+      "name": "Andy Warhol",
+      "party_id": "party-3",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-alfred-hitchcock",
+      "name": "Alfred Hitchcock",
+      "party_id": "party-3",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-charles-darwin",
+      "name": "Charles Darwin",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-stephen-hawking",
+      "name": "Stephen Hawking",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-johan-sebastian-bach",
+      "name": "Johann Sebastian Bach",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-alexander-graham-bell",
+      "name": "Alexander Graham Bell",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-helen-keller",
+      "name": "Helen Keller",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-steve-jobs",
+      "name": "Steve Jobs",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-nikola-tesla",
+      "name": "Nikola Tesla",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-vincent-van-gogh",
+      "name": "Vincent Van Gogh",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-pablo-picasso",
+      "name": "Pablo Picasso",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-wolfgang-amadeus-mozart",
+      "name": "Wolfgang Amadeus Mozart",
+      "party_id": "party-2",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-marie-curie",
+      "name": "Marie Curie",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-indiana-jones",
+      "name": "Indiana Jones",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-mona-lisa",
+      "name": "Mona Lisa",
+      "party_id": "party-3",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-jackie-chan",
+      "name": "Jackie Chan",
+      "party_id": "party-3",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-tim-allen",
+      "name": "Tim Allen",
+      "party_id": "party-2",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-mark-antony",
+      "name": "Mark Antony",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-harriet-tubman",
+      "name": "Harriet Tubman",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-martin-luther-king",
+      "name": "Dr. Martin Luther King Jr.",
+      "party_id": "party-0",
+      "image_url": null,
+      "is_write_in": false
+    },
+    {
+      "object_id": "cand-marilyn-monroe",
+      "name": "Marilyn Monroe",
+      "party_id": "party-1",
+      "image_url": null,
+      "is_write_in": false
+    }
+  ],
+  "contests": [
+    {
+      "object_id": "contest-mayor",
+      "sequence_order": 1,
+      "electoral_district_id": "district-district-1",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "contest-mayor",
+      "ballot_selections": [
+        {
+          "object_id": "cand-sherlock-holmes",
+          "sequence_order": 1,
+          "candidate_id": "cand-sherlock-holmes"
+        },
+        {
+          "object_id": "cand-thomas-edison",
+          "sequence_order": 2,
+          "candidate_id": "cand-thomas-edison"
+        }
+      ],
+      "ballot_title": "Mayor",
+      "ballot_subtitle": "City of Lincoln"
+    },
+    {
+      "object_id": "contest-controller",
+      "sequence_order": 2,
+      "electoral_district_id": "district-district-1",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "contest-controller",
+      "ballot_selections": [
+        {
+          "object_id": "cand-winston-churchill",
+          "sequence_order": 1,
+          "candidate_id": "cand-winston-churchill"
+        },
+        {
+          "object_id": "cand-oprah-winfrey",
+          "sequence_order": 2,
+          "candidate_id": "cand-oprah-winfrey"
+        },
+        {
+          "object_id": "cand-louis-armstrong",
+          "sequence_order": 3,
+          "candidate_id": "cand-louis-armstrong"
+        }
+      ],
+      "ballot_title": "Controller",
+      "ballot_subtitle": "City of Lincoln"
+    },
+    {
+      "object_id": "contest-attorney",
+      "sequence_order": 3,
+      "electoral_district_id": "district-district-1",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "contest-attorney",
+      "ballot_selections": [
+        {
+          "object_id": "cand-john-snow",
+          "sequence_order": 1,
+          "candidate_id": "cand-john-snow"
+        },
+        {
+          "object_id": "cand-mark-twain",
+          "sequence_order": 2,
+          "candidate_id": "cand-mark-twain"
+        }
+      ],
+      "ballot_title": "Attorney",
+      "ballot_subtitle": "City of Lincoln"
+    },
+    {
+      "object_id": "contest-public-works-director",
+      "sequence_order": 4,
+      "electoral_district_id": "district-district-1",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "contest-public-works-director",
+      "ballot_selections": [
+        {
+          "object_id": "cand-benjamin-franklin",
+          "sequence_order": 1,
+          "candidate_id": "cand-benjamin-franklin"
+        },
+        {
+          "object_id": "cand-robert-downey-jr",
+          "sequence_order": 2,
+          "candidate_id": "cand-robert-downey-jr"
+        },
+        {
+          "object_id": "cand-bill-nye",
+          "sequence_order": 3,
+          "candidate_id": "cand-bill-nye"
+        }
+      ],
+      "ballot_title": "Public Works Director",
+      "ballot_subtitle": "City of Lincoln"
+    },
+    {
+      "object_id": "contest-chief-of-police",
+      "sequence_order": 5,
+      "electoral_district_id": "district-district-1",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "contest-chief-of-police",
+      "ballot_selections": [
+        {
+          "object_id": "cand-natalie-portman",
+          "sequence_order": 1,
+          "candidate_id": "cand-natalie-portman"
+        },
+        {
+          "object_id": "cand-frank-sinatra",
+          "sequence_order": 2,
+          "candidate_id": "cand-frank-sinatra"
+        },
+        {
+          "object_id": "cand-andy-warhol",
+          "sequence_order": 3,
+          "candidate_id": "cand-andy-warhol"
+        },
+        {
+          "object_id": "cand-alfred-hitchcock",
+          "sequence_order": 4,
+          "candidate_id": "cand-alfred-hitchcock"
+        }
+      ],
+      "ballot_title": "Chief of Police",
+      "ballot_subtitle": "City of Lincoln"
+    },
+    {
+      "object_id": "contest-parks-and-recreation-director",
+      "sequence_order": 6,
+      "electoral_district_id": "district-district-1",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "contest-parks-and-recreation-director",
+      "ballot_selections": [
+        {
+          "object_id": "cand-charles-darwin",
+          "sequence_order": 1,
+          "candidate_id": "cand-charles-darwin"
+        },
+        {
+          "object_id": "cand-stephen-hawking",
+          "sequence_order": 2,
+          "candidate_id": "cand-stephen-hawking"
+        },
+        {
+          "object_id": "cand-johan-sebastian-bach",
+          "sequence_order": 3,
+          "candidate_id": "cand-johan-sebastian-bach"
+        },
+        {
+          "object_id": "cand-alexander-graham-bell",
+          "sequence_order": 4,
+          "candidate_id": "cand-alexander-graham-bell"
+        }
+      ],
+      "ballot_title": "Parks and Recreation Director",
+      "ballot_subtitle": "City of Lincoln"
+    },
+    {
+      "object_id": "contest-board-of-alderman",
+      "sequence_order": 7,
+      "electoral_district_id": "district-district-1",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "contest-board-of-alderman",
+      "ballot_selections": [
+        {
+          "object_id": "cand-helen-keller",
+          "sequence_order": 1,
+          "candidate_id": "cand-helen-keller"
+        },
+        {
+          "object_id": "cand-steve-jobs",
+          "sequence_order": 2,
+          "candidate_id": "cand-steve-jobs"
+        },
+        {
+          "object_id": "cand-nikola-tesla",
+          "sequence_order": 3,
+          "candidate_id": "cand-nikola-tesla"
+        },
+        {
+          "object_id": "cand-vincent-van-gogh",
+          "sequence_order": 4,
+          "candidate_id": "cand-vincent-van-gogh"
+        },
+        {
+          "object_id": "cand-pablo-picasso",
+          "sequence_order": 5,
+          "candidate_id": "cand-pablo-picasso"
+        },
+        {
+          "object_id": "cand-wolfgang-amadeus-mozart",
+          "sequence_order": 6,
+          "candidate_id": "cand-wolfgang-amadeus-mozart"
+        }
+      ],
+      "ballot_title": "Board of Alderman",
+      "ballot_subtitle": "City of Lincoln"
+    },
+    {
+      "object_id": "contest-city-council",
+      "sequence_order": 8,
+      "electoral_district_id": "district-district-1",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "contest-city-council",
+      "ballot_selections": [
+        {
+          "object_id": "cand-marie-curie",
+          "sequence_order": 1,
+          "candidate_id": "cand-marie-curie"
+        },
+        {
+          "object_id": "cand-indiana-jones",
+          "sequence_order": 2,
+          "candidate_id": "cand-indiana-jones"
+        },
+        {
+          "object_id": "cand-mona-lisa",
+          "sequence_order": 3,
+          "candidate_id": "cand-mona-lisa"
+        },
+        {
+          "object_id": "cand-jackie-chan",
+          "sequence_order": 4,
+          "candidate_id": "cand-jackie-chan"
+        },
+        {
+          "object_id": "cand-tim-allen",
+          "sequence_order": 5,
+          "candidate_id": "cand-tim-allen"
+        },
+        {
+          "object_id": "cand-mark-antony",
+          "sequence_order": 6,
+          "candidate_id": "cand-mark-antony"
+        },
+        {
+          "object_id": "cand-harriet-tubman",
+          "sequence_order": 7,
+          "candidate_id": "cand-harriet-tubman"
+        },
+        {
+          "object_id": "cand-martin-luther-king",
+          "sequence_order": 8,
+          "candidate_id": "cand-martin-luther-king"
+        },
+        {
+          "object_id": "cand-marilyn-monroe",
+          "sequence_order": 9,
+          "candidate_id": "cand-marilyn-monroe"
+        }
+      ],
+      "ballot_title": "City Council",
+      "ballot_subtitle": "City of Lincoln"
+    }
+  ],
+  "ballot_styles": [
+    {
+      "object_id": "ballot-style-1",
+      "geopolitical_unit_ids": [
+        "district-district-1"
+      ],
+      "party_ids": [
+        "party-undefined"
+      ],
+      "image_url": null
+    }
+  ],
+  "name": [],
+  "contact_information": {
+    "address_line": [],
+    "email": null,
+    "phone": "",
+    "name": "contact"
+  }
+}

@@ -1,7 +1,8 @@
-package electionguard.decrypt
+package electionguard.pep
 
 import electionguard.ballot.LagrangeCoordinate
 import electionguard.core.*
+import electionguard.decrypt.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

@@ -12,20 +12,20 @@ import kotlin.test.assertEquals
 private val group = productionGroup()
 
 /** Test KeyCeremony Trustee generation and recovered decryption. */
-class DoerreTest {
+class EncryptDecryptTest {
 
     @Test
     fun testEncryptDecrypt() {
-        runDoerreTest( 1, 1, listOf(1))
-        runDoerreTest( 2, 2, listOf(1, 2))
-        runDoerreTest( 3, 3, listOf(1,2,3)) // all
-        runDoerreTest(5, 5, listOf(1,2,3,4,5)) // all
-        runDoerreTest(5, 3, listOf(2,3,4)) // quota
-        runDoerreTest(5, 3, listOf(1,2,3,4)) // between
+        runEncryptDecrypt( 1, 1, listOf(1))
+        runEncryptDecrypt( 2, 2, listOf(1, 2))
+        runEncryptDecrypt( 3, 3, listOf(1,2,3)) // all
+        runEncryptDecrypt(5, 5, listOf(1,2,3,4,5)) // all
+        runEncryptDecrypt(5, 3, listOf(2,3,4)) // quota
+        runEncryptDecrypt(5, 3, listOf(1,2,3,4)) // between
     }
 }
 
-fun runDoerreTest(
+fun runEncryptDecrypt(
     nguardians: Int,
     quorum: Int,
     present: List<Int>,
@@ -55,13 +55,15 @@ fun runDoerreTest(
     val electionExtendedHash = electionExtendedHash(UInt256.random(), jointPublicKey)
     val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it, electionExtendedHash) }
 
-    testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
+    encryptDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
 }
 
-fun testDoerreDecrypt(group: GroupContext,
-                                publicKey: ElGamalPublicKey,
-                                trustees: List<DecryptingTrusteeIF>,
-                                present: List<Int>) {
+fun encryptDecrypt(
+    group: GroupContext,
+    publicKey: ElGamalPublicKey,
+    trustees: List<DecryptingTrusteeIF>,
+    present: List<Int>
+) {
     val missing = trustees.filter {!present.contains(it.xCoordinate())}.map { it.id() }
     println("present $present, missing $missing")
     val vote = 42

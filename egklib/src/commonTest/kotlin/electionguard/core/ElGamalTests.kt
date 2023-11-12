@@ -61,6 +61,27 @@ class ElGamalTests {
     }
 
     @Test
+    fun encryptExtraNonce() {
+        runTest {
+            val group = productionGroup()
+
+            var count = 0
+            checkAll(
+                propTestFastConfig,
+                elGamalKeypairs(group), smallInts()) { keypair, message ->
+                val org = message.encrypt(keypair)
+                val extra : ElementModQ = group.randomElementModQ(minimum = 1)
+                val extraEncryption =  ElGamalCiphertext(org.pad * group.gPowP(extra), org.data * (keypair.publicKey powP extra))
+
+                val decryption = extraEncryption.decrypt(keypair)
+                println("$count $message ${message == decryption} ")
+                assertEquals(message, decryption)
+                count++
+            }
+        }
+    }
+
+    @Test
     fun decryptWithNonce() {
         runTest {
             val context = tinyGroup()

@@ -32,6 +32,8 @@ actual fun fileReadLines(filename: String): List<String> = File(filename).readLi
 
 actual fun fileReadBytes(filename: String): ByteArray = File(filename).readBytes()
 
+actual fun fileReadText(filename: String): String = File(filename).readText()
+
 actual fun isBigEndian(): Boolean = nativeOrder() == ByteOrder.BIG_ENDIAN
 
 
