@@ -4,7 +4,6 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
-import electionguard.decrypt.DecryptorFull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

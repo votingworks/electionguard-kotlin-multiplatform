@@ -1,0 +1,22 @@
+{
+    "encrypting_device": "testDevice",
+    "baux0": "6465766963653432",
+    "ballot_ids": [
+        "id-1354918873",
+        "id618213203",
+        "id1564610423",
+        "id1626428916",
+        "id-2115119398",
+        "id1061951649",
+        "id1945485090",
+        "id678278830",
+        "id-1912003633",
+        "id-1456542445",
+        "id-286678519",
+        "id157517312",
+        "id-946370709"
+    ],
+    "last_confirmation_code": "3A85A961AED55DBBE21044F783A0B933ABD4457EC82F46BC942FDB6992BC87FB",
+    "chaining": false,
+    "closing_hash": null
+}

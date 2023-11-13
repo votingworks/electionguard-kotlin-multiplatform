@@ -1,6 +1,6 @@
 package electionguard.ballot
 
-import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.*
 import electionguard.core.UInt256
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.keyceremony.KeyCeremonyTrustee

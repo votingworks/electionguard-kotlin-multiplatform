@@ -66,7 +66,7 @@ class MissingGuardianTests {
         val electionExtendedHash = electionExtendedHash(UInt256.random(), jointPublicKey)
         val dTrustees: List<DecryptingTrusteeDoerre> = trustees.map { makeDoerreTrustee(it, electionExtendedHash) }
 
-        testDoerreDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
+        encryptDecrypt(group, ElGamalPublicKey(jointPublicKey), dTrustees, present)
     }
 
 }
