@@ -23,7 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DecryptWithNonceTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/DecryptWithNonceTestVector.json"
 
     val group = productionGroup()
@@ -81,10 +81,10 @@ class DecryptWithNonceTestVector {
             "Decrypt ballot with given primary nonce",
             decryptedBallot.publishJson()
         )
-        println(jsonFormat.encodeToString(decryptWithNonceTestVector))
+        println(jsonReader.encodeToString(decryptWithNonceTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(decryptWithNonceTestVector, out)
+            jsonReader.encodeToStream(decryptWithNonceTestVector, out)
             out.close()
         }
     }
@@ -94,7 +94,7 @@ class DecryptWithNonceTestVector {
         val fileSystemProvider = fileSystem.provider()
         val testVector: DecryptWithNonceTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<DecryptWithNonceTestVector>(inp)
+                jsonReader.decodeFromStream<DecryptWithNonceTestVector>(inp)
             }
 
         val extendedBaseHash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed extended_base_hash")

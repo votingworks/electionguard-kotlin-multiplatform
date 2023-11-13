@@ -162,7 +162,7 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
         }
         return try {
             fileSystemProvider.newInputStream(initPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<ElectionInitializedJson>(inp)
+                val json = jsonReader.decodeFromStream<ElectionInitializedJson>(inp)
                 val electionInitialized = json.import(group, config, errs)
                 if (errs.hasErrors()) Err(errs) else Ok(electionInitialized!!)
             }
@@ -192,7 +192,7 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
         }
         return try {
             fileSystemProvider.newInputStream(ballotChainPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<EncryptedBallotChainJson>(inp)
+                val json = jsonReader.decodeFromStream<EncryptedBallotChainJson>(inp)
                 val chain = json.import(errs)
                 if (errs.hasErrors()) Err(errs) else Ok(chain!!)
             }
@@ -308,7 +308,7 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
         }
         return try {
             fileSystemProvider.newInputStream(fileSystem.getPath(ballotFilename), StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
+                val json = jsonReader.decodeFromStream<EncryptedBallotJson>(inp)
                 val eballot = json.import(group, errs)
                 if (errs.hasErrors()) Err(errs) else Ok(eballot!!)
             }
@@ -353,7 +353,7 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
         }
         return try {
             fileSystemProvider.newInputStream(tallyPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<EncryptedTallyJson>(inp)
+                val json = jsonReader.decodeFromStream<EncryptedTallyJson>(inp)
                 val encryptedTally = json.import(group, errs)
                 if (errs.hasErrors()) Err(errs) else Ok(TallyResult(init, encryptedTally!!, emptyList()))
             }
@@ -372,7 +372,7 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
         }
         return try {
             fileSystemProvider.newInputStream(decryptedTallyPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
+                val json = jsonReader.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
                 val decryptedTallyOrBallot = json.import(group, errs)
                 if (errs.hasErrors()) Err(errs) else Ok(DecryptionResult(tallyResult, decryptedTallyOrBallot!!))
             }
@@ -385,7 +385,7 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
         val errs = ErrorMessages("readTrustee '$filePath'")
         return try {
             fileSystemProvider.newInputStream(filePath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<TrusteeJson>(inp)
+                val json = jsonReader.decodeFromStream<TrusteeJson>(inp)
                 val decryptingTrustee = json.importDecryptingTrustee(group, errs)
                 if (errs.hasErrors()) Err(errs) else Ok(decryptingTrustee!!)
             }
@@ -481,7 +481,7 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
 
     fun readEncryptedBallot(ballotFilePath : Path, errs: ErrorMessages): EncryptedBallot? {
         fileSystemProvider.newInputStream(ballotFilePath, StandardOpenOption.READ).use { inp ->
-            val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
+            val json = jsonReader.decodeFromStream<EncryptedBallotJson>(inp)
             return json.import(group, errs)
         }
     }
@@ -499,7 +499,7 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
             while (idx < pathList.size) {
                 val file = pathList[idx++]
                 fileSystemProvider.newInputStream(file, StandardOpenOption.READ).use { inp ->
-                    val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
+                    val json = jsonReader.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
                     val errs = ErrorMessages("DecryptedBallotIterator '$file'")
                     val decryptedTallyOrBallot = json.import(group, errs)
                     if (errs.hasErrors()) {

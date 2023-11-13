@@ -51,7 +51,6 @@ class ElGamalSecretKey(val key: ElementModQ) {
         if (key < key.context.TWO_MOD_Q)
             throw ArithmeticException("secret key must be in [2, Q)")
     }
-
     val negativeKey: ElementModQ = -key
 
     override fun equals(other: Any?) =
@@ -60,11 +59,8 @@ class ElGamalSecretKey(val key: ElementModQ) {
             is ElGamalSecretKey -> key == other.key
             else -> false
         }
-
     override fun hashCode(): Int = key.hashCode()
-
     override fun toString(): String = key.toString()
-
 }
 
 /** A public and private keypair, suitable for doing ElGamal cryptographic operations. */
@@ -114,7 +110,8 @@ fun elGamalKeyPairFromSecret(secret: ElementModQ) =
 fun elGamalKeyPairFromRandom(context: GroupContext) =
     elGamalKeyPairFromSecret(context.randomElementModQ(minimum = 2))
 
-/** Use an ElGamal public key and nonce to encrypt the integer, see eq 24. */
+/** Uses an ElGamal public key to encrypt an unsigned integer vote. An optional nonce can be specified to make this
+ * deterministic, or it will be chosen at random. see eq 24. */
 fun Int.encrypt(
     publicKey: ElGamalPublicKey,
     nonce: ElementModQ = publicKey.context.randomElementModQ(minimum = 1)
@@ -131,17 +128,38 @@ fun Int.encrypt(
     }
 
     // We don't have to check if message >= Q, because it's an integer, and Q is much larger than that.
-    // Enc(σ, ξ) = (α, β) = (g^ξ mod p, K^σ · K^ξ mod p) = (g^ξ mod p, K^σ+ξ mod p). spec 2.0.0 eq 24
+    // Enc(σ, ξ) = (α, β) = (g^ξ mod p, K^σ · K^ξ mod p) = (g^ξ mod p, K^(σ+ξ) mod p). spec 2.0.0 eq 24
     val pad = context.gPowP(nonce)
     val data = publicKey.key powP (nonce + this.toElementModQ(context))
 
     return ElGamalCiphertext(pad, data)
 }
 
-/**
- * Uses an ElGamal public key to encrypt a message. An optional nonce can be specified to make this
- * deterministic, or it will be chosen at random.
- */
+/** Uses an ElGamal public key to encrypt an integer vote. An optional nonce can be specified to make this
+ * deterministic, or it will be chosen at random. see eq 24. */
+fun Long.encrypt(
+    publicKey: ElGamalPublicKey,
+    nonce: ElementModQ = publicKey.context.randomElementModQ(minimum = 1)
+): ElGamalCiphertext {
+    val context = compatibleContextOrFail(publicKey.key, nonce)
+
+    // LOOK: Exception
+    if (nonce.isZero()) {
+        throw ArithmeticException("Can't use a zero nonce for ElGamal encryption")
+    }
+
+    if (this < 0) {
+        throw ArithmeticException("Can't encrypt a negative value")
+    }
+
+    // We don't have to check if message >= Q, because it's a long, and Q is much larger than that.
+    // Enc(σ, ξ) = (α, β) = (g^ξ mod p, K^σ · K^ξ mod p) = (g^ξ mod p, K^(σ+ξ) mod p). spec 2.0.0 eq 24
+    val pad = context.gPowP(nonce)
+    val data = publicKey.key powP (nonce + this.toElementModQ(context))
+
+    return ElGamalCiphertext(pad, data)
+}
+
 fun Int.encrypt(
     keypair: ElGamalKeypair,
     nonce: ElementModQ = keypair.context.randomElementModQ(minimum = 1)

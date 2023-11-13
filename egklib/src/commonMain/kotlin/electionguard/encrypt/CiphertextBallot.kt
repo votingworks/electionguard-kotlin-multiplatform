@@ -3,7 +3,8 @@ package electionguard.encrypt
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 
-/** Intermediate stage while encrypting. Does not have the extra Pre-encryption info, nor the state. */
+/** Intermediate stage while encrypting. Does not have the extra Pre-encryption info, nor the state.
+ * Contains nonces which are discarded when converted to EncryptedBallot. */
 data class CiphertextBallot(
     val ballotId: String,
     val ballotStyleId: String,
@@ -14,6 +15,7 @@ data class CiphertextBallot(
     val electionId : UInt256,
     val contests: List<Contest>,
     val ballotNonce: UInt256,
+    val encryptedSN: ElGamalCiphertext?,
     val isPreEncrypt: Boolean = false,
 ) {
     data class Contest(
@@ -54,6 +56,7 @@ fun CiphertextBallot.submit(state: EncryptedBallot.BallotState): EncryptedBallot
         this.electionId,
         this.contests.map { it.submit() },
         state,
+        this.encryptedSN,
         this.isPreEncrypt,
     )
 }

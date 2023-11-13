@@ -51,8 +51,10 @@ actual fun productionGroup(acceleration: PowRadixOption, mode: ProductionMode) :
         ProductionMode.Mode3072 -> productionGroups3072[acceleration] ?: throw Error("can't happen")
     }
 
-/** Convert an array of bytes, in big-endian format, to a BigInteger */
 internal fun UInt.toBigInteger() = BigInteger.valueOf(this.toLong())
+internal fun ULong.toBigInteger() = BigInteger.valueOf(this.toLong())
+
+/** Convert an array of bytes, in big-endian format, to a BigInteger */
 internal fun ByteArray.toBigInteger() = BigInteger(1, this)
 
 class ProductionGroupContext(
@@ -201,6 +203,13 @@ class ProductionGroupContext(
         0U -> ZERO_MOD_Q
         1U -> ONE_MOD_Q
         2U -> TWO_MOD_Q
+        else -> ProductionElementModQ(i.toBigInteger(), this)
+    }
+
+    override fun uLongToElementModQ(i: ULong) : ElementModQ = when (i) {
+        0UL -> ZERO_MOD_Q
+        1UL -> ONE_MOD_Q
+        2UL -> TWO_MOD_Q
         else -> ProductionElementModQ(i.toBigInteger(), this)
     }
 

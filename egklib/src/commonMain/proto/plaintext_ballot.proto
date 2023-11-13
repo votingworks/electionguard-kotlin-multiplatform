@@ -8,6 +8,7 @@ message PlaintextBallot {
   string ballot_id = 1; // a unique ballot ID created by the external system
   string ballot_style_id = 2; // matches a BallotStyle.ballot_style_id
   repeated PlaintextBallotContest contests = 3;
+  int64 sn = 5; // must be > 0 if it exists
   string errors = 4; // error messages from processing, eg when invalid
 }
 

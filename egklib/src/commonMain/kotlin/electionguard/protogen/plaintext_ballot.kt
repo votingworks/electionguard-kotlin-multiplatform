@@ -7,6 +7,7 @@ public data class PlaintextBallot(
     val ballotId: String = "",
     val ballotStyleId: String = "",
     val contests: List<electionguard.protogen.PlaintextBallotContest> = emptyList(),
+    val sn: Long = 0L,
     val errors: String = "",
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -18,7 +19,7 @@ public data class PlaintextBallot(
         override fun decodeWith(u: pbandk.MessageDecoder): electionguard.protogen.PlaintextBallot = electionguard.protogen.PlaintextBallot.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<electionguard.protogen.PlaintextBallot> by lazy {
-            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallot, *>>(4)
+            val fieldsList = ArrayList<pbandk.FieldDescriptor<electionguard.protogen.PlaintextBallot, *>>(5)
             fieldsList.apply {
                 add(
                     pbandk.FieldDescriptor(
@@ -58,6 +59,16 @@ public data class PlaintextBallot(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(),
                         jsonName = "errors",
                         value = electionguard.protogen.PlaintextBallot::errors
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "sn",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Int64(),
+                        jsonName = "sn",
+                        value = electionguard.protogen.PlaintextBallot::sn
                     )
                 )
             }
@@ -214,6 +225,7 @@ private fun PlaintextBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): 
     var ballotId = ""
     var ballotStyleId = ""
     var contests: pbandk.ListWithSize.Builder<electionguard.protogen.PlaintextBallotContest>? = null
+    var sn = 0L
     var errors = ""
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
@@ -222,10 +234,12 @@ private fun PlaintextBallot.Companion.decodeWithImpl(u: pbandk.MessageDecoder): 
             2 -> ballotStyleId = _fieldValue as String
             3 -> contests = (contests ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<electionguard.protogen.PlaintextBallotContest> }
             4 -> errors = _fieldValue as String
+            5 -> sn = _fieldValue as Long
         }
     }
 
-    return PlaintextBallot(ballotId, ballotStyleId, pbandk.ListWithSize.Builder.fixed(contests), errors, unknownFields)
+    return PlaintextBallot(ballotId, ballotStyleId, pbandk.ListWithSize.Builder.fixed(contests), sn,
+        errors, unknownFields)
 }
 
 @pbandk.Export

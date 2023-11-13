@@ -168,14 +168,13 @@ interface GroupContext {
      */
     fun binaryToElementModQ(b: ByteArray): ElementModQ?
 
-    /**
-     * Converts an integer to an ElementModQ, with optimizations when possible for small integers
-     */
+    /** Converts an integer to an ElementModQ, with optimizations when possible for small integers */
     fun uIntToElementModQ(i: UInt): ElementModQ
 
-    /**
-     * Converts an integer to an ElementModP, with optimizations when possible for small integers
-     */
+    /** Converts a long to an ElementModQ, with optimizations when possible for small integers */
+    fun uLongToElementModQ(i: ULong): ElementModQ
+
+    /** Converts an integer to an ElementModP, with optimizations when possible for small integers */
     fun uIntToElementModP(i: UInt): ElementModP
 
     /**
@@ -389,12 +388,12 @@ fun Int.toElementModQ(ctx: GroupContext) =
     }
 
 /** Converts an integer to an ElementModQ, with optimizations when possible for small integers */
-fun Int.toElementModP(ctx: GroupContext) =
+fun Long.toElementModQ(ctx: GroupContext) =
     when {
         this < 0 -> throw NoSuchElementException("no negative numbers allowed")
-        !ctx.isProductionStrength() && this >= intTestP ->
-            throw NoSuchElementException("tried to make an element >= p")
-        else -> ctx.uIntToElementModP(this.toUInt())
+        !ctx.isProductionStrength() && this >= intTestQ ->
+            throw NoSuchElementException("tried to make an element >= q")
+        else -> ctx.uLongToElementModQ(this.toULong())
     }
 
 /**

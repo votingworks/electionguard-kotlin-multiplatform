@@ -38,13 +38,14 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11) {
 
     fun getFakeBallot(manifest: Manifest, ballotStyleId: String, ballotId: String): PlaintextBallot {
         if (manifest.ballotStyles.find { it.ballotStyleId == ballotStyleId } == null) {
-            throw RuntimeException("BallotStyle '$ballotStyleId' not in the given manifest styles = ${manifest.ballotStyles}")
+            throw RuntimeException("BallotStyle '$ballotStyleId' not found in manifest ballotStyles= ${manifest.ballotStyles}")
         }
         val contests = mutableListOf<PlaintextBallot.Contest>()
         for (contestp in manifest.contestsForBallotStyle(ballotStyleId)!!) {
             contests.add(makeContestFrom(contestp as Manifest.ContestDescription))
         }
-        return PlaintextBallot(ballotId, ballotStyleId, contests)
+        val sn = Random.nextInt(100)
+        return PlaintextBallot(ballotId, ballotStyleId, contests, sn.toLong())
     }
 
     fun makeContestFrom(contest: Manifest.ContestDescription): PlaintextBallot.Contest {

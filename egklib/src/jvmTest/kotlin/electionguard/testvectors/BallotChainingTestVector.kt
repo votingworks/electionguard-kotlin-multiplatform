@@ -12,7 +12,6 @@ import electionguard.input.RandomBallotProvider
 import electionguard.json2.*
 import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -25,7 +24,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BallotChainingTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/BallotChainingTestVector.json"
 
     val group = productionGroup()
@@ -131,7 +130,7 @@ class BallotChainingTestVector {
         // println(jsonFormat.encodeToString(confirmationCodeTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(confirmationCodeTestVector, out)
+            jsonReader.encodeToStream(confirmationCodeTestVector, out)
             out.close()
         }
     }
@@ -141,7 +140,7 @@ class BallotChainingTestVector {
         val fileSystemProvider = fileSystem.provider()
         val testVector: BallotChainingTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<BallotChainingTestVector>(inp)
+                jsonReader.decodeFromStream<BallotChainingTestVector>(inp)
             }
 
         val publicKey = ElGamalPublicKey(group.base16ToElementModPsafe(testVector.joint_public_key))

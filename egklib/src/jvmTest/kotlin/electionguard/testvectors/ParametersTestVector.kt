@@ -3,7 +3,6 @@ package electionguard.testvectors
 import electionguard.ballot.*
 import electionguard.core.Base16.fromHex
 import electionguard.core.Base16.toHex
-import electionguard.core.UInt256
 import electionguard.core.hashFunction
 import electionguard.core.productionGroup
 import electionguard.json2.*
@@ -22,7 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.text.toByteArray
 
 class ParametersTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/ParametersTestVector.json"
 
     @Serializable
@@ -109,10 +108,10 @@ class ParametersTestVector {
             manifestTestVector,
             electionBaseHash
         )
-        println(jsonFormat.encodeToString(parametersTestVector))
+        println(jsonReader.encodeToString(parametersTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(parametersTestVector, out)
+            jsonReader.encodeToStream(parametersTestVector, out)
             out.close()
         }
     }
@@ -122,7 +121,7 @@ class ParametersTestVector {
         val fileSystemProvider = fileSystem.provider()
         val parametersTestVector : ParametersTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<ParametersTestVector>(inp)
+                jsonReader.decodeFromStream<ParametersTestVector>(inp)
             }
 
         val parameterV = parametersTestVector.parameter_base_hash

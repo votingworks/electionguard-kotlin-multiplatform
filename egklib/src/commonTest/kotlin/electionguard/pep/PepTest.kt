@@ -169,7 +169,7 @@ class PepTest {
         val ratio = makeRatioEncryption(enc1, enc2)
 
         group.showAndClearCountPowP()
-        val resultPep = egkPep.decrypt(ratio)
+        egkPep.decrypt(ratio)
         val n = nguardians
         val nd = egkPep.ndGuardians
         val q = egkPep.quorum
@@ -207,7 +207,7 @@ class PepTest {
         return EncryptedBallot(
             "ballotId", "ballotStyleId", "device11", 0, ByteArray(0),
             UInt256.random(), electionId = electionId,
-            listOf(contest), EncryptedBallot.BallotState.CAST
+            listOf(contest), EncryptedBallot.BallotState.CAST, null,
         )
     }
 

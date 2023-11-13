@@ -1,7 +1,6 @@
 package electionguard.testvectors
 
 import electionguard.core.GroupContext
-import electionguard.core.UInt256
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.json2.*
 import electionguard.keyceremony.KeyCeremonyTrustee

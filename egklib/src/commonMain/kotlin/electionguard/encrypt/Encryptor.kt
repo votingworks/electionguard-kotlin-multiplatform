@@ -27,7 +27,7 @@ class Encryptor(
         codeBaux : ByteArray,
         errs: ErrorMessages,
         ballotNonce: UInt256? = null,
-        timestampOverride: Long? = null
+        timestampOverride: Long? = null,
     ): CiphertextBallot? {
         return ballot.encryptBallot(codeBaux, errs, ballotNonce ?: UInt256.random(), timestampOverride)
     }
@@ -63,6 +63,11 @@ class Encryptor(
         val confirmationCode = hashFunction(extendedBaseHash.bytes, 0x24.toByte(), contestHashes, codeBaux)
         val timestamp = timestampOverride ?: (getSystemTimeInMillis() / 1000) // secs since epoch
 
+        val encryptedSn: ElGamalCiphertext? = if (this.sn != null) {
+            val snNonce = hashFunction(extendedBaseHashB, 0x110.toByte(), ballotNonce).toElementModQ(group)
+            this.sn.encrypt(jointPublicKey, snNonce) // eq 24
+        } else null
+
         return CiphertextBallot(
             ballotId,
             ballotStyle,
@@ -73,6 +78,7 @@ class Encryptor(
             extendedBaseHash,
             sortedContests,
             ballotNonce,
+            encryptedSn,
             false,
         )
     }
@@ -182,7 +188,7 @@ fun PlaintextBallot.Contest.encryptContest(
 ): CiphertextBallot.Contest {
 
     val ciphertexts: List<ElGamalCiphertext> = encryptedSelections.map { it.ciphertext }
-    val ciphertextAccumulation: ElGamalCiphertext = ciphertexts.encryptedSum()?: 0.encrypt(jointPublicKey)
+    val ciphertextAccumulation: ElGamalCiphertext = ciphertexts.encryptedSum()?: 0.encrypt(jointPublicKey) // LOOK deterministic?
     val nonces: Iterable<ElementModQ> = encryptedSelections.map { it.selectionNonce }
     val aggNonce: ElementModQ = with(group) { nonces.addQ() }
 

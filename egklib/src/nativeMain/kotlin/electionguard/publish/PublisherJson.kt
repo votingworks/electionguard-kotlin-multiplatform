@@ -13,7 +13,7 @@ import platform.posix.fclose
 /** Write the Election Record as JSON files.  */
 actual class PublisherJson actual constructor(topDir: String, createNew: Boolean) : Publisher {
     private var jsonPaths: ElectionRecordJsonPaths = ElectionRecordJsonPaths(topDir)
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
 
     init {
         if (createNew) {
@@ -44,22 +44,22 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
     actual override fun writeManifest(manifest: Manifest) : String {
         val fileout2 = jsonPaths.manifestPath()
-        val jsonString2 = jsonFormat.encodeToString(manifest.publishJson())
+        val jsonString2 = jsonReader.encodeToString(manifest.publishJson())
         writeToFile(fileout2, jsonString2)
         return fileout2
     }
 
     actual override fun writeElectionConfig(config: ElectionConfig) {
-        writeToFile(jsonPaths.electionConstantsPath(), jsonFormat.encodeToString(config.constants.publishJson()))
+        writeToFile(jsonPaths.electionConstantsPath(), jsonReader.encodeToString(config.constants.publishJson()))
         writeToFile(jsonPaths.electionConfigPath(), config.manifestBytes)
-        writeToFile(jsonPaths.electionConfigPath(), jsonFormat.encodeToString(config.publishJson()))
+        writeToFile(jsonPaths.electionConfigPath(), jsonReader.encodeToString(config.publishJson()))
     }
 
     actual override fun writeElectionInitialized(init: ElectionInitialized) {
         writeElectionConfig(init.config)
 
         val fileout = jsonPaths.electionInitializedPath()
-        val jsonString = jsonFormat.encodeToString(init.publishJson())
+        val jsonString = jsonReader.encodeToString(init.publishJson())
         writeToFile(fileout, jsonString)
     }
 
@@ -67,7 +67,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         writeElectionInitialized(tally.electionInitialized)
 
         val fileout = jsonPaths.encryptedTallyPath()
-        val jsonString = jsonFormat.encodeToString(tally.encryptedTally.publishJson())
+        val jsonString = jsonReader.encodeToString(tally.encryptedTally.publishJson())
         writeToFile(fileout, jsonString)
     }
 
@@ -75,7 +75,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         writeTallyResult(decryption.tallyResult)
 
         val fileout2 = jsonPaths.decryptedTallyPath()
-        val jsonString2 = jsonFormat.encodeToString(decryption.decryptedTally.publishJson())
+        val jsonString2 = jsonReader.encodeToString(decryption.decryptedTally.publishJson())
         writeToFile(fileout2, jsonString2)
     }
 
@@ -85,13 +85,13 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
     private fun writePlaintextBallot(outputDir: String, plaintextBallot: PlaintextBallot) {
         val fileout = jsonPaths.plaintextBallotPath(outputDir, plaintextBallot.ballotId)
-        val jsonString = jsonFormat.encodeToString(plaintextBallot.publishJson())
+        val jsonString = jsonReader.encodeToString(plaintextBallot.publishJson())
         writeToFile(fileout, jsonString)
     }
 
     actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
         val fileout = jsonPaths.decryptingTrusteePath(trusteeDir, trustee.id)
-        val jsonString = jsonFormat.encodeToString(trustee.publishJson())
+        val jsonString = jsonReader.encodeToString(trustee.publishJson())
         writeToFile(fileout, jsonString)
     }
 
@@ -107,7 +107,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val fileout = jsonPaths.encryptedBallotPath(ballot.ballotId)
             val jsonBallot = ballot.publishJson()
-            val jsonString = jsonFormat.encodeToString(jsonBallot)
+            val jsonString = jsonReader.encodeToString(jsonBallot)
             writeToFile(fileout, jsonString)
         }
 
@@ -123,7 +123,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     private inner class DecryptedTallyOrBallotSink : DecryptedTallyOrBallotSinkIF {
         override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot) {
             val fileout = jsonPaths.decryptedBallotPath(tally.id)
-            val jsonString = jsonFormat.encodeToString(tally.publishJson())
+            val jsonString = jsonReader.encodeToString(tally.publishJson())
             writeToFile(fileout, jsonString)
         }
 

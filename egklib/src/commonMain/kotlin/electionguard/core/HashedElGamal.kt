@@ -13,10 +13,15 @@ data class HashedElGamalCiphertext(
     val c2: UInt256,
     val numBytes: Int // TODO not sure if this is needed
 ) {
+
+    override fun toString(): String {
+        return "HashedElGamalCiphertext(c0=$c0,\n c1=${c1.contentToString()},\n c2=$c2,\n numBytes=$numBytes)"
+    }
+
     // override because of the ByteArray
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || this::class != other::class) return false
+        if (javaClass != other?.javaClass) return false
 
         other as HashedElGamalCiphertext
 
@@ -34,10 +39,6 @@ data class HashedElGamalCiphertext(
         result = 31 * result + c2.hashCode()
         result = 31 * result + numBytes
         return result
-    }
-
-    override fun toString(): String {
-        return "HashedElGamalCiphertext(c0=$c0,\n c1=${c1.contentToString()},\n c2=$c2,\n numBytes=$numBytes)"
     }
 }
 

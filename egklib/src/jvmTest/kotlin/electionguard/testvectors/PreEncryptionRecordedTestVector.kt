@@ -1,6 +1,5 @@
 package electionguard.testvectors
 
-import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.ballot.Manifest
 import electionguard.core.*
@@ -14,7 +13,6 @@ import electionguard.protoconvert.import
 import electionguard.protoconvert.publishProto
 import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -31,7 +29,7 @@ import kotlin.test.assertFalse
 
 /** Generate the election record information from a Pre-encrypted Ballot that has been voted. */
 class PreEncryptionRecordedTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/PreEncryptionRecordedTestVector.json"
 
     val group = productionGroup()
@@ -106,10 +104,10 @@ class PreEncryptionRecordedTestVector {
             "Compute the encrypted ballot from the ballot primary nonce and the selections voted for, spec 2.0 section 4.3",
             fullEncryptedBallot.publishJson(),
         )
-        // println(jsonFormat.encodeToString(preEncryptionRecordedTestVector))
+        // println(jsonReader.encodeToString(preEncryptionRecordedTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(preEncryptionRecordedTestVector, out)
+            jsonReader.encodeToStream(preEncryptionRecordedTestVector, out)
             out.close()
         }
     }
@@ -119,7 +117,7 @@ class PreEncryptionRecordedTestVector {
         val fileSystemProvider = fileSystem.provider()
         val testVector: PreEncryptionRecordedTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<PreEncryptionRecordedTestVector>(inp)
+                jsonReader.decodeFromStream<PreEncryptionRecordedTestVector>(inp)
             }
 
         val manifest = testVector.manifest.import()

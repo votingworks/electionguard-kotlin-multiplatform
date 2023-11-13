@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 
 /** Generate Pre-encrypted Ballot */
 class PreEncryptionTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/PreEncryptionTestVector.json"
 
     val group = productionGroup()
@@ -126,10 +126,10 @@ class PreEncryptionTestVector {
             primaryNonce.publishJson(),
             pballot.publishJson(),
         )
-        println(jsonFormat.encodeToString(preEncryptionTestVector))
+        println(jsonReader.encodeToString(preEncryptionTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(preEncryptionTestVector, out)
+            jsonReader.encodeToStream(preEncryptionTestVector, out)
             out.close()
         }
     }
@@ -139,7 +139,7 @@ class PreEncryptionTestVector {
         val fileSystemProvider = fileSystem.provider()
         val testVector: PreEncryptionTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<PreEncryptionTestVector>(inp)
+                jsonReader.decodeFromStream<PreEncryptionTestVector>(inp)
             }
 
         val manifest = testVector.manifest.import()

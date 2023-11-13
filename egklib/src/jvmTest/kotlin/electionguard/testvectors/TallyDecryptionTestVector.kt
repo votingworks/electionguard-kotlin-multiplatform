@@ -56,7 +56,7 @@ class TallyDecryptionTestVector(
     val missingCoordinates: List<Int>,
     val outputFile: Path
 ) {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     val group = productionGroup()
     val nBallots = 11
 
@@ -166,10 +166,10 @@ class TallyDecryptionTestVector(
             encryptedTally.publishJson(),
             decryptedTally.publishJson(),
         )
-        println(jsonFormat.encodeToString(tallyPartialDecryptionTestVector))
+        println(jsonReader.encodeToString(tallyPartialDecryptionTestVector))
 
         FileOutputStream(outputFile.toFile()).use { out ->
-            jsonFormat.encodeToStream(tallyPartialDecryptionTestVector, out)
+            jsonReader.encodeToStream(tallyPartialDecryptionTestVector, out)
             out.close()
         }
     }
