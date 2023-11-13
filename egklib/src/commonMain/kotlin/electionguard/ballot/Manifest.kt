@@ -290,7 +290,12 @@ data class Manifest(
         val geopoliticalUnitIds: List<String>,
         val partyIds: List<String>,
         val imageUri: String?,
-    )
+    )  {
+        override fun toString() =
+            buildString {
+                append("$ballotStyleId: $geopoliticalUnitIds")
+            }
+    }
 
     /** A candidate in a contest. */
     data class Candidate(
@@ -324,7 +329,14 @@ data class Manifest(
         val name: String,
         val type: ReportingUnitType,
         val contactInformation: String?,
-    )
+    ) {
+        override fun toString() =
+            buildString {
+                append("$geopoliticalUnitId: '$name'")
+                if (type != ReportingUnitType.unknown) append(", $type")
+
+            }
+    }
 
     /**
      * The ISO-639 language code.
