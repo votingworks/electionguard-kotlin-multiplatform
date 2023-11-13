@@ -26,7 +26,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ConfirmationCodeTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/ConfirmationCodeTestVector.json"
 
     val group = productionGroup()
@@ -114,10 +114,10 @@ class ConfirmationCodeTestVector {
             useBallots.map { it.publishJsonE() },
             eballots.map { it.publishJson() },
         )
-        println(jsonFormat.encodeToString(confirmationCodeTestVector))
+        println(jsonReader.encodeToString(confirmationCodeTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(confirmationCodeTestVector, out)
+            jsonReader.encodeToStream(confirmationCodeTestVector, out)
             out.close()
         }
     }
@@ -127,7 +127,7 @@ class ConfirmationCodeTestVector {
         val fileSystemProvider = fileSystem.provider()
         val testVector: ConfirmationCodeTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<ConfirmationCodeTestVector>(inp)
+                jsonReader.decodeFromStream<ConfirmationCodeTestVector>(inp)
             }
 
         val publicKey = ElGamalPublicKey(group.base16ToElementModPsafe(testVector.joint_public_key))

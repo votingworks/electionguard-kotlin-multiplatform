@@ -1,6 +1,5 @@
 package electionguard.protoconvert
 
-import com.github.michaelbull.result.*
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import electionguard.util.ErrorMessages
@@ -8,7 +7,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class EncryptedBallotConvertTest {
 
@@ -47,6 +45,7 @@ class EncryptedBallotConvertTest {
                 EncryptedBallot.BallotState.CAST
             else
                 EncryptedBallot.BallotState.SPOILED,
+            generateCiphertext(context),
         )
     }
 

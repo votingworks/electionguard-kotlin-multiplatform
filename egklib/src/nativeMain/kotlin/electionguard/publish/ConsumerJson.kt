@@ -16,7 +16,7 @@ import kotlinx.serialization.json.Json
 
 actual class ConsumerJson actual constructor(private val topDir: String, private val group: GroupContext) : Consumer {
     val jsonPaths = ElectionRecordJsonPaths(topDir)
-    val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
 
     init {
         if (!exists(topDir)) {
@@ -31,7 +31,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
     actual override fun isJson() = true
 
     actual override fun makeManifest(manifestBytes: ByteArray): Manifest {
-        val json = jsonFormat.decodeFromString<ManifestJson>(manifestBytes.toKString())
+        val json = jsonReader.decodeFromString<ManifestJson>(manifestBytes.toKString())
         return json.import()
     }
 
@@ -133,12 +133,12 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
     fun readElectionConfig(constantsFile: String, manifestFilename: String, configFile: String,): Result<ElectionConfig, String> {
         return try {
-            val constantsJson = jsonFormat.decodeFromString<ElectionConstantsJson>(gulp(constantsFile).toKString())
+            val constantsJson = jsonReader.decodeFromString<ElectionConstantsJson>(gulp(constantsFile).toKString())
             val electionConstants = constantsJson.import()
 
             val manifestBytes = readManifestBytes(manifestFilename)
 
-            val configJson: ElectionConfigJson = jsonFormat.decodeFromString<ElectionConfigJson>(gulp(configFile).toKString())
+            val configJson: ElectionConfigJson = jsonReader.decodeFromString<ElectionConfigJson>(gulp(configFile).toKString())
             val config = configJson.import(electionConstants, manifestBytes)
             Ok(config)
 
@@ -149,7 +149,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
     fun readElectionInitialized(contextFile: String, config: ElectionConfig): Result<ElectionInitialized, String> {
         return try {
-            val initJson: ElectionInitializedJson = jsonFormat.decodeFromString<ElectionInitializedJson>(gulp(contextFile).toKString())
+            val initJson: ElectionInitializedJson = jsonReader.decodeFromString<ElectionInitializedJson>(gulp(contextFile).toKString())
             Ok(initJson.import(group, config))
         } catch (e: Exception) {
             Err(e.message ?: "readElectionInitialized $contextFile error")
@@ -158,7 +158,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
     fun readTallyResult(filename: String, init: ElectionInitialized): Result<TallyResult, String> {
         return try {
-            val json = jsonFormat.decodeFromString<EncryptedTallyJson>(gulp(filename).toKString())
+            val json = jsonReader.decodeFromString<EncryptedTallyJson>(gulp(filename).toKString())
             val tallyResult: EncryptedTally = json.import(group)
             if (tallyResult == null)
                 Err("error reading EncryptedTallyJson")
@@ -171,7 +171,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
     fun readDecryptionResult(filename: String, tallyResult: TallyResult): Result<DecryptionResult, String> {
         return try {
-            val json = jsonFormat.decodeFromString<DecryptedTallyOrBallotJson>(gulp(filename).toKString())
+            val json = jsonReader.decodeFromString<DecryptedTallyOrBallotJson>(gulp(filename).toKString())
             val dtallyResult = json.import(group)
             if (dtallyResult == null)
                 Err("error reading DecryptedTallyOrBallotJson $filename")
@@ -192,7 +192,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
         override fun computeNext() {
             while (idx < fileList.size) {
                 val filename = "$dirname/${fileList[idx++]}"
-                val json = jsonFormat.decodeFromString<PlaintextBallotJson>(gulp(filename).toKString())
+                val json = jsonReader.decodeFromString<PlaintextBallotJson>(gulp(filename).toKString())
                 val ballot = json.import()
                 if (ballot == null) {
                     Err("error reading PlaintextBallotJson ${filename}")
@@ -217,7 +217,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
         override fun computeNext() {
             while (idx < fileList.size) {
                 val filename = "$dirname/${fileList[idx++]}"
-                val json = jsonFormat.decodeFromString<EncryptedBallotJson>(gulp(filename).toKString())
+                val json = jsonReader.decodeFromString<EncryptedBallotJson>(gulp(filename).toKString())
 
                 val ballot = json.import(group)
                 if (ballot == null) {
@@ -243,7 +243,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
         override fun computeNext() {
             while (idx < fileList.size) {
                 val filename = "$dirname/${fileList[idx++]}"
-                val json = jsonFormat.decodeFromString<DecryptedTallyOrBallotJson>(gulp(filename).toKString())
+                val json = jsonReader.decodeFromString<DecryptedTallyOrBallotJson>(gulp(filename).toKString())
                 val ballot = json.import(group)
                 if (ballot == null) {
                     Err("error reading DecryptedTallyOrBallotJson $filename")
@@ -258,7 +258,7 @@ actual class ConsumerJson actual constructor(private val topDir: String, private
 
     private fun readTrustee(filename: String): Result<DecryptingTrusteeDoerre, String> {
         return try {
-            val json = jsonFormat.decodeFromString<TrusteeJson>(gulp(filename).toKString())
+            val json = jsonReader.decodeFromString<TrusteeJson>(gulp(filename).toKString())
             val trusteeResult = json.importDecryptingTrustee(group)
             if (trusteeResult == null)
                 Err("error reading DecryptingTrustee $filename")

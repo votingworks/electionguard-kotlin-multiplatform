@@ -29,7 +29,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
     var fileSystem : FileSystem = FileSystems.getDefault()
     var fileSystemProvider : FileSystemProvider = fileSystem.provider()
     var jsonPaths = ElectionRecordJsonPaths(topDir)
-    val jsonReader = Json { explicitNulls = false }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
 
     init {
         if (!Files.exists(Path.of(topDir))) {
@@ -59,7 +59,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
     actual override fun makeManifest(manifestBytes: ByteArray): Manifest {
         ByteArrayInputStream(manifestBytes).use { inp ->
-            val json = Json.decodeFromStream<ManifestJson>(inp)
+            val json = jsonReader.decodeFromStream<ManifestJson>(inp)
             return json.import()
         }
     }
@@ -140,7 +140,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
         return try {
             fileSystemProvider.newInputStream(ballotChainPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<EncryptedBallotChainJson>(inp)
+                val json = jsonReader.decodeFromStream<EncryptedBallotChainJson>(inp)
                 val chain = json.import(errs)
                 if (errs.hasErrors()) Err(errs) else Ok(chain!!)
             }
@@ -263,7 +263,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         val constantErrs = errs.nested("constants file '$constantsPath'")
         val constants : ElectionConstants? = try {
             fileSystemProvider.newInputStream(constantsPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<ElectionConstantsJson>(inp)
+                val json = jsonReader.decodeFromStream<ElectionConstantsJson>(inp)
                 json.import(constantErrs)
             }
         } catch (t: Throwable) {
@@ -282,7 +282,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return try {
             var electionConfig: ElectionConfig?
             fileSystemProvider.newInputStream(configFile, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<ElectionConfigJson>(inp)
+                val json = jsonReader.decodeFromStream<ElectionConfigJson>(inp)
                 electionConfig = json.import(constants, manifestBytes, configErrs)
             }
             if (errs.hasErrors()) Err(errs) else Ok(electionConfig!!)
@@ -299,7 +299,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         return try {
             var electionInitialized: ElectionInitialized?
             fileSystemProvider.newInputStream(initPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<ElectionInitializedJson>(inp)
+                val json = jsonReader.decodeFromStream<ElectionInitializedJson>(inp)
                 electionInitialized = json.import(group, config, errs)
             }
             if (errs.hasErrors()) Err(errs) else Ok(electionInitialized!!)
@@ -315,7 +315,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
         return try {
             fileSystemProvider.newInputStream(tallyPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<EncryptedTallyJson>(inp)
+                val json = jsonReader.decodeFromStream<EncryptedTallyJson>(inp)
                 val encryptedTally = json.import(group, errs)
                 if (errs.hasErrors()) Err(errs) else Ok(TallyResult(init, encryptedTally!!, emptyList()))
             }
@@ -334,7 +334,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
         return try {
             fileSystemProvider.newInputStream(decryptedTallyPath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
+                val json = jsonReader.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
                 val decryptedTallyOrBallot = json.import(group, errs)
                 if (errs.hasErrors()) Err(errs) else Ok(DecryptionResult(tallyResult, decryptedTallyOrBallot!!))
             }
@@ -347,7 +347,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         val errs = ErrorMessages("readTrustee '$filePath'")
         return try {
             fileSystemProvider.newInputStream(filePath, StandardOpenOption.READ).use { inp ->
-                val json = Json.decodeFromStream<TrusteeJson>(inp)
+                val json = jsonReader.decodeFromStream<TrusteeJson>(inp)
                 val decryptingTrustee = json.importDecryptingTrustee(group, errs)
                 if (errs.hasErrors()) Err(errs) else Ok(decryptingTrustee!!)
             }
@@ -467,7 +467,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
 
     private fun readEncryptedBallot(ballotFilePath : Path, errs: ErrorMessages): EncryptedBallot? {
         fileSystemProvider.newInputStream(ballotFilePath, StandardOpenOption.READ).use { inp ->
-            val json = Json.decodeFromStream<EncryptedBallotJson>(inp)
+            val json = jsonReader.decodeFromStream<EncryptedBallotJson>(inp)
             return json.import(group, errs)
         }
     }
@@ -485,7 +485,7 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             while (idx < pathList.size) {
                 val file = pathList[idx++]
                 fileSystemProvider.newInputStream(file, StandardOpenOption.READ).use { inp ->
-                    val json = Json.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
+                    val json = jsonReader.decodeFromStream<DecryptedTallyOrBallotJson>(inp)
                     val errs = ErrorMessages("DecryptedBallotIterator '$file'")
                     val decryptedTallyOrBallot = json.import(group, errs)
                     if (errs.hasErrors()) {

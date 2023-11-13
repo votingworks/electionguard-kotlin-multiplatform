@@ -21,7 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ShareEncryptionTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/ShareEncryptionTestVector.json"
 
     val numberOfGuardians = 3
@@ -159,11 +159,11 @@ class ShareEncryptionTestVector {
             guardians,
             guardianShares,
         )
-        println(jsonFormat.encodeToString(shareEncryptionTestVector))
+        println(jsonReader.encodeToString(shareEncryptionTestVector))
 
         if (publish) {
             FileOutputStream(outputFile).use { out ->
-                jsonFormat.encodeToStream(shareEncryptionTestVector, out)
+                jsonReader.encodeToStream(shareEncryptionTestVector, out)
                 out.close()
             }
         }
@@ -176,7 +176,7 @@ class ShareEncryptionTestVector {
         val fileSystemProvider = fileSystem.provider()
         val shareEncryptionTestVector: ShareEncryptionTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<ShareEncryptionTestVector>(inp)
+                jsonReader.decodeFromStream<ShareEncryptionTestVector>(inp)
             }
 
         val guardians = shareEncryptionTestVector.guardians

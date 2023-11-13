@@ -107,7 +107,8 @@ class AttackEncryptedBallotTest {
             UInt256.random(),
             UInt256.random(),
             ccontests,
-            ballot.state
+            ballot.state,
+            null
         )
     }
 

@@ -7,6 +7,7 @@ fun electionguard.protogen.PlaintextBallot.import() =
         this.ballotId,
         this.ballotStyleId,
         this.contests.map { it.import() },
+        if (this.sn == 0L) null else this.sn,
         this.errors.ifEmpty { null },
     )
 
@@ -32,6 +33,7 @@ fun PlaintextBallot.publishProto() =
         this.ballotId,
         this.ballotStyle,
         this.contests.map { it.publishProto() },
+        this.sn ?: 0L,
         this.errors ?: "",
     )
 

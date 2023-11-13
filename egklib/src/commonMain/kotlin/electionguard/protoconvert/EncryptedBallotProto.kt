@@ -29,6 +29,7 @@ fun electionguard.protogen.EncryptedBallot.import(group: GroupContext, errs : Er
             electionId!!,
             contests.filterNotNull(),
             ballotState!!,
+            group.importCiphertext(this.encryptedSn),
             this.isPreencrypt,
         )
 }
@@ -124,6 +125,7 @@ fun EncryptedBallot.publishProto(recordedPreBallot: RecordedPreBallot) = electio
     this.electionId.publishProto(),
     this.contests.map { it.publishProto(recordedPreBallot) },
     this.state.publishProto(),
+    this.encryptedSn?.publishProto(),
     true,
 )
 
@@ -162,7 +164,6 @@ private fun RecordedSelectionVector.publishProto():
             this.selectionHash.toUInt256safe().publishProto(),
             this.shortCode,
             this.encryptions.map { it.publishProto() },
-            // this.proofs.map { it.publishProto() },
         )
 }
 
@@ -179,8 +180,9 @@ fun EncryptedBallot.publishProto() =
         this.confirmationCode.publishProto(),
         this.electionId.publishProto(),
         this.contests.map { it.publishProto() },
-        this.state.publishProto()
-    )
+        this.state.publishProto(),
+        this.encryptedSn?.publishProto(),
+     )
 
 private fun EncryptedBallot.BallotState.publishProto() =
     try {

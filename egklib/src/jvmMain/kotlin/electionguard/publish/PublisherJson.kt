@@ -17,8 +17,7 @@ import java.util.*
 @OptIn(ExperimentalSerializationApi::class)
 actual class PublisherJson actual constructor(topDir: String, createNew: Boolean) : Publisher {
     private var jsonPaths: ElectionRecordJsonPaths = ElectionRecordJsonPaths(topDir)
-    private val jsonFormat = Json { prettyPrint = true }
-    val jsonIgnoreNulls = Json { explicitNulls = false }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
 
     init {
         val electionRecordDir = Path.of(topDir)
@@ -33,7 +32,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     actual override fun writeManifest(manifest: Manifest)  : String {
         val manifestJson = manifest.publishJson()
         FileOutputStream(jsonPaths.manifestPath()).use { out ->
-            jsonFormat.encodeToStream(manifestJson, out)
+            jsonReader.encodeToStream(manifestJson, out)
             out.close()
         }
         return jsonPaths.manifestPath()
@@ -42,7 +41,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     actual override fun writeElectionConfig(config: ElectionConfig) {
         val constantsJson = config.constants.publishJson()
         FileOutputStream(jsonPaths.electionConstantsPath()).use { out ->
-            jsonFormat.encodeToStream(constantsJson, out)
+            jsonReader.encodeToStream(constantsJson, out)
             out.close()
         }
 
@@ -53,7 +52,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
         val configJson = config.publishJson()
         FileOutputStream(jsonPaths.electionConfigPath()).use { out ->
-            jsonFormat.encodeToStream(configJson, out)
+            jsonReader.encodeToStream(configJson, out)
             out.close()
         }
     }
@@ -63,7 +62,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
         val contextJson = init.publishJson()
         FileOutputStream(jsonPaths.electionInitializedPath()).use { out ->
-            jsonFormat.encodeToStream(contextJson, out)
+            jsonReader.encodeToStream(contextJson, out)
             out.close()
         }
     }
@@ -73,7 +72,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
         val encryptedTallyJson = tally.encryptedTally.publishJson()
         FileOutputStream(jsonPaths.encryptedTallyPath()).use { out ->
-            jsonFormat.encodeToStream(encryptedTallyJson, out)
+            jsonReader.encodeToStream(encryptedTallyJson, out)
             out.close()
         }
     }
@@ -83,7 +82,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
 
         val decryptedTallyJson = decryption.decryptedTally.publishJson()
         FileOutputStream(jsonPaths.decryptedTallyPath()).use { out ->
-            jsonFormat.encodeToStream(decryptedTallyJson, out)
+            jsonReader.encodeToStream(decryptedTallyJson, out)
             out.close()
         }
     }
@@ -95,7 +94,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     private fun writePlaintextBallot(outputDir: String, plaintextBallot: PlaintextBallot) {
         val plaintextBallotJson = plaintextBallot.publishJson()
         FileOutputStream(jsonPaths.plaintextBallotPath(outputDir, plaintextBallot.ballotId)).use { out ->
-            jsonIgnoreNulls.encodeToStream(plaintextBallotJson, out)
+            jsonReader.encodeToStream(plaintextBallotJson, out)
             out.close()
         }
     }
@@ -103,7 +102,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
     actual override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee) {
         val decryptingTrusteeJson = trustee.publishJson()
         FileOutputStream(jsonPaths.decryptingTrusteePath(trusteeDir, trustee.id)).use { out ->
-            jsonFormat.encodeToStream(decryptingTrusteeJson, out)
+            jsonReader.encodeToStream(decryptingTrusteeJson, out)
             out.close()
         }
     }
@@ -114,7 +113,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         val jsonChain = closing.publishJson()
         val filename = jsonPaths.encryptedBallotChain(closing.encryptingDevice)
         FileOutputStream(filename).use { out ->
-            jsonFormat.encodeToStream(jsonChain, out)
+            jsonReader.encodeToStream(jsonChain, out)
             out.close()
         }
     }
@@ -131,7 +130,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
             val ballotFile = jsonPaths.encryptedBallotDevicePath(device, ballot.ballotId)
             val json = ballot.publishJson()
             FileOutputStream(ballotFile).use { out ->
-                jsonFormat.encodeToStream(json, out)
+                jsonReader.encodeToStream(json, out)
                 out.close()
             }
         }
@@ -150,7 +149,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         override fun writeDecryptedTallyOrBallot(tally: DecryptedTallyOrBallot) {
             val tallyJson = tally.publishJson()
             FileOutputStream(jsonPaths.decryptedBallotPath(tally.id)).use { out ->
-                jsonFormat.encodeToStream(tallyJson, out)
+                jsonReader.encodeToStream(tallyJson, out)
                 out.close()
             }
         }
@@ -165,7 +164,7 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         override fun writePepBallot(pepBallot: BallotPep) {
             val pepJson = pepBallot.publishJson()
             FileOutputStream(jsonPaths.pepBallotPath(outputDir, pepBallot.ballotId)).use { out ->
-                jsonFormat.encodeToStream(pepJson, out)
+                jsonReader.encodeToStream(pepJson, out)
                 out.close()
             }
         }

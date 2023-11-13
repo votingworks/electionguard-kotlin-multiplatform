@@ -166,6 +166,12 @@ internal class TinyGroupContext(
         else
             TinyElementModQ(i, this)
 
+    override fun uLongToElementModQ(i: ULong): ElementModQ =
+        if (i >= q)
+            throw ArithmeticException("out of bounds for TestElementModQ: $i")
+        else
+            TinyElementModQ(i.toUInt(), this) // hmmm, could we use a different group here?
+
     override fun uIntToElementModP(i: UInt): ElementModP =
         if (i >= p)
             throw ArithmeticException("out of bounds for TestElementModP: $i")

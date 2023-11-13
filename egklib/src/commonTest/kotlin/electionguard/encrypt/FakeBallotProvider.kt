@@ -2,11 +2,13 @@ package electionguard.encrypt
 
 import electionguard.ballot.Manifest
 import electionguard.ballot.PlaintextBallot
+import kotlin.random.Random
 
 fun makeBallot(election: Manifest, ballotStyleId : String, contestIdx: Int, selectionIdx: Int): PlaintextBallot {
     val contests: MutableList<PlaintextBallot.Contest> = ArrayList()
     contests.add(makeContest(election.contests.get(contestIdx), selectionIdx))
-    return PlaintextBallot("id", ballotStyleId, contests)
+    val sn = Random.nextInt(100)
+    return PlaintextBallot("id", ballotStyleId, contests, sn.toLong())
 }
 
 fun makeContest(contest: Manifest.ContestDescription, selectionIdx: Int): PlaintextBallot.Contest {

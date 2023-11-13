@@ -23,6 +23,7 @@ message EncryptedBallot {
   repeated EncryptedBallotContest contests = 7;
   BallotState state = 8;
 
+  ElGamalCiphertext encrypted_sn = 12;
   bool is_preencrypt = 9;
   UInt256 primary_nonce = 10; // only when challenged / uncast
 }

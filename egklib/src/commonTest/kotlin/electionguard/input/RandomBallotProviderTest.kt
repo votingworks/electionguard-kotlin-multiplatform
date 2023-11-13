@@ -19,7 +19,7 @@ class RandomBallotProviderTest {
             block = { RandomBallotProvider(electionRecord.manifest(), 1).ballots("badStyleId") }
         )
         assertEquals(
-            "BallotStyle 'badStyleId' not in the given manifest styles = [BallotStyle(ballotStyleId=ballotStyle, geopoliticalUnitIds=[district9], partyIds=[], imageUri=null)]",
+            "BallotStyle 'badStyleId' not found in manifest ballotStyles= ['ballotStyle': [district9]]",
             exception.message
         )
     }

@@ -30,7 +30,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DecryptBallotTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/DecryptBallotTestVector.json"
 
     val group = productionGroup()
@@ -112,10 +112,10 @@ class DecryptBallotTestVector {
             "Decrypt ballot with trustees",
             decryptedBallot.publishJson()
         )
-        println(jsonFormat.encodeToString(decryptBallotTestVector))
+        println(jsonReader.encodeToString(decryptBallotTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(decryptBallotTestVector, out)
+            jsonReader.encodeToStream(decryptBallotTestVector, out)
             out.close()
         }
     }
@@ -125,7 +125,7 @@ class DecryptBallotTestVector {
         val fileSystemProvider = fileSystem.provider()
         val testVector: DecryptBallotTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<DecryptBallotTestVector>(inp)
+                jsonReader.decodeFromStream<DecryptBallotTestVector>(inp)
             }
 
         val extendedBaseHash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readDecryptBallotTestVector malformed extended_base_hash")

@@ -17,7 +17,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class KeyCeremonyTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/KeyCeremonyTestVector.json"
 
     val numberOfGuardians = 5
@@ -101,11 +101,11 @@ class KeyCeremonyTestVector {
             expectedPublicKey.publishJson(),
             extendedBaseHash.publishJson(),
         )
-        println(jsonFormat.encodeToString(keyCeremonyTestVector))
+        println(jsonReader.encodeToString(keyCeremonyTestVector))
 
         if (publish) {
             FileOutputStream(outputFile).use { out ->
-                jsonFormat.encodeToStream(keyCeremonyTestVector, out)
+                jsonReader.encodeToStream(keyCeremonyTestVector, out)
                 out.close()
             }
         }

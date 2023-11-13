@@ -8,7 +8,9 @@ import kotlinx.serialization.json.*
 
 
 inline fun <reified T> jsonRoundTripWithStringPrimitive(value: T): T {
-    val jsonT: JsonElement = Json.encodeToJsonElement(value)
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
+
+    val jsonT: JsonElement = jsonReader.encodeToJsonElement(value)
 
     if (jsonT is JsonPrimitive) {
         assertTrue(jsonT.isString)
@@ -18,8 +20,8 @@ inline fun <reified T> jsonRoundTripWithStringPrimitive(value: T): T {
     }
 
     val jsonS = jsonT.toString()
-    val backToJ: JsonElement = Json.parseToJsonElement(jsonS)
-    val backToT: T = Json.decodeFromJsonElement(backToJ)
+    val backToJ: JsonElement = jsonReader.parseToJsonElement(jsonS)
+    val backToT: T = jsonReader.decodeFromJsonElement(backToJ)
     return backToT
 }
 

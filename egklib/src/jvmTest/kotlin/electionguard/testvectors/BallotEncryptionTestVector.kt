@@ -23,7 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BallotEncryptionTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/BallotEncryptionTestVector.json"
 
     val group = productionGroup()
@@ -138,10 +138,10 @@ class BallotEncryptionTestVector {
             useBallots.map { it.publishJsonE() },
             eballots.map { it.publishJson() },
         )
-        println(jsonFormat.encodeToString(ballotEncryptionTestVector))
+        println(jsonReader.encodeToString(ballotEncryptionTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(ballotEncryptionTestVector, out)
+            jsonReader.encodeToStream(ballotEncryptionTestVector, out)
             out.close()
         }
     }
@@ -151,7 +151,7 @@ class BallotEncryptionTestVector {
         val fileSystemProvider = fileSystem.provider()
         val testVector: BallotEncryptionTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<BallotEncryptionTestVector>(inp)
+                jsonReader.decodeFromStream<BallotEncryptionTestVector>(inp)
             }
 
         val publicKey = ElGamalPublicKey(testVector.joint_public_key.import(group) ?: throw IllegalArgumentException("readBallotEncryptionTestVector malformed joint_public_key"))

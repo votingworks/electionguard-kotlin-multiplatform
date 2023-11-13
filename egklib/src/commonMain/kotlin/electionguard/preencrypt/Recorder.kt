@@ -69,6 +69,7 @@ class Recorder(
             extendedBaseHash,
             contests.filterNotNull(),
             ballotNonce,
+            null,
             true,
         )
 

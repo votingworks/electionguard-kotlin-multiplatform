@@ -47,6 +47,7 @@ class EncryptedBallotTest {
                 EncryptedBallot.BallotState.CAST
             else
                 EncryptedBallot.BallotState.SPOILED,
+            generateCiphertext(context),
         )
     }
 

@@ -12,12 +12,13 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 inline fun <reified T> jsonRoundTrip(value: T): T {
-    val jsonT: JsonElement = Json.encodeToJsonElement(value)
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
+
+    val jsonT: JsonElement = jsonReader.encodeToJsonElement(value)
     val jsonS = jsonT.toString()
-    val backToJ: JsonElement = Json.parseToJsonElement(jsonS)
-    val backToT: T = Json.decodeFromJsonElement(backToJ)
+    val backToJ: JsonElement = jsonReader.parseToJsonElement(jsonS)
+    val backToT: T = jsonReader.decodeFromJsonElement(backToJ)
     return backToT
 }
 

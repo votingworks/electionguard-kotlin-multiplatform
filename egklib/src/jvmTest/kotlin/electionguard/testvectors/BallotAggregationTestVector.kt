@@ -25,7 +25,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BallotAggregationTestVector {
-    private val jsonFormat = Json { prettyPrint = true }
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
     private var outputFile = "testOut/testvectors/BallotAggregationTestVector.json"
 
     val group = productionGroup()
@@ -79,10 +79,10 @@ class BallotAggregationTestVector {
             "Compute tally over all encrypted ballots, eq 63",
             tally.publishJson()
         )
-        println(jsonFormat.encodeToString(ballotAggregationTestVector))
+        println(jsonReader.encodeToString(ballotAggregationTestVector))
 
         FileOutputStream(outputFile).use { out ->
-            jsonFormat.encodeToStream(ballotAggregationTestVector, out)
+            jsonReader.encodeToStream(ballotAggregationTestVector, out)
             out.close()
         }
     }
@@ -92,7 +92,7 @@ class BallotAggregationTestVector {
         val fileSystemProvider = fileSystem.provider()
         val testVector: BallotAggregationTestVector =
             fileSystemProvider.newInputStream(fileSystem.getPath(outputFile)).use { inp ->
-                Json.decodeFromStream<BallotAggregationTestVector>(inp)
+                jsonReader.decodeFromStream<BallotAggregationTestVector>(inp)
             }
 
         val extended_base_hash = testVector.extended_base_hash.import() ?: throw IllegalArgumentException("readBallotAggregationTestVector malformed extended_base_hash")

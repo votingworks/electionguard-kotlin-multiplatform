@@ -33,10 +33,19 @@ data class ElectionConfig(
         require(numberOfGuardians >= quorum) { "numberOfGuardians ${numberOfGuardians} != $quorum" }
     }
 
+    fun show(): String = buildString {
+        appendLine("ElectionConfig '${configVersion}' numberOfGuardians=$numberOfGuardians, quorum=$quorum chainConfirmationCodes=$chainConfirmationCodes")
+        appendLine("  parameterBaseHash ${parameterBaseHash}")
+        appendLine("  electionBaseHash ${electionBaseHash}")
+        appendLine("  ElectionConstants ${constants}")
+    }
+
     // override because of the byte arrays
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is ElectionConfig) return false
+        if (javaClass != other?.javaClass) return false
+
+        other as ElectionConfig
 
         if (configVersion != other.configVersion) return false
         if (constants != other.constants) return false
@@ -46,9 +55,11 @@ data class ElectionConfig(
         if (manifestHash != other.manifestHash) return false
         if (electionBaseHash != other.electionBaseHash) return false
         if (!manifestBytes.contentEquals(other.manifestBytes)) return false
-        if (!configBaux0.contentEquals(other.configBaux0)) return false
         if (chainConfirmationCodes != other.chainConfirmationCodes) return false
-        return metadata == other.metadata
+        if (!configBaux0.contentEquals(other.configBaux0)) return false
+        if (metadata != other.metadata) return false
+
+        return true
     }
 
     override fun hashCode(): Int {
@@ -60,17 +71,10 @@ data class ElectionConfig(
         result = 31 * result + manifestHash.hashCode()
         result = 31 * result + electionBaseHash.hashCode()
         result = 31 * result + manifestBytes.contentHashCode()
-        result = 31 * result + configBaux0.contentHashCode()
         result = 31 * result + chainConfirmationCodes.hashCode()
+        result = 31 * result + configBaux0.contentHashCode()
         result = 31 * result + metadata.hashCode()
         return result
-    }
-
-    fun show(): String = buildString {
-        appendLine("ElectionConfig '${configVersion}' numberOfGuardians=$numberOfGuardians, quorum=$quorum chainConfirmationCodes=$chainConfirmationCodes")
-        appendLine("  parameterBaseHash ${parameterBaseHash}")
-        appendLine("  electionBaseHash ${electionBaseHash}")
-        appendLine("  ElectionConstants ${constants}")
     }
 }
 

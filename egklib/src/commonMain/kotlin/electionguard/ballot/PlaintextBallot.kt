@@ -9,6 +9,7 @@ data class PlaintextBallot(
     val ballotId: String,       // a unique ballot ID created by the external system
     val ballotStyle: String,    // matches a Manifest.BallotStyle
     val contests: List<Contest>,
+    val sn: Long? = null, // must be > 0
     val errors: String? = null, // error messages from processing, eg when invalid
 ) {
     init {
@@ -16,7 +17,7 @@ data class PlaintextBallot(
     }
 
     constructor(org: PlaintextBallot, errors: String):
-        this(org.ballotId, org.ballotStyle, org.contests, errors)
+        this(org.ballotId, org.ballotStyle, org.contests, org.sn, errors)
 
     /** The plaintext representation of a voter's selections for one contest. */
     data class Contest(

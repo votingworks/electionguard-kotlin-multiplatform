@@ -293,7 +293,7 @@ data class Manifest(
     )  {
         override fun toString() =
             buildString {
-                append("$ballotStyleId: $geopoliticalUnitIds")
+                append("'$ballotStyleId': $geopoliticalUnitIds")
             }
     }
 

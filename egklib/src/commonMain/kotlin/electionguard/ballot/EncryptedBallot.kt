@@ -16,6 +16,7 @@ data class EncryptedBallot(
         override val electionId : UInt256,
         override val contests: List<Contest>,
         override val state: BallotState,
+        val encryptedSn: ElGamalCiphertext?,
         val isPreencrypt: Boolean = false,
     ) : EncryptedBallotIF {
 
@@ -27,26 +28,36 @@ data class EncryptedBallot(
     // override because of codeBaux: ByteArray
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is EncryptedBallot) return false
+        if (javaClass != other?.javaClass) return false
+
+        other as EncryptedBallot
 
         if (ballotId != other.ballotId) return false
         if (ballotStyleId != other.ballotStyleId) return false
-        if (confirmationCode != other.confirmationCode) return false
-        if (!codeBaux.contentEquals(other.codeBaux)) return false
-        if (contests != other.contests) return false
+        if (encryptingDevice != other.encryptingDevice) return false
         if (timestamp != other.timestamp) return false
+        if (!codeBaux.contentEquals(other.codeBaux)) return false
+        if (confirmationCode != other.confirmationCode) return false
+        if (electionId != other.electionId) return false
+        if (contests != other.contests) return false
         if (state != other.state) return false
-        return isPreencrypt == other.isPreencrypt
+        if (encryptedSn != other.encryptedSn) return false
+        if (isPreencrypt != other.isPreencrypt) return false
+
+        return true
     }
 
     override fun hashCode(): Int {
         var result = ballotId.hashCode()
         result = 31 * result + ballotStyleId.hashCode()
-        result = 31 * result + confirmationCode.hashCode()
-        result = 31 * result + codeBaux.contentHashCode()
-        result = 31 * result + contests.hashCode()
+        result = 31 * result + encryptingDevice.hashCode()
         result = 31 * result + timestamp.hashCode()
+        result = 31 * result + codeBaux.contentHashCode()
+        result = 31 * result + confirmationCode.hashCode()
+        result = 31 * result + electionId.hashCode()
+        result = 31 * result + contests.hashCode()
         result = 31 * result + state.hashCode()
+        result = 31 * result + (encryptedSn?.hashCode() ?: 0)
         result = 31 * result + isPreencrypt.hashCode()
         return result
     }

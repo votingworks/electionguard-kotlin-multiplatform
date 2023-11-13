@@ -6,10 +6,11 @@ import kotlin.test.*
 import kotlinx.serialization.json.*
 
 class ElementsJsonRTest {
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
 
     // we need this to actually test from teh string form and back
     inline fun <reified T> jsonRoundTripWithStringPrimitive(value: T): T {
-        val jsonT: JsonElement = Json.encodeToJsonElement(value)
+        val jsonT: JsonElement = jsonReader.encodeToJsonElement(value)
 
         if (jsonT is JsonPrimitive) {
             assertTrue(jsonT.isString)
@@ -18,8 +19,8 @@ class ElementsJsonRTest {
         }
 
         val jsonS = jsonT.toString()
-        val backToJ: JsonElement = Json.parseToJsonElement(jsonS)
-        val backToT: T = Json.decodeFromJsonElement(backToJ)
+        val backToJ: JsonElement = jsonReader.parseToJsonElement(jsonS)
+        val backToT: T = jsonReader.decodeFromJsonElement(backToJ)
         return backToT
     }
 

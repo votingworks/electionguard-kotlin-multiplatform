@@ -3,7 +3,6 @@ package electionguard.json2
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import electionguard.core.Base16.fromHex
-import electionguard.core.Base16.fromHexSafe
 import electionguard.core.Base16.toHex
 import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
@@ -19,6 +18,7 @@ data class EncryptedBallotJson(
     val election_id: UInt256Json,
     val contests: List<EncryptedContestJson>,
     val state: String, // BallotState
+    val encrypted_sn: ElGamalCiphertextJson?,
     val is_preencrypt: Boolean,
     val primary_nonce: UInt256Json?, // only when uncast
 )
@@ -75,6 +75,7 @@ fun EncryptedBallot.publishJson(primaryNonce : UInt256? = null): EncryptedBallot
         this.electionId.publishJson(),
         contests,
         this.state.name,
+        this.encryptedSn?.publishJson(),
         this.isPreencrypt,
         primaryNonce?.publishJson(),
     )
@@ -100,6 +101,7 @@ fun EncryptedBallotJson.import(group : GroupContext, errs : ErrorMessages): Encr
         electionId!!,
         contests.filterNotNull(),
         state!!,
+        this.encrypted_sn?.import(group),
         this.is_preencrypt,
     )
 }

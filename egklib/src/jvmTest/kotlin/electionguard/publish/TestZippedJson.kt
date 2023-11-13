@@ -1,7 +1,5 @@
 package electionguard.publish
 
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.unwrap
 import electionguard.cli.RunVerifier
 import electionguard.core.productionGroup
 import electionguard.json2.ElectionConstantsJson
@@ -22,11 +20,12 @@ import java.nio.file.spi.FileSystemProvider
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.test.Test
-import kotlin.test.assertTrue
 
 // run verifier on zipped JSON record, only supported on JVM
 @OptIn(ExperimentalSerializationApi::class)
 class TestZippedJson {
+    val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
+
     val inputDir = "src/commonTest/data/workflow/allAvailableJson"
     val zippedJson = "testOut/allAvailableJson.zip"
     val fs: FileSystem
@@ -52,7 +51,7 @@ class TestZippedJson {
     fun readConstants() {
         val path : Path = fs.getPath("/constants.json")
         fsp.newInputStream(path).use { inp ->
-            val json = Json.decodeFromStream<ElectionConstantsJson>(inp)
+            val json = jsonReader.decodeFromStream<ElectionConstantsJson>(inp)
             val result = json.import(ErrorMessages("readConstants"))
             assertNotNull(result)
             println("constants = ${result}")
