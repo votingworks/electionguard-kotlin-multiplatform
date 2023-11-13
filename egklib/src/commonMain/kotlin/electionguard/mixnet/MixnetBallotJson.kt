@@ -71,17 +71,17 @@ private fun List<String>.import(group: GroupContext) : List<ElementModP> {
 
 fun readMixnetJsonBallots(group: GroupContext, filename: String): List<MixnetBallot> {
     val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true }
-    val result = readMixnetBallotWrapped(jsonReader, filename)
+    val result = readMixnetBallotArray(jsonReader, filename)
     return result.unwrap().import(group)
 }
 
-private fun readMixnetBallotWrapped(jsonReader: Json, filename: String): Result<MixnetBallotJson, String> =
+private fun readMixnetBallotArray(jsonReader: Json, filename: String): Result<MixnetBallotJson, String> =
     try {
         val text = fileReadText(filename)
-        val wrap = "{ \"wtf\": $text }"
-        var mixnetInput: MixnetBallotJson = jsonReader.decodeFromString<MixnetBallotJson>(wrap)
-        Ok(mixnetInput)
+        val lists = jsonReader.decodeFromString<List<List<List<String>>>>(text)
+        val mixnetBallotJson = MixnetBallotJson(lists)
+        Ok(mixnetBallotJson)
     } catch (e: Exception) {
         e.printStackTrace()
-        Err(e.message ?: "readMixnetBallotWrapped on $filename has error")
+        Err(e.message ?: "readMixnetInput on $filename error")
     }

@@ -31,6 +31,13 @@ class MixnetBallotJsonReaderTest {
     }
 
     @Test
+    fun testInputArray() {
+        val result = readMixnetBallotArray("$topdir/input-ciphertexts.json")
+        assertTrue(result is Ok)
+        println(result.unwrap().show())
+    }
+
+    @Test
     fun testOutputWrap() {
         val result = readMixnetBallotWrapped("$topdir/after-mix-2-ciphertexts.json")
         assertTrue(result is Ok)
@@ -63,20 +70,22 @@ class MixnetBallotJsonReaderTest {
         converted.forEachIndexed { idx, it ->
             it.ciphertext.forEach { ciphertext ->
                 val vote = decryptor.decrypt(ciphertext)
+                print("$vote,")
                 assertNotNull(vote)
             }
-            println("ballot ${idx + 1} OK")
+            println("\nballot ${idx + 1} OK")
         }
     }
 
-    private fun readMixnetBallot(filename: String): Result<MixnetBallotJson, String> =
+    private fun readMixnetBallotArray(filename: String): Result<MixnetBallotJson, String> =
         try {
-            var mixnetInput: MixnetBallotJson
             val path = Path.of(filename)
+            val mixnetBallotJson : MixnetBallotJson
             fileSystemProvider.newInputStream(path).use { inp ->
-                mixnetInput = jsonReader.decodeFromStream<MixnetBallotJson>(inp)
+                val lists = jsonReader.decodeFromStream<List<List<List<String>>>>(inp)
+                mixnetBallotJson = MixnetBallotJson(lists)
             }
-            Ok(mixnetInput)
+            Ok(mixnetBallotJson)
         } catch (e: Exception) {
             e.printStackTrace()
             Err(e.message ?: "readMixnetInput on $filename error")
