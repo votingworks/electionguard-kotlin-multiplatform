@@ -7,7 +7,7 @@ import kotlin.random.Random
 fun makeBallot(election: Manifest, ballotStyleId : String, contestIdx: Int, selectionIdx: Int): PlaintextBallot {
     val contests: MutableList<PlaintextBallot.Contest> = ArrayList()
     contests.add(makeContest(election.contests.get(contestIdx), selectionIdx))
-    val sn = Random.nextInt(100)
+    val sn = Random.nextInt(1000)
     return PlaintextBallot("id", ballotStyleId, contests, sn.toLong())
 }
 

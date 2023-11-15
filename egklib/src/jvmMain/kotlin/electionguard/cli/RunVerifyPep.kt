@@ -5,10 +5,9 @@ import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.unwrap
 import electionguard.pep.*
 import electionguard.publish.*
+import electionguard.util.ErrorMessages
 import electionguard.util.sigfig
 import kotlinx.cli.default
 import kotlinx.coroutines.*
@@ -19,9 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private val logger = KotlinLogging.logger("RunVerifyPep")
 
-/**
- * Run election record verification CLI.
- */
+/** Run election record verification CLI. */
 class RunVerifyPep {
 
     companion object {
@@ -50,32 +47,6 @@ class RunVerifyPep {
             batchVerifyPep(productionGroup(), inputDir, pepBallotDir, nthreads)
         }
 
-        fun runVerifyPep(group: GroupContext, inputDir: String, pepBallotDir: String): Boolean {
-            val starting = getSystemTimeInMillis()
-
-            val consumer = makeConsumer(group, inputDir)
-            val record = readElectionRecord(consumer)
-            val verifier = VerifierPep(group, record.extendedBaseHash()!!, ElGamalPublicKey(record.jointPublicKey()!!))
-
-            var count = 0
-            var allOk = true
-            consumer.iteratePepBallots(pepBallotDir).forEach { ballotPEP ->
-                //     fun verify(ballotPEP: BallotPep): Result<Boolean, String> {
-                val result = verifier.verify(ballotPEP)
-                if (result is Err) {
-                    println(result)
-                    allOk = false
-                } else {
-                    println(" ${ballotPEP.ballotId} validates isEq=${ballotPEP.isEq}")
-                }
-                count++
-            }
-
-            val tookAll = (getSystemTimeInMillis() - starting)
-            println("RunVerifier = $allOk took $tookAll msecs for $count ballots; allOk = ${allOk}")
-            return allOk
-        }
-
         fun batchVerifyPep(
             group: GroupContext,
             inputDir: String,
@@ -85,7 +56,7 @@ class RunVerifyPep {
             println(" Pep verify ballots in '${pepBallotDir}'")
             val starting = getSystemTimeInMillis() // wall clock
 
-            val consumer = makeConsumer(group, inputDir)
+            val consumer = makeConsumer(group, inputDir, true)
             val record = readElectionRecord(consumer)
 
             val verifier = VerifierPep(group, record.extendedBaseHash()!!, ElGamalPublicKey(record.jointPublicKey()!!))
@@ -131,16 +102,17 @@ class RunVerifyPep {
         ) = launch(Dispatchers.Default) {
 
             for (ballotPEP in input) {
-                val result = verifier.verify(ballotPEP)
-                if (result is Err) {
-                    logger.warn { " PEP error verifying ballot ${ballotPEP.ballotId} because $result" }
+                val errs = ErrorMessages("Ballot ${ballotPEP.ballotId}")
+                val result = verifier.verify(ballotPEP, errs)
+                if (errs.hasErrors()) {
+                    println(" PEP error verifying ballot ${ballotPEP.ballotId} because $errs")
+                    logger.warn { " PEP error verifying ballot ${ballotPEP.ballotId} because $errs" }
                 } else {
-                    val verifyOk = result.unwrap()
-                    logger.info { " PEP verify ${ballotPEP.ballotId} is ${verifyOk}" }
-                    println(" PEP verify ${ballotPEP.ballotId} is ${verifyOk}")
+                    println(" PEP verify ${ballotPEP.ballotId} is ${result}")
+                    logger.info { " PEP verify ${ballotPEP.ballotId} is ${result}" }
                     count.getAndIncrement()
-                    yield()
                 }
+                yield()
             }
             logger.debug { "Decryptor #$id done" }
         }

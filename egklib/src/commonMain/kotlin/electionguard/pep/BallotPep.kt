@@ -1,6 +1,7 @@
 package electionguard.pep
 
 import electionguard.ballot.DecryptedTallyOrBallot
+import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import electionguard.json2.*
 import electionguard.util.ErrorMessages
@@ -50,6 +51,14 @@ data class SelectionPep(
         dselection.bOverM,
         dselection.proof,
     )
+    constructor(selection: EncryptedBallot.Selection, work: BlindWorking, pep: PepWithProof) : this (
+        selection.selectionId,
+        work.ciphertextRatio,
+        work.ciphertextAB!!,
+        ChaumPedersenProof(work.c, work.v!!),
+        pep.bOverM,
+        pep.proof,
+    )
 }
 
 @Serializable
@@ -77,13 +86,6 @@ data class SelectionPepJson(
 
 fun BallotPep.publishJson(): BallotPepJson {
     val contests = this.contests.map { pcontest ->
-
-        //     val selectionId: String,
-        //    val ciphertextRatio: ElGamalCiphertext, // α, β
-        //    val ciphertextAB: ElGamalCiphertext, // A, B
-        //    val blindingProof: ChaumPedersenProof,
-        //    val T: ElementModP,
-        //    val decryptionProof: ChaumPedersenProof,
         ContestPepJson(
             pcontest.contestId,
             pcontest.selections.map {
@@ -136,3 +138,5 @@ fun SelectionPepJson.import(group: GroupContext, errs : ErrorMessages): Selectio
         decryptionProof!!
     )
 }
+
+data class PepWithProof(val bOverM: ElementModP, val proof: ChaumPedersenProof)

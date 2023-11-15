@@ -44,7 +44,7 @@ class RandomBallotProvider(val manifest: Manifest, val nballots: Int = 11) {
         for (contestp in manifest.contestsForBallotStyle(ballotStyleId)!!) {
             contests.add(makeContestFrom(contestp as Manifest.ContestDescription))
         }
-        val sn = Random.nextInt(100)
+        val sn = Random.nextInt(1000)
         return PlaintextBallot(ballotId, ballotStyleId, contests, sn.toLong())
     }
 
