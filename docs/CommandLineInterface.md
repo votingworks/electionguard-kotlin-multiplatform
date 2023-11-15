@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 10/23/2023
+last update 11/14/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
@@ -14,9 +14,10 @@ last update 10/23/2023
   * [Run trusted Tally Decryption](#run-trusted-tally-decryption)
   * [Run trusted Ballot Decryption](#run-trusted-ballot-decryption)
   * [Run Verifier](#run-verifier)
-  * [Encrypt plaintext files again for Pep](#encrypt-plaintext-files-again-for-pep)
-  * [Run Trusted Pep](#run-trusted-pep)
-  * [Run Verify Pep](#run-verify-pep)
+  * [Rave / PEP (Plaintext Equivalence Proof)](#rave--pep-plaintext-equivalence-proof)
+    * [Extract encrypted ballots for mixnet input](#extract-encrypted-ballots-for-mixnet-input)
+    * [Run MixnetBlindTrustPep to compare ballots with mixnet](#run-mixnetblindtrustpep-to-compare-ballots-with-mixnet)
+    * [Run Verify Pep](#run-verify-pep)
 <!-- TOC -->
 
 ## Election workflow overview
@@ -93,7 +94,7 @@ Example:
 ````
 /usr/lib/jvm/jdk-19/bin/java \
   -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunCreateTestManifest \
     -ncontests 3 \
     -nselections 11 \
@@ -120,7 +121,7 @@ Example:
 ````
 /usr/lib/jvm/jdk-19/bin/java \
   -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunCreateElectionConfig \
     -manifest egklib/src/commonTest/data/startManifestJson \
     -nguardians 3 \
@@ -149,7 +150,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunTrustedKeyCeremony \
     -in testOut/cliWorkflow/config \
     -trustees testOut/cliWorkflow/keyceremony/trustees \
@@ -177,7 +178,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunBatchEncryption \
     -in testOut/cliWorkflow/keyceremony \
     -ballots egklib/src/commonTest/data/fakeBallots/json \
@@ -203,7 +204,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunAccumulateTally \
     -in testOut/cliWorkflow/electionRecord \
     -out testOut/cliWorkflow/electionRecord 
@@ -237,7 +238,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunTrustedTallyDecryption \
     -in testOut/cliWorkflow/electionRecord \
     -trustees testOut/cliWorkflow/keyceremony/trustees \
@@ -274,7 +275,7 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunTrustedBallotDecryption \
     -in testOut/cliWorkflow/electionRecord \
     -trustees testOut/cliWorkflow/keyceremony/trustees \
@@ -301,34 +302,39 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunVerifier \
     -in testOut/cliWorkflow/electionRecord 
 ````
 
-## Encrypt plaintext files again for Pep
+## Rave / PEP (Plaintext Equivalence Proof)
+
+### Extract encrypted ballots for mixnet input
+
+Usage: RunMakeMixnetInput options_list
+Options:
+--inputDir, -in -> Directory containing input election record (always required) { String }
+--outputFile, -out -> Write to this filename (always required) { String }
+--help, -h -> Usage info
 
 Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
-  electionguard.cli.RunBatchEncryption \
-    -in egklib/src/commonTest/data/workflow/allAvailableJson \
-    -ballots egklib/src/commonTest/data/workflow/allAvailableJson/private_data/input \
-    -out testOut/pep/testPepAllJson \
-    -device scanned \
-    --cleanOutput
+  -classpath egkliball/build/libs/egklib-all.jar \
+  electionguard.cli.RunMakeMixnetInput \
+    -in working/eg/encrypted \
+    -out working/vg/input-ciphertexts.json
 
 ````
 
-## Run Trusted Pep
+### Run MixnetBlindTrustPep to compare ballots with mixnet
 
 ```` 
-Usage: RunTrustedPep options_list
+Usage: RunMixnetBlindTrustPep options_list
 Options: 
-    --inputDir, -in -> Directory containing input election record (always required) { String }
-    --scannedBallotDir, -scanned -> Directory containing scanned ballots (always required) { String }
+    --inputDir, -in -> Top directory of the input election record (always required) { String }
+    --mixnetFile, -file with mixnet output -> Json file containing mixnet ballot output (always required) { String }
     --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
     --missing, -missing -> missing guardians' xcoord, comma separated, eg '2,4' { String }
@@ -340,16 +346,16 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
-  electionguard.cli.RunTrustedPep \
-    -in egklib/src/commonTest/data/workflow/allAvailableJson \
-    -trustees egklib/src/commonTest/data/workflow/allAvailableJson/private_data/trustees \
-    -scanned testOut/pep/testPepAllJson/encrypted_ballots/scanned \
-    -out testOut/pep/testPepAllJson/pepBallots \
+  -classpath egkliball/build/libs/egklib-all.jar \
+  electionguard.cli.RunMixnetBlindTrustPep \
+    -in src/commonTest/data/mixnet/working/eg/encryption \
+    --mixnetFile src/commonTest/data/mixnet/working/vf/after-mix-2-ciphertexts.json \
+    -trustees src/commonTest/data/mixnet/working/eg/trustees \
+    -out testOut/testRunMixnetBlindTrustPep \
     -nthreads 25 
 ````
 
-## Run Verify Pep
+### Run Verify Pep
 
 ```` 
 Usage: RunVerifyPep options_list
@@ -364,8 +370,8 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -classpath egkliball/egklib-all.jar \
+  -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunVerifyPep \
-    --inputDir egklib/src/commonTest/data/workflow/allAvailableJson \
-    --pepBallotDir testOut/pep/testPepAllJson/pepBallots
+    --inputDir src/commonTest/data/mixnet/working/eg/encryption \
+    --pepBallotDir testOut/testRunMixnetBlindTrustPep
 ````

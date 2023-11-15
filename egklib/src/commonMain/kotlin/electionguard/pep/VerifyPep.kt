@@ -1,9 +1,7 @@
 package electionguard.pep
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
 import electionguard.core.*
+import electionguard.util.ErrorMessages
 
 class VerifierPep(
     val group: GroupContext,
@@ -16,8 +14,7 @@ class VerifierPep(
     //         If T ̸= 1, IsEq = 0, output “accept(unequal)”.
     //         Otherwise, output “reject”
 
-    fun verify(ballotPEP: BallotPep): Result<Boolean, String> {
-        val errors = mutableListOf<String>()
+    fun verify(ballotPEP: BallotPep, errs : ErrorMessages): Boolean {
         ballotPEP.contests.forEach { contest ->
             contest.selections.forEach { pep ->
                 val selectionKey = "${contest.contestId}#${pep.selectionId}"
@@ -29,7 +26,7 @@ class VerifierPep(
                     pep.ciphertextRatio.pad, pep.ciphertextRatio.data,
                     pep.ciphertextAB.pad, pep.ciphertextAB.data,
                 )
-                if (!verifya) errors.add("PEP test 3.a error on ${selectionKey}")
+                if (!verifya) errs.add("PEP test 3.a error on ${selectionKey}")
 
                 val verifyb = pep.decryptionProof.verifyDecryption(
                     extendedBaseHash,
@@ -37,10 +34,10 @@ class VerifierPep(
                     pep.ciphertextAB,
                     pep.T,
                 )
-                if (!verifyb) errors.add("PEP test 3.b error on ${contest.contestId}#${pep.selectionId}")
+                if (!verifyb) errs.add("PEP test 3.b error on ${contest.contestId}#${pep.selectionId}")
                 // println(" selection ${selectionKey} verifya = $verifya verifyb = $verifyb")
             }
         }
-        return if (errors.isEmpty()) Ok(true) else Err(errors.joinToString(";"))
+        return !errs.hasErrors()
     }
 }

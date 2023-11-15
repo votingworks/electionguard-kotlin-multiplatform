@@ -97,8 +97,9 @@ class PepSimple(
         val ballotPEP = BallotPep(decryption.id, isEq, contestsPEP)
 
         // step 6: verify
-        val verifyResult = VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP)
-        return if (verifyResult is Ok) Ok(ballotPEP) else Err(verifyResult.getError()!!)
+        VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP, ballotMesses)
+
+        return if (!ballotMesses.hasErrors()) Ok(ballotPEP) else Err(ballotMesses.toString())
     }
 
     fun doStep1(ratioBallot: EncryptedBallot): BallotStep1 {

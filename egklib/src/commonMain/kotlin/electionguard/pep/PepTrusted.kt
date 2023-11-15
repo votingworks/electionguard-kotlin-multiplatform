@@ -176,8 +176,9 @@ class PepTrusted(
         val ballotPEP = BallotPep(decryption.id, isEq, contestsPEP)
 
         // step 6: verify
-        val verifyResult = VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP)
-        return if (verifyResult is Ok) Ok(ballotPEP) else Err(verifyResult.getError()!!)
+        VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP, errorMesses)
+
+        return if (!errorMesses.hasErrors()) Ok(ballotPEP) else Err(errorMesses.toString())
     }
 
     data class BallotWorking(

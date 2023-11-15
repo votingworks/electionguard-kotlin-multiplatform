@@ -41,6 +41,8 @@ data class MixnetBallotJson(
 data class MixnetBallot(
     val ciphertext: List<ElGamalCiphertext>
 ) {
+    fun removeFirst() : MixnetBallot = MixnetBallot(ciphertext.subList(1, ciphertext.size))
+
     fun show(): String{
         return buildString {
             ciphertext.forEachIndexed { idx, it ->
@@ -53,20 +55,12 @@ data class MixnetBallot(
 fun MixnetBallotJson.import(group: GroupContext) : List<MixnetBallot> {
     val mxBallots =
         wtf.map { padAndData ->
-            val pads = padAndData[0].import(group)
-            val datas = padAndData[1].import(group)
+            val pads = padAndData[0].map { it.convertFromMixnetString(group) }
+            val datas = padAndData[1].map { it.convertFromMixnetString(group) }
             val ciphers = pads.zip(datas).map { (pad, data) -> ElGamalCiphertext(pad, data )}
             MixnetBallot(ciphers)
         }
     return mxBallots
-}
-
-private fun List<String>.import(group: GroupContext) : List<ElementModP> {
-    val ps = this.map {
-        val strip00 = it.substring(2)
-        group.binaryToElementModP(strip00.fromHex()!!)!!
-    }
-    return ps
 }
 
 fun readMixnetJsonBallots(group: GroupContext, filename: String): List<MixnetBallot> {
@@ -85,3 +79,30 @@ private fun readMixnetBallotArray(jsonReader: Json, filename: String): Result<Mi
         e.printStackTrace()
         Err(e.message ?: "readMixnetInput on $filename error")
     }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+fun List<MixnetBallot>.publishJson() : List<List<List<String>>> {
+    val wtf = mutableListOf<List<List<String>>>()
+
+    this.forEach { mixnetBallot ->
+        val pads = mutableListOf<String>()
+        val data = mutableListOf<String>()
+        mixnetBallot.ciphertext.forEach {
+            pads.add( it.pad.convertToMixnetString() )
+            data.add( it.data.convertToMixnetString() )
+        }
+        wtf.add(listOf(pads, data))
+    }
+
+    return wtf
+}
+
+private fun ElementModP.convertToMixnetString() : String {
+    return "00" + this.toHex().lowercase()
+}
+
+private fun String.convertFromMixnetString(group: GroupContext) : ElementModP {
+    val strip00 = this.substring(2).uppercase()
+    return group.binaryToElementModP(strip00.fromHex()!!)!!
+}

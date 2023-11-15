@@ -13,9 +13,7 @@ class PepTrustee(val idx : Int, val group : GroupContext) :  PepTrusteeIF {
     //    (c) uj ← Zq
     //    (d) Compute aj = α^uj mod p and bj = β^uj mod p
     //    (e) Send (Aj, Bj, aj, bj) to admin
-    override fun blind(
-        texts: List<ElGamalCiphertext>,
-    ): List<BlindResponse> {
+    override fun blind(texts: List<ElGamalCiphertext>): List<BlindResponse> {
         return texts.map { text ->
             val eps = group.randomElementModQ(2)
             val u = group.randomElementModQ(2)
@@ -30,9 +28,7 @@ class PepTrustee(val idx : Int, val group : GroupContext) :  PepTrusteeIF {
         }
     }
 
-    override fun challenge(
-        challenges: List<BlindChallenge>,
-    ): List<BlindChallengeResponse> {
+    override fun challenge(challenges: List<BlindChallenge>): List<BlindChallengeResponse> {
         return challenges.map {
             val eps = it.eps - randomConstantNonce
             val u = it.u - randomConstantNonce

@@ -1,59 +1,47 @@
-package electionguard.pep
+package electionguard.mixnet
 
-import com.github.michaelbull.result.*
-import electionguard.ballot.DecryptedTallyOrBallot
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
-import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.decrypt.DecryptorDoerre
-import electionguard.decrypt.Guardians
+import electionguard.decrypt.CiphertextDecryptor
+import electionguard.pep.*
 import electionguard.util.ErrorMessages
 import electionguard.util.Stats
-import io.github.oshai.kotlinlogging.KotlinLogging
 
-private val logger = KotlinLogging.logger("DistPep")
-
-/** Egk PEP with blinding Guardians separate from decrypting Guardians, and a trusted admin. */
-class PepBlindTrust(
+/** PepBlindTrust adapted for mixnet. */
+class MixnetPepBlindTrust(
     val group: GroupContext,
     val extendedBaseHash: UInt256,
     val jointPublicKey: ElGamalPublicKey,
-    val guardians: Guardians, // all guardians
     val blindTrustees: List<PepTrusteeIF>, // the trustees used to blind the decryption
-    decryptingTrustees: List<DecryptingTrusteeIF>, // the trustees available to decrypt
-) : PepAlgorithm {
-    val decryptor = DecryptorDoerre(group, extendedBaseHash, jointPublicKey, guardians, decryptingTrustees)
+    val decryptor: CiphertextDecryptor, // TODO replace with DecryptorDoerr using List<Ciphertext> instead of ballot.
+) {
     val stats = Stats()
 
-    // test if ballot1 and ballot2 are equivalent or not.
-    override fun testEquivalent(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<Boolean, String> {
-        val result = doEgkPep(ballot1, ballot2)
-        if (result is Err) {
-            return Err(result.error)
-        }
-        val pep = result.unwrap()
-        return Ok(pep.isEq)
+    // test if ballot1 and ballot2 are equivalent (or not).
+    fun testEquivalent(ballot1: EncryptedBallot, ballot2: MixnetBallot): Result<BallotPep, ErrorMessages> {
+        val errs = ErrorMessages("MixnetPepBlindTrust Ballot '${ballot1.ballotId}'", 1)
+
+        val pep = doMixnetPep(ballot1, ballot2, errs)
+        return if (pep == null) Err(errs) else Ok(pep!!)
     }
 
-    override fun doEgkPep(ballot1: EncryptedBallot, ballot2: EncryptedBallot): Result<BallotPep, String> {
+    /**
+     * Create proof that ballot1 and ballot2 are equivalent (or not).
+     * The returned DecryptedTallyOrBallot is the ratio of the two ballots for each selection.
+     * Each decrypted selection has T == 1 (or not) and a corresponding proof.
+     * Note that the two encrypted ballots must have been decrypted by the same encryptor, using
+     * the same parameters (extendedBaseHash, jointPublicKey, guardians, decryptingTrustees).
+     */
+    fun doMixnetPep(ballot1: EncryptedBallot, ballot2: MixnetBallot, errs: ErrorMessages): BallotPep? {
         val startPep = System.currentTimeMillis()
-
-        // LOOK check ballotIds match, styleIds?
-        val errorMesses = ErrorMessages("Ballot '${ballot1.ballotId}'", 1)
-        if (ballot1.ballotId != ballot2.ballotId) {
-            val message = "ballot ids not equal ${ballot1.ballotId} != ${ballot2.ballotId}"
-            return Err(message)
-        }
 
         // 	Enc(σj) = (αj, βj) for j ∈ {1, 2}.
         //	Let α = α1/α2 mod p, β = β1/β2 mod p
         // Create encryptedBallot consisting of the (α, β)
-        val ratioBallot: EncryptedBallot = makeRatioBallot(ballot1, ballot2, errorMesses)
-        if (errorMesses.hasErrors()) {
-            val message = "${ballot1.ballotId} makeRatioBallot error $errorMesses"
-            logger.warn { message }
-            return Err(message)
-        }
+        val ratioBallot = makeRatioMixnetBallot(ballot1, ballot2)
 
         // create list of ciphertext
         val ratioCiphertexts: List<ElGamalCiphertext> =
@@ -202,31 +190,71 @@ class PepBlindTrust(
 
         //6. admin:
         //    (a) decrypt (A, B): (T, ChaumPedersenProof(c',v')) = EGDecrypt(A, B)    // 4+5*nd
-        val decryption: DecryptedTallyOrBallot? = decryptor.decryptPep(ballotAB, ErrorMessages("PepBlindTrust"))
-        require(decryption != null)
+        // val decryption: DecryptedTallyOrBallot? = decryptor.decryptPep(ballotAB, errs.nested("decryptPep"))
+        //require(decryption != null)
 
         //    (b) IsEq = (T == 1)
         //    (c) Send (IsEq, c, v, α, β, c′, v′, A, B, T) to V and publish to BB.
         workIterator = work23s.iterator()
         var isEq = true
-        val contestsPEP =
-            decryption.contests.map { dContest ->
-                val selectionsPEP =
-                    dContest.selections.map { dSelection ->
-                        isEq = isEq && (dSelection.bOverM == group.ONE_MOD_P)
-                        val work = workIterator.next()
-                        SelectionPep(work, dSelection)
-                    }
-                ContestPep(dContest.contestId, selectionsPEP)
+        val contestsPEP = ballotAB.contests.map { contest ->
+            val selectionsPEP =
+                contest.selections.map { selection ->
+                    val pepWithProof = decryptor.decryptPepWithProof(selection.encryptedVote)
+                    isEq = isEq && (pepWithProof.bOverM == group.ONE_MOD_P)
+                    val work = workIterator.next()
+                    SelectionPep(selection, work, pepWithProof)
+                }
+            ContestPep(contest.contestId, selectionsPEP)
+        }
+        val ballotPEP = BallotPep(ballotAB.ballotId, isEq, contestsPEP)
+
+        // debug: verify the decyption prrofs
+        var countOk = 0
+        ballotPEP.contests.forEach {
+            it.selections.forEach {
+                val ok = it.decryptionProof.verifyDecryption(extendedBaseHash, jointPublicKey.key, it.ciphertextAB, it.T)
+                if (!ok) {
+                    println("FAIL")
+                } else countOk++
             }
-        val ballotPEP = BallotPep(decryption.id, isEq, contestsPEP)
+        }
+        println("  Verify ok $countOk")
 
         stats.of("egkPep", "selection").accum(getSystemTimeInMillis() - startPep, ntexts)
 
         // step 6: verify
-        VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP, errorMesses)
+        // step 6: verify
+        VerifierPep(group, extendedBaseHash, jointPublicKey).verify(ballotPEP, errs)
 
-        return if (!errorMesses.hasErrors()) Ok(ballotPEP) else Err(errorMesses.toString())
+        return ballotPEP
     }
 
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// make a ballot replacing all the selection ciphertexts with the ratio of ballot1/ballot2 selection ciphertexts
+fun makeRatioMixnetBallot(
+    ballot1: EncryptedBallot,
+    ballot2: MixnetBallot,
+): EncryptedBallot {
+    val ratioContests = mutableListOf<EncryptedBallot.Contest>()
+    var count = 0
+    for (contest1 in ballot1.contests) {
+        val ratioSelections = mutableListOf<EncryptedBallot.Selection>()
+        for (selection1 in contest1.selections) {
+            val ratio = makeCiphertextRatio(selection1.encryptedVote, ballot2.ciphertext[count++])
+            ratioSelections.add(selection1.copy(encryptedVote = ratio))
+        }
+        ratioContests.add(contest1.copy(selections = ratioSelections))
+    }
+    return ballot1.copy(contests = ratioContests)
+}
+
+private fun makeCiphertextRatio(ciphertext1: ElGamalCiphertext, ciphertext2: ElGamalCiphertext): ElGamalCiphertext {
+    // replace with ((α1/α2), (β1/β2)))
+    val alpha = (ciphertext1.pad div ciphertext2.pad)
+    val beta = (ciphertext1.data div ciphertext2.data)
+    return ElGamalCiphertext(alpha, beta)
 }

@@ -1,16 +1,22 @@
 package electionguard.decrypt
 
 import com.github.michaelbull.result.*
+import electionguard.ballot.ElectionInitialized
 import electionguard.core.*
+import electionguard.pep.PepWithProof
 import electionguard.publish.Consumer
 import electionguard.publish.makeConsumer
 import electionguard.publish.makeTrusteeSource
 import electionguard.util.ErrorMessages
 import electionguard.util.mergeErrorMessages
 
-// uses ElectionInitialized.guardians to read DecryptingTrustee's from trusteeDir
+/**
+ * Shortcut to decryption when you're willing to compute the secret key, eg for testing.
+ * Should be replaced by a distributed algorithm where s is never computed.
+ * Uses ElectionInitialized.guardians to read DecryptingTrustee's from trusteeDir
+ */
 class CiphertextDecryptor(
-    group: GroupContext,
+    val group: GroupContext,
     inputDir: String,
     trusteeDir: String,
     missing: String? = null
@@ -19,6 +25,7 @@ class CiphertextDecryptor(
     val lagrangeCoeff : List<ElementModQ>
     val secretKey : ElementModQ
     val keyPair : ElGamalKeypair
+    val init : ElectionInitialized
 
     init {
         val consumerIn = makeConsumer(group, inputDir)
@@ -26,7 +33,7 @@ class CiphertextDecryptor(
         if (initResult is Err) {
             throw RuntimeException(initResult.error.toString())
         }
-        val init = initResult.unwrap()
+        init = initResult.unwrap()
         val trusteeSource: Consumer = makeTrusteeSource(trusteeDir, group, consumerIn.isJson())
         val readTrusteeResults: List<Result<DecryptingTrusteeIF, ErrorMessages>> =
             init.guardians.map { trusteeSource.readTrustee(trusteeDir, it.guardianId) }
@@ -62,5 +69,33 @@ class CiphertextDecryptor(
 
     fun decrypt(ciphertext : ElGamalCiphertext) : Int? {
         return ciphertext.decrypt(keyPair)
+    }
+
+    // T = B · M−1 mod p; spec 2.0.0, eq 64
+    // PEP means "dont take the log"
+    fun decryptPep(ciphertext : ElGamalCiphertext): ElementModP {
+        val blind = ciphertext.pad powP keyPair.secretKey.negativeKey // M-1 = A ^ -s
+        return ciphertext.data * blind
+    }
+
+    // T = B · M−1 mod p; spec 2.0.0, eq 64
+    fun decryptPepWithProof(ciphertext : ElGamalCiphertext): PepWithProof {
+        val M = ciphertext.pad powP keyPair.secretKey.key // M = A ^ s, spec 2.0.0, eq 66
+        val bOverM = ciphertext.data / M
+        val u = group.randomElementModQ(2) // random value u in Zq
+        val a = group.gPowP(u)  // g ^ u
+        val b = ciphertext.pad powP u // A ^ u
+
+        // "collective challenge" c = H(HE ; 0x30, K, A, B, a, b, M) ; spec 2.0.0 eq 71
+        val challenge = hashFunction(
+            init.extendedBaseHash.bytes,
+            0x30.toByte(),
+            keyPair.publicKey.key,
+            ciphertext.pad,
+            ciphertext.data,
+            a, b, M).toElementModQ(group)
+
+        val v = u - challenge * keyPair.secretKey.key
+        return PepWithProof(bOverM, ChaumPedersenProof(challenge, v))
     }
 }
