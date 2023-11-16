@@ -31,6 +31,10 @@ class RunMakeMixnetInput {
             ).required()
             parser.parse(args)
 
+            // create output directory if needed
+            val outputDir = outputFile.substringBeforeLast("/")
+            createDirectories(outputDir)
+
             runMakeMixnetInput(productionGroup(), inputDir, outputFile)
         }
 

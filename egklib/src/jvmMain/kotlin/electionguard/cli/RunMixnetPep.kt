@@ -2,17 +2,22 @@ package electionguard.cli
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.unwrap
-
 import electionguard.ballot.EncryptedBallot
-import electionguard.core.*
+import electionguard.core.GroupContext
+import electionguard.core.getSystemTimeInMillis
+import electionguard.core.productionGroup
 import electionguard.decrypt.CiphertextDecryptor
 import electionguard.mixnet.MixnetBallot
-import electionguard.mixnet.MixnetPepBlindTrust
+import electionguard.mixnet.MixnetPep
 import electionguard.mixnet.readMixnetJsonBallots
 import electionguard.pep.BallotPep
 import electionguard.pep.PepTrustee
-import electionguard.publish.*
+import electionguard.publish.DecryptedTallyOrBallotSinkIF
+import electionguard.publish.PepBallotSinkIF
+import electionguard.publish.makeConsumer
+import electionguard.publish.makePublisher
 import electionguard.util.sigfig
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -22,25 +27,24 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
- * Compare encrypted ballots with local trustees CLI. Multithreaded: each ballot gets its own coroutine.
+ * Compare encrypted ballots with mixnet output using PEP algorithm.
  *
  * Read election record from inputDir, which is assumed to have an electionInitialized file in the inputDir directory,
  * and encrypted ballots in inputDir/encrypted_ballots. This is the "standard election record layout".
  *
- * All encrypted ballots in subdirectories of inputDir/encrypted_ballots are read, and the corresponding ballot
- * (matched by ballot_id) is looked for in the scannedBallotDir. If not found, the ballot is skipped.
+ * All encrypted ballots in subdirectories of inputDir/encrypted_ballots are read and hashed by , and the corresponding ballot
+ * (matched by hashCode(encryptedSn) is looked for in the scannedBallotDir. If not found, the ballot is skipped.
  * The subdirectories correspond to the "device".
  *
  * This has access to all the trustees for decrypting and blinding. So it is used when the guardians trust each other.
  * The decrypting trustees could be isolated into seperate webapps, although this class does not yet have that option.
  */
-class RunMixnetBlindTrustPep {
+class RunMixnetPep {
 
     companion object {
-        private val logger = KotlinLogging.logger("RunMixnetBlindTrustPep")
+        private val logger = KotlinLogging.logger("RunMixnetPep")
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -87,10 +91,10 @@ class RunMixnetBlindTrustPep {
             }
 
             val group = productionGroup()
-            batchMixnetBlindTrustPep(group, inputDir, trusteeDir, mixnetFile, outputDir, nthreads)
+            batchMixnetPep(group, inputDir, trusteeDir, mixnetFile, outputDir, nthreads)
         }
 
-        private fun batchMixnetBlindTrustPep(
+        private fun batchMixnetPep(
             group: GroupContext,
             inputDir: String,
             trusteeDir: String,
@@ -107,25 +111,25 @@ class RunMixnetBlindTrustPep {
                 trusteeDir,
             )
 
-            val encryptedBallots = mutableMapOf<Int, EncryptedBallot>() // key is the SN (for now)
+            // TODO just keep the map and the name, and read it in again when needed.
+            val encryptedBallots = mutableMapOf<Int, EncryptedBallot>() // key is hashCode(encryptedSn)
             val consumer = makeConsumer(group, inputDir)
             consumer.iterateAllCastBallots().forEach { encryptedBallot ->
                 val sn = decryptor.decryptPep(encryptedBallot.encryptedSn!!)
                 encryptedBallots[sn.hashCode()] = encryptedBallot
             }
 
-            // TODO make this number settable
             val blindingTrustees = mutableListOf<PepTrustee>()
-            repeat(3) {
+            repeat(3) { // TODO make this number settable
                 blindingTrustees.add(PepTrustee(it, group))
             }
 
-            val mixnetPep = MixnetPepBlindTrust(
+            val mixnetPep = MixnetPep(
                 group,
                 decryptor.init.extendedBaseHash,
                 decryptor.init.jointPublicKey(),
                 blindingTrustees,
-                decryptor
+                decryptor.makeDecryptorDoerre()
             )
             val mixnetBallots = readMixnetJsonBallots(group, mixnetFile)
 
@@ -189,7 +193,7 @@ class RunMixnetBlindTrustPep {
 
         private fun CoroutineScope.launchPepWorker(
             input: ReceiveChannel<Pair<EncryptedBallot, MixnetBallot>>,
-            pep: MixnetPepBlindTrust,
+            pep: MixnetPep,
             output: SendChannel<BallotPep>,
         ) = launch(Dispatchers.Default) {
 

@@ -1,13 +1,22 @@
 package electionguard.util
 
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.math.min
 
-/* Keep track of timing stats. Thread-safe */
+/** Keep track of timing stats. Thread-safe. */
 class Stats {
+    private val mutex = Mutex()
     private val stats = mutableMapOf<String, Stat>() // TODO need thread safe collection
 
-    fun of(who: String, thing: String = "decryption", what: String = "ballot"): Stat =
-        stats.getOrPut(who) { Stat(thing, what) }
+    fun of(who: String, thing: String = "decryption", what: String = "ballot"): Stat {
+        return runBlocking {
+            mutex.withLock {
+                stats.getOrPut(who) { Stat(thing, what) }
+            }
+        }
+    }
 
     fun show(len: Int = 3) {
         showLines(len).forEach { println(it) }

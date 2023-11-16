@@ -67,6 +67,12 @@ class CiphertextDecryptor(
         keyPair = ElGamalKeypair(ElGamalSecretKey(secretKey), ElGamalPublicKey(init.jointPublicKey))
     }
 
+
+    fun makeDecryptorDoerre() : DecryptorDoerre {
+        val guardians = Guardians(group, init.guardians)
+        return DecryptorDoerre(group, init.extendedBaseHash, init.jointPublicKey(), guardians, trustees)
+    }
+
     fun decrypt(ciphertext : ElGamalCiphertext) : Int? {
         return ciphertext.decrypt(keyPair)
     }
