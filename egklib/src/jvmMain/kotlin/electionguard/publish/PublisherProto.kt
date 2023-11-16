@@ -2,7 +2,6 @@ package electionguard.publish
 
 import electionguard.ballot.*
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.pep.BallotPep
 import electionguard.protoconvert.publishProto
 import electionguard.publish.ElectionRecordProtoPaths.Companion.DECRYPTION_RESULT_FILE
 import electionguard.publish.ElectionRecordProtoPaths.Companion.ELECTION_CONFIG_FILE
@@ -185,18 +184,7 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////
-    actual override fun pepBallotSink(outputDir: String): PepBallotSinkIF = PepBallotSink(outputDir)
-
-    // TODO
-    inner class PepBallotSink(path: String) : PepBallotSinkIF {
-        override fun writePepBallot(pepBallot : BallotPep) {
-        }
-        override fun close() {
-        }
-    }
-
-}
+ }
 
 
 /** Delete everything in the given directory, but leave that directory.  */

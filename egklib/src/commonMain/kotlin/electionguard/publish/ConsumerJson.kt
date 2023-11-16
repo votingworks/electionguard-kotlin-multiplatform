@@ -4,7 +4,6 @@ import com.github.michaelbull.result.Result
 import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.pep.BallotPep
 import electionguard.util.ErrorMessages
 
 expect class ConsumerJson (topDir: String, group: GroupContext) : Consumer {
@@ -30,6 +29,4 @@ expect class ConsumerJson (topDir: String, group: GroupContext) : Consumer {
 
     override fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
     override fun readTrustee(trusteeDir: String, guardianId: String): Result<DecryptingTrusteeIF, ErrorMessages>
-    override fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
-
 }

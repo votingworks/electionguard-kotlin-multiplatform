@@ -7,9 +7,6 @@ import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.json2.*
-import electionguard.pep.BallotPep
-import electionguard.pep.BallotPepJson
-import electionguard.pep.import
 import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -213,32 +210,6 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
             return errs.add("file does not exist ")
         }
         return readTrustee(fileSystem.getPath(filename))
-    }
-
-    actual override fun iteratePepBallots(pepDir : String): Iterable<BallotPep> {
-        return Iterable { PepBallotIterator(group, Path.of(pepDir)) }
-    }
-
-    private inner class PepBallotIterator(val group: GroupContext, ballotDir: Path) : AbstractIterator<BallotPep>() {
-        val pathList = ballotDir.pathListNoDirs()
-        var idx = 0
-
-        override fun computeNext() {
-            while (idx < pathList.size) {
-                val file = pathList[idx++]
-                fileSystemProvider.newInputStream(file, StandardOpenOption.READ).use { inp ->
-                    val json = jsonReader.decodeFromStream<BallotPepJson>(inp)
-                    val errs = ErrorMessages("readPepBallot file=$file")
-                    val pepBallot = json.import(group, errs)
-                    if (errs.hasErrors()) {
-                        logger.error { errs.toString() }
-                    } else {
-                        return setNext(pepBallot!!)
-                    }
-                }
-            }
-            return done()
-        }
     }
 
 

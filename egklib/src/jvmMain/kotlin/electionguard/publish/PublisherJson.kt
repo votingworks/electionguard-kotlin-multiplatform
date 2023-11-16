@@ -1,11 +1,8 @@
 package electionguard.publish
 
 import electionguard.ballot.*
-import electionguard.core.UInt256
 import electionguard.json2.publishJson
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.pep.BallotPep
-import electionguard.pep.publishJson
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
@@ -156,21 +153,5 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         override fun close() {
         }
     }
-
-    ///////////////////////////////////////////////////////////////////////
-    actual override fun pepBallotSink(outputDir: String): PepBallotSinkIF = PepBallotSink(outputDir)
-
-    inner class PepBallotSink(val outputDir: String) : PepBallotSinkIF {
-        override fun writePepBallot(pepBallot: BallotPep) {
-            val pepJson = pepBallot.publishJson()
-            FileOutputStream(jsonPaths.pepBallotPath(outputDir, pepBallot.ballotId)).use { out ->
-                jsonReader.encodeToStream(pepJson, out)
-                out.close()
-            }
-        }
-        override fun close() {
-        }
-    }
-
 
 }

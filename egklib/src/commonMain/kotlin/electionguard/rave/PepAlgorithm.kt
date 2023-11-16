@@ -1,4 +1,4 @@
-package electionguard.pep
+package electionguard.rave
 
 import com.github.michaelbull.result.Result
 import electionguard.ballot.EncryptedBallot

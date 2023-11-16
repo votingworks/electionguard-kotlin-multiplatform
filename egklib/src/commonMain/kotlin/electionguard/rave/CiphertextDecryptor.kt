@@ -1,9 +1,9 @@
-package electionguard.decrypt
+package electionguard.rave
 
 import com.github.michaelbull.result.*
 import electionguard.ballot.ElectionInitialized
 import electionguard.core.*
-import electionguard.pep.PepWithProof
+import electionguard.decrypt.*
 import electionguard.publish.Consumer
 import electionguard.publish.makeConsumer
 import electionguard.publish.makeTrusteeSource

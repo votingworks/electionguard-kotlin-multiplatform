@@ -8,11 +8,9 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.decrypt.Guardians
-import electionguard.pep.BallotPep
-import electionguard.pep.PepAlgorithm
-import electionguard.pep.PepBlindTrust
-import electionguard.pep.PepTrustee
 import electionguard.publish.*
+import electionguard.rave.*
+import electionguard.rave.PepBallotSinkIF
 import electionguard.util.sigfig
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -129,9 +127,7 @@ class RunTrustedPep {
                 decryptingTrustees,
             )
 
-            val publisher = makePublisher(outputDir, createNew = false, jsonSerialization = true) // always json for now
-            val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
-
+            val sink = RaveIO(outputDir, group).pepBallotSink()
             try {
                 runBlocking {
                     val outputChannel = Channel<BallotPep>()
@@ -147,7 +143,7 @@ class RunTrustedPep {
                             )
                         )
                     }
-                    launchSink(outputChannel, publisher.pepBallotSink(outputDir))
+                    launchSink(outputChannel, sink)
 
                     // wait for all decryptions to be done, then close everything
                     joinAll(*pepJobs.toTypedArray())

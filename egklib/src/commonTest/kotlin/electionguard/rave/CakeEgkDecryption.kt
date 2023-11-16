@@ -1,13 +1,13 @@
-package electionguard.pep
+package electionguard.rave
 
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.EncryptedTally
 import electionguard.ballot.makeDoerreTrustee
 import electionguard.ballot.makeGuardian
 import electionguard.core.*
 import electionguard.decrypt.DecryptingTrusteeDoerre
 import electionguard.decrypt.DecryptorDoerre
 import electionguard.decrypt.Guardians
+import electionguard.decrypt.makeTallyForSingleCiphertext
 import electionguard.keyceremony.KeyCeremonyTrustee
 import electionguard.util.ErrorMessages
 import kotlin.test.assertEquals
@@ -199,10 +199,4 @@ class CakeEgkDecryption(val group: GroupContext, val quorum: Int, val extendedBa
 }
 
 data class EgkDecryptOutput(val T: ElementModP, val proof : ChaumPedersenProof)
-
-fun makeTallyForSingleCiphertext(ciphertext : ElGamalCiphertext, extendedBaseHash : UInt256) : EncryptedTally {
-    val selection = EncryptedTally.Selection("Selection1", 1, ciphertext)
-    val contest = EncryptedTally.Contest("Contest1", 1, listOf(selection))
-    return EncryptedTally("tallyId", listOf(contest), emptyList(), extendedBaseHash)
-}
 

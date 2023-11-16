@@ -6,16 +6,8 @@ import electionguard.ballot.EncryptedBallot
 import electionguard.core.GroupContext
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
-import electionguard.decrypt.CiphertextDecryptor
-import electionguard.mixnet.MixnetBallot
-import electionguard.mixnet.MixnetPep
-import electionguard.mixnet.readMixnetJsonBallots
-import electionguard.pep.BallotPep
-import electionguard.pep.PepTrustee
-import electionguard.publish.DecryptedTallyOrBallotSinkIF
-import electionguard.publish.PepBallotSinkIF
 import electionguard.publish.makeConsumer
-import electionguard.publish.makePublisher
+import electionguard.rave.*
 import electionguard.util.sigfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.cli.ArgParser
@@ -133,9 +125,7 @@ class RunMixnetPep {
             )
             val mixnetBallots = readMixnetJsonBallots(group, mixnetFile)
 
-            val publisher = makePublisher(outputDir, createNew = false, jsonSerialization = true) // always json for now
-            val sink: DecryptedTallyOrBallotSinkIF = publisher.decryptedTallyOrBallotSink()
-
+            val sink = RaveIO(outputDir, group).pepBallotSink()
             try {
                 runBlocking {
                     val outputChannel = Channel<BallotPep>()
@@ -150,7 +140,7 @@ class RunMixnetPep {
                             )
                         )
                     }
-                    launchSink(outputChannel, publisher.pepBallotSink(outputDir))
+                    launchSink(outputChannel, sink)
 
                     // wait for all decryptions to be done, then close everything
                     joinAll(*pepJobs.toTypedArray())

@@ -7,7 +7,6 @@ import electionguard.core.isDirectory
 import electionguard.core.pathExists
 import electionguard.decrypt.DecryptingTrusteeIF
 import electionguard.input.ManifestInputValidation
-import electionguard.pep.BallotPep
 import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -50,8 +49,6 @@ interface Consumer {
     fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
     /** read trustee in given directory for given guardianId, private data. */
     fun readTrustee(trusteeDir: String, guardianId: String): Result<DecryptingTrusteeIF, ErrorMessages>
-    /** Read all the PEP ratio ballots in the given directory. */
-    fun iteratePepBallots(pepDir : String): Iterable<BallotPep>
 }
 
 fun makeConsumer(
