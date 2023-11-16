@@ -9,7 +9,7 @@ class RunMakeMixnetInputTest {
         RunMakeMixnetInput.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/someAvailableJson",
-                "-out", "testOut/testMakeMixnetInput/mixnetInput.json",
+                "--outputFile", "testOut/testMakeMixnetInput/mixnetInput.json",
             )
         )
     }

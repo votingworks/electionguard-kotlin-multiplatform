@@ -17,6 +17,9 @@ data class DecryptingTrusteeDoerre(
     // problem with this is now there's state; if trustee goes down it cant come back up and continue, if there are
     // PartialDecryption not yet challenged, since there will be a different randomConstantNonce.
     private val randomConstantNonce = group.randomElementModQ(2) // random value u in Zq
+    // is it possible one could do deterministic nonce generation with a known seed?
+    // like Nonces.take(n).
+    // perhaps we just need to cache one seed for every batch ??
 
     init {
         require(xCoordinate > 0)
