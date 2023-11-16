@@ -5,7 +5,6 @@ import electionguard.ballot.*
 import electionguard.core.*
 
 import electionguard.keyceremony.KeyCeremonyTrustee
-import electionguard.pep.makeTallyForSingleCiphertext
 import electionguard.util.ErrorMessages
 import electionguard.util.Stats
 import kotlin.test.*
@@ -274,6 +273,13 @@ class TallyDecryptorTest {
         return TrusteeChallengeResponses(trustee.id(), results)
     }
 
+}
+
+
+fun makeTallyForSingleCiphertext(ciphertext : ElGamalCiphertext, extendedBaseHash : UInt256) : EncryptedTally {
+    val selection = EncryptedTally.Selection("Selection1", 1, ciphertext)
+    val contest = EncryptedTally.Contest("Contest1", 1, listOf(selection))
+    return EncryptedTally("tallyId", listOf(contest), emptyList(), extendedBaseHash)
 }
 
 

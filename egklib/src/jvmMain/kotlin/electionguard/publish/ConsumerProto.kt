@@ -8,21 +8,15 @@ import electionguard.ballot.*
 import electionguard.core.GroupContext
 import electionguard.core.fileReadBytes
 import electionguard.decrypt.DecryptingTrusteeIF
-import electionguard.json2.EncryptedBallotJson
-import electionguard.json2.import
-import electionguard.pep.BallotPep
 import electionguard.protoconvert.import
 import electionguard.util.ErrorMessages
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
 import pbandk.decodeFromByteBuffer
 import pbandk.decodeFromStream
 import java.io.*
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 import java.util.function.Predicate
 import java.util.stream.Stream
 
@@ -181,11 +175,6 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
     ): Result<DecryptingTrusteeIF, ErrorMessages> {
         val filename = protoPaths.decryptingTrusteePath(trusteeDir, guardianId)
         return groupContext.readTrustee(filename)
-    }
-
-    // TODO havent defined PEP protos yet
-    actual override fun iteratePepBallots(pepDir: String): Iterable<BallotPep> {
-        throw RuntimeException("Not implemented yet")
     }
 
     ////////////////////////////////////////////////////////////////////

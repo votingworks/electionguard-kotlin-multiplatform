@@ -5,7 +5,7 @@ import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.required
 
-import electionguard.pep.*
+import electionguard.rave.*
 import electionguard.publish.*
 import electionguard.util.ErrorMessages
 import electionguard.util.sigfig
@@ -61,9 +61,10 @@ class RunVerifyPep {
 
             val verifier = VerifierPep(group, record.extendedBaseHash()!!, ElGamalPublicKey(record.jointPublicKey()!!))
 
+            val raveIO = RaveIO(pepBallotDir, group)
             runBlocking {
                 val pepJobs = mutableListOf<Job>()
-                val ballotProducer = produceBallots(consumer, pepBallotDir)
+                val ballotProducer = produceBallots(raveIO)
                 repeat(nthreads) {
                     pepJobs.add(
                         launchPepWorker(
@@ -85,9 +86,9 @@ class RunVerifyPep {
         }
 
         @OptIn(ExperimentalCoroutinesApi::class)
-        private fun CoroutineScope.produceBallots(consumer: Consumer, pepBallotDir: String): ReceiveChannel<BallotPep> =
+        private fun CoroutineScope.produceBallots(raveIO: RaveIO): ReceiveChannel<BallotPep> =
             produce {
-                for (ballot in consumer.iteratePepBallots(pepBallotDir)) {
+                for (ballot in raveIO.iteratePepBallots()) {
                     send(ballot)
                     yield()
                 }

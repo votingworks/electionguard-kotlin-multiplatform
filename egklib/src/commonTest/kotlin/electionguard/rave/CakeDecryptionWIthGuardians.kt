@@ -1,4 +1,4 @@
-package electionguard.pep
+package electionguard.rave
 
 import electionguard.core.*
 import kotlin.test.assertEquals

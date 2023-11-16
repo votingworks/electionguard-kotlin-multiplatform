@@ -1,4 +1,4 @@
-package electionguard.pep
+package electionguard.rave
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap

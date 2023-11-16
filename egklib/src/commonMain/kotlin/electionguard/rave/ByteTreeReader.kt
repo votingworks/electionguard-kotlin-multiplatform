@@ -1,4 +1,4 @@
-package electionguard.mixnet
+package electionguard.rave
 
 import electionguard.core.Base16.fromHex
 import electionguard.util.Indent

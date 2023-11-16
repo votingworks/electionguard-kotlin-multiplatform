@@ -1,8 +1,8 @@
 package electionguard.cli
 
 import electionguard.core.*
-import electionguard.mixnet.MixnetBallot
-import electionguard.mixnet.publishJson
+import electionguard.rave.MixnetBallot
+import electionguard.rave.publishJson
 import electionguard.publish.makeConsumer
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType

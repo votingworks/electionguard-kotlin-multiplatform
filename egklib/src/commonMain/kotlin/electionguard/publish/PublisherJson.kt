@@ -18,7 +18,6 @@ expect class PublisherJson(topDir: String, createNew: Boolean = false) : Publish
     override fun writeEncryptedBallotChain(closing: EncryptedBallotChain)
 
     override fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF
-    override fun pepBallotSink(outputDir: String): PepBallotSinkIF
 
     override fun writePlaintextBallot(outputDir: String, plaintextBallots: List<PlaintextBallot>)
     override fun writeTrustee(trusteeDir: String, trustee: KeyCeremonyTrustee)

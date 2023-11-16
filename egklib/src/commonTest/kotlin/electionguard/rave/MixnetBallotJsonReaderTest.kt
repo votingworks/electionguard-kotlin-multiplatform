@@ -1,4 +1,4 @@
-package electionguard.mixnet
+package electionguard.rave
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -6,8 +6,6 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
 import electionguard.ballot.EncryptedBallot
 import electionguard.core.*
-import electionguard.decrypt.CiphertextDecryptor
-import electionguard.pep.PepTrustee
 import electionguard.publish.makeConsumer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -18,8 +16,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MixnetBallotJsonReaderTest {
-    //val topdir = "src/commonTest/data/mixnet/working"
-    val topdir = "/home/stormy/tmp/working"
+    val topdir = "src/commonTest/data/rave/working"
+    // val topdir = "/home/stormy/tmp/working"
 
     var fileSystem = FileSystems.getDefault()
     var fileSystemProvider = fileSystem.provider()

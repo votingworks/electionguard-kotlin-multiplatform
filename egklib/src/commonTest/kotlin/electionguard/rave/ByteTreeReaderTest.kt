@@ -1,11 +1,10 @@
-package electionguard.mixnet
+package electionguard.rave
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.unwrap
 import electionguard.core.ElGamalCiphertext
 import electionguard.core.ElementModP
 import electionguard.core.productionGroup
-import electionguard.decrypt.CiphertextDecryptor
 import electionguard.publish.makeConsumer
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
@@ -15,24 +14,24 @@ class ByteTreeReaderTest {
 
     @Test
     fun testReadRawInput() {
-        val root = readByteTreeFromFile("src/commonTest/data/mixnet/working/vf/input-ciphertexts.raw")
+        val root = readByteTreeFromFile("src/commonTest/data/rave/working/vf/input-ciphertexts.raw")
         println(root.show(10))
     }
 
     @Test
     fun testReadRawOutput() {
-        val root = readByteTreeFromFile("src/commonTest/data/mixnet/working/vf/after-mix-2-ciphertexts.raw")
+        val root = readByteTreeFromFile("src/commonTest/data/rave/working/vf/after-mix-2-ciphertexts.raw")
         println(root.show(10))
     }
 
     @Test
     fun testCompareMixnet() {
-        val root = readByteTreeFromFile("src/commonTest/data/mixnet/working/vf/input-ciphertexts.raw")
+        val root = readByteTreeFromFile("src/commonTest/data/rave/working/vf/input-ciphertexts.raw")
         val ptree = convertByteTree(root.root)
 
-        val consumer = makeConsumer(group, "src/commonTest/data/mixnet/working/eg/encryption")
+        val consumer = makeConsumer(group, "src/commonTest/data/rave/working/eg/encryption")
         val result = consumer.readEncryptedBallot(
-            "src/commonTest/data/mixnet/working/eg/encryption/encrypted_ballots/testDevice",
+            "src/commonTest/data/rave/working/eg/encryption/encrypted_ballots/testDevice",
             "id157517312"
         )
         if (result is Err) {
@@ -59,13 +58,13 @@ class ByteTreeReaderTest {
     fun testCiphertextDecryptor() {
         val decryptor = CiphertextDecryptor(
             group,
-            "src/commonTest/data/mixnet/working/eg/keyceremony",
-            "src/commonTest/data/mixnet/working/eg/trustees",
+            "src/commonTest/data/rave/working/eg/keyceremony",
+            "src/commonTest/data/rave/working/eg/trustees",
         )
 
-        val consumer = makeConsumer(group, "src/commonTest/data/mixnet/working/eg/encryption")
+        val consumer = makeConsumer(group, "src/commonTest/data/rave/working/eg/encryption")
         val result = consumer.readEncryptedBallot(
-            "src/commonTest/data/mixnet/working/eg/encryption/encrypted_ballots/testDevice",
+            "src/commonTest/data/rave/working/eg/encryption/encrypted_ballots/testDevice",
             "id157517312"
         )
         if (result is Err) {
@@ -87,7 +86,7 @@ class ByteTreeReaderTest {
 
     @Test
     fun testDecryptMixnetOutput() {
-        val root = readByteTreeFromFile("src/commonTest/data/mixnet/working/vf/after-mix-2-ciphertexts.raw")
+        val root = readByteTreeFromFile("src/commonTest/data/rave/working/vf/after-mix-2-ciphertexts.raw")
         val ptree = convertByteTree(root.root)
         println(ptree)
         val ctree = convertPTree(ptree)
@@ -95,8 +94,8 @@ class ByteTreeReaderTest {
 
         val decryptor = CiphertextDecryptor(
             group,
-            "src/commonTest/data/mixnet/working/eg/keyceremony",
-            "src/commonTest/data/mixnet/working/eg/trustees",
+            "src/commonTest/data/rave/working/eg/keyceremony",
+            "src/commonTest/data/rave/working/eg/trustees",
         )
 
         decryptor.checkCipherTextDecrypts(ctree)
