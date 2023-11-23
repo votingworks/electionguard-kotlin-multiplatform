@@ -46,6 +46,11 @@ class RunMixnetBlindTrustPep {
                 shortName = "in",
                 description = "Top directory of the input election record"
             ).required()
+            val encryptedBallotsDir by parser.option(
+                ArgType.String,
+                shortName = "eballots",
+                description = "Directory containing encrypted ballots to compare (PB)"
+            ).required()
             val mixnetFile by parser.option(
                 ArgType.String,
                 shortName = "file with mixnet output",
@@ -74,8 +79,13 @@ class RunMixnetBlindTrustPep {
 
             parser.parse(args)
             println(
-                "RunMixnetBlindTrustPep starting\n   -in $inputDir\n   -mixnetFile $mixnetFile\n   -trustees $trusteeDir\n" +
-                        "   -out $outputDir\n   -nthreads $nthreads"
+                "RunMixnetBlindTrustPep starting\n" +
+                        "   -in $inputDir\n" +
+                        "   -eballots $encryptedBallotsDir\n" +
+                        "   -mixnetFile $mixnetFile\n" +
+                        "   -trustees $trusteeDir\n" +
+                        "   -out $outputDir\n" +
+                        "   -nthreads $nthreads"
             )
             // TODO use missing
             if (missing != null) {
@@ -83,12 +93,13 @@ class RunMixnetBlindTrustPep {
             }
 
             val group = productionGroup()
-            batchMixnetBlindTrustPep(group, inputDir, trusteeDir, mixnetFile, outputDir, nthreads)
+            batchMixnetBlindTrustPep(group, inputDir, encryptedBallotsDir, trusteeDir, mixnetFile, outputDir, nthreads)
         }
 
         private fun batchMixnetBlindTrustPep(
             group: GroupContext,
             inputDir: String,
+            encryptedBallotsDir: String,
             trusteeDir: String,
             mixnetFile: String,
             outputDir: String,
@@ -104,8 +115,8 @@ class RunMixnetBlindTrustPep {
             )
 
             val encryptedBallots = mutableMapOf<Int, EncryptedBallot>() // key is the SN (for now)
-            val consumer = makeConsumer(group, inputDir)
-            consumer.iterateAllCastBallots().forEach { encryptedBallot ->
+            val consumer = makeConsumer(group, encryptedBallotsDir, true)
+            consumer.iterateEncryptedBallotsFromDir(encryptedBallotsDir, null).forEach { encryptedBallot ->
                 val sn = decryptor.decryptPep(encryptedBallot.encryptedSn!!)
                 encryptedBallots[sn.hashCode()] = encryptedBallot
             }
@@ -172,6 +183,7 @@ class RunMixnetBlindTrustPep {
                     val first = decryptor.decryptPep(mixnetBallot.ciphertext[0])
                     val match = encryptedBallots[first.hashCode()]
                     if (match == null) {
+                        println("Match ballot ${idx + 1} NOT FOUND")
                         logger.warn { "Match ballot ${idx + 1} NOT FOUND" }
                     } else {
                         println("Match ballot ${idx + 1} FOUND")

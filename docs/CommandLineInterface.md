@@ -1,6 +1,6 @@
 # Workflow and Command Line Programs
 
-last update 11/14/2023
+last update 11/22/2023
 
 <!-- TOC -->
 * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
@@ -9,14 +9,18 @@ last update 11/14/2023
   * [Create a fake Election Manifest](#create-a-fake-election-manifest)
   * [Create an Election Configuration](#create-an-election-configuration)
   * [Run trusted KeyCeremony](#run-trusted-keyceremony)
+  * [Create fake input ballots](#create-fake-input-ballots)
   * [Run Batch Encryption](#run-batch-encryption)
   * [Run Accumulate Tally](#run-accumulate-tally)
   * [Run trusted Tally Decryption](#run-trusted-tally-decryption)
   * [Run trusted Ballot Decryption](#run-trusted-ballot-decryption)
   * [Run Verifier](#run-verifier)
-  * [Rave / PEP (Plaintext Equivalence Proof)](#rave--pep-plaintext-equivalence-proof)
+  * [Rave Workflow](#rave-workflow)
+    * [Generate test input ballots](#generate-test-input-ballots)
+    * [Encrypt ballots to simulate receiving encrypted ballots from BB](#encrypt-ballots-to-simulate-receiving-encrypted-ballots-from-bb)
     * [Extract encrypted ballots for mixnet input](#extract-encrypted-ballots-for-mixnet-input)
-    * [Run MixnetBlindTrustPep to compare ballots with mixnet](#run-mixnetblindtrustpep-to-compare-ballots-with-mixnet)
+    * [Reencrypt ballots to simulate paper ballot scanning](#reencrypt-ballots-to-simulate-paper-ballot-scanning)
+    * [Run MixnetBlindTrustPep to compare paper ballots with mixnet](#run-mixnetblindtrustpep-to-compare-paper-ballots-with-mixnet)
     * [Run Verify Pep](#run-verify-pep)
 <!-- TOC -->
 
@@ -29,49 +33,48 @@ last update 11/14/2023
       you must figure out what that looks like yourself, and use it as input to the library.
    2. Create a manifest in code with the _electionguard.ballot.Manifest_ classes, and write it out
           with a Publisher. 
-   3. Create a fake manifest for testing with the _electionguard.input.createTestManifest_ test program.
+   3. Create a fake manifest for testing with [_RunCreateTestManifest_ CLI](#create-a-fake-election-manifest).
    4. Use an existing fake manifest for testing in _egklib/src/commonTest/data/startManifestJson/manifest.json_ or
-      _egklib/src/commonTest/data/startManifestProto/manifest.protobuf_
+      _egklib/src/commonTest/data/startManifestProto/manifest.protobuf_.
 
-2. **Create an ElectionConfig record**.
-   1. Create an ElectionConfig from a Manifest and input parameters using [_RunCreateElectionConfig_ CLI](#create-an-election-configuration)
+2. **Create an ElectionConfig record**
+   1. Create an ElectionConfig record from a Manifest and configuration values using [_RunCreateElectionConfig_ CLI](#create-an-election-configuration)
 
-3. **Run the KeyCeremony**. 
-   1. Create an ElectionInitialized from an ElectionConfig and input parameters using [_RunTrustedKeyCeremony_ CLI](#run-trusted-keyceremony)
+3. **Run the KeyCeremony**
+   1. Create an ElectionInitialized record and decrypting trustees from an ElectionConfig by running a KeyCeremony with 
+      [_RunTrustedKeyCeremony_ CLI](#run-trusted-keyceremony)
    2. To run a keyceremony with remote guardians, see the webapps CLI.
 
-4. **Create test input plaintext ballots**.
+4. **Create test input plaintext ballots**
+   1. Create fake input ballots for testing with [_RunGenerateInputBallots_ CLI](#create-fake-input-ballots).
    1. _electionguard.workflow.GenerateFakeBallots_ generates random test ballots.
-   2. Use existing fake ballots for testing in _egklib/src/commonTest/data/fakeBallots
+   2. Use existing fake ballots for testing in _egklib/src/commonTest/data/fakeBallots_.
 
 5. **Batch Encryption**. 
-   1. _electionguard.encrypt.RunBatchEncryption_ is a CLI that reads an ElectionInitialized record and input plaintext
+   1. The [_RunBatchEncryption_ CLI](#run-batch-encryption) reads an ElectionInitialized record and input plaintext
        ballots, encrypts the ballots and writes out EncryptedBallot records. If any input plaintext ballot fails validation,
        it is annotated and written to a separate directory, and not encrypted.
    2. _electionguard.encrypt.AddEncryptedBallot_ is a class that your program calls to encrypt plaintext ballots
-       and add them to the election record.
-   3. In jvmMain, _electionguard.cli.ExampleEncryption_ is an example of using AddEncryptedBallot.
-   4. To run encryption with the Encryption server, see the webapps CLI. This allows you to run the encryption on a 
+       and add them to the election record. (See _electionguard.cli.ExampleEncryption_ as an example of using AddEncryptedBallot). 
+   3. To run encryption with the Encryption server, see the webapps CLI. This allows you to run the encryption on a 
       different machine than where ballots are generated, and/or to call from a non-JVM program.
 
 6. **Accumulate Tally**.
-    1. _electionguard.tally.RunAccumulateTally_ is a CLI that reads an ElectionInitialized record and EncryptedBallot
-       records, sums the votes in the encrypted ballots and writes out a _EncryptedTally_ record.
+    1. [_RunAccumulateTally_ CLI](#run-accumulate_tally) reads an ElectionInitialized record and EncryptedBallot
+       records, sums the votes in the encrypted ballots and writes out an _EncryptedTally_ record.
 
 7. **Decryption**.
-    1. _electionguard.decrypt.RunTrustedTallyDecryption_ is a CLI for testing, that will run locally in a single
-       process, reads an EncryptedTally record and local DecryptingTrustee records, decrypts the tally and writes out 
-       a _DecryptedTallyOrBallot_ record for the tally.
-    2. _electionguard.decrypt.RunTrustedBallotDecryption_ is a CLI for testing, that will run locally in a single
-       process, that reads a spoiled ballot record and local DecryptingTrustee records, decrypts the ballot and writes out a
-       _DecryptedTallyOrBallot_ record for the spoiled ballot.
+    1. [_RunTrustedTallyDecryption_ CLI](#run-trusted-tally-decryption) reads an EncryptedTally and 
+       local DecryptingTrustee records, decrypts the tally and writes out a _DecryptedTallyOrBallot_ record for the tally.
+    2. [_RunTrustedBallotDecryption_ CLI](#run-trusted-ballot-decryption) reads "spoiled" ballot records and 
+       local DecryptingTrustee records, decrypts the ballots and writes out a _DecryptedTallyOrBallot_ for each ballot.
     3. To run decryption with remote guardians, see the webapps CLI.
 
 8. **Verify**. 
-    1. _electionguard.verify.VerifyElectionRecord_ is a CLI that reads an election record and verifies it.
+    1. [_VerifyElectionRecord_ CLI](#run-verifier) reads an election record and verifies it.
 
 9. **Complete test Workflow**.
-    1. A complete test workflow can be run from electionguard.workflow.TestWorkflow.
+    1. A complete test workflow can be run from _electionguard.workflow.TestWorkflow_.
 
 ## Make ekglib fatJar
 
@@ -157,6 +160,31 @@ Example:
     -out testOut/cliWorkflow/keyceremony 
 ````
 
+## Create fake input ballots
+
+````
+Usage: RunCreateInputBallots options_list
+Options: 
+    --manifestDirOrFile, -manifest -> Manifest file or directory (json or protobuf) (always required) { String }
+    --outputDir, -out -> Directory to write plaintext ballots (always required) { String }
+    --nballots, -n [11] -> Number of ballots to generate { Int }
+    --isJson, -json -> Generate Json ballots (default to manifest type) 
+    --help, -h -> Usage info 
+````
+
+Example:
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
+  -classpath egkliball/build/libs/egklib-all.jar \
+  electionguard.cli.RunCreateInputBallots \
+    -manifest egklib/src/commonTest/data/startManifestJson \
+    -out testOut/generateInputBallots \
+    -n 23 \
+    -json
+````
+
 ## Run Batch Encryption
 
 ````
@@ -164,15 +192,20 @@ Usage: RunBatchEncryption options_list
 Options: 
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --ballotDir, -ballots -> Directory to read Plaintext ballots from (always required) { String }
-    --outputDir, -out -> Directory to write output election record (always required) { String }
+    --outputDir, -out -> Directory to write output election record { String }
+    --encryptDir, -encryptDir -> Write just encrypted ballots here { String }
     --invalidDir, -invalid -> Directory to write invalid input ballots to { String }
     --check, -check [None] -> Check encryption { Value should be one of [none, verify, encrypttwice, decryptnonce] }
     --nthreads, -nthreads [11] -> Number of parallel threads to use { Int }
     --createdBy, -createdBy -> who created { String }
-    --device, -device -> voting device information (always required) { String }
+    --device, -device -> voting device name (always required) { String }
     --cleanOutput, -clean [false] -> clean output dir 
+    --anonymize, -anon [false] -> anonymize ballot 
     --help, -h -> Usage info 
 ````
+You must specify outputDir or encryptDir. The former copies ElectionInit and writes encrypted ballots to standard election record.
+The latter writes just the encrypted ballots to the specified directory.
+
 
 Example:
 
@@ -248,6 +281,7 @@ Example:
 output:
 * outputDir/tally.(json|protobuf)
 
+
 ## Run trusted Ballot Decryption
 
 This has access to all the trustees, so is only used for testing, or in a use case of trust.
@@ -287,6 +321,7 @@ output:
 
 * outputDir/challenged_ballots/
 
+
 ## Run Verifier
 
 ```` 
@@ -307,15 +342,43 @@ Example:
     -in testOut/cliWorkflow/electionRecord 
 ````
 
-## Rave / PEP (Plaintext Equivalence Proof)
+## Rave Workflow
+
+### Generate test input ballots
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
+  -classpath egkliball/build/libs/egklib-all.jar \
+  electionguard.cli.RunCreateInputBallots \
+    -manifest egklib/src/commonTest/data/rave/working/eg/manifest.json \
+    -out testOut/rave/inputBallots  \
+    -n 33 \
+    -json
+````
+
+### Encrypt ballots to simulate receiving encrypted ballots from BB
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egkliball/build/libs/egklib-all.jar \
+  electionguard.cli.RunBatchEncryption \
+    -in egklib/src/commonTest/data/rave/working/eg/keyceremony \
+    -ballots testOut/rave/inputBallots \
+    -encryptDir testOut/rave/EB \
+    -device device42 \
+    -nthreads 33 
+````
 
 ### Extract encrypted ballots for mixnet input
 
+````
 Usage: RunMakeMixnetInput options_list
-Options:
---inputDir, -in -> Directory containing input election record (always required) { String }
---outputFile, -out -> Write to this filename (always required) { String }
---help, -h -> Usage info
+Options: 
+    --encryptedBallotsDir, -eballots -> Directory containing input encrypted ballots (EB) (always required) { String }
+    --outputFile, -out -> Write to this filename (always required) { String }
+    --help, -h -> Usage info 
+````
 
 Example:
 
@@ -323,12 +386,27 @@ Example:
 /usr/lib/jvm/jdk-19/bin/java \
   -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunMakeMixnetInput \
-    -in working/eg/encrypted \
-    -out working/vg/input-ciphertexts.json
-
+    -eballots testOut/rave/EB \
+    -out testOut/rave/vg/input-ciphertexts.json
 ````
 
-### Run MixnetBlindTrustPep to compare ballots with mixnet
+
+### Reencrypt ballots to simulate paper ballot scanning
+
+````
+/usr/lib/jvm/jdk-19/bin/java \
+  -classpath egkliball/build/libs/egklib-all.jar \
+  electionguard.cli.RunBatchEncryption \
+    -in egklib/src/commonTest/data/rave/working/eg/keyceremony \
+    -ballots testOut/rave/inputBallots  \
+    -encryptDir testOut/rave/PB  \
+    -device scanPB \
+    -nthreads 33 \
+    --anonymize
+````
+
+
+### Run MixnetBlindTrustPep to compare paper ballots with mixnet
 
 ```` 
 Usage: RunMixnetBlindTrustPep options_list
@@ -348,11 +426,12 @@ Example:
 /usr/lib/jvm/jdk-19/bin/java \
   -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunMixnetBlindTrustPep \
-    -in src/commonTest/data/mixnet/working/eg/encryption \
-    --mixnetFile src/commonTest/data/mixnet/working/vf/after-mix-2-ciphertexts.json \
-    -trustees src/commonTest/data/mixnet/working/eg/trustees \
-    -out testOut/testRunMixnetBlindTrustPep \
-    -nthreads 25 
+    -in egklib/src/commonTest/data/rave/working/eg/keyceremony \
+    -eballots testOut/rave/PB \
+    --mixnetFile egklib/src/commonTest/data/rave/working/vf/after-mix-2-ciphertexts.json \
+    -trustees egklib/src/commonTest/data/rave/working/eg/trustees \
+    -out testOut/rave/pep \
+    -nthreads 33 
 ````
 
 ### Run Verify Pep
@@ -372,6 +451,6 @@ Example:
 /usr/lib/jvm/jdk-19/bin/java \
   -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunVerifyPep \
-    --inputDir src/commonTest/data/mixnet/working/eg/encryption \
-    --pepBallotDir testOut/testRunMixnetBlindTrustPep
+    --inputDir egklib/src/commonTest/data/rave/working/eg/keyceremony \
+    --pepBallotDir testOut/rave/pep
 ````

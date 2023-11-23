@@ -14,7 +14,7 @@ expect class PublisherProto(topDir: String, createNew: Boolean = false) : Publis
     override fun writeTallyResult(tally: TallyResult)
     override fun writeDecryptionResult(decryption: DecryptionResult)
 
-    override fun encryptedBallotSink(device: String, batched: Boolean): EncryptedBallotSinkIF
+    override fun encryptedBallotSink(device: String?, batched : Boolean): EncryptedBallotSinkIF
     override fun writeEncryptedBallotChain(closing: EncryptedBallotChain)
 
     override fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF

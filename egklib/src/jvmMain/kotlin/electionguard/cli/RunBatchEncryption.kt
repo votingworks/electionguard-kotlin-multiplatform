@@ -68,7 +68,12 @@ class RunBatchEncryption {
                 ArgType.String,
                 shortName = "out",
                 description = "Directory to write output election record"
-            ).required()
+            )
+            val encryptDir by parser.option(
+                ArgType.String,
+                shortName = "eballots",
+                description = "Write encrypted ballots here"
+            )
             val invalidDir by parser.option(
                 ArgType.String,
                 shortName = "invalid",
@@ -99,27 +104,40 @@ class RunBatchEncryption {
                 shortName = "clean",
                 description = "clean output dir"
             ).default(false)
+            val anonymize by parser.option(
+                ArgType.Boolean,
+                shortName = "anon",
+                description = "anonymize ballot"
+            ).default(false)
 
             parser.parse(args)
 
+            if (outputDir == null && encryptDir == null) {
+                throw RuntimeException("Must specify outputDir or encryptDir")
+            }
+
             println(
-                "RunBatchEncryption starting\n   input= $inputDir\n   ballots = $ballotDir\n   output = $outputDir" +
-                        "\n   device = $device" +
+                "RunBatchEncryption starting\n   input= $inputDir\n   ballots = $ballotDir\n   device = $device" +
+                        "\n   outputDir = $outputDir" +
+                        "\n   encryptDir = $encryptDir" +
                         "\n   nthreads = $nthreads" +
-                        "\n   check = $check"
+                        "\n   check = $check" +
+                        "\n   anonymize = $anonymize"
             )
 
             batchEncryption(
                 productionGroup(),
                 inputDir,
-                outputDir,
                 ballotDir,
+                device = device,
+                outputDir,
+                encryptDir,
                 invalidDir,
-                device,
                 nthreads,
                 createdBy,
                 check,
                 cleanOutput,
+                anonymize,
             )
         }
 
@@ -129,21 +147,26 @@ class RunBatchEncryption {
         fun batchEncryption(
             group: GroupContext,
             inputDir: String,
-            outputDir: String,
             ballotDir: String,
-            invalidDir: String?,
             device: String,
+            outputDir: String?,
+            encryptDir: String?,
+            invalidDir: String?,
             nthreads: Int,
             createdBy: String?,
             check: CheckType = CheckType.None,
             cleanOutput: Boolean = false,
+            anonymize: Boolean = false,
         ) {
             // ballots can be in either format
             val ballotSource = makeInputBallotSource(ballotDir, group)
 
             return batchEncryption(
-                group, inputDir, outputDir, ballotSource.iteratePlaintextBallots(ballotDir, null),
-                invalidDir, device, nthreads, createdBy, check, cleanOutput
+                group, inputDir,
+                ballotSource.iteratePlaintextBallots(ballotDir, null),
+                device = device,
+                outputDir, encryptDir, invalidDir,
+                nthreads, createdBy, check, cleanOutput, anonymize
             )
         }
 
@@ -151,14 +174,16 @@ class RunBatchEncryption {
         fun batchEncryption(
             group: GroupContext,
             inputDir: String,
-            outputDir: String,
             ballots: Iterable<PlaintextBallot>,
-            invalidDir: String?,
             device: String,
-            nthreads: Int,
+            outputDir: String?,
+            encryptDir: String?,
+            invalidDir: String?,
+            nthreads: Int = 11,
             createdBy: String?,
             check: CheckType = CheckType.None,
             cleanOutput: Boolean = false,
+            anonymize: Boolean = false,
         ) {
             count = 0 // start over each batch
             val consumerIn = makeConsumer(group, inputDir)
@@ -212,8 +237,11 @@ class RunBatchEncryption {
                 electionInit.jointPublicKey, electionInit.extendedBaseHash, check
             )
 
-            val publisher = makePublisher(outputDir, cleanOutput, consumerIn.isJson())
-            val sink: EncryptedBallotSinkIF = publisher.encryptedBallotSink(device, true)
+            // encryptDir is the exact encrypted ballot directory, outputDir is the election record topdir
+            val publisher = makePublisher(encryptDir ?: outputDir!!, cleanOutput, consumerIn.isJson())
+            val sink: EncryptedBallotSinkIF =
+                if (encryptDir != null) publisher.encryptedBallotSink(null, true)
+                else publisher.encryptedBallotSink(device, true)
 
             try {
                 runBlocking {
@@ -229,7 +257,7 @@ class RunBatchEncryption {
                             ) { ballot -> runEncryption.encrypt(ballot) }
                         )
                     }
-                    launchSink(outputChannel, sink)
+                    launchSink(outputChannel, sink, anonymize)
 
                     // wait for all encryptions to be done, then close everything
                     joinAll(*encryptorJobs.toTypedArray())
@@ -240,17 +268,22 @@ class RunBatchEncryption {
             }
             val took = getSystemTimeInMillis() - starting
 
-            publisher.writeElectionInitialized(
-                electionInit.addMetadataToCopy(
-                    Pair("Used", createdBy ?: "RunBatchEncryption"),
-                    Pair("UsedOn", getSystemDate()),
-                    Pair("CreatedFromDir", inputDir)
+            // only copy the ElectionInitialized record if outputDir (not encryptDir) is used
+            if (encryptDir == null) {
+                publisher.writeElectionInitialized(
+                    electionInit.addMetadataToCopy(
+                        Pair("Used", createdBy ?: "RunBatchEncryption"),
+                        Pair("UsedOn", getSystemDate()),
+                        Pair("CreatedFromDir", inputDir)
+                    )
                 )
-            )
-            if (invalidDir != null && invalidBallots.isNotEmpty()) {
-                electionguard.core.createDirectories(invalidDir)
-                publisher.writePlaintextBallot(invalidDir, invalidBallots)
-                println(" wrote ${invalidBallots.size} invalid ballots to $invalidDir")
+            }
+            // Must save invalid ballots
+            if (invalidBallots.isNotEmpty()) {
+                val useInvalidDir = if (invalidDir != null) invalidDir else if (outputDir != null) "$outputDir/invalid" else "$encryptDir/invalid"
+                electionguard.core.createDirectories(useInvalidDir)
+                publisher.writePlaintextBallot(useInvalidDir, invalidBallots)
+                println(" wrote ${invalidBallots.size} invalid ballots to $useInvalidDir")
             }
 
             val msecsPerBallot = if (count == 0) 0 else (took.toDouble() / count).roundToInt()
@@ -335,8 +368,8 @@ class RunBatchEncryption {
             }
 
         // coroutines allow parallel encryption at the ballot level
-// LOOK not possible to do ballot chaining, since the order is indeterminate?
-//    or do we just have to work harder??
+        // LOOK not possible to do ballot chaining, since the order is indeterminate?
+        //    or do we just have to work harder??
         private fun CoroutineScope.launchEncryptor(
             id: Int,
             input: ReceiveChannel<PlaintextBallot>,
@@ -357,11 +390,12 @@ class RunBatchEncryption {
         // the encrypted ballot writing is in its own coroutine
         private var count = 0
         private fun CoroutineScope.launchSink(
-            input: Channel<EncryptedBallot>, sink: EncryptedBallotSinkIF,
+            input: Channel<EncryptedBallot>, sink: EncryptedBallotSinkIF, anonymize: Boolean,
         ) = launch {
             for (ballot in input) {
-                sink.writeEncryptedBallot(ballot)
-                logger.debug { " Sink wrote $count submitted ballot ${ballot.ballotId}" }
+                val useBallot = if (!anonymize) ballot else ballot.copy(ballotId = (count+1).toString())
+                sink.writeEncryptedBallot(useBallot)
+                logger.debug { " Sink wrote $count submitted ballot ${useBallot.ballotId}" }
                 count++
             }
         }

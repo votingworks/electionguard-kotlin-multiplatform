@@ -13,7 +13,7 @@ interface Publisher {
     fun writeTallyResult(tally: TallyResult)
     fun writeDecryptionResult(decryption: DecryptionResult)
 
-    fun encryptedBallotSink(device: String, batched: Boolean = false): EncryptedBallotSinkIF
+    fun encryptedBallotSink(device: String?, batched : Boolean = false): EncryptedBallotSinkIF
     fun writeEncryptedBallotChain(closing: EncryptedBallotChain)
 
     fun decryptedTallyOrBallotSink(): DecryptedTallyOrBallotSinkIF

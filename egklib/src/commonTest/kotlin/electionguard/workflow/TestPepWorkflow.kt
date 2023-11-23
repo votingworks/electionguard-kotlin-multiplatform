@@ -62,12 +62,12 @@ class TestPepWorkflow {
 
         // encrypt
         group.showAndClearCountPowP()
-        batchEncryption(group, workingDir, workingDir, inputBallotDir, invalidDir, "device11", nthreads, name1)
+        batchEncryption(group, inputDir = workingDir, ballotDir = inputBallotDir, "device11", outputDir = workingDir, null, invalidDir, nthreads, name1)
         //println("----------- after encrypt ${group.showAndClearCountPowP()}")
 
         // encrypt again, simulating the CAKE workflow of scanning the paper ballots
         val scannedBallotDir = "$workingDir/scan"
-        batchEncryption(group, workingDir, scannedBallotDir, inputBallotDir, invalidDir, "scanPaper", nthreads, name1)
+        batchEncryption(group, inputDir = workingDir, ballotDir = inputBallotDir, "scanPaper", outputDir = scannedBallotDir, null, invalidDir, nthreads, name1)
         //println("----------- after encrypt ${group.showAndClearCountPowP()}")
 
         val decryptingTrustees = readDecryptingTrustees(group, trusteeDir, init, present, true)

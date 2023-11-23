@@ -75,10 +75,14 @@ data class ElectionRecordProtoPaths(val topDir : String) {
         return "${ballotDir}/${ENCRYPTED_BALLOT_PREFIX}$id${PROTO_SUFFIX}"
     }
 
-    fun encryptedBallotDevicePath(device: String, ballotId: String): String {
-        val useDevice = device.replace(" ", "_")
+    fun encryptedBallotDevicePath(device: String?, ballotId: String): String {
         val id = ballotId.replace(" ", "_")
-        return "$electionRecordDir/$ENCRYPTED_DIR/$useDevice/${ENCRYPTED_BALLOT_PREFIX}$id${PROTO_SUFFIX}"
+        return if (device != null) {
+            val useDevice = device.replace(" ", "_")
+            "$electionRecordDir/$ENCRYPTED_DIR/$useDevice/${ENCRYPTED_BALLOT_PREFIX}$id${PROTO_SUFFIX}"
+        } else {
+            "${topDir}/${ENCRYPTED_BALLOT_PREFIX}$id${PROTO_SUFFIX}"
+        }
     }
 
     fun encryptedBallotBatched(device: String): String {

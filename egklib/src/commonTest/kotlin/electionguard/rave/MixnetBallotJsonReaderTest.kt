@@ -16,7 +16,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MixnetBallotJsonReaderTest {
-    val topdir = "src/commonTest/data/rave/working"
+    val topdir = "src/commonTest/data/rave"
     // val topdir = "/home/stormy/tmp/working"
 
     var fileSystem = FileSystems.getDefault()
@@ -42,7 +42,7 @@ class MixnetBallotJsonReaderTest {
     fun testMixnetOutputDecrypt() {
         val decryptor = CiphertextDecryptor(
             group,
-            "$topdir/eg/keyceremony",
+            "$topdir/eg",
             "$topdir/eg/trustees",
         )
 
@@ -61,12 +61,12 @@ class MixnetBallotJsonReaderTest {
     fun testEncryptedBallotDecrypt() {
         val decryptor = CiphertextDecryptor(
             group,
-            "$topdir/eg/keyceremony",
+            "$topdir/eg",
             "$topdir/eg/trustees",
         )
 
         val mixnetBallots = mutableListOf<MixnetBallot>()
-        val consumer = makeConsumer(group, "$topdir/eg/encryption")
+        val consumer = makeConsumer(group, "$topdir/eg")
         consumer.iterateAllCastBallots().forEach { encryptedBallot ->
             val ciphertexts = mutableListOf<ElGamalCiphertext>()
             ciphertexts.add(encryptedBallot.encryptedSn!!) // always the first one
@@ -93,12 +93,12 @@ class MixnetBallotJsonReaderTest {
         val mixnetFile = "$topdir/vf/after-mix-2-ciphertexts.json"
         val decryptor = CiphertextDecryptor(
             group,
-            "$topdir/eg/keyceremony",
+            "$topdir/eg",
             "$topdir/eg/trustees",
         )
 
         val encryptedBallots = mutableMapOf<Int, EncryptedBallot>() // key is the SN (for now)
-        val consumer = makeConsumer(group, "$topdir/eg/encryption")
+        val consumer = makeConsumer(group, "$topdir/eg")
         consumer.iterateAllCastBallots().forEach { encryptedBallot ->
             val sn = decryptor.decryptPep(encryptedBallot.encryptedSn!!)!!
             encryptedBallots[sn.hashCode()] = encryptedBallot

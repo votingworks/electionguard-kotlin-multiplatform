@@ -6,6 +6,7 @@ import electionguard.rave.publishJson
 import electionguard.publish.makeConsumer
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
+import kotlinx.cli.default
 import kotlinx.cli.required
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
@@ -19,29 +20,34 @@ class RunMakeMixnetInput {
         @JvmStatic
         fun main(args: Array<String>) {
             val parser = ArgParser("RunMakeMixnetInput")
-            val inputDir by parser.option(
+            val encryptedBallotsDir by parser.option(
                 ArgType.String,
-                shortName = "in",
-                description = "Directory containing input election record"
+                shortName = "eballots",
+                description = "Directory containing input encrypted ballots (EB)"
             ).required()
             val outputFile by parser.option(
                 ArgType.String,
                 shortName = "out",
                 description = "Write to this filename"
             ).required()
+            val isJson by parser.option(
+                ArgType.Boolean,
+                shortName = "json",
+                description = "ENcrypted ballots are JSON"
+            ).default(true)
             parser.parse(args)
 
             // create output directory if needed
             val outputDir = outputFile.substringBeforeLast("/")
             createDirectories(outputDir)
 
-            runMakeMixnetInput(productionGroup(), inputDir, outputFile)
+            runMakeMixnetInput(productionGroup(), encryptedBallotsDir, outputFile, isJson)
         }
 
-        fun runMakeMixnetInput(group: GroupContext, inputDir: String, outputFile: String) {
-            val consumer = makeConsumer(group, inputDir)
+        fun runMakeMixnetInput(group: GroupContext, encryptedBallotsDir: String, outputFile: String, isJson : Boolean) {
+            val consumer = makeConsumer(group, encryptedBallotsDir, isJson)
             val mixnetBallots = mutableListOf<MixnetBallot>()
-            consumer.iterateAllCastBallots().forEach { encryptedBallot ->
+            consumer.iterateEncryptedBallotsFromDir(encryptedBallotsDir, null).forEach { encryptedBallot ->
                 val ciphertexts = mutableListOf<ElGamalCiphertext>()
                 ciphertexts.add(encryptedBallot.encryptedSn!!) // always the first one
                 encryptedBallot.contests.forEach { contest ->

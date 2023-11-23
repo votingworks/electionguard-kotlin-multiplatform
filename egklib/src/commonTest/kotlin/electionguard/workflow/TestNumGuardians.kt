@@ -75,11 +75,12 @@ class TestNumGuardians {
         println("----------- after keyCeremony ${group.showAndClearCountPowP()}")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, inputBallotDir, invalidDir, "device11", nthreads, name1)
+        batchEncryption(group, inputDir = workingDir, ballotDir = inputBallotDir, device = "device11",
+            outputDir = workingDir, null, invalidDir = invalidDir, nthreads, name1)
         println("----------- after encrypt ${group.showAndClearCountPowP()}")
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", name1)
+        runAccumulateBallots(group, workingDir, workingDir, null, "RunWorkflow", name1)
         println("----------- after tally ${group.showAndClearCountPowP()}")
 
         val dtrustees : List<DecryptingTrusteeIF> = readDecryptingTrustees(group, trusteeDir, init, present, true)

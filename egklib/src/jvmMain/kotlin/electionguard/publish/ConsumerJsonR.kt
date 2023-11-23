@@ -198,6 +198,9 @@ actual class ConsumerJsonR actual constructor(val topDir: String, val group: Gro
         }
     }
 
+    actual override fun iterateEncryptedBallotsFromDir(ballotDir: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> = emptyList()
+
+
     actual override fun iterateEncryptedBallots(device: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> {
         val deviceDirPath = Path.of(jsonPaths.encryptedBallotDir(device))
         if (!Files.exists(deviceDirPath)) {

@@ -8,8 +8,9 @@ class RunMakeMixnetInputTest {
     fun testMakeMixnetInput() {
         RunMakeMixnetInput.main(
             arrayOf(
-                "-in", "src/commonTest/data/workflow/someAvailableJson",
-                "--outputFile", "testOut/testMakeMixnetInput/mixnetInput.json",
+                "-eballots", "../testOut/rave/EB",
+                "--outputFile", "../testOut/rave/vg/input-ciphertexts.json",
+                "-json"
             )
         )
     }

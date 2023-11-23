@@ -66,10 +66,23 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "runWorkflowAllAvailable", nthreads, "createdBy")
+        //         //             group: GroupContext,
+        //        //            inputDir: String,
+        //        //            ballotDir: String,
+        //        //            device: String,
+        //        //            outputDir: String?,
+        //        //            encryptDir: String?,
+        //        //            invalidDir: String?,
+        //        //            nthreads: Int,
+        //        //            createdBy: String?,
+        //        //            check: CheckType = CheckType.None,
+        //        //            cleanOutput: Boolean = false,
+        //        //            anonymize: Boolean = false,
+        batchEncryption(group, inputDir = workingDir, ballotDir = ballotsDir, device = "runWorkflowAllAvailable",
+            outputDir = workingDir, null, invalidDir = invalidDir, nthreads, "createdBy")
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
+        runAccumulateBallots(group, workingDir, workingDir, null, "RunWorkflow", "createdBy")
 
         // decrypt tally
         runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, false), "runWorkflowAllAvailable")
@@ -137,7 +150,7 @@ class TestWorkflow {
         encryptor.close()
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
+        runAccumulateBallots(group, workingDir, workingDir, null, "RunWorkflow", "createdBy")
 
         // decrypt tally
         val trustees = readDecryptingTrustees(group, trusteeDir, electionInit, present, false)
@@ -186,10 +199,11 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "runWorkflowSomeAvailable", nthreads, "createdBy")
+        batchEncryption(group, inputDir = workingDir, ballotDir = ballotsDir, device = "runWorkflowSomeAvailable",
+            outputDir = workingDir, null, invalidDir = invalidDir, nthreads, "createdBy")
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
+        runAccumulateBallots(group, workingDir, workingDir, null, "RunWorkflow", "createdBy")
 
         // decrypt
         runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, false), "runWorkflowSomeAvailable")
@@ -233,10 +247,11 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "runWorkflowAllAvailableJson", nthreads, "createdBy")
+        batchEncryption(group, inputDir = workingDir, ballotDir = ballotsDir, device = "runWorkflowAllAvailableJson",
+            outputDir = workingDir, null, invalidDir = invalidDir, nthreads, "createdBy")
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
+        runAccumulateBallots(group, workingDir, workingDir, null, "RunWorkflow", "createdBy")
 
         // decrypt tally
         runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, true), "runWorkflowAllAvailableJson")
@@ -304,7 +319,7 @@ class TestWorkflow {
         encryptor.close()
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "runWorkflowChainedJson", "runWorkflowChainedJson")
+        runAccumulateBallots(group, workingDir, workingDir, null, "runWorkflowChainedJson", "runWorkflowChainedJson")
 
         // decrypt tally
         val trustees = readDecryptingTrustees(group, trusteeDir, electionInit, present, true)
@@ -353,10 +368,11 @@ class TestWorkflow {
         println("RandomBallotProvider created ${ballots.size} ballots")
 
         // encrypt
-        batchEncryption(group, workingDir, workingDir, ballotsDir, invalidDir, "runWorkflowSomeAvailableJson", nthreads, "createdBy")
+        batchEncryption(group, inputDir = workingDir, ballotDir = ballotsDir, device = "runWorkflowSomeAvailableJson",
+            outputDir = workingDir, null, invalidDir = invalidDir, nthreads, "createdBy")
 
         // tally
-        runAccumulateBallots(group, workingDir, workingDir, "RunWorkflow", "createdBy")
+        runAccumulateBallots(group, workingDir, workingDir, null, "RunWorkflow", "createdBy")
 
         // decrypt
         runDecryptTally(group, workingDir, workingDir, readDecryptingTrustees(group, trusteeDir, init, present, true), "runWorkflowSomeAvailableJson")

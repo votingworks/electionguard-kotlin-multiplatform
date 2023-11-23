@@ -8,8 +8,8 @@ class RunVerifyPepTest {
     fun testRunVerifyPep() {
         RunVerifyPep.main(
             arrayOf(
-                "-in", "src/commonTest/data/rave/working/eg/encryption",
-                "--pepBallotDir", "testOut/testRunMixnetBlindTrustPep",
+                "-in", "src/commonTest/data/rave/eg",
+                "--pepBallotDir", "src/commonTest/data/rave/bb/pep",
             )
         )
     }
