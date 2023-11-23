@@ -40,6 +40,11 @@ class RunAccumulateTally {
                 shortName = "out",
                 description = "Directory to write output election record"
             ).required()
+            val encryptDir by parser.option(
+                ArgType.String,
+                shortName = "eballots",
+                description = "Read encrypted ballots here (optional)"
+            )
             val name by parser.option(
                 ArgType.String,
                 shortName = "name",
@@ -51,7 +56,11 @@ class RunAccumulateTally {
                 description = "who created"
             )
             parser.parse(args)
-            println("RunAccumulateTally starting\n   input= $inputDir\n   output = $outputDir")
+
+            println("RunAccumulateTally starting\n" +
+                    "   input= $inputDir\n" +
+                    "   outputDir = $outputDir\n" +
+                    "   encryptDir = $encryptDir")
 
             val group = productionGroup()
             try {
@@ -59,11 +68,13 @@ class RunAccumulateTally {
                     group,
                     inputDir,
                     outputDir,
+                    encryptDir,
                     name ?: "RunAccumulateTally",
                     createdBy ?: "RunAccumulateTally"
                 )
             } catch (t: Throwable) {
                 logger.error { "Exception= ${t.message} ${t.stackTraceToString()}" }
+                t.printStackTrace()
             }
         }
 
@@ -71,6 +82,7 @@ class RunAccumulateTally {
             group: GroupContext,
             inputDir: String,
             outputDir: String,
+            encryptDir: String?,
             name: String,
             createdBy: String
         ) {
@@ -88,7 +100,8 @@ class RunAccumulateTally {
             var countBad = 0
             var countOk = 0
             val accumulator = AccumulateTally(group, manifest, name, electionInit.extendedBaseHash, electionInit.jointPublicKey())
-            for (encryptedBallot in consumerIn.iterateAllCastBallots()) {
+            val encryptedBallots = if (encryptDir == null) consumerIn.iterateAllCastBallots() else consumerIn.iterateEncryptedBallotsFromDir(encryptDir, null)
+            for (encryptedBallot in encryptedBallots) {
                 val errs = ErrorMessages("RunAccumulateTally ballotId=${encryptedBallot.ballotId}")
                 accumulator.addCastBallot(encryptedBallot, errs)
                 if (errs.hasErrors()) {

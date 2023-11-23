@@ -43,8 +43,9 @@ interface Consumer {
     /** Read all decrypted ballots, usually the challenged ones. */
     fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
 
-    //// not part of the election record
-
+    //// outside  the election record
+    /** read encrypted ballots in given directory. */
+    fun iterateEncryptedBallotsFromDir(ballotDir: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     /** read plaintext ballots in given directory, private data. */
     fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
     /** read trustee in given directory for given guardianId, private data. */

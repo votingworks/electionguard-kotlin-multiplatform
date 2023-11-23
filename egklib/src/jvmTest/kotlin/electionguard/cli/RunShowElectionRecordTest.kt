@@ -8,7 +8,7 @@ class RunShowElectionRecordTest {
     fun testShowElectionRecordTest() {
         RunShowElectionRecord.main(
             arrayOf(
-                "-in", "src/commonTest/data/rave/working/eg/keyceremony",
+                "-in", "src/commonTest/data/rave/eg",
                 "-show", "manifest",
             )
         )
@@ -18,7 +18,7 @@ class RunShowElectionRecordTest {
     fun testShowElectionRecordDetailsTest() {
         RunShowElectionRecord.main(
             arrayOf(
-                "-in", "src/commonTest/data/rave/working/eg/keyceremony",
+                "-in", "src/commonTest/data/rave/eg",
                 "-show", "manifest",
                 "--details",
             )
@@ -29,7 +29,7 @@ class RunShowElectionRecordTest {
     fun testShowElectionRecordBallotStyleTest() {
         RunShowElectionRecord.main(
             arrayOf(
-                "-in", "src/commonTest/data/rave/working/eg/keyceremony",
+                "-in", "src/commonTest/data/rave/eg",
                 "-show", "manifest",
                 "-ballotStyle", "ballot-style-1",
                 "--details",

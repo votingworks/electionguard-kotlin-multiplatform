@@ -140,10 +140,11 @@ RunBatchEncryptionTest {
         batchEncryption(
             group,
             inputDir,
-            invalidDir,
             ballots,
+            device = "testDevice",
             invalidDir,
-            "device",
+            encryptDir = null,
+            invalidDir,
             1,
             "testInvalidBallot",
         )

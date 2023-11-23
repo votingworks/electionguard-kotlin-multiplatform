@@ -16,7 +16,6 @@ data class ElectionRecordJsonPaths(val topDir : String) {
         const val ENCRYPTED_BALLOT_PREFIX = "eballot-"
         const val DECRYPTED_BALLOT_PREFIX = "dballot-"
         const val PLAINTEXT_BALLOT_PREFIX = "pballot-"
-        const val PEP_BALLOT_PREFIX = "pepballot-"
 
         const val ENCRYPTED_DIR = "encrypted_ballots"
         const val CHALLENGED_DIR = "challenged_ballots"
@@ -58,11 +57,6 @@ data class ElectionRecordJsonPaths(val topDir : String) {
         return "${ballotDir}/$ENCRYPTED_BALLOT_PREFIX$id$JSON_SUFFIX"
     }
 
-    fun pepBallotPath(outputDir : String, ballotId : String): String {
-        val id = ballotId.replace(" ", "_")
-        return "${outputDir}/$PEP_BALLOT_PREFIX$id$JSON_SUFFIX"
-    }
-
     fun decryptedBallotPath(ballotId : String): String {
         val id = ballotId.replace(" ", "_")
         return "${decryptedBallotDir()}/$DECRYPTED_BALLOT_PREFIX$id$JSON_SUFFIX"
@@ -88,10 +82,14 @@ data class ElectionRecordJsonPaths(val topDir : String) {
         return "${encryptedBallotDir()}/$useDevice/"
     }
 
-    fun encryptedBallotDevicePath(device: String, ballotId: String): String {
-        val useDevice = device.replace(" ", "_")
+    fun encryptedBallotDevicePath(device: String?, ballotId: String): String {
         val id = ballotId.replace(" ", "_")
-        return "${encryptedBallotDir(useDevice)}/${ENCRYPTED_BALLOT_PREFIX}$id${JSON_SUFFIX}"
+        return if (device != null) {
+            val useDevice = device.replace(" ", "_")
+            "${encryptedBallotDir(useDevice)}/${ENCRYPTED_BALLOT_PREFIX}$id${JSON_SUFFIX}"
+        } else {
+            "${topDir}/${ENCRYPTED_BALLOT_PREFIX}$id${JSON_SUFFIX}"
+        }
     }
 
     fun encryptedBallotChain(device: String): String {

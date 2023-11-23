@@ -146,6 +146,14 @@ actual class ConsumerJson actual constructor(val topDir: String, val group: Grou
         }
     }
 
+    actual override fun iterateEncryptedBallotsFromDir(ballotDir: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> {
+        val path = fileSystem.getPath(ballotDir)
+        if (!Files.exists(path)) {
+            return emptyList()
+        }
+        return Iterable { EncryptedBallotFileIterator(path, filter) }
+    }
+
     actual override fun readEncryptedBallot(ballotDir: String, ballotId: String) : Result<EncryptedBallot, ErrorMessages> {
         val errs = ErrorMessages("readEncryptedBallot ballotId=$ballotId from directory $ballotDir")
         val ballotFilename = jsonPaths.encryptedBallotPath(ballotDir, ballotId)

@@ -115,13 +115,14 @@ actual class PublisherJson actual constructor(topDir: String, createNew: Boolean
         }
     }
 
-    actual override fun encryptedBallotSink(device: String, batched: Boolean): EncryptedBallotSinkIF {
-        val ballotDir = jsonPaths.encryptedBallotDir(device)
-        validateOutputDir(Path.of(ballotDir), Formatter())
+    // batched is only used by proto, so is ignored here
+    actual override fun encryptedBallotSink(device: String?, batched: Boolean): EncryptedBallotSinkIF {
+        val ballotDir = if (device != null) jsonPaths.encryptedBallotDir(device) else jsonPaths.topDir
+        validateOutputDir(Path.of(ballotDir), Formatter()) // TODO
         return EncryptedBallotDeviceSink(device)
     }
 
-    inner class EncryptedBallotDeviceSink(val device: String) : EncryptedBallotSinkIF {
+    inner class EncryptedBallotDeviceSink(val device: String?) : EncryptedBallotSinkIF {
 
         override fun writeEncryptedBallot(ballot: EncryptedBallot) {
             val ballotFile = jsonPaths.encryptedBallotDevicePath(device, ballot.ballotId)

@@ -27,6 +27,7 @@ expect class ConsumerJsonR (topDir: String, group: GroupContext) : Consumer {
 
     override fun iterateDecryptedBallots(): Iterable<DecryptedTallyOrBallot>
 
+    override fun iterateEncryptedBallotsFromDir(ballotDir: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot>
     override fun iteratePlaintextBallots(ballotDir: String, filter : ((PlaintextBallot) -> Boolean)? ): Iterable<PlaintextBallot>
     override fun readTrustee(trusteeDir: String, guardianId: String): Result<DecryptingTrusteeIF, ErrorMessages>
 }

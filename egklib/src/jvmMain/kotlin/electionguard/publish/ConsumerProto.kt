@@ -139,6 +139,9 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         return Iterable { DeviceIterator(devices.iterator(), filter) }
     }
 
+    actual override fun iterateEncryptedBallotsFromDir(ballotDir: String, filter : ((EncryptedBallot) -> Boolean)? ): Iterable<EncryptedBallot> = emptyList()
+
+
     //////////////////////////////////////////////////////////////////////////////////////////////
 
 

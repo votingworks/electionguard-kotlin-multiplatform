@@ -1,6 +1,6 @@
 # ElectionGuard-Kotlin-Multiplatform Getting Started
 
-_last update 10/23/2023_
+_last update 11/22/2023_
 
 <!-- TOC -->
 * [ElectionGuard-Kotlin-Multiplatform Getting Started](#electionguard-kotlin-multiplatform-getting-started)
@@ -16,7 +16,7 @@ _last update 10/23/2023_
 
 ```
   cd devhome
-  git clone https://github.com/danwallach/electionguard-kotlin-multiplatform.git
+  git clone https://github.com/votingworks/electionguard-kotlin-multiplatform.git
 ```
 
 2. **Java 17+**. Install as needed, and make it your default Java when working with egk.
@@ -34,7 +34,7 @@ _last update 10/23/2023_
 ```
 
 4. **Kotlin 1.9.10**. The correct version of kotlin will be installed when you invoke a gradle command.
-   SImilarly, all needed library dependencies are also downloaded when you invoke a gradle command.
+   Similarly, all needed library dependencies are downloaded when you invoke a gradle command.
 
 Alternatively, you can use the IntelliJ IDE (make sure you update to the latest version). 
 Do steps 1 and 2 above. Then, in the IDE top menu: 
@@ -112,7 +112,7 @@ You can put this jar into your build like
   }
 ```
 
-And you can also add it to your classpath to execute programs from the command line:
+And you can also add it to your classpath to execute [command line programs](CommandLineInterface.md):
 
 ```
 /usr/lib/jvm/jdk-19/bin/java \
@@ -122,5 +122,5 @@ And you can also add it to your classpath to execute programs from the command l
     -in /path/to/election_record
 ```
 
-This also includes logback as a logging implementation. The includede libraries are described
+This also includes logback as a logging implementation. The included libraries are described
 [here](../dependencies.txt).
