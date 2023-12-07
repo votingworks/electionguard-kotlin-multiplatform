@@ -12,13 +12,14 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
 import java.io.FileOutputStream
 
+/** Read the EG encypted ballots and create JSON encoded file for the mixnet. */
 class RunMakeMixnetInput {
 
     companion object {
         val jsonReader = Json { explicitNulls = false; ignoreUnknownKeys = true; prettyPrint = true }
 
         @JvmStatic
-        fun main(args: Array<String>) {
+        fun main(args: Array<String>): Int {
             val parser = ArgParser("RunMakeMixnetInput")
             val encryptedBallotsDir by parser.option(
                 ArgType.String,
@@ -33,7 +34,7 @@ class RunMakeMixnetInput {
             val isJson by parser.option(
                 ArgType.Boolean,
                 shortName = "json",
-                description = "ENcrypted ballots are JSON"
+                description = "Encrypted ballots are JSON"
             ).default(true)
             parser.parse(args)
 
@@ -41,12 +42,15 @@ class RunMakeMixnetInput {
             val outputDir = outputFile.substringBeforeLast("/")
             createDirectories(outputDir)
 
-            runMakeMixnetInput(productionGroup(), encryptedBallotsDir, outputFile, isJson)
+            return runMakeMixnetInput(productionGroup(), encryptedBallotsDir, outputFile, isJson)
         }
 
-        fun runMakeMixnetInput(group: GroupContext, encryptedBallotsDir: String, outputFile: String, isJson : Boolean) {
+        /** return number of ciphertexts in a row. */
+        fun runMakeMixnetInput(group: GroupContext, encryptedBallotsDir: String, outputFile: String, isJson : Boolean): Int {
             val consumer = makeConsumer(group, encryptedBallotsDir, isJson)
             val mixnetBallots = mutableListOf<MixnetBallot>()
+            var first = true
+            var countCiphertexts = 0
             consumer.iterateEncryptedBallotsFromDir(encryptedBallotsDir, null).forEach { encryptedBallot ->
                 val ciphertexts = mutableListOf<ElGamalCiphertext>()
                 ciphertexts.add(encryptedBallot.encryptedSn!!) // always the first one
@@ -56,12 +60,14 @@ class RunMakeMixnetInput {
                     }
                 }
                 mixnetBallots.add(MixnetBallot(ciphertexts))
+                if (first) countCiphertexts = ciphertexts.size else require(countCiphertexts == ciphertexts.size)
             }
 
             val json = mixnetBallots.publishJson()
             FileOutputStream(outputFile).use { out ->
                 jsonReader.encodeToStream(json, out)
             }
+            return countCiphertexts
         }
     }
 }
