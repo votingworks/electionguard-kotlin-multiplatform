@@ -46,7 +46,7 @@ last update 11/22/2023
    2. To run a keyceremony with remote guardians, see the webapps CLI.
 
 4. **Create test input plaintext ballots**
-   1. Create fake input ballots for testing with [_RunGenerateInputBallots_ CLI](#create-fake-input-ballots).
+   1. Create fake input ballots for testing with [_RunCreateInputBallots_ CLI](#create-fake-input-ballots).
    1. _electionguard.workflow.GenerateFakeBallots_ generates random test ballots.
    2. Use existing fake ballots for testing in _egklib/src/commonTest/data/fakeBallots_.
 
@@ -123,7 +123,6 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
   -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunCreateElectionConfig \
     -manifest egklib/src/commonTest/data/startManifestJson \
@@ -193,7 +192,7 @@ Options:
     --inputDir, -in -> Directory containing input election record (always required) { String }
     --ballotDir, -ballots -> Directory to read Plaintext ballots from (always required) { String }
     --outputDir, -out -> Directory to write output election record { String }
-    --encryptDir, -encryptDir -> Write just encrypted ballots here { String }
+    --encryptDir, -eballots -> Write encrypted ballots here { String }
     --invalidDir, -invalid -> Directory to write invalid input ballots to { String }
     --check, -check [None] -> Check encryption { Value should be one of [none, verify, encrypttwice, decryptnonce] }
     --nthreads, -nthreads [11] -> Number of parallel threads to use { Int }
@@ -201,7 +200,7 @@ Options:
     --device, -device -> voting device name (always required) { String }
     --cleanOutput, -clean [false] -> clean output dir 
     --anonymize, -anon [false] -> anonymize ballot 
-    --help, -h -> Usage info 
+    --help, -h -> Usage info
 ````
 You must specify outputDir or encryptDir. The former copies ElectionInit and writes encrypted ballots to standard election record.
 The latter writes just the encrypted ballots to the specified directory.
@@ -228,6 +227,7 @@ Usage: RunAccumulateTally options_list
 Options: 
     --inputDir, -in -> Directory containing input ElectionInitialized record and encrypted ballots (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
+    --encryptDir, -eballots -> Read encrypted ballots here (optional) { String }
     --name, -name -> Name of tally { String }
     --createdBy, -createdBy -> who created { String }
     --help, -h -> Usage info 
@@ -263,7 +263,7 @@ Options:
     --trusteeDir, -trustees -> Directory to read private trustees (always required) { String }
     --outputDir, -out -> Directory to write output election record (always required) { String }
     --createdBy, -createdBy -> who created { String }
-    --npresent, -npresent -> number of guardians present { Int }
+    --missing, -missing -> missing guardians' xcoord, comma separated, eg '2,4' { String }
     --help, -h -> Usage info 
 ````
 

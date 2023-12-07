@@ -283,7 +283,7 @@ open class KeyCeremonyTrustee(
     // Call after all myShareOfOthers has been populated with all the other trustee's.
     // The value P(i) == G_i’s share of the secret key s = (s1 + s2 + · · · + sn )
     // == (P1 (ℓ) + P2 (ℓ) + · · · + Pn (ℓ)) mod q. spec 2.0.0, eq 65.
-    internal fun computeSecretKeyShare(): ElementModQ {
+    fun computeSecretKeyShare(): ElementModQ {
        if (nguardians != myShareOfOthers.size + 1) {
             throw RuntimeException("KeyCeremonyTrustee.computeSecretKeyShare: requires nguardians ${nguardians} but have ${myShareOfOthers.size + 1} shares")
         }
