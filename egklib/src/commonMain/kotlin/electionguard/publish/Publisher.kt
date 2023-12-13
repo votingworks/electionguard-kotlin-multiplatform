@@ -40,5 +40,5 @@ fun makePublisher(
     createNew: Boolean = false, // false = create directories if not already exist, true = create clean directories,
     jsonSerialization: Boolean = false, // false = protobuf, true = json
 ): Publisher {
-    return if (jsonSerialization) PublisherJson(topDir, createNew) else PublisherProto(topDir, createNew)
+    return PublisherJson(topDir, createNew)
 }

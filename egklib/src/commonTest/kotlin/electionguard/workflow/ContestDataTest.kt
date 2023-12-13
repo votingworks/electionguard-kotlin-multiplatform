@@ -16,7 +16,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ContestDataTest {
-    val input = "src/commonTest/data/workflow/allAvailableProto"
+    val input = "src/commonTest/data/workflow/allAvailableJson"
     val output = "testOut/contestData/testEncryptionWithWriteIn"
     val context = productionGroup()
     val keypair = elGamalKeyPairFromRandom(context)
@@ -130,12 +130,6 @@ class ContestDataTest {
                 }
             }
         }
-
-        val publisherProto = makePublisher(output, true, false)
-        publisherProto.writeElectionInitialized(electionInit)
-        val sink = publisherProto.encryptedBallotSink("testWriteEncryptions")
-        sink.writeEncryptedBallot(eballot.cast())
-        sink.close()
 
         val publisherJson = makePublisher(output + "Json", true, true)
         publisherJson.writeElectionInitialized(electionInit)

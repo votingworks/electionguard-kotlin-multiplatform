@@ -21,7 +21,7 @@ import kotlin.test.*
 /** Test KeyCeremony Trustee generation and recovered decryption. */
 class EncryptDecryptBallotTest {
     val group = productionGroup()
-    val configDir = "src/commonTest/data/startConfigProto"
+    val configDir = "src/commonTest/data/startConfigJson"
     val outputDir = "testOut/RecoveredDecryptionTest"
     val trusteeDir = "$outputDir/private_data"
 

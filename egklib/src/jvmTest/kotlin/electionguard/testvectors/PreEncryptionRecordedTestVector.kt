@@ -9,8 +9,6 @@ import electionguard.json2.*
 import electionguard.preencrypt.*
 import electionguard.preencrypt.MarkedPreEncryptedBallot
 import electionguard.preencrypt.MarkedPreEncryptedContest
-import electionguard.protoconvert.import
-import electionguard.protoconvert.publishProto
 import electionguard.util.ErrorMessages
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -91,8 +89,8 @@ class PreEncryptionRecordedTestVector {
 
         // roundtrip through the proto, combines the recordedBallot
         val encryptedBallot = ciphertextBallot.cast()
-        val proto = encryptedBallot.publishProto(recordedBallot)
-        val fullEncryptedBallot = proto.import(group, ErrorMessages(""))!!
+        val json = encryptedBallot.publishJson(recordedBallot)
+        val fullEncryptedBallot = json.import(group, ErrorMessages(""))!!
 
         val preEncryptionRecordedTestVector = PreEncryptionRecordedTestVector(
             "Test recording a pre-encrypted ballot to election record",
@@ -142,8 +140,8 @@ class PreEncryptionRecordedTestVector {
 
         // roundtrip through the proto, combines the recordedBallot
         val encryptedBallot = ciphertextBallot.cast()
-        val proto = encryptedBallot.publishProto(recordedBallot)
-        val fullEncryptedBallot = proto.import(group, ErrorMessages(""))!!
+        val json = encryptedBallot.publishJson(recordedBallot)
+        val fullEncryptedBallot = json.import(group, ErrorMessages(""))!!
 
         checkEquals(testVector.expected_recorded_ballot, fullEncryptedBallot)
     }

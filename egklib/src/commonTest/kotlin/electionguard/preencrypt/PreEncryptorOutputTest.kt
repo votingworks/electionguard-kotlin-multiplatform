@@ -31,14 +31,6 @@ class PreEncryptorOutputTest {
             .build()
 
         runCompleteOutput(group,
-            "src/commonTest/data/workflow/allAvailableProto",
-            "testOut/preencrypt/PreEncryptorOutputProto",
-            "testPreencrypt",
-            manifest,
-            ::markBallotToLimit,
-                true)
-
-        runCompleteOutput(group,
             "src/commonTest/data/workflow/allAvailableJson",
             "testOut/preencrypt/PreEncryptorOutputJson",
             "testPreencrypt",

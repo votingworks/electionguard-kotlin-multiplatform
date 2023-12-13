@@ -19,17 +19,5 @@ class RunKeyCeremonyTest {
         RunVerifier.runVerifier(productionGroup(), "testOut/keyceremony/testKeyCeremonyJson", 1, true)
     }
 
-    @Test
-    fun testKeyCeremonyProto() {
-        RunTrustedKeyCeremony.main(
-            arrayOf(
-                "-in", "src/commonTest/data/startConfigProto",
-                "-trustees", "testOut/keyceremony/testKeyCeremonyProto/private_data/trustees",
-                "-out", "testOut/keyceremony/testKeyCeremonyProto",
-            )
-        )
-        RunVerifier.runVerifier(productionGroup(), "testOut/keyceremony/testKeyCeremonyProto", 1, true)
-    }
-
 }
 

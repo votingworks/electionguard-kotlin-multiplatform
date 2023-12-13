@@ -15,19 +15,19 @@ import kotlin.test.*
 
 class AddEncryptedBallotTest {
     val group = productionGroup()
-    val input = "src/commonTest/data/workflow/allAvailableProto"
-    val outputDirProto = "testOut/encrypt/addEncryptedBallot"
+    val input = "src/commonTest/data/workflow/allAvailableJson"
+    val outputDir = "testOut/encrypt/addEncryptedBallot"
 
     val nballots = 4
 
     @Test
     fun testJustOne() {
-        val outputDir = "$outputDirProto/testJustOne"
+        val outputDir = "$outputDir/testJustOne"
         val device = "device0"
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         val encryptor = AddEncryptedBallot(
@@ -52,17 +52,17 @@ class AddEncryptedBallotTest {
         }
         encryptor.close()
 
-        checkOutput(group, outputDir, nballots, false)
+        checkOutput(group, outputDir, nballots, electionInit.config.chainConfirmationCodes)
     }
 
     @Test
     fun testEncryptAndCast() {
-        val outputDir = "$outputDirProto/testEncryptAndCast"
+        val outputDir = "$outputDir/testEncryptAndCast"
         val device = "device0"
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         val encryptor = AddEncryptedBallot(
@@ -87,17 +87,17 @@ class AddEncryptedBallotTest {
         }
         encryptor.close()
 
-        checkOutput(group, outputDir, nballots, publisher.isJson())
+        checkOutput(group, outputDir, nballots, electionInit.config.chainConfirmationCodes)
     }
 
     @Test
     fun testEncryptAndCastNoWrite() {
-        val outputDir = "$outputDirProto/testEncryptAndCastNoWrite"
+        val outputDir = "$outputDir/testEncryptAndCastNoWrite"
         val device = "device0"
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         val encryptor = AddEncryptedBallot(
@@ -127,12 +127,12 @@ class AddEncryptedBallotTest {
 
     @Test
     fun testCallMultipleTimes() {
-        val outputDir = "$outputDirProto/testCallMultipleTimes"
+        val outputDir = "$outputDir/testCallMultipleTimes"
         val device = "device1"
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         repeat(3) {
@@ -159,16 +159,16 @@ class AddEncryptedBallotTest {
             encryptor.close()
         }
 
-        checkOutput(group, outputDir, 3 * nballots, false)
+        checkOutput(group, outputDir, 3 * nballots, electionInit.config.chainConfirmationCodes)
     }
 
     @Test
     fun testMultipleDevices() {
-        val outputDir = "$outputDirProto/testMultipleDevices"
+        val outputDir = "$outputDir/testMultipleDevices"
 
         val electionRecord = readElectionRecord(group, input)
         val electionInit = electionRecord.electionInit()!!
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         repeat(3) { it ->
@@ -195,19 +195,19 @@ class AddEncryptedBallotTest {
             encryptor.close()
         }
 
-        checkOutput(group, outputDir, 3 * nballots, false)
+        checkOutput(group, outputDir, 3 * nballots, electionInit.config.chainConfirmationCodes)
     }
 
     @Test
     fun testOneWithChain() {
-        val outputDir = "$outputDirProto/testOneWithChain"
+        val outputDir = "$outputDir/testOneWithChain"
         val device = "device0"
 
         val electionRecord = readElectionRecord(group, input)
         val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
         val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
 
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         val encryptor = AddEncryptedBallot(
@@ -237,14 +237,14 @@ class AddEncryptedBallotTest {
 
     @Test
     fun testCallMultipleTimesChaining() {
-        val outputDir = "$outputDirProto/testCallMultipleTimesChaining"
+        val outputDir = "$outputDir/testCallMultipleTimesChaining"
         val device = "device1"
 
         val electionRecord = readElectionRecord(group, input)
         val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
         val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
 
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         repeat(4) {
@@ -276,13 +276,13 @@ class AddEncryptedBallotTest {
 
     @Test
     fun testMultipleDevicesChaining() {
-        val outputDir = "$outputDirProto/testMultipleDevicesChaining"
+        val outputDir = "$outputDir/testMultipleDevicesChaining"
 
         val electionRecord = readElectionRecord(group, input)
         val configWithChaining = electionRecord.config().copy(chainConfirmationCodes = true)
         val electionInit = electionRecord.electionInit()!!.copy(config = configWithChaining)
 
-        val publisher = makePublisher(outputDir, true, false)
+        val publisher = makePublisher(outputDir, true, true)
         publisher.writeElectionInitialized(electionInit)
 
         repeat(3) { it ->
