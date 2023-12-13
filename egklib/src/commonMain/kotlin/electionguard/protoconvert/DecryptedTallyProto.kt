@@ -1,13 +1,11 @@
 package electionguard.protoconvert
 
 import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.unwrap
-import electionguard.ballot.DecryptedTallyOrBallot
-import electionguard.ballot.importContestData
-import electionguard.core.ElGamalCiphertext
-import electionguard.core.ElementModP
-import electionguard.core.GroupContext
-import electionguard.core.UInt256
+import electionguard.ballot.*
+import electionguard.core.*
 import electionguard.util.ErrorMessages
 
 fun electionguard.protogen.DecryptedTallyOrBallot.import(group: GroupContext, errs : ErrorMessages): DecryptedTallyOrBallot? {
@@ -110,3 +108,35 @@ private fun DecryptedTallyOrBallot.DecryptedContestData.publishProto() =
         this.proof.publishProto(),
         this.beta.publishProto(),
     )
+
+//////////////////////////////////////////////////////////////////
+
+fun ContestData.publish(filler: String = ""): electionguard.protogen.ContestData {
+    return electionguard.protogen.ContestData(
+        status.publishContestDataStatus(),
+        overvotes,
+        writeIns,
+        filler,
+    )
+}
+
+fun importContestData(proto : electionguard.protogen.ContestData?): Result<ContestData, String> {
+    if (proto == null) return Err( "ContestData is missing")
+    return Ok(ContestData(
+        proto.overVotes,
+        proto.writeIns,
+        importContestDataStatus(proto.status)?: ContestDataStatus.normal,
+    ))
+}
+
+private fun importContestDataStatus(proto: electionguard.protogen.ContestData.Status): ContestDataStatus? {
+    return safeEnumValueOf<ContestDataStatus>(proto.name)
+}
+
+private fun ContestDataStatus.publishContestDataStatus(): electionguard.protogen.ContestData.Status {
+    return try {
+        electionguard.protogen.ContestData.Status.fromName(this.name)
+    }  catch (e: IllegalArgumentException) {
+        electionguard.protogen.ContestData.Status.NORMAL
+    }
+}

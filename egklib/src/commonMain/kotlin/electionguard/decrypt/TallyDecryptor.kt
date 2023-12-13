@@ -9,7 +9,6 @@ import electionguard.ballot.decryptWithBetaToContestData
 import electionguard.core.*
 import electionguard.util.ErrorMessages
 import electionguard.util.Stats
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 private const val doVerifierSelectionProof = true
 

@@ -188,56 +188,23 @@ actual class PublisherProto actual constructor(topDir: String, createNew: Boolea
  }
 
 
-/** Delete everything in the given directory, but leave that directory.  */
-fun removeAllFiles(path: Path) {
-    if (!path.toFile().exists()) {
-        return
-    }
-    Files.walk(path)
-        .filter { p: Path -> p != path }
-        .map { obj: Path -> obj.toFile() }
-        .sorted { o1: File, o2: File? -> -o1.compareTo(o2) }
-        .forEach { f: File -> f.delete() }
+fun writeDelimitedTo(proto: pbandk.Message, output: OutputStream) {
+    val bb = ByteArrayOutputStream()
+    proto.encodeToStream(bb)
+    writeVlenForProto(bb.size(), output)
+    output.write(bb.toByteArray())
+    output.flush()
 }
 
-
-    fun writeDelimitedTo(proto: pbandk.Message, output: OutputStream) {
-        val bb = ByteArrayOutputStream()
-        proto.encodeToStream(bb)
-        writeVlen(bb.size(), output)
-        output.write(bb.toByteArray())
-        output.flush()
-    }
-
-    fun writeVlen(input: Int, output: OutputStream) {
-        var value = input
-        while (true) {
-            if (value and 0x7F.inv() == 0) {
-                output.write(value)
-                return
-            } else {
-                output.write(value and 0x7F or 0x80)
-                value = value ushr 7
-            }
+private fun writeVlenForProto(input: Int, output: OutputStream) {
+    var value = input
+    while (true) {
+        if (value and 0x7F.inv() == 0) {
+            output.write(value)
+            return
+        } else {
+            output.write(value and 0x7F or 0x80)
+            value = value ushr 7
         }
     }
-
-/** Make sure output directories exists and are writeable.  */
-fun validateOutputDir(path: Path, error: Formatter): Boolean {
-    if (!Files.exists(path)) {
-        Files.createDirectories(path)
-    }
-    if (!Files.isDirectory(path)) {
-        error.format(" Output directory '%s' is not a directory%n", path)
-        return false
-    }
-    if (!Files.isWritable(path)) {
-        error.format(" Output directory '%s' is not writeable%n", path)
-        return false
-    }
-    if (!Files.isExecutable(path)) {
-        error.format(" Output directory '%s' is not executable%n", path)
-        return false
-    }
-    return true
 }

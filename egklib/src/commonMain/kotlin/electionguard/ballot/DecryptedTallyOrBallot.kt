@@ -29,7 +29,7 @@ data class DecryptedTallyOrBallot(
 
     data class DecryptedContestData(
         val contestData: ContestData,
-        val encryptedContestData : HashedElGamalCiphertext, // same as EncryptedTally.Selection.ciphertext
+        val encryptedContestData : HashedElGamalCiphertext, // same as EncryptedTally.Contest.contestData
         val proof: ChaumPedersenProof,
         var beta: ElementModP, // needed to verify 10.2
     )
