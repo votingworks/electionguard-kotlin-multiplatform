@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import kotlin.test.Test
 
 class DuplicateTrackingCodesTest {
-    private val inputDir = "src/commonTest/data/workflow/allAvailableProto"
+    private val inputDir = "src/commonTest/data/workflow/allAvailableJson"
 
     @Test
     fun duplicateTrackingCodes() {

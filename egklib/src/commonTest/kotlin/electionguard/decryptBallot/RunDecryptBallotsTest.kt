@@ -22,7 +22,7 @@ class RunDecryptBallotsTest {
     @Test
     fun testDecryptBallotsAll() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/workflow/allAvailableProto"
+        val inputDir = "src/commonTest/data/workflow/allAvailableJson"
         val trusteeDir = "$inputDir/private_data/trustees"
         val outputDir = "testOut/decrypt/testDecryptBallotsAll"
         println("\ntestDecryptBallotsAll")
@@ -40,7 +40,7 @@ class RunDecryptBallotsTest {
     @Test
     fun testDecryptBallotsSomeFromList() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/workflow/someAvailableProto"
+        val inputDir = "src/commonTest/data/workflow/someAvailableJson"
         val trusteeDir = "$inputDir/private_data/trustees"
         val outputDir = "testOut/decrypt/testDecryptBallotsSomeFromList"
         println("\ntestDecryptBallotsSomeFromList")
@@ -57,7 +57,7 @@ class RunDecryptBallotsTest {
     @Test
     fun testDecryptBallotsSomeFromFile() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/workflow/someAvailableProto"
+        val inputDir = "src/commonTest/data/workflow/someAvailableJson"
         val trusteeDir = "$inputDir/private_data/trustees"
         val wantBallots = "$inputDir/private_data/wantedBallots.txt"
         val outputDir = "testOut/decrypt/testDecryptBallotsSomeFromFile"
@@ -77,9 +77,9 @@ class RunDecryptBallotsTest {
         RunTrustedBallotDecryption.main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/workflow/someAvailableProto",
+                "src/commonTest/data/workflow/someAvailableJson",
                 "-trustees",
-                "src/commonTest/data/workflow/someAvailableProto/private_data/trustees",
+                "src/commonTest/data/workflow/someAvailableJson/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptBallotsMainMultiThreaded",
                 "-challenged",
@@ -97,9 +97,9 @@ class RunDecryptBallotsTest {
         RunTrustedBallotDecryption.main(
             arrayOf(
                 "-in",
-                "src/commonTest/data/workflow/someAvailableProto",
+                "src/commonTest/data/workflow/someAvailableJson",
                 "-trustees",
-                "src/commonTest/data/workflow/someAvailableProto/private_data/trustees",
+                "src/commonTest/data/workflow/someAvailableJson/private_data/trustees",
                 "-out",
                 "testOut/decrypt/testDecryptBallotsMarkedSpoiled",
                 "-nthreads",
@@ -111,7 +111,7 @@ class RunDecryptBallotsTest {
     @Test
     fun showBallotIds() {
         val group = productionGroup()
-        val inputDir = "src/commonTest/data/workflow/someAvailableProto"
+        val inputDir = "src/commonTest/data/workflow/someAvailableJson"
         val ballotDir = "$inputDir/private_data/input/"
         val consumerIn = makeConsumer(group, inputDir)
 

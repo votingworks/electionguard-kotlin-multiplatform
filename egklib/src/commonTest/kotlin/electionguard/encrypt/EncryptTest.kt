@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class EncryptTest {
-    val input = "src/commonTest/data/workflow/allAvailableProto"
+    val input = "src/commonTest/data/workflow/allAvailableJson"
 
     // sanity check that encryption doesnt barf
     @Test

@@ -3,8 +3,8 @@ package electionguard.ballot
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.unwrap
 import electionguard.core.*
-import electionguard.protoconvert.importHashedCiphertext
-import electionguard.protoconvert.publishProto
+import electionguard.json2.import
+import electionguard.json2.publishJson
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.string
@@ -72,8 +72,9 @@ class ContestDataEncryptTest {
         var took = getSystemTimeInMillis() - starting
         println(" contestData.encrypt took $took millisecs")
 
-        val hashProto = target.publishProto()
-        val hashRoundtrip = group.importHashedCiphertext(hashProto)
+        val json = target.publishJson()
+        // fun HashedElGamalCiphertextJson.import(group : GroupContext) : HashedElGamalCiphertext? {
+        val hashRoundtrip = json.import(group)
         assertNotNull(hashRoundtrip)
         assertEquals(target, hashRoundtrip)
 

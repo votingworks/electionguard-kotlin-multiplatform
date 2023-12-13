@@ -55,16 +55,12 @@ interface Consumer {
 fun makeConsumer(
     group: GroupContext,
     topDir: String,
-    isJson: Boolean? = null, // if not set, check if manifest.json file exists
+    isJson: Boolean = true, // if not set, check if manifest.json file exists
 ): Consumer {
     val useJson = isJson ?: topDir.endsWith(".zip") ||
             pathExists("$topDir/${ElectionRecordJsonPaths.MANIFEST_FILE}")
 
-    return if (useJson) {
-        ConsumerJson(topDir, group)
-    } else {
-        ConsumerProto(topDir, group)
-    }
+    return ConsumerJson(topDir, group)
 }
 
 fun makeInputBallotSource(
@@ -72,13 +68,7 @@ fun makeInputBallotSource(
     group: GroupContext,
     isJson: Boolean? = null, // if not set, check if PLAINTEXT_BALLOT_FILE file exists
 ): Consumer {
-    val useJson = isJson ?: !pathExists("$ballotDir/${ElectionRecordProtoPaths.PLAINTEXT_BALLOT_FILE}")
-
-    return if (useJson) {
-        ConsumerJson(ballotDir, group)
-    } else {
-        ConsumerProto(ballotDir, group)
-    }
+    return ConsumerJson(ballotDir, group)
 }
 
 fun makeTrusteeSource(
@@ -86,12 +76,7 @@ fun makeTrusteeSource(
     group: GroupContext,
     isJson: Boolean,
 ): Consumer {
-
-    return if (isJson) {
-        ConsumerJson(trusteeDir, group)
-    } else {
-        ConsumerProto(trusteeDir, group)
-    }
+    return ConsumerJson(trusteeDir, group)
 }
 
 /**
@@ -110,8 +95,7 @@ fun readAndCheckManifest(group: GroupContext, manifestDirOrFile: String): Triple
     }
 
     val manifestFile = if (isDirectory) {
-        if (isJson) "$manifestDirOrFile/${ElectionRecordJsonPaths.MANIFEST_FILE}" else
-            "$manifestDirOrFile/${ElectionRecordProtoPaths.MANIFEST_FILE}"
+        "$manifestDirOrFile/${ElectionRecordJsonPaths.MANIFEST_FILE}"
     } else if (isZip) {
         ElectionRecordJsonPaths.MANIFEST_FILE
     } else {
@@ -124,11 +108,7 @@ fun readAndCheckManifest(group: GroupContext, manifestDirOrFile: String): Triple
         manifestDirOrFile.substringBeforeLast("/")
     }
 
-    val consumer = if (isJson) {
-        ConsumerJson(manifestDir, group)
-    } else {
-        ConsumerProto(manifestDir, group)
-    }
+    val consumer =  ConsumerJson(manifestDir, group)
 
     try {
         val manifestBytes = consumer.readManifestBytes(manifestFile)

@@ -9,9 +9,8 @@ import kotlin.test.Test
 
 /** Generate fake ballots for testing. No actual testing here. */
 class GenerateFakeBallots {
-    val inputDir = "src/commonTest/data/startConfigProto"
+    val inputDir = "src/commonTest/data/startConfigJson"
     val outputDirJson =  "testOut/fakeBallots/json"
-    val outputDirProto =  "testOut/fakeBallots/proto"
 
     @Test
     fun generateFakeBallotsJson() {
@@ -25,8 +24,5 @@ class GenerateFakeBallots {
 
         val publisher = makePublisher(outputDirJson, true, true)
         publisher.writePlaintextBallot(outputDirJson, ballots)
-
-        val publisherProto = makePublisher(outputDirProto, true, false)
-        publisherProto.writePlaintextBallot(outputDirProto, ballots)
     }
 }

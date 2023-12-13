@@ -15,22 +15,6 @@ RunBatchEncryptionTest {
     val nthreads = 25
 
     @Test
-    fun testRunBatchEncryptionProto() {
-        RunBatchEncryption.main(
-            arrayOf(
-                "-in", "src/commonTest/data/workflow/allAvailableProto",
-                "-ballots", "src/commonTest/data/fakeBallots/proto",
-                "-out", "testOut/encrypt/testRunBatchEncryptionProto",
-                "-invalid", "testOut/encrypt/testRunBatchEncryptionProto/invalid_ballots",
-                "-nthreads", "$nthreads",
-                "-device", "device0",
-                "--cleanOutput",
-            )
-        )
-        RunVerifier.runVerifier(productionGroup(), "testOut/encrypt/testRunBatchEncryptionProto", 11)
-    }
-
-    @Test
     fun testRunBatchEncryptionWithJsonBallots() {
         RunBatchEncryption.main(
             arrayOf(
@@ -67,7 +51,7 @@ RunBatchEncryptionTest {
         RunBatchEncryption.main(
             arrayOf(
                 "-in", "src/commonTest/data/workflow/allAvailableJson",
-                "-ballots", "src/commonTest/data/fakeBallots/proto",
+                "-ballots", "src/commonTest/data/fakeBallots/json",
                 "-out", "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots",
                 "-invalid", "testOut/encrypt/testRunBatchEncryptionJsonWithProtoBallots/invalid_ballots",
                 "-nthreads", "$nthreads",
@@ -128,8 +112,9 @@ RunBatchEncryptionTest {
 
     @Test
     fun testInvalidBallot() {
-        val inputDir = "src/commonTest/data/workflow/allAvailableProto"
-        val invalidDir = "testOut/testInvalidBallot"
+        val inputDir = "src/commonTest/data/workflow/allAvailableJson"
+        val outputDir = "testOut/testInvalidBallot"
+        val invalidDir = "testOut/testInvalidBallot/invalidDir"
 
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, inputDir)
@@ -142,9 +127,9 @@ RunBatchEncryptionTest {
             inputDir,
             ballots,
             device = "testDevice",
-            invalidDir,
+            outputDir = outputDir,
             encryptDir = null,
-            invalidDir,
+            invalidDir = invalidDir,
             1,
             "testInvalidBallot",
         )

@@ -39,7 +39,7 @@ kotest-property = { module = "io.kotest:kotest-property", version = "5.7.2" }
 mockk = { module = "io.mockk:mockk", version = "1.13.7" }
 
 [bundles]
-eglib = ["bull-result", "kotlinx-cli", "kotlinx-coroutines-core", "kotlinx-datetime", "kotlinx-serialization-json", "pbandk", "oshai-logging"]
+eglib = ["bull-result", "kotlinx-cli", "kotlinx-coroutines-core", "kotlinx-datetime", "kotlinx-serialization-json", "oshai-logging"]
 egtest = ["test-common", "test-annotations-common", "kotlinx-coroutines-test", "kotest-property"]
 jvmtest = ["junit-jupiter-params", "kotlin-test-junit5", "logback-classic", "mockk"]
 

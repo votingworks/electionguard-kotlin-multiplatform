@@ -10,7 +10,7 @@ class RandomBallotProviderTest {
 
     @Test
     fun testBadStyle() {
-        val inputDir = "src/commonTest/data/workflow/allAvailableProto"
+        val inputDir = "src/commonTest/data/workflow/allAvailableJson"
 
         val group = productionGroup()
         val electionRecord = readElectionRecord(group, inputDir)
