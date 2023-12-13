@@ -4,7 +4,7 @@ import electionguard.ballot.*
 import electionguard.core.UInt256
 import electionguard.keyceremony.KeyCeremonyTrustee
 
-/** Read/write the Election Record as protobuf files. */
+/** Read/write the Election Record as JSON files. */
 expect class PublisherJson(topDir: String, createNew: Boolean = false) : Publisher {
     override fun isJson() : Boolean
 

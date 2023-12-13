@@ -10,7 +10,6 @@ import electionguard.input.BallotInputBuilder
 import electionguard.publish.makePublisher
 import electionguard.publish.readElectionRecord
 import electionguard.util.ErrorMessages
-import pbandk.decodeFromByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -76,8 +75,7 @@ class ContestDataTest {
                 keypair.secretKey
             )
             assertNotNull(baRT)
-            val protoRoundtrip = electionguard.protogen.ContestData.decodeFromByteArray(baRT)
-            val contestDataResult = importContestData(protoRoundtrip)
+            val contestDataResult = baRT.decodeToContestData()
             assertTrue(contestDataResult is Ok)
             val contestDataRoundtrip = contestDataResult.unwrap()
 

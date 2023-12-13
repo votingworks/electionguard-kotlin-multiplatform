@@ -13,6 +13,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.nio.file.*
 import java.nio.file.spi.FileSystemProvider
 import java.util.function.Predicate
@@ -494,4 +495,25 @@ fun Path.pathListNoDirs(): List<Path> {
     return Files.walk(this, 1).use { fileStream ->
         fileStream.filter { it != this && !it.isDirectory() }.toList()
     }
+}
+
+// variable length (base 128) int32
+fun readVlen(input: InputStream): Int {
+    var ib: Int = input.read()
+    if (ib == -1) {
+        return -1
+    }
+
+    var result = ib.and(0x7F)
+    var shift = 7
+    while (ib.and(0x80) != 0) {
+        ib = input.read()
+        if (ib == -1) {
+            return -1
+        }
+        val im = ib.and(0x7F).shl(shift)
+        result = result.or(im)
+        shift += 7
+    }
+    return result
 }

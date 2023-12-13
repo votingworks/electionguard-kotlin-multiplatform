@@ -473,24 +473,3 @@ actual class ConsumerProto actual constructor(val topDir: String, val groupConte
         }
     }
 }
-
-// variable length (base 128) int32
-fun readVlen(input: InputStream): Int {
-    var ib: Int = input.read()
-    if (ib == -1) {
-        return -1
-    }
-
-    var result = ib.and(0x7F)
-    var shift = 7
-    while (ib.and(0x80) != 0) {
-        ib = input.read()
-        if (ib == -1) {
-            return -1
-        }
-        val im = ib.and(0x7F).shl(shift)
-        result = result.or(im)
-        shift += 7
-    }
-    return result
-}

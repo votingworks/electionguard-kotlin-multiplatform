@@ -1,12 +1,9 @@
 package electionguard.ballot
 
 import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import electionguard.core.*
 import io.github.oshai.kotlinlogging.KotlinLogging
-import pbandk.decodeFromByteArray
-import pbandk.encodeToByteArray
 import kotlin.math.max
 
 private val logger = KotlinLogging.logger("ContestData")
@@ -27,30 +24,6 @@ data class ContestData(
     val writeIns: List<String>,
     val status: ContestDataStatus = if (overvotes.isNotEmpty()) ContestDataStatus.over_vote else ContestDataStatus.normal,
 ) {
-
-    fun publish(filler: String = ""): electionguard.protogen.ContestData {
-        return publish(
-            this.status,
-            this.overvotes,
-            this.writeIns,
-            filler,
-        )
-    }
-
-    fun publish(
-        status: ContestDataStatus,
-        overvotes: List<Int>,
-        writeIns: List<String>,
-        filler: String = ""
-    ): electionguard.protogen.ContestData {
-        return electionguard.protogen.ContestData(
-            status.publishContestDataStatus(),
-            overvotes,
-            writeIns,
-            filler,
-        )
-    }
-
     // Make sure that the HashedElGamalCiphertext message is exactly (votesAllowed + 1) * BLOCK_SIZE
     // If too large, remove extra writeIns, add "*" to list to indicate some were removed
     // If still too large, truncate writeIns to CHOP_WRITE_INS characters, append "*" to string to indicate truncated
@@ -68,7 +41,7 @@ data class ContestData(
         val messageSize = (1 + contestLimit) * BLOCK_SIZE
 
         var trialContestData = this
-        var trialContestDataBA = trialContestData.publish().encodeToByteArray()
+        var trialContestDataBA = trialContestData.encodeToByteArray()
         var trialSize = trialContestDataBA.size
         val trialSizes = mutableListOf<Int>()
         trialSizes.add(trialSize)
@@ -81,7 +54,7 @@ data class ContestData(
             trialContestData = trialContestData.copy(
                 writeIns = truncateWriteIns,
             )
-            trialContestDataBA = trialContestData.publish().encodeToByteArray()
+            trialContestDataBA = trialContestData.encodeToByteArray()
             trialSize = trialContestDataBA.size
             trialSizes.add(trialSize)
         }
@@ -93,7 +66,7 @@ data class ContestData(
                 if (it.length <= CHOP_WRITE_INS) it else it.substring(0, chop) + "*"
             }
             trialContestData = trialContestData.copy(writeIns = truncateWriteIns)
-            trialContestDataBA = trialContestData.publish().encodeToByteArray()
+            trialContestDataBA = trialContestData.encodeToByteArray()
             trialSize = trialContestDataBA.size
             trialSizes.add(trialSize)
         }
@@ -102,7 +75,7 @@ data class ContestData(
         while (trialSize > messageSize && (trialContestData.overvotes.size > contestLimit + 1)) {
             val chopList = trialContestData.overvotes.subList(0, contestLimit + 1) + (-1)
             trialContestData = trialContestData.copy(overvotes = chopList)
-            trialContestDataBA = trialContestData.publish().encodeToByteArray()
+            trialContestDataBA = trialContestData.encodeToByteArray()
             trialSize = trialContestDataBA.size
             trialSizes.add(trialSize)
         }
@@ -112,7 +85,7 @@ data class ContestData(
             val filler = StringBuilder().apply {
                 repeat(messageSize - trialSize - 2) { append("*") }
             }
-            trialContestDataBA = trialContestData.publish(filler.toString()).encodeToByteArray()
+            trialContestDataBA = trialContestData.encodeToByteArray(filler.toString())
             trialSize = trialContestDataBA.size
             trialSizes.add(trialSize)
         }
@@ -204,8 +177,7 @@ fun HashedElGamalCiphertext.decryptWithBetaToContestData(
 
     val ba: ByteArray = this.decryptContestData(publicKey, extendedBaseHash, contestId, c0, beta) ?:
         return Err( "decryptWithBetaToContestData did not succeed")
-    val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba)
-    return importContestData(proto)
+    return ba.decodeToContestData()
 }
 
 fun HashedElGamalCiphertext.decryptWithNonceToContestData(
@@ -220,8 +192,7 @@ fun HashedElGamalCiphertext.decryptWithNonceToContestData(
     val (alpha, beta) = 0.encrypt(publicKey, contestDataNonce.toElementModQ(group))
     val ba: ByteArray = this.decryptContestData(publicKey, extendedBaseHash, contestId, alpha, beta) ?:
         return Err( "decryptWithNonceToContestData did not succeed")
-    val proto = electionguard.protogen.ContestData.decodeFromByteArray(ba)
-    return importContestData(proto)
+    return ba.decodeToContestData()
 }
 
 fun HashedElGamalCiphertext.decryptWithSecretKey(
@@ -266,32 +237,4 @@ fun HashedElGamalCiphertext.decryptContestData(
     }
 }
 
-//////////////////////////////////////////////////////////////////
-// LOOK maybe move to protoconvert
-
-fun importContestData(proto : electionguard.protogen.ContestData?): Result<ContestData, String> {
-    if (proto == null) return Err( "ContestData is missing")
-    return Ok(ContestData(
-        proto.overVotes,
-        proto.writeIns,
-        importContestDataStatus(proto.status)?: ContestDataStatus.normal,
-    ))
-}
-
-private fun importContestDataStatus(proto: electionguard.protogen.ContestData.Status): ContestDataStatus? {
-    val result = safeEnumValueOf<ContestDataStatus>(proto.name)
-    if (result == null) {
-        logger.error { "ContestDataStatus $proto has missing or unknown name" }
-    }
-    return result
-}
-
-private fun ContestDataStatus.publishContestDataStatus(): electionguard.protogen.ContestData.Status {
-    return try {
-        electionguard.protogen.ContestData.Status.fromName(this.name)
-    }  catch (e: IllegalArgumentException) {
-        logger.error { "ContestDataStatus $this has missing or unknown name" }
-        electionguard.protogen.ContestData.Status.NORMAL
-    }
-}
 

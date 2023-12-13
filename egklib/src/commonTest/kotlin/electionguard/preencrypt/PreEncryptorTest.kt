@@ -11,8 +11,8 @@ import electionguard.core.*
 import electionguard.decryptBallot.DecryptPreencryptWithNonce
 import electionguard.encrypt.cast
 import electionguard.cli.ManifestBuilder
-import electionguard.protoconvert.import
-import electionguard.protoconvert.publishProto
+import electionguard.json2.import
+import electionguard.json2.publishJson
 import electionguard.publish.readElectionRecord
 import electionguard.util.ErrorMessages
 import electionguard.util.Stats
@@ -26,8 +26,8 @@ import kotlin.test.*
 
 private val random = Random
 
-internal class PreEncryptorTest {
-    val input = "src/commonTest/data/workflow/allAvailableProto"
+class PreEncryptorTest {
+    val input = "src/commonTest/data/workflow/allAvailableJson"
     val group = productionGroup()
 
     // sanity check that PreEncryptor.preencrypt doesnt barf
@@ -227,10 +227,10 @@ internal fun runComplete(
         println()
     }
 
-    // roundtrip through the proto, combines the recordedBallot
+    // roundtrip through the serialization, which combines the recordedBallot
     val encryptedBallot = ciphertextBallot.cast()
-    val proto = encryptedBallot.publishProto(recordedBallot)
-    val fullEncryptedBallot = proto.import(group, ErrorMessages(""))!!
+    val json = encryptedBallot.publishJson(recordedBallot)
+    val fullEncryptedBallot = json.import(group, ErrorMessages(""))!!
 
     // show what ends up in the election record
     if (show) {
