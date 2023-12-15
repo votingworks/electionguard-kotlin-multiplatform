@@ -4,6 +4,7 @@ import electionguard.core.GroupContext
 import electionguard.util.Stats
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
+import electionguard.publish.Consumer
 import electionguard.util.sigfig
 import electionguard.publish.readElectionRecord
 import electionguard.verifier.Verifier
@@ -47,6 +48,23 @@ class RunVerifier {
             val starting = getSystemTimeInMillis()
 
             val electionRecord = readElectionRecord(group, inputDir)
+            val verifier = Verifier(electionRecord, nthreads)
+            val stats = Stats()
+            val allOk = verifier.verify(stats, showTime)
+            if (showTime) {
+                stats.show()
+            }
+
+            val tookAll = (getSystemTimeInMillis() - starting)
+            println("RunVerifier took $tookAll msecs OK = ${allOk}")
+            return allOk
+        }
+
+        // RunVerifier.runVerifier(group, consumerIn, 11, true)
+        fun runVerifier(group: GroupContext, consumer: Consumer, nthreads: Int, showTime: Boolean = false): Boolean {
+            val starting = getSystemTimeInMillis()
+
+            val electionRecord = readElectionRecord(consumer)
             val verifier = Verifier(electionRecord, nthreads)
             val stats = Stats()
             val allOk = verifier.verify(stats, showTime)

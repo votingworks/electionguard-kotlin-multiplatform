@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation(files("../egklib/build/libs/egklib-jvm-2.0.0-SNAPSHOT.jar")) // add the library to the fatJar
+    implementation(files("../egklib/build/libs/egklib-jvm-2.0.3-SNAPSHOT.jar")) // add the library to the fatJar
     implementation(libs.bundles.eglib)
     implementation(libs.logback.classic)
 }

@@ -9,7 +9,7 @@ repositories {
 }
 
 group = "electionguard-kotlin-multiplatform"
-version = "2.0.2-SNAPSHOT"
+version = "2.0.3-SNAPSHOT"
 
 kotlin {
     jvm {
@@ -35,30 +35,6 @@ kotlin {
                 systemProperties["junit.jupiter.execution.parallel.mode.classes.default"] = "concurrent"
             }
     }
-
-    /*
-val hostOs = System.getProperty("os.name")
-val isMingwX64 = hostOs.startsWith("Windows")
-val arch = System.getProperty("os.arch")
-val nativeTarget =
-    when {
-        hostOs == "Mac OS X" && arch == "aarch64" -> macosArm64("native")
-        hostOs == "Mac OS X"-> macosX64("native")
-        hostOs == "Linux" -> linuxX64("native")
-        isMingwX64 -> mingwX64("native")
-        else -> throw GradleException("Host OS '$hostOs' arch '$arch' is not supported.")
-    }
-
-nativeTarget.apply {
-    binaries {
-        sharedLib() {
-            baseName = "ekm" // on Linux and macOS
-            // baseName = "libekm // on Windows
-        }
-    }
-}
-
- */
 
     sourceSets {
         all { languageSettings.optIn("kotlin.RequiresOptIn") }
@@ -99,34 +75,6 @@ nativeTarget.apply {
     }
     jvmToolchain(17)
 }
-
-// val protoGenSource by extra("build/generated/source/proto")
-
-/*
-protoc --pbandk_out=./egklib/src/commonMain/kotlin/ --proto_path=./egklib/src/commonMain/proto \
-                    common.proto encrypted_ballot.proto encrypted_tally.proto \
-                    election_record.proto manifest.proto \
-                    plaintext_ballot.proto decrypted_tally.proto \
-                    trustees.proto
- */
-val compileProtobuf =
-    tasks.register("compileProtobuf") {
-        doLast {
-            print("* Compiling protobuf *\n")
-            /* project.exec {
-             *        commandLine = "rm -f ./src/commonMain/kotlin/electionguard/protogen".split("
-             * ")
-             * } */
-            // TODO lame
-            val commandLineStr =
-                "protoc --pbandk_out=./egklib/src/commonMain/kotlin/ --proto_path=./egklib/src/commonMain/proto " +
-                    "common.proto encrypted_ballot.proto encrypted_tally.proto " +
-                    "election_record.proto manifest.proto " +
-                    "plaintext_ballot.proto decrypted_tally.proto " +
-                    "trustees.proto"
-            project.exec { commandLine = commandLineStr.split(" ") }
-        }
-    }
 
 tasks.withType<Test> { testLogging { showStandardStreams = true } }
 
