@@ -127,7 +127,7 @@ fun ByteArray.encryptContestData(
     // ElectionGuard spec: (α, β) = (g^ξ mod p, K^ξ mod p); by encrypting a zero, we achieve exactly this
     val (alpha, beta) = 0.encrypt(publicKey, contestDataNonce.toElementModQ(group))
     // k = H(HE ; 0x22, K, α, β) ; (spec 2.0, eq 51)
-    val kdfKey = hashFunction(extendedBaseHash.bytes, 0x22.toByte(), publicKey.key, alpha, beta)
+    val kdfKey = hashFunction(extendedBaseHash.bytes, 0x22.toByte(), publicKey, alpha, beta)
 
     // TODO check
     // context = b(”contest_data”) ∥ b(Λ).
@@ -210,7 +210,7 @@ fun HashedElGamalCiphertext.decryptContestData(
     beta: ElementModP): ByteArray? {
 
     // k = H(HE ; 22, K, α, β). (51)
-    val kdfKey = hashFunction(extendedBaseHash.bytes, 0x22.toByte(), publicKey.key, alpha, beta)
+    val kdfKey = hashFunction(extendedBaseHash.bytes, 0x22.toByte(), publicKey, alpha, beta)
 
     // context = b(”contest_data”) ∥ b(Λ).
     val context = "${ContestData.contestDataLabel}$contestId"

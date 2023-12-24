@@ -305,16 +305,19 @@ interface ElementModP : Element, Comparable<ElementModP> {
 }
 
 /**
- * Computes the sum of the given elements, mod q; this can be faster than using the addition
- * operation for large numbers of inputs by potentially reusing scratch-space memory.
+ * Montgomery form of an [ElementModP]. Note the very limited set of methods. Convert back
+ * a regular [ElementModP] for anything other than multiplication.
  */
-fun GroupContext.addQ(vararg elements: ElementModQ) = elements.asIterable().addQ()
+interface MontgomeryElementModP {
+    /** Modular multiplication */
+    operator fun times(other: MontgomeryElementModP): MontgomeryElementModP
 
-/**
- * Computes the product of the given elements, mod p; this can be faster than using the
- * multiplication operation for large numbers of inputs by potentially reusing scratch-space memory.
- */
-fun GroupContext.multP(vararg elements: ElementModP) = elements.asIterable().multP()
+    /** Convert back to the normal [ElementModP] representation. */
+    fun toElementModP(): ElementModP
+
+    /** Every [MontgomeryElementModP] knows the [GroupContext] that was used to create it. */
+    val context: GroupContext
+}
 
 /**
  * Converts a base-16 (hexadecimal) string to an [ElementModP]. Returns null if the number is out of
@@ -398,8 +401,7 @@ fun Long.toElementModQ(ctx: GroupContext) =
 
 /**
  * Returns a random number in [minimum, Q), where minimum defaults to zero. Promises to use a
- * "secure" random number generator, such that the results are suitable for use as cryptographic
- * keys.
+ * "secure" random number generator, such that the results are suitable for use as cryptographic keys.
  *
  * @throws IllegalArgumentException if the minimum is negative
  */
@@ -480,16 +482,13 @@ fun ElectionConstants.toGroupContext(
 }
 
 /**
- * Montgomery form of an [ElementModP]. Note the very limited set of methods. Convert back
- * a regular [ElementModP] for anything other than multiplication.
+ * Computes the sum of the given elements, mod q; this can be faster than using the addition
+ * operation for large numbers of inputs by potentially reusing scratch-space memory.
  */
-interface MontgomeryElementModP {
-    /** Modular multiplication */
-    operator fun times(other: MontgomeryElementModP): MontgomeryElementModP
+fun GroupContext.addQ(vararg elements: ElementModQ) = elements.asIterable().addQ()
 
-    /** Convert back to the normal [ElementModP] representation. */
-    fun toElementModP(): ElementModP
-
-    /** Every [MontgomeryElementModP] knows the [GroupContext] that was used to create it. */
-    val context: GroupContext
-}
+/**
+ * Computes the product of the given elements, mod p; this can be faster than using the
+ * multiplication operation for large numbers of inputs by potentially reusing scratch-space memory.
+ */
+fun GroupContext.multP(vararg elements: ElementModP) = elements.asIterable().multP()

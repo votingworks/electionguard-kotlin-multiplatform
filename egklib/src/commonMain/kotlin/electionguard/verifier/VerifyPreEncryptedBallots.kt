@@ -114,7 +114,7 @@ fun VerifyEncryptedBallots.verifyPreencryptedCode(ballot: EncryptedBallot,
         val cv = contest.preEncryption
         for (sv in cv.selectedVectors) {
             val hashVector: List<ElementModP> = sv.encryptions.map { listOf(it.pad, it.data) }.flatten()
-            val selectionHash = hashFunction(extendedBaseHash.bytes, 0x40.toByte(), jointPublicKey.key, hashVector)
+            val selectionHash = hashFunction(extendedBaseHash.bytes, 0x40.toByte(), jointPublicKey, hashVector)
             if (selectionHash != sv.selectionHash) {
                 errs.add("    17.A. Incorrect selectionHash for selection shortCode=${sv.shortCode} contest=${contest.contestId} ballot='${ballot.ballotId}' ")
             }

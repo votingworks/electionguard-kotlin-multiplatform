@@ -59,8 +59,8 @@ fun HmacSha256.addToHash(element : Any, show : Boolean = false) {
             is UInt256 -> element.bytes
             is Element -> element.byteArray()
             is String -> element.encodeToByteArray() // LOOK not adding size
-            // is Short -> ByteArray(2) { if (it == 0) (element / 256).toByte() else (element % 256).toByte() }
-            // is UShort -> ByteArray(2) { if (it == 0) (element / U256).toByte() else (element % U256).toByte() }
+            is ElGamalCiphertext -> element.pad.byteArray() + element.data.byteArray()
+            is ElGamalPublicKey -> element.key.byteArray()
             is Int -> intToByteArray(element)
             else -> throw IllegalArgumentException("unknown type in hashElements: ${element::class}")
         }

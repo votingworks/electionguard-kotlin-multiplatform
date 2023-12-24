@@ -104,7 +104,7 @@ internal fun ElGamalCiphertext.makeChaumPedersenWithNonces(
     val abList: List<ElementModP> = aList.zip(bList).flatMap { listOf(it.first, it.second) }
 
     // c = H(HE ; 0x21, K, α, β, a0 , b0 , a1 , b1 , . . . , aR , bR ) ; eq 46
-    val c = hashFunction(extendedBaseHash.bytes, 0x21.toByte(), publicKey.key, alpha, beta, abList).toElementModQ(group)
+    val c = hashFunction(extendedBaseHash.bytes, 0x21.toByte(), publicKey, alpha, beta, abList).toElementModQ(group)
 
     // cl = (c − (c0 + · · · + cℓ−1 + cℓ+1 + · · · + cR )) mod q ; eq 47
     val cl = c -
@@ -166,7 +166,7 @@ fun ChaumPedersenRangeProofKnownNonce.verify(
     val abList = expandedProofs.flatMap { listOf(it.a, it.b) }
 
     // c = H(HE ; 0x21, K, α, β, a0 , b0 , a1 , b1 , . . . , aR , bR ) ; eq 5.3
-    val c = hashFunction(extendedBaseHash.bytes, 0x21.toByte(), publicKey.key, alpha, beta, abList).toElementModQ(group)
+    val c = hashFunction(extendedBaseHash.bytes, 0x21.toByte(), publicKey, alpha, beta, abList).toElementModQ(group)
 
     // The equation c = (c0 + c1 + · · · + cR ) mod q is satisfied ; eq 5.D
     val cSum = this.proofs.fold(group.ZERO_MOD_Q) { a, b -> a + b.c }

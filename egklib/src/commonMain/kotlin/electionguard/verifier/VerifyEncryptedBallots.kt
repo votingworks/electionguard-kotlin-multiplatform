@@ -146,7 +146,7 @@ class VerifyEncryptedBallots(
             ciphers.add(it.data)
         }
         val contestHash =
-            hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.sequenceOrder, jointPublicKey.key, ciphers)
+            hashFunction(extendedBaseHash.bytes, 0x23.toByte(), contest.sequenceOrder, jointPublicKey, ciphers)
         if (contestHash != contest.contestHash) {
             errs.add("    7.A. Incorrect contest hash")
         }

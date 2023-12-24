@@ -40,7 +40,7 @@ open class KeyCeremonyTrustee(
 
     override fun xCoordinate(): Int = xCoordinate
 
-    override fun guardianPublicKey(): ElementModP = polynomial.coefficientCommitments[0]
+    override fun guardianPublicKey(): ElementModP = polynomial.coefficientCommitments[0] // TODO make sure this is accelerated
 
     override fun coefficientCommitments(): List<ElementModP> = polynomial.coefficientCommitments
 
@@ -214,7 +214,7 @@ open class KeyCeremonyTrustee(
         // by encrypting a zero, we achieve exactly this
         val (alpha, beta) = 0.encrypt(K_l, nonce)
         // ki,ℓ = H(HP ; 0x11, i, ℓ, Kℓ , αi,ℓ , βi,ℓ ) ; eq 15 "secret key"
-        val kil = hashFunction(hp, 0x11.toByte(), i, l, K_l.key, alpha, beta).bytes
+        val kil = hashFunction(hp, 0x11.toByte(), i, l, K_l, alpha, beta).bytes
 
         // footnote 27
         // This key derivation uses the KDF in counter mode from SP 800-108r1. The second input to HMAC contains

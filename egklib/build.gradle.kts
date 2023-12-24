@@ -2,6 +2,7 @@ plugins {
     kotlin("multiplatform")
     alias(libs.plugins.serialization)
     application
+    id("maven-publish")
 }
 
 repositories {
@@ -99,4 +100,23 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
     .configureEach { kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn" }
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+}
+
+// publish github package
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/votingworks/electionguard-kotlin-multiplatform")
+            credentials {
+                username = project.findProperty("github.user") as String? ?: System.getenv("GITHUB_USER")
+                password = project.findProperty("github.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            from(components["java"])
+        }
+    }
 }

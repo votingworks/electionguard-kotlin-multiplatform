@@ -10,7 +10,7 @@ import electionguard.core.*
 class PreEncryptor(
     val group: GroupContext,
     val manifest: ManifestIF,
-    val publicKey: ElementModP,
+    val publicKey: ElementModP, // TODO make sure this is accellerated
     val extendedBaseHash: UInt256,
     val sigma : (UInt256) -> String, // hash trimming function Ω
 ) {

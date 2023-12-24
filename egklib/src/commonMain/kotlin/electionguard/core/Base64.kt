@@ -1,6 +1,5 @@
 package electionguard.core
 
-import electionguard.core.Base64.fromBase64
 import kotlin.math.min
 import io.github.oshai.kotlinlogging.KotlinLogging
 

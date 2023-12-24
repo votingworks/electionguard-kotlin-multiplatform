@@ -110,4 +110,24 @@ class HashTest {
             assertEquals(h1, h2)
         }
     }
+
+    @Test
+    fun testCiphertext() {
+        val group = productionGroup()
+        val keypair = elGamalKeyPairFromRandom(group)
+        val ciphertext = 42.encrypt(keypair)
+        val h1 = hashFunction("hay1".encodeToByteArray(), 0x42, ciphertext)
+        val h2 = hashFunction("hay1".encodeToByteArray(), 0x42, ciphertext.pad, ciphertext.data)
+        assertEquals(h1, h2)
+    }
+
+    @Test
+    fun testPublicKey() {
+        val group = productionGroup()
+        val keypair = elGamalKeyPairFromRandom(group)
+        val h1 = hashFunction("hay2".encodeToByteArray(), 0x422, keypair.publicKey)
+        val h2 = hashFunction("hay2".encodeToByteArray(), 0x422, keypair.publicKey.key)
+        assertEquals(h1, h2)
+    }
+
 }
