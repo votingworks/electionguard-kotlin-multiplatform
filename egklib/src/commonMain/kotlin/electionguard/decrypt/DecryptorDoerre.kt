@@ -160,7 +160,7 @@ class DecryptorDoerre(
                 val b: ElementModP = with(group) { cresults.shares.values.map { it.b }.multP() }
 
                 // "joint challenge" c = H(HE ; 0x31, K, C0 , C1 , C2 , a, b, β) ; 2.0, eq 81
-                cresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), jointPublicKey.key,
+                cresults.collectiveChallenge = hashFunction(extendedBaseHash.bytes, 0x31.toByte(), jointPublicKey,
                     cresults.hashedCiphertext.c0,
                     cresults.hashedCiphertext.c1.toHex(),
                     cresults.hashedCiphertext.c2,

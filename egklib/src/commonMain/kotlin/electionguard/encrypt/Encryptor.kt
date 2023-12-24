@@ -206,7 +206,7 @@ fun PlaintextBallot.Contest.encryptContest(
         ciphers.add(it.pad)
         ciphers.add(it.data)
     }
-    val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), this.sequenceOrder, jointPublicKey.key, ciphers)
+    val contestHash = hashFunction(extendedBaseHash.bytes, 0x23.toByte(), this.sequenceOrder, jointPublicKey, ciphers)
 
     return CiphertextBallot.Contest(
         this.contestId,

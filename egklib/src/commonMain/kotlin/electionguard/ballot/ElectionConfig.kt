@@ -168,7 +168,7 @@ fun electionBaseHash(Hp: UInt256, HM: UInt256, n : Int, k : Int) : UInt256 {
     return hashFunction(
         Hp.bytes,
         0x02.toByte(),
-        HM.bytes,
+        HM,
         n,
         k,
     )

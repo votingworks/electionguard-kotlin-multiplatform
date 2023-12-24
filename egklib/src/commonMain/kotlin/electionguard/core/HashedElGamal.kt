@@ -112,7 +112,7 @@ fun ByteArray.encryptToHashedElGamal(
     // ElectionGuard spec: (α, β) = (g^ξ mod p, K^ξ mod p); by encrypting a zero, we achieve exactly this
     val (alpha, beta) = 0.encrypt(publicKey, nonce)
     // k = H(HE ; 0x22, K, C0 , β) eq 51: secret key since beta is secret since nonce is secret.
-    val kdfKey = hashFunction(extendedBaseHash.bytes, separator, publicKey.key, alpha, beta)
+    val kdfKey = hashFunction(extendedBaseHash.bytes, separator, publicKey, alpha, beta)
 
     // ki = HMAC(k, b(i, 4) ∥ Label ∥ 0x00 ∥ Context ∥ b((bD + 1) · 256, 4)) // TODO implementation correct?
     val kdf = KDF(kdfKey, label, context, this.size * 8)
@@ -137,7 +137,7 @@ fun HashedElGamalCiphertext.decryptToByteArray(
     ): ByteArray? {
 
     // has to match encryptToHashedElGamal()
-    val kdfKey = hashFunction(extendedBaseHash.bytes, separator, publicKey.key, alpha, beta)
+    val kdfKey = hashFunction(extendedBaseHash.bytes, separator, publicKey, alpha, beta)
     val kdf = KDF(kdfKey, label, context, numBytes * 8) // (86, 87)
     val k0 = kdf[0]
     val expectedHmac = (c0.byteArray() + c1).hmacSha256(k0)
