@@ -202,7 +202,11 @@ interface GroupContext {
      */
     fun dLogG(p: ElementModP, maxResult: Int = - 1): Int?
 
-    fun showAndClearCountPowP() : String
+    fun showAndClearCountPowP(count :CountExp? = null) : String
+}
+
+class CountExp(var exp: Int, var acc: Int) {
+    constructor(): this(0,0)
 }
 
 interface Element {
