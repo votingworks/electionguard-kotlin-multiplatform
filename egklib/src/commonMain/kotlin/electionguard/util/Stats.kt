@@ -18,6 +18,13 @@ class Stats {
         }
     }
 
+    fun show(who: String) {
+        val stat = stats.get(who)
+        if (stat != null) println(stat.show()) else println("no stat named $who")
+    }
+
+    fun get(who: String) : Stat? = stats.get(who)
+
     fun show(len: Int = 3) {
         showLines(len).forEach { println(it) }
     }

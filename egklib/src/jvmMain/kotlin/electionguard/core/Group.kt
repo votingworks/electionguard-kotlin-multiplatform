@@ -266,10 +266,12 @@ class ProductionGroupContext(
 
     override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
 
-    // temp debug
-
-    override fun showAndClearCountPowP() : String {
+    override fun showAndClearCountPowP(count :CountExp?) : String {
         val result = "countPowP,AccPowP= ${countPow}, $countAccPowP total= ${countPow.get()+countAccPowP.get()}"
+        if (count != null) {
+            count.exp = countPow.get()
+            count.acc = countAccPowP.get()
+        }
         countPow.set(0)
         countAccPowP.set(0)
         return result
