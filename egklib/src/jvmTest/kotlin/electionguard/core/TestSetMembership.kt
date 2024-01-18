@@ -1,6 +1,6 @@
 package electionguard.core
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class TestSetMembership {
