@@ -1,6 +1,6 @@
 # ElectionGuard-Kotlin-Multiplatform
 
-_last update 12/13/2023_
+_last update 01/21/2024_
 
 ElectionGuard-Kotlin-Multiplatform (EGK) is a [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) 
 implementation of 
@@ -23,9 +23,7 @@ Currently Java 17 is required.
   * [Getting Started](#getting-started)
   * [Workflow and Command Line Programs](#workflow-and-command-line-programs)
   * [Serialization](#serialization)
-    * [Protobuf Serialization](#protobuf-serialization)
-    * [JSON Serialization](#json-serialization)
-    * [Previous Serialization specs](#previous-serialization-specs)
+    * [JSON Serialization specification](#json-serialization-specification)
   * [Validation](#validation)
   * [Verification](#verification)
   * [Test Vectors](#test-vectors)
@@ -65,6 +63,7 @@ These are JSON files that give inputs and expected outputs for the purpose of te
 * [Test Vectors](docs/TestVectors.md)
 
 ## Implementation Notes
+* [Cryptography Notes](docs/CryptographyNotes.md)
 * [Implementation Notes](docs/ImplementationNotes.md)
 
 ## Authors

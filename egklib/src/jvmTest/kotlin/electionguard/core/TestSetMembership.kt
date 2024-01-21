@@ -1,24 +1,28 @@
 package electionguard.core
 
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertFalse
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class TestSetMembership {
     val group = productionGroup()
 
     @Test
-    fun testSetMembership0() {
-        assertTrue(checkMembership(group.ZERO_MOD_P))
+    fun testSetMembershipZero() {
+        assertFalse(checkMembership(group.ZERO_MOD_P))
     }
 
     @Test
-    fun testSetMembership1() {
-        assertTrue(checkMembership(group.ONE_MOD_P))
+    fun testSetMembershipG() {
+        val anyq = group.randomElementModQ()
+        val checkit = group.gPowP(anyq)
+        assertTrue(checkMembership(checkit))
     }
 
     @Test
-    fun testSetMembership2() {
-        assertTrue(checkMembership(group.TWO_MOD_P))
+    fun testSetMembershiNotG() {
+        val checkit = group.TWO_MOD_P powP group.TWO_MOD_Q
+        assertFalse(checkMembership(checkit))
     }
 
     fun checkMembership(x: ElementModP): Boolean {

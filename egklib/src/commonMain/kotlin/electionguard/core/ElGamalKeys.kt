@@ -1,5 +1,15 @@
 package electionguard.core
 
+/** A public and private keypair, suitable for doing ElGamal cryptographic operations. */
+data class ElGamalKeypair(val secretKey: ElGamalSecretKey, val publicKey: ElGamalPublicKey) {
+    init {
+        compatibleContextOrFail(secretKey.key, publicKey.key)
+    }
+
+    val context: GroupContext
+        get() = this.publicKey.context
+}
+
 /**
  * A wrapper around an ElementModP that allows us to ensure that we're accelerating exponentiation
  * when using the key. Also contains the [inverseKey] (i.e., the multiplicative inverse mod `p`)
@@ -10,16 +20,8 @@ class ElGamalPublicKey(inputKey: ElementModP) {
     val inverseKey = inputKey.multInv() // not accelerated because not used for pow
     private val dlogger = dLoggerOf(inputKey)
 
-    override fun equals(other: Any?) =
-        when (other) {
-            is ElementModP -> key == other
-            is ElGamalPublicKey -> key == other.key
-            else -> false
-        }
-
-    override fun hashCode(): Int = key.hashCode()
-
-    override fun toString(): String = key.toString()
+    val context: GroupContext
+        get() = this.key.context
 
     /** Helper function. `key powP e` is shorthand for `key.key powP e`. */
     infix fun powP(exponent: ElementModQ): ElementModP = key powP exponent
@@ -40,6 +42,18 @@ class ElGamalPublicKey(inputKey: ElementModP) {
      * and will be computed.
      */
     fun dLog(input: ElementModP, maxResult: Int = -1): Int? = dlogger.dLog(input, maxResult)
+
+
+    override fun equals(other: Any?) =
+        when (other) {
+            is ElementModP -> key == other
+            is ElGamalPublicKey -> key == other.key
+            else -> false
+        }
+
+    override fun hashCode(): Int = key.hashCode()
+
+    override fun toString(): String = key.toString()
 }
 
 /**
@@ -52,6 +66,8 @@ class ElGamalSecretKey(val key: ElementModQ) {
             throw ArithmeticException("secret key must be in [2, Q)")
     }
     val negativeKey: ElementModQ = -key
+    val context: GroupContext
+        get() = this.key.context
 
     override fun equals(other: Any?) =
         when (other) {
@@ -63,40 +79,6 @@ class ElGamalSecretKey(val key: ElementModQ) {
     override fun toString(): String = key.toString()
 }
 
-/** A public and private keypair, suitable for doing ElGamal cryptographic operations. */
-data class ElGamalKeypair(val secretKey: ElGamalSecretKey, val publicKey: ElGamalPublicKey) {
-    init {
-        compatibleContextOrFail(secretKey.key, publicKey.key)
-    }
-}
-
-val ElGamalSecretKey.context: GroupContext
-    get() = this.key.context
-
-val ElGamalPublicKey.context: GroupContext
-    get() = this.key.context
-
-val ElGamalKeypair.context: GroupContext
-    get() = this.publicKey.context
-
-/**
- * An "exponential ElGamal ciphertext" (i.e., with the plaintext in the exponent to allow for
- * homomorphic addition). (See [ElGamal 1982](https://ieeexplore.ieee.org/abstract/document/1057074))
- *
- * In a "normal" ElGamal encryption where the message goes into the exponent, a secret key `a`
- * with corresponding public key `g^a`, message `M` and nonce `R` would be encoded as the tuple
- * `(g^R, (g^a)^r * g^M)`.
- *
- * In this particular ElGamal implementation, we're instead encoding the ciphertext as
- * `(g^R, (g^a)^{R+M})`. This accelerates both the encryption process and the process of generating
- * the corresponding Chaum-Pedersen proofs.
- *
- * This also means that this ElGamal ciphertext is *not compatible with ElectionGuard 1.0*, but
- * is anticipated to be the standard for ElectionGuard 2.0 and later.
- */
-data class ElGamalCiphertext(val pad: ElementModP, val data: ElementModP) {
-    override fun toString() = "pad=${pad.toStringShort()} data=${data.toStringShort()} "
-}
 
 /**
  * Given an ElGamal secret key, derives the corresponding secret/public key pair.
@@ -164,59 +146,3 @@ fun Int.encrypt(
     keypair: ElGamalKeypair,
     nonce: ElementModQ = keypair.context.randomElementModQ(minimum = 1)
     ) = this.encrypt(keypair.publicKey, nonce)
-
-/** Decrypts using the secret key from the keypair. If the decryption fails, `null` is returned. */
-fun ElGamalCiphertext.decrypt(keypair: ElGamalKeypair): Int? {
-    compatibleContextOrFail(pad, data, keypair.secretKey.key)
-    val blind = pad powP keypair.secretKey.negativeKey
-    val kPowM = data * blind
-
-    return keypair.publicKey.dLog(kPowM)
-}
-
-/** Compute the share of the decryption from the secret key. */
-fun ElGamalCiphertext.computeShare(secretKey: ElGamalSecretKey): ElementModP {
-    compatibleContextOrFail(pad, data, secretKey.key)
-    return pad powP secretKey.key
-}
-
-fun ElGamalCiphertext.decryptWithShares(publicKey: ElGamalPublicKey, shares: Iterable<ElementModP>): Int? {
-    val sharesList = shares.toList()
-    val context = compatibleContextOrFail(pad, data, publicKey.key, *(sharesList.toTypedArray()))
-    val allSharesProductM: ElementModP = with (context) { sharesList.multP() }
-    val decryptedValue: ElementModP = this.data / allSharesProductM
-    return publicKey.dLog(decryptedValue)
-}
-
-/** Decrypts a message by knowing the nonce. If the decryption fails, `null` is returned. */
-fun ElGamalCiphertext.decryptWithNonce(publicKey: ElGamalPublicKey, nonce: ElementModQ, maxResult: Int = -1): Int? {
-    compatibleContextOrFail(pad, data, publicKey.key, nonce)
-
-    val blind = publicKey powP (-nonce)
-    val kPowM = data * blind // data * blind = publicKey ^ m
-    return publicKey.dLog(kPowM, maxResult)
-}
-
-/** Homomorphically "adds" two ElGamal ciphertexts together through piecewise multiplication. */
-operator fun ElGamalCiphertext.plus(o: ElGamalCiphertext): ElGamalCiphertext {
-    compatibleContextOrFail(this.pad, this.data, o.pad, o.data)
-    return ElGamalCiphertext(pad * o.pad, data * o.data)
-}
-
-/**
- * Homomorphically "adds" a sequence of ElGamal ciphertexts through piecewise multiplication.
- * @throws ArithmeticException if the sequence is empty
- */
-fun List<ElGamalCiphertext>.encryptedSum(): ElGamalCiphertext? {
-    return if (this.isEmpty()) null else this.reduce { a, b -> a + b }
-}
-
-/** Add two lists by component-wise multiplication */
-fun List<ElGamalCiphertext>.add(other: List<ElGamalCiphertext>): List<ElGamalCiphertext> {
-    require(this.size == other.size)
-    val result = mutableListOf<ElGamalCiphertext>()
-    this.forEachIndexed { index, value ->
-        result.add(value + other[index])
-    }
-    return result
-}

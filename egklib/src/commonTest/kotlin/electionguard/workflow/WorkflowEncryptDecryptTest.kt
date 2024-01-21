@@ -8,8 +8,6 @@ import electionguard.core.PowRadixOption
 import electionguard.core.elGamalKeyPairFromRandom
 import electionguard.core.encrypt
 import electionguard.core.encryptedSum
-import electionguard.core.computeShare
-import electionguard.core.decryptWithShares
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
 import electionguard.core.runTest
