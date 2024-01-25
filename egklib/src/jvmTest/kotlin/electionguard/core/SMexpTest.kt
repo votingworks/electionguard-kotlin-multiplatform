@@ -16,11 +16,11 @@ class SMexpTest {
         val bases = List(3) { group.gPowP( group.randomElementModQ()) }
 
         val sam = SMexp(group, bases, es)
-        val result = sam.prodPowP()
+        val result = sam.prodPowP(true)
 
         val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
-
         assertEquals(check, result)
+        println()
     }
 
     @Test

@@ -2,9 +2,10 @@ package electionguard.core
 
 // Simultaneous Multiple exponentiation. Experimental.
 // Algorithm 14.88 in Handbook (menezes et al)
-private val debug = false
+private val debug = true
+private val debug1 = true
 private val debug2 = false
-private val show = false
+private val show = true
 
 class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<ElementModQ>) {
     // there are k exponents which are integers of bitlength t = actualBitLength
@@ -15,6 +16,8 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
     val Gp : Map<BitMatrix.ColVector, ElementModP>
 
     init {
+        if (debug1) println("EAmatrix bitLength=$actualBitLength, bitCount=${EAmatrix.countBits(actualBitLength)}")
+
         var countMultiply = 0
         Gp = mutableMapOf()
         repeat(actualBitLength) { colIdx ->
@@ -39,15 +42,22 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
         var countMultiply = 0
         var result = group.ONE_MOD_P
         repeat(actualBitLength) { colIdx ->
+            // first time dont square
+            if (result != group.ONE_MOD_P) {
+                result = result * result // square
+                countSquare++
+            }
+
             val vecIdx = actualBitLength - colIdx - 1 // idx reversed
             val colv = EAmatrix.colVector(vecIdx)
             val factor: ElementModP = Gp[colv]!!
-            result = result * result // square
-            countSquare++
+
+            // heres where we need the high bit, or you could say we ignore everything until we find it
             if (factor != group.ONE_MOD_P) {
                 result *= factor
                 countMultiply++
             }
+
         }
         if (show) println("countSquare=$countSquare countMultiply=$countMultiply")
         return result
@@ -96,6 +106,14 @@ class BitMatrix(val bas: List<ByteArray>) {
         return bit != 0
     }
 
+    fun countBits(bitLength: Int): Int {
+        var count = 0
+        repeat(bitLength) {
+            count += colVector(it).countBits()
+        }
+        return count
+    }
+
     fun colVector(colidx: Int) : ColVector {
         return ColVector(colidx)
     }
@@ -108,6 +126,14 @@ class BitMatrix(val bas: List<ByteArray>) {
 
         fun isBitSet(rowIdx: Int): Boolean {
             return isBitSet(rowIdx, bytePos, bitPos)
+        }
+
+        fun countBits(): Int {
+            var count = 0
+            repeat(nrows) {
+                if (isBitSet(it)) count++
+            }
+            return count
         }
 
         override fun equals(other: Any?): Boolean {
