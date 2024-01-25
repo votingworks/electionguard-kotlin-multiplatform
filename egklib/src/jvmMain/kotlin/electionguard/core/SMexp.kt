@@ -2,9 +2,7 @@ package electionguard.core
 
 // Simultaneous Multiple exponentiation. Experimental.
 // Algorithm 14.88 in Handbook (menezes et al)
-private val bitlength = 256 // t
 private val debug = false
-private val debug1 = false
 private val debug2 = false
 private val show = false
 
