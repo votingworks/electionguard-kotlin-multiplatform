@@ -14,14 +14,14 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
     val k = exps.size
     val actualBitLength: Int
 
-    val IAQ: List<ByteVector> // needs to be BigInteger, need a bit for every row.
-    val G: Map<ByteVector, ElementModP>
+   // val IAQ: List<ByteVector> // needs to be BigInteger, need a bit for every row.
+    //val G: Map<ByteVector, ElementModP>
 
     val EAmatrix = BitMatrix(exps.map { it.byteArray() })
     val Gp : Map<ByteVector, ElementModP>
 
     init {
-        // form the k by t exponent array EA whose rows are the binary representations of the e's
+        /* form the k by t exponent array EA whose rows are the binary representations of the e's
         val EA = exps.map { it.byteArray() } // big endian byte arrays
 
         // IA_j is the jth column vector of EA, low order bits are at the top of the column
@@ -112,6 +112,9 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
         }
         if (debug) println("size of G = ${G.size}")
 
+         */
+        actualBitLength = EAmatrix.firstNonZeroColumn()
+
         Gp = mutableMapOf()
         repeat(actualBitLength) { colIdx ->
             val vecIdx = actualBitLength - colIdx - 1 // idx reversed
@@ -130,6 +133,7 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
         if (debug) println("size of Gp = ${Gp.size}")
     }
 
+    /*
     fun prodPowP(): ElementModP {
         var result = group.ONE_MOD_P
         repeat(actualBitLength) { idx ->
@@ -141,6 +145,8 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
         }
         return result
     }
+
+     */
 
     fun prodPowP2(): ElementModP {
         var result = group.ONE_MOD_P

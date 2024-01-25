@@ -16,14 +16,11 @@ class SMexpTest {
         val bases = List(3) { group.gPowP( group.randomElementModQ()) }
 
         val sam = SMexp(group, bases, es)
-        val result = sam.prodPowP()
+        val result = sam.prodPowP2()
 
         val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
 
         assertEquals(check, result)
-
-        val result2 = sam.prodPowP2()
-        assertEquals(result2, result)
     }
 
     @Test
@@ -48,12 +45,9 @@ class SMexpTest {
         val bases = List(nrows) { group.gPowP( group.randomElementModQ()) }
 
         val sam = SMexp(group, bases, exps)
-        val result = sam.prodPowP()
+        val result = sam.prodPowP2()
         val check =  bases.mapIndexed { idx, it -> it powP exps[idx] }.reduce { a, b -> (a * b) }
         assertEquals(check, result)
-
-        val result2 = sam.prodPowP2()
-        assertEquals(result2, result)
     }
 
     @Test
