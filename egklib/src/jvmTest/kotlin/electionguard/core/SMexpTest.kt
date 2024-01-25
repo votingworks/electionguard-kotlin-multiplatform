@@ -16,7 +16,7 @@ class SMexpTest {
         val bases = List(3) { group.gPowP( group.randomElementModQ()) }
 
         val sam = SMexp(group, bases, es)
-        val result = sam.prodPowP2()
+        val result = sam.prodPowP()
 
         val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
 
@@ -45,13 +45,14 @@ class SMexpTest {
         val bases = List(nrows) { group.gPowP( group.randomElementModQ()) }
 
         val sam = SMexp(group, bases, exps)
-        val result = sam.prodPowP2()
+        val result = sam.prodPowP()
         val check =  bases.mapIndexed { idx, it -> it powP exps[idx] }.reduce { a, b -> (a * b) }
         assertEquals(check, result)
     }
 
     @Test
     fun testSMtiming() {
+        runSMrepeat(1, 100)
         runSMrepeat(10, 100)
         runSMrepeat(100, 10)
         runSMrepeat(1000, 1)
@@ -65,7 +66,7 @@ class SMexpTest {
 
         var starting1 = getSystemTimeInMillis()
         repeat (ntimes) {
-            SMexp(group, bases, exps).prodPowP2()
+            SMexp(group, bases, exps).prodPowP()
         }
         val time1 = getSystemTimeInMillis() - starting1
 
@@ -75,6 +76,24 @@ class SMexpTest {
         }
         val time2 = getSystemTimeInMillis() - starting2
         println(" timeSM = $time1, timePowP = $time2")
+    }
+
+    @Test
+    fun testSMshow() {
+        runSMshow(1)
+        runSMshow(10)
+        runSMshow(100)
+        runSMshow(1000)
+    }
+
+    fun runSMshow(nrows : Int) {
+        val exps = List(nrows) { group.randomElementModQ() }
+        val bases = List(nrows) { group.gPowP( group.randomElementModQ()) }
+
+        val sam = SMexp(group, bases, exps)
+        val result = sam.prodPowP(true)
+        val check =  bases.mapIndexed { idx, it -> it powP exps[idx] }.reduce { a, b -> (a * b) }
+        assertEquals(check, result)
     }
 
 }
