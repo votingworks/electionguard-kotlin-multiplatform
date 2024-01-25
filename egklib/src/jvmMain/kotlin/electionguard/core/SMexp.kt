@@ -8,7 +8,7 @@ private val bitlength = 256 // t
 private val debug = false
 private val debug1 = false
 private val debug2 = false
-private val show = true
+private val show = false
 
 class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<ElementModQ>) {
     // there are k exps which are integers of bitlength t = actualBitLength
@@ -16,11 +16,20 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
     val EAmatrix = BitMatrix(exps.map { it.byteArray() })
     val actualBitLength = EAmatrix.firstNonZeroColumn()
 
-    val Gp : Map<ByteVector, ElementModP>
+    val Gp : Map<BitMatrix.ColVector, ElementModP>
 
     init {
-        var countMultiply = 0
+        /* test
+        repeat(actualBitLength) { colIdx ->
+            val vecIdx = actualBitLength - colIdx - 1 // idx reversed
+            val colbv = EAmatrix.colByteVector(vecIdx)
+            val colv = EAmatrix.colVector(vecIdx)
+            repeat(k) { rowIdx ->
+                require (colv.isBitSet(rowIdx) == colbv.isBitSet(rowIdx))
+            }
+        } */
 
+        var countMultiply = 0
         Gp = mutableMapOf()
         repeat(actualBitLength) { colIdx ->
             val vecIdx = actualBitLength - colIdx - 1 // idx reversed
@@ -107,7 +116,6 @@ class ByteVector(val ba : ByteArray, val bitSize:Int = ba.size * 8) {
     override fun hashCode(): Int {
         return ba.contentHashCode()
     }
-
 }
 
 // bits are indexed from right to left. bigendian
@@ -116,7 +124,7 @@ class BitMatrix(val bas: List<ByteArray>) {
     val byteWidth = bas[0].size
     val bitWidth = byteWidth * 8
 
-    fun colVector(colidx: Int, bitSize: Int = nrows) : ByteVector {
+    fun colByteVector(colidx: Int, bitSize: Int = nrows) : ByteVector {
         val byteSize = (bitSize + 7) / 8
         val result = ByteArray(byteSize)
 
@@ -162,11 +170,38 @@ class BitMatrix(val bas: List<ByteArray>) {
         return b1 + bitPos + 1
     }
 
+    // here we use position in the underlying byte arrays
     private fun isBitSet(rowIdx: Int, bytePos: Int, bitPos: Int): Boolean {
         val ba = bas[rowIdx]
         val byteAsInt = ba[bytePos].toInt()
         val bit = byteAsInt shr bitPos and 1
         return bit != 0
+    }
+
+    fun colVector(colidx: Int) : ColVector {
+        return ColVector(colidx)
+    }
+
+    // virtual Column Vector
+    inner class ColVector(val colIdx: Int) {
+        val bitpos = bitWidth - 1 - colIdx // low order bits first
+        val bytePos = (bitpos) / 8
+        val bitPos = 7 - (bitpos) % 8
+
+        fun isBitSet(rowIdx: Int): Boolean {
+            return isBitSet(rowIdx, bytePos, bitPos)
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            other as ColVector
+            return colIdx == other.colIdx
+        }
+
+        override fun hashCode(): Int {
+            return colIdx
+        }
     }
 }
 
