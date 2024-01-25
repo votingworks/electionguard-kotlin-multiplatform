@@ -1,15 +1,13 @@
 package electionguard.core
 
-import java.math.BigInteger
-
 // Simultaneous Multiple exponentiation. Experimental.
 // Algorithm 14.88 in Handbook (menezes et al)
 //
 
 private val bitlength = 256 // t
-private val debug = true
-private val debug1 = true
-private val debug2 = true
+private val debug = false
+private val debug1 = false
+private val debug2 = false
 
 class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<ElementModQ>) {
     // there are k exps which are integers of bitlength t
@@ -50,7 +48,12 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
             if (nonzero(IA32[idx])) break
         }
         actualBitLength = bitlength - discard
-        if (debug) println("runSM for nrows = $k, nbits=$actualBitLength")
+        val test = EAmatrix.firstNonZeroColumn()
+        if (debug) println("runSM for nrows = $k, nbits=$actualBitLength alt = $test")
+        if (actualBitLength != test) {
+            EAmatrix.firstNonZeroColumn()
+        }
+        require(actualBitLength == test)
 
         val IA = IA32.subList(discard, bitlength)
         if (debug) println(" size of IA = ${IA.size}")
@@ -105,7 +108,7 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
                 pos++
             }
             G[bv] = accum
-            if (accum == group.ONE_MOD_P) println(" ONE $idx accum for base $pos")
+            // if (accum == group.ONE_MOD_P) println(" ONE $idx accum for base $pos")
         }
         if (debug) println("size of G = ${G.size}")
 
@@ -239,16 +242,36 @@ class BitMatrix(val bas: List<ByteArray>) {
         return ByteVector(result, bitSize)
     }
 
-    // bits are ordered from right to left
-    fun isBitSet(rowIdx: Int,  colIdx: Int): Boolean {
-        val bitpos = bitWidth - 1 - colIdx
-        val byteidx = (bitpos) / 8
-        val bitIdx = (bitpos) % 8
-        val bitShift = 7 - bitIdx // maybe this should be bitIdx ?
+    fun firstNonZeroColumn(): Int {
+        var bytePos = 0
+        while (bytePos < byteWidth) {
+            var allzero = true
+            repeat (nrows) { rowIdx ->
+                allzero = allzero &&  (bas[rowIdx][bytePos] == byteZ)
+            }
+            if (!allzero) break
+            bytePos++
+        }
 
+        var bitPos = 7
+        while (bitPos >= 0) {
+            var allzero = true
+            repeat (nrows) { rowIdx ->
+                allzero = allzero && !isBitSet(rowIdx, bytePos, bitPos)
+            }
+            if (!allzero) break
+            bitPos--
+        }
+
+        // col index from the right
+        val b1 =  bitWidth - (bytePos+1) * 8
+        return b1 + bitPos + 1
+    }
+
+    private fun isBitSet(rowIdx: Int, bytePos: Int, bitPos: Int): Boolean {
         val ba = bas[rowIdx]
-        val byteAsInt = ba[byteidx].toInt()
-        val bit = byteAsInt shr bitShift and 1
+        val byteAsInt = ba[bytePos].toInt()
+        val bit = byteAsInt shr bitPos and 1
         return bit != 0
     }
 }

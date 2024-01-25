@@ -27,27 +27,18 @@ class SMexpTest {
     }
 
     @Test
-    fun testSMmatrix() {
-        val e0 = 30.toElementModQ(group)
-        val e1 = 10.toElementModQ(group)
-        val e2 = 24.toElementModQ(group)
-        val es = listOf(e0, e1, e2)
-
-        val bases = List(3) { group.gPowP( group.randomElementModQ()) }
-
-        val sam = SMexp(group, bases, es)
-        val result = sam.prodPowP()
-        val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
-        assertEquals(check, result)
-
-        val result2 = sam.prodPowP2()
-        assertEquals(result2, result)
+    fun testSMbitwidth() {
+        repeat(100) { runSM(1) } // likely to have actual < bitwidth
     }
 
     @Test
     fun testSMsizes() {
-        runSM(10)
-        runSM(30)
+        runSM(1)
+        runSM(2)
+        runSM(3)
+        runSM(11)
+        runSM(16)
+        runSM(33)
         runSM(100)
         runSM(1000)
     }
@@ -56,9 +47,13 @@ class SMexpTest {
         val exps = List(nrows) { group.randomElementModQ() }
         val bases = List(nrows) { group.gPowP( group.randomElementModQ()) }
 
-        val result = SMexp(group, bases, exps).prodPowP()
+        val sam = SMexp(group, bases, exps)
+        val result = sam.prodPowP()
         val check =  bases.mapIndexed { idx, it -> it powP exps[idx] }.reduce { a, b -> (a * b) }
         assertEquals(check, result)
+
+        val result2 = sam.prodPowP2()
+        assertEquals(result2, result)
     }
 
     @Test
@@ -76,7 +71,7 @@ class SMexpTest {
 
         var starting1 = getSystemTimeInMillis()
         repeat (ntimes) {
-            SMexp(group, bases, exps).prodPowP()
+            SMexp(group, bases, exps).prodPowP2()
         }
         val time1 = getSystemTimeInMillis() - starting1
 
