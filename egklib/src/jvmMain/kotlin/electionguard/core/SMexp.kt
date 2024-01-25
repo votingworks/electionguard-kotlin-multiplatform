@@ -11,20 +11,20 @@ import kotlin.math.min
 //
 
 private val bitlength = 256 // t
+private val debug = false
 
 class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<ElementModQ>) {
     // there are k exps which are integers of bitlength t
     val k = exps.size
     val actualBitLength: Int
 
-    val IA: List<List<Int>>
-    val G: List<ElementModP>
+    val IAQ: List<Int>
+    val IAQset: Set<Int>
+    val G: Map<Int, ElementModP> // do we really need more than a long ? may be up to 2^nrows
 
     init {
         // form the k by t exponent array EA whose rows are the binary representations of the es
         val EA = exps.map { it.byteArray() } // big endian byte arrays
-
-        val nbytes = (exps.size + 7) / 8
 
         // IA_j is the jth column vector of EA, low order bits are at the top of the column
         val IA32 = MutableList(bitlength) { colIdx ->
@@ -50,7 +50,8 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
             if (nonzero(IA32[idx])) break
         }
         actualBitLength = bitlength - discard
-        IA = IA32.subList(discard, bitlength)
+        val IA = IA32.subList(discard, bitlength)
+        println("size of IA = ${IA.size}")
 
         val IAstring = buildString {
             appendLine("IA array")
@@ -58,9 +59,14 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
                 appendLine(" $idx $it")
             }
         }
-        println(IAstring)
+        if (debug) println(IAstring)
 
-        val IAQ = IA.mapIndexed { idx, it ->
+        IAQ = IA.mapIndexed { idx, it ->
+            makeIAvalue(it, idx)
+        }
+
+        /*
+        IAQ = IA.mapIndexed { idx, it ->
             val iarr = IntArray(32)
             var byteIndex = 31
             var bitIndex = 0
@@ -78,33 +84,40 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
             val asInt = (q as ProductionElementModQ).element.toInt()
             val makeInt = makeIAvalue(it, idx)
             require(makeInt == asInt)
-            q
+            makeInt
         }
 
-        G = mutableListOf()
+         */
+        IAQset = HashSet(IAQ)
+        println("size of IAQset = ${IAQset.size}")
+
+        G = mutableMapOf()
         val nentries = 2 shl k - 1
         repeat(nentries) {
-            var idx = it
-            var pos = 0
-            var accum = group.ONE_MOD_P
-            while (idx > 0) {
-                val bit = idx and 1
-                if (bit != 0) {
-                    accum = accum * bases[pos]
+            if (IAQset.contains(it)) {
+                var idx = it
+                var pos = 0
+                var accum = group.ONE_MOD_P
+                while (idx > 0) {
+                    val bit = idx and 1
+                    if (bit != 0) {
+                        accum = accum * bases[pos]
+                    }
+                    idx = idx shr 1
+                    pos++
                 }
-                idx = idx shr 1
-                pos++
+                G[it] = accum
             }
-            G.add(accum)
         }
+        println("size of G = ${G.size}")
     }
 
     fun prodPowP(): ElementModP {
         var result = group.ONE_MOD_P
         repeat(actualBitLength) { idx ->
-            val ia = IA[idx] // IA is reversed
-            val iaval = makeIAvalue(ia, idx)
-            val factor = G[iaval]
+            val ia = IAQ[idx]
+            if (G[ia] == null) println("HEY no G for $ia, idx = $idx")
+            val factor = G[ia]!! // LOOK
             result = result * result // square
             result = result * factor
         }
@@ -118,7 +131,7 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
                 result += it shl idx
             }
         }
-        println("value for $idx is $result")
+        if (debug) println("value for $idx is $result")
         return result
     }
 
