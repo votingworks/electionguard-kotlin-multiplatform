@@ -27,6 +27,24 @@ class SMexpTest {
     }
 
     @Test
+    fun testSMmatrix() {
+        val e0 = 30.toElementModQ(group)
+        val e1 = 10.toElementModQ(group)
+        val e2 = 24.toElementModQ(group)
+        val es = listOf(e0, e1, e2)
+
+        val bases = List(3) { group.gPowP( group.randomElementModQ()) }
+
+        val sam = SMexp(group, bases, es)
+        val result = sam.prodPowP()
+        val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
+        assertEquals(check, result)
+
+        val result2 = sam.prodPowP2()
+        assertEquals(result2, result)
+    }
+
+    @Test
     fun testSMsizes() {
         runSM(10)
         runSM(30)

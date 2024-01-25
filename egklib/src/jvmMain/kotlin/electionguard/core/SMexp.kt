@@ -7,8 +7,9 @@ import java.math.BigInteger
 //
 
 private val bitlength = 256 // t
-private val debug = false
-private val debug2 = false
+private val debug = true
+private val debug1 = true
+private val debug2 = true
 
 class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<ElementModQ>) {
     // there are k exps which are integers of bitlength t
@@ -49,18 +50,10 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
             if (nonzero(IA32[idx])) break
         }
         actualBitLength = bitlength - discard
-        if (debug2) println("runSM for nrows = $k, nbits=$actualBitLength")
+        if (debug) println("runSM for nrows = $k, nbits=$actualBitLength")
 
         val IA = IA32.subList(discard, bitlength)
-        if (debug2) println(" size of IA = ${IA.size}")
-
-        val IAstring = buildString {
-            appendLine("IA array")
-            IA.forEachIndexed { idx, it ->
-                appendLine(" $idx $it")
-            }
-        }
-        if (debug) println(IAstring)
+        if (debug) println(" size of IA = ${IA.size}")
 
         val nbytes = (k + 7) / 8
         IAQ = IA.mapIndexed { idx, it ->
@@ -77,8 +70,28 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
                 }
             }
             val ba = ByteArray(nbytes) { iarr[it].toByte() }
-            ByteVector(ba)
+            ByteVector(ba, k)
         }
+
+
+        if (debug2) {
+            val IAstring = buildString {
+                appendLine("IA array")
+                IA.forEachIndexed { idx, it ->
+                    val itq = IAQ[idx]
+                    appendLine(" $idx $it = ${itq.toInt()}")
+                }
+            }
+            println(IAstring)
+        }
+
+        if (debug1) {
+            repeat(actualBitLength) { colIdx ->
+                val colVector = EAmatrix.colVector(colIdx) // idx reversed
+                println("$colIdx colVector = ${colVector.toInt()}")
+            }
+        }
+
 
         G = mutableMapOf()
         IAQ.forEachIndexed { idx, bv ->
@@ -87,29 +100,31 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
             while (pos < k) {
                 if (bv.isBitSet(pos)) {
                     accum = accum * bases[pos]
-                    if (debug) println(" $idx accum for base $pos")
+                    if (debug2) println(" $idx accum for base $pos")
                 }
                 pos++
             }
             G[bv] = accum
             if (accum == group.ONE_MOD_P) println(" ONE $idx accum for base $pos")
         }
-        if (debug2) println("size of G = ${G.size}")
+        if (debug) println("size of G = ${G.size}")
 
         Gp = mutableMapOf()
-        repeat(bitlength) { colIdx ->
-            val colv = EAmatrix.colVector(colIdx) // will be length k
+        repeat(actualBitLength) { colIdx ->
+            val vecIdx = actualBitLength - colIdx - 1 // idx reversed
+            val colv = EAmatrix.colVector(vecIdx) // will be length k
             var accum = group.ONE_MOD_P
             repeat(k) { rowIdx ->
-                if (EAmatrix.isBitSet(rowIdx, colIdx)) {
+                if (colv.isBitSet(rowIdx)) {
                     accum = accum * bases[rowIdx]
+                    if (debug2) println(" $vecIdx accum for base $rowIdx")
                 }
                 Gp[colv] = accum
                 // if (accum == group.ONE_MOD_P) println(" ONE at colIdx=$colIdx for base $rowIdx")
             }
 
         }
-        if (debug2) println("size of Gp = ${Gp.size}")
+        if (debug) println("size of Gp = ${Gp.size}")
     }
 
     fun prodPowP(): ElementModP {
@@ -127,7 +142,8 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
     fun prodPowP2(): ElementModP {
         var result = group.ONE_MOD_P
         repeat(actualBitLength) { colIdx ->
-            val colv = EAmatrix.colVector(colIdx) // will be length k
+            val vecIdx = actualBitLength - colIdx - 1 // idx reversed
+            val colv = EAmatrix.colVector(vecIdx) // will be length k
             val factor: ElementModP = Gp[colv]!!
             result = result * result // square
             if (colv.nonzero()) {
@@ -150,7 +166,7 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
 private val byteZ = 0.toByte()
 
 // main point of this is to make hashing work
-class ByteVector(val ba : ByteArray, val size:Int = ba.size) {
+class ByteVector(val ba : ByteArray, val bitSize:Int = ba.size * 8) {
     val byteWidth = ba.size
     val bitWidth = byteWidth * 8
 
@@ -162,9 +178,11 @@ class ByteVector(val ba : ByteArray, val size:Int = ba.size) {
         val bitShift = 7 - bitIdx
 
         val byteAsInt = ba[byteidx].toInt()
-        return byteAsInt shr bitShift and 1 != 0
+        val isSet =  byteAsInt shr bitShift and 1 != 0
+        return isSet
     }
 
+    // assumes upper bits are zero
     fun nonzero(): Boolean {
         ba.forEach {
             if (it != byteZ) return true
@@ -172,12 +190,11 @@ class ByteVector(val ba : ByteArray, val size:Int = ba.size) {
         return false
     }
 
-
     fun toInt(): Int {
         var result = 0
-        repeat(size) { colidx ->
+        repeat(bitSize) { colidx ->
             if (isBitSet(colidx)) {
-                result += result + (1 shl colidx)
+                result += (1 shl colidx)
             }
         }
         return result
@@ -214,8 +231,9 @@ class BitMatrix(val bas: List<ByteArray>) {
             val b: Int = ba[byteidx].toInt()
             val bit = (b shr bitShift) and 1
             if (bit != 0) {
-                val (colbyte, colbit) = pos(rowIdx, nrows)
-                result[colbyte] = (result[colbyte].toInt() + (1 shl colbit)).toByte()
+                val (colbyte, colbit) = pos(rowIdx, byteSize * 8)
+                val bitShift = 7 - colbit
+                result[colbyte] = (result[colbyte].toInt() + (1 shl bitShift)).toByte()
             }
         }
         return ByteVector(result, bitSize)
@@ -226,20 +244,20 @@ class BitMatrix(val bas: List<ByteArray>) {
         val bitpos = bitWidth - 1 - colIdx
         val byteidx = (bitpos) / 8
         val bitIdx = (bitpos) % 8
-        val bitShift = 7 - bitIdx
+        val bitShift = 7 - bitIdx // maybe this should be bitIdx ?
 
         val ba = bas[rowIdx]
         val byteAsInt = ba[byteidx].toInt()
         val bit = byteAsInt shr bitShift and 1
         return bit != 0
     }
-
 }
 
 // convert from colIdx to byteIndex, bitIndex
-fun pos(colIdx: Int, nbits: Int): Pair<Int, Int> {
-    val bitpos = nbits - 1 - colIdx
+// bitWidth if the storage
+fun pos(colIdx: Int, bitWidth: Int): Pair<Int, Int> {
+    val bitpos = bitWidth - 1 - colIdx
     val byteidx = (bitpos) / 8
-    val bitidx = (bitpos) % 8
+    val bitidx = (bitpos) % 8 // maybe should be 7 - bitIdx ?
     return Pair(byteidx, bitidx)
 }
