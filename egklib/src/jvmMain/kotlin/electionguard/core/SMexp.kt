@@ -18,9 +18,9 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
     val k = exps.size
     val actualBitLength: Int
 
-    val IAQ: List<Int>
-    val IAQset: Set<Int>
-    val G: Map<Int, ElementModP> // do we really need more than a long ? may be up to 2^nrows
+    val IAQ: List<ElementModQ> // needs to be BigInteger, need a bit for every row.
+    val IAQset: Set<ElementModQ>
+    val G: Map<ElementModQ, ElementModP> // do we really need more than a long ? may be up to 2^nrows
 
     init {
         // form the k by t exponent array EA whose rows are the binary representations of the es
@@ -50,8 +50,10 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
             if (nonzero(IA32[idx])) break
         }
         actualBitLength = bitlength - discard
+        println("runSM for nrows = $k, nbits=$actualBitLength")
+
         val IA = IA32.subList(discard, bitlength)
-        println("size of IA = ${IA.size}")
+        println(" size of IA = ${IA.size}")
 
         val IAstring = buildString {
             appendLine("IA array")
@@ -61,11 +63,12 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
         }
         if (debug) println(IAstring)
 
+        /*
         IAQ = IA.mapIndexed { idx, it ->
             makeIAvalue(it, idx)
         }
+        */
 
-        /*
         IAQ = IA.mapIndexed { idx, it ->
             val iarr = IntArray(32)
             var byteIndex = 31
@@ -80,36 +83,45 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
                 }
             }
             val ba = ByteArray(32) { iarr[it].toByte() }
-            val q = group.binaryToElementModQ(ba)
-            val asInt = (q as ProductionElementModQ).element.toInt()
-            val makeInt = makeIAvalue(it, idx)
-            require(makeInt == asInt)
-            makeInt
+            group.binaryToElementModQ(ba)!!
         }
 
-         */
         IAQset = HashSet(IAQ)
-        println("size of IAQset = ${IAQset.size}")
+        println(" size of IAQset = ${IAQset.size}")
 
         G = mutableMapOf()
-        val nentries = 2 shl k - 1
-        repeat(nentries) {
-            if (IAQset.contains(it)) {
-                var idx = it
-                var pos = 0
-                var accum = group.ONE_MOD_P
-                while (idx > 0) {
-                    val bit = idx and 1
-                    if (bit != 0) {
-                        accum = accum * bases[pos]
-                    }
-                    idx = idx shr 1
-                    pos++
+        IAQ.forEachIndexed { idx, it ->
+            if (debug) println("value for $idx is ${ (it as ProductionElementModQ).element.toInt() }")
+            var ba = it.byteArray()
+            var pos = 0
+            var accum = group.ONE_MOD_P
+            while (pos < k) {
+                if (isBitSet2(ba, pos)) {
+                    accum = accum * bases[pos]
+                    if (debug) println(" $idx accum for base $pos")
                 }
-                G[it] = accum
+                pos++
             }
+            G[it] = accum
         }
         println("size of G = ${G.size}")
+    }
+
+    fun isBitSet2(ba: ByteArray, colIdx: Int): Boolean {
+        val nbits = ba.size * 8
+        val bitpos = nbits - 1 - colIdx // low order bits first
+        val byteidx = (bitpos) / 8
+        val bitIdx = (bitpos) % 8
+        val bitShift = 7 - bitIdx
+        val byteAsInt = ba[byteidx].toInt()
+        return byteAsInt shr bitShift and 1 != 0
+    }
+
+    fun isBitSet(ba: ByteArray, bitnum: Int): Boolean {
+        val byteidx = bitnum / 8
+        val bitinbyte = bitnum % 8
+        val bint = ba[byteidx].toInt()
+        return bint shr bitinbyte != 0
     }
 
     fun prodPowP(): ElementModP {
