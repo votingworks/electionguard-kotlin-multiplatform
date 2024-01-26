@@ -55,8 +55,44 @@ class AdditionChain(val k: Int, private val elems: IntArray = IntArray(k)) {
 class VectorAdditionChain(val k: Int) {
     val chain = mutableListOf<AdditionChain>()
     val w = mutableListOf<Pair<Int, Int>>()
-    val elemMap = mutableMapOf<Int, AdditionChain>()
+    val elemMap = mutableMapOf<AdditionChain, AdditionChain>()
 
+    /*
+    fun addProducts(products: Collection<List<Int>>) {
+        // for the moment punt on figuring this out
+        products.forEach {
+            if (it.size == 2) {
+                add(AdditionChain(k, it))
+                w.add(Pair(-it[0] - 1, -it[1] - 1))
+            }
+        }
+        products.forEach { listi ->
+            if (listi.size > 2) {
+                val ac = AdditionChain(k, listi)
+                // do we already have it ?
+                if (elemMap[ac] != null) {
+                    println("already have product $ac")
+                } else {
+                    // see if we can find a subset that has n - 1 elements
+                    repeat(listi.size) { idx ->
+                        println("size ${listi.size} $idx")
+                        val subset = arrayListOf(listi.size) { listi[it] } .removeAt(idx)
+                        val subsetac = AdditionChain(k, subset)
+                        val subsetPrev = elemMap[subsetac]
+                        if (subsetPrev != null) {
+                            add(AdditionChain(k, it))
+                            w.add(Pair(subsetPrev.index, -it[idx]-1))
+                            println("found subset $ac")
+                            return@repeat
+                        }
+                    }
+                }
+            }
+        }
+        println("  added ${w.size} from products")
+    } */
+
+    // this apparently can deal with k=3
     fun addProducts(products: Collection<List<Int>>) {
         // for the moment punt on figuring this out
         products.forEach {
@@ -87,6 +123,7 @@ class VectorAdditionChain(val k: Int) {
                 }
             }
         }
+        println("  added ${w.size} from products")
     }
 
     fun addSquare(result: AdditionChain): AdditionChain {
@@ -100,9 +137,9 @@ class VectorAdditionChain(val k: Int) {
         val result = prev.product(v)
 
         // do we already have this result?
-        val resultPrev = elemMap[result.hashCode()]
+        val resultPrev = elemMap[result]
         if (resultPrev != null) {
-            println("already have this factor $resultPrev")
+            println("  ${w.size} already have this factor $resultPrev")
             return resultPrev
         }
 
@@ -111,7 +148,9 @@ class VectorAdditionChain(val k: Int) {
         if (factorIdx != null) {
             w.add(Pair(prev.index, factorIdx))
         } else {
-            println("cant find factor $v")
+            println("  ${w.size} cant find factor $v")
+            val factorac = AdditionChain(k, v)
+            val wtf = elemMap[factorac]
             w.add(Pair(prev.index, -999))
         }
 
@@ -125,8 +164,7 @@ class VectorAdditionChain(val k: Int) {
         }
         // otherwise search by hashcode
         val factorac = AdditionChain(k, v)
-        val key = factorac.hashCode()
-        return elemMap[key]?.index
+        return elemMap[factorac]?.index
     }
 
     fun search(v: List<Int>): Int {
@@ -138,8 +176,7 @@ class VectorAdditionChain(val k: Int) {
 
     private fun add(ac: AdditionChain) {
         chain.add(ac)
-        val key = ac.hashCode()
-        elemMap[key] = ac
+        elemMap[ac] = ac
         ac.index = chain.size - 1
     }
 
@@ -182,7 +219,6 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>) {
             }
             products[colv] = baseIndexes
         }
-        vaChain.addProducts(products.values)
 
         if (show) println(buildString {
             appendLine("products")
@@ -191,6 +227,7 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>) {
                 appendLine("$idx $it")
             }
         })
+        vaChain.addProducts(products.values)
 
         var result = AdditionChain(k)
         repeat(width) { colIdx ->

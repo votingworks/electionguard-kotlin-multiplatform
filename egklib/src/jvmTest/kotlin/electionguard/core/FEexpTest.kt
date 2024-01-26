@@ -25,7 +25,9 @@ class FEexpTest {
 
     @Test
     fun testSMsizes() {
-        runFM(1)
+        repeat (20) {
+            runFM(3)
+        }
     }
 
     fun runFM(nrows : Int) {
