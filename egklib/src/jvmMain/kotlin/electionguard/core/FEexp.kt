@@ -3,9 +3,9 @@ package electionguard.core
 // Use 14.88 to generate a vector addition chain
 // Then use Algorithm 14.104 in Handbook (menezes et al)
 private val debug = false
-private val debug1 = true
-private val debug2 = false
-private val show = true
+private val debug1 = false
+private val showProducts = false
+private var showConstruction = false
 
 class AdditionChain(val k: Int, private val elems: IntArray = IntArray(k)) {
     var index: Int = -999
@@ -92,17 +92,25 @@ class VectorAdditionChain(val k: Int) {
         println("  added ${w.size} from products")
     } */
 
+    fun alreadyHave(v: List<Int>): Boolean {
+        // do we already have this?
+        val productac = AdditionChain(k, v)
+        return elemMap[productac] != null
+    }
+
     // this apparently can deal with k=3
     fun addProducts(products: Collection<List<Int>>) {
+
         // for the moment punt on figuring this out
         products.forEach {
-            if (it.size == 2) {
+            if (it.size == 2 && !alreadyHave(it)) {
                 add(AdditionChain(k, it))
                 w.add(Pair(-it[0] - 1, -it[1] - 1))
+                if (showConstruction)  println(" addProduct size2 ${showLast()}")
             }
         }
         products.forEach {
-            if (it.size == 3) {
+            if (it.size == 3 && !alreadyHave(it)) {
                 add(AdditionChain(k, it)) // optimistic
                 // we need to find a previous one that has two that are contained. for the moment, exhaustive search is ok
                 var use = search(it.subList(0, 2))
@@ -121,16 +129,32 @@ class VectorAdditionChain(val k: Int) {
                         }
                     }
                 }
+                if (showConstruction) println(" addProduct size3 ${showLast()}")
             }
         }
-        println("  added ${w.size} from products")
+        if (showConstruction) println("added ${w.size} from products")
     }
 
     fun addSquare(result: AdditionChain): AdditionChain {
         val square = result.square()
         add(square)
         w.add(Pair(result.index, result.index))
+        if (showConstruction)  println(" addSquare to get ${showLast()}")
         return square
+    }
+
+    fun addFirstFactor(v: List<Int>): AdditionChain {
+        // assume we must already have this factor
+        val factorIdx = findFactor(v)
+        if (factorIdx != null) {
+            val factorac = AdditionChain(k, v)
+            w.add(Pair(SpecialOneFactor, factorIdx))
+            add(factorac)
+            if (showConstruction) println(" addFirstFactor to get ${showLast()}")
+            return factorac
+        } else {
+            throw RuntimeException("addFirstFactor")
+        }
     }
 
     fun addFactor(prev: AdditionChain, v: List<Int>): AdditionChain {
@@ -155,6 +179,7 @@ class VectorAdditionChain(val k: Int) {
         }
 
         add(result)
+        if (showConstruction) println(" addFactor $v to get ${showLast()}")
         return result
     }
 
@@ -180,8 +205,8 @@ class VectorAdditionChain(val k: Int) {
         ac.index = chain.size - 1
     }
 
-    fun last(): AdditionChain {
-        return chain[chain.size - 1]
+    fun showLast(): String {
+        return "${chain[chain.size - 1]} ${w[chain.size - 1]}"
     }
 
     override fun toString() = buildString {
@@ -194,7 +219,9 @@ class VectorAdditionChain(val k: Int) {
     }
 }
 
-class FEexp(val group: GroupContext, exps: List<ElementModQ>) {
+private const val SpecialOneFactor = Integer.MIN_VALUE
+
+class FEexp(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = false) {
     // there are k exponents which are integers of bitlength t = actualBitLength
     val k = exps.size
     val EAmatrix = BitMatrix(exps.map { it.byteArray() })
@@ -204,6 +231,7 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>) {
     val vaChain = VectorAdditionChain(k)
 
     init {
+        showConstruction = show
         if (debug1) println("EAmatrix bitLength=$width, bitCount=${EAmatrix.countBits(width)}")
 
         val products = mutableMapOf<BitMatrix.ColVector, List<Int>>()
@@ -220,31 +248,34 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>) {
             products[colv] = baseIndexes
         }
 
-        if (show) println(buildString {
+        if (showProducts) print(buildString {
             appendLine("products")
             val wtf = products.values
             wtf.forEachIndexed { idx, it ->
-                appendLine("$idx $it")
+                appendLine(" $idx $it")
             }
         })
         vaChain.addProducts(products.values)
+        if (show) println()
 
-        var result = AdditionChain(k)
+        var result = AdditionChain(k) // not actually used because of addFirstFactor()
         repeat(width) { colIdx ->
-            if (!result.isEmpty()) {
-                result = vaChain.addSquare(result)
-                println(" added square ${vaChain.last()}")
-            }
-            val vecIdx = width - colIdx - 1 // idx reversed
-            val colv = EAmatrix.colVector(vecIdx) // will be length k
+            val vecIdx = width - colIdx - 1 // start with high order bit, it gets shifted on each square
+            val colv = EAmatrix.colVector(vecIdx)
             val factor = products[colv]!!
-            if (factor.isNotEmpty()) {
-                result = vaChain.addFactor(result, factor)
-                println(" added factor $factor to get ${vaChain.last()}")
+
+            if (result.isEmpty()) {
+                // first time. wont be empty as long as weve calculated actualBitLength.
+                result = vaChain.addFirstFactor(factor)
+            } else {
+                result = vaChain.addSquare(result)
+                if (factor.isNotEmpty()) {
+                    result = vaChain.addFactor(result, factor)
+                }
             }
         }
         if (show) println(vaChain)
-        println( "chain size = ${ vaChain.chain.size }")
+        if (show) println( "chain size = ${ vaChain.chain.size }")
     }
 
     fun prodPowP(bases: List<ElementModP>, show: Boolean = false): ElementModP {
@@ -252,10 +283,15 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>) {
         val a = mutableListOf<ElementModP>()
 
         vaChain.w.forEach { (i1, i2) ->
-            val f1 = if (i1 < 0) bases[-i1-1] else a[i1]
-            val f2 = if (i2 < 0) bases[-i2-1] else a[i2]
-            a.add( f1 * f2)
-            countMultiply++
+            if (i1 == SpecialOneFactor) { // first element glitch
+                val f2 = if (i2 < 0) bases[-i2 - 1] else a[i2]
+                a.add(f2)
+            } else {
+                val f1 = if (i1 < 0) bases[-i1 - 1] else a[i1]
+                val f2 = if (i2 < 0) bases[-i2 - 1] else a[i2]
+                a.add(f1 * f2)
+                countMultiply++
+            }
         }
         if (show) println("countMultiply=$countMultiply")
         return a[a.size-1]
