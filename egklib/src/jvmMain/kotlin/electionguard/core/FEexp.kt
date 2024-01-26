@@ -7,7 +7,7 @@ private val debug1 = false
 private val showProducts = false
 private var showConstruction = false
 
-class AdditionChain(val k: Int, private val elems: IntArray = IntArray(k)) {
+class AdditionChain(val k: Int, val elems: IntArray = IntArray(k)) {
     var index: Int = -999
 
     constructor(k: Int, indices: List<Int>) : this(k) {
@@ -52,87 +52,20 @@ class AdditionChain(val k: Int, private val elems: IntArray = IntArray(k)) {
     }
 }
 
-class VectorAdditionChain(val k: Int) {
+class VectorAdditionChain(val k: Int, val show: Boolean = false) {
     val chain = mutableListOf<AdditionChain>()
     val w = mutableListOf<Pair<Int, Int>>()
     val elemMap = mutableMapOf<AdditionChain, AdditionChain>()
 
-    /*
-    fun addProducts(products: Collection<List<Int>>) {
-        // for the moment punt on figuring this out
+    fun addProducts(products: List<Product>) {
         products.forEach {
-            if (it.size == 2) {
-                add(AdditionChain(k, it))
-                w.add(Pair(-it[0] - 1, -it[1] - 1))
-            }
+            val ac = AdditionChain(k, it.nonbinary)
+            chain.add(ac)
+            w.add(it.w)
+            // leave out the singletons, they should be found directly in the bases
+            if (it.nonbinary.size > 1) elemMap[ac] = ac
+            ac.index = chain.size - 1
         }
-        products.forEach { listi ->
-            if (listi.size > 2) {
-                val ac = AdditionChain(k, listi)
-                // do we already have it ?
-                if (elemMap[ac] != null) {
-                    println("already have product $ac")
-                } else {
-                    // see if we can find a subset that has n - 1 elements
-                    repeat(listi.size) { idx ->
-                        println("size ${listi.size} $idx")
-                        val subset = arrayListOf(listi.size) { listi[it] } .removeAt(idx)
-                        val subsetac = AdditionChain(k, subset)
-                        val subsetPrev = elemMap[subsetac]
-                        if (subsetPrev != null) {
-                            add(AdditionChain(k, it))
-                            w.add(Pair(subsetPrev.index, -it[idx]-1))
-                            println("found subset $ac")
-                            return@repeat
-                        }
-                    }
-                }
-            }
-        }
-        println("  added ${w.size} from products")
-    } */
-
-    fun alreadyHave(v: List<Int>): Boolean {
-        // do we already have this?
-        val productac = AdditionChain(k, v)
-        return elemMap[productac] != null
-    }
-
-    // this apparently can deal with k=3
-    fun addProducts(products: Collection<List<Int>>) {
-
-        // for the moment punt on figuring this out
-        products.forEach {
-            if (it.size == 2 && !alreadyHave(it)) {
-                add(AdditionChain(k, it))
-                w.add(Pair(-it[0] - 1, -it[1] - 1))
-                if (showConstruction)  println(" addProduct size2 ${showLast()}")
-            }
-        }
-        products.forEach {
-            if (it.size == 3 && !alreadyHave(it)) {
-                add(AdditionChain(k, it)) // optimistic
-                // we need to find a previous one that has two that are contained. for the moment, exhaustive search is ok
-                var use = search(it.subList(0, 2))
-                if (use >= 0) {
-                    w.add(Pair(use, -it[2] - 1))
-                } else {
-                    use = search(it.subList(1, 3))
-                    if (use >= 0) {
-                        w.add(Pair(use, -it[0] - 1))
-                    } else {
-                        use = search(listOf(it[0], it[3]))
-                        if (use >= 0) {
-                            w.add(Pair(use, -it[1] - 1))
-                        } else {
-                            throw RuntimeException("cant find previous product to use")
-                        }
-                    }
-                }
-                if (showConstruction) println(" addProduct size3 ${showLast()}")
-            }
-        }
-        if (showConstruction) println("added ${w.size} from products")
     }
 
     fun addSquare(result: AdditionChain): AdditionChain {
@@ -219,6 +152,95 @@ class VectorAdditionChain(val k: Int) {
     }
 }
 
+data class Product(val nonbinary: List<Int>, val w: Pair<Int, Int>)
+
+class KProducts(val k: Int, val show: Boolean = false) {
+    val listMap = mutableMapOf<Int, VV>()
+
+    data class VV(val v: Int, val nonzero: List<Int>)
+
+    fun addKProducts() : List<Product> {
+        val total = 1 shl k
+        repeat(total) { genVVlist(k, it) }
+
+        val result = mutableListOf<Product>()
+        repeat(total) { result.add( calcw(it) ) }
+        return result
+    }
+
+    fun genVVlist(k: Int, ival: Int) {
+        var vv = ival
+        val vlist = List(k) {
+            val v = if (vv and 1 == 1) 1 else 0
+            vv = vv shr 1
+            v
+        }
+        val nonzero = nonzero(vlist)
+        if (show) println(" ${ival} == ${vlist} == ${nonzero}")
+        listMap[ival] = VV(ival, nonzero)
+    }
+
+    fun calcw(ival: Int): Product {
+        val vv = listMap[ival]!!
+
+        val pair = when (vv.nonzero.size) {
+            0 -> Pair( 0, 0)
+            1 -> Pair( 0, -(vv.nonzero[0]+1))
+            2 -> Pair( -(vv.nonzero[0]+1), -(vv.nonzero[1]+1))
+            else -> divide(vv.nonzero)
+        }
+
+        if (show) println(" nz=${vv.nonzero.size}: $ival -> $pair")
+        return Product(vv.nonzero, pair)
+    }
+
+    fun nonzero(vlist: List<Int>): List<Int> {
+        val result = mutableListOf<Int>()
+        vlist.forEachIndexed { idx, it -> if (it != 0) result.add(idx) }
+        return result
+    }
+
+    fun binary(nonzero: List<Int>): List<Int> {
+        val result = IntArray(k)
+        nonzero.forEach { result[it] = 1 }
+        return result.toList()
+    }
+
+    fun toInt(binary: List<Int>): Int {
+        var result = 0
+        binary.forEachIndexed { idx, it ->
+            if (it != 0) result = result + (1 shl idx)
+        }
+        return result
+    }
+
+    fun divide(nonzero: List<Int>): Pair<Int, Int> {
+        val size2 = nonzero.size / 2
+        val left = binary(nonzero.subList(0, size2))
+        val right = binary(nonzero.subList(size2, nonzero.size))
+
+        //println(" require nz=${nonzero.size}: ${left} + ${right}) == ${left.addComponents(right)} == ${vlist} ")
+        val vlist = binary(nonzero)
+        require(left.addComponents(right) == vlist)
+
+        val leftFromMap = listMap[toInt(left)]!!
+        val rightFromMap = listMap[toInt(right)]!!
+
+        //println(" require nz=${nonzero.size}: ${leftFromMap.vlist} + ${rightFromMap.vlist}) == ${leftFromMap.vlist.addComponents(rightFromMap.vlist)} == ${vlist} ")
+        require(binary(leftFromMap.nonzero).addComponents(binary(rightFromMap.nonzero)) == vlist)
+
+        // singletons must reference the bases directly
+        val leftVal = if (leftFromMap.nonzero.size == 1) -(leftFromMap.nonzero[0]+1) else leftFromMap.v
+        val rightVal = if (rightFromMap.nonzero.size == 1) -(rightFromMap.nonzero[0]+1) else rightFromMap.v
+        return Pair(leftVal, rightVal)
+    }
+
+    fun List<Int>.addComponents(other: List<Int>) : List<Int> {
+        require (this.size == other.size)
+        return List(this.size) { this[it] + other[it]}
+    }
+}
+
 private const val SpecialOneFactor = Integer.MIN_VALUE
 
 class FEexp(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = false) {
@@ -255,7 +277,7 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = fa
                 appendLine(" $idx $it")
             }
         })
-        vaChain.addProducts(products.values)
+        vaChain.addProducts(KProducts(k, show).addKProducts())
         if (show) println()
 
         var result = AdditionChain(k) // not actually used because of addFirstFactor()
@@ -275,7 +297,7 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = fa
             }
         }
         if (show) println(vaChain)
-        if (show) println( "chain size = ${ vaChain.chain.size }")
+        if (show) println( "  chain size = ${ vaChain.chain.size }")
     }
 
     fun prodPowP(bases: List<ElementModP>, show: Boolean = false): ElementModP {
@@ -283,7 +305,9 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = fa
         val a = mutableListOf<ElementModP>()
 
         vaChain.w.forEach { (i1, i2) ->
-            if (i1 == SpecialOneFactor) { // first element glitch
+            if (i1 == 0) { // skip
+                a.add(group.ZERO_MOD_P);
+            } else if (i1 == SpecialOneFactor) { // first element glitch
                 val f2 = if (i2 < 0) bases[-i2 - 1] else a[i2]
                 a.add(f2)
             } else {
