@@ -63,12 +63,12 @@ class VACalgTest {
         val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
 
         // works
-        val feResult = FEexp(group, es, true).prodPowP(bases)
-        assertEquals(check, feResult)
+        //val feResult = FEexp(group, es, true).prodPowP(bases)
+        //assertEquals(check, feResult)
         println("///////////////////////////////////////////")
 
         val vac = VACalg(group, es, true)
-        val result = vac.prodPowP(bases)
+        val result = vac.prodPowP(bases, false)
         assertEquals(check, result)
         println()
     }

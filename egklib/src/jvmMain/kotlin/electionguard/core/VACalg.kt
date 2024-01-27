@@ -4,13 +4,17 @@ import electionguard.util.sigfig
 
 // Use 14.88 to generate a vector addition chain
 // Then use Algorithm 14.104 in Handbook (menezes et al)
-private val showChain = true
+private val showChain1 = true
+private val showChain2 = true
 private val showChainResult = false
 private val showPowP = true
-private var showConstruction = false
-private var showTerms = true
+private var showConstruction = true
+private var showTerms = false
 
 typealias ColVector = Int
+
+////////////////////////////////////////////////////////////////////////////////
+// this is for matching the exact factor using the cv value. not about the pairs.
 
 class VACElem(val k: Int, val cv: ColVector, val w: Pair<Int, Int>) {
     var index: Int = -999
@@ -24,7 +28,7 @@ class VACElem(val k: Int, val cv: ColVector, val w: Pair<Int, Int>) {
     fun product(factor: CVInt, factorIdx: Int) = VACElem(k, cv + factor.cv, Pair(index, factorIdx))
 
     override fun toString(): String {
-        return " $index: $cv $w"
+        return " $index: $cv ${cv.toBList(k)}  $w"
     }
 }
 
@@ -168,10 +172,10 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = f
     val EAmatrix = BitMatrix(exps.map { it.byteArray() })
     val width = EAmatrix.firstNonZeroColumn()
 
-    val vaChain = VAChain(k)
+    val vaChain = VAChain(k, show)
 
     init {
-        println("EAmatrix width=$width, bitsOn=${EAmatrix.countBits(width)}")
+        println("EAmatrix k= $k width=$width, bitsOn=${EAmatrix.countBits(width)}")
 
         val cvints = mutableListOf<CVInt>()
         repeat(width) { colIdx ->
@@ -187,6 +191,7 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = f
         })
 
         vaChain.addTerms(MakeTerms(k, cvints, show && showTerms).getTerms())
+        if (show && showChain1) println(vaChain)
 
         var result = VACElem(k) // not actually used because of addFirstFactor()
         cvints.forEach { cvint ->
@@ -200,7 +205,7 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = f
         }
         //val notmissing = vaChain.countRef()
         //val ratio = notmissing.toDouble()/vaChain.chain.size
-        if (show && showChain) println(vaChain)
+        if (show && showChain2) println(vaChain)
         if (show && showChainResult) print(buildString {
             appendLine("chainResults")
             vaChain.chainResults.forEach {
@@ -232,6 +237,9 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = f
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// this is all about creating a chain that can get you to each of the cvints factors.
+
 class CVInt(val orgIdx: Int, val cv: ColVector) : Comparable<CVInt> {
     var sum2: Pair<ColVector, ColVector>? = null // not indexes,  these are the column vector values
 
@@ -262,6 +270,14 @@ fun Int.toNList(): List<Int> {
         bit++
     }
     return result
+}
+
+// to list of 0, 1
+fun Int.toBList(k: Int): List<Int> {
+    val nlist = this.toNList()
+    val elems = IntArray(k)
+    nlist.forEach { elems[it] = 1 }
+    return elems.toList()
 }
 
 // reverse of toNList()
@@ -308,7 +324,12 @@ class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) 
     }
 
     fun getTerms(): List<CVInt> {
-        return done.sorted()
+        val allsorted = done.sorted()
+        allsorted.forEach {
+            require(it.sum2 != null)
+            require((it.sum2!!.first + it.sum2!!.second) == it.cv)
+        }
+        return allsorted
     }
 
     fun makeWorkingNoDuplicates() {
