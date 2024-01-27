@@ -242,6 +242,8 @@ class CVInt(val orgIdx: Int, val cv: Int) : Comparable<CVInt> {
     var idxReference: Int = SpecialOneFactor
     var sum: Pair<Int, Int>? = null
 
+    constructor(nlist: List<Int>) : this(0, toIntN(nlist))
+
     fun done() = (idxReference != SpecialOneFactor) || (sum != null)
     fun setReference(ref: Int): CVInt { idxReference = ref; return this }
     fun setSum(i1: Int, i2: Int): CVInt { sum = Pair(i1, i2); return this }
@@ -271,7 +273,16 @@ fun Int.toNList(): List<Int> {
     return result
 }
 
-// there are 256 cvints
+// reverse of toNList()
+fun toIntN(nonzero: List<Int>): Int {
+    var result = 0
+    nonzero.forEachIndexed { idx, it ->
+        result = result + (1 shl it)
+    }
+    return result
+}
+
+// there are 256 cvints when using ElementModQ
 class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) {
     val working = mutableMapOf<Int, CVInt>() // key = value
     val done = mutableListOf<CVInt>()
@@ -279,12 +290,11 @@ class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) 
     init {
         removeDuplicates()
         removeEmptyAndBaseValues()
-        removeSums()
 
         while (working.size > 0) {
-            removeSingleBits()
-            split()
             removeSums()
+            removeSingleBits()
+            splitLargest()
             println("not done=${working.size}")
         }
 
@@ -339,13 +349,15 @@ class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) 
         var count = 0
 
         for (first in 0 until sorted.size) {
-            if (sorted[first].cv + sorted[first + 1].cv > last) break // dont bother continuing
+            if (sorted[first]!!.cv + sorted[first + 1]!!.cv > last) break // dont bother continuing
+            val firstCV = sorted[first]!!
 
             for (second in first + 1 until sorted.size) {
-                val test = sorted[first].cv + sorted[second].cv
+                val secondCV = sorted[second]!!
+                val test = firstCV.cv + secondCV.cv
                 val theSum = sorted[test]
                 if (theSum != null && !theSum.done()) {
-                    theSum.sum = Pair(sorted[first].orgIdx, sorted[second].orgIdx)
+                    theSum.sum = Pair(firstCV.orgIdx, secondCV.orgIdx)
                     done.add(theSum)
                     working.remove(theSum.cv)
                     count++
@@ -377,22 +389,33 @@ class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) 
         removeThese.forEach{working.remove(it.cv)}
     }
 
-    fun split() {
+    fun splitLargest() {
         if (working.isEmpty()) return
-        val removeThese = mutableListOf<CVInt>()
-        working.values.forEach { trial ->
-            for (doneIdx in 0 until done.size) {
-                val test = trial.cv - done[doneIdx].cv
-                if (test > 0 && test.countOneBits() == 1) { // you can form it with existing and one base
-                    val bitno = test.toNList()[0]
-                    trial.sum = Pair(-bitno - 1, doneIdx) // not orgIdx
-                    done.add(trial)
-                    removeThese.add(trial)
-                    if (show)  println(" removeSingleBits $trial succeeded with ${done[doneIdx]} and ${-bitno - 1}")
-                    break
-                }
-            }
-        }
-        removeThese.forEach{working.remove(it.cv)}
+        val sorted = working.toSortedMap()
+
+        // split the last one, ie with largest value
+        val splitt = sorted.values.last()
+
+        val nonzero = splitt.cv.toNList()
+        val size2 = nonzero.size / 2
+        val left = binary(nonzero.subList(0, size2))
+        val right = binary(nonzero.subList(size2, nonzero.size))
+
+        val leftCV = CVInt(left)
+        val rightCV = CVInt(right)
+
+        // look may be duplicates - use cv
+        working[leftCV.cv] = leftCV
+        working[rightCV.cv] = leftCV
+
+        splitt.setSum(leftCV.cv, rightCV.cv)
+        working.remove(splitt.cv)
+        done.add(splitt)
+    }
+
+    fun binary(nonzero: List<Int>): List<Int> {
+        val result = IntArray(k)
+        nonzero.forEach { result[it] = 1 }
+        return result.toList()
     }
 }
