@@ -136,6 +136,14 @@ class BitMatrix(val bas: List<ByteArray>) {
             return count
         }
 
+        fun toInt(): Int {
+            var result = 0
+            repeat(nrows) {
+                if (isBitSet(it)) result = result + (1 shl it)
+            }
+            return result
+        }
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false

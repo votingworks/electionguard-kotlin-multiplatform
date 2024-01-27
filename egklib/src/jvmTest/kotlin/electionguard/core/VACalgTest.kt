@@ -1,45 +1,97 @@
 package electionguard.core
 
-import electionguard.util.sigfig
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class FEexpTest {
+class VACalgTest {
     val group = productionGroup()
 
     @Test
-    fun testFEexample() {
+    fun testVACexample() {
         val e0 = 30.toElementModQ(group)
         val e1 = 10.toElementModQ(group)
         val e2 = 24.toElementModQ(group)
         val es = listOf(e0, e1, e2)
 
-        val bases = List(3) { group.gPowP( group.randomElementModQ()) }
+        val bases = List(3) { group.gPowP(group.randomElementModQ()) }
 
-        val fe = FEexp(group, es, true)
-        val result = fe.prodPowP(bases)
+        // works
+        //FEexp(group, es, true).prodPowP(bases)
+        //println("///////////////////////////////////////////")
 
+        // no work
+        val vac = VACalg(group, es, true)
+        val result = vac.prodPowP(bases)
         val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
         assertEquals(check, result)
         println()
     }
 
     @Test
-    fun testSMsizes() {
-        runFM(3, false)
+    fun testVACexample2() {
+        val e0 = 1231130.toElementModQ(group)
+        val e1 = 3462110.toElementModQ(group)
+        val e2 = 5673241.toElementModQ(group)
+        val es = listOf(e0, e1, e2)
+
+        val bases = List(3) { group.gPowP(group.randomElementModQ()) }
+        val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
+
+        // works
+        //val feResult = FEexp(group, es, true).prodPowP(bases)
+        //println("///////////////////////////////////////////")
+        //assertEquals(check, feResult)
+
+        // no work
+        val vac = VACalg(group, es, true)
+        val result = vac.prodPowP(bases)
+        assertEquals(check, result)
+        println()
     }
 
-    fun runFM(nrows : Int, show: Boolean = false) {
+    @Test
+    fun testVACexample3() {
+        val es = listOf(
+            1231130.toElementModQ(group),
+            3462110.toElementModQ(group),
+            5673241.toElementModQ(group),
+            2983477.toElementModQ(group),
+            6345902.toElementModQ(group),
+            329756.toElementModQ(group),
+        )
+
+        val bases = List(es.size) { group.gPowP(group.randomElementModQ()) }
+        val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
+
+        // works
+        val feResult = FEexp(group, es, true).prodPowP(bases)
+        println("///////////////////////////////////////////")
+        assertEquals(check, feResult)
+
+        // no work
+        val vac = VACalg(group, es, true)
+        val result = vac.prodPowP(bases)
+        assertEquals(check, result)
+        println()
+    }
+
+    @Test
+    fun testVACsizes() {
+        runVAC(3, true)
+    }
+
+    fun runVAC(nrows : Int, show: Boolean = false) {
         val exps = List(nrows) { group.randomElementModQ() }
         val bases = List(nrows) { group.gPowP( group.randomElementModQ()) }
 
-        val fe = FEexp(group, exps, show)
-        val result = fe.prodPowP(bases)
+        val vac = VACalg(group, exps, show)
+        val result = vac.prodPowP(bases)
 
         val check =  bases.mapIndexed { idx, it -> it powP exps[idx] }.reduce { a, b -> (a * b) }
         assertEquals(check, result)
     }
 
+/*
     @Test
     fun testFEtiming() {
         val k = 12
@@ -123,6 +175,7 @@ class FEexpTest {
         val exps = List(k) { group.randomElementModQ() }
         val fe = FEexp(group, exps, false)
     }
+    */
 }
 
 /*
