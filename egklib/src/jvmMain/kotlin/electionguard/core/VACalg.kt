@@ -6,23 +6,25 @@ import electionguard.util.sigfig
 // Then use Algorithm 14.104 in Handbook (menezes et al)
 private val showChain = true
 private val showChainResult = false
-private val showPowP = false
+private val showPowP = true
 private var showConstruction = false
 private var showTerms = true
 
-class VACElem(val k: Int, val cv: CVInt) {
+typealias ColVector = Int
+
+class VACElem(val k: Int, val cv: ColVector, val w: Pair<Int, Int>) {
     var index: Int = -999
 
-    constructor(k: Int) : this(k, CVInt(0, 0))
+    constructor(k: Int) : this(k, 0, Pair(0, 0))
 
-    fun clone() = VACElem(k, cv)
+    fun clone() = VACElem(k, cv, w)
 
-    fun square() = VACElem(k, CVInt(0, 2 * cv.cv).setSum(index, index))
+    fun square() = VACElem(k, 2 * cv, Pair(index, index))
 
-    fun product(factor: CVInt, factorIdx: Int) = VACElem(k, CVInt(0, cv.cv + factor.cv).setSum(index, factorIdx))
+    fun product(factor: CVInt, factorIdx: Int) = VACElem(k, cv + factor.cv, Pair(index, factorIdx))
 
     override fun toString(): String {
-        return " $index: $cv"
+        return " $index: $cv $w"
     }
 }
 
@@ -60,16 +62,17 @@ fun MutableList<ChainResult>.product(factor: CVInt) {
 
 class VAChain(val k: Int, val show: Boolean = false) {
     val chain = mutableListOf<VACElem>()
-    val elemMap = mutableMapOf<Int, VACElem>()
+    val elemMap = mutableMapOf<Int, VACElem>() // key is cv
     val chainResults = mutableListOf<ChainResult>()
 
     fun addTerms(terms: List<CVInt>) {
-        terms.forEach {
-            val ac = VACElem(k, it)
+        terms.forEach { term ->
+            val (cv1, cv2) = term.sum2!!
+            val idx1 = findIndex(cv1)
+            val idx2 = findIndex(cv2)
+            val ac = VACElem(k, term.cv, Pair(idx1, idx2))
             chain.add(ac)
-            // leave out the singletons, they should be found directly in the bases LOOK
-            // if (it.cv > 0) elemMap[ac] = ac
-            elemMap[it.cv] = ac
+            elemMap[term.cv] = ac
             ac.index = chain.size - 1
         }
     }
@@ -84,25 +87,27 @@ class VAChain(val k: Int, val show: Boolean = false) {
 
     fun addFirstFactor(factor: CVInt): VACElem {
         // assume we must already have this factor
-        val factorIdx = findFactor(factor)
-        if (factorIdx != null) {
-            if (factor.sum == null) factor.setSum(SpecialOneFactor, factorIdx)
-            val factorac = VACElem(k, factor)
-            add(factorac)
-            if (show && showConstruction) println(" addFirstFactor to initialize the result = ${showLast()}")
-            chainResults.add(ChainResult(k))
-            chainResults.product(factor)
-            return factorac
-        } else {
-            throw RuntimeException("addFirstFactor")
+        val factorIdx = findIndex(factor.cv)
+        val w =  if (factor.sum2 == null) Pair(SpecialOneFactor, factorIdx)
+        else {
+            val (cv1, cv2) = factor.sum2!!
+            val idx1 = findIndex(cv1)
+            val idx2 = findIndex(cv2)
+            Pair(idx1, idx2)
         }
+        val factorac = VACElem(k, factor.cv, w)
+        add(factorac)
+        if (show && showConstruction) println(" addFirstFactor to initialize the result = ${showLast()}")
+        chainResults.add(ChainResult(k))
+        chainResults.product(factor)
+        return factorac
     }
 
     fun addFactor(prev: VACElem, factor: CVInt): VACElem {
         if (factor.cv == 0) return prev
 
         // assume we must already have this factor
-        val factorIdx = findFactor(factor)
+        val factorIdx = findIndex(factor.cv)
         if (factorIdx == null) {
             println("  ${chain.size} cant find factor $factor")
             throw Exception()
@@ -112,7 +117,7 @@ class VAChain(val k: Int, val show: Boolean = false) {
         chainResults.product(factor)
 
         // do we already have this result?
-        val resultPrev = elemMap[result.cv.cv]
+        val resultPrev = elemMap[result.cv]
         if (resultPrev != null) {
             println("  ${chain.size} already have this factor $resultPrev")
             return resultPrev
@@ -123,18 +128,23 @@ class VAChain(val k: Int, val show: Boolean = false) {
         return result
     }
 
-    fun findFactor(factor: CVInt): Int? {
-        if (factor.cv.countOneBits() == 1) {
-            val bitno = factor.cv.toNList()[0]
+    fun findIndex(cv: ColVector): Int {
+        if (cv.countOneBits() == 1) {
+            val bitno = cv.toNList()[0]
             return -bitno-1 // its a base
         }
-        // otherwise search by colvector
-        return elemMap[factor.cv]?.index
+        // otherwise search by col vector
+        val elem = elemMap[cv]
+        if (elem == null) {
+            throw RuntimeException()
+        } else {
+            return elem.index
+        }
     }
 
     private fun add(elem: VACElem) {
         chain.add(elem)
-        elemMap[elem.cv.cv] = elem
+        elemMap[elem.cv] = elem
         elem.index = chain.size - 1
     }
 
@@ -148,22 +158,6 @@ class VAChain(val k: Int, val show: Boolean = false) {
             appendLine("  $idx $it")
         }
     }
-
-    /*
-    fun countRef(): Int {
-        w.forEach{
-            if (it.i1 >= 0 ) w[it.i1].refCount++
-            if (it.i2 >= 0 ) w[it.i2].refCount++
-        }
-
-        var notmissing = 0
-        w.forEach{
-            if (it.refCount > 0 ) notmissing++
-        }
-        return notmissing
-    }
-
-     */
 }
 
 private const val SpecialOneFactor = Integer.MIN_VALUE
@@ -192,12 +186,12 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = f
             }
         })
 
-        vaChain.addTerms(MakeTerms(k, cvints, show && showTerms).done)
+        vaChain.addTerms(MakeTerms(k, cvints, show && showTerms).getTerms())
 
         var result = VACElem(k) // not actually used because of addFirstFactor()
         cvints.forEach { cvint ->
-            if (result.cv.cv == 0) {
-                // first time. wont be empty as long as weve calculated actualBitLength.
+            if (result.cv == 0) {
+                // first time. wont be empty as long as weve calculated actualBitLength.1
                 result = vaChain.addFirstFactor(cvint)
             } else {
                 result = vaChain.addSquare(result)
@@ -221,7 +215,7 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = f
         val a = mutableListOf<ElementModP>()
 
         vaChain.chain.forEach { elem ->
-            val (i1, i2) = elem.cv.sum!!
+            val (i1, i2) = elem.w
             if (i1 == SpecialOneFactor) { // first element glitch
                 val f2 = if (i2 < 0) bases[-i2 - 1] else a[i2]
                 a.add(f2)
@@ -238,15 +232,13 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = f
     }
 }
 
-class CVInt(val orgIdx: Int, val cv: Int) : Comparable<CVInt> {
-    var idxReference: Int = SpecialOneFactor
-    var sum: Pair<Int, Int>? = null
+class CVInt(val orgIdx: Int, val cv: ColVector) : Comparable<CVInt> {
+    var sum2: Pair<ColVector, ColVector>? = null // not indexes,  these are the column vector values
 
     constructor(nlist: List<Int>) : this(0, toIntN(nlist))
 
-    fun done() = (idxReference != SpecialOneFactor) || (sum != null)
-    fun setReference(ref: Int): CVInt { idxReference = ref; return this }
-    fun setSum(i1: Int, i2: Int): CVInt { sum = Pair(i1, i2); return this }
+    fun done() = (sum2 != null)
+    fun setSum(i1: ColVector, i2: ColVector): CVInt { sum2 = Pair(i1, i2); return this }
 
     override fun compareTo(other: CVInt): Int {
         return this.cv - other.cv
@@ -254,8 +246,7 @@ class CVInt(val orgIdx: Int, val cv: Int) : Comparable<CVInt> {
 
     override fun toString() = buildString {
         append(" CVInt(orgIdx=$orgIdx, cv=$cv, bitsOn=${cv.countOneBits()}")
-        if (idxReference != SpecialOneFactor) append(", idxReference=$idxReference")
-        if (sum != null) append(", sum=$sum")
+        if (sum2 != null) append(", sum=$sum2")
         append(")")
     }
 }
@@ -286,22 +277,23 @@ fun toIntN(nonzero: List<Int>): Int {
 class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) {
     val working = mutableMapOf<Int, CVInt>() // key = value
     val done = mutableListOf<CVInt>()
+    val doneSet = mutableSetOf<ColVector>()
 
     init {
-        removeDuplicates()
-        removeEmptyAndBaseValues()
+        makeWorkingNoDuplicates()
 
         while (working.size > 0) {
-            removeSums()
-            removeSingleBits()
-            splitLargest()
-            println("not done=${working.size}")
+            var changed = removeEmptyAndBaseValues()
+            changed = changed || removeSums()
+            changed = changed || removeSingleBits()
+            changed = changed || splitLargest()
+            if (!changed) break // no progress
         }
 
         if (show) {
             println("done=${done.size}")
             println(buildString {
-                done.forEach { appendLine(it) }
+                getTerms().forEach { appendLine(it) }
             })
         }
         if (show || (working.size > 0)) {
@@ -315,7 +307,11 @@ class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) 
         }
     }
 
-    fun removeDuplicates() {
+    fun getTerms(): List<CVInt> {
+        return done.sorted()
+    }
+
+    fun makeWorkingNoDuplicates() {
         cvints.forEach {
             val org = working[it.cv]
             if (org == null) {
@@ -325,40 +321,39 @@ class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) 
         if (show) println(" removeDuplicates ${cvints.size - working.size}")
     }
 
-    fun removeEmptyAndBaseValues() {
+    fun removeEmptyAndBaseValues(): Boolean {
         val removeThese = mutableListOf<CVInt>()
         working.values.forEach {
             if (it.cv.countOneBits() < 2) { // ignore zeros and ones
                 removeThese.add(it)
             } else if (it.cv.countOneBits() == 2) { // can use sum of bases
                 val bits = it.cv.toNList()
-                done.add(it.setSum(-bits[0]-1, -bits[1]-1))
+                addToDone(it.setSum( 1 shl bits[0], 1 shl bits[1]))
                 removeThese.add(it)
-            } else {
-                working[it.cv] = it
             }
         }
         removeThese.forEach{working.remove(it.cv)}
         if (show) println(" removeEmptyAndBaseValues ${removeThese.size}")
+        return (removeThese.size > 0)
     }
 
-    fun removeSums() {
-        if (working.size < 2) return
-        val sorted = working.toSortedMap()
-        val last = sorted.values.last().cv
+    fun removeSums(): Boolean {
+        if (working.size < 2) return false
+        val sorted = working.values.sorted()
+        val last = sorted.last().cv
         var count = 0
 
-        for (first in 0 until sorted.size) {
+        for (first in 0 until sorted.size-1) {
             if (sorted[first]!!.cv + sorted[first + 1]!!.cv > last) break // dont bother continuing
             val firstCV = sorted[first]!!
 
             for (second in first + 1 until sorted.size) {
                 val secondCV = sorted[second]!!
                 val test = firstCV.cv + secondCV.cv
-                val theSum = sorted[test]
+                val theSum = working[test]
                 if (theSum != null && !theSum.done()) {
-                    theSum.sum = Pair(firstCV.orgIdx, secondCV.orgIdx)
-                    done.add(theSum)
+                    theSum.sum2 = Pair(firstCV.cv, secondCV.cv)
+                    addToDone(theSum)
                     working.remove(theSum.cv)
                     count++
                 }
@@ -366,31 +361,33 @@ class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) 
             }
         }
         if (show) println(" removeSums= $count")
+        return (count > 0)
     }
 
-    // look for terms that are sum of  existing and one base
-    fun removeSingleBits() {
-        if (working.isEmpty()) return
-        if (done.isEmpty()) return
+    // look for terms that are sum of existing and one base
+    fun removeSingleBits(): Boolean {
+        if (working.isEmpty()) return false
+        if (done.isEmpty()) return false
         val removeThese = mutableListOf<CVInt>()
         working.values.forEach { trial ->
             for (doneIdx in 0 until done.size) {
                 val test = trial.cv - done[doneIdx].cv
                 if (test > 0 && test.countOneBits() == 1) {
-                    val bitno = test.toNList()[0]
-                    trial.sum = Pair(-bitno - 1, doneIdx) // not orgIdx
-                    done.add(trial)
+                    trial.sum2 = Pair(test, done[doneIdx].cv) // not orgIdx
+                    addToDone(trial)
                     removeThese.add(trial)
-                    if (show)  println(" removeSingleBits $trial succeeded with ${done[doneIdx]} and ${-bitno - 1}")
+                    if (show) println(" removeSingleBits $trial succeeded with ${done[doneIdx]} and ${test}")
                     break
                 }
             }
         }
         removeThese.forEach{working.remove(it.cv)}
+        if (show) println(" removeSums= ${removeThese.size}")
+        return (removeThese.size > 0)
     }
 
-    fun splitLargest() {
-        if (working.isEmpty()) return
+    fun splitLargest(): Boolean {
+        if (working.isEmpty()) return false
         val sorted = working.toSortedMap()
 
         // split the last one, ie with largest value
@@ -401,21 +398,44 @@ class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) 
         val left = binary(nonzero.subList(0, size2))
         val right = binary(nonzero.subList(size2, nonzero.size))
 
-        val leftCV = CVInt(left)
-        val rightCV = CVInt(right)
+        val leftCV = CVInt(nonbinary(left))
+        val rightCV = CVInt(nonbinary(right))
 
-        // look may be duplicates - use cv
-        working[leftCV.cv] = leftCV
-        working[rightCV.cv] = leftCV
+        addToWorkingOrDone(leftCV)
+        addToWorkingOrDone(rightCV)
 
         splitt.setSum(leftCV.cv, rightCV.cv)
         working.remove(splitt.cv)
-        done.add(splitt)
+        addToDone(splitt)
+
+        if (show) println(" splitLargest $splitt succeeded with ${leftCV} and ${rightCV}")
+        return true
+    }
+
+    fun addToWorkingOrDone(cv: CVInt) {
+        if (cv.cv.countOneBits() == 2) { // can use sum of bases
+            val bits = cv.cv.toNList()
+            addToDone(cv.setSum( 1 shl bits[0], 1 shl bits[1]))
+        } else {
+            if (working[cv.cv] == null) working[cv.cv] = cv
+        }
+    }
+
+    fun addToDone(cv: CVInt) {
+        if (doneSet.contains(cv.cv)) return
+        done.add(cv)
+        doneSet.add(cv.cv)
     }
 
     fun binary(nonzero: List<Int>): List<Int> {
         val result = IntArray(k)
         nonzero.forEach { result[it] = 1 }
         return result.toList()
+    }
+
+    fun nonbinary(vlist: List<Int>): List<Int> {
+        val result = mutableListOf<Int>()
+        vlist.forEachIndexed { idx, it -> if (it != 0) result.add(idx) }
+        return result
     }
 }

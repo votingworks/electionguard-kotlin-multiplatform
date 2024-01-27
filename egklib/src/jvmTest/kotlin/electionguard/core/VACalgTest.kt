@@ -42,7 +42,6 @@ class VACalgTest {
         //println("///////////////////////////////////////////")
         //assertEquals(check, feResult)
 
-        // no work
         val vac = VACalg(group, es, true)
         val result = vac.prodPowP(bases)
         assertEquals(check, result)
@@ -65,10 +64,9 @@ class VACalgTest {
 
         // works
         val feResult = FEexp(group, es, true).prodPowP(bases)
-        println("///////////////////////////////////////////")
         assertEquals(check, feResult)
+        println("///////////////////////////////////////////")
 
-        // no work
         val vac = VACalg(group, es, true)
         val result = vac.prodPowP(bases)
         assertEquals(check, result)
