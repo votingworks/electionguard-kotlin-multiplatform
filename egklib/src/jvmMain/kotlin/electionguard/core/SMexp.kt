@@ -5,7 +5,7 @@ package electionguard.core
 private val debug = true
 private val debug1 = true
 private val debug2 = false
-private val show = true
+private val showSM = true
 
 class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<ElementModQ>) {
     // there are k exponents which are integers of bitlength t = actualBitLength
@@ -34,7 +34,7 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
             }
         }
         if (debug) println("size of Gp = ${Gp.size}")
-        if (show) println("precompute countMultiply=$countMultiply")
+        if (showSM) println("precompute countMultiply=$countMultiply")
     }
 
     fun prodPowP(show: Boolean = false): ElementModP {
@@ -61,98 +61,5 @@ class SMexp(val group: GroupContext, bases: List<ElementModP>, exps: List<Elemen
         }
         if (show) println("countSquare=$countSquare countMultiply=$countMultiply")
         return result
-    }
-}
-
-private val byteZ = 0.toByte()
-
-// bits are indexed from right to left. bigendian
-class BitMatrix(val bas: List<ByteArray>) {
-    val nrows = bas.size
-    val byteWidth = bas[0].size
-    val bitWidth = byteWidth * 8
-
-    fun firstNonZeroColumn(): Int {
-        var bytePos = 0
-        while (bytePos < byteWidth) {
-            var allzero = true
-            repeat (nrows) { rowIdx ->
-                allzero = allzero &&  (bas[rowIdx][bytePos] == byteZ)
-            }
-            if (!allzero) break
-            bytePos++
-        }
-
-        var bitPos = 7
-        while (bitPos >= 0) {
-            var allzero = true
-            repeat (nrows) { rowIdx ->
-                allzero = allzero && !isBitSet(rowIdx, bytePos, bitPos)
-            }
-            if (!allzero) break
-            bitPos--
-        }
-
-        // col index from the right
-        val b1 =  bitWidth - (bytePos+1) * 8
-        return b1 + bitPos + 1
-    }
-
-    // here we use position in the underlying byte arrays
-    private fun isBitSet(rowIdx: Int, bytePos: Int, bitPos: Int): Boolean {
-        val ba = bas[rowIdx]
-        val byteAsInt = ba[bytePos].toInt()
-        val bit = byteAsInt shr bitPos and 1
-        return bit != 0
-    }
-
-    fun countBits(bitLength: Int): Int {
-        var count = 0
-        repeat(bitLength) {
-            count += colVector(it).countBits()
-        }
-        return count
-    }
-
-    fun colVector(colidx: Int) : ColVector {
-        return ColVector(colidx)
-    }
-
-    // virtual Column Vector
-    inner class ColVector(val colIdx: Int) {
-        val bitpos = bitWidth - 1 - colIdx // low order bits first
-        val bytePos = (bitpos) / 8
-        val bitPos = 7 - (bitpos) % 8
-
-        fun isBitSet(rowIdx: Int): Boolean {
-            return isBitSet(rowIdx, bytePos, bitPos)
-        }
-
-        fun countBits(): Int {
-            var count = 0
-            repeat(nrows) {
-                if (isBitSet(it)) count++
-            }
-            return count
-        }
-
-        fun toInt(): Int {
-            var result = 0
-            repeat(nrows) {
-                if (isBitSet(it)) result = result + (1 shl it)
-            }
-            return result
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-            other as ColVector
-            return colIdx == other.colIdx
-        }
-
-        override fun hashCode(): Int {
-            return colIdx
-        }
     }
 }
