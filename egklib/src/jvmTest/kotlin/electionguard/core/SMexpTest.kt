@@ -16,11 +16,11 @@ class SMexpTest {
         val bases = List(3) { group.gPowP( group.randomElementModQ()) }
 
         val sam = SMexp(group, bases, es)
-        val result = sam.prodPowP()
+        val result = sam.prodPowP(true)
 
         val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
-
         assertEquals(check, result)
+        println()
     }
 
     @Test
@@ -52,13 +52,13 @@ class SMexpTest {
 
     @Test
     fun testSMtiming() {
-        runSMrepeat(1, 100)
-        runSMrepeat(10, 100)
-        runSMrepeat(100, 10)
-        runSMrepeat(1000, 1)
+        runSMtiming(1, 100)
+        runSMtiming(10, 100)
+        runSMtiming(100, 10)
+        runSMtiming(1000, 1)
     }
 
-    fun runSMrepeat(nrows : Int, ntimes: Int) {
+    fun runSMtiming(nrows : Int, ntimes: Int) {
         println("runSMrepeat nrows = $nrows, ntimes = $ntimes")
 
         val exps = List(nrows) { group.randomElementModQ() }

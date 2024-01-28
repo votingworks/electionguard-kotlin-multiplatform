@@ -11,11 +11,6 @@ import kotlin.math.min
 
 // initial port from PGroupSimExpTab. This seems to be fixed bases, variable exps??
 
-// Simultaneous Multiple exponentiation. Experimental.
-// Algorithm 14.88 in Handbook (menezes et al)
-//
-// BigInteger.modPowProd() calls
-
 
 // Breakpoint at which exponentiation of * <code>PGroupElement[]</code> is threaded.
 private val expThreadThreshold = 100
