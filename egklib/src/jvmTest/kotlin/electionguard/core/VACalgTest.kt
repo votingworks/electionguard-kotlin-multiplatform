@@ -128,6 +128,7 @@ class VACalgTest {
         val nexps = 30
         runVACtiming(nexps, 10)
         runVACtiming(nexps, 100)
+        runVACtiming(nexps, 1000)
     }
 
     fun runVACtiming(nexps : Int, nbases: Int) {
