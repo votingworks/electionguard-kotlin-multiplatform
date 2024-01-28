@@ -332,6 +332,9 @@ class FEexp(val group: GroupContext, exps: List<ElementModQ>, show: Boolean = fa
         val a = mutableListOf<ElementModP>()
 
         vaChain.w.forEach { wentry ->
+            if (wentry.index == 66)
+                println("there")
+
             if (wentry.i1 == 0 || wentry.refCount == 0) { // skip
                 a.add(group.ZERO_MOD_P);
             } else if (wentry.i1 == SpecialOneFactor) { // first element glitch

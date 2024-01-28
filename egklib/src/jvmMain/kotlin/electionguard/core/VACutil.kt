@@ -134,6 +134,7 @@ class CVInt(val orgIdx: Int, val cv: ColVector) : Comparable<CVInt> {
 
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // VAC's may have any value in their elements, ie not just 0 or 1
@@ -178,7 +179,81 @@ class VAC(val k: Int, val elems: IntArray = IntArray(k)) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-        other as AdditionChainElem
+        other as VAC
+        return elems.contentEquals(other.elems)
+    }
+
+    override fun hashCode(): Int {
+        return elems.contentHashCode()
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+// The column vectors are vectors of {0,1} .
+class BitVector(val k: Int, val elems: IntArray, val cv: Int = elems.toCV()) : Comparable<BitVector> {
+    // hmm, i dont know if this should be here
+    var sum2: Pair<ColVector, ColVector>? = null
+
+    init {
+        require (k == elems.size)
+        elems.forEach{ require ((it == 0) || (it == 1)) }
+    }
+
+    constructor(k: Int, cv: Int) : this(k, cv.toVector(k))
+    constructor(k: Int, blist: List<Int>) : this(k, binary(k, blist))
+    fun setSum(i1: ColVector, i2: ColVector): BitVector { sum2 = Pair(i1, i2); return this } // LOOK
+    fun countOneBits() = cv.countOneBits()
+
+    fun isEmpty(): Boolean {
+        return cv == 0
+    }
+
+    fun xor(other: BitVector) = BitVector(k, elems.mapIndexed{ idx, it -> it xor other.elems[idx] }.toVector() )
+
+    fun isSumOf(a: BitVector, b: BitVector): Boolean {
+        return this.equals(a.xor(b))
+    }
+
+    // is this one bit different? yes, return bit position, else null
+    fun isOneBitDifferent(a: BitVector): Int? {
+        val diff = this.xor(a)
+        return diff.isOneBit()
+    }
+
+    // is this a one bit value? yes, return bit position, else null
+    fun isOneBit(): Int? {
+        return if (countOneBits() == 1) {
+            var found: Int? = null
+            for (i in 0 until k) {
+                if (elems[i] == 1) { found = i; break }
+            }
+            found
+        } else null
+    }
+
+    fun divide(): Pair<BitVector, BitVector> {
+        val nonzero = cv.toNList()
+        val size2 = nonzero.size / 2
+        val left = nonzero.subList(0, size2)
+        val right = nonzero.subList(size2, nonzero.size)
+        val left2 = BitVector(k, binary(k, left))
+        val right2 = BitVector(k, binary(k, right))
+        return Pair(left2, right2)
+    }
+
+    override fun compareTo(other: BitVector): Int {
+        return this.cv - other.cv
+    }
+
+    override fun toString(): String {
+        return " $cv: ${elems.contentToString()}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as BitVector
         return elems.contentEquals(other.elems)
     }
 
@@ -188,7 +263,7 @@ class VAC(val k: Int, val elems: IntArray = IntArray(k)) {
 }
 
 
-// to list of indices that are 1
+// convert to list of indices that are 1
 fun Int.toNList(): List<Int> {
     val result = mutableListOf<Int>()
     var work = this
@@ -223,8 +298,8 @@ fun IntArray.toCV(): Int {
     val k = this.size
     var work = 0
     for (j in k-1 downTo 0) {
+        work = work shl 1
         if (this[j] != 0) work++
-        work shl 1
     }
     return work
 }
@@ -236,8 +311,23 @@ fun nonzero(vector: IntArray): List<Int> {
     return result
 }
 
-fun binary(nonzero: List<Int>, k: Int): IntArray {
+// from nlist to vector
+fun binary(k: Int, nonzero: List<Int>): IntArray {
     val result = IntArray(k)
     nonzero.forEach { result[it] = 1 }
     return result
+}
+
+// from blist to vector
+fun List<Int>.toVector(): IntArray {
+    return IntArray(this.size) { this[it] }
+}
+
+// from vector to Blist
+fun IntArray.toBlist(): List<Int> {
+    return List(this.size) { this[it] }
+}
+
+fun List<Int>.toCV(): Int {
+    return this.toVector().toCV()
 }

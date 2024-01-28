@@ -1,5 +1,6 @@
 package electionguard.core
 
+import electionguard.util.sigfig
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -62,8 +63,39 @@ class VACalgTest {
         val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
 
         // works
-        val feResult = FEexp(group, es, true).prodPowP(bases)
-        assertEquals(check, feResult)
+        //val feResult = FEexp(group, es, true).prodPowP(bases)
+        //assertEquals(check, feResult)
+        println("///////////////////////////////////////////")
+
+        val vac = VACalg(group, es, true)
+        val result = vac.prodPowP(bases)
+        assertEquals(check, result)
+        println()
+    }
+
+    @Test
+    fun testVACexample4() {
+        val es = listOf(
+            12313130.toElementModQ(group),
+            34623110.toElementModQ(group),
+            56733241.toElementModQ(group),
+            32983477.toElementModQ(group),
+            63435902.toElementModQ(group),
+            3297356.toElementModQ(group),
+            12331130.toElementModQ(group),
+            34362110.toElementModQ(group),
+            56733241.toElementModQ(group),
+            29834377.toElementModQ(group),
+            63345902.toElementModQ(group),
+            3239756.toElementModQ(group),
+            )
+
+        val bases = List(es.size) { group.gPowP(group.randomElementModQ()) }
+        val check =  bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
+
+        // works
+        //val feResult = FEexp(group, es, true).prodPowP(bases)
+        //assertEquals(check, feResult)
         println("///////////////////////////////////////////")
 
         val vac = VACalg(group, es, true)
@@ -75,6 +107,9 @@ class VACalgTest {
     @Test
     fun testVACsizes() {
         runVAC(3, true)
+        runVAC(8, true)
+        runVAC(16, true)
+        runVAC(30, true)
     }
 
     fun runVAC(nrows : Int, show: Boolean = false) {
@@ -88,45 +123,35 @@ class VACalgTest {
         assertEquals(check, result)
     }
 
-/*
     @Test
-    fun testFEtiming() {
-        val k = 12
-        runFEtiming(k, 1)
-        runFEtiming(k, 10)
-        runFEtiming(k, 50)
-        runFEtiming(k, 100)
-        // runFEtiming(k, 1000)
-        //runFEtiming(k, 100)
-        //runFEtiming(k, 1000)
+    fun testVACtiming() {
+        val nexps = 30
+        runVACtiming(nexps, 10)
+        runVACtiming(nexps, 100)
     }
 
-    @Test
-    fun testFEfork() {
-        runFEtiming(8, 100)
-        runFEtiming(12, 100)
-        runFEtiming(16, 100)
-    }
-
-    fun runFEtiming(nexps : Int, nbases: Int) {
-        println("runFEtiming nexps = $nexps, nbases = $nbases")
+    fun runVACtiming(nexps : Int, nbases: Int) {
+        println("runVACtiming nexps = $nexps, nbases = $nbases")
 
         val exps = List(nexps) { group.randomElementModQ() }
 
+        // how long to build?
         var starting11 = getSystemTimeInMillis()
-        val fe = FEexp(group, exps)
+        val vac = VACalg(group, exps)
         val time11 = getSystemTimeInMillis() - starting11
 
         var starting12 = getSystemTimeInMillis()
         var countFE = 0
 
+        // how long to calculate. apply same VACalg to all the rows
         repeat (nbases) {
             val bases = List(nexps) { group.gPowP(group.randomElementModQ()) }
-            fe.prodPowP(bases)
+            vac.prodPowP(bases)
             countFE += bases.size
         }
         val time12 = getSystemTimeInMillis() - starting12
 
+        // heres the way we do it now
         var starting = getSystemTimeInMillis()
         var countP = 0
         repeat (nbases) {
@@ -139,40 +164,8 @@ class VACalgTest {
 
         // println(" countFE = $countFE countP = $countP")
         val ratio = (time11 + time12).toDouble()/timePowP
-        println(" timeFE = $time11 + $time12 = ${time11 + time12}, timePowP = $timePowP ratio = ${ratio.sigfig(2)}")
+        println(" timeVAC = $time11 + $time12 = ${time11 + time12}, timePowP = $timePowP ratio = ${ratio.sigfig(2)}")
     }
-
-
-    //////////////////////////////////////////////////////////////
-    @Test
-    fun testGenK() {
-        KProducts(3).addKProducts()
-        //addKProducts(3)
-        //addKProducts(8)
-    }
-
-    //////////////////////////////////////////////////////////////
-    @Test
-    fun testVac() {
-        runVac(5)
-        runVac(6)
-        runVac(7)
-        runVac(8)
-        runVac(9)
-        runVac(10)
-        runVac(11)
-        runVac(12)
-        runVac(13)
-        runVac(14)
-        runVac(15)
-        runVac(16)
-    }
-
-    fun runVac(k : Int) {
-        val exps = List(k) { group.randomElementModQ() }
-        val fe = FEexp(group, exps, false)
-    }
-    */
 }
 
 /*

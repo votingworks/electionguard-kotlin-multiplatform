@@ -2,12 +2,13 @@ package electionguard.core
 
 // Use 14.88 to generate a vector addition chain
 // Then use Algorithm 14.104 in Handbook (menezes et al)
-private val showChain1 = true
-private val showChain2 = true
-private val showCVints = true
+private val showRawCV = false
+private val showChain1 = false
+private val showChain2 = false
+private val showCVints = false
 private val showChainResult = false
-private val showPowP = true
-private var showConstruction = true
+private val showPowP = false
+private var showConstruction = false
 private var showTerms = false
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +53,7 @@ class VAChain(val k: Int, val show: Boolean = false) {
     val chain = mutableListOf<VACElem>()
     val elemMap = mutableMapOf<VACElem, VACElem>() // key is cv
 
-    fun addTerms(terms: List<CVInt>) {
+    fun addTerms(terms: List<BitVector>) {
         terms.forEach { term ->
             val ac = makeTermFromSum(term)
             chain.add(ac)
@@ -61,7 +62,7 @@ class VAChain(val k: Int, val show: Boolean = false) {
         }
     }
 
-    fun makeTermFromSum(term: CVInt): VACElem {
+    fun makeTermFromSum(term: BitVector): VACElem {
         val (cv1, cv2) = term.sum2!!
         val idx1 = findIndex(cv1)
         val idx2 = findIndex(cv2)
@@ -85,15 +86,15 @@ class VAChain(val k: Int, val show: Boolean = false) {
         return square
     }
 
-    fun addFirstFactor(cv: CVInt): VACElem {
+    fun addFirstFactor(cv: BitVector): VACElem {
         // do we already have it?
         val elem = VACElem(k, cv.cv)
         val already = elemMap[elem]
 
         val factor = if (already != null) already else {
             // otherwise we have to make it, must be a 1 bit number, but not added
-            if ((cv.cv.countOneBits() == 1)) {
-                val bitno = cv.toNList()[0]
+            val bitno = cv.isOneBit()
+            if (bitno != null) {
                 VACElem(k, cv.cv).setW(SpecialOneFactor, -bitno - 1)
             } else {
                 throw RuntimeException()
@@ -104,13 +105,17 @@ class VAChain(val k: Int, val show: Boolean = false) {
         return factor
     }
 
-    fun addFactor(prev: VACElem, cv: CVInt): VACElem {
+    fun addFactor(prev: VACElem, cv: BitVector): VACElem {
         if (cv.cv == 0) return prev
+        //if (prev.index == 22)
+        //    println("HEY")
 
         // if its a one bit, we just make it
-        val result = if ((cv.cv.countOneBits() == 1)) {
-            val bitno = cv.toNList()[0]
-            VACElem(k, cv.cv).setW(prev.index, -bitno - 1)
+        val bitno = cv.isOneBit()
+        val result = if (bitno != null) {
+            val factor = VACElem(k, cv.cv)
+            // tricky: make the result, and tell how to make the result with setW
+            VACElem(k, prev.vac.product(factor.vac.elems)).setW(prev.index, -bitno - 1)
         } else {
             // otherwise, we better already have it
             val elem = VACElem(k, cv.cv)
@@ -125,7 +130,7 @@ class VAChain(val k: Int, val show: Boolean = false) {
 
     private fun add(elem: VACElem) {
         chain.add(elem)
-        elemMap[elem] = elem
+        // elemMap[elem] = elem
         elem.index = chain.size - 1
     }
 
@@ -154,26 +159,27 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, val show: Boolean
     init {
         println("EAmatrix k= $k width=$width, bitsOn=${EAmatrix.countBits(width)}")
 
-        val cvints = mutableListOf<CVInt>()
+        val cvints = mutableListOf<BitVector>()
         repeat(width) { colIdx ->
             val vecIdx = width - colIdx - 1 // start with high order bit, it gets shifted on each square
             val colv = EAmatrix.colVector(vecIdx) // will be length k
-            cvints.add(CVInt(colIdx, colv.toInt()))
+            cvints.add(BitVector(k, colv.toInt()))
         }
-        if (show && showCVints) print(buildString {
-            appendLine("cvints")
+        if (show && showRawCV) print(buildString {
+            appendLine("raw column vectors")
             cvints.forEachIndexed { idx, it ->
-                appendLine(" $idx $it ${it.cv.toVector(k).contentToString()}")
+                appendLine(" $idx $it")
             }
         })
 
-        val terms = MakeTerms1(k, cvints, show && showTerms).getTerms()
-        if (show && showChain1) print(buildString {
+        val terms = MakeTerms2(k, cvints, show && showTerms).getTerms()
+        if (show && showTerms) print(buildString {
             appendLine("terms")
             terms.forEachIndexed { idx, it ->
-                appendLine(" $idx $it ${it.cv.toVector(k).contentToString()}")
+                appendLine(" $idx $it")
             }
         })
+        // TODO maybe we shouldnt modify the raw cvints?
         if (show && showCVints) print(buildString {
             appendLine("cvints")
             cvints.forEachIndexed { idx, it ->
@@ -223,7 +229,6 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, val show: Boolean
             }
             if (show && showPowP) println("  ppp ${a.last().toStringShort()} from $elem")
         }
-        if (show) println("countMultiply=$countMultiply")
         return a.last()
     }
 }
