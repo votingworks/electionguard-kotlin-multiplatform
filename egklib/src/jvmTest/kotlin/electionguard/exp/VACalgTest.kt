@@ -1,5 +1,6 @@
-package electionguard.core
+package electionguard.exp
 
+import electionguard.core.*
 import electionguard.util.sigfig
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -124,11 +125,19 @@ class VACalgTest {
     }
 
     @Test
-    fun testVACtiming() {
+    fun testVACbases() {
         val nexps = 30
         runVACtiming(nexps, 10)
         runVACtiming(nexps, 100)
-        runVACtiming(nexps, 1000)
+        runVACtiming(nexps, 10000)
+    }
+
+    @Test
+    fun testVACexps() {
+        val nbases = 1000
+        //runVACtiming(10, nbases)
+        //runVACtiming(20, nbases)
+        runVACtiming(30, 100)
     }
 
     fun runVACtiming(nexps : Int, nbases: Int) {
@@ -189,4 +198,22 @@ runFEtiming nrows = 12, nbases = 100
  timeFE = 31 + 5728 = 5759, timePowP = 3736 ratio = 1.5
 runFEtiming nrows = 16, nbases = 100
  timeFE = 190 + 19006 = 19196, timePowP = 5075 ratio = 3.7
+ */
+
+/*
+runVACtiming nexps = 30, nbases = 10
+EAmatrix k= 30 width=256, bitsOn=3882
+  k = 30, width= 256, chain size = 2086
+ timeVAC = 4504 + 1484 = 5988, timePowP = 1069 ratio = 5.6
+runVACtiming nexps = 30, nbases = 100
+EAmatrix k= 30 width=256, bitsOn=3859
+  k = 30, width= 256, chain size = 2100
+ timeVAC = 4323 + 11282 = 15605, timePowP = 10245 ratio = 1.5
+runVACtiming nexps = 30, nbases = 1000
+EAmatrix k= 30 width=256, bitsOn=3863
+  k = 30, width= 256, chain size = 2073
+ timeVAC = 4591 + 108266 = 112857, timePowP = 97069 ratio = 1.1
+ runVACtiming nexps = 30, nbases = 10000
+   k = 30, width= 256, chain size = 2084
+ timeVAC = 4698 + 1068567 = 1073265, timePowP = 958004 ratio = 1.1
  */

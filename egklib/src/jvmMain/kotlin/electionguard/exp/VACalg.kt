@@ -1,4 +1,4 @@
-package electionguard.core
+package electionguard.exp
 
 // Use 14.88 to generate a vector addition chain
 // Then use Algorithm 14.104 in Handbook (menezes et al)

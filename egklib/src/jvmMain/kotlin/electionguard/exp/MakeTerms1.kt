@@ -1,11 +1,11 @@
-package electionguard.core
+package electionguard.exp
 
 // The job is to find an addition chain for all the column vectors.
-// I think we can just use BitVectors.
+// I think we can just use CVInts.
 // Do we have to compare the vectors, not the cb integer?
-class MakeTerms2(val k: Int, val BitVectors: List<BitVector>, val show: Boolean = false) {
-    val working = mutableMapOf<Int, BitVector>() // key = value
-    val done = mutableListOf<BitVector>()
+class MakeTerms1(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) {
+    val working = mutableMapOf<Int, CVInt>() // key = value
+    val done = mutableListOf<CVInt>()
     val doneSet = mutableSetOf<ColVector>()
 
     private val showDetails = true
@@ -38,29 +38,27 @@ class MakeTerms2(val k: Int, val BitVectors: List<BitVector>, val show: Boolean 
         }
     }
 
-    fun getTerms(): List<BitVector> {
+    fun getTerms(): List<CVInt> {
         val allsorted = done.sorted()
         allsorted.forEach {
             require(it.sum2 != null)
-            if ((it.sum2!!.first + it.sum2!!.second) != it.cv)
-                println("HAY")
             require((it.sum2!!.first + it.sum2!!.second) == it.cv)
         }
         return allsorted
     }
 
     fun makeWorkingNoDuplicates() {
-        BitVectors.forEach {
+        cvints.forEach {
             val org = working[it.cv]
             if (org == null) {
                 working[it.cv] = it
             }
         }
-        if (show) println(" removeDuplicates ${BitVectors.size - working.size}")
+        if (show) println(" removeDuplicates ${cvints.size - working.size}")
     }
 
     fun removeEmptyAndBaseValues(): Boolean {
-        val removeThese = mutableListOf<BitVector>()
+        val removeThese = mutableListOf<CVInt>()
         working.values.forEach {
             if (it.cv.countOneBits() < 2) { // ignore zeros and ones
                 removeThese.add(it)
@@ -88,16 +86,13 @@ class MakeTerms2(val k: Int, val BitVectors: List<BitVector>, val show: Boolean 
             for (second in first + 1 until sorted.size) {
                 val secondCV = sorted[second]
                 val test = firstCV.cv + secondCV.cv
-                val candidate = working[test]
-                if (candidate != null) {
-                    // that cvs are sums are necessary but not sufficient. must test the bits
-                    if (candidate.isSumOf(firstCV, secondCV)) {
-                        candidate.sum2 = Pair(firstCV.cv, secondCV.cv)
-                        addToDone(candidate)
-                        working.remove(candidate.cv)
-                        if (show && showDetails) println("   removeSum= $candidate")
-                        count++
-                    }
+                val theSum = working[test]
+                if (theSum != null && !theSum.done()) {
+                    theSum.sum2 = Pair(firstCV.cv, secondCV.cv)
+                    addToDone(theSum)
+                    working.remove(theSum.cv)
+                    if (show && showDetails) println("   removeSum= $theSum")
+                    count++
                 }
                 if (test > last) break // dont bother continuing
             }
@@ -110,20 +105,16 @@ class MakeTerms2(val k: Int, val BitVectors: List<BitVector>, val show: Boolean 
     fun removeSingleBits(): Boolean {
         if (working.isEmpty()) return false
         if (done.isEmpty()) return false
-        val removeThese = mutableListOf<BitVector>()
-
-        working.values.forEach { candidate ->
+        val removeThese = mutableListOf<CVInt>()
+        working.values.forEach { trial ->
             for (doneIdx in 0 until done.size) {
-                val test = done[doneIdx]
-                if (candidate.cv > test.cv) { // only test smaller values
-                    val bitPos = candidate.isOneBitDifferent(test)
-                    if (bitPos != null) {
-                        candidate.sum2 = Pair(test.cv, 1 shl bitPos)
-                        addToDone(candidate)
-                        removeThese.add(candidate)
-                        if (show) println(" removeSingleBits $candidate succeeded with ${candidate.sum2}")
-                        break
-                    }
+                val test = trial.cv - done[doneIdx].cv
+                if (test > 0 && test.countOneBits() == 1) {
+                    trial.sum2 = Pair(done[doneIdx].cv, test) // not orgIdx
+                    addToDone(trial)
+                    removeThese.add(trial)
+                    if (show) println(" removeSingleBits $trial succeeded with ${trial.sum2}")
+                    break
                 }
             }
         }
@@ -138,12 +129,19 @@ class MakeTerms2(val k: Int, val BitVectors: List<BitVector>, val show: Boolean 
 
         // split the last one, ie with largest value
         val splitt = sorted.values.last()
-        val (left, right) = splitt.divide()
 
-        val addleft = addToWorkingOrDone(left)
-        val addRight = addToWorkingOrDone(right)
+        val nonzero = splitt.cv.toNList()
+        val size2 = nonzero.size / 2
+        val left = binary(k, nonzero.subList(0, size2))
+        val right = binary(k, nonzero.subList(size2, nonzero.size))
 
-        splitt.setSum(left.cv, right.cv)
+        val leftCV = CVInt(nonzero(left))
+        val rightCV = CVInt(nonzero(right))
+
+        val addleft = addToWorkingOrDone(leftCV)
+        val addRight = addToWorkingOrDone(rightCV)
+
+        splitt.setSum(leftCV.cv, rightCV.cv)
         working.remove(splitt.cv)
         addToDone(splitt)
 
@@ -151,7 +149,7 @@ class MakeTerms2(val k: Int, val BitVectors: List<BitVector>, val show: Boolean 
         return true
     }
 
-    fun addToWorkingOrDone(cv: BitVector): String {
+    fun addToWorkingOrDone(cv: CVInt): String {
         return if (cv.cv.countOneBits() == 2) { // can use sum of bases
             val bits = cv.cv.toNList()
             addToDone(cv.setSum(1 shl bits[0], 1 shl bits[1]))
@@ -166,7 +164,7 @@ class MakeTerms2(val k: Int, val BitVectors: List<BitVector>, val show: Boolean 
         }
     }
 
-    fun addToDone(cv: BitVector) {
+    fun addToDone(cv: CVInt) {
         if (doneSet.contains(cv.cv)) return
         done.add(cv)
         doneSet.add(cv.cv)

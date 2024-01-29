@@ -1,4 +1,4 @@
-package electionguard.core
+package electionguard.exp
 
 import org.junit.jupiter.api.Test
 import kotlin.test.*
