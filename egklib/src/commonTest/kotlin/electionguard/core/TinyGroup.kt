@@ -190,7 +190,7 @@ internal class TinyGroupContext(
 
     override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
 
-    override fun showAndClearCountPowP(count :CountExp?) = ""
+    override fun getAndClearOpCounts() = emptyMap<String, Int>()
 }
 
 internal class TinyElementModP(val element: UInt, val groupContext: TinyGroupContext) : ElementModP {

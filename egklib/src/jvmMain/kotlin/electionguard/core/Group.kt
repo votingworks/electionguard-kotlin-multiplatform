@@ -266,20 +266,14 @@ class ProductionGroupContext(
 
     override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
 
-    override fun showAndClearCountPowP(count :CountExp?) : String {
-        val result = "countPowP,AccPowP= ${countPow}, $countAccPowP total= ${countPow.get()+countAccPowP.get()}"
-        if (count != null) {
-            count.exp = countPow.get()
-            count.acc = countAccPowP.get()
-        }
-        countPow.set(0)
-        countAccPowP.set(0)
-        return result
+    var opCounts: HashMap<String, AtomicInteger> = HashMap()
+    override fun getAndClearOpCounts(): Map<String, Int> {
+        val result = HashMap<String, Int>()
+        opCounts.forEach { (key, value) -> result[key] = value.get() }
+        opCounts = HashMap()
+        return result.toSortedMap()
     }
 }
-
-private val countPow = AtomicInteger(0)
-private val countAccPowP = AtomicInteger(0)
 
 private fun Element.getCompat(other: ProductionGroupContext): BigInteger {
     context.assertCompatible(other)
@@ -330,7 +324,7 @@ class ProductionElementModQ(internal val element: BigInteger, val groupContext: 
         this * denominator.multInv()
 
     override infix fun powQ(e: ElementModQ): ElementModQ {
-        countPow.incrementAndGet()
+        groupContext.opCounts.getOrPut("exp") { AtomicInteger(0) }.incrementAndGet()
         return this.element.modPow(e.getCompat(groupContext), groupContext.q).wrap()
     }
 
@@ -364,13 +358,13 @@ open class ProductionElementModP(internal val element: BigInteger, val groupCont
     override operator fun compareTo(other: ElementModP): Int = element.compareTo(other.getCompat(groupContext))
 
     override fun isValidResidue(): Boolean {
-        countPow.incrementAndGet()
+        groupContext.opCounts.getOrPut("exp") { AtomicInteger(0) }.incrementAndGet()
         val residue = this.element.modPow(groupContext.q, groupContext.p) == groupContext.ONE_MOD_P.element
         return inBounds() && residue
     }
 
     override infix fun powP(e: ElementModQ) : ElementModP {
-        countPow.incrementAndGet()
+        groupContext.opCounts.getOrPut("exp") { AtomicInteger(0) }.incrementAndGet()
         return this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
     }
 
@@ -415,7 +409,7 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
     override fun acceleratePow(): ElementModP = this
 
     override infix fun powP(e: ElementModQ) : ElementModP {
-        countAccPowP.incrementAndGet()
+        groupContext.opCounts.getOrPut("acc") { AtomicInteger(0) }.incrementAndGet()
         return powRadix.pow(e)
     }
 }

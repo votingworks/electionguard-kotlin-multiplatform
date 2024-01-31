@@ -501,3 +501,13 @@ class GroupTest {
     }
 
 }
+
+fun GroupContext.showOpCountResults(where: String): String {
+    val opCounts = this.getAndClearOpCounts()
+    return buildString {
+        appendLine("$where:")
+        opCounts.toSortedMap().forEach{ (key, value) ->
+            appendLine("   $key : $value")
+        }
+    }
+}
