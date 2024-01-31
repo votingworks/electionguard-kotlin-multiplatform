@@ -1,5 +1,8 @@
 package electionguard.exp
 
+import electionguard.core.GroupContext
+import org.cryptobiotic.bigint.BigInteger
+
 // Use 14.88 to generate a vector addition chain
 // Then use Algorithm 14.104 in Handbook (menezes et al)
 private val showRawCV = false
@@ -148,10 +151,12 @@ class VAChain(val k: Int, val show: Boolean = false) {
 
 private const val SpecialOneFactor = Integer.MIN_VALUE
 
-class VACalg(val group: GroupContext, exps: List<ElementModQ>, val show: Boolean = false) {
+class VACalg(val group: GroupContext, exps: List<BigInteger>, val show: Boolean = false) {
+    val modulus = BigInteger(1, group.constants.largePrime)
+
     // there are k exponents which are integers of bitlength t = actualBitLength
     val k = exps.size
-    val EAmatrix = BitMatrix(exps.map { it.byteArray() })
+    val EAmatrix = BitMatrix(exps.map { it.toByteArray(32) })
     val width = EAmatrix.firstNonZeroColumn()
 
     val vaChain = VAChain(k, show)
@@ -212,9 +217,9 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, val show: Boolean
         println( "  k = ${exps.size}, width= $width, chain size = ${vaChain.chain.size}")
     }
 
-    fun prodPowP(bases: List<ElementModP>): ElementModP {
+    fun prodPowP(bases: List<BigInteger>): BigInteger {
         var countMultiply = 0
-        val a = mutableListOf<ElementModP>()
+        val a = mutableListOf<BigInteger>()
 
         vaChain.chain.forEach { elem ->
             val (i1, i2) = elem.w
@@ -224,7 +229,7 @@ class VACalg(val group: GroupContext, exps: List<ElementModQ>, val show: Boolean
             } else {
                 val f1 = if (i1 < 0) bases[-i1 - 1] else a[i1]
                 val f2 = if (i2 < 0) bases[-i2 - 1] else a[i2]
-                a.add(f1 * f2)
+                a.add(f1.multiply(f2).mod(modulus))
                 countMultiply++
             }
             if (show && showPowP) println("  ppp ${a.last().toStringShort()} from $elem")

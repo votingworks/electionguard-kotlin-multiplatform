@@ -29,12 +29,11 @@
 
 package org.cryptobiotic.bigint;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Immutable arbitrary-precision integers.  All operations behave as if
+ * BigIntegers were represented in two's-complement notation (like Java's
  * BigIntegers were represented in two's-complement notation (like Java's
  * primitive integer types).  BigInteger provides analogues to all of Java's
  * primitive integer operators, and all relevant methods from java.lang.Math.
@@ -1172,6 +1171,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      * @return {@code this * val}
      */
     public BigInteger multiply(BigInteger val) {
+        opCounts.merge("multiply", 1, Integer::sum);
         return multiply(val, false);
     }
 
@@ -1184,6 +1184,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      * @return {@code this * val}
      */
     private BigInteger multiply(BigInteger val, boolean isRecursion) {
+        opCounts.merge("multiplyRecursion", 1, Integer::sum);
+
         if (val.signum == 0 || signum == 0)
             return ZERO;
 
@@ -1209,6 +1211,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
             return new BigInteger(result, resultSign);
         } else {
             if ((xlen < TOOM_COOK_THRESHOLD) && (ylen < TOOM_COOK_THRESHOLD)) {
+                opCounts.merge("multiplyKaratsuba", 1, Integer::sum);
                 return multiplyKaratsuba(this, val);
             } else {
                 //
@@ -1277,6 +1280,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         if (Integer.bitCount(y) == 1) {
             return new BigInteger(shiftLeft(x,Integer.numberOfTrailingZeros(y)), sign);
         }
+        opCounts.merge("multiplyByInt", 1, Integer::sum);
+
         int xlen = x.length;
         int[] rmag =  new int[xlen + 1];
         long carry = 0;
@@ -1349,6 +1354,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
 
     // @IntrinsicCandidate
     private static int[] implMultiplyToLen(int[] x, int xlen, int[] y, int ylen, int[] z) {
+        opCounts.merge("implMultiplyToLen", 1, Integer::sum);
+
         int xstart = xlen - 1;
         int ystart = ylen - 1;
 
@@ -1683,6 +1690,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
             return new BigInteger(trustedStripLeadingZeroInts(z), 1);
         } else {
             if (len < TOOM_COOK_SQUARE_THRESHOLD) {
+                opCounts.merge("squareKaratsuba", 1, Integer::sum);
                 return squareKaratsuba();
             } else {
                 //
@@ -1742,6 +1750,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      */
     // @IntrinsicCandidate
     private static final int[] implSquareToLen(int[] x, int len, int[] z, int zlen) {
+        opCounts.merge("implSquareToLen", 1, Integer::sum);
+
         /*
          * The algorithm used here is adapted from Colin Plumb's C library.
          * Technique: Consider the partial products in the multiplication
@@ -2297,6 +2307,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     public BigInteger mod(BigInteger m) {
         if (m.signum <= 0)
             throw new ArithmeticException("BigInteger: modulus not positive");
+        opCounts.merge("mod", 1, Integer::sum);
+
 
         BigInteger result = this.remainder(m);
         return (result.signum >= 0 ? result : result.add(m));
@@ -2340,8 +2352,11 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
                 ? this.mod(m) : this);
         BigInteger result;
         if (m.testBit(0)) { // odd modulus
+            opCounts.merge("oddModPow", 1, Integer::sum);
             result = base.oddModPow(exponent, m);
         } else {
+            opCounts.merge("evenModPow", 1, Integer::sum);
+
             /*
              * Even modulus.  Tear it into an "odd part" (m1) and power of two
              * (m2), exponentiate mod m1, manually exponentiate mod m2, and
@@ -2390,8 +2405,11 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     // virtual machine intrinsics.  We don't use the intrinsics for
     // very large operands: MONTGOMERY_INTRINSIC_THRESHOLD should be
     // larger than any reasonable crypto key.
+    // @IntrinsicCandidate
     private static int[] montgomeryMultiply(int[] a, int[] b, int[] n, int len, long inv,
                                             int[] product) {
+        opCounts.merge("montMultiply", 1, Integer::sum);
+
         implMontgomeryMultiplyChecks(a, b, n, len, product);
         if (len > MONTGOMERY_INTRINSIC_THRESHOLD) {
             // Very long argument: do not use an intrinsic
@@ -2403,6 +2421,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
     private static int[] montgomerySquare(int[] a, int[] n, int len, long inv,
                                           int[] product) {
+        opCounts.merge("montSquare", 1, Integer::sum);
+
         implMontgomeryMultiplyChecks(a, a, n, len, product);
         if (len > MONTGOMERY_INTRINSIC_THRESHOLD) {
             // Very long argument: do not use an intrinsic
@@ -2446,12 +2466,16 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
    // @IntrinsicCandidate
     private static int[] implMontgomeryMultiply(int[] a, int[] b, int[] n, int len,
                                                 long inv, int[] product) {
+        opCounts.merge("implMontgomeryMultiply", 1, Integer::sum);
+
         product = multiplyToLen(a, len, b, len, product);
         return montReduce(product, n, len, (int)inv);
     }
    // @IntrinsicCandidate
     private static int[] implMontgomerySquare(int[] a, int[] n, int len,
                                               long inv, int[] product) {
+        opCounts.merge("implMontgomerySquare", 1, Integer::sum);
+
         product = squareToLen(a, len, product);
         return montReduce(product, n, len, (int)inv);
     }
@@ -2696,10 +2720,12 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     /**
-     * Montgomery reduce n, modulo mod.  This reduces modulo mod and divides
+     * Montgomery reduce n, modulo mod.  This reduces modulo mod and divides`
      * by 2^(32*mlen). Adapted from Colin Plumb's C library.
      */
     private static int[] montReduce(int[] n, int[] mod, int mlen, int inv) {
+        opCounts.merge("montReduce", 1, Integer::sum);
+
         int c=0;
         int len = mlen;
         int offset=0;
@@ -2783,13 +2809,14 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      */
     // @IntrinsicCandidate
     private static int implMulAdd(int[] out, int[] in, int offset, int len, int k) {
+        opCounts.merge("implMulAdd", 1, Integer::sum);
+
         long kLong = k & LONG_MASK;
         long carry = 0;
 
         offset = out.length-offset - 1;
         for (int j=len-1; j >= 0; j--) {
-            long product = (in[j] & LONG_MASK) * kLong +
-                    (out[offset] & LONG_MASK) + carry;
+            long product = (in[j] & LONG_MASK) * kLong + (out[offset] & LONG_MASK) + carry;
             out[offset--] = (int)product;
             carry = product >>> 32;
         }
@@ -3049,6 +3076,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     //@ForceInline
     //@IntrinsicCandidate
     private static void shiftRightImplWorker(int[] newArr, int[] oldArr, int newIdx, int shiftCount, int numIter) {
+        opCounts.merge("shiftRightImplWorker", 1, Integer::sum);
+
         int shiftCountLeft = 32 - shiftCount;
         int idx = numIter;
         int nidx = (newIdx == 0) ? numIter - 1 : numIter;
@@ -3715,6 +3744,13 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      */
     public String toString() {
         return toString(10);
+    }
+
+    /** Short version of the String for readability */
+    public String toStringShort() {
+        String s = toString(10);
+        int len = s.length();
+        return s.substring(0, 7) + "..." + s.substring(len-8, len);
     }
 
     /**
@@ -4414,4 +4450,12 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         }
         throw new ArithmeticException("BigInteger out of byte range");
     }
+
+    static HashMap<String, Integer> opCounts = new HashMap<>();
+    static public Map<String, Integer> getAndClearCounts() {
+        HashMap<String, Integer> result = new HashMap<>(opCounts);
+        opCounts = new HashMap<>();
+        return result;
+    }
+
 }
