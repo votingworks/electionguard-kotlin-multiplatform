@@ -71,7 +71,7 @@ Perform precalculation
 
         var starting = getSystemTimeInMillis()
 
-        BigInteger.getAndClearCounts()
+        BigInteger.getAndClearOpCounts()
         val newWay = modPowProdB(bases, exps, modulus)
         val timeNew = getSystemTimeInMillis() - starting
         if (show) println(showCountResults(" newWay"))
@@ -118,7 +118,7 @@ Perform precalculation
 
 
         starting = getSystemTimeInMillis()
-        BigInteger.getAndClearCounts()
+        BigInteger.getAndClearOpCounts()
         val newWay = modPowProd(basesM, expsM, modulusM)
         val timeNew = getSystemTimeInMillis() - starting
         if (show) println(showCountResults(" newWay"))

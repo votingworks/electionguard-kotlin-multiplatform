@@ -49,7 +49,8 @@ class TestNumGuardians {
     }
 
     fun runWorkflow(name : String, nguardians: Int, quorum: Int, present: List<Int>, nthreads: Int) {
-        println("=========================================================== ${group.showAndClearCountPowP()}")
+        println("===========================================================")
+        group.getAndClearOpCounts()
         val workingDir =  "testOut/workflow/$name"
         val privateDir =  "$workingDir/private_data"
         val trusteeDir =  "${privateDir}/trustees"
@@ -72,20 +73,20 @@ class TestNumGuardians {
         // key ceremony
         val (_, init) = runFakeKeyCeremony(group, workingDir, workingDir, trusteeDir, nguardians, quorum, false)
         println("FakeKeyCeremony created ElectionInitialized, guardians = $present")
-        println("----------- after keyCeremony ${group.showAndClearCountPowP()}")
+        println(group.showOpCountResults("----------- after keyCeremony"))
 
         // encrypt
         batchEncryption(group, inputDir = workingDir, ballotDir = inputBallotDir, device = "device11",
             outputDir = workingDir, null, invalidDir = invalidDir, nthreads, name1)
-        println("----------- after encrypt ${group.showAndClearCountPowP()}")
+        println(group.showOpCountResults("----------- after encrypt"))
 
         // tally
         runAccumulateBallots(group, workingDir, workingDir, null, "RunWorkflow", name1)
-        println("----------- after tally ${group.showAndClearCountPowP()}")
+        println(group.showOpCountResults("----------- after tally"))
 
         val dtrustees : List<DecryptingTrusteeIF> = readDecryptingTrustees(group, trusteeDir, init, present, true)
         runDecryptTally(group, workingDir, workingDir, dtrustees, name1)
-        println("----------- after decrypt tally ${group.showAndClearCountPowP()}")
+        println(group.showOpCountResults("----------- after decrypt tally"))
 
         // decrypt ballots
         RunTrustedBallotDecryption.main(
@@ -97,7 +98,7 @@ class TestNumGuardians {
                 "-nthreads", nthreads.toString()
             )
         )
-        println("----------- after decrypt ballots ${group.showAndClearCountPowP()}")
+        println(group.showOpCountResults("----------- after decrypt ballots"))
 
         // verify
         println("\nRun Verifier")
@@ -108,7 +109,7 @@ class TestNumGuardians {
         stats.show()
         println("Verify is $ok")
         assertTrue(ok)
-        println("----------- after verify ${group.showAndClearCountPowP()}")
+        println(group.showOpCountResults("----------- after verify"))
     }
 
     fun checkTalliesAreEqual() {

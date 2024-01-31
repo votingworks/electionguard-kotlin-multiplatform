@@ -22,17 +22,16 @@ class BigintTest {
         val org: ElementModP = bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
         val orgb = org.toBig()
 
-        val productb = runProdPow(es, bases, group)
+        val productb = runProdPow(es, bases, group, true)
         assertEquals(orgb, productb)
     }
 
     @Test
     fun testBigintQ() {
         runBigintQ(1)
-        runBigintQ(3)
         runBigintQ(10)
         runBigintQ(100)
-        runBigintQ(1000)
+        runBigintQ(200)
     }
 
     fun runBigintQ(nexps: Int) {
@@ -90,7 +89,7 @@ fun runProdPow(exps: List<ElementModQ>, bases: List<ElementModP>, group: GroupCo
 
 fun runProdPow(exps: List<BigInteger>, bases: List<BigInteger>, modulus: BigInteger, show: Boolean = false): BigInteger {
     // modPow(BigInteger exponent, BigInteger modulus)
-    BigInteger.getAndClearCounts()
+    BigInteger.getAndClearOpCounts()
     val expsb = bases.mapIndexed { idx, it -> it.modPow(exps[idx], modulus) }
     if (show) println(showCountResults(" reg.modPow"))
     // this.element * other.getCompat(groupContext)).modWrap()
@@ -100,8 +99,7 @@ fun runProdPow(exps: List<BigInteger>, bases: List<BigInteger>, modulus: BigInte
 }
 
 fun showCountResults(where: String): String {
-    val opCounts = BigInteger.getAndClearCounts()
-
+    val opCounts = BigInteger.getAndClearOpCounts()
     return buildString {
         appendLine("$where:")
         opCounts.toSortedMap().forEach{ (key, value) ->

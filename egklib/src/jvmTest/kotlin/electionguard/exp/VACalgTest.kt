@@ -146,7 +146,7 @@ class VACalgTest {
         val basesb = bases.map { it.toBig() }
 
         val vac = VACalg(group, esb, true)
-        BigInteger.getAndClearCounts()
+        BigInteger.getAndClearOpCounts()
         val result = vac.prodPowP(basesb)
         println(showCountResults(" prodPowP"))
 
@@ -203,7 +203,7 @@ class VACalgTest {
         var countFE = 0
 
         // how long to calculate. apply same VACalg to all the rows
-        BigInteger.getAndClearCounts()
+        BigInteger.getAndClearOpCounts()
         repeat (nbases) {
             val bases = List(nexps) { group.gPowP(group.randomElementModQ()) }
             val basesb = bases.map { it.toBig() }
