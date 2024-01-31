@@ -1,5 +1,6 @@
-package electionguard.core
+package electionguard.exp
 
+import electionguard.core.*
 import electionguard.util.sigfig
 
 // Use 14.88 to generate a vector addition chain

@@ -1,14 +1,11 @@
-package electionguard.core
+package electionguard.exp
 
-// The job is to find an addition chain for all the column vectors.
-// I think we can just use CVInts.
-// Do we have to compare the vectors, not the cb integer?
-class MakeTerms1(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) {
+
+// there are 256 cvints when using ElementModQ
+class MakeTerms(val k: Int, val cvints: List<CVInt>, val show: Boolean = false) {
     val working = mutableMapOf<Int, CVInt>() // key = value
     val done = mutableListOf<CVInt>()
     val doneSet = mutableSetOf<ColVector>()
-
-    private val showDetails = true
 
     init {
         makeWorkingNoDuplicates()
@@ -17,7 +14,7 @@ class MakeTerms1(val k: Int, val cvints: List<CVInt>, val show: Boolean = false)
             var changed = removeEmptyAndBaseValues()
             changed = changed || removeSums()
             changed = changed || removeSingleBits()
-            changed = changed || splitLargest()
+            // changed = changed || splitLargest()
             if (!changed) break // no progress
         }
 
@@ -91,7 +88,6 @@ class MakeTerms1(val k: Int, val cvints: List<CVInt>, val show: Boolean = false)
                     theSum.sum2 = Pair(firstCV.cv, secondCV.cv)
                     addToDone(theSum)
                     working.remove(theSum.cv)
-                    if (show && showDetails) println("   removeSum= $theSum")
                     count++
                 }
                 if (test > last) break // dont bother continuing
@@ -110,10 +106,10 @@ class MakeTerms1(val k: Int, val cvints: List<CVInt>, val show: Boolean = false)
             for (doneIdx in 0 until done.size) {
                 val test = trial.cv - done[doneIdx].cv
                 if (test > 0 && test.countOneBits() == 1) {
-                    trial.sum2 = Pair(done[doneIdx].cv, test) // not orgIdx
+                    trial.sum2 = Pair(test, done[doneIdx].cv) // not orgIdx
                     addToDone(trial)
                     removeThese.add(trial)
-                    if (show) println(" removeSingleBits $trial succeeded with ${trial.sum2}")
+                    if (show) println(" removeSingleBits $trial succeeded with ${done[doneIdx]} and ${test}")
                     break
                 }
             }
@@ -123,6 +119,7 @@ class MakeTerms1(val k: Int, val cvints: List<CVInt>, val show: Boolean = false)
         return (removeThese.size > 0)
     }
 
+    /*
     fun splitLargest(): Boolean {
         if (working.isEmpty()) return false
         val sorted = working.toSortedMap()
@@ -132,35 +129,31 @@ class MakeTerms1(val k: Int, val cvints: List<CVInt>, val show: Boolean = false)
 
         val nonzero = splitt.cv.toNList()
         val size2 = nonzero.size / 2
-        val left = binary(k, nonzero.subList(0, size2))
-        val right = binary(k, nonzero.subList(size2, nonzero.size))
+        val left = binary(nonzero.subList(0, size2), k)
+        val right = binary(nonzero.subList(size2, nonzero.size), k)
 
-        val leftCV = CVInt(nonzero(left))
-        val rightCV = CVInt(nonzero(right))
+        //val leftCV = CVInt(nonbinary(left))
+        //val rightCV = CVInt(nonbinary(right))
 
-        val addleft = addToWorkingOrDone(leftCV)
-        val addRight = addToWorkingOrDone(rightCV)
+        addToWorkingOrDone(leftCV)
+        addToWorkingOrDone(rightCV)
 
         splitt.setSum(leftCV.cv, rightCV.cv)
         working.remove(splitt.cv)
         addToDone(splitt)
 
-        if (show) println(" splitLargest $splitt succeeded with '$addleft' and '$addRight'")
+        if (show) println(" splitLargest $splitt succeeded with ${leftCV} and ${rightCV}")
         return true
     }
 
-    fun addToWorkingOrDone(cv: CVInt): String {
-        return if (cv.cv.countOneBits() == 2) { // can use sum of bases
+     */
+
+    fun addToWorkingOrDone(cv: CVInt) {
+        if (cv.cv.countOneBits() == 2) { // can use sum of bases
             val bits = cv.cv.toNList()
             addToDone(cv.setSum(1 shl bits[0], 1 shl bits[1]))
-            "add ${cv.cv} 2bit to done"
         } else {
-            if (working[cv.cv] == null) {
-                working[cv.cv] = cv
-                "add ${cv.cv} to working"
-            } else {
-                "already had ${cv.cv} in working"
-            }
+            if (working[cv.cv] == null) working[cv.cv] = cv
         }
     }
 
@@ -169,4 +162,6 @@ class MakeTerms1(val k: Int, val cvints: List<CVInt>, val show: Boolean = false)
         done.add(cv)
         doneSet.add(cv.cv)
     }
+
+
 }

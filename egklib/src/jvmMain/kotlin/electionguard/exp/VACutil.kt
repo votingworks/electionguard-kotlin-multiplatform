@@ -1,5 +1,9 @@
-package electionguard.core
+package electionguard.exp
 
+import electionguard.core.ElementModP
+import electionguard.core.ElementModQ
+import electionguard.core.normalize
+import org.cryptobiotic.bigint.BigInteger
 
 private val byteZ = 0.toByte()
 
@@ -330,4 +334,24 @@ fun IntArray.toBlist(): List<Int> {
 
 fun List<Int>.toCV(): Int {
     return this.toVector().toCV()
+}
+
+fun BigInteger.toByteArray(width: Int): ByteArray {
+    return this.toByteArray().normalize(width)
+}
+
+fun ElementModP.toBig(): BigInteger {
+    return BigInteger(1, this.byteArray().normalize(512))
+}
+
+fun ElementModQ.toBig(): BigInteger {
+    return BigInteger(1, this.byteArray().normalize(32))
+}
+
+fun ElementModP.toBigM(): java.math.BigInteger {
+    return java.math.BigInteger(1, this.byteArray())
+}
+
+fun ElementModQ.toBigM(): java.math.BigInteger {
+    return java.math.BigInteger(1, this.byteArray())
 }

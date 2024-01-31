@@ -14,8 +14,9 @@ version = "2.0.3-SNAPSHOT"
 
 kotlin {
     jvm {
+        withJava()
         compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.jvmTarget = "17"
             kotlinOptions.freeCompilerArgs = listOf(
                 "-Xexpect-actual-classes",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi,kotlinx.serialization.ExperimentalSerializationApi"

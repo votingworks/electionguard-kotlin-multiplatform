@@ -1,4 +1,6 @@
-package electionguard.core
+package electionguard.exp
+
+import electionguard.core.*
 
 // Simultaneous Multiple exponentiation. Experimental.
 // Algorithm 14.88 in Handbook (menezes et al)
