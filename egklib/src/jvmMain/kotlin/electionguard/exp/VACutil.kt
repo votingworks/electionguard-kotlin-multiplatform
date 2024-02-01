@@ -349,9 +349,9 @@ fun ElementModQ.toBig(): BigInteger {
 }
 
 fun ElementModP.toBigM(): java.math.BigInteger {
-    return java.math.BigInteger(1, this.byteArray())
+    return java.math.BigInteger(1, this.byteArray().normalize(512))
 }
 
 fun ElementModQ.toBigM(): java.math.BigInteger {
-    return java.math.BigInteger(1, this.byteArray())
+    return java.math.BigInteger(1, this.byteArray().normalize(512))
 }

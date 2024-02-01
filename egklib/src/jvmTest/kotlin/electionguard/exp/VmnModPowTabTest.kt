@@ -1,6 +1,5 @@
 package electionguard.exp
 
-import electionguard.core.ElementModP
 import electionguard.core.getSystemTimeInMillis
 import electionguard.core.productionGroup
 import electionguard.core.randomElementModQ
@@ -9,7 +8,7 @@ import org.junit.jupiter.api.Test
 import org.cryptobiotic.bigint.BigInteger
 import kotlin.test.assertEquals
 
-class ModPowTabTest {
+class VmnModPowTabTest {
     val group = productionGroup()
     val modulus = BigInteger(1, group.constants.largePrime)
     val modulusM = java.math.BigInteger(1, group.constants.largePrime)
@@ -18,7 +17,7 @@ class ModPowTabTest {
     fun testOptimalWidth() {
         var bitLength = 8
         repeat(12) {
-            println("optimalWidth (nexps at a time) for $bitLength = ${ModPowTab.optimalWidth(bitLength)}")
+            println("optimalWidth (nexps at a time) for $bitLength = ${VmnModPowTab.optimalWidth(bitLength)}")
             bitLength *= 2
         }
     }
@@ -29,7 +28,7 @@ class ModPowTabTest {
 
         val nrows = 3
         val bases = List(nrows) { group.gPowP(group.randomElementModQ()).toBig() }
-        val table = ModPowTabB(bases, 0, nrows, modulus)
+        val table = VmnModPowTabB(bases, 0, nrows, modulus)
     }
 
     /*
@@ -59,49 +58,77 @@ Perform precalculation
     }
 
     @Test
-    fun testModPowProdBshow() {
-        runModPowProdB(100, false)
-        runModPowProdB(100, true)
+    fun testCompareModPowProdBshow() {
+        compareModPowProdB(1000, true)
     }
 
-    fun runModPowProdB(nrows: Int, show: Boolean = false) {
-        println("runModPowProdB with nrows = $nrows")
+    // compare LargeInteger.modPowProdB vs BigIntegerB.modPow
+    fun compareModPowProdB(nrows: Int, show: Boolean = false) {
+        println("compareModPowProdB with nrows = $nrows")
         val bases = List(nrows) { group.gPowP(group.randomElementModQ()).toBig() }
         val exps = List(nrows) { group.randomElementModQ().toBig() }
 
-        var starting = getSystemTimeInMillis()
-
-        BigInteger.getAndClearOpCounts()
-        val newWay = modPowProdB(bases, exps, modulus)
-        val timeNew = getSystemTimeInMillis() - starting
-        if (show) println(showCountResults(" newWay"))
+        val (newWay, timeNew) = runModPowProdB(bases, exps, show)
 
         // heres the way we do it now
-        starting = getSystemTimeInMillis()
-        val oldWay = runProdPow(exps, bases, modulus, show)
+        val starting = getSystemTimeInMillis()
+        val oldWay = runProdPowB(exps, bases, modulus, show)
         val timeOld = getSystemTimeInMillis() - starting
 
         val ratio = timeOld.toDouble()/timeNew
-        println(" nrows=$nrows timeOld = $timeOld, timeNew = $timeNew ratio = ${ratio.sigfig(2)}")
-        println(" perrow = ${(timeOld.toDouble()/nrows).sigfig(3)} / ${(timeNew.toDouble()/nrows).sigfig(3)}")
+        println(" nrows=$nrows timeOld = $timeOld, timeNew = $timeNew msecs, ratio = ${ratio.sigfig(2)}")
+        println(" per_row = ${(timeOld.toDouble()/nrows).sigfig(3)} / ${(timeNew.toDouble()/nrows).sigfig(3)} msecs")
         println("============================================================")
 
         assertEquals(oldWay, newWay)
     }
 
     @Test
-    fun testModPowProd() {
-        val show = false
-        runModPowProdQ(100, show)
-        runModPowProdQ(200, show)
-        runModPowProdQ(400, show)
-        runModPowProdQ(800, show)
-        runModPowProdQ(100, show)
+    fun testRunModPowProdBshow() {
+        runModPowProdB(300, false)
+        runModPowProdB(600, false)
+        runModPowProdB(900, false)
+        runModPowProdB(1200, false)
         println()
     }
 
-    fun runModPowProdQ(nrows: Int, show: Boolean = false) {
-        println("runModPowProdQ with nrows = $nrows")
+    fun runModPowProdB(nrows: Int, show: Boolean = false) {
+        val bases = List(nrows) { group.gPowP(group.randomElementModQ()).toBig() }
+        val exps = List(nrows) { group.randomElementModQ().toBig() }
+
+        val (newWay, timeNew) = runModPowProdB(bases, exps, show)
+        println("runModPowProdB with nrows =$nrows  time = $timeNew msecs, per_row = ${(timeNew.toDouble()/nrows).sigfig(3)} msecs")
+    }
+
+    fun runModPowProdB(bases: List<BigInteger>, exps: List<BigInteger>, show: Boolean = false): Pair<BigInteger, Long> {
+        var starting = getSystemTimeInMillis()
+        BigInteger.getAndClearOpCounts()
+
+        val newWay = modPowProd7B(bases, exps, modulus)
+
+        val timeNew = getSystemTimeInMillis() - starting
+        if (show) println(showCountResults(" newWay (modPowProd7B)"))
+        return Pair(newWay, timeNew)
+    }
+
+    @Test
+    fun testModPowProd() {
+        val show = false
+        compareModPowProdQ(300, show)
+        compareModPowProdQ(1000, show)
+        compareModPowProdQ(2000, show)
+        compareModPowProdQ(3000, show)
+        println()
+    }
+
+    @Test
+    fun testModPowProdshow() {
+        compareModPowProdQ(1000, true)
+    }
+
+    // compare LargeInteger.modPowProd vs BigIntegerB.modPow
+    fun compareModPowProdQ(nrows: Int, show: Boolean = false) {
+        println("compareModPowProdQ with nrows = $nrows")
         val bases = List(nrows) { group.gPowP(group.randomElementModQ()) }
         val exps = List(nrows) { group.randomElementModQ() }
 
@@ -119,13 +146,13 @@ Perform precalculation
 
         starting = getSystemTimeInMillis()
         BigInteger.getAndClearOpCounts()
-        val newWay = modPowProd(basesM, expsM, modulusM)
+        val newWay = modPowProd7(basesM, expsM, modulusM)
         val timeNew = getSystemTimeInMillis() - starting
         if (show) println(showCountResults(" newWay"))
 
         val ratio = timeOld.toDouble()/timeNew
         println(" nrows=$nrows timeOld = $timeOld, timeNew = $timeNew ratio = ${ratio.sigfig(2)}")
-        println(" perrow = ${(timeOld.toDouble()/nrows).sigfig(3)} / ${(timeNew.toDouble()/nrows).sigfig(3)}")
+        println(" per_row = ${(timeOld.toDouble()/nrows).sigfig(3)} / ${(timeNew.toDouble()/nrows).sigfig(3)}")
         println("============================================================")
 
         assertEquals(oldWay, newWay)
