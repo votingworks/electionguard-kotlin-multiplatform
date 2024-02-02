@@ -1,6 +1,7 @@
 package electionguard.exp
 
 import electionguard.core.*
+import electionguard.util.Stopwatch
 import electionguard.util.sigfig
 import org.cryptobiotic.bigint.BigInteger
 import org.junit.jupiter.api.Test
@@ -63,12 +64,8 @@ class BigintTest {
     @Test
     fun testCountProdPowB() {
         countProdPowB(1)
-        countProdPowB(10)
         countProdPowB(100)
         countProdPowB(1000)
-        countProdPowB(100)
-        countProdPowB(1000)
-        countProdPowB(100)
     }
 
     // count ops for runProdPowB, full size exponents (256 bits), check result is correct
@@ -77,25 +74,23 @@ class BigintTest {
         val es = List(nexps) { group.randomElementModQ() }
         val bases = List(nexps) { group.gPowP(group.randomElementModQ()) }
 
-        var starting = getSystemTimeInMillis()
+        val stopwatch = Stopwatch()
         val org: ElementModP = bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
-        val took = getSystemTimeInMillis() - starting
-        val perN = took.toDouble() / nexps
+        val took = stopwatch.stop()
 
-        println("*** prodPow nrows = $nexps took ${took} msec, ${perN.sigfig(2)} msecs per row")
-        val orgb = org.toBig()
+        println("*** prodPow ${Stopwatch.perRow(took, nexps)}")
 
         val productb = runProdPowB(es, bases, group, true)
-        assertEquals(orgb, productb)
+        assertEquals(org.toBig(), productb)
     }
 
     @Test
     fun testBigintQQ() {
         compareTimeProdPow(1)
-        compareTimeProdPow(3)
         compareTimeProdPow(10)
         compareTimeProdPow(100)
         compareTimeProdPow(1000)
+        println()
     }
 
     // time standard ProdPow, vs ProdPowB
@@ -103,23 +98,21 @@ class BigintTest {
         println("nexps = $nexps")
         val es = List(nexps) { group.randomElementModQ() }
         val bases = List(nexps) { group.gPowP(group.randomElementModQ()) }
-        var starting = getSystemTimeInMillis()
+        val stopwatch = Stopwatch()
         val org: ElementModP = bases.mapIndexed { idx, it -> it powP es[idx] }.reduce { a, b -> (a * b) }
         val orgb: BigInteger = org.toBig()
-        val timePowQ = getSystemTimeInMillis() - starting
+        val BigIntegerTime = stopwatch.stop()
 
-        starting = getSystemTimeInMillis()
+        stopwatch.start()
         val esb = es.map { it.toBig() }
         val basesb = bases.map { it.toBig() }
         val modulus = BigInteger(1, group.constants.largePrime)
         val expsb = basesb.mapIndexed { idx, it -> it.modPow(esb[idx], modulus) }
         val productb: BigInteger = expsb.reduce { a, b -> (a.multiply(b)).mod(modulus) }
-        val timePowQQ = getSystemTimeInMillis() - starting
+        val BigIntegerBTime = stopwatch.stop()
 
         assertEquals(orgb, productb)
-
-        val ratio = timePowQQ.toDouble() / timePowQ
-        println(" compareTimeProdPow = $timePowQ, timePowQQ = $timePowQQ timePowQQ/timePowQ = ${ratio.sigfig(2)}")
+        println(" timeProdPow (BigIntegerB/BigInteger) = ${Stopwatch.ratioAndPer(BigIntegerBTime, BigIntegerTime, nexps)}")
     }
 }
 
@@ -135,10 +128,9 @@ fun runProdPowB(exps: List<BigInteger>, bases: List<BigInteger>, modulus: BigInt
     // modPow(BigInteger exponent, BigInteger modulus)
     BigInteger.getAndClearOpCounts()
     val expsb = bases.mapIndexed { idx, it -> it.modPow(exps[idx], modulus) }
-    if (show) println(showCountResults(" BigIntegerB.modPow"))
     // this.element * other.getCompat(groupContext)).modWrap()
     val productb: BigInteger = expsb.reduce { a, b -> (a.multiply(b)).mod(modulus) }
-    if (show) println(showCountResults(" BigIntegerB.multiply"))
+    if (show) println(showCountResultsPerRow(" BigIntegerB.prodModPow", exps.size))
     return productb
 }
 
@@ -148,6 +140,16 @@ fun showCountResults(where: String): String {
         appendLine("$where:")
         opCounts.toSortedMap().forEach{ (key, value) ->
             appendLine("   $key : $value")
+        }
+    }
+}
+
+fun showCountResultsPerRow(where: String, nrows: Int): String {
+    val opCounts = BigInteger.getAndClearOpCounts()
+    return buildString {
+        appendLine("$where per row:")
+        opCounts.toSortedMap().forEach{ (key, value) ->
+            appendLine("   $key : ${value/nrows}")
         }
     }
 }

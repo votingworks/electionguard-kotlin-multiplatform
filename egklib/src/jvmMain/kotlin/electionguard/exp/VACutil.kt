@@ -355,3 +355,11 @@ fun ElementModP.toBigM(): java.math.BigInteger {
 fun ElementModQ.toBigM(): java.math.BigInteger {
     return java.math.BigInteger(1, this.byteArray().normalize(512))
 }
+
+fun BigInteger.toBigM(): java.math.BigInteger {
+    return java.math.BigInteger(1, this.toByteArray())
+}
+
+fun java.math.BigInteger.toBig(): BigInteger {
+    return BigInteger(1, this.toByteArray())
+}
