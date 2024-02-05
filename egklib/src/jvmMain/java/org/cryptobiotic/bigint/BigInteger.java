@@ -1094,7 +1094,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      * @return {@code this * val}
      */
     public BigInteger multiply(BigInteger val) {
-        opCounts.computeIfAbsent("multiply"+val.mag.length, s -> new AtomicInteger(0)).incrementAndGet();
+        opCounts.computeIfAbsent("multiply", s -> new AtomicInteger(0)).incrementAndGet();
         return multiply(val, false);
     }
 
@@ -1107,7 +1107,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      * @return {@code this * val}
      */
     private BigInteger multiply(BigInteger val, boolean isRecursion) {
-        opCounts.computeIfAbsent("multiplyRecursion"+val.mag.length, s -> new AtomicInteger(0)).incrementAndGet();
+        // opCounts.computeIfAbsent("multiplyRecursion"+val.mag.length, s -> new AtomicInteger(0)).incrementAndGet();
 
         if (val.signum == 0 || signum == 0)
             return ZERO;
@@ -1128,8 +1128,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
             if (mag.length == 1) {
                 return multiplyByInt(val.mag,mag[0], resultSign);
             }
-            int[] result = multiplyToLen(mag, xlen,
-                    val.mag, ylen, null);
+            int[] result = multiplyToLen(mag, xlen, val.mag, ylen, null);
             result = trustedStripLeadingZeroInts(result);
             return new BigInteger(result, resultSign);
         } else {
@@ -1277,7 +1276,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
 
     // @IntrinsicCandidate
     private static int[] implMultiplyToLen(int[] x, int xlen, int[] y, int ylen, int[] z) {
-        opCounts.computeIfAbsent("implMultiplyByLen", s -> new AtomicInteger(0)).incrementAndGet();
+        opCounts.computeIfAbsent("multiplyToLen", s -> new AtomicInteger(0)).incrementAndGet();
 
 
         int xstart = xlen - 1;
@@ -1610,6 +1609,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         int len = mag.length;
 
         if (len < KARATSUBA_SQUARE_THRESHOLD) {
+            opCounts.computeIfAbsent("squareToLen", s -> new AtomicInteger(0)).incrementAndGet();
             int[] z = squareToLen(mag, len, null);
             return new BigInteger(trustedStripLeadingZeroInts(z), 1);
         } else {
@@ -1675,9 +1675,6 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      */
     // @IntrinsicCandidate
     private static final int[] implSquareToLen(int[] x, int len, int[] z, int zlen) {
-        opCounts.computeIfAbsent("implSquareToLen", s -> new AtomicInteger(0)).incrementAndGet();
-
-
         /*
          * The algorithm used here is adapted from Colin Plumb's C library.
          * Technique: Consider the partial products in the multiplication
@@ -2235,8 +2232,6 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
             throw new ArithmeticException("BigInteger: modulus not positive");
         opCounts.computeIfAbsent("mod", s -> new AtomicInteger(0)).incrementAndGet();
 
-
-
         BigInteger result = this.remainder(m);
         return (result.signum >= 0 ? result : result.add(m));
     }
@@ -2255,6 +2250,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
      * @see    #modInverse
      */
     public BigInteger modPow(BigInteger exponent, BigInteger m) {
+        opCounts.computeIfAbsent("modPow", s -> new AtomicInteger(0)).incrementAndGet();
+
         if (m.signum <= 0)
             throw new ArithmeticException("BigInteger: modulus not positive");
 
@@ -2279,11 +2276,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
                 ? this.mod(m) : this);
         BigInteger result;
         if (m.testBit(0)) { // odd modulus
-            opCounts.computeIfAbsent("oddModPow", s -> new AtomicInteger(0)).incrementAndGet();
-
             result = base.oddModPow(exponent, m);
         } else {
-            opCounts.computeIfAbsent("evenModPow", s -> new AtomicInteger(0)).incrementAndGet();
 
             /*
              * Even modulus.  Tear it into an "odd part" (m1) and power of two
@@ -2339,7 +2333,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         opCounts.computeIfAbsent("montMultiply", s -> new AtomicInteger(0)).incrementAndGet();
 
 
-        implMontgomeryMultiplyChecks(a, b, n, len, product);
+        // implMontgomeryMultiplyChecks(a, b, n, len, product);
         if (len > MONTGOMERY_INTRINSIC_THRESHOLD) {
             // Very long argument: do not use an intrinsic
             product = multiplyToLen(a, len, b, len, product);
@@ -2396,15 +2390,13 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
    // @IntrinsicCandidate
     private static int[] implMontgomeryMultiply(int[] a, int[] b, int[] n, int len,
                                                 long inv, int[] product) {
-        opCounts.computeIfAbsent("implMontgomeryMultiply", s -> new AtomicInteger(0)).incrementAndGet();
-
         product = multiplyToLen(a, len, b, len, product);
         return montReduce(product, n, len, (int)inv);
     }
    // @IntrinsicCandidate
     private static int[] implMontgomerySquare(int[] a, int[] n, int len,
                                               long inv, int[] product) {
-        opCounts.computeIfAbsent("implMontgomerySquare", s -> new AtomicInteger(0)).incrementAndGet();
+        // opCounts.computeIfAbsent("implMontgomerySquare", s -> new AtomicInteger(0)).incrementAndGet();
 
         product = squareToLen(a, len, product);
         return montReduce(product, n, len, (int)inv);
@@ -2511,6 +2503,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
 
         // Calculate appropriate table size
         int tblmask = 1 << wbits;
+        opCounts.computeIfAbsent("oddModPow"+wbits, s -> new AtomicInteger(0)).incrementAndGet();
 
         // Allocate table for precomputed odd powers of base in Montgomery form
         int[][] table = new int[tblmask][];

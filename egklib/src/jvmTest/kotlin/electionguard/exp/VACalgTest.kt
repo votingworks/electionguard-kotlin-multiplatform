@@ -31,7 +31,7 @@ class VACalgTest {
         val vac = VACalg(group, esb, true)
         val result = vac.prodPowP(basesb)
 
-        val productb = runProdPow(esb, basesb, modulus)
+        val productb = runProdPowB(esb, basesb, modulus)
         assertEquals(productb, result)
         val productP = ProductionElementModP( java.math.BigInteger(1, productb.toByteArray()), group as ProductionGroupContext)
         assertEquals(org, productP)
@@ -59,7 +59,7 @@ class VACalgTest {
         val vac = VACalg(group, esb, true)
         val result = vac.prodPowP(basesb)
 
-        val productb = runProdPow(esb, basesb, modulus)
+        val productb = runProdPowB(esb, basesb, modulus)
         assertEquals(productb, result)
         println()
     }
@@ -89,7 +89,7 @@ class VACalgTest {
         val vac = VACalg(group, esb, true)
         val result = vac.prodPowP(basesb)
 
-        val productb = runProdPow(esb, basesb, modulus)
+        val productb = runProdPowB(esb, basesb, modulus)
         assertEquals(productb, result)
         println()
     }
@@ -125,7 +125,7 @@ class VACalgTest {
         val vac = VACalg(group, esb, true)
         val result = vac.prodPowP(basesb)
 
-        val productb = runProdPow(esb, basesb, modulus)
+        val productb = runProdPowB(esb, basesb, modulus)
         assertEquals(productb, result)
         println()
     }
@@ -151,7 +151,7 @@ class VACalgTest {
         println(showCountResults(" prodPowP"))
 
         println("runProdPow")
-        val productb = runProdPow(esb, basesb, modulus)
+        val productb = runProdPowB(esb, basesb, modulus)
         assertEquals(productb, result)
         println()
     }
@@ -219,7 +219,7 @@ class VACalgTest {
         repeat (nbases) {
             val bases = List(nexps) { group.gPowP(group.randomElementModQ()) }
             val basesb = bases.map { it.toBig() }
-            val productb = runProdPow(esb, basesb, modulus, true)
+            val productb = runProdPowB(esb, basesb, modulus, true)
         }
         val timePowP = getSystemTimeInMillis() - starting
 
