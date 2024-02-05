@@ -45,6 +45,11 @@ class Stopwatch(running: Boolean = true) {
 
     companion object {
 
+        fun took(took: Long): String {
+            val tookMs = took / 1_000_000
+            return "took ${tookMs} ms"
+        }
+
         fun perRow(took: Long, nrows: Int): String {
             val tookMs = took / 1_000_000
             val perRow = tookMs.toDouble()  / nrows
