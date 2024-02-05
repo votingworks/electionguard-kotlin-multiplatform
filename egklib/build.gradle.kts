@@ -14,7 +14,6 @@ version = "2.0.3-SNAPSHOT"
 
 kotlin {
     jvm {
-        withJava()
         compilations.all {
             kotlinOptions.jvmTarget = "17"
             kotlinOptions.freeCompilerArgs = listOf(
