@@ -89,7 +89,6 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
   -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunCreateTestManifest \
     -ncontests 3 \
@@ -168,7 +167,6 @@ Example:
 
 ````
 /usr/lib/jvm/jdk-19/bin/java \
-  -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 \
   -classpath egkliball/build/libs/egklib-all.jar \
   electionguard.cli.RunCreateInputBallots \
     -manifest egklib/src/commonTest/data/startManifestJson \
