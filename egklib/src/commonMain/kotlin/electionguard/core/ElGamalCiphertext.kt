@@ -88,3 +88,56 @@ fun List<ElGamalCiphertext>.add(other: List<ElGamalCiphertext>): List<ElGamalCip
     }
     return result
 }
+
+fun Int.encrypt(
+    keypair: ElGamalKeypair,
+    nonce: ElementModQ = keypair.context.randomElementModQ(minimum = 1)
+) = this.encrypt(keypair.publicKey, nonce)
+
+/** Encrypt an Int. */
+fun Int.encrypt(
+    publicKey: ElGamalPublicKey,
+    nonce: ElementModQ = publicKey.context.randomElementModQ(minimum = 1)
+): ElGamalCiphertext {
+    val context = compatibleContextOrFail(publicKey.key, nonce)
+
+    // LOOK: Exception
+    if (nonce.isZero()) {
+        throw ArithmeticException("Can't use a zero nonce for ElGamal encryption")
+    }
+
+    if (this < 0) {
+        throw ArithmeticException("Can't encrypt a negative vote")
+    }
+
+    // We don't have to check if message >= Q, because it's an integer, and Q is much larger than that.
+    // Enc(σ, ξ) = (α, β) = (g^ξ mod p, K^σ · K^ξ mod p) = (g^ξ mod p, K^(σ+ξ) mod p). spec 2.0.0 eq 24
+    val pad = context.gPowP(nonce)
+    val data = publicKey.key powP (nonce + this.toElementModQ(context))
+
+    return ElGamalCiphertext(pad, data)
+}
+
+/** Encrypt a Long. Used to encrypt serial number. */
+fun Long.encrypt(
+    publicKey: ElGamalPublicKey,
+    nonce: ElementModQ = publicKey.context.randomElementModQ(minimum = 1)
+): ElGamalCiphertext {
+    val context = compatibleContextOrFail(publicKey.key, nonce)
+
+    // LOOK: Exception
+    if (nonce.isZero()) {
+        throw ArithmeticException("Can't use a zero nonce for ElGamal encryption")
+    }
+
+    if (this < 0) {
+        throw ArithmeticException("Can't encrypt a negative value")
+    }
+
+    // We don't have to check if message >= Q, because it's a long, and Q is much larger than that.
+    // Enc(σ, ξ) = (α, β) = (g^ξ mod p, K^σ · K^ξ mod p) = (g^ξ mod p, K^(σ+ξ) mod p). spec 2.0.0 eq 24
+    val pad = context.gPowP(nonce)
+    val data = publicKey.key powP (nonce + this.toElementModQ(context))
+
+    return ElGamalCiphertext(pad, data)
+}

@@ -19,6 +19,7 @@ class Stopwatch(running: Boolean = true) {
         return this
     }
 
+    // return elapsed nanoseconds
     fun stop(): Long {
         val tick: Long = System.nanoTime()
         isRunning = false
