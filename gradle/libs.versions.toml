@@ -1,17 +1,20 @@
 [versions]
-coroutines-version = "1.6.4"
-kotlin-version = "1.9.20"
+coroutines-version = "1.8.0-RC2"
+kotlin-version = "1.9.22"
 ktor-version = "2.3.4"
+xmlutil-version = "0.86.3"
 
 [libraries]
 bull-result = { module = "com.michael-bull.kotlin-result:kotlin-result", version = "1.1.18" }
 kotlinx-cli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version = "0.3.6" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines-version" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.4.1" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.0" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.5.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.2" }
+pdvrieze-xmlutil-core-xml = { module = "io.github.pdvrieze.xmlutil:core-jvm", version.ref = "xmlutil-version" }
+pdvrieze-xmlutil-serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization-jvm", version.ref = "xmlutil-version" }
 pbandk = { module = "pro.streem.pbandk:pbandk-runtime", version = "0.14.2" }
-oshai-logging = { module = "io.github.oshai:kotlin-logging", version = "5.1.0" }
-logback-classic = { module = "ch.qos.logback:logback-classic", version = "1.4.11" }
+oshai-logging = { module = "io.github.oshai:kotlin-logging", version = "6.0.3" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version = "1.4.14" }
 
 ktor-server-core-jvm = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
 ktor-server-auth-jvm = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "ktor-version" }
@@ -42,6 +45,7 @@ mockk = { module = "io.mockk:mockk", version = "1.13.7" }
 eglib = ["bull-result", "kotlinx-cli", "kotlinx-coroutines-core", "kotlinx-datetime", "kotlinx-serialization-json", "oshai-logging"]
 egtest = ["test-common", "test-annotations-common", "kotlinx-coroutines-test", "kotest-property"]
 jvmtest = ["junit-jupiter-params", "kotlin-test-junit5", "logback-classic", "mockk"]
+logging = ["oshai-logging", "logback-classic"]
 
 ktor-server = [
     "ktor-server-core-jvm",
@@ -69,6 +73,10 @@ ktor-server-test = [
 ktor-client-test = [
     "kotlin-test",
     "mockk",
+]
+xmlutil = [
+    "pdvrieze-xmlutil-core-xml",
+    "pdvrieze-xmlutil-serialization-xml",
 ]
 
 [plugins]
