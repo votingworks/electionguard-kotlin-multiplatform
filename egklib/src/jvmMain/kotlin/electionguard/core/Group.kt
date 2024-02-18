@@ -1,6 +1,7 @@
 package electionguard.core
 
 import electionguard.ballot.ElectionConstants
+import electionguard.core.Base16.toHex
 import java.math.BigInteger
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -74,13 +75,10 @@ class ProductionGroupContext(
     val q: BigInteger
     val g: BigInteger
     val r: BigInteger
-    val zeroModP: ProductionElementModP
     val oneModP: ProductionElementModP
-    val twoModP: ProductionElementModP
     val gModP: ProductionElementModP
     val gInvModP by lazy { gPowP(qMinus1Q) }
     val gSquaredModP: ProductionElementModP
-    val qModP: ProductionElementModP
     val zeroModQ: ProductionElementModQ
     val oneModQ: ProductionElementModQ
     val twoModQ: ProductionElementModQ
@@ -95,12 +93,9 @@ class ProductionGroupContext(
         q = qBytes.toBigInteger()
         g = gBytes.toBigInteger()
         r = rBytes.toBigInteger()
-        zeroModP = ProductionElementModP(0U.toBigInteger(), this)
         oneModP = ProductionElementModP(1U.toBigInteger(), this)
-        twoModP = ProductionElementModP(2U.toBigInteger(), this)
         gModP = ProductionElementModP(g, this).acceleratePow() as ProductionElementModP
         gSquaredModP = ProductionElementModP((g * g).mod(p), this)
-        qModP = ProductionElementModP(q, this)
         zeroModQ = ProductionElementModQ(0U.toBigInteger(), this)
         oneModQ = ProductionElementModQ(1U.toBigInteger(), this)
         twoModQ = ProductionElementModQ(2U.toBigInteger(), this)
@@ -119,14 +114,8 @@ class ProductionGroupContext(
 
     override fun toString() : String = name
 
-    override val ZERO_MOD_P
-        get() = zeroModP
-
     override val ONE_MOD_P
         get() = oneModP
-
-    override val TWO_MOD_P
-        get() = twoModP
 
     override val G_MOD_P
         get() = gModP
@@ -136,9 +125,6 @@ class ProductionGroupContext(
 
     override val G_SQUARED_MOD_P
         get() = gSquaredModP
-
-    override val Q_MOD_P
-        get() = qModP
 
     override val ZERO_MOD_Q
         get() = zeroModQ
@@ -213,13 +199,6 @@ class ProductionGroupContext(
         else -> ProductionElementModQ(i.toBigInteger(), this)
     }
 
-    override fun uIntToElementModP(i: UInt) : ElementModP = when (i) {
-        0U -> ZERO_MOD_P
-        1U -> ONE_MOD_P
-        2U -> TWO_MOD_P
-        else -> ProductionElementModP(i.toBigInteger(), this)
-    }
-
     override fun Iterable<ElementModQ>.addQ(): ElementModQ {
         val input = iterator().asSequence().toList()
 
@@ -262,7 +241,7 @@ class ProductionGroupContext(
         return ProductionElementModP(result, this@ProductionGroupContext)
     }
 
-    override fun gPowP(e: ElementModQ) = gModP powP e
+    override fun gPowP(exp: ElementModQ) = gModP powP exp
 
     override fun dLogG(p: ElementModP, maxResult: Int): Int? = dlogger.dLog(p, maxResult)
 
@@ -299,8 +278,6 @@ class ProductionElementModQ(internal val element: BigInteger, val groupContext: 
 
     override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.q
 
-    override fun inBoundsNoZero() = inBounds() && !isZero()
-
     override operator fun compareTo(other: ElementModQ): Int = element.compareTo(other.getCompat(groupContext))
 
     override operator fun plus(other: ElementModQ) =
@@ -323,10 +300,6 @@ class ProductionElementModQ(internal val element: BigInteger, val groupContext: 
     override infix operator fun div(denominator: ElementModQ): ElementModQ =
         this * denominator.multInv()
 
-    override infix fun powQ(e: ElementModQ): ElementModQ {
-        groupContext.opCounts.getOrPut("exp") { AtomicInteger(0) }.incrementAndGet()
-        return this.element.modPow(e.getCompat(groupContext), groupContext.q).wrap()
-    }
 
     override fun equals(other: Any?) = when (other) {
         is ElementModQ -> byteArray().contentEquals(other.byteArray())
@@ -335,7 +308,7 @@ class ProductionElementModQ(internal val element: BigInteger, val groupContext: 
 
     override fun hashCode() = byteArray().contentHashCode()
 
-    override fun toString() = base16()
+    override fun toString() = byteArray().toHex()
 }
 
 open class ProductionElementModP(internal val element: BigInteger, val groupContext: ProductionGroupContext): ElementModP,
@@ -349,11 +322,7 @@ open class ProductionElementModP(internal val element: BigInteger, val groupCont
     override val context: GroupContext
         get() = groupContext
 
-    override fun isZero() = element == BigInteger.ZERO
-
     override fun inBounds() = element >= BigInteger.ZERO && element < groupContext.p
-
-    override fun inBoundsNoZero() = inBounds() && !isZero()
 
     override operator fun compareTo(other: ElementModP): Int = element.compareTo(other.getCompat(groupContext))
 
@@ -363,9 +332,9 @@ open class ProductionElementModP(internal val element: BigInteger, val groupCont
         return inBounds() && residue
     }
 
-    override infix fun powP(e: ElementModQ) : ElementModP {
+    override infix fun powP(exp: ElementModQ) : ElementModP {
         groupContext.opCounts.getOrPut("exp") { AtomicInteger(0) }.incrementAndGet()
-        return this.element.modPow(e.getCompat(groupContext), groupContext.p).wrap()
+        return this.element.modPow(exp.getCompat(groupContext), groupContext.p).wrap()
     }
 
     override operator fun times(other: ElementModP) =
@@ -397,7 +366,7 @@ open class ProductionElementModP(internal val element: BigInteger, val groupCont
 
     override fun hashCode() = byteArray().contentHashCode()
 
-    override fun toString() = base16()
+    override fun toString() = byteArray().toHex()
 }
 
 class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p.element, p.groupContext) {
@@ -408,9 +377,9 @@ class AcceleratedElementModP(p: ProductionElementModP) : ProductionElementModP(p
 
     override fun acceleratePow(): ElementModP = this
 
-    override infix fun powP(e: ElementModQ) : ElementModP {
+    override infix fun powP(exp: ElementModQ) : ElementModP {
         groupContext.opCounts.getOrPut("acc") { AtomicInteger(0) }.incrementAndGet()
-        return powRadix.pow(e)
+        return powRadix.pow(exp)
     }
 }
 

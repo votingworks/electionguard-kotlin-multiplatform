@@ -130,7 +130,7 @@ class ConfirmationCodeTestVector {
                 jsonReader.decodeFromStream<ConfirmationCodeTestVector>(inp)
             }
 
-        val publicKey = ElGamalPublicKey(group.base16ToElementModPsafe(testVector.joint_public_key))
+        val publicKey = ElGamalPublicKey(group.base16ToElementModP(testVector.joint_public_key)!!)
         val extendedBaseHash = UInt256(testVector.extended_base_hash.fromHex()!!)
         val ballotsZipped = testVector.ballots.zip(testVector.expected_encrypted_ballots)
 

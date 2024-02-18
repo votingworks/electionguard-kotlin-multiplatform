@@ -10,7 +10,7 @@ repositories {
 }
 
 group = "electionguard-kotlin-multiplatform"
-version = "2.0.3-SNAPSHOT"
+version = "2.0.4-SNAPSHOT"
 
 kotlin {
     jvm {

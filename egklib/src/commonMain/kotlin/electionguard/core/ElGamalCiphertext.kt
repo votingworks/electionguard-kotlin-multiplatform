@@ -89,6 +89,7 @@ fun List<ElGamalCiphertext>.add(other: List<ElGamalCiphertext>): List<ElGamalCip
     return result
 }
 
+// TODO what happens if nonce is small enough to take the log of?
 fun Int.encrypt(
     keypair: ElGamalKeypair,
     nonce: ElementModQ = keypair.context.randomElementModQ(minimum = 1)

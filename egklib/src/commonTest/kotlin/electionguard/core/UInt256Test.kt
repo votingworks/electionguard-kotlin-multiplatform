@@ -34,7 +34,7 @@ class UInt256Test {
             assertEquals(32, s1u.bytes.size)
 
             val s1q = s1u.toElementModQ(group)
-            assertEquals(64, s1q.base16().length)
+            assertEquals(64, s1q.toHex().length)
         }
     }
 }

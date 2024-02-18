@@ -1,5 +1,7 @@
 package electionguard.core
 
+import electionguard.core.Base64.fromBase64
+import electionguard.core.Base64.toBase64
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
@@ -109,6 +111,23 @@ class GroupTest {
             }
         }
     }
+
+    /**
+     * Converts a base-64 string to an [ElementModQ]. Returns null if the number is out of bounds or the
+     * string is malformed.
+     */
+    fun GroupContext.base64ToElementModQ(s: String): ElementModQ? =
+        s.fromBase64()?.let { binaryToElementModQ(it) }
+
+    /**
+     * Converts a base-64 string to an [ElementModP]. Returns null if the number is out of bounds or the
+     * string is malformed.
+     */
+    fun GroupContext.base64ToElementModP(s: String): ElementModP? =
+        s.fromBase64()?.let { binaryToElementModP(it) }
+
+    /** Converts from any [Element] to a base64 string representation. */
+    fun Element.base64(): String = byteArray().toBase64()
 
     @Test
     fun baseConversionFails() {
@@ -322,39 +341,6 @@ class GroupTest {
             val context = contextF()
             forAll(propTestFastConfig, validResiduesOfP(context), validResiduesOfP(context))
                 { a, b -> (a * b) / b == a }
-        }
-    }
-
-    @Test
-    fun exponentiationQ4096() = exponentiationQ { productionGroup(mode = ProductionMode.Mode4096) }
-
-    @Test
-    fun exponentiationQ3072() = exponentiationQ { productionGroup(mode = ProductionMode.Mode3072) }
-
-    fun exponentiationQ(contextF: () -> GroupContext) {
-        runTest {
-            val context = contextF()
-            val qMinus1 = context.ZERO_MOD_Q - context.ONE_MOD_Q
-
-            checkAll(propTestFastConfig, elementsModQNoZero(context)) {
-                assertEquals(it * it, it powQ context.TWO_MOD_Q)
-                assertEquals(context.ONE_MOD_Q, it powQ qMinus1)
-            }
-        }
-    }
-
-    @Test
-    fun exponentiationQSm() {
-        runTest {
-            val context = tinyGroup()
-            val qMinus1 = context.ZERO_MOD_Q - context.ONE_MOD_Q
-
-            // note: unlike the production group, here we're going to let the
-            // checker search much harder for a counterexample
-            checkAll(elementsModQNoZero(context)) {
-                assertEquals(it * it, it powQ context.TWO_MOD_Q)
-                assertEquals(context.ONE_MOD_Q, it powQ qMinus1)
-            }
         }
     }
 

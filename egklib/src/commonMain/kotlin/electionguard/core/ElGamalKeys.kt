@@ -58,7 +58,7 @@ class ElGamalPublicKey(inputKey: ElementModP) {
 
 /**
  * A wrapper around an ElementModQ that allows us to hang onto a pre-computed [negativeKey]
- * (i.e., the additive inverse mod `q`). The secret key must be in [2, Q).
+ * (i.e., the additive inverse mod q). The secret key must be in [2, Q).
  */
 class ElGamalSecretKey(val key: ElementModQ) {
     init {
