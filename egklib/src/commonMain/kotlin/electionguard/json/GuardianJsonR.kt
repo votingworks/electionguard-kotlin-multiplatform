@@ -43,7 +43,7 @@ fun GuardianJsonR.import(group: GroupContext, errs : ErrorMessages) : GuardianR?
 fun GuardianR.convert(group: GroupContext) = Guardian(
     this.name,
     this.i,
-    //     Schnorr proof is missing - fake it
+    //     Schnorr proof is missing - fake it TODO WTF?
     this.coefficient_commitments.map { SchnorrProof(it, group.ONE_MOD_Q, group.TWO_MOD_Q) }
 )
 

@@ -9,7 +9,6 @@ import electionguard.core.elGamalKeyPairFromRandom
 import electionguard.core.encrypt
 import electionguard.core.encryptedSum
 import electionguard.core.productionGroup
-import electionguard.core.randomElementModQ
 import electionguard.core.runTest
 import electionguard.core.toElementModQ
 import kotlin.test.Test

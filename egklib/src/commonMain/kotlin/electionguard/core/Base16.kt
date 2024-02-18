@@ -1,5 +1,6 @@
 package electionguard.core
 
+import electionguard.core.Base16.fromHex
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
@@ -88,5 +89,11 @@ object Base16 {
      */
     fun String.fromHexSafe(): ByteArray =
         fromHex() ?: throw IllegalArgumentException("fromHexSafe invalid input= '$this'")
-
 }
+
+/**
+ * Converts a base-16 (hexadecimal) string to an [ElementModP]. Returns null if the number is out of
+ * bounds or the string is malformed.
+ */
+fun GroupContext.base16ToElementModP(s: String): ElementModP? =
+    s.fromHex()?.let { binaryToElementModP(it) }

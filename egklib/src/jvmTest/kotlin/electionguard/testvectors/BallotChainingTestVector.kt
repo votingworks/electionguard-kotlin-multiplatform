@@ -143,7 +143,7 @@ class BallotChainingTestVector {
                 jsonReader.decodeFromStream<BallotChainingTestVector>(inp)
             }
 
-        val publicKey = ElGamalPublicKey(group.base16ToElementModPsafe(testVector.joint_public_key))
+        val publicKey = ElGamalPublicKey(group.base16ToElementModP(testVector.joint_public_key)!!)
         val extendedBaseHash = UInt256(testVector.extended_base_hash.fromHexSafe())
         val configBaux0 : ByteArray = testVector.configBaux0
         val ballotsZipped = testVector.ballots.zip(testVector.expected_encrypted_ballots)

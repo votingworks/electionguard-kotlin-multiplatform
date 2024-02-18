@@ -72,7 +72,7 @@ fun generateUInt256(context: GroupContext): UInt256 {
     return generateElementModQ(context).toUInt256safe();
 }
 
-fun generateElementModP(context: GroupContext) = context.uIntToElementModP(Random.nextUInt(1879047647.toUInt()))
+fun generateElementModP(context: GroupContext) = context.randomElementModP()
 
 fun generatePublicKey(group: GroupContext): ElementModP =
     group.gPowP(group.randomElementModQ())

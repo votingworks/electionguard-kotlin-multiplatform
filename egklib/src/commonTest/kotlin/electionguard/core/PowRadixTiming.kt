@@ -80,7 +80,7 @@ class PowRadixTiming {
         val nonces = List(n) { group.randomElementModQ() }
 
         var stopwatch = Stopwatch()
-        repeat(n) { require( !group.gPowP(nonces[it]).isZero()) }
+        repeat(n) { group.gPowP(nonces[it]) }
         var duration = stopwatch.stop()
         val peracc = duration.toDouble() / n / 1_000_000
         println("  ${count.pad(4)} acc $n = ${peracc.sigfig(3)} msec per acc")
@@ -102,14 +102,14 @@ class PowRadixTiming {
         val h = group.gPowP(group.randomElementModQ())
 
         var stopwatch = Stopwatch()
-        repeat(n) { require( !group.gPowP(nonces[it]).isZero()) }
+        repeat(n) { group.gPowP(nonces[it]) }
 
         var duration = stopwatch.stop()
         val peracc = duration.toDouble() / n / 1_000_000
         println(" acc took $duration msec for $n = $peracc msec per acc")
 
         stopwatch.start()
-        repeat(n) { require(!(h powP nonces[it]).isZero()) }
+        repeat(n) { h powP nonces[it] }
 
         duration = stopwatch.stop()
         val perexp = duration.toDouble() / n / 1_000_000
@@ -133,7 +133,7 @@ class PowRadixTiming {
         val elemps = nonces.map { group.gPowP(it) }
 
         var starting = getSystemTimeInMillis()
-        val prod = elemps.reduce { a, b -> a * b }
+        elemps.reduce { a, b -> a * b }
         var duration = getSystemTimeInMillis() - starting
         var peracc = duration.toDouble() / n
         println(" multiply took $duration msec for $n = $peracc msec per multiply")

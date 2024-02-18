@@ -79,9 +79,9 @@ class HashTest {
         runTest {
             val group = productionGroup()
             val s1q = "C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromHexSafe()
-                .toUInt256safe().toElementModQ(group).base16()
+                .toUInt256safe().toElementModQ(group).toHex()
             val s2q = "000C49A1E8053FBA95F6B7CD3F3B30B101CDD595C435A46AECF2872F47F1C601206".fromHexSafe()
-                .toUInt256safe().toElementModQ(group).base16()
+                .toUInt256safe().toElementModQ(group).toHex()
             assertEquals(s1q, s2q)
             assertEquals(s1q.encodeToByteArray().size, s2q.encodeToByteArray().size)
             assertEquals(hashFunction(s1q.encodeToByteArray(), s1q), hashFunction(s2q.encodeToByteArray(), s2q))
@@ -94,7 +94,7 @@ class HashTest {
     fun testElementModQToHex() {
         runTest {
             val group = productionGroup()
-            val subject = group.TWO_MOD_Q.base16()
+            val subject = group.TWO_MOD_Q.toHex()
             println(" len = ${subject.length} hex = '${subject}'")
             assertEquals(64, subject.length)
         }

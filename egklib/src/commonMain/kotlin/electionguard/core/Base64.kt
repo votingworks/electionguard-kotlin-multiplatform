@@ -104,8 +104,7 @@ object Base64 {
 
         /**
          * Encodes all bytes from the specified byte array into a newly-allocated byte array using
-         * the [Base64] encoding scheme. The returned byte array is of the length of the resulting
-         * bytes.
+         * the [Base64] encoding scheme. The returned byte array is of the length of the resulting bytes.
          *
          * @param src the byte array to encode
          * @param useBase64URL use Base64URL else use Base64

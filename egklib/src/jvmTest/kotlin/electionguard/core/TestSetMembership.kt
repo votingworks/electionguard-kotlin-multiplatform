@@ -9,7 +9,13 @@ class TestSetMembership {
 
     @Test
     fun testSetMembershipZero() {
-        assertFalse(checkMembership(group.ZERO_MOD_P))
+        val zero = group.binaryToElementModP(ByteArray(11))!!
+        assertFalse(checkMembership(zero))
+    }
+
+    @Test
+    fun testSetMembershipOne() {
+        assertTrue(checkMembership(group.ONE_MOD_P))
     }
 
     @Test
@@ -21,7 +27,8 @@ class TestSetMembership {
 
     @Test
     fun testSetMembershiNotG() {
-        val checkit = group.TWO_MOD_P powP group.TWO_MOD_Q
+        val two = group.binaryToElementModP(ByteArray(1) { 2 })!!
+        val checkit = two powP group.TWO_MOD_Q
         assertFalse(checkMembership(checkit))
     }
 
