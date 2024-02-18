@@ -106,8 +106,7 @@ fun <T : Any> List<T?>.noNullValuesOrNull(): List<T>? {
 
 /**
  * Normally, Kotlin's `Enum.valueOf` or [enumValueOf] method will throw an exception for an invalid
- * input. This method will instead return `null` if the string doesn't map to a valid value of the
- * enum.
+ * input. This method will instead return `null` if the string doesn't map to a valid value of the enum.
  */
 inline fun <reified T : Enum<T>> safeEnumValueOf(name: String?): T? {
     if (name == null) {
